@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030608AbXDVMfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030512AbXDVMgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030608AbXDVMfH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030512AbXDVMfG
+	id S1030512AbXDVMgO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030576AbXDVMgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:35:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46967 "EHLO
+	Sun, 22 Apr 2007 08:36:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56177 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030608AbXDVMfF (ORCPT
+	with ESMTP id S1030512AbXDVMgN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:35:05 -0400
-Date: Sun, 22 Apr 2007 13:34:56 +0100
+	Sun, 22 Apr 2007 08:36:13 -0400
+Date: Sun, 22 Apr 2007 13:35:56 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc pseries rtasd: Convert to kthread API.
-Message-ID: <20070422123456.GG20763@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       "Cameron, Steve" <Steve.Cameron@hp.com>,
+       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer operations as 32-bit halves
+Message-ID: <20070422123556.GA28850@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969582987-git-send-email-ebiederm@xmission.com>
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+	James Bottomley <James.Bottomley@SteelEye.com>,
+	"Cameron, Steve" <Steve.Cameron@hp.com>,
+	"Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
+	Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+	jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+	linux-scsi@vger.kernel.org, trivial@kernel.org
+References: <20070420123041.94aac1e1.akpm@linux-foundation.org> <1177100459.3718.45.camel@mulgrave.il.steeleye.com> <20070420141218.a0222472.akpm@linux-foundation.org> <alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com> <alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com> <20070421030825.bed0b8a9.akpm@linux-foundation.org> <20070421220147.7144113e@the-village.bc.nu> <20070421140622.dc197b38.akpm@linux-foundation.org> <20070422091816.GC1558@infradead.org> <20070422133823.4bd3eaed@the-village.bc.nu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1176969582987-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <20070422133823.4bd3eaed@the-village.bc.nu>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 01:58:46AM -0600, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com>
+On Sun, Apr 22, 2007 at 01:38:23PM +0100, Alan Cox wrote:
+> > > > over-engineering. Call it sector_upper32() do it the simple way and stop
+> > > > trying to solve a problem we don't have
+> > > 
+> > > James said we have the same problem with dma_addr_t.
+> > 
+> > Yes.  It's in fact the far more common case and we have a bread of
+> > macros dealing with the issue in various drivers.
 > 
-> This patch modifies the startup of rtasd to use kthread_run instaed of
-> a combination of kernel_thread and daemonize.  Making the code a little
-> simpler and more maintainble.
+> So we still only need it for unsigned 32/64bit values ?
 
-Looks okay, but I have some questions about the original code.
-
-Why does the driver only check if it really needs to run in the
-thread and calls vmalloc from it?  If we did all these in the
-initialization function we could actually properly unwind.
-
+Yes.
