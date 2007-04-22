@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965576AbXDVJSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965584AbXDVJRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965576AbXDVJSc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 05:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965606AbXDVJSc
+	id S965584AbXDVJRw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 05:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXDVJRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 05:18:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33303 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965565AbXDVJSa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 05:18:30 -0400
-Date: Sun, 22 Apr 2007 10:18:16 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       "Cameron, Steve" <Steve.Cameron@hp.com>,
-       "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [PATCH] utilities: add helper functions for safe 64-bit integer operations as 32-bit halves
-Message-ID: <20070422091816.GC1558@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	"John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-	James Bottomley <James.Bottomley@SteelEye.com>,
-	"Cameron, Steve" <Steve.Cameron@hp.com>,
-	"Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-	Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-	jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, trivial@kernel.org
-References: <20070420114337.12a67141.akpm@linux-foundation.org> <1177095007.3718.43.camel@mulgrave.il.steeleye.com> <20070420123041.94aac1e1.akpm@linux-foundation.org> <1177100459.3718.45.camel@mulgrave.il.steeleye.com> <20070420141218.a0222472.akpm@linux-foundation.org> <alpine.DEB.0.98.0704201732240.11655@sigma.j-a-k-j.com> <alpine.DEB.0.98.0704202040150.16687@sigma.j-a-k-j.com> <20070421030825.bed0b8a9.akpm@linux-foundation.org> <20070421220147.7144113e@the-village.bc.nu> <20070421140622.dc197b38.akpm@linux-foundation.org>
+	Sun, 22 Apr 2007 05:17:52 -0400
+Received: from 1wt.eu ([62.212.114.60]:2177 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965565AbXDVJRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 05:17:51 -0400
+Date: Sun, 22 Apr 2007 11:14:51 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
+       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
+       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Message-ID: <20070422091451.GA15913@1wt.eu>
+References: <200704221441.48897.kernel@kolivas.org> <200704221731.58724.kernel@kolivas.org> <20070422080607.GA15411@1wt.eu> <200704221853.59358.kernel@kolivas.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070421140622.dc197b38.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200704221853.59358.kernel@kolivas.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 21, 2007 at 02:06:22PM -0700, Andrew Morton wrote:
-> On Sat, 21 Apr 2007 22:01:47 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sun, Apr 22, 2007 at 06:53:58PM +1000, Con Kolivas wrote:
+> On Sunday 22 April 2007 18:06, Willy Tarreau wrote:
+> > On Sun, Apr 22, 2007 at 05:31:58PM +1000, Con Kolivas wrote:
+> > > On Sunday 22 April 2007 17:27, Con Kolivas wrote:
+> > > > On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
+> > > > > On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
+> > > > > > A significant bugfix for SMP balancing was just posted for the
+> > > > > > staircase deadline cpu scheduler which improves behaviour
+> > > > > > dramatically on any SMP machine.
+> > > > > >
+> > > > > > Thanks to Willy Tarreau for noticing likely fault point.
+> > > > > >
+> > > > > > Also requested was a version in the Makefile so this version of the
+> > > > > > patch adds -sd045 to the kernel version.
+> > > > >
+> > > > > Con, I'm sorry, but it is worse with this one :-(
+> > > >
+> > > > Well that was quick testing, thanks.
+> > > >
+> > > > > The lag when typing in xterms is even more noticeable and vmstat
+> > > > > output oscillates between 8 and 65, with idle rates around 50%, as
+> > > > > you can see below :
+> > > > >
+> > > > > Renicing X or not does not change anything here.
+> > > > >
+> > > > > I suspect that the bug you fixed was hiding another one :-/
+> > > > > If you want me to test another patch, feel free to ask.
+> > >
+> > > Just as a debug point could you please try this patch? Thanks.
+> >
+> > OK, this time, the ocbench took ages to start. They appeared immediately
+> > but very few of them (less than 8 out of 64) really started to work. The
+> > system remained very responsive and smooth during the test. But I guess
+> > I know why : all the load was sent to CPU 0 :
 > 
-> > > > +#define lower_32_bits(n) (sizeof(n) == 8 ? (u32)(n) : (n))
-> > > 
-> > > n&0xffffffff would be simpler.
-> > > 
-> > > Do we actually have any call for this?
-> > 
-> > The only case for all of this we care about is sector_t, which is one
-> > type, with specific properties (eg always being positive). The rest is
-> > over-engineering. Call it sector_upper32() do it the simple way and stop
-> > trying to solve a problem we don't have
-> 
-> James said we have the same problem with dma_addr_t.
+> Shouldn't have affected smp balancing at all, but try this on top of the 
+> ontop please? Thanks
 
-Yes.  It's in fact the far more common case and we have a bread of
-macros dealing with the issue in various drivers.
+Does not change anything. There clearly is a huge regression somewhere :-/
+The second CPU is not used by ocbench, and again, out of 64 tasks, only
+a small bunch (between 4 and 8) do something.
+
+Con, you should review the changes between 0.44 and 0.45, I think you
+introduced a bug which broke fairness while fixing another one.
+
+Willy
+
