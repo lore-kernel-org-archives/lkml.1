@@ -1,69 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXDVIU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXDVIac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXDVIU6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932279AbXDVIU5
+	id S965475AbXDVIac (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932339AbXDVIac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:20:57 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:42583 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932244AbXDVIU4 (ORCPT
+	Sun, 22 Apr 2007 04:30:32 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:51519 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932255AbXDVIab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:20:56 -0400
-To: ebiederm@xmission.com
-CC: jengelh@linux01.gwdg.de, akpm@linux-foundation.org, miklos@szeredi.hu,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-In-reply-to: <m17is5igtb.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: [patch 7/8] allow unprivileged mounts
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102652.075606533@szeredi.hu>
-	<20070421005513.e230aa88.akpm@linux-foundation.org>
-	<m1bqhhked1.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.61.0704211743100.9989@yvahk01.tjqt.qr>
-	<m1zm51is2h.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.61.0704211905230.9989@yvahk01.tjqt.qr> <m17is5igtb.fsf@ebiederm.dsl.xmission.com>
-Message-Id: <E1HfXIY-0004Js-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sun, 22 Apr 2007 10:19:54 +0200
+	Sun, 22 Apr 2007 04:30:31 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, v4
+Date: Sun, 22 Apr 2007 10:30:07 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>
+References: <20070420140457.GA14017@elte.hu>
+In-Reply-To: <20070420140457.GA14017@elte.hu>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1690017.Q7bN9SWmJE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704221030.24168.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177230631;15cea697;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Apr 21 2007 10:57, Eric W. Biederman wrote:
-> >>
-> >>> tmpfs!
-> >>
-> >>tmpfs is a possible problem because it can consume lots of ram/swap. 
-> >>Which is why it has limits on the amount of space it can consume. 
-> >
-> > Users can gobble up all RAM and swap already today. (Unless they are
-> > confined into an rlimit, which, in most systems, is not the case.)
-> > And in case /dev/shm exists, they can already fill it without running
-> > into an rlimit early.
-> 
-> There are systems that care about rlimits and there is strong intersection
-> between caring about rlimits and user mounts.  Although I do agree that
-> it looks like we have gotten lazy with the default mount options for
-> /dev/shm.
-> 
-> Going a little farther any filesystem that is safe to put on a usb
-> stick and mount automatically should ultimately be safe for unprivileged
-> mounts as well.
+--nextPart1690017.Q7bN9SWmJE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Actually, that's not as simple.
+> i'm pleased to announce release -v4 of the CFS patchset. The patch=20
+> against v2.6.21-rc7 can be downloaded from:
+>=20
+>     http://redhat.com/~mingo/cfs-scheduler/
 
-For the usb stick or cdrom you need physical access to the machine.
-And once you have that you basically have full control over the system
-anyway.
+I can't get 2.6.21-rc7-CFS-v4 to boot. Immediately after selecting
+this kernel I see a very fast scrolling (loop?) sequence of addrs
+which I don't know how to stop to write them down. They don't appear
+in any kernel log either. However I see two Tux at the top of the
+screen.
 
-But with block filesystems, the user would still need access to the
-device (currently kernel doesn't even check this I think).
+I'm using the very same .config I also use with 2.6.21-rc7-sd0.x
 
-So it may make sense to mark all block based filesystems safe, and
-defer permission checking to user access on the block device.
+What could be wrong and how could I track that down ?
 
-But the safe flag is still needed for filesystems, which don't have
-such an additional access checking, such as network filesystems.
+=46WIW this also happened with 2.6.21-rc7-CFS-v3 and thus for
+2.6.21-rc7-CFS-v4 I did a pristine extract of 2.6.20.tar.bz2 and
+applied all patches freshly.
 
-Miklos
+System is a Dell XPS M1710, Intel Core2 T7600 2.33, 4GB
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1690017.Q7bN9SWmJE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGKx0fUYYhyuxDQc4RAuGgAJ9u0bnzBfzblS0EI12MAAebhZFO8gCeKPCY
+kbgU/oEnKCIbJT9WIhDoecU=
+=R64E
+-----END PGP SIGNATURE-----
+
+--nextPart1690017.Q7bN9SWmJE--
