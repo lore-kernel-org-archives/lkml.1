@@ -1,74 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXDVQRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161362AbXDVQSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161359AbXDVQRi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 12:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161362AbXDVQRi
+	id S1161362AbXDVQSw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 12:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161374AbXDVQSw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 12:17:38 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52962 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161359AbXDVQRh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 12:17:37 -0400
-Date: Sun, 22 Apr 2007 17:20:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Tilman Schmidt" <tilman@imap.cc>, "David Miller" <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, kkeil@suse.de,
-       i4ldeveloper@listserv.isdn4linux.de, akpm@linux-foundation.org
-Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-Message-ID: <20070422172017.52f21a90@the-village.bc.nu>
-In-Reply-To: <a781481a0704220848t16cc8ed2l3cb5ee52d9b405e1@mail.gmail.com>
-References: <20070115172912.GA3323@pingi.kke.suse.de>
-	<462A0CA7.2090908@imap.cc>
-	<20070421215844.542d3aab@the-village.bc.nu>
-	<20070421.151052.78709111.davem@davemloft.net>
-	<462B54A0.9000203@imap.cc>
-	<20070422135835.037e323c@the-village.bc.nu>
-	<462B712D.7070504@imap.cc>
-	<20070422161708.54253ab7@the-village.bc.nu>
-	<a781481a0704220848t16cc8ed2l3cb5ee52d9b405e1@mail.gmail.com>
-X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 22 Apr 2007 12:18:52 -0400
+Received: from h155.mvista.com ([63.81.120.155]:55955 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161362AbXDVQSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 12:18:51 -0400
+Message-ID: <462B8B21.1030805@ru.mvista.com>
+Date: Sun, 22 Apr 2007 20:19:45 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] ide: fix UDMA/MWDMA/SWDMA masks
+References: <20070203172415.4926.29574.sendpatchset@localhost.localdomain>
+In-Reply-To: <20070203172415.4926.29574.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> simple and fundamental (which you haven't answered as yet). Why, or
-> rather how, were the writers of newer APIs _allowed_ to push *their*
-> stuff into the kernel _without_ even bothering to convert the
-> *existing* users of the older APIs in the kernel? This goes against
+Hello.
 
-Because to convert the existing ISDN4Linux heap into the new APIs would
-require someone with all the cards involved and a lot of time (as the
-card drivers need a *lot* of work by now to bring them up to todays work)
+Bartlomiej Zolnierkiewicz wrote:
 
-> the spirit of pretty much how anything is done in here ... one can't
-> really find fault with the original author of I4L for not using APIs
-> that didn't even exist when he wrote I4L.
+> [PATCH] ide: fix UDMA/MWDMA/SWDMA masks
 
-Of course not - and I4L as originally merged is very different to I4L as
-it is now - both because it was maintained and because other people fixed
-things when it was easy to do so (eg the tty layer changes).
+> * use 0x00 instead of 0x80 to disable ->{ultra,mwdma,swdma}_mask
+> * add udma_mask field to ide_pci_device_t and use it to initialize
+>   ->ultra_mask in aec62xx, cmd64x, pdc202xx_{new,old} and piix drivers
+> * fix UDMA masks to match with chipset specific *_ratemask()
+>   (alim15x3, hpt366, serverworks and siimage drivers need UDMA mask
+>    filtering method - done in the next patch)
+> 
+> v2:
+> * piix: fix cable detection for 82801AA_1 and 82372FB_1
+>   [ Noticed by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
+> * cmd64x: use hwif->cds->udma_mask
+>   [ Suggested by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
+> * aec62xx: fix newly introduced bug - check DMA status not command register
+>   [ Noticed by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
 
-> and working kernel subsystem to their newer APIs. If we allow
-> something like this (or if this was allowed in the past), then we
-> could be setting a very unfortunate precedent.
+> v3:
+> * piix: use hwif->cds->udma_mask
+>   [ Suggested by Sergei Shtylyov <sshtylyov@ru.mvista.com>. ]
 
-"Precedent", that implies it is a new behaviour - which it isn't. We
-regularly break old driver code when it is neccessary in order to make
-general progress. Grep for "BROKEN" in the kernel tree.
+> Index: b/drivers/ide/pci/aec62xx.c
+> ===================================================================
+> --- a/drivers/ide/pci/aec62xx.c
+> +++ b/drivers/ide/pci/aec62xx.c
+> @@ -270,11 +270,13 @@ static unsigned int __devinit init_chips
+>  
+>  static void __devinit init_hwif_aec62xx(ide_hwif_t *hwif)
+>  {
+> +	struct pci_dev *dev = hwif->pci_dev;
+> +
+>  	hwif->autodma = 0;
+>  	hwif->tuneproc = &aec62xx_tune_drive;
+>  	hwif->speedproc = &aec62xx_tune_chipset;
+>  
+> -	if (hwif->pci_dev->device == PCI_DEVICE_ID_ARTOP_ATP850UF)
+> +	if (dev->device == PCI_DEVICE_ID_ARTOP_ATP850UF)
+>  		hwif->serialized = hwif->channel;
+>  
+>  	if (hwif->mate)
+> @@ -286,7 +288,15 @@ static void __devinit init_hwif_aec62xx(
+>  		return;
+>  	}
+>  
+> -	hwif->ultra_mask = 0x7f;
+> +	hwif->ultra_mask = hwif->cds->udma_mask;
+> +
+> +	/* atp865 and atp865r */
+> +	if (hwif->ultra_mask == 0x3f) {
+> +		/* check bit 0x10 of DMA status register */
+> +		if (inb(pci_resource_start(dev, 4) + 2) & 0x10)
+> + 			hwif->ultra_mask = 0x7f; /* udma0-6 */
+> +	}
+> +
+ 
+   IMO, this asks to be put into init_setup_aec6x80() instead but since I'm already cleaning up that function, I'll move it there myself.
 
-> I really don't have any specific knowledge of the I4L codebase, so
-> perhaps you and Dave do have better reasons to keep it marked as
-> obsolete (and *allow* it get broken by API changes in the future).
-
-If the changes to make it use pci_get_ were trivial I'd simply have
-pushed them, but they are not due to the rather bizarre structure of some
-of the drivers - ditto some of the other changes.
-
-You, and anyone else who wants to, are free to work on I4L and fix it,
-improve it and make it better. 
-
-Alan
+MBR, Sergei
