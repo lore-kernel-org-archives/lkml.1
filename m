@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030936AbXDVPEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030944AbXDVPJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030936AbXDVPEK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 11:04:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030937AbXDVPEJ
+	id S1030944AbXDVPJe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 11:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030941AbXDVPJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 11:04:09 -0400
-Received: from mail20.syd.optusnet.com.au ([211.29.132.201]:54061 "EHLO
-	mail20.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030936AbXDVPEI (ORCPT
+	Sun, 22 Apr 2007 11:09:33 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49976 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030937AbXDVPJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 11:04:08 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.46
-Date: Mon, 23 Apr 2007 01:03:14 +1000
-User-Agent: KMail/1.9.5
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200704230103.15265.kernel@kolivas.org>
-X-Length: 1518
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 22 Apr 2007 11:09:33 -0400
+Date: Sun, 22 Apr 2007 16:13:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: rene@exactcode.de, todorovic.s@googlemail.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: InitIO SCSI: Volunteers required
+Message-ID: <20070422161302.2a52b908@the-village.bc.nu>
+In-Reply-To: <20070422141423.GA8928@infradead.org>
+References: <20070420103849.7358f1f1@the-village.bc.nu>
+	<20070422141423.GA8928@infradead.org>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yet another significant bugfix for SMP balancing was just posted for the 
-staircase deadline cpu scheduler which improves behaviour dramatically on any 
-SMP machine.
+> Once again a pci_get_device conversation isn't all that helpfull at all.
+> fortunately in this case I've done a patch to convert this driver to
+> proper pci probing in 2004, and I've attached the forward-ported version
+> below now that we've actually found some testers that weren't locatable
+> back then..
+> 
+> This doesn't change much outside the initialization and irq code, so
+> any additional de-crappyfication will hopefully apply ontop.
 
-Thanks to Willy Tarreau for noticing more bugs.
+Can this wait Christoph as it'll clash horribly with all the work I've
+done. Once the original changes are checked out by folks who have
+volunteered to do that I'll see these get merged in as well.
 
-As requested was a version in the Makefile so this version of the patch 
-adds -sd046 to the kernel version.
+Alan
 
-http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.46.patch
-http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.46.patch
-
-Renicing X to -10, while not essential, may be desirable on the desktop. 
-Unlike the CFS scheduler which renices X without your intervention to 
-nice -19, the SD patches do not alter nice level on their own.
-
-See the patch just posted called 'sched: implement staircase deadline 
-scheduler load  weight fix' for details of the fixes.
-
-Thanks to all testing and giving feedback.
-
-Well I'm exhausted...
-
--- 
--ck
