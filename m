@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbXDVSNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbXDVSVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbXDVSNZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 14:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbXDVSNZ
+	id S1754329AbXDVSVg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 14:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXDVSVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 14:13:25 -0400
-Received: from smtp103.sbc.mail.mud.yahoo.com ([68.142.198.202]:33758 "HELO
-	smtp103.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754314AbXDVSNX (ORCPT
+	Sun, 22 Apr 2007 14:21:36 -0400
+Received: from mbox1.netikka.net ([213.250.81.202]:35739 "EHLO
+	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbXDVSVf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 14:13:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WxeC9urO0d77x5z6ZRhPqtKwT2NetcxRLo5snWaC0H3qVU9cAeCsXnnuKJgqrSbKUGjzcGQWj+5dKe/v6a1IKVeykVihz4cN5PxQB14MFUmbemEuKSYYSV2N4hEauDWpNqXdRNemKm1xvN/Zk7tUG/tu1r/32GT3qzTw2KSFAFM=  ;
-X-YMail-OSG: zCE08SwVM1msb1e.2R.OnSGq._U7UO1CdxaiQkg_LmTsI72C2DVhSibH4L9_4KnyFEhOyu_eCQ--
-From: David Brownell <david-b@pacbell.net>
-To: linux@bohmer.net
-Subject: Re: gtod/clocksource/clockevents documentation
-Date: Sun, 22 Apr 2007 11:13:21 -0700
-User-Agent: KMail/1.9.6
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-References: <3efb10970704211414q7c66c154m79cc06db61eb76be@mail.gmail.com> <200704211600.02278.david-b@pacbell.net> <3efb10970704220900m53874769ta8f540098ea7d9de@mail.gmail.com>
-In-Reply-To: <3efb10970704220900m53874769ta8f540098ea7d9de@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704221113.21778.david-b@pacbell.net>
+	Sun, 22 Apr 2007 14:21:35 -0400
+X-Greylist: delayed 1278 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 14:21:35 EDT
+Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.46
+From: Thomas Backlund <tmb@mandriva.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
+       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
+       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>
+In-Reply-To: <200704230103.15265.kernel@kolivas.org>
+References: <200704230103.15265.kernel@kolivas.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 22 Apr 2007 20:58:34 +0300
+Message-Id: <1177264715.4729.2.camel@turion34.supernet.tld>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007, Remy Bohmer wrote:
-> Hello David,
+mån 2007-04-23 klockan 01:03 +1000 skrev Con Kolivas:
+> Yet another significant bugfix for SMP balancing was just posted for the 
+> staircase deadline cpu scheduler which improves behaviour dramatically on any 
+> SMP machine.
 > 
-> Thanks for this patch you sent me. This patch will also increase the
-> clock resolution which is good in RT context.
+> Thanks to Willy Tarreau for noticing more bugs.
+> 
+> As requested was a version in the Makefile so this version of the patch 
+> adds -sd046 to the kernel version.
+> 
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-rc7-sd-0.46.patch
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.20.7-sd-0.46.patch
+> 
+> Renicing X to -10, while not essential, may be desirable on the desktop. 
+> Unlike the CFS scheduler which renices X without your intervention to 
+> nice -19, the SD patches do not alter nice level on their own.
+> 
+> See the patch just posted called 'sched: implement staircase deadline 
+> scheduler load  weight fix' for details of the fixes.
+> 
+> Thanks to all testing and giving feedback.
+> 
+> Well I'm exhausted...
+> 
 
-Yeah, a 32768 Hz timer (battery backed) may leave a bit to be desired.
+This one broke 2.6.20.7 build...
 
+kernel/sched.c: In function ‘dependent_sleeper’:
+kernel/sched.c:3319: error: ‘DEF_TIMESLICE’ undeclared (first use in
+this function)
+kernel/sched.c:3319: error: (Each undeclared identifier is reported only
+once
+kernel/sched.c:3319: error: for each function it appears in.)
 
-> But, unfortunately, I have some problems with compiling the kernel, as
-> this patch does not enable CONFIG_GENERIC_TIME, while the patch you
-> published earlier did.
-
-I'm not sure which patch you mean.  I tested only in conjunction with
-updates specific to the at91rm9200.
-
-
-> Is there a special reason why you removed that?
-
-My config didn't need it ... and ISTR that making a system support
-it was more than just adding a "select GENERIC_TIME" after
-
-> > +config AT91_TC_CLOCKSOURCE
-
-Like the various arch/arm/kernel/* changes needed.  ISTR
-there are several still in Russell's patch queue.
-
-But basically, because I couldn't test such an at91sam926x
-configuration.  That would be one of the "tweaks" that I
-mentioned you would need to do.
-
-- Dave
+-- 
+Thomas Backlund <tmb@mandriva.org>
 
