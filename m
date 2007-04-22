@@ -1,147 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030910AbXDVOaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030926AbXDVOb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030910AbXDVOaG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 10:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030911AbXDVOaG
+	id S1030926AbXDVOb1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 10:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030923AbXDVOb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 10:30:06 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:3984 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030910AbXDVOaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 10:30:04 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: 7eggert@gmx.de
-Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wrong free clusters count on FAT32
-References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
-	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
-	<E1Hfc7X-00010D-09@be1.lrz> <87wt04sdyb.fsf@duaron.myhome.or.jp>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Sun, 22 Apr 2007 23:29:57 +0900
-In-Reply-To: <87wt04sdyb.fsf@duaron.myhome.or.jp> (OGAWA Hirofumi's message of "Sun\, 22 Apr 2007 23\:04\:12 +0900")
-Message-ID: <877is4scre.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 22 Apr 2007 10:31:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46203 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030922AbXDVOb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 10:31:26 -0400
+Date: Sun, 22 Apr 2007 15:31:21 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: hch@infradead.org, andrew.vasquez@qlogic.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James.Bottomley@SteelEye.com,
+       ema@debian.org
+Subject: Re: Major qla2xxx regression on sparc64
+Message-ID: <20070422143121.GA10947@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Miller <davem@davemloft.net>, andrew.vasquez@qlogic.com,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	James.Bottomley@SteelEye.com, ema@debian.org
+References: <20070416.123743.07452378.davem@davemloft.net> <20070416200857.GH10822@andrew-vasquezs-computer.local> <20070418171346.GA16471@infradead.org> <20070418.131054.70219428.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070418.131054.70219428.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+On Wed, Apr 18, 2007 at 01:10:54PM -0700, David Miller wrote:
+> From: Christoph Hellwig <hch@infradead.org>
+> Date: Wed, 18 Apr 2007 18:13:46 +0100
+> 
+> > Note that I expect Sun put in the invalid ROM intentionally, as we have
+> > similar cases with other cards that have totally messed up ROMs in
+> > Sun-branded versions.  Personally I think that's an utterly bad decision
+> > from Sun's side, but we'll have to live with this.
+> 
+> The way configuration paramters are provided on Sun systems is via
+> openfirmware properties, this is how they do everything and that is
+> why they never setup the NVRAMs on various chips.
+> 
+> This happens on PowerPC too.  One of many examples is determining the
+> clock parameters of the ATI Radeon graphics card, it's provided as an
+> openfirmware property not in some config area in the BIOS.
+> 
+> We can either be anti-social and _demand_ that these systems get their
+> NVRAMs fixed, which in reality will never happen and is totally
+> unreasonable, or we can say ok this is how we get the information we
+> need on these platforms we'll look for it there.
 
->> - You forgot to update Documentation/
->
-> Sure. If you can post the patch, it'll be great.
-
-Updated patch is here.
-
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-
-
-
-It seems that the recent Windows changed specification, and it's
-undocumented. Windows doesn't update ->free_clusters correctly.
-
-This patch doesn't use ->free_clusters by default. (instead, add
-"usefree" for forcing to use it)
-
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- Documentation/filesystems/vfat.txt |    7 +++++++
- fs/fat/inode.c                     |   14 +++++++++++---
- include/linux/msdos_fs.h           |    3 ++-
- 3 files changed, 20 insertions(+), 4 deletions(-)
-
-diff -puN fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32 fs/fat/inode.c
---- linux-2.6/fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/inode.c	2007-04-22 13:18:07.000000000 +0900
-@@ -825,6 +825,8 @@ static int fat_show_options(struct seq_f
- 	}
- 	if (opts->name_check != 'n')
- 		seq_printf(m, ",check=%c", opts->name_check);
-+	if (opts->usefree)
-+		seq_puts(m, ",usefree");
- 	if (opts->quiet)
- 		seq_puts(m, ",quiet");
- 	if (opts->showexec)
-@@ -850,7 +852,7 @@ static int fat_show_options(struct seq_f
- 
- enum {
- 	Opt_check_n, Opt_check_r, Opt_check_s, Opt_uid, Opt_gid,
--	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_nocase,
-+	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_usefree, Opt_nocase,
- 	Opt_quiet, Opt_showexec, Opt_debug, Opt_immutable,
- 	Opt_dots, Opt_nodots,
- 	Opt_charset, Opt_shortname_lower, Opt_shortname_win95,
-@@ -872,6 +874,7 @@ static match_table_t fat_tokens = {
- 	{Opt_dmask, "dmask=%o"},
- 	{Opt_fmask, "fmask=%o"},
- 	{Opt_codepage, "codepage=%u"},
-+	{Opt_usefree, "usefree"},
- 	{Opt_nocase, "nocase"},
- 	{Opt_quiet, "quiet"},
- 	{Opt_showexec, "showexec"},
-@@ -951,7 +954,7 @@ static int parse_options(char *options, 
- 	opts->quiet = opts->showexec = opts->sys_immutable = opts->dotsOK =  0;
- 	opts->utf8 = opts->unicode_xlate = 0;
- 	opts->numtail = 1;
--	opts->nocase = 0;
-+	opts->usefree = opts->nocase = 0;
- 	*debug = 0;
- 
- 	if (!options)
-@@ -979,6 +982,9 @@ static int parse_options(char *options, 
- 		case Opt_check_n:
- 			opts->name_check = 'n';
- 			break;
-+		case Opt_usefree:
-+			opts->usefree = 1;
-+			break;
- 		case Opt_nocase:
- 			if (!is_vfat)
- 				opts->nocase = 1;
-@@ -1306,7 +1312,9 @@ int fat_fill_super(struct super_block *s
- 			       le32_to_cpu(fsinfo->signature2),
- 			       sbi->fsinfo_sector);
- 		} else {
--			sbi->free_clusters = le32_to_cpu(fsinfo->free_clusters);
-+			if (sbi->options.usefree)
-+				sbi->free_clusters =
-+					le32_to_cpu(fsinfo->free_clusters);
- 			sbi->prev_free = le32_to_cpu(fsinfo->next_cluster);
- 		}
- 
-diff -puN include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32 include/linux/msdos_fs.h
---- linux-2.6/include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
-+++ linux-2.6-hirofumi/include/linux/msdos_fs.h	2007-04-22 13:09:14.000000000 +0900
-@@ -205,7 +205,8 @@ struct fat_mount_options {
- 		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
- 		 atari:1,         /* Use Atari GEMDOS variation of MS-DOS fs */
- 		 flush:1,	  /* write things quickly */
--		 nocase:1;	  /* Does this need case conversion? 0=need case conversion*/
-+		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
-+		 usefree:1;	  /* Use free_clusters for FAT32 */
- };
- 
- #define FAT_HASH_BITS	8
-diff -puN Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32 Documentation/filesystems/vfat.txt
---- linux-2.6/Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32	2007-04-22 23:06:21.000000000 +0900
-+++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2007-04-22 23:28:19.000000000 +0900
-@@ -34,6 +34,13 @@ iocharset=name -- Character set to use f
- 		 NOTE: "iocharset=utf8" is not recommended. If unsure,
- 		 you should consider the following option instead.
- 
-+usefree       -- Use the "free clusters" value stored on FSINFO. It'll
-+                 be used to determine number of free clusters without
-+                 scanning disk. But it's not used by default, because
-+                 recent Windows don't update it correctly in some
-+                 case. If you are sure the "free clusters" on FSINFO is
-+                 correct, by this option you can avoid scanning disk.
-+
- utf8=<bool>   -- UTF-8 is the filesystem safe version of Unicode that
- 		 is used by the console.  It can be enabled for the
- 		 filesystem with this option. If 'uni_xlate' gets set,
-_
+Personally I think it is reasonable to expect manufacturer-provided
+config space to always be in the same place, regardless what kind
+of executable rom is there.  Then again most vendors seem to think
+it's unresonable, and even if it wasn't we'll have to make sure our
+drivers work with whatever it out there - so this discussion is
+rather moot.
