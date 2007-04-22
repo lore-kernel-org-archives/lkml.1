@@ -1,81 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030907AbXDVO2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030910AbXDVOaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030907AbXDVO2M (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 10:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030910AbXDVO2M
+	id S1030910AbXDVOaG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 10:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030911AbXDVOaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 10:28:12 -0400
-Received: from 1wt.eu ([62.212.114.60]:2205 "EHLO 1wt.eu"
+	Sun, 22 Apr 2007 10:30:06 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:3984 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030907AbXDVO2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 10:28:10 -0400
-Date: Sun, 22 Apr 2007 16:22:16 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Al Boldi <a1426z@gawab.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [ck] Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Message-ID: <20070422142216.GA17210@1wt.eu>
-References: <200704221441.48897.kernel@kolivas.org> <20070422091451.GA15913@1wt.eu> <200704222142.52325.kernel@kolivas.org> <200704222218.32754.kernel@kolivas.org>
-Mime-Version: 1.0
+	id S1030910AbXDVOaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 10:30:04 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: 7eggert@gmx.de
+Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wrong free clusters count on FAT32
+References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
+	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
+	<E1Hfc7X-00010D-09@be1.lrz> <87wt04sdyb.fsf@duaron.myhome.or.jp>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Sun, 22 Apr 2007 23:29:57 +0900
+In-Reply-To: <87wt04sdyb.fsf@duaron.myhome.or.jp> (OGAWA Hirofumi's message of "Sun\, 22 Apr 2007 23\:04\:12 +0900")
+Message-ID: <877is4scre.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704222218.32754.kernel@kolivas.org>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 22, 2007 at 10:18:32PM +1000, Con Kolivas wrote:
-> On Sunday 22 April 2007 21:42, Con Kolivas wrote:
-> 
-> Willy I'm still investigating the idle time and fluctuating load as a separate 
-> issue. Is it possible the multiple ocbench processes are naturally 
-> synchronising and desynchronising and choosing to sleep and/or run at the 
-> same time? I can remove the idle time entirely by running ocbench at nice 19 
-> which means they are all forced to run at basically the same time by the 
-> scheduler.
-> 
-> Anyway the more important part is... Can you test this patch please? Dump
-> all the other patches I sent you post 045. Michael, if you could test too
-> please?
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
-OK, it's better now. All tasks equally run. X is still somewhat jerky, even
-at nice -19. I'm sure it happens when it's waiting in the other array. We
-should definitely manage to get rid of this if we want to ensure low latency.
+>> - You forgot to update Documentation/
+>
+> Sure. If you can post the patch, it'll be great.
 
-Just FYI, the idle is often close to zero and the load is often close to 30,
-even if still fluctuating :
+Updated patch is here.
 
-   procs                      memory      swap          io     system      cpu
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
-22  0  0      0 922876   6472  57848    0    0     0     0  164  3275 34 58  8
-14  0  0      0 922648   6472  57864    0    0     0     0    8   383 37 63  0
-24  0  0      0 922580   6472  57864    0    0     0   128   32   219 34 66  0
-13  0  1      0 922524   6472  57864    0    0     0     0    0   393 35 64  0
-31  0  0      0 922524   6472  57864    0    0     0     0    3   338 37 63  0
-56  0  0      0 922556   6472  57864    0    0     0     0    0   290 35 65  0
-57  0  1      0 922556   6472  57864    0    0     0     0    1   288 33 55 11
-45  0  0      0 922556   6472  57864    0    0     0     0    1   255 27 52 21
-38  0  0      0 922564   6472  57864    0    0     0     0    0   161 24 49 27
- 0  0  0      0 922564   6472  57864    0    0     0     0    1   142 23 40 38
- 0  0  0      0 922564   6472  57864    0    0     0     0    2   182 29 55 16
-22  0  0      0 922564   6472  57864    0    0     0     0    1   253 28 48 24
-26  0  0      0 922564   6472  57864    0    0     0     0    1   212 31 60  9
-27  0  0      0 922564   6472  57864    0    0     0     0    1   314 31 70  0
-44  0  0      0 922564   6472  57864    0    0     0     0    2   282 32 62  6
-54  0  1      0 922564   6472  57864    0    0     0     0   26   213 32 67  1
-42  0  0      0 922564   6472  57864    0    0     0     0  142   278 34 61  4
-35  0  0      0 922564   6472  57864    0    0     0     0   58   226 39 61  0
- 6  0  0      0 922564   6472  57864    0    0     0     0   79   228 35 65  0
- 5  0  0      0 922564   6472  57864    0    0     0     0   98   225 36 61  3
-35  0  1      0 922564   6472  57864    0    0     0     0   71   205 22 41 36
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-Hoping this helps !
-Willy
 
+
+It seems that the recent Windows changed specification, and it's
+undocumented. Windows doesn't update ->free_clusters correctly.
+
+This patch doesn't use ->free_clusters by default. (instead, add
+"usefree" for forcing to use it)
+
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ Documentation/filesystems/vfat.txt |    7 +++++++
+ fs/fat/inode.c                     |   14 +++++++++++---
+ include/linux/msdos_fs.h           |    3 ++-
+ 3 files changed, 20 insertions(+), 4 deletions(-)
+
+diff -puN fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32 fs/fat/inode.c
+--- linux-2.6/fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
++++ linux-2.6-hirofumi/fs/fat/inode.c	2007-04-22 13:18:07.000000000 +0900
+@@ -825,6 +825,8 @@ static int fat_show_options(struct seq_f
+ 	}
+ 	if (opts->name_check != 'n')
+ 		seq_printf(m, ",check=%c", opts->name_check);
++	if (opts->usefree)
++		seq_puts(m, ",usefree");
+ 	if (opts->quiet)
+ 		seq_puts(m, ",quiet");
+ 	if (opts->showexec)
+@@ -850,7 +852,7 @@ static int fat_show_options(struct seq_f
+ 
+ enum {
+ 	Opt_check_n, Opt_check_r, Opt_check_s, Opt_uid, Opt_gid,
+-	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_nocase,
++	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_usefree, Opt_nocase,
+ 	Opt_quiet, Opt_showexec, Opt_debug, Opt_immutable,
+ 	Opt_dots, Opt_nodots,
+ 	Opt_charset, Opt_shortname_lower, Opt_shortname_win95,
+@@ -872,6 +874,7 @@ static match_table_t fat_tokens = {
+ 	{Opt_dmask, "dmask=%o"},
+ 	{Opt_fmask, "fmask=%o"},
+ 	{Opt_codepage, "codepage=%u"},
++	{Opt_usefree, "usefree"},
+ 	{Opt_nocase, "nocase"},
+ 	{Opt_quiet, "quiet"},
+ 	{Opt_showexec, "showexec"},
+@@ -951,7 +954,7 @@ static int parse_options(char *options, 
+ 	opts->quiet = opts->showexec = opts->sys_immutable = opts->dotsOK =  0;
+ 	opts->utf8 = opts->unicode_xlate = 0;
+ 	opts->numtail = 1;
+-	opts->nocase = 0;
++	opts->usefree = opts->nocase = 0;
+ 	*debug = 0;
+ 
+ 	if (!options)
+@@ -979,6 +982,9 @@ static int parse_options(char *options, 
+ 		case Opt_check_n:
+ 			opts->name_check = 'n';
+ 			break;
++		case Opt_usefree:
++			opts->usefree = 1;
++			break;
+ 		case Opt_nocase:
+ 			if (!is_vfat)
+ 				opts->nocase = 1;
+@@ -1306,7 +1312,9 @@ int fat_fill_super(struct super_block *s
+ 			       le32_to_cpu(fsinfo->signature2),
+ 			       sbi->fsinfo_sector);
+ 		} else {
+-			sbi->free_clusters = le32_to_cpu(fsinfo->free_clusters);
++			if (sbi->options.usefree)
++				sbi->free_clusters =
++					le32_to_cpu(fsinfo->free_clusters);
+ 			sbi->prev_free = le32_to_cpu(fsinfo->next_cluster);
+ 		}
+ 
+diff -puN include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32 include/linux/msdos_fs.h
+--- linux-2.6/include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
++++ linux-2.6-hirofumi/include/linux/msdos_fs.h	2007-04-22 13:09:14.000000000 +0900
+@@ -205,7 +205,8 @@ struct fat_mount_options {
+ 		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
+ 		 atari:1,         /* Use Atari GEMDOS variation of MS-DOS fs */
+ 		 flush:1,	  /* write things quickly */
+-		 nocase:1;	  /* Does this need case conversion? 0=need case conversion*/
++		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
++		 usefree:1;	  /* Use free_clusters for FAT32 */
+ };
+ 
+ #define FAT_HASH_BITS	8
+diff -puN Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32 Documentation/filesystems/vfat.txt
+--- linux-2.6/Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32	2007-04-22 23:06:21.000000000 +0900
++++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2007-04-22 23:28:19.000000000 +0900
+@@ -34,6 +34,13 @@ iocharset=name -- Character set to use f
+ 		 NOTE: "iocharset=utf8" is not recommended. If unsure,
+ 		 you should consider the following option instead.
+ 
++usefree       -- Use the "free clusters" value stored on FSINFO. It'll
++                 be used to determine number of free clusters without
++                 scanning disk. But it's not used by default, because
++                 recent Windows don't update it correctly in some
++                 case. If you are sure the "free clusters" on FSINFO is
++                 correct, by this option you can avoid scanning disk.
++
+ utf8=<bool>   -- UTF-8 is the filesystem safe version of Unicode that
+ 		 is used by the console.  It can be enabled for the
+ 		 filesystem with this option. If 'uni_xlate' gets set,
+_
