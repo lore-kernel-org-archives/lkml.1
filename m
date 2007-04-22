@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965626AbXDVKK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXDVKMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965626AbXDVKK7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 06:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXDVKK7
+	id S1754168AbXDVKMP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 06:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXDVKMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 06:10:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58656 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754168AbXDVKK6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 06:10:58 -0400
-Date: Sun, 22 Apr 2007 10:10:57 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.34.3
-Message-ID: <20070422101057.GA11893@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Apr 2007 06:12:15 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:20677 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbXDVKMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 06:12:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kvTbqlU1JOE7YIeJOFE2qU/taUOkIHlDvgtPp1ey8+vngtUK/kRo2A2M1agfWnuGqY9SofxEKLGEPB9/qyZsPGGPZRcrls16Fvrw6OEolfA2u3s11mcvGy6xEHUXL9TVyyMEmXfT9+1D0C5Qo4pmlffsEq8aErHk6pWl+8wj/a4=
+Message-ID: <653402b90704220312k24ed730ay204ccd076dab8d6c@mail.gmail.com>
+Date: Sun, 22 Apr 2007 12:12:11 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "oliver pinter" <oliver.pntr@gmail.com>
+Subject: Re: [BUG? -rc7] SMP: Just one CPU activated: P4 3GHz HT
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6101e8c40704220300n4cfef0f1l652b303f5bab8d1b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+References: <653402b90704220157h5fe2be3p18c4a341d13ccc87@mail.gmail.com>
+	 <6101e8c40704220300n4cfef0f1l652b303f5bab8d1b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just released Linux 2.4.34.3.
+On 4/22/07, oliver pinter <oliver.pntr@gmail.com> wrote:
+> Hello
+>
+> I have ASUS P4C800, P4 3GHz HT (Nortwood), 512RAM and I have nothing errors
+> in my cpu.
+>
+> in bios have you HT option enabled
+>
 
-Nothing critical, just a bunch of bugfixes and small security fix.
+Sure, and the hardware is fine as other kernels and other systems (as
+WinXP) work fine.
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.34.3.bz2
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.34.3
+> or im =<2.6.21-rc7 functioniert?
+>
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.3.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-v2.4.34.3.y.git
+?
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-v2.4.34.3.y.git
+The only big difference I see is that you did not set CONFIG_PREEMPT.
+However, that should not matter. Any other general options are almost
+the same.
 
-Fixed in this version :
-  CVE-2007-1353 : Bluetooth: L2CAP and HCI setsockopt() information leaks
+(please CC linux-kernel)
 
-Summary of changes from v2.4.34.2 to v2.4.34.3
-============================================
+thanks,
 
-Willy Tarreau (6):
-      [DECNet] fib: Fix out of bound access of dn_fib_props[]
-      [IPv4] fib: Fix out of bound access of fib_props[]
-      [PPP]: Don't leak an sk_buff on interface destruction.
-      Fix TCP receiver side SWS handling
-      Bluetooth: L2CAP and HCI setsockopt() information leaks (CVE-2007-1353)
-      Change VERSION to 2.4.34.3
-
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
