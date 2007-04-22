@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030237AbXDVLL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030196AbXDVLPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030237AbXDVLL2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 07:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXDVLL2
+	id S1030196AbXDVLPq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 07:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030284AbXDVLPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 07:11:28 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:38789 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030293AbXDVLL0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 07:11:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=VHPnw2BL37cKxTPOZnnmZePW+PcNRwPZRChlXj1xJe+24huhSGsMe80fWpkcO4pYXJwld2hryvo5b/u7/s1rkasW8Xg9yzNdEQCww43UKLRLK8qpteoCigsFL5a6O0IkKCMqnIJ/jDiw7qShWJigFaiR/5RBAQiYHQyq9Jxz1Vc=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Date: Sun, 22 Apr 2007 07:11:21 -0400
-User-Agent: KMail/1.9.6
-Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr
-References: <20070420140457.GA14017@elte.hu> <200704211417.03598.gene.heskett@gmail.com> <20070422080708.GI2986@holomorphy.com>
-In-Reply-To: <20070422080708.GI2986@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Apr 2007 07:15:46 -0400
+Received: from smtp01.cdmon.com ([86.109.99.230]:62228 "EHLO smtp01.cdmon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030196AbXDVLPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 07:15:45 -0400
+Date: Sun, 22 Apr 2007 13:17:33 +0200
+From: DervishD <lkml@dervishd.net>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org
+Subject: Re: Wrong free clusters count on FAT32
+Message-ID: <20070422111733.GA5786@DervishD>
+Mail-Followup-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	Juergen Beisert <juergen127@kreuzholzen.de>,
+	linux-kernel@vger.kernel.org
+References: <20070419085750.GA2833@DervishD> <200704191352.06456.juergen127@kreuzholzen.de> <20070419141942.GF8287@DervishD> <87d51xtkmp.fsf@duaron.myhome.or.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200704220711.22432.gene.heskett@gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <87d51xtkmp.fsf@duaron.myhome.or.jp>
+User-Agent: Mutt/1.4.2.2i
+Organization: DervishD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007, William Lee Irwin III wrote:
->On Sat, Apr 21, 2007 at 02:17:02PM -0400, Gene Heskett wrote:
->> CFS-v4 is quite smooth in terms of the users experience but after
->> prolonged observations approaching 24 hours, it appears to choke the cpu
->> hog off a bit even when the system has nothing else to do.  My amanda runs
->> went from 1 to 1.5 hours depending on how much time it took gzip to handle
->> the amount of data tar handed it, up to about 165m & change, or nearly 3
->> hours pretty consistently over 5 runs.
->
->Welcome to infinite history. I'm not surprised, apart from the time
->scale of anomalies being much larger than I anticipated.
+    Hi Ogawa :)
 
-[...]
+ * OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> dixit:
+> DervishD <lkml@dervishd.net> writes:
+> > A mount option to force walking the FAT and getting the real
+> > info could be interesting. That way, it will be only done for
+> > certain devices (small disks, for example).
+> 
+> Yes. It seems that Windows does not update the ->free_clusters
+> correctly. Probably, I think the option is good for now. What do you
+> think about an attached patch?
 
->Pardon my saying so but you appear to be describing anomalous behavior
->in terms of "scheduler warmups."
+    The option ignores ->free_clusters by default, am I wrong? I'm not
+sure about this: given that nobody cared before, chances are that this
+problem didn't bite anyone, so I think that the default behaviour should
+be the _old_ behaviour (that is, nofree=0, as if the option never
+existed).
 
-Well, that was what I saw, it took gzip about 4 or 5 minutes to get to the 
-first 90% hit in htop's display, and it first hit the top of the display with 
-only 5%.  And the next backup run took about 2h:21m, so we're back in the 
-ballpark.  I'd reset amanda's schedule for a faster dumpcycle too, along with 
-giving the old girl a new drive, all about the time we started playing with 
-this, so the times I'm recording now may well be nominal.  I suppose I should 
-boot a plain 2.6.21-rc7 and make a run & time that, but I don't enjoy 
-masochism THAT much. :)
+    Moreover, I'm not sure if Windows updates correctly or not the
+free_clustes FSINFO entry, this problem has happened (by now) in a
+portable device only. What I can ensure is that both the portable device
+and any Windows box I've tested ignores this value and properly
+calculate the real free space. Linux doesn't because it relies on an
+invalid value. Again, the fault is in the portable device, but the
+workaround seems common practice out there...
+
+    So I will suggest just "nofree:0" instead of "nofree:1". And thanks
+a lot for the patch :))) I'm not sure about this: given that nobody
+cared before, chances are that this problem didn't bite anyone, so I
+think that the default behaviour should be the _old_ behaviour (that is,
+nofree=0, as if the option never existed).
+
+    Moreover, I'm not sure if Windows updates correctly or not the
+free_clustes FSINFO entry, this problem has happened (by now) in a
+portable device only. What I can ensure is that both the portable device
+and any Windows box I've tested ignores this value and properly
+calculate the real free space. Linux doesn't because it relies on an
+invalid value. Again, the fault is in the portable device, but the
+workaround seems common practice out there...
+
+    So I will suggest just "nofree:0" instead of "nofree:1". And thanks
+a lot for the patch :)))
+
+    Raúl Núñez de Arenas Coronado
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-I've enjoyed just about as much of this as I can stand.
+Linux Registered User 88736 | http://www.dervishd.net
+It's my PC and I'll cry if I want to... RAmen!
