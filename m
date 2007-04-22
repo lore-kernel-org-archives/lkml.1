@@ -1,136 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965540AbXDVIJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965536AbXDVILZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965540AbXDVIJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965525AbXDVIJ5
+	id S965536AbXDVILZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965544AbXDVILY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:09:57 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:56812 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965485AbXDVIJx (ORCPT
+	Sun, 22 Apr 2007 04:11:24 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:44082 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965525AbXDVILW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:09:53 -0400
-Subject: Re: [PATCH 2/8] Kconfig: unwanted menus for s390.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200704220110.54587.arnd@arndb.de>
-References: <20070420113248.GC3738@skybase>
-	 <200704220110.54587.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Sun, 22 Apr 2007 10:10:08 +0200
-Message-Id: <1177229408.8046.21.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Apr 2007 04:11:22 -0400
+To: ebiederm@xmission.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <m1ps5w26rz.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 1/8] add user mounts to the kernel
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102624.975879175@szeredi.hu>
+	<m1wt05kgy8.fsf@ebiederm.dsl.xmission.com>
+	<E1HfW5I-00044y-00@dorka.pomaz.szeredi.hu> <m1ps5w26rz.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HfX4D-0004H9-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Apr 2007 10:05:05 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-22 at 01:10 +0200, Arnd Bergmann wrote:
-> > --- linux-2.6/drivers/dma/Kconfig	2007-04-19 15:24:33.000000000 +0200
-> > +++ linux-2.6-patched/drivers/dma/Kconfig	2007-04-19 15:49:55.000000000 +0200
-> > @@ -3,6 +3,7 @@
-> >  #
-> >  
-> >  menu "DMA Engine support"
-> > +	depends on !S390
-> >  
-> >  config DMA_ENGINE
-> >  	bool "Support for DMA engines"
+> >> > +	if (mnt->mnt_flags & MNT_USER)
+> >> > +		seq_printf(m, ",user=%i", mnt->mnt_uid);
+> >> How about making the test "if (mnt->mnt_user != &root_user)"
+> >
+> > We don't want to treat root_user special.  That's what capabilities
+> > were invented for.
 > 
-> I'd leave the menu enabled. If the DMA engine infrastructure becomes more widely
-> used, you may want to add an implementation for s390 using milicoded instructions
-> like xor-string or copy-page.
+> For the print statement?  What ever it is minor.
 
-If we ever add an implementation for s390 we can rmeove the depends line
-again. The current situation is that we don't support it.
+It is a user interface, not a print statement.  Your suggested change
+would be vetoed by any number of people.  
 
-> > diff -urpN linux-2.6/drivers/input/Kconfig linux-2.6-patched/drivers/input/Kconfig
-> > --- linux-2.6/drivers/input/Kconfig	2007-02-04 19:44:54.000000000 +0100
-> > +++ linux-2.6-patched/drivers/input/Kconfig	2007-04-19 15:49:55.000000000 +0200
-> > @@ -3,6 +3,7 @@
-> >  #
-> >  
-> >  menu "Input device support"
-> > +	depends on !S390
-> >  
-> >  config INPUT
-> >  	tristate "Generic input layer (needed for keyboard, mouse, ...)" if EMBEDDED
+So either we have all mounts having owners, AND have /proc/mounts add
+"user=0" to all mounts.  While I don't _think_ this would actually
+break userspace, it would definitely make people complain.
+
+The other choice is what the current patchset does: is to have
+"legacy" mounts without owners, and "new generation" mounts with
+owners having "user=UID" in /proc/mounts, regardless of the value of
+UID.
+
+> So I want to minimize the changes needed to existing programs.
+> Now if all we have to do is specify MS_SETUSER when root a
+> user with CAP_SETUID is setting up a mount as a user other
+> then himself then I don't much care.  If we have to call MS_SETUSER
+> as unprivileged users
+
+You don't.  Unprivileged mounts _imply_ MS_SETUSER.
+
+> >> > +
+> >> > +	uid_t mnt_uid;			/* owner of the mount */
+> >> 
+> >> Can we please make this a user struct.   That requires a bit of
+> >> reference counting but it has uid namespace benefits as well
+> >> as making it easy to implement per user mount rlimits.
+> >
+> > OK, can you ellaborate, what the uid namespace benifits are?
 > 
-> Probably leave this as !S390. One could imagine channel-attached input devices
-> or the idea of intepreting a terminal as an input device, but no driver currently
-> does and probably never will.
+> In the uid namespace the comparison is simpler as are the propagations
+> rules.  Basically if you use a struct user you will never need to
+> care about a uid namespace.  If you don't we will have to tear through
+> this code another time.
 
-We don't have support and it is VERY unlikely we will get it. I would
-prefer to hide the menu.
+Well, OK.  I'll do the user_struct thing then.
 
-> > diff -urpN linux-2.6/drivers/isdn/Kconfig linux-2.6-patched/drivers/isdn/Kconfig
-> > --- linux-2.6/drivers/isdn/Kconfig	2007-02-04 19:44:54.000000000 +0100
-> > +++ linux-2.6-patched/drivers/isdn/Kconfig	2007-04-19 15:49:55.000000000 +0200
-> > @@ -3,6 +3,7 @@
-> >  #
-> >  
-> >  menu "ISDN subsystem"
-> > +	depends on !S390
-> >  
-> >  config ISDN
-> >  	tristate "ISDN support"
-> 
-> Same here, actually there was an IBM 2216 ISDN adapter with channel attachment,
-> but I don't think anybody wants to add a driver for that one.
-
-Without a driver is it mute to have the menu.
-
-> > diff -urpN linux-2.6/drivers/misc/Kconfig linux-2.6-patched/drivers/misc/Kconfig
-> > --- linux-2.6/drivers/misc/Kconfig	2007-04-19 15:24:35.000000000 +0200
-> > +++ linux-2.6-patched/drivers/misc/Kconfig	2007-04-19 15:49:55.000000000 +0200
-> > @@ -3,6 +3,7 @@
-> >  #
-> >  
-> >  menu "Misc devices"
-> > +	depends on !S390
-> >  
-> >  config IBM_ASM
-> >  	tristate "Device driver for IBM RSA service processor"
-> 
-> Maybe just leave the menu open, all drivers in it are already depending on PCI
-> or similar and someone might add a driver that does work on s390 here.
-
-This is a border-case. Someone might add a driver that actually works.
-Currently it is an empty menu. 
-
-> > diff -urpN linux-2.6/drivers/rtc/Kconfig linux-2.6-patched/drivers/rtc/Kconfig
-> > --- linux-2.6/drivers/rtc/Kconfig	2007-04-19 15:24:39.000000000 +0200
-> > +++ linux-2.6-patched/drivers/rtc/Kconfig	2007-04-19 15:49:55.000000000 +0200
-> > @@ -3,6 +3,7 @@
-> >  #
-> >  
-> >  menu "Real Time Clock"
-> > +	depends on !S390
-> >  
-> >  config RTC_LIB
-> >  	tristate
-> 
-> Applications might actually want to use the RTC interface to access the system time
-> or get accurate timers, but the rtc drivers are all very dependant on either MMIO
-> or I2C. Not sure what would be best here.
-
-If we ever come up with an implementation for RTC we can remove the
-depends statement again. Until we do it is another empty menu.
-
-Thanks Arnd for the review.
-
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Miklos
