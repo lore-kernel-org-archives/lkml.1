@@ -1,113 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbXDVHVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbXDVHVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbXDVHVl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbXDVHVk
+	id S1754153AbXDVHVw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXDVHVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:21:40 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54514 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754140AbXDVHVj (ORCPT
+	Sun, 22 Apr 2007 03:21:51 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:48369 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754142AbXDVHVv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:21:39 -0400
-Date: Sun, 22 Apr 2007 00:19:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-Subject: Re: [PATCH 08/10] mm: count writeback pages per BDI
-Message-Id: <20070422001949.4d697fe5.akpm@linux-foundation.org>
-In-Reply-To: <1177153636.2934.43.camel@lappy>
-References: <20070420155154.898600123@chello.nl>
-	<20070420155503.334628394@chello.nl>
-	<20070421025525.042ed73a.akpm@linux-foundation.org>
-	<1177153636.2934.43.camel@lappy>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Apr 2007 03:21:51 -0400
+To: ebiederm@xmission.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <m1fy6tkeu7.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 5/8] allow unprivileged bind mounts
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102641.165244483@szeredi.hu> <m1fy6tkeu7.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HfWML-00048U-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Apr 2007 09:19:45 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007 13:07:16 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
-> > On Fri, 20 Apr 2007 17:52:02 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > Count per BDI writeback pages.
-> > > 
-> > > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > ---
-> > >  include/linux/backing-dev.h |    1 +
-> > >  mm/page-writeback.c         |   12 ++++++++++--
-> > >  2 files changed, 11 insertions(+), 2 deletions(-)
-> > > 
-> > > Index: linux-2.6/mm/page-writeback.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/mm/page-writeback.c	2007-04-20 15:27:28.000000000 +0200
-> > > +++ linux-2.6/mm/page-writeback.c	2007-04-20 15:28:10.000000000 +0200
-> > > @@ -979,14 +979,18 @@ int test_clear_page_writeback(struct pag
-> > >  	int ret;
-> > >  
-> > >  	if (mapping) {
-> > > +		struct backing_dev_info *bdi = mapping->backing_dev_info;
-> > >  		unsigned long flags;
-> > >  
-> > >  		write_lock_irqsave(&mapping->tree_lock, flags);
-> > >  		ret = TestClearPageWriteback(page);
-> > > -		if (ret)
-> > > +		if (ret) {
-> > >  			radix_tree_tag_clear(&mapping->page_tree,
-> > >  						page_index(page),
-> > >  						PAGECACHE_TAG_WRITEBACK);
-> > > +			if (bdi_cap_writeback_dirty(bdi))
-> > > +				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-> > 
-> > Why do we test bdi_cap_writeback_dirty() here?
-> > 
-> > If we remove that test, we end up accumulating statistics for
-> > non-writebackable backing devs, but does that matter? 
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> >
+> > Allow bind mounts to unprivileged users if the following conditions
+> > are met:
+> >
+> >   - mountpoint is not a symlink or special file
 > 
-> It would not, had I not cheated:
+> Why?  This sounds like a left over from when we were checking permissions.
+
+Hmm, yes.  Don't know.  Maybe only the symlink check.
+
+Bind mounts of directory over non-directy, and vica versa are already
+excluded, even for root.
+
+> >   - parent mount is owned by the user
+> >   - the number of user mounts is below the maximum
+> >
+> > Unprivileged mounts imply MS_SETUSER, and will also have the "nosuid"
+> > and "nodev" mount flags set.
 > 
-> +void bdi_init(struct backing_dev_info *bdi)
-> +{
-> +       int i;
-> +
-> +       if (!(bdi_cap_writeback_dirty(bdi) || bdi_cap_account_dirty(bdi)))
-> +               return;
-> +
-> +       for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
-> +               percpu_counter_init(&bdi->bdi_stat[i], 0);
-> +}
-> +EXPORT_SYMBOL(bdi_init);
+> So in principle I agree, but in detail I disagree.
 > 
-> >  Probably the common
-> > case is writebackable backing-devs, so eliminating the test-n-branch might
-> > be a net microgain.
+> capable(CAP_SETUID) should be required to leave MNT_NOSUID clear.
+> capable(CAP_MKNOD) should be required to leave MNT_NODEV clear.
 > 
-> Time vs space. Now we don't even have storage for those BDIs..
-> 
-> Don't particularly care on this point though, I just thought it might be
-> worthwhile to save on the percpu data.
+> I.e.  We should not special case this as a user mount but rather
+> simply check to see if the user performing the mount has the appropriate
+> capabilities to allow the flags.
 
-It could be that we never call test_clear_page_writeback() against
-!bdi_cap_writeback_dirty() pages anwyay.  I can't think why we would, but
-the relationships there aren't very clear.  Does "don't account for dirty
-memory" imply "doesn't ever do writeback"?  One would need to check, and
-it's perhaps a bit fragile.
+Sounds sane.  Will fix.
 
-It's worth checking though.  Boy we're doing a lot of stuff in there
-nowadays.
-
-OT: it might be worth looking into batching this work up - the predominant
-caller should be mpage_end_io_write(), and he has a whole bunch of pages
-which are usually all from the same file, all contiguous.  It's pretty
-inefficient to be handling that data one-page-at-a-time, and some
-significant speedups may be available.
-
-Instead, everyone seems to think that variable pagecache page size is the
-only way of improving things.  Shudder.
-
+Miklos
