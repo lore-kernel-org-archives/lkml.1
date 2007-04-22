@@ -1,204 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030773AbXDVTa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXDVTjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030773AbXDVTa7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 15:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030780AbXDVTa6
+	id S1030572AbXDVTjS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 15:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030727AbXDVTjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 15:30:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60108 "EHLO
+	Sun, 22 Apr 2007 15:39:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38134 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030773AbXDVTa5 (ORCPT
+	with ESMTP id S1030572AbXDVTjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 15:30:57 -0400
-Date: Sun, 22 Apr 2007 20:30:43 +0100
+	Sun, 22 Apr 2007 15:39:17 -0400
+Date: Sun, 22 Apr 2007 20:38:43 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
        Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com
-Subject: Re: [PATCH] i386 voyager: Convert the monitor thread to use the kthread API
-Message-ID: <20070422193043.GA16567@infradead.org>
+       linux-kernel@vger.kernel.org, "Darrick J. Wong" <djwong@us.ibm.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: [PATCH] sas_scsi_host: Convert to use the kthread API
+Message-ID: <20070422193843.GA17841@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
 	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-	James.Bottomley@HansenPartnership.com
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <117696576895-git-send-email-ebiederm@xmission.com>
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
+	linux-kernel@vger.kernel.org, "Darrick J. Wong" <djwong@us.ibm.com>,
+	James Bottomley <James.Bottomley@SteelEye.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769695611073-git-send-email-ebiederm@xmission.com> <20070419173753.8ba2f955.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <117696576895-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <20070419173753.8ba2f955.akpm@linux-foundation.org>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 12:55:27AM -0600, Eric W. Biederman wrote:
-> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+On Thu, Apr 19, 2007 at 05:37:53PM -0700, Andrew Morton wrote:
+> On Thu, 19 Apr 2007 01:58:38 -0600
+> "Eric W. Biederman" <ebiederm@xmission.com> wrote:
 > 
-> This patch just trivially replaces kernel_thread and daemonize
-> with a single call to kthread_run.
+> > From: Eric W. Biederman <ebiederm@xmission.com>
+> > 
+> > This patch modifies the sas scsi host thread startup
+> > to use kthread_run not kernel_thread and deamonize.
+> > kthread_run is slightly simpler and more maintainable.
+> > 
+> 
+> Again, I'll rename this to "partially convert...".  This driver should be
+> using kthread_should_stop() and kthread_stop() rather than the
+> apparently-unnecessary ->queue_thread_kill thing.
+> 
+> This driver was merged two and a half years after the kthread API was
+> available.   Our coding-vs-reviewing effort is out of balance.
 
-Here's a better patch that does the full kthread conversion +
-switch to wake_up_process.  Only compile tested of course due to
-lack of voyager hardware.
+Here's a full conversion.
 
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Index: linux-2.6/arch/i386/mach-voyager/voyager_cat.c
+Index: linux-2.6/drivers/scsi/libsas/sas_scsi_host.c
 ===================================================================
---- linux-2.6.orig/arch/i386/mach-voyager/voyager_cat.c	2007-04-22 15:19:28.000000000 +0200
-+++ linux-2.6/arch/i386/mach-voyager/voyager_cat.c	2007-04-22 15:27:03.000000000 +0200
-@@ -1111,7 +1111,7 @@ voyager_cat_do_common_interrupt(void)
- 				printk(KERN_ERR "Voyager front panel switch turned off\n");
- 				voyager_status.switch_off = 1;
- 				voyager_status.request_from_kernel = 1;
--				up(&kvoyagerd_sem);
-+				wake_up_process(voyager_thread);
- 			}
- 			/* Tell the hardware we're taking care of the
- 			 * shutdown, otherwise it will power the box off
-@@ -1157,7 +1157,7 @@ voyager_cat_do_common_interrupt(void)
- 			outb(VOYAGER_CAT_END, CAT_CMD);
- 			voyager_status.power_fail = 1;
- 			voyager_status.request_from_kernel = 1;
--			up(&kvoyagerd_sem);
-+			wake_up_process(voyager_thread);
- 		}
- 		
- 		
-Index: linux-2.6/arch/i386/mach-voyager/voyager_thread.c
-===================================================================
---- linux-2.6.orig/arch/i386/mach-voyager/voyager_thread.c	2007-04-22 15:15:24.000000000 +0200
-+++ linux-2.6/arch/i386/mach-voyager/voyager_thread.c	2007-04-22 15:25:51.000000000 +0200
-@@ -24,33 +24,16 @@
- #include <linux/kmod.h>
- #include <linux/completion.h>
- #include <linux/sched.h>
+--- linux-2.6.orig/drivers/scsi/libsas/sas_scsi_host.c	2007-04-22 20:30:39.000000000 +0200
++++ linux-2.6/drivers/scsi/libsas/sas_scsi_host.c	2007-04-22 20:36:51.000000000 +0200
+@@ -23,6 +23,8 @@
+  *
+  */
+ 
 +#include <linux/kthread.h>
- #include <asm/desc.h>
- #include <asm/voyager.h>
- #include <asm/vic.h>
- #include <asm/mtrr.h>
- #include <asm/msr.h>
++
+ #include "sas_internal.h"
  
--#define THREAD_NAME "kvoyagerd"
+ #include <scsi/scsi_host.h>
+@@ -184,7 +186,7 @@ static int sas_queue_up(struct sas_task 
+ 	list_add_tail(&task->list, &core->task_queue);
+ 	core->task_queue_size += 1;
+ 	spin_unlock_irqrestore(&core->task_queue_lock, flags);
+-	up(&core->queue_thread_sema);
++	wake_up_process(core->queue_thread);
  
--/* external variables */
--int kvoyagerd_running = 0;
--DECLARE_MUTEX_LOCKED(kvoyagerd_sem);
--
--static int thread(void *);
--
--static __u8 set_timeout = 0;
--
--/* Start the machine monitor thread.  Return 1 if OK, 0 if fail */
--static int __init
--voyager_thread_start(void)
--{
--	if(kernel_thread(thread, NULL, CLONE_KERNEL) < 0) {
--		/* This is serious, but not fatal */
--		printk(KERN_ERR "Voyager: Failed to create system monitor thread!!!\n");
--		return 1;
--	}
--	return 0;
--}
-+struct task_struct *voyager_thread;
-+static __u8 set_timeout;
+ 	return 0;
+ }
+@@ -819,7 +821,7 @@ static void sas_queue(struct sas_ha_stru
+ 	struct sas_internal *i = to_sas_internal(core->shost->transportt);
  
- static int
- execute(const char *string)
-@@ -110,31 +93,15 @@ check_continuing_condition(void)
- 	}
+ 	spin_lock_irqsave(&core->task_queue_lock, flags);
+-	while (!core->queue_thread_kill &&
++	while (!kthread_should_stop() &&
+ 	       !list_empty(&core->task_queue)) {
+ 
+ 		can_queue = sas_ha->lldd_queue_size - core->task_queue_size;
+@@ -858,8 +860,6 @@ static void sas_queue(struct sas_ha_stru
+ 	spin_unlock_irqrestore(&core->task_queue_lock, flags);
  }
  
--static void
--wakeup(unsigned long unused)
--{
--	up(&kvoyagerd_sem);
--}
+-static DECLARE_COMPLETION(queue_th_comp);
 -
- static int
- thread(void *unused)
+ /**
+  * sas_queue_thread -- The Task Collector thread
+  * @_sas_ha: pointer to struct sas_ha
+@@ -867,40 +867,33 @@ static DECLARE_COMPLETION(queue_th_comp)
+ static int sas_queue_thread(void *_sas_ha)
  {
--	struct timer_list wakeup_timer;
--
--	kvoyagerd_running = 1;
--
--	daemonize(THREAD_NAME);
--
--	set_timeout = 0;
--
--	init_timer(&wakeup_timer);
--
--	sigfillset(&current->blocked);
--
- 	printk(KERN_NOTICE "Voyager starting monitor thread\n");
+ 	struct sas_ha_struct *sas_ha = _sas_ha;
+-	struct scsi_core *core = &sas_ha->core;
  
--	for(;;) {
--		down_interruptible(&kvoyagerd_sem);
-+	for (;;) {
+-	daemonize("sas_queue_%d", core->shost->host_no);
+ 	current->flags |= PF_NOFREEZE;
+ 
+-	complete(&queue_th_comp);
+-
+ 	while (1) {
+-		down_interruptible(&core->queue_thread_sema);
 +		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule_timeout(set_timeout ? HZ : MAX_SCHEDULE_TIMEOUT);
-+
- 		VDEBUG(("Voyager Daemon awoken\n"));
- 		if(voyager_status.request_from_kernel == 0) {
- 			/* probably awoken from timeout */
-@@ -143,20 +110,26 @@ thread(void *unused)
- 			check_from_kernel();
- 			voyager_status.request_from_kernel = 0;
- 		}
--		if(set_timeout) {
--			del_timer(&wakeup_timer);
--			wakeup_timer.expires = HZ + jiffies;
--			wakeup_timer.function = wakeup;
--			add_timer(&wakeup_timer);
--		}
++		schedule();
+ 		sas_queue(sas_ha);
+-		if (core->queue_thread_kill)
++		if (kthread_should_stop())
+ 			break;
  	}
+ 
+-	complete(&queue_th_comp);
+-
+ 	return 0;
  }
  
-+static int __init
-+voyager_thread_start(void)
-+{
-+	voyager_thread = kthread_run(thread, NULL, "kvoyagerd");
-+	if (IS_ERR(voyager_thread)) {
-+		printk(KERN_ERR "Voyager: Failed to create system monitor thread.\n");
-+		return PTR_ERR(voyager_thread);
-+	}
-+	return 0;
-+}
-+
-+
- static void __exit
- voyager_thread_stop(void)
+ int sas_init_queue(struct sas_ha_struct *sas_ha)
  {
--	/* FIXME: do nothing at the moment */
-+	kthread_stop(voyager_thread);
+-	int res;
+ 	struct scsi_core *core = &sas_ha->core;
+ 
+ 	spin_lock_init(&core->task_queue_lock);
+ 	core->task_queue_size = 0;
+ 	INIT_LIST_HEAD(&core->task_queue);
+-	init_MUTEX_LOCKED(&core->queue_thread_sema);
+ 
+-	res = kernel_thread(sas_queue_thread, sas_ha, 0);
+-	if (res >= 0)
+-		wait_for_completion(&queue_th_comp);
+-
+-	return res < 0 ? res : 0;
++	core->queue_thread = kthread_run(sas_queue_thread, sas_ha,
++					 "sas_queue_%d", core->shost->host_no);
++	if (IS_ERR(core->queue_thread))
++		return PTR_ERR(core->queue_thread);
++	return 0;
  }
  
- module_init(voyager_thread_start);
--//module_exit(voyager_thread_stop);
-+module_exit(voyager_thread_stop);
-Index: linux-2.6/include/asm-i386/voyager.h
+ void sas_shutdown_queue(struct sas_ha_struct *sas_ha)
+@@ -909,10 +902,7 @@ void sas_shutdown_queue(struct sas_ha_st
+ 	struct scsi_core *core = &sas_ha->core;
+ 	struct sas_task *task, *n;
+ 
+-	init_completion(&queue_th_comp);
+-	core->queue_thread_kill = 1;
+-	up(&core->queue_thread_sema);
+-	wait_for_completion(&queue_th_comp);
++	kthread_stop(core->queue_thread);
+ 
+ 	if (!list_empty(&core->task_queue))
+ 		SAS_DPRINTK("HA: %llx: scsi core task queue is NOT empty!?\n",
+Index: linux-2.6/include/scsi/libsas.h
 ===================================================================
---- linux-2.6.orig/include/asm-i386/voyager.h	2007-04-22 15:18:39.000000000 +0200
-+++ linux-2.6/include/asm-i386/voyager.h	2007-04-22 15:24:13.000000000 +0200
-@@ -487,15 +487,11 @@ extern struct voyager_qic_cpi *voyager_q
- extern struct voyager_SUS *voyager_SUS;
+--- linux-2.6.orig/include/scsi/libsas.h	2007-04-22 20:32:41.000000000 +0200
++++ linux-2.6/include/scsi/libsas.h	2007-04-22 20:32:59.000000000 +0200
+@@ -314,8 +314,7 @@ struct scsi_core {
+ 	struct list_head  task_queue;
+ 	int               task_queue_size;
  
- /* variables exported always */
-+extern struct task_struct *voyager_thread;
- extern int voyager_level;
--extern int kvoyagerd_running;
--extern struct semaphore kvoyagerd_sem;
- extern struct voyager_status voyager_status;
+-	struct semaphore  queue_thread_sema;
+-	int               queue_thread_kill;
++	struct task_struct *queue_thread;
+ };
  
--
--
- /* functions exported by the voyager and voyager_smp modules */
--
- extern int voyager_cat_readb(__u8 module, __u8 asic, int reg);
- extern void voyager_cat_init(void);
- extern void voyager_detect(struct voyager_bios_info *);
+ struct sas_ha_event {
