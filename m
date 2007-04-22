@@ -1,117 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbXDVWpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030180AbXDVWtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbXDVWpZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 18:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753289AbXDVWpZ
+	id S1030180AbXDVWtt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 18:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030950AbXDVWts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 18:45:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35296 "HELO mail.gmx.net"
+	Sun, 22 Apr 2007 18:49:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46904 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752989AbXDVWpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 18:45:24 -0400
+	id S1030180AbXDVWts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 18:49:48 -0400
 X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18SxaBSyeQSkX0I5dWaaiIMKlHtvnembLXvHyntQW
-	VCQMMxNiI1EfQD
-Date: Mon, 23 Apr 2007 00:45:25 +0200 (CEST)
+X-Provags-ID: V01U2FsdGVkX1+9gr8acX+9El/I8naBqopkYhQPYL0/NfM968kYOo
+	fHD5pximOV4te+
+Date: Mon, 23 Apr 2007 00:49:43 +0200 (CEST)
 From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: linux-kernel@vger.kernel.org, jayalk@intworks.biz,
-       akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Mikael Starvik <starvik@axis.com>
 Subject: Re: [PATCH] dma_declare_coherent_memory wrong allocation
-In-Reply-To: <1177260725.4268.9.camel@mulgrave.il.steeleye.com>
-Message-ID: <Pine.LNX.4.60.0704222202050.4127@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0704222202050.4127@poirot.grange>
+Message-ID: <Pine.LNX.4.60.0704230045440.10258@poirot.grange>
 References: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
  <1177260725.4268.9.camel@mulgrave.il.steeleye.com>
+ <Pine.LNX.4.60.0704222202050.4127@poirot.grange>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007, James Bottomley wrote:
+On Mon, 23 Apr 2007, Guennadi Liakhovetski wrote:
 
-> On Fri, 2007-04-13 at 20:08 +0200, Guennadi Liakhovetski wrote:
-> > -	int bitmap_size = (pages + 31)/32;
-> > +	int bitmap_size = DIV_ROUND_UP(pages, 8);
-> 
-> This isn't quite right.  Bitmaps are arrays of longs, not arrays of
-> bytes.  The bug is forgetting that kmalloc() takes bytes ...
-> 
-> How about
-> 
-> int bitmap_size = DIV_ROUNDUP(pages, 32) * 4;
+> to also allow for size not an integer number of pages as Andrew noticed? 
+> This could be done in 2 patches:
 
-Right, thinko. How about using his:
-
-+	int pages = DIV_ROUND_UP(size, PAGE_SIZE);
-+	int bitmap_size = BITS_TO_LONGS(pages) * BYTES_PER_LONG;
-
-to also allow for size not an integer number of pages as Andrew noticed? 
-This could be done in 2 patches:
+patch 2:
 
 ---
-Introduce BYTES_PER_LONG and remove local definitions. fbsys 
-compile-tested, amifb untested (framebuffer maintainer cc'ed)...
+Fix bitmap allocation and size non-multiple of PAGE_SIZE in 
+dma_declare_coherent_memory implementations. i386 compile-tested.
 
 Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
 
---- a/include/linux/types.h	2007-04-15 22:07:52.000000000 +0200
-+++ b/include/linux/types.h	2007-04-22 22:51:17.000000000 +0200
-@@ -9,6 +9,7 @@
- 	unsigned long name[BITS_TO_LONGS(bits)]
- 
- #define BITS_PER_BYTE 8
-+#define BYTES_PER_LONG (BITS_PER_LONG / BITS_PER_BYTE)
- #endif
- 
- #include <linux/posix_types.h>
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 40c80c8..6bb68b8 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -19,6 +19,7 @@
- #include <linux/fb.h>
- #include <linux/console.h>
- #include <linux/module.h>
-+#include <linux/types.h>
- 
- #define FB_SYSFS_FLAG_ATTR 1
- 
-@@ -37,7 +38,6 @@
-  */
- struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+diff --git a/arch/i386/kernel/pci-dma.c b/arch/i386/kernel/pci-dma.c
+index 3ebcea0..0a9317a 100644
+--- a/arch/i386/kernel/pci-dma.c
++++ b/arch/i386/kernel/pci-dma.c
+@@ -76,8 +76,8 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
+ 				dma_addr_t device_addr, size_t size, int flags)
  {
--#define BYTES_PER_LONG (BITS_PER_LONG/8)
- #define PADDING (BYTES_PER_LONG - (sizeof(struct fb_info) % BYTES_PER_LONG))
- 	int fb_info_size = sizeof(struct fb_info);
- 	struct fb_info *info;
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 1a849b8..a53d5a2 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -51,6 +51,8 @@
- #include <linux/fb.h>
- #include <linux/init.h>
- #include <linux/ioport.h>
-+#include <linux/types.h>
-+#include <linux/log2.h>
+ 	void __iomem *mem_base = NULL;
+-	int pages = size >> PAGE_SHIFT;
+-	int bitmap_size = (pages + 31)/32;
++	int pages = DIV_ROUND_UP(size, PAGE_SIZE);
++	int bitmap_size = BITS_TO_LONGS(pages) * BYTES_PER_LONG;
  
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -1350,15 +1352,7 @@ static int amifb_pan_display(struct fb_var_screeninfo *var,
- }
+ 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
+ 		goto out;
+diff --git a/arch/cris/arch-v32/drivers/pci/dma.c b/arch/cris/arch-v32/drivers/pci/dma.c
+index d634347..99f760e 100644
+--- a/arch/cris/arch-v32/drivers/pci/dma.c
++++ b/arch/cris/arch-v32/drivers/pci/dma.c
+@@ -75,8 +75,8 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
+ 				dma_addr_t device_addr, size_t size, int flags)
+ {
+ 	void __iomem *mem_base;
+-	int pages = size >> PAGE_SHIFT;
+-	int bitmap_size = (pages + 31)/32;
++	int pages = DIV_ROUND_UP(size, PAGE_SIZE);
++	int bitmap_size = BITS_TO_LONGS(pages) * BYTES_PER_LONG;
  
- 
--#if BITS_PER_LONG == 32
--#define BYTES_PER_LONG	4
--#define SHIFT_PER_LONG	5
--#elif BITS_PER_LONG == 64
--#define BYTES_PER_LONG	8
--#define SHIFT_PER_LONG	6
--#else
--#define Please update me
--#endif
-+#define SHIFT_PER_LONG	ilog2(BITS_PER_LONG)
- 
- 
-     /*
+ 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
+ 		goto out;
