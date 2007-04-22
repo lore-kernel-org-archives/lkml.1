@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965509AbXDVIB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXDVICd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965509AbXDVIB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXDVIB1
+	id S965461AbXDVICd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965512AbXDVICd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:01:27 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:46094 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965475AbXDVIB0 (ORCPT
+	Sun, 22 Apr 2007 04:02:33 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:44751 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965461AbXDVICa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:01:26 -0400
-Subject: Re: [PATCH 3/8] Kconfig: unwanted config options for s390.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200704220115.01532.arnd@arndb.de>
-References: <20070420113310.GD3738@skybase>
-	 <200704220115.01532.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Sun, 22 Apr 2007 10:01:41 +0200
-Message-Id: <1177228901.8046.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Sun, 22 Apr 2007 04:02:30 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: ck@vds.kolivas.org
+Subject: Re: [ck] [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Sun, 22 Apr 2007 10:02:07 +0200
+User-Agent: KMail/1.9.5
+Cc: Con Kolivas <kernel@kolivas.org>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Al Boldi <a1426z@gawab.com>, Peter Williams <pwil3058@bigpond.net.au>,
+       Nick Piggin <npiggin@suse.de>, Matt Mackall <mpm@selenic.com>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <200704221441.48897.kernel@kolivas.org>
+In-Reply-To: <200704221441.48897.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1749841.6YSV0uADGl";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704221002.21289.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177228950;6465c97e;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-22 at 01:15 +0200, Arnd Bergmann wrote:
-> > @@ -81,6 +82,7 @@ config VT_HW_CONSOLE_BINDING
-> >  
-> >  config SERIAL_NONSTANDARD
-> >  	bool "Non-standard serial port support"
-> > +	depends on !S390
-> >  	---help---
-> >  	  Say Y here if you have any non-standard serial boards -- boards
-> >  	  which aren't supported using the standard "dumb" serial driver.
-> 
-> depends on MMIO
+--nextPart1749841.6YSV0uADGl
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Depends on HAS_IOMEM.
+Hi Con,
 
-> > @@ -822,7 +824,7 @@ config SGI_IP27_RTC
-> >  
-> >  config GEN_RTC
-> >  	tristate "Generic /dev/rtc emulation"
-> > -	depends on RTC!=y && !IA64 && !ARM && !M32R && !SPARC && !FRV
-> > +	depends on RTC!=y && !IA64 && !ARM && !M32R && !SPARC && !FRV && !S390
-> >  	---help---
-> >  	  If you say Y here and create a character special file /dev/rtc with
-> >  	  major number 10 and minor number 135 using mknod ("man mknod"), you
-> 
-> ok.
-> 
-> this one is bad in general and should probably be a select from the architecture,
-> but that should not stop you from adding another architecture...
+I now have 2.6.21-rc7-sd-0.45 running on my Intel Core2 T7600 2.33
+machine and there is something I don't understand.
 
-The disable extension would help here, but I never got anywhere with it.
+=46or testing I have a Perl script that does some numbercrunching
+and runs a couple of hours.
 
-> > @@ -878,6 +880,7 @@ config DTLK
-> >  
-> >  config R3964
-> >  	tristate "Siemens R3964 line discipline"
-> > +	depends on !S390
-> >  	---help---
-> >  	  This driver allows synchronous communication with devices using the
-> >  	  Siemens R3964 packet protocol. Unless you are dealing with special
-> 
-> Does it build? I don't see a point disabling this one just because there are
-> no users. Most architectures also don't have users for this one, but it
-> doesn't hurt be able to build it using allyesconfig.
+I have two scenarios
+a) start the job via loops in a shellscript
+b) start the job via a makefile (make -j 2)
+that I run in parallel.
 
-I'll try to build it.
+I watch the jobs via top and this is what I see:
+Job a) quickly gets about 100% (- 0-2) while job b) creates two
+perl jobs that both get 50% (- 0-2). I suppose it is expected
+behaviour that the single perl job created via a) gets same same
+share of the cpu as the two perl jobs created via b) together.
 
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
+However occasionally cpu drops to 33% for all three perl jobs
+while there is no other job visible in top (i.e. the sum drops
+from 200% to 100%). After some time this changes back to 100/50/50.
 
-"Reality continues to ruin my life." - Calvin.
+How could this happen and would applying the other patch you
+mailed to Willy Tarreau help tracking that down ?
 
+Best wishes,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
 
+--nextPart1749841.6YSV0uADGl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGKxaNUYYhyuxDQc4RAog8AJ9xSI/r3xhOxF7lxZDuB+GhCq+d6gCfVpUI
+W7CFk5mZU5sJNd/OHabOv44=
+=e0a5
+-----END PGP SIGNATURE-----
+
+--nextPart1749841.6YSV0uADGl--
