@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXDVHBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXDVHD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbXDVHBg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbXDVHBg
+	id S1753512AbXDVHD0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXDVHD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:01:36 -0400
-Received: from 1wt.eu ([62.212.114.60]:2153 "EHLO 1wt.eu"
+	Sun, 22 Apr 2007 03:03:26 -0400
+Received: from holomorphy.com ([66.93.40.71]:56924 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753394AbXDVHBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:01:35 -0400
-Date: Sun, 22 Apr 2007 09:00:37 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
+	id S1753512AbXDVHDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 03:03:25 -0400
+Date: Sun, 22 Apr 2007 00:02:38 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Willy Tarreau <w@1wt.eu>,
+       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
        Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Message-ID: <20070422070037.GA15092@1wt.eu>
-References: <200704221441.48897.kernel@kolivas.org>
-Mime-Version: 1.0
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070422070238.GH2986@holomorphy.com>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu> <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org> <20070421164241.GF2986@holomorphy.com> <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com> <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com> <alpine.LFD.0.98.0704211634130.9964@woody.linux-foundation.org> <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704221441.48897.kernel@kolivas.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
-> A significant bugfix for SMP balancing was just posted for the staircase 
-> deadline cpu scheduler which improves behaviour dramatically on any SMP 
-> machine.
-> 
-> Thanks to Willy Tarreau for noticing likely fault point.
-> 
-> Also requested was a version in the Makefile so this version of the patch 
-> adds -sd045 to the kernel version.
+On 4/21/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>> And how the hell do you imagine you'd even *know* what thread holds the
+>> futex?
 
-Con, I'm sorry, but it is worse with this one :-(
+On Sat, Apr 21, 2007 at 06:46:58PM -0700, Ulrich Drepper wrote:
+> We know this in most cases.  This is information recorded, for
+> instance, in the mutex data structure.  You might have missed my "the
+> interface must be extended" part.  This means the PID of the owning
+> thread will have to be passed done.  For PI mutexes this is not
+> necessary since the kernel already has access to the information.
 
-The lag when typing in xterms is even more noticeable and vmstat output
-oscillates between 8 and 65, with idle rates around 50%, as you can see
-below :
+I'm just looking for what people want the API to be here. With that in
+hand we can just go out and do whatever needs to be done.
 
-   procs                      memory      swap          io     system      cpu
- r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
- 9  0  0      0 922436   6392  57496    0    0     0     0    2   172 26 33 41
-65  0  1      0 922436   6392  57496    0    0     0     0    0   132 23 37 40
-66  0  0      0 922436   6392  57496    0    0     0     0    1   159 18 31 51
- 9  0  0      0 922436   6392  57496    0    0     0     0    0   166 24 37 40
-68  0  0      0 922436   6392  57496    0    0     0     0    5   121 23 32 44
-62  0  0      0 922576   6392  57496    0    0     0     0    0   161 17 29 53
- 8  0  0      0 922576   6392  57496    0    0     0     0    1   158 23 42 34
-65  0  0      0 922576   6392  57496    0    0     0     0    1    92 17 33 50
-52  0  2      0 922576   6392  57496    0    0     0     0    0   156 19 28 53
-13  0  0      0 922576   6392  57496    0    0     0     0    8   171 25 44 30
-65  0  0      0 922576   6392  57496    0    0     0     0   17   172 20 26 54
- 8  0  0      0 922576   6392  57496    0    0     0     0    4   188 22 31 47
-22  0  0      0 922576   6392  57496    0    0     0     0   10   182 26 38 36
-65  0  1      0 922576   6392  57496    0    0     0     0    8   107 18 28 54
- 8  0  0      0 922588   6424  57508    0    0    12    36   11   201 26 35 39
-66  0  0      0 922588   6424  57508    0    0     0     0   11   115 22 36 43
-61  0  0      0 922564   6424  57508    0    0     0     0   32   409 16 28 56
- 8  0  0      0 922564   6424  57508    0    0     0     0   19   224 24 42 34
-65  0  0      0 922564   6436  57496    0    0     0    12   34   439 19 29 52
- 8  0  0      0 922564   6436  57496    0    0     0     0   28   320 18 26 56
-20  0  0      0 922564   6436  57508    0    0     0     0    6   195 26 42 32
 
-Renicing X or not does not change anything here.
-
-I suspect that the bug you fixed was hiding another one :-/
-If you want me to test another patch, feel free to ask.
-
-Willy
-
+-- wli
