@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030480AbXDVMiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030649AbXDVMix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030480AbXDVMiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030576AbXDVMiQ
+	id S1030649AbXDVMix (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030778AbXDVMix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:38:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:26691 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030480AbXDVMiP (ORCPT
+	Sun, 22 Apr 2007 08:38:53 -0400
+Received: from ik-out-1112.google.com ([66.249.90.180]:2504 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030649AbXDVMiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:38:15 -0400
+	Sun, 22 Apr 2007 08:38:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jr+xyZp6uuXvWkH/sW2HLLDWp2r2IYXLJm539fiKX2EVm30kOt6ENmNpfxvkax20bKEpwLpu6aIA1OUeOmLrmWZVf53OZ/EhvEnn3C+79thk/mvp/5W4JITuS5FjWREW2e15zz5n6c6fqCOetVeabP9c+SOnmBb0S6vAd7Q88RM=
-Message-ID: <f5ba67240704220538p40f908cag39b8d7c46d87ca47@mail.gmail.com>
-Date: Sun, 22 Apr 2007 13:38:13 +0100
-From: "Ian Kirk" <intercede619@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Subject: BUG/CRASH help - 2.6.20 (fc5) - spinlock bad magic on CPU#0, kswapd
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hnpAYObE2uCvsWpDzBbqbwO7DWdqltIe4x3pkI1/3H97doowqjoGcS/EQWcT502jjTzjxthOHiiz+J2BclMmDnbHz5gdIUMSr9SlC4dab0kaDXTuZ+tIv8DQYa3t3eFguY4CwKhnDYC2SoSLxYiD/rnPdaeFQ3t4FMSR5V4tjo4=
+Message-ID: <653402b90704220538gf0041f1yf699cc8aa5f200e8@mail.gmail.com>
+Date: Sun, 22 Apr 2007 14:38:50 +0200
+From: "Miguel Ojeda" <maxextreme@gmail.com>
+To: "oliver pinter" <oliver.pntr@gmail.com>
+Subject: Re: [BUG? -rc7] SMP: Just one CPU activated: P4 3GHz HT
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6101e8c40704220453v544dce39j9e348939b3cb1f2e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <653402b90704220157h5fe2be3p18c4a341d13ccc87@mail.gmail.com>
+	 <6101e8c40704220300n4cfef0f1l652b303f5bab8d1b@mail.gmail.com>
+	 <653402b90704220312k24ed730ay204ccd076dab8d6c@mail.gmail.com>
+	 <6101e8c40704220453v544dce39j9e348939b3cb1f2e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 4/22/07, oliver pinter <oliver.pntr@gmail.com> wrote:
+> I have CC the kernel
 
-I just wondered if the below type of crash was a known thing, and if
-there are any obvious things I can do to prevent/fix it ?
+Did you?
 
-BUG: spinlock bad magic on CPU#0, kswapd0/242 (Not tainted)
-lock: c06c9380, .magic: c06c9380, .owner:
-[<c06eba2a>] _raw_spin_lock+0x1a/0xd9
-[<c061e72f>] _spin_lock_irqsave+0x9/0xd
-[<c041febf>] __wake_up+0x18/0x43
-[<c04379ce>] __wake_up_bit+0x2e/0x33
-[<c045a496>] shrink_inactive_list+0x483/0x6c9
-[<c0459eae>] shrink_active_list+0x334/0x33c
-[<c045a799>] shrink_zone+0xbd/0xe2
-[<c045ac0e>] kswapd+0x296/0x3bb
-[<c04379e9>] autoremove_wake_function+0x0/0x35
-[<c045a978>] kswapd+0x0/0x3bb
-[<c043792f>] kthread+0xb0/0xd9
-[<c043787f>] kthread+0x0/0xd9
-[<c0404b47>] kernel_thread_helper+0x7/0x10
-=======================
+> and the result is:
+>
+> your'e config : failed smp
+>
+> your'e config + power managment : ok
+>
 
-The .owner: field contains a long list of unprintable characters.
+Interesting, can anyone tell me why does not SMP work without Power
+Managment? Should it be that way?
 
-The server is running kernel-smp-2.6.20-1.2307.fc5.i686.rpm.
-Hardware of note is:
-
-1x AMD AM2 DUALCORE 3800
-2x Corsair DDR2 XMS 1Gb PC6400
-2x 400G SEAGATE SATA2 ST3400633AS (traditional s/w RAID1 w/ ext3)
-1x ASUS M2V-MX AM2 MOBO (onboard NIC unused)
-1x e100 driver using NIC
-
-I've a few things to try (disabling serial/par ports, unused NIC, USB).
-It also crashed with a UP kernel.
-
-Apologies if I'm duplicating any questions asked, I Googled for the
-error messages but found quite different stack traces and contextx
-(e.g. resiferfs vs ext3 - i'm only running ext3)
-
-Regards,
-Ian
-
-(normally posting from blob@blob.co.uk but can't get to that as the
-server is crashed!)
+-- 
+Miguel Ojeda
+http://maxextreme.googlepages.com/index.htm
