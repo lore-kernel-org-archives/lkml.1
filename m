@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030923AbXDVOn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030933AbXDVOqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030923AbXDVOn2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 10:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030928AbXDVOn2
+	id S1030933AbXDVOqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 10:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030934AbXDVOqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 10:43:28 -0400
-Received: from oker.escape.de ([194.120.234.254]:43841 "EHLO oker.escape.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030923AbXDVOn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 10:43:27 -0400
-X-Greylist: delayed 4102 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Apr 2007 10:43:27 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.4.34.3
-References: <20070422101057.GA11893@hera.kernel.org>
-From: Urs Thuermann <urs@isnogud.escape.de>
-Date: 22 Apr 2007 15:33:58 +0200
-In-Reply-To: <20070422101057.GA11893@hera.kernel.org>; from Willy Tarreau on Sun, 22 Apr 2007 10:10:57 +0000
-Message-ID: <ygfzm508reh.fsf@janus.isnogud.escape.de>
-User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/20.7
+	Sun, 22 Apr 2007 10:46:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:62487 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030928AbXDVOqQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 10:46:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YDHlSZMTiEal28PJL5h6wqopoS9LypTN7waWRvDdkzQsP/JlBCblfoMBVKLJDksY4mS2qXdJGhjOpTKizxxg4NzDmedCE6NC8X7Le7e4+JHcAqlKlu/P3WE72ExWcUyyHyyjpbkzEQ+VdRTnM0Ps+U8PsEJysyKiZUVYaZSHTmc=
+Message-ID: <8355959a0704220746k7ffb9ba1k89695e27760e915d@mail.gmail.com>
+Date: Sun, 22 Apr 2007 20:16:15 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: Linux 2.6.21-rc7 - ACPI issues? (Namespace lookup failure, AE_NOT_FOUND)
+Cc: linux-acpi@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <200704212147.47926.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8355959a0704210703n35b0dc35wcad04e5723eaec7@mail.gmail.com>
+	 <200704212147.47926.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau <wtarreau@hera.kernel.org> writes:
+On 4/22/07, Len Brown <lenb@kernel.org> wrote:
+>
+> This is an AML run-time error from a PCI Interrupt Link
+> trying to find its "Present Resource Settings" --
+> ie. the current IRQ for a programmable IRQ.
+>
+> Please open up a bug report here:
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
 
-> I've just released Linux 2.4.34.3.
-> 
-> Nothing critical, just a bunch of bugfixes and small security fix.
+Yep, raised a Bug report: #8360
 
-I get the following compile error:
+> For 2.6.20.stable and the latest 2.6.21, please
+> build with CONFIG_ACPI_DEBUG=y, and
+> attach the complete output from dmesg -s64000
+> and paste the /proc/interrupts.
 
-gcc -D__KERNEL__ -I/usr/src/linux-2.4.34.3-ut/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -fno-builtin-sprintf -fomit-frame-pointer  -pipe -mpreferred-stack-boundary=2 -fno-guess-branch-probability -march=i686 -fno-unit-at-a-time   -nostdinc -iwithprefix include -DKBUILD_BASENAME=fib_semantics  -c -o fib_semantics.o fib_semantics.c
-fib_semantics.c: In function `fib_create_info':
-fib_semantics.c:436: error: label `errout' used but not defined
-make[3]: *** [fib_semantics.o] Error 1
-make[3]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net/ipv4'
-make[2]: *** [first_rule] Error 2
-make[2]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net/ipv4'
-make[1]: *** [_subdir_ipv4] Error 2
-make[1]: Leaving directory `/usr/src/linux-2.4.34.3-ut/net'
-make: *** [_dir_net] Error 2
+Sure, shall test with 2.6.20.7 & 2.6.21-rc7.
 
-The appended patch fixes this problem.
+> Also, please attach the output from acpidump
+> and lspci -vv taken from either boot.
 
+Shall do it ASAP ;-)
 
-urs
+> -Len
 
-
---- net/ipv4/fib_semantics.c.orig	2007-04-22 13:31:23.000000000 +0000
-+++ net/ipv4/fib_semantics.c	2007-04-22 13:31:42.000000000 +0000
-@@ -433,7 +433,7 @@
- 
- 	if (r->rtm_type > RTN_MAX) {
- 		err = -EINVAL;
--		goto errout;
-+		goto failure;
- 	}
- 
- 	/* Fast check to catch the most weird cases */
+Thanks,
+~Akula2
