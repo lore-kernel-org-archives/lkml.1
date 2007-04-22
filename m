@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXDVKf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXDVLKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965645AbXDVKf3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 06:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030181AbXDVKf3
+	id S1030181AbXDVLKi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 07:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030196AbXDVLKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 06:35:29 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:44185 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965646AbXDVKf2 (ORCPT
+	Sun, 22 Apr 2007 07:10:38 -0400
+Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:46068 "EHLO
+	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030181AbXDVLKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 06:35:28 -0400
-Date: Sun, 22 Apr 2007 12:35:24 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] do not truncate irq number for icom adapter
-Message-ID: <20070422103524.GA20513@aepfle.de>
+	Sun, 22 Apr 2007 07:10:37 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Michael Gerdau <mgd@technosis.de>
+Subject: Re: [ck] [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Sun, 22 Apr 2007 21:09:23 +1000
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Al Boldi <a1426z@gawab.com>, Peter Williams <pwil3058@bigpond.net.au>,
+       Nick Piggin <npiggin@suse.de>, Matt Mackall <mpm@selenic.com>,
+       Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>
+References: <200704221441.48897.kernel@kolivas.org> <200704221002.21289.mgd@technosis.de>
+In-Reply-To: <200704221002.21289.mgd@technosis.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704222109.24294.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 22 April 2007 18:02, Michael Gerdau wrote:
+> Hi Con,
+>
+> I now have 2.6.21-rc7-sd-0.45 running on my Intel Core2 T7600 2.33
+> machine and there is something I don't understand.
+>
+> For testing I have a Perl script that does some numbercrunching
+> and runs a couple of hours.
+>
+> I have two scenarios
+> a) start the job via loops in a shellscript
+> b) start the job via a makefile (make -j 2)
+> that I run in parallel.
+>
+> I watch the jobs via top and this is what I see:
+> Job a) quickly gets about 100% (- 0-2) while job b) creates two
+> perl jobs that both get 50% (- 0-2). I suppose it is expected
+> behaviour that the single perl job created via a) gets same same
+> share of the cpu as the two perl jobs created via b) together.
+>
+> However occasionally cpu drops to 33% for all three perl jobs
+> while there is no other job visible in top (i.e. the sum drops
+> from 200% to 100%). After some time this changes back to 100/50/50.
+>
+> How could this happen and would applying the other patch you
+> mailed to Willy Tarreau help tracking that down ?
 
-irq values are u32, not u8. Large irq numbers will be truncated,
-free_irq may free a different irq.
-Remove incorrectly sized struct member and use the one from pci_dev.
+Thanks for report. That patch did not help Willy, and now you have confirmed 
+there still is an SMP balancing problem too where it doesn't seem to keep all 
+cpus busy. There's still a bug there in the smp balancing code and I'm 
+reviewing it madly trying to find it. If anyone else knows this balancing 
+code and is willing to help I'd be happy for feedback if they can see an 
+obvious error. Likely thing is the runqueue is not being weighted at all 
+despite being bust so the other runqueue doesn't try to take any tasks from 
+it.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- drivers/serial/icom.c |    5 ++---
- drivers/serial/icom.h |    1 -
- 2 files changed, 2 insertions(+), 4 deletions(-)
-
---- a/drivers/serial/icom.c
-+++ b/drivers/serial/icom.c
-@@ -1473,7 +1473,7 @@ static void icom_remove_adapter(struct i
- 		}
- 	}
- 
--	free_irq(icom_adapter->irq_number, (void *) icom_adapter);
-+	free_irq(icom_adapter->pci_dev->irq, (void *) icom_adapter);
- 	iounmap(icom_adapter->base_addr);
- 	icom_free_adapter(icom_adapter);
- 	pci_release_regions(icom_adapter->pci_dev);
-@@ -1539,7 +1539,6 @@ static int __devinit icom_probe(struct p
- 	}
- 
- 	 icom_adapter->base_addr_pci = pci_resource_start(dev, 0);
--	 icom_adapter->irq_number = dev->irq;
- 	 icom_adapter->pci_dev = dev;
- 	 icom_adapter->version = ent->driver_data;
- 	 icom_adapter->subsystem_id = ent->subdevice;
-@@ -1570,7 +1569,7 @@ static int __devinit icom_probe(struct p
- 		icom_port = &icom_adapter->port_info[index];
- 
- 		if (icom_port->status == ICOM_PORT_ACTIVE) {
--			icom_port->uart_port.irq = icom_port->adapter->irq_number;
-+			icom_port->uart_port.irq = icom_port->adapter->pci_dev->irq;
- 			icom_port->uart_port.type = PORT_ICOM;
- 			icom_port->uart_port.iotype = UPIO_MEM;
- 			icom_port->uart_port.membase =
---- a/drivers/serial/icom.h
-+++ b/drivers/serial/icom.h
-@@ -258,7 +258,6 @@ struct icom_port {
- struct icom_adapter {
- 	void __iomem * base_addr;
- 	unsigned long base_addr_pci;
--	unsigned char irq_number;
- 	struct pci_dev *pci_dev;
- 	struct icom_port port_info[4];
- 	int index;
+-- 
+-ck
