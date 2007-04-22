@@ -1,127 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965427AbXDVHpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXDVHts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965427AbXDVHpu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXDVHpt
+	id S965452AbXDVHts (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXDVHtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:45:49 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34635 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965336AbXDVHps (ORCPT
+	Sun, 22 Apr 2007 03:49:47 -0400
+Received: from smtp102.plus.mail.re2.yahoo.com ([206.190.53.27]:35393 "HELO
+	smtp102.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965452AbXDVHtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:45:48 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org
-Subject: Re: [patch 1/8] add user mounts to the kernel
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102624.975879175@szeredi.hu>
-	<m1wt05kgy8.fsf@ebiederm.dsl.xmission.com>
-	<E1HfW5I-00044y-00@dorka.pomaz.szeredi.hu>
-Date: Sun, 22 Apr 2007 01:43:44 -0600
-In-Reply-To: <E1HfW5I-00044y-00@dorka.pomaz.szeredi.hu> (Miklos Szeredi's
-	message of "Sun, 22 Apr 2007 09:02:08 +0200")
-Message-ID: <m1ps5w26rz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 22 Apr 2007 03:49:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=a5YxJx0C/BRNBDGMv8vVPGPECUlCr9pqfqwKPtN9ajstMcyFLyhoxNu3ecrxwptaf9ZzEw6YK8d9x7u0OK5uuVSjMrbbz/zI75h4OAKuQvCvcXTTl27w0uRVA2niTqbmUF9kY08RXH4gX2UUR8lDUGe4A/vghlLod7J+Z44tRkc=  ;
+X-YMail-OSG: GiB1zTsVM1kb0KfxWBnZN5XewPfV1zJMPtwK4sbilhiBsFYBMOMHOkBLaiwb8Wn.Ld23g5DjPBYbI1Lm9z6GjKNLaD53wJuyPUcuT23PE1WcLgY6OLBLxLluS2WxKB9HwLq8yHvCJv.NK3Q-
+Date: Sun, 22 Apr 2007 09:49:40 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCHv3] [KERNEL-DOC] kill warnings when building mandocs (fixed whitespaces)
+Message-ID: <20070422074940.GB3934@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070413091422.GA15426@zmei.tnic> <20070413092943.GA16491@zmei.tnic> <20070418101654.7c7906c1.randy.dunlap@oracle.com> <20070419063019.GB3974@gollum.tnic> <20070419071931.GA4778@gollum.tnic> <20070421002045.36a663ba.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070421002045.36a663ba.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+Sorry about the wrong whitespaces again :), here's a correct one
 
->> > The MNT_USER flag is not copied on any kind of mount cloning:
->> > namespace creation, binding or propagation.
->> 
->> I half agree, and as an initial approximation this works.
->> Ultimately we should be at the point that for mount propagation
->> that we copy the owner of the from the owner of our parent mount
->> at the propagation destination.
->
-> Yes, that sounds the most sane.
->
-> Ram, what do you think?
->
->> > +	if (mnt->mnt_flags & MNT_USER)
->> > +		seq_printf(m, ",user=%i", mnt->mnt_uid);
->> How about making the test "if (mnt->mnt_user != &root_user)"
->
-> We don't want to treat root_user special.  That's what capabilities
-> were invented for.
+-----
+From: Borislav Petkov <bbpetkov@yahoo.de>
 
-For the print statement?  What ever it is minor.
+This patch shuts warnings of the sort:
 
->> > Index: linux/include/linux/fs.h
->> > ===================================================================
->> > --- linux.orig/include/linux/fs.h	2007-04-20 11:55:02.000000000 +0200
->> > +++ linux/include/linux/fs.h	2007-04-20 11:55:05.000000000 +0200
->> > @@ -123,6 +123,7 @@ extern int dir_notify_enable;
->> >  #define MS_SLAVE	(1<<19)	/* change to slave */
->> >  #define MS_SHARED	(1<<20)	/* change to shared */
->> > #define MS_RELATIME (1<<21) /* Update atime relative to mtime/ctime. */
->> > +#define MS_SETUSER	(1<<22) /* set mnt_uid to current user */
->> 
->> If we unconditionally use the fsuid I think we can get away without
->> this flag.
->
-> That coudl work if we wouldn't have to worry about breaking the user
-> interface.  As it is, we cannot be sure, that existing callers of
-> mount(2) don't have fsuid set to some random value.
+make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
+        KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
+        KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
+make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
+make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
+  SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc
+ /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
+  if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o
+ Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
+Note: meta version: No productnumber or alternative     sppp_close
+Note: meta version: No refmiscinfo@class=version        sppp_close
+Note: Writing sppp_close.9
+Note: meta version: No productnumber or alternative     sppp_open
+Note: meta version: No refmiscinfo@class=version        sppp_open
 
-If we can get away without an extra flag it would really be
-preferable.
+by adding a RefMiscInfo xml tag in the form of the current kernel version to
+the function, struct and enum definitions in files included by kernel-doc when
+building 'mandocs'.  However, the version string appears truncated on the manpage
+due to some constraints in the xml DTD for the man header, I believe, for the
+troff output is truncated too.
 
-In the container case we have an interesting and very common
-scenario struct user *our_user != &root_user. our_user->uid == 0.
+The current patch improves upon previous versions by reading the kernel version
+directly from the enclosing build environment. In order to do so, the
+KERNELVERSION variable is passed onto the shell from within the Makefile build
+command string.
 
-I.e. The root in the what is the container but not the root
-of the entire system.
+Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+CC: Randy Dunlap <randy.dunlap@oracle.com>
 
-So I want to minimize the changes needed to existing programs.
-Now if all we have to do is specify MS_SETUSER when root a
-user with CAP_SETUID is setting up a mount as a user other
-then himself then I don't much care.  If we have to call MS_SETUSER
-as unprivileged users I will have to modify mount binaries to work
-differently inside and outside of containers.
-
-Further there is only one or two versions of mount in widespread
-use on linux, and unless you do something special fsuid == euid.
-So the chance of fsuid set to some random value is pretty low.
-So yes I think we can be 99.9% certain that existing callers of
-mount(2) don't have fsuid set to some random value just by
-inspecting the code of mount(1).
-
->> >  #define MNT_SHRINKABLE	0x100
->> > +#define MNT_USER	0x200
->> 
->> If we assign a user to all mount points and root gets to own the
->> initial set of mounts then we don't need the internal MNT_USER
->> flag.
->
-> I think we do want to treat "owned" mounts special, rather than
-> treating user=0 mounts special.
-
-I don't think we should treat any mount special and all mounts
-should be owned.
-
->> > +
->> > +	uid_t mnt_uid;			/* owner of the mount */
->> 
->> Can we please make this a user struct.   That requires a bit of
->> reference counting but it has uid namespace benefits as well
->> as making it easy to implement per user mount rlimits.
->
-> OK, can you ellaborate, what the uid namespace benifits are?
-
-In the uid namespace the comparison is simpler as are the propagations
-rules.  Basically if you use a struct user you will never need to
-care about a uid namespace.  If you don't we will have to tear through
-this code another time.
-
-Plus like I was mentioning earlier.  If we do have a struct user there
-implementing per user mount rlimits becomes trivial.
-
-
-Eric
+---
+Index: 21-rc7/Documentation/DocBook/Makefile
+===================================================================
+--- 21-rc7.orig/Documentation/DocBook/Makefile
++++ 21-rc7/Documentation/DocBook/Makefile
+@@ -147,7 +147,7 @@ quiet_cmd_db2html = HTML   $@
+             cp $(PNG-$(basename $(notdir $@))) $(patsubst %.html,%,$@); fi
+ 
+ quiet_cmd_db2man = MAN     $@
+-      cmd_db2man = if grep -q refentry $<; then xmlto man $(XMLTOFLAGS) -o $(obj)/man $< ; gzip -f $(obj)/man/*.9; fi
++      cmd_db2man = if grep -q refentry $<; then KERNELVERSION=$(KERNELVERSION) xmlto man $(XMLTOFLAGS) -o $(obj)/man $< ; gzip -f $(obj)/man/*.9; fi
+ %.9 : %.xml
+ 	@(which xmlto > /dev/null 2>&1) || \
+ 	 (echo "*** You need to install xmlto ***"; \
+Index: 21-rc7/scripts/kernel-doc
+===================================================================
+--- 21-rc7.orig/scripts/kernel-doc
++++ 21-rc7/scripts/kernel-doc
+@@ -326,6 +326,15 @@ while ($ARGV[0] =~ m/^-(.*)/) {
+     }
+ }
+ 
++# get kernel version from env
++sub get_kernel_version() {
++    my $version;
++
++    if (defined($ENV{'KERNELVERSION'})) {
++	$version = $ENV{'KERNELVERSION'};
++    }
++    return $version;
++}
+ 
+ # generate a sequence of code that will splice in highlighting information
+ # using the s// operator.
+@@ -592,6 +601,7 @@ sub output_function_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'function'}."</refname>\n";
+@@ -668,6 +678,7 @@ sub output_struct_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
+@@ -752,6 +763,7 @@ sub output_enum_xml(%) {
+     print "<refmeta>\n";
+     print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
+     print " <manvolnum>9</manvolnum>\n";
++    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
+     print "</refmeta>\n";
+     print "<refnamediv>\n";
+     print " <refname>enum ".$args{'enum'}."</refname>\n";
+-- 
+Regards/Gruﬂ,
+    Boris.
