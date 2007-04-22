@@ -1,92 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXDVICd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965521AbXDVIIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965461AbXDVICd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965512AbXDVICd
+	id S965521AbXDVIIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965485AbXDVIIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:02:33 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:44751 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965461AbXDVICa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:02:30 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: ck@vds.kolivas.org
-Subject: Re: [ck] [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Date: Sun, 22 Apr 2007 10:02:07 +0200
-User-Agent: KMail/1.9.5
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Al Boldi <a1426z@gawab.com>, Peter Williams <pwil3058@bigpond.net.au>,
-       Nick Piggin <npiggin@suse.de>, Matt Mackall <mpm@selenic.com>,
-       Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>, Willy Tarreau <w@1wt.eu>,
+	Sun, 22 Apr 2007 04:08:19 -0400
+Received: from 1wt.eu ([62.212.114.60]:2165 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965521AbXDVIIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 04:08:17 -0400
+Date: Sun, 22 Apr 2007 10:06:07 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
+       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
+       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
        Gene Heskett <gene.heskett@gmail.com>
-References: <200704221441.48897.kernel@kolivas.org>
-In-Reply-To: <200704221441.48897.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1749841.6YSV0uADGl";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704221002.21289.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177228950;6465c97e;
+Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Message-ID: <20070422080607.GA15411@1wt.eu>
+References: <200704221441.48897.kernel@kolivas.org> <20070422070037.GA15092@1wt.eu> <200704221727.44430.kernel@kolivas.org> <200704221731.58724.kernel@kolivas.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704221731.58724.kernel@kolivas.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1749841.6YSV0uADGl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, Apr 22, 2007 at 05:31:58PM +1000, Con Kolivas wrote:
+> On Sunday 22 April 2007 17:27, Con Kolivas wrote:
+> > On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
+> > > On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
+> > > > A significant bugfix for SMP balancing was just posted for the
+> > > > staircase deadline cpu scheduler which improves behaviour dramatically
+> > > > on any SMP machine.
+> > > >
+> > > > Thanks to Willy Tarreau for noticing likely fault point.
+> > > >
+> > > > Also requested was a version in the Makefile so this version of the
+> > > > patch adds -sd045 to the kernel version.
+> > >
+> > > Con, I'm sorry, but it is worse with this one :-(
+> >
+> > Well that was quick testing, thanks.
+> >
+> > > The lag when typing in xterms is even more noticeable and vmstat output
+> > > oscillates between 8 and 65, with idle rates around 50%, as you can see
+> > > below :
+> > >
+> > > Renicing X or not does not change anything here.
+> > >
+> > > I suspect that the bug you fixed was hiding another one :-/
+> > > If you want me to test another patch, feel free to ask.
+> 
+> Just as a debug point could you please try this patch? Thanks.
 
-Hi Con,
+OK, this time, the ocbench took ages to start. They appeared immediately
+but very few of them (less than 8 out of 64) really started to work. The
+system remained very responsive and smooth during the test. But I guess
+I know why : all the load was sent to CPU 0 :
 
-I now have 2.6.21-rc7-sd-0.45 running on my Intel Core2 T7600 2.33
-machine and there is something I don't understand.
+   procs                      memory      swap          io     system      cpu
+ r  b  w   swpd   free   buff  cache   si   so    bi    bo   in    cs us sy id
+63  0  0      0 923476   6516  57456    0    0     0    28  175  1281 14 26 59
+64  0  2      0 922976   6516  57456    0    0     0     0    4   261 19 31 50
+64  0  0      0 922924   6516  57492    0    0     0     0    1    85 17 33 50
+64  0  0      0 922924   6516  57492    0    0     0     0    0   110 25 25 50
+64  0  1      0 922924   6516  57492    0    0     0     0    3    83 24 27 50
+64  0  0      0 922924   6516  57492    0    0     0     4   16   267 18 33 50
+64  0  0      0 922924   6516  57492    0    0     0     0   15   244 24 27 50
+64  0  0      0 922956   6516  57492    0    0     0     0    8   200 20 31 49
+59  0  0      0 922956   6516  57492    0    0     0     0    1    98 18 34 49
+59  0  0      0 922956   6516  57492    0    0     0     0    0   105 21 30 49
+64  0  0      0 922956   6516  57492    0    0     0     0    1    97 19 32 49
+62  0  0      0 922972   6516  57492    0    0     0     0    0   114 23 28 49
+64  0  0      0 922972   6516  57492    0    0     0     0    1    95 23 28 49
+64  0  0      0 922972   6516  57492    0    0     0     0    0   104 22 29 49
 
-=46or testing I have a Perl script that does some numbercrunching
-and runs a couple of hours.
 
-I have two scenarios
-a) start the job via loops in a shellscript
-b) start the job via a makefile (make -j 2)
-that I run in parallel.
+CPU0 states:  45.0% user  54.0% system    0.0% nice   0.0% iowait   0.0% idle
+CPU1 states:   0.1% user   0.0% system    0.0% nice   0.0% iowait  99.0% idle
+Mem:  1034876k av,  112296k used,  922580k free,       0k shrd,    6524k buff
+        34232k active,              45428k inactive
+Swap:  497972k av,       0k used,  497972k free                   57536k cached
 
-I watch the jobs via top and this is what I see:
-Job a) quickly gets about 100% (- 0-2) while job b) creates two
-perl jobs that both get 50% (- 0-2). I suppose it is expected
-behaviour that the single perl job created via a) gets same same
-share of the cpu as the two perl jobs created via b) together.
+  PID USER     PRI  NI  SIZE  RSS SHARE STAT %CPU %MEM   TIME CPU COMMAND
+ 1402 willy     31   0  2272  640   548 R     2.9  0.0   0:00   0 ocbench
+ 1407 willy     31   0  2272  640   548 R     2.9  0.0   0:00   0 ocbench
+ 1452 willy     31   0  2272  640   548 R     2.9  0.0   0:00   0 ocbench
+ 1455 willy     31   0  2272  640   548 R     2.9  0.0   0:00   0 ocbench
+ 1394 willy     29   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1395 willy     29   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1396 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1400 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1401 willy     29   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1404 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1408 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1409 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1411 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1412 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
+ 1413 willy     31   0  2272  640   548 R     1.9  0.0   0:00   0 ocbench
 
-However occasionally cpu drops to 33% for all three perl jobs
-while there is no other job visible in top (i.e. the sum drops
-from 200% to 100%). After some time this changes back to 100/50/50.
 
-How could this happen and would applying the other patch you
-mailed to Willy Tarreau help tracking that down ?
+Willy
 
-Best wishes,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
-
---nextPart1749841.6YSV0uADGl
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGKxaNUYYhyuxDQc4RAog8AJ9xSI/r3xhOxF7lxZDuB+GhCq+d6gCfVpUI
-W7CFk5mZU5sJNd/OHabOv44=
-=e0a5
------END PGP SIGNATURE-----
-
---nextPart1749841.6YSV0uADGl--
