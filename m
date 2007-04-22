@@ -1,47 +1,442 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030946AbXDVPlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161274AbXDVPsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030946AbXDVPlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 11:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030948AbXDVPlx
+	id S1161274AbXDVPsl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 11:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161227AbXDVPsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 11:41:53 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:52368 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030946AbXDVPlw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 11:41:52 -0400
-Date: Sun, 22 Apr 2007 11:41:51 -0400
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       Christer Weinigel <wingel@nano-system.com>,
-       Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070422154151.GJ5575@csclub.uwaterloo.ca>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com> <20070414163418.20490fe2@dhcp-252-105.norway.atmel.com> <20070414192807.60bdf84b@hyperion.delvare> <20070418174256.GB5577@csclub.uwaterloo.ca> <20070419085413.1520feef@hyperion.delvare> <20070419205942.GC5577@csclub.uwaterloo.ca> <20070420194933.0813a359@hyperion.delvare>
+	Sun, 22 Apr 2007 11:48:41 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60414 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161155AbXDVPsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 11:48:38 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [d_path 0/7] Fixes to d_path: Respin
+Date: Sun, 22 Apr 2007 17:48:31 +0200
+User-Agent: KMail/1.9.5
+Cc: Ulrich Drepper <drepper@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       jjohansen@suse.de, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chrisw@sous-sol.org, Andrew Morton <akpm@linux-foundation.org>
+References: <20070412090809.917795000@suse.de> <200704212104.06349.agruen@suse.de> <20070422091033.GA1558@infradead.org>
+In-Reply-To: <20070422091033.GA1558@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420194933.0813a359@hyperion.delvare>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Length: 30695
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_PP4KGuyYeaj3OaV"
+Message-Id: <200704221748.31830.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 07:49:33PM +0200, Jean Delvare wrote:
-> The scx200_acb driver was heavily modified in 2.6.17 and 2.6.18, not
-> much since then. I am not familiar with the hardware so I can't comment
-> on which chips are supposed to work and which aren't.
+--Boundary-00=_PP4KGuyYeaj3OaV
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Well 2.6.18's scx200_acb works on the geode LX module I have, but no on
-the geode sc1200 module (where scx200_i2c does work).
+On Sunday 22 April 2007 11:10, Christoph Hellwig wrote:
+> So what about stopping the flaming here and implementing real statvfs/
+> fstatvfs syscalls instead of these horrible hacks glibc has to do
+> currently?
 
-scx200_acb doesn't detect any device that it can drive (nothing in dmesg
-at all when loaded) on the sc1200.  I believe the main changes that
-happened to scx200_acb was adding support for the newer CSxxxx chipsets,
-such as the one used with the geode LX (which does work now).
+I could imagine two approaches to that: either add statvfs and fstatvfs 
+syscalls, or use one of the reserved fields in struct statfs, and return the 
+missing flags in there.
 
---
-Len Sorensen
+Here is a very rough shot at the latter (i386 and x86_64 only so far). One of 
+the uglinesses with that is that all those flags could be cleared at the same 
+time, and so we can't tell whether the field is used from the flags alone and 
+need some other mechanism like an extra bit, or a successive field that is 
+guaranteed to be nonzero. Not sure whether that's acceptable considering the 
+alternative of adding two syscalls and duplicating all the ugly compatibility 
+scaffolding.
+
+struct statvfs also defines a f_favail field, the ``number of file serial 
+numbers available to non-privileged process''. Glibc currently sets this to 
+the same value as f_ffree, the ``total number of free file serial numbers''. 
+We don't seem to have this information, so adding this field wouldn't help 
+immediately.
+
+Andreas
+
+--Boundary-00=_PP4KGuyYeaj3OaV
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="statvfs.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="statvfs.diff"
+
+---
+ fs/compat.c                  |   13 +++++-----
+ fs/ecryptfs/super.c          |    5 +++-
+ fs/nfsd/nfs4xdr.c            |    2 -
+ fs/nfsd/vfs.c                |    2 -
+ fs/open.c                    |   53 ++++++++++++++++++++++++++++++++++---------
+ fs/super.c                   |    2 -
+ include/asm-generic/statfs.h |    9 ++++---
+ include/asm-x86_64/compat.h  |    3 +-
+ include/asm-x86_64/statfs.h  |    9 ++++---
+ include/linux/fs.h           |    2 -
+ include/linux/statfs.h       |   13 +++++++++-
+ kernel/acct.c                |    2 -
+ 12 files changed, 84 insertions(+), 31 deletions(-)
+
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -194,7 +194,7 @@ static int put_compat_statfs(struct comp
+ 	    __put_user(kbuf->f_fsid.val[0], &ubuf->f_fsid.val[0]) ||
+ 	    __put_user(kbuf->f_fsid.val[1], &ubuf->f_fsid.val[1]) ||
+ 	    __put_user(kbuf->f_frsize, &ubuf->f_frsize) ||
+-	    __put_user(0, &ubuf->f_spare[0]) || 
++	    __put_user(kbuf->f_flag, &ubuf->f_flag) ||
+ 	    __put_user(0, &ubuf->f_spare[1]) || 
+ 	    __put_user(0, &ubuf->f_spare[2]) || 
+ 	    __put_user(0, &ubuf->f_spare[3]) || 
+@@ -215,7 +215,7 @@ asmlinkage long compat_sys_statfs(const 
+ 	error = user_path_walk(path, &nd);
+ 	if (!error) {
+ 		struct kstatfs tmp;
+-		error = vfs_statfs(nd.dentry, &tmp);
++		error = vfs_statfs(nd.dentry, nd.mnt, &tmp);
+ 		if (!error)
+ 			error = put_compat_statfs(buf, &tmp);
+ 		path_release(&nd);
+@@ -233,7 +233,7 @@ asmlinkage long compat_sys_fstatfs(unsig
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+-	error = vfs_statfs(file->f_path.dentry, &tmp);
++	error = vfs_statfs(file->f_path.dentry, file->f_path.mnt, &tmp);
+ 	if (!error)
+ 		error = put_compat_statfs(buf, &tmp);
+ 	fput(file);
+@@ -267,7 +267,8 @@ static int put_compat_statfs64(struct co
+ 	    __put_user(kbuf->f_namelen, &ubuf->f_namelen) ||
+ 	    __put_user(kbuf->f_fsid.val[0], &ubuf->f_fsid.val[0]) ||
+ 	    __put_user(kbuf->f_fsid.val[1], &ubuf->f_fsid.val[1]) ||
+-	    __put_user(kbuf->f_frsize, &ubuf->f_frsize))
++	    __put_user(kbuf->f_frsize, &ubuf->f_frsize) ||
++	    __put_user(kbuf->f_flag, &ubuf->f_flag))
+ 		return -EFAULT;
+ 	return 0;
+ }
+@@ -283,7 +284,7 @@ asmlinkage long compat_sys_statfs64(cons
+ 	error = user_path_walk(path, &nd);
+ 	if (!error) {
+ 		struct kstatfs tmp;
+-		error = vfs_statfs(nd.dentry, &tmp);
++		error = vfs_statfs(nd.dentry, nd.mnt, &tmp);
+ 		if (!error)
+ 			error = put_compat_statfs64(buf, &tmp);
+ 		path_release(&nd);
+@@ -304,7 +305,7 @@ asmlinkage long compat_sys_fstatfs64(uns
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+-	error = vfs_statfs(file->f_path.dentry, &tmp);
++	error = vfs_statfs(file->f_path.dentry, file->f_path.mnt, &tmp);
+ 	if (!error)
+ 		error = put_compat_statfs64(buf, &tmp);
+ 	fput(file);
+--- a/fs/ecryptfs/super.c
++++ b/fs/ecryptfs/super.c
+@@ -119,7 +119,10 @@ static void ecryptfs_put_super(struct su
+  */
+ static int ecryptfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+-	return vfs_statfs(ecryptfs_dentry_to_lower(dentry), buf);
++	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
++
++	return vfs_statfs(lower_dentry, lower_mnt, buf);
+ }
+ 
+ /**
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -1457,7 +1457,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+ 	if ((bmval0 & (FATTR4_WORD0_FILES_FREE | FATTR4_WORD0_FILES_TOTAL)) ||
+ 	    (bmval1 & (FATTR4_WORD1_SPACE_AVAIL | FATTR4_WORD1_SPACE_FREE |
+ 		       FATTR4_WORD1_SPACE_TOTAL))) {
+-		err = vfs_statfs(dentry, &statfs);
++		err = vfs_statfs(dentry, exp->ex_mnt, &statfs);
+ 		if (err)
+ 			goto out_nfserr;
+ 	}
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1767,7 +1767,7 @@ __be32
+ nfsd_statfs(struct svc_rqst *rqstp, struct svc_fh *fhp, struct kstatfs *stat)
+ {
+ 	__be32 err = fh_verify(rqstp, fhp, 0, MAY_NOP);
+-	if (!err && vfs_statfs(fhp->fh_dentry,stat))
++	if (!err && vfs_statfs(fhp->fh_dentry, fhp->fh_export->ex_mnt, stat))
+ 		err = nfserr_io;
+ 	return err;
+ }
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -28,7 +28,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/audit.h>
+ 
+-int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
++int vfs_statfs(struct dentry *dentry, struct vfsmount *mnt, struct kstatfs *buf)
+ {
+ 	int retval = -ENODEV;
+ 
+@@ -40,8 +40,35 @@ int vfs_statfs(struct dentry *dentry, st
+ 			if (retval)
+ 				return retval;
+ 			retval = dentry->d_sb->s_op->statfs(dentry, buf);
+-			if (retval == 0 && buf->f_frsize == 0)
+-				buf->f_frsize = buf->f_bsize;
++			if (retval == 0) {
++				unsigned long f_flag = ST_IN_USE;
++				unsigned long x;
++
++				if (buf->f_frsize == 0)
++					buf->f_frsize = buf->f_bsize;
++
++				x = dentry->d_inode->i_sb->s_flags;
++				if (x & MS_RDONLY)
++					f_flag |= ST_RDONLY;
++				if (x & MS_SYNCHRONOUS)
++					f_flag |= ST_SYNCHRONOUS;
++				if (x & MS_MANDLOCK)
++					f_flag |= ST_MANDLOCK;
++
++				if (mnt) {
++					int x = mnt->mnt_flags;
++
++					if (x & MNT_NOSUID)
++						f_flag |= ST_NOSUID;
++					if (x & MNT_NODEV)
++						f_flag |= ST_NODEV;
++					if (x & MNT_NOATIME)
++						f_flag |= ST_NOATIME;
++					if (x & MNT_NODIRATIME)
++						f_flag |= ST_NODIRATIME;
++				}
++				buf->f_flag = f_flag;
++			}
+ 		}
+ 	}
+ 	return retval;
+@@ -49,12 +76,13 @@ int vfs_statfs(struct dentry *dentry, st
+ 
+ EXPORT_SYMBOL(vfs_statfs);
+ 
+-static int vfs_statfs_native(struct dentry *dentry, struct statfs *buf)
++static int vfs_statfs_native(struct dentry *dentry, struct vfsmount *mnt,
++			     struct statfs *buf)
+ {
+ 	struct kstatfs st;
+ 	int retval;
+ 
+-	retval = vfs_statfs(dentry, &st);
++	retval = vfs_statfs(dentry, mnt, &st);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -87,17 +115,19 @@ static int vfs_statfs_native(struct dent
+ 		buf->f_fsid = st.f_fsid;
+ 		buf->f_namelen = st.f_namelen;
+ 		buf->f_frsize = st.f_frsize;
++		buf->f_flag = st.f_flag;
+ 		memset(buf->f_spare, 0, sizeof(buf->f_spare));
+ 	}
+ 	return 0;
+ }
+ 
+-static int vfs_statfs64(struct dentry *dentry, struct statfs64 *buf)
++static int vfs_statfs64(struct dentry *dentry, struct vfsmount *mnt,
++			struct statfs64 *buf)
+ {
+ 	struct kstatfs st;
+ 	int retval;
+ 
+-	retval = vfs_statfs(dentry, &st);
++	retval = vfs_statfs(dentry, mnt, &st);
+ 	if (retval)
+ 		return retval;
+ 
+@@ -114,6 +144,7 @@ static int vfs_statfs64(struct dentry *d
+ 		buf->f_fsid = st.f_fsid;
+ 		buf->f_namelen = st.f_namelen;
+ 		buf->f_frsize = st.f_frsize;
++		buf->f_flag = st.f_flag;
+ 		memset(buf->f_spare, 0, sizeof(buf->f_spare));
+ 	}
+ 	return 0;
+@@ -127,7 +158,7 @@ asmlinkage long sys_statfs(const char __
+ 	error = user_path_walk(path, &nd);
+ 	if (!error) {
+ 		struct statfs tmp;
+-		error = vfs_statfs_native(nd.dentry, &tmp);
++		error = vfs_statfs_native(nd.dentry, nd.mnt, &tmp);
+ 		if (!error && copy_to_user(buf, &tmp, sizeof(tmp)))
+ 			error = -EFAULT;
+ 		path_release(&nd);
+@@ -146,7 +177,7 @@ asmlinkage long sys_statfs64(const char 
+ 	error = user_path_walk(path, &nd);
+ 	if (!error) {
+ 		struct statfs64 tmp;
+-		error = vfs_statfs64(nd.dentry, &tmp);
++		error = vfs_statfs64(nd.dentry, nd.mnt, &tmp);
+ 		if (!error && copy_to_user(buf, &tmp, sizeof(tmp)))
+ 			error = -EFAULT;
+ 		path_release(&nd);
+@@ -165,7 +196,7 @@ asmlinkage long sys_fstatfs(unsigned int
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+-	error = vfs_statfs_native(file->f_path.dentry, &tmp);
++	error = vfs_statfs_native(file->f_path.dentry, file->f_path.mnt, &tmp);
+ 	if (!error && copy_to_user(buf, &tmp, sizeof(tmp)))
+ 		error = -EFAULT;
+ 	fput(file);
+@@ -186,7 +217,7 @@ asmlinkage long sys_fstatfs64(unsigned i
+ 	file = fget(fd);
+ 	if (!file)
+ 		goto out;
+-	error = vfs_statfs64(file->f_path.dentry, &tmp);
++	error = vfs_statfs64(file->f_path.dentry, file->f_path.mnt, &tmp);
+ 	if (!error && copy_to_user(buf, &tmp, sizeof(tmp)))
+ 		error = -EFAULT;
+ 	fput(file);
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -542,7 +542,7 @@ asmlinkage long sys_ustat(unsigned dev, 
+         s = user_get_super(new_decode_dev(dev));
+         if (s == NULL)
+                 goto out;
+-	err = vfs_statfs(s->s_root, &sbuf);
++	err = vfs_statfs(s->s_root, NULL, &sbuf);
+ 	drop_super(s);
+ 	if (err)
+ 		goto out;
+--- a/include/asm-generic/statfs.h
++++ b/include/asm-generic/statfs.h
+@@ -17,7 +17,8 @@ struct statfs {
+ 	__kernel_fsid_t f_fsid;
+ 	__u32 f_namelen;
+ 	__u32 f_frsize;
+-	__u32 f_spare[5];
++	__u32 f_flag;
++	__u32 f_spare[4];
+ };
+ 
+ struct statfs64 {
+@@ -31,7 +32,8 @@ struct statfs64 {
+ 	__kernel_fsid_t f_fsid;
+ 	__u32 f_namelen;
+ 	__u32 f_frsize;
+-	__u32 f_spare[5];
++	__u32 f_flag;
++	__u32 f_spare[4];
+ };
+ 
+ struct compat_statfs64 {
+@@ -45,7 +47,8 @@ struct compat_statfs64 {
+ 	__kernel_fsid_t f_fsid;
+ 	__u32 f_namelen;
+ 	__u32 f_frsize;
+-	__u32 f_spare[5];
++	__u32 f_flag;
++	__u32 f_spare[4];
+ };
+ 
+ #endif
+--- a/include/asm-x86_64/compat.h
++++ b/include/asm-x86_64/compat.h
+@@ -104,7 +104,8 @@ struct compat_statfs {
+ 	compat_fsid_t	f_fsid;
+ 	int		f_namelen;	/* SunOS ignores this field. */
+ 	int		f_frsize;
+-	int		f_spare[5];
++	int		f_flag;
++	int		f_spare[4];
+ };
+ 
+ #define COMPAT_RLIM_OLD_INFINITY	0x7fffffff
+--- a/include/asm-x86_64/statfs.h
++++ b/include/asm-x86_64/statfs.h
+@@ -24,7 +24,8 @@ struct statfs {
+ 	__kernel_fsid_t f_fsid;
+ 	long f_namelen;
+ 	long f_frsize;
+-	long f_spare[5];
++	long f_flag;
++	long f_spare[4];
+ };
+ 
+ struct statfs64 {
+@@ -38,7 +39,8 @@ struct statfs64 {
+ 	__kernel_fsid_t f_fsid;
+ 	long f_namelen;
+ 	long f_frsize;
+-	long f_spare[5];
++	long f_flag;
++	long f_spare[4];
+ };
+ 
+ struct compat_statfs64 {
+@@ -52,7 +54,8 @@ struct compat_statfs64 {
+ 	__kernel_fsid_t f_fsid;
+ 	__u32 f_namelen;
+ 	__u32 f_frsize;
+-	__u32 f_spare[5];
++	__u32 f_flag;
++	__u32 f_spare[4];
+ } __attribute__((packed));
+ 
+ #endif
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1408,7 +1408,7 @@ extern struct vfsmount *copy_tree(struct
+ extern void mnt_set_mountpoint(struct vfsmount *, struct dentry *,
+ 				  struct vfsmount *);
+ 
+-extern int vfs_statfs(struct dentry *, struct kstatfs *);
++extern int vfs_statfs(struct dentry *, struct vfsmount *, struct kstatfs *);
+ 
+ /* /sys/fs */
+ extern struct subsystem fs_subsys;
+--- a/include/linux/statfs.h
++++ b/include/linux/statfs.h
+@@ -16,7 +16,18 @@ struct kstatfs {
+ 	__kernel_fsid_t f_fsid;
+ 	long f_namelen;
+ 	long f_frsize;
+-	long f_spare[5];
++	unsigned long f_flag;
++	long f_spare[4];
+ };
+ 
++#define ST_RDONLY	1
++#define ST_NOSUID	2
++#define ST_NODEV	4
++#define ST_NOEXEC	8
++#define ST_SYNCHRONOUS	16
++#define ST_MANDLOCK	64
++#define ST_NOATIME	1024
++#define ST_NODIRATIME	2048
++#define ST_IN_USE	(1 << 31)
++
+ #endif
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -118,7 +118,7 @@ static int check_free_space(struct file 
+ 	spin_unlock(&acct_globals.lock);
+ 
+ 	/* May block */
+-	if (vfs_statfs(file->f_path.dentry, &sbuf))
++	if (vfs_statfs(file->f_path.dentry, file->f_path.mnt, &sbuf))
+ 		return res;
+ 	suspend = sbuf.f_blocks * SUSPEND;
+ 	resume = sbuf.f_blocks * RESUME;
+
+--Boundary-00=_PP4KGuyYeaj3OaV--
