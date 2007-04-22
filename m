@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965680AbXDVTDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965104AbXDVTGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965680AbXDVTDl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 15:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965679AbXDVTDl
+	id S965104AbXDVTGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 15:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXDVTGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 15:03:41 -0400
-Received: from fed1rmmtao101.cox.net ([68.230.241.45]:57767 "EHLO
-	fed1rmmtao101.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965662AbXDVTDk (ORCPT
+	Sun, 22 Apr 2007 15:06:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:23039 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965104AbXDVTGQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 15:03:40 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nicolas Pitre <nico@cam.org>, git@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Today's 'master' leaves .idx/.pack in 0400
-References: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
-	<7v1widrl0o.fsf@assigned-by-dhcp.cox.net>
-	<alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
-	<7vvefonvdz.fsf@assigned-by-dhcp.cox.net>
-	<7vmz10nv1h.fsf_-_@assigned-by-dhcp.cox.net>
-	<alpine.LFD.0.98.0704221422250.28339@xanadu.home>
-	<7vejmcnu28.fsf@assigned-by-dhcp.cox.net>
-	<alpine.LFD.0.98.0704221431430.28339@xanadu.home>
-	<alpine.LFD.0.98.0704221144250.9964@woody.linux-foundation.org>
-Date: Sun, 22 Apr 2007 12:03:39 -0700
-In-Reply-To: <alpine.LFD.0.98.0704221144250.9964@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Sun, 22 Apr 2007 11:54:41 -0700 (PDT)")
-Message-ID: <7vy7kkmdtg.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 22 Apr 2007 15:06:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:x-x-sender:reply-to:to:cc:subject:message-id:mime-version:content-type:from;
+        b=P+P39YoakrOBP4zhhsJ1SQKeXzx2kcxLvGH6E9QrA2isRBF+isomzrE+DV48+9JgidEYsVtzk6oHfIF5coWtSWCq6ZWHX08SOZ9QI1txOPusQQzevvKlposC6b0NTPg/40o8ZXI6gzFzepraTsQgGEglviP3XDsfhQah0xF3JmI=
+Date: Sun, 22 Apr 2007 15:06:10 -0400 (EDT)
+X-X-Sender: paragw@paragw-desktop
+Reply-To: pwarudkar@aol.com
+To: akpm@linux-foundation.org
+cc: dsk6@pitt.edu, linux-kernel@vger.kernel.org
+Subject: Re: Sleep during spinlock in TPM driver
+Message-ID: <alpine.DEB.0.82.0704221505370.14039@paragw-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: Parag Warudkar <parag.warudkar@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+Andrew Morton <akpm <at> linux-foundation.org> writes:
 
-> On Sun, 22 Apr 2007, Nicolas Pitre wrote:
->> 
->> Well, actually there is no point making pack files writable.  If they're 
->> modified, they get corrupted.
->> 
->> Here's the fix I wanted to propose:
->> 
->> diff --git a/builtin-pack-objects.c b/builtin-pack-objects.c
->> index c72e07a..85c6e6e 100644
->> --- a/builtin-pack-objects.c
->> +++ b/builtin-pack-objects.c
->> @@ -1786,11 +1786,13 @@ int cmd_pack_objects(int argc, const char **argv, const char *prefix)
->>  		if (rename(pack_tmp_name, tmpname))
->>  			die("unable to rename temporary pack file: %s",
->>  			    strerror(errno));
->> +		chmod(tmpname, 0444);
 >
-> I think this is wrong (as is Junio's). I think we should still honor the 
-> repository permission setting, and default to honoring umask.
+> On Fri, 20 Apr 2007 18:11:10 -0400 "David Kyle" <dsk6 <at> pitt.edu> 
+wrote:
 >
-> So I think that if the user has a umask that says "nobody else can read", 
-> then we should *not* make it world readable (unless the 
-> "shared_repository" thing is set to override it, of course).
+> > int tpm_release(struct inode *inode, struct file *file)
+> > {
+> >         struct tpm_chip *chip = file->private_data;
+> >         spin_lock(&driver_lock);
+> >         file->private_data = NULL;
+> >         chip->num_opens--;
+> >         del_singleshot_timer_sync(&chip->user_read_timer);
+> >         flush_scheduled_work();
+> >         atomic_set(&chip->data_pending, 0);
+> >         put_device(chip->dev);
+> >         kfree(chip->data_buffer);
+> >         spin_unlock(&driver_lock);
+> >         return 0;
+> > }
+> > EXPORT_SYMBOL_GPL(tpm_release);
+> >
+> > I believe that flush_scheduled_work can sleep, correct?  Does anyone
+> > know why this function is called while the spinlock is held?
+> >
+>
+> yup, that's a bug.  It's not immediately clear to e what driver_lock is
+> protecting.  Some global things, some per-device things, it appears.
+>
+> A suitable fix might be to make driver_lock a mutex.
+>
 
-I obviously agree, but as a tentative measure, I'll push out
-0644 version anyway.
+AFAICS, moving flush_scheduled_work before spin_lock() should 
+not cause any problems.
+
+Reason being - The only thing that can race against tpm_release is 
+tpm_open (tpm_release is called when last reference to the file is closed 
+and only thing that can happen after that is tpm_open??) and tpm_open 
+acquires driver_lock and more over it bails out with EBUSY if 
+chip->num_opens is greater than 0.
+
+I also moved chip->num_pending-- to after deleting timer and setting data 
+pending as it looks more correct for the paranoid although it probably 
+doesn't matter as it is guarded by driver_lock. None the less this change 
+should not cause problems.
+
+While I was at it I noticed a missing NULL check in tpm_register_hardware 
+which is fixed with this patch as well.
+
+David - could you please try the below patch and see if it works? Thanks.
+
+Signed-off-by: Parag Warudkar <parag.warudkar@gmail.com>
+
+--- linux-2.6-us/drivers/char/tpm/tpm.c	2007-04-21 14:55:03.134975360 -0400
++++ linux-2.6-wk/drivers/char/tpm/tpm.c	2007-04-22 14:58:51.957999963 -0400
+@@ -942,12 +942,12 @@
+   {
+   	struct tpm_chip *chip = file->private_data;
+
++	flush_scheduled_work();
+   	spin_lock(&driver_lock);
+   	file->private_data = NULL;
+-	chip->num_opens--;
+   	del_singleshot_timer_sync(&chip->user_read_timer);
+-	flush_scheduled_work();
+   	atomic_set(&chip->data_pending, 0);
++	chip->num_opens--;
+   	put_device(chip->dev);
+   	kfree(chip->data_buffer);
+   	spin_unlock(&driver_lock);
+@@ -1097,8 +1097,13 @@
+
+   	/* Driver specific per-device data */
+   	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+-	if (chip == NULL)
++	devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
++ 
++	if (chip == NULL || devname == NULL) {
++		kfree(chip);
++		kfree(devname);
+   		return NULL;
++	}
+
+   	init_MUTEX(&chip->buffer_mutex);
+   	init_MUTEX(&chip->tpm_mutex);
+@@ -1124,7 +1129,6 @@
+
+   	set_bit(chip->dev_num, dev_mask);
+
+-	devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
+   	scnprintf(devname, DEVNAME_SIZE, "%s%d", "tpm", chip->dev_num);
+   	chip->vendor.miscdev.name = devname;
 
