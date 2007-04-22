@@ -1,132 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXDVHts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965496AbXDVHuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965452AbXDVHts (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965461AbXDVHtr
+	id S965496AbXDVHuV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965483AbXDVHuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:49:47 -0400
-Received: from smtp102.plus.mail.re2.yahoo.com ([206.190.53.27]:35393 "HELO
-	smtp102.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965452AbXDVHtq (ORCPT
+	Sun, 22 Apr 2007 03:50:20 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:2604 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965475AbXDVHuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:49:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=a5YxJx0C/BRNBDGMv8vVPGPECUlCr9pqfqwKPtN9ajstMcyFLyhoxNu3ecrxwptaf9ZzEw6YK8d9x7u0OK5uuVSjMrbbz/zI75h4OAKuQvCvcXTTl27w0uRVA2niTqbmUF9kY08RXH4gX2UUR8lDUGe4A/vghlLod7J+Z44tRkc=  ;
-X-YMail-OSG: GiB1zTsVM1kb0KfxWBnZN5XewPfV1zJMPtwK4sbilhiBsFYBMOMHOkBLaiwb8Wn.Ld23g5DjPBYbI1Lm9z6GjKNLaD53wJuyPUcuT23PE1WcLgY6OLBLxLluS2WxKB9HwLq8yHvCJv.NK3Q-
-Date: Sun, 22 Apr 2007 09:49:40 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCHv3] [KERNEL-DOC] kill warnings when building mandocs (fixed whitespaces)
-Message-ID: <20070422074940.GB3934@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070413091422.GA15426@zmei.tnic> <20070413092943.GA16491@zmei.tnic> <20070418101654.7c7906c1.randy.dunlap@oracle.com> <20070419063019.GB3974@gollum.tnic> <20070419071931.GA4778@gollum.tnic> <20070421002045.36a663ba.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	Sun, 22 Apr 2007 03:50:17 -0400
+Subject: Re: [PATCH 2/8] Kconfig: unwanted menus for s390.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <200704220232.10219.arnd@arndb.de>
+References: <20070420113248.GC3738@skybase>
+	 <200704220110.54587.arnd@arndb.de>  <200704220232.10219.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Organization: IBM Corporation
+Date: Sun, 22 Apr 2007 09:50:32 +0200
+Message-Id: <1177228232.8046.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070421002045.36a663ba.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry about the wrong whitespaces again :), here's a correct one
+On Sun, 2007-04-22 at 02:32 +0200, Arnd Bergmann wrote:
+> I just saw that we already have an option like that, with a slightly different
+> name.
+> 
+> arch/s390/Kconfig contains
+> 
+> config NO_IOMEM
+>         def_bool y
+> 
+> and lib/Kconfig contains
+> 
+> config HAS_IOMEM
+>         boolean
+>         depends on !NO_IOMEM
+>         default y
 
------
-From: Borislav Petkov <bbpetkov@yahoo.de>
+Now that is a good idea, I should be able to replace quite a few !S390
+with HAS_IOMEM. It much better reflects WHY things don't work.
+Just !S390 is so negative ..
 
-This patch shuts warnings of the sort:
-
-make -C /mnt/samsung_200/sam/kernel/trees/21-rc6/build \
-        KBUILD_SRC=/mnt/samsung_200/sam/kernel/trees/21-rc6 \
-        KBUILD_EXTMOD="" -f /mnt/samsung_200/sam/kernel/trees/21-rc6/Makefile mandocs
-make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=scripts/basic
-make -f /mnt/samsung_200/sam/kernel/trees/21-rc6/scripts/Makefile.build obj=Documentation/DocBook mandocs
-  SRCTREE=/mnt/samsung_200/sam/kernel/trees/21-rc6/ /mnt/samsung_200/sam/kernel/trees/21-rc6/build/scripts/basic/docproc doc
- /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/wanbook.tmpl >Documentation/DocBook/wanbook.xml
-  if grep -q refentry Documentation/DocBook/wanbook.xml; then xmlto man -m /mnt/samsung_200/sam/kernel/trees/21-rc6/Documentation/DocBook/stylesheet.xsl -o
- Documentation/DocBook/man Documentation/DocBook/wanbook.xml ; gzip -f Documentation/DocBook/man/*.9; fi
-Note: meta version: No productnumber or alternative     sppp_close
-Note: meta version: No refmiscinfo@class=version        sppp_close
-Note: Writing sppp_close.9
-Note: meta version: No productnumber or alternative     sppp_open
-Note: meta version: No refmiscinfo@class=version        sppp_open
-
-by adding a RefMiscInfo xml tag in the form of the current kernel version to
-the function, struct and enum definitions in files included by kernel-doc when
-building 'mandocs'.  However, the version string appears truncated on the manpage
-due to some constraints in the xml DTD for the man header, I believe, for the
-troff output is truncated too.
-
-The current patch improves upon previous versions by reading the kernel version
-directly from the enclosing build environment. In order to do so, the
-KERNELVERSION variable is passed onto the shell from within the Makefile build
-command string.
-
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-CC: Randy Dunlap <randy.dunlap@oracle.com>
-
----
-Index: 21-rc7/Documentation/DocBook/Makefile
-===================================================================
---- 21-rc7.orig/Documentation/DocBook/Makefile
-+++ 21-rc7/Documentation/DocBook/Makefile
-@@ -147,7 +147,7 @@ quiet_cmd_db2html = HTML   $@
-             cp $(PNG-$(basename $(notdir $@))) $(patsubst %.html,%,$@); fi
- 
- quiet_cmd_db2man = MAN     $@
--      cmd_db2man = if grep -q refentry $<; then xmlto man $(XMLTOFLAGS) -o $(obj)/man $< ; gzip -f $(obj)/man/*.9; fi
-+      cmd_db2man = if grep -q refentry $<; then KERNELVERSION=$(KERNELVERSION) xmlto man $(XMLTOFLAGS) -o $(obj)/man $< ; gzip -f $(obj)/man/*.9; fi
- %.9 : %.xml
- 	@(which xmlto > /dev/null 2>&1) || \
- 	 (echo "*** You need to install xmlto ***"; \
-Index: 21-rc7/scripts/kernel-doc
-===================================================================
---- 21-rc7.orig/scripts/kernel-doc
-+++ 21-rc7/scripts/kernel-doc
-@@ -326,6 +326,15 @@ while ($ARGV[0] =~ m/^-(.*)/) {
-     }
- }
- 
-+# get kernel version from env
-+sub get_kernel_version() {
-+    my $version;
-+
-+    if (defined($ENV{'KERNELVERSION'})) {
-+	$version = $ENV{'KERNELVERSION'};
-+    }
-+    return $version;
-+}
- 
- # generate a sequence of code that will splice in highlighting information
- # using the s// operator.
-@@ -592,6 +601,7 @@ sub output_function_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
-+    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>".$args{'function'}."</refname>\n";
-@@ -668,6 +678,7 @@ sub output_struct_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
-+    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
-@@ -752,6 +763,7 @@ sub output_enum_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
-+    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>enum ".$args{'enum'}."</refname>\n";
 -- 
-Regards/Gruß,
-    Boris.
+blue skies,              IBM Deutschland Entwicklung GmbH
+   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
+                         Geschäftsführung: Herbert Kircher
+Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
+Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
+   Development           HRB 243294
+
+"Reality continues to ruin my life." - Calvin.
+
+
