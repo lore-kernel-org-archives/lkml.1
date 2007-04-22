@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030420AbXDVLnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030405AbXDVLzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030420AbXDVLnt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 07:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030457AbXDVLns
+	id S1030405AbXDVLzN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 07:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030480AbXDVLzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 07:43:48 -0400
-Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:57516 "EHLO
-	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030420AbXDVLns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 07:43:48 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Date: Sun, 22 Apr 2007 21:42:51 +1000
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>
-References: <200704221441.48897.kernel@kolivas.org> <200704221853.59358.kernel@kolivas.org> <20070422091451.GA15913@1wt.eu>
-In-Reply-To: <20070422091451.GA15913@1wt.eu>
+	Sun, 22 Apr 2007 07:55:13 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:3936 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030405AbXDVLzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 07:55:11 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: DervishD <lkml@dervishd.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Juergen Beisert <juergen127@kreuzholzen.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Wrong free clusters count on FAT32
+References: <20070419085750.GA2833@DervishD>
+	<200704191352.06456.juergen127@kreuzholzen.de>
+	<20070419141942.GF8287@DervishD> <87d51xtkmp.fsf@duaron.myhome.or.jp>
+	<20070421201841.85717088.akpm@linux-foundation.org>
+	<87wt05vxu7.fsf@duaron.myhome.or.jp> <20070422112658.GB5786@DervishD>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Sun, 22 Apr 2007 20:55:02 +0900
+In-Reply-To: <20070422112658.GB5786@DervishD> (DervishD's message of "Sun\, 22 Apr 2007 13\:26\:58 +0200")
+Message-ID: <87mz10tyi1.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704222142.52325.kernel@kolivas.org>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007 19:14, Willy Tarreau wrote:
-> On Sun, Apr 22, 2007 at 06:53:58PM +1000, Con Kolivas wrote:
-> > On Sunday 22 April 2007 18:06, Willy Tarreau wrote:
-> > > On Sun, Apr 22, 2007 at 05:31:58PM +1000, Con Kolivas wrote:
-> > > > On Sunday 22 April 2007 17:27, Con Kolivas wrote:
-> > > > > On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
-> > > > > > On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
-> > > > > > > A significant bugfix for SMP balancing was just posted for the
-> > > > > > > staircase deadline cpu scheduler which improves behaviour
-> > > > > > > dramatically on any SMP machine.
-> > > > > > >
-> > > > > > > Thanks to Willy Tarreau for noticing likely fault point.
-> > > > > > >
-> > > > > > > Also requested was a version in the Makefile so this version of
-> > > > > > > the patch adds -sd045 to the kernel version.
-> > > > > >
-> > > > > > Con, I'm sorry, but it is worse with this one :-(
-> > > > >
-> > > > > Well that was quick testing, thanks.
-> > > > >
-> > > > > > The lag when typing in xterms is even more noticeable and vmstat
-> > > > > > output oscillates between 8 and 65, with idle rates around 50%,
-> > > > > > as you can see below :
-> > > > > >
-> > > > > > Renicing X or not does not change anything here.
-> > > > > >
-> > > > > > I suspect that the bug you fixed was hiding another one :-/
-> > > > > > If you want me to test another patch, feel free to ask.
-> > > >
-> > > > Just as a debug point could you please try this patch? Thanks.
-> > >
-> > > OK, this time, the ocbench took ages to start. They appeared
-> > > immediately but very few of them (less than 8 out of 64) really started
-> > > to work. The system remained very responsive and smooth during the
-> > > test. But I guess I know why : all the load was sent to CPU 0 :
-> >
-> > Shouldn't have affected smp balancing at all, but try this on top of the
-> > ontop please? Thanks
->
-> Does not change anything. There clearly is a huge regression somewhere :-/
-> The second CPU is not used by ocbench, and again, out of 64 tasks, only
-> a small bunch (between 4 and 8) do something.
->
-> Con, you should review the changes between 0.44 and 0.45, I think you
-> introduced a bug which broke fairness while fixing another one.
+DervishD <lkml@dervishd.net> writes:
 
-Ok I was able to find time on dual core and could reproduce your problem. 
-Testing something now that I think might be responsible.
+>     The problem is that if a program writes a file onto the filesystem
+> without using statfs first to check for free space, the free_clusters
+> entry won't have the real value and the driver may report "disk full" (I
+> haven't read the code for the vfat driver, sorry, so I'm not sure about
+> this) when really there are plenty of clusters to write the new file.
 
+No need to worry about it. If we ignored the ->free_clusters in
+FSINFO, the fat drivers counts the current free clusters by scaning
+FAT entries if needed.
+
+>     Probably it's stupid to update the free clusters count at mount time
+> (sorry if so...) but it looks like a good idea to me. And of course, I
+> don't mean to update the value _on disk_, but the kernel's idea of free
+> clusters (so even FAT filesystems mounted R/O will report correct
+> values).
+
+It would add the limitation to following simple usage,
+
+	# mount -t vfat /dev/sda1 /mnt
+        # cp -a * /mnt
+        # umount
+
+if /dev/sda1 was the large and slow device, "mount" will need several
+minutes to counts free clusters. I think the user will be hard to
+accept the several minutes at "mount".
+
+Thanks.
 -- 
--ck
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
