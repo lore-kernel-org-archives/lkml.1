@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030727AbXDVToM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030801AbXDVTpF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030727AbXDVToM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 15:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030801AbXDVToM
+	id S1030801AbXDVTpF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 15:45:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDVTpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 15:44:12 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:36079 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030727AbXDVToL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 15:44:11 -0400
-Date: Sun, 22 Apr 2007 21:45:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mikael Starvik <mikael.starvik@axis.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 2.6.20 7/14] CRIS architecture update - Boot
-Message-ID: <20070422194501.GB17258@uranus.ravnborg.org>
-References: <BFECAF9E178F144FAEF2BF4CE739C66803BEEE1D@exmail1.se.axis.com>
+	Sun, 22 Apr 2007 15:45:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54008 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030801AbXDVTpD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 15:45:03 -0400
+Date: Sun, 22 Apr 2007 20:44:55 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Subject: Re: [PATCH] bluetooth bnep: Convert to kthread API.
+Message-ID: <20070422194455.GA18561@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
+	linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969596686-git-send-email-ebiederm@xmission.com> <20070419162459.af7a182c.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C66803BEEE1D@exmail1.se.axis.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070419162459.af7a182c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 22, 2007 at 09:25:23PM +0200, Mikael Starvik wrote:
-> The attached patch relates to CRIS kernel booting (decompresser etc)
+On Thu, Apr 19, 2007 at 04:24:59PM -0700, Andrew Morton wrote:
+> On Thu, 19 Apr 2007 01:58:51 -0600
+> "Eric W. Biederman" <ebiederm@xmission.com> wrote:
+> 
+> > From: Eric W. Biederman <ebiederm@xmission.com>
+> > 
+> > This patch starts kbenpd using kthread_run replacing
+> > a combination of kernel_thread and daemonize.  Making
+> > the code a little simpler and more maintainable.
+> > 
+> >
+> 
+> 	while (!atomic_read(&s->killed)) {
+> 
+> ho hum.
 
---- ../linux/arch/cris/arch-v32/boot/compressed/Makefile        2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6/arch/cris/arch-v32/boot/compressed/Makefile       2007-02-13 12:55:23.000000000 +0100
-@@ -1,41 +1,30 @@
- #
--# lx25/arch/cris/arch-v32/boot/compressed/Makefile
-+# arch/cris/arch-v32/boot/compressed/Makefile
- #
--# create a compressed vmlinux image from the original vmlinux files and romfs
--#
--
--target = $(target_compressed_dir)
--src    = $(src_compressed_dir)
+Note that this also stands against a full kthread conversion.
+Marcel put my old patches for a full kthread conversion in, but
+they didn't deal properly with some of the premaure exit cases,
+and causes OOPSes.
 
--CC = gcc-cris -mlinux -march=v32 -I $(TOPDIR)/include
--CFLAGS = -O2
-+CC = gcc-cris -mlinux -march=v32 -I $(TOPDIR)/include
-+AFLAGS += -I $(TOPDIR)/include/asm/mach/ -I $(TOPDIR)/include/asm/arch
-+CFLAGS += -O2 -I $(TOPDIR)/include/asm/mach/ -I $(TOPDIR)/include/asm/arch
- LD = gcc-cris -mlinux -march=v32 -nostdlib
+I don't remember what the problems where, but the case of a thread
+terminating earlier and possibly asynchronously is one of the
+cases we'll probably have to add to the kthread infrastructure
+before all uses of kernel_thread in drivers can be converted.
 
-Use of $(TOPDIR) is deprecated.
-Please replace with $(srctree).
-
-There was lots of other Makefile changes but they looked OK in general.
-When the patch-set I would like to give to full set a review - please ping me.
-
-	Sam
