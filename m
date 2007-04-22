@@ -1,82 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965345AbXDVIIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965529AbXDVIJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965345AbXDVIIP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 04:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965521AbXDVIIP
+	id S965529AbXDVIJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 04:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965533AbXDVIJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 04:08:15 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45677 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S965345AbXDVIIN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 04:08:13 -0400
-X-Authenticated: #24128601
-X-Provags-ID: V01U2FsdGVkX1/LikJGBqXLFsaDx9mImOL89jKyaFXYtbclY6DRy+
-	iJbVJbUBZigq0U
-From: Sebastian Kemper <sebastian_ml@gmx.net>
-To: linux-kernel@vger.kernel.org
-Subject: No proper shutdown after kernel 2.6.13-rc2
-Date: Sun, 22 Apr 2007 10:08:16 +0200
-User-Agent: KMail/1.9.5
-Cc: dbrownell@users.sourceforge.net
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 22 Apr 2007 04:09:27 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58075 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965529AbXDVIJX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 04:09:23 -0400
+Date: Sun, 22 Apr 2007 01:09:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Fix potential overflow in perfctr reservation
+Message-Id: <20070422010917.6427e7a2.akpm@linux-foundation.org>
+In-Reply-To: <200704172359.l3HNxAMV024586@hera.kernel.org>
+References: <200704172359.l3HNxAMV024586@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704221008.16946.sebastian_ml@gmx.net>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello list,
+On Tue, 17 Apr 2007 23:59:10 GMT Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-this is an old issue, I reported it to 
-http://bugzilla.kernel.org/show_bug.cgi?id=5410 in 2005, but it still 
-bothers me. My mouse light (simple Logitech USB mouse) still stays on 
-after shutdown with 2.6.21-rc7.
+> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1714f9bfc92d6ee67e84127332a1fae27772acfe
+> Commit:     1714f9bfc92d6ee67e84127332a1fae27772acfe
+> Parent:     08269c6d38e003adb12f55c6d795daa89bdc1bae
+> Author:     Andi Kleen <ak@suse.de>
+> AuthorDate: Mon Apr 16 10:30:27 2007 +0200
+> Committer:  Andi Kleen <andi@basil.nowhere.org>
+> CommitDate: Mon Apr 16 10:30:27 2007 +0200
+> 
+>     [PATCH] x86: Fix potential overflow in perfctr reservation
+>     
+>     While reviewing this code again I found a potential overflow of the bitmap.
+>     The p4 oprofile can theoretically set bits beyond the reservation bitmap for
+>     specific configurations. Avoid that by sizing the bitmaps properly.
+>     
+>     Signed-off-by: Andi Kleen <ak@suse.de>
+> ---
+>  arch/i386/kernel/nmi.c   |    9 +++++----
+>  arch/x86_64/kernel/nmi.c |   10 ++++++----
+>  2 files changed, 11 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
+> index a98ba88..9f1e8c1 100644
+> --- a/arch/i386/kernel/nmi.c
+> +++ b/arch/i386/kernel/nmi.c
+> @@ -41,16 +41,17 @@ int nmi_watchdog_enabled;
+>   *   different subsystems this reservation system just tries to coordinate
+>   *   things a little
+>   */
+> -static DEFINE_PER_CPU(unsigned long, perfctr_nmi_owner);
+> -static DEFINE_PER_CPU(unsigned long, evntsel_nmi_owner[3]);
+> -
+> -static cpumask_t backtrace_mask = CPU_MASK_NONE;
+>  
+>  /* this number is calculated from Intel's MSR_P4_CRU_ESCR5 register and it's
+>   * offset from MSR_P4_BSU_ESCR0.  It will be the max for all platforms (for now)
+>   */
+>  #define NMI_MAX_COUNTER_BITS 66
+> +#define NMI_MAX_COUNTER_LONGS BITS_TO_LONGS(NMI_MAX_COUNTER_BITS)
+>  
+> +static DEFINE_PER_CPU(unsigned long, perfctr_nmi_owner[NMI_MAX_COUNTER_LONGS]);
+> +static DEFINE_PER_CPU(unsigned long, evntsel_nmi_owner[NMI_MAX_COUNTER_LONGS]);
+> +
+> +static cpumask_t backtrace_mask = CPU_MASK_NONE;
+>  /* nmi_active:
+>   * >0: the lapic NMI watchdog is active, but can be disabled
+>   * <0: the lapic NMI watchdog has not been set up, and cannot
 
-But, headway has been made (a little). It turned out that I don't have a 
-jumper on my motherboard that would explain this behaviour (e.g. 
-PS2_USB_PWR). Then there's MS Windows which manages to shut off the 
-mouse light when it shuts down.
+The created a warning storm:
 
-Last but not least I finally managed to find the commit which triggered 
-the issue back in 2.6.13-rc2: 
 
-commit edfd6aee1f073ae645bd3e60ef96090fc9f0957b
-Author: david-b@pacbell.net <david-b@pacbell.net>
-Date:   Wed Jun 29 07:03:10 2005 -0700
+arch/i386/kernel/nmi.c: In function 'avail_to_resrv_perfctr_nmi_bit':
+arch/i386/kernel/nmi.c:129: warning: passing argument 2 of 'constant_test_bit' from incompatible pointer type
+arch/i386/kernel/nmi.c:129: warning: passing argument 2 of 'variable_test_bit' from incompatible pointer type
+arch/i386/kernel/nmi.c: In function 'avail_to_resrv_perfctr_nmi':
+arch/i386/kernel/nmi.c:145: warning: passing argument 2 of 'constant_test_bit' from incompatible pointer type
+arch/i386/kernel/nmi.c:145: warning: passing argument 2 of 'variable_test_bit' from incompatible pointer type
+arch/i386/kernel/nmi.c: In function '__reserve_perfctr_nmi':
+arch/i386/kernel/nmi.c:160: warning: passing argument 2 of 'test_and_set_bit' from incompatible pointer type
+arch/i386/kernel/nmi.c: In function '__release_perfctr_nmi':
+arch/i386/kernel/nmi.c:174: warning: passing argument 2 of 'clear_bit' from incompatible pointer type
 
-    [PATCH] USB: fix ohci merge glitch
-
-    A patch re-organizing some parts of root hub initialization deleted 
-the
-    code initializing the bus-neutral reboot/shutdown notifier for OHCI.
-    This patch just restores that deleted code.
-
-    Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-diff --git a/drivers/usb/host/ohci-hcd.c b/drivers/usb/host/ohci-hcd.c
-index 0375097..68decab 100644
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -673,8 +673,10 @@ retry:
-
-        ohci_dump (ohci, 1);
-
--       if (ohci_to_hcd(ohci)->self.root_hub == NULL)
-+       if (ohci_to_hcd(ohci)->self.root_hub == NULL) {
-+               register_reboot_notifier (&ohci->reboot_notifier);
-                create_debug_files (ohci);
-+       }
-
-        return 0;
+diff -puN arch/i386/kernel/nmi.c~fix-x86-fix-potential-overflow-in-perfctr-reservation arch/i386/kernel/nmi.c
+--- a/arch/i386/kernel/nmi.c~fix-x86-fix-potential-overflow-in-perfctr-reservation
++++ a/arch/i386/kernel/nmi.c
+@@ -126,7 +126,7 @@ int avail_to_resrv_perfctr_nmi_bit(unsig
+ 	int cpu;
+ 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+ 	for_each_possible_cpu (cpu) {
+-		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
++		if (test_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
+ 			return 0;
+ 	}
+ 	return 1;
+@@ -142,7 +142,7 @@ int avail_to_resrv_perfctr_nmi(unsigned 
+ 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+ 
+ 	for_each_possible_cpu (cpu) {
+-		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
++		if (test_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
+ 			return 0;
+ 	}
+ 	return 1;
+@@ -157,7 +157,7 @@ static int __reserve_perfctr_nmi(int cpu
+ 	counter = nmi_perfctr_msr_to_bit(msr);
+ 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+ 
+-	if (!test_and_set_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
++	if (!test_and_set_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
+ 		return 1;
+ 	return 0;
  }
+@@ -171,7 +171,7 @@ static void __release_perfctr_nmi(int cp
+ 	counter = nmi_perfctr_msr_to_bit(msr);
+ 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+ 
+-	clear_bit(counter, &per_cpu(perfctr_nmi_owner, cpu));
++	clear_bit(counter, per_cpu(perfctr_nmi_owner, cpu));
+ }
+ 
+ int reserve_perfctr_nmi(unsigned int msr)
+_
 
-I'd really appreciate if someone could attend to this.
 
-Thanks!
+I worry rather a lot about how well runtime tested this very late change
+was, and whether it works correctly even with this fix applied.  Perhaps
+we should jsut revert?
 
-Regards
-Sebastian
