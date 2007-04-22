@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750961AbXDVVco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752051AbXDVVgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750961AbXDVVco (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 17:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751597AbXDVVco
+	id S1752051AbXDVVgz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 17:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXDVVgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 17:32:44 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:55740
+	Sun, 22 Apr 2007 17:36:55 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:44180
 	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750897AbXDVVc1 (ORCPT
+	by vger.kernel.org with ESMTP id S1752051AbXDVVgy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 17:32:27 -0400
-Date: Sun, 22 Apr 2007 23:35:31 +0200
+	Sun, 22 Apr 2007 17:36:54 -0400
+Date: Sun, 22 Apr 2007 23:39:59 +0200
 From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: emoenke@gwdg.de, minyard@wf-rch.cirr.com
+To: chas@cmf.nrl.navy.mil, ecd@atecom.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use spinlock instead of binary mutex in CDU-31A driver
-Message-ID: <20070422213531.GO5013@traven>
+Subject: [PATCH] use spinlock instead of binary mutex in idt77252 driver
+Message-ID: <20070422213959.GP5013@traven>
 Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	emoenke@gwdg.de, minyard@wf-rch.cirr.com,
-	linux-kernel@vger.kernel.org
+	chas@cmf.nrl.navy.mil, ecd@atecom.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,226 +25,144 @@ User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use spinlock instead of binary mutex in CDU-31A driver
+use spinlock instead of binary mutex in idt77252 driver
 
 Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
 --
  
-diff --git a/drivers/cdrom/cdu31a.c b/drivers/cdrom/cdu31a.c
-index 2157c58..d3649e4 100644
---- a/drivers/cdrom/cdu31a.c
-+++ b/drivers/cdrom/cdu31a.c
-@@ -263,7 +263,7 @@ static int sony_toc_read = 0;	/* Has the TOC been read for
- static struct s_sony_subcode last_sony_subcode;	/* Points to the last
- 						   subcode address read */
+diff --git a/drivers/atm/idt77252.c b/drivers/atm/idt77252.c
+index b4b8014..e3cf141 100644
+--- a/drivers/atm/idt77252.c
++++ b/drivers/atm/idt77252.c
+@@ -2430,7 +2430,7 @@ idt77252_open(struct atm_vcc *vcc)
  
--static DECLARE_MUTEX(sony_sem);		/* Semaphore for drive hardware access */
-+static DEFINE_MUTEX(sony_mtx);		/* Mutex for drive hardware access */
+ 	set_bit(ATM_VF_ADDR, &vcc->flags);
  
- static int is_double_speed = 0;	/* does the drive support double speed ? */
+-	down(&card->mutex);
++	mutex_lock(&card->mutex);
  
-@@ -339,11 +339,11 @@ static int scd_drive_status(struct cdrom_device_info *cdi, int slot_nr)
- 		return -EINVAL;
- 	if (sony_spun_up)
- 		return CDS_DISC_OK;
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	if (scd_spinup() == 0)
- 		sony_spun_up = 1;
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return sony_spun_up ? CDS_DISC_OK : CDS_DRIVE_NOT_READY;
- }
+ 	OPRINTK("%s: opening vpi.vci: %d.%d\n", card->name, vpi, vci);
  
-@@ -452,7 +452,7 @@ static int scd_reset(struct cdrom_device_info *cdi)
- {
- 	unsigned long retry_count;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	reset_drive();
- 
-@@ -461,7 +461,7 @@ static int scd_reset(struct cdrom_device_info *cdi)
- 		sony_sleep();
- 	}
- 
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return 0;
- }
- 
-@@ -655,10 +655,10 @@ static int scd_select_speed(struct cdrom_device_info *cdi, int speed)
- 	else
- 		sony_speed = speed - 1;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	set_drive_params(sony_speed);
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return 0;
- }
- 
-@@ -673,10 +673,10 @@ static int scd_lock_door(struct cdrom_device_info *cdi, int lock)
- 	} else {
- 		is_auto_eject = 0;
- 	}
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	set_drive_params(sony_speed);
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return 0;
- }
- 
-@@ -1143,7 +1143,7 @@ static void handle_abort_timeout(unsigned long data)
- {
- 	pr_debug(PFX "Entering %s\n", __FUNCTION__);
- 	/* If it is in use, ignore it. */
--	if (down_trylock(&sony_sem) == 0) {
-+	if (mutex_trylock(&sony_mtx) == 0) {
- 		/* We can't use abort_read(), because it will sleep
- 		   or schedule in the timer interrupt.  Just start
- 		   the operation, finish it on the next access to
-@@ -1154,7 +1154,7 @@ static void handle_abort_timeout(unsigned long data)
- 
- 		sony_blocks_left = 0;
- 		abort_read_started = 1;
--		up(&sony_sem);
-+		mutex_unlock(&sony_mtx);
- 	}
- 	pr_debug(PFX "Leaving %s\n", __FUNCTION__);
- }
-@@ -1300,7 +1300,7 @@ static void do_cdu31a_request(request_queue_t * q)
- 	pr_debug(PFX "Entering %s\n", __FUNCTION__);
- 
- 	spin_unlock_irq(q->queue_lock);
--	if (down_interruptible(&sony_sem)) {
-+	if (mutex_lock_interruptible(&sony_mtx)) {
- 		spin_lock_irq(q->queue_lock);
- 		return;
- 	}
-@@ -1435,7 +1435,7 @@ static void do_cdu31a_request(request_queue_t * q)
- 	add_timer(&cdu31a_abort_timer);
- #endif
- 
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	spin_lock_irq(q->queue_lock);
- 	pr_debug(PFX "Leaving %s at %d\n", __FUNCTION__, __LINE__);
- }
-@@ -1906,10 +1906,10 @@ static int scd_get_last_session(struct cdrom_device_info *cdi,
- 		return 1;
- 
- 	if (!sony_toc_read) {
--		if (down_interruptible(&sony_sem))
-+		if (mutex_lock_interruptible(&sony_mtx))
- 			return -ERESTARTSYS;
- 		sony_get_toc();
--		up(&sony_sem);
-+		mutex_unlock(&sony_mtx);
- 	}
- 
- 	ms_info->addr_format = CDROM_LBA;
-@@ -1988,11 +1988,11 @@ scd_get_mcn(struct cdrom_device_info *cdi, struct cdrom_mcn *mcn)
- 	unsigned int res_size;
- 
- 	memset(mcn->medium_catalog_number, 0, 14);
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	do_sony_cd_cmd(SONY_REQ_UPC_EAN_CMD,
- 		       NULL, 0, resbuffer, &res_size);
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	if ((res_size < 2) || ((resbuffer[0] & 0xf0) == 0x20));
- 	else {
- 		/* packed bcd to single ASCII digits */
-@@ -2207,7 +2207,7 @@ static int read_audio(struct cdrom_read_audio *ra)
- 	unsigned int res_size;
- 	unsigned int cframe;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	if (!sony_spun_up)
- 		scd_spinup();
-@@ -2343,7 +2343,7 @@ static int read_audio(struct cdrom_read_audio *ra)
- 	}
- 
-  out_up:
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 
- 	return retval;
- }
-@@ -2373,7 +2373,7 @@ static int scd_tray_move(struct cdrom_device_info *cdi, int position)
- {
- 	int retval;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	if (position == 1 /* open tray */ ) {
- 		unsigned char res_reg[12];
-@@ -2392,7 +2392,7 @@ static int scd_tray_move(struct cdrom_device_info *cdi, int position)
- 			sony_spun_up = 1;
- 		retval = 0;
- 	}
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return retval;
- }
- 
-@@ -2407,7 +2407,7 @@ static int scd_audio_ioctl(struct cdrom_device_info *cdi,
- 	unsigned char params[7];
- 	int i, retval;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	switch (cmd) {
- 	case CDROMSTART:	/* Spin up the drive */
-@@ -2665,7 +2665,7 @@ static int scd_audio_ioctl(struct cdrom_device_info *cdi,
- 		retval = -EINVAL;
+@@ -2441,7 +2441,7 @@ idt77252_open(struct atm_vcc *vcc)
  		break;
- 	}
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return retval;
- }
- 
-@@ -2675,7 +2675,7 @@ static int scd_read_audio(struct cdrom_device_info *cdi,
- 	void __user *argp = (void __user *)arg;
- 	int retval;
- 
--	if (down_interruptible(&sony_sem))
-+	if (mutex_lock_interruptible(&sony_mtx))
- 		return -ERESTARTSYS;
- 	switch (cmd) {
- 	case CDROMREADAUDIO:	/* Read 2352 byte audio tracks and 2340 byte
-@@ -2749,7 +2749,7 @@ static int scd_read_audio(struct cdrom_device_info *cdi,
  	default:
- 		retval = -EINVAL;
+ 		printk("%s: Unsupported AAL: %d\n", card->name, vcc->qos.aal);
+-		up(&card->mutex);
++		mutex_unlock(&card->mutex);
+ 		return -EPROTONOSUPPORT;
  	}
--	up(&sony_sem);
-+	mutex_unlock(&sony_mtx);
- 	return retval;
+ 
+@@ -2450,7 +2450,7 @@ idt77252_open(struct atm_vcc *vcc)
+ 		card->vcs[index] = kzalloc(sizeof(struct vc_map), GFP_KERNEL);
+ 		if (!card->vcs[index]) {
+ 			printk("%s: can't alloc vc in open()\n", card->name);
+-			up(&card->mutex);
++			mutex_unlock(&card->mutex);
+ 			return -ENOMEM;
+ 		}
+ 		card->vcs[index]->card = card;
+@@ -2479,14 +2479,14 @@ idt77252_open(struct atm_vcc *vcc)
+ 	if (inuse) {
+ 		printk("%s: %s vci already in use.\n", card->name,
+ 		       inuse == 1 ? "tx" : inuse == 2 ? "rx" : "tx and rx");
+-		up(&card->mutex);
++		mutex_unlock(&card->mutex);
+ 		return -EADDRINUSE;
+ 	}
+ 
+ 	if (vcc->qos.txtp.traffic_class != ATM_NONE) {
+ 		error = idt77252_init_tx(card, vc, vcc, &vcc->qos);
+ 		if (error) {
+-			up(&card->mutex);
++			mutex_unlock(&card->mutex);
+ 			return error;
+ 		}
+ 	}
+@@ -2494,14 +2494,14 @@ idt77252_open(struct atm_vcc *vcc)
+ 	if (vcc->qos.rxtp.traffic_class != ATM_NONE) {
+ 		error = idt77252_init_rx(card, vc, vcc, &vcc->qos);
+ 		if (error) {
+-			up(&card->mutex);
++			mutex_unlock(&card->mutex);
+ 			return error;
+ 		}
+ 	}
+ 
+ 	set_bit(ATM_VF_READY, &vcc->flags);
+ 
+-	up(&card->mutex);
++	mutex_unlock(&card->mutex);
+ 	return 0;
  }
+ 
+@@ -2515,7 +2515,7 @@ idt77252_close(struct atm_vcc *vcc)
+ 	unsigned long addr;
+ 	unsigned long timeout;
+ 
+-	down(&card->mutex);
++	mutex_lock(&card->mutex);
+ 
+ 	IPRINTK("%s: idt77252_close: vc = %d (%d.%d)\n",
+ 		card->name, vc->index, vcc->vpi, vcc->vci);
+@@ -2586,7 +2586,7 @@ done:
+ 		free_scq(card, vc->scq);
+ 	}
+ 
+-	up(&card->mutex);
++	mutex_unlock(&card->mutex);
+ }
+ 
+ static int
+@@ -2597,7 +2597,7 @@ idt77252_change_qos(struct atm_vcc *vcc, struct atm_qos *qos, int flags)
+ 	struct vc_map *vc = vcc->dev_data;
+ 	int error = 0;
+ 
+-	down(&card->mutex);
++	mutex_lock(&card->mutex);
+ 
+ 	if (qos->txtp.traffic_class != ATM_NONE) {
+ 	    	if (!test_bit(VCF_TX, &vc->flags)) {
+@@ -2643,7 +2643,7 @@ idt77252_change_qos(struct atm_vcc *vcc, struct atm_qos *qos, int flags)
+ 	set_bit(ATM_VF_HASQOS, &vcc->flags);
+ 
+ out:
+-	up(&card->mutex);
++	mutex_unlock(&card->mutex);
+ 	return error;
+ }
+ 
+@@ -3703,7 +3703,7 @@ idt77252_init_one(struct pci_dev *pcidev, const struct pci_device_id *id)
+ 	membase = pci_resource_start(pcidev, 1);
+ 	srambase = pci_resource_start(pcidev, 2);
+ 
+-	init_MUTEX(&card->mutex);
++	mutex_init(&card->mutex);
+ 	spin_lock_init(&card->cmd_lock);
+ 	spin_lock_init(&card->tst_lock);
+ 
+diff --git a/drivers/atm/idt77252.h b/drivers/atm/idt77252.h
+index 544b397..a3b2f74 100644
+--- a/drivers/atm/idt77252.h
++++ b/drivers/atm/idt77252.h
+@@ -359,7 +359,7 @@ struct idt77252_dev
+ 	unsigned long		srambase;	/* SAR's sram  base address */
+ 	void __iomem		*fbq[4];	/* FBQ fill addresses */
+ 
+-	struct semaphore	mutex;
++	struct mutex		mutex;
+ 	spinlock_t		cmd_lock;	/* for r/w utility/sram */
+ 
+ 	unsigned long		softstat;
 
 -- 
 Matthias Kaehlcke
 Linux Application Developer
 Barcelona
 
-                If you don't know where you are going,
-               you will probably end up somewhere else
-                         (Laurence J. Peter)
+              Insanity: doing the same thing over and over
+                again and expecting different results
+                            (Albert Einstein)
                                                                  .''`.
     using free software / Debian GNU/Linux | http://debian.org  : :'  :
                                                                 `. `'`
