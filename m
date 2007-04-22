@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965301AbXDVHXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965164AbXDVH1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965301AbXDVHXu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965292AbXDVHXu
+	id S965164AbXDVH1o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXDVH1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:23:50 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:52865 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965158AbXDVHXt (ORCPT
+	Sun, 22 Apr 2007 03:27:44 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44781 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965164AbXDVH1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:23:49 -0400
-To: ebiederm@xmission.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
-       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-In-reply-to: <m17is5kdyw.fsf@ebiederm.dsl.xmission.com>
-Subject: Re: [patch 8/8] allow unprivileged fuse mounts
-References: <20070420102532.385211890@szeredi.hu>
-	<20070420102656.364689151@szeredi.hu> <m17is5kdyw.fsf@ebiederm.dsl.xmission.com>
-Message-Id: <E1HfWPE-00049L-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sun, 22 Apr 2007 09:22:44 +0200
+	Sun, 22 Apr 2007 03:27:43 -0400
+Date: Sun, 22 Apr 2007 00:26:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+Message-Id: <20070422002606.ef060060.akpm@linux-foundation.org>
+In-Reply-To: <1177156902.2934.96.camel@lappy>
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+	<20070421025532.916b1e2e.akpm@linux-foundation.org>
+	<1177156902.2934.96.camel@lappy>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	/*
-> > +	 * For unprivileged mounts use current uid/gid.  Still allow
-> > +	 * "user_id" and "group_id" options for compatibility, but
-> > +	 * only if they match these values.
-> > +	 */
-> > +	if (!capable(CAP_SYS_ADMIN)) {
-> > +		d->user_id = current->uid;
-> > +		d->user_id_present = 1;
-> > +		d->group_id = current->gid;
-> > +		d->group_id_present = 1;
-> > +
-> > +	}
-> 
-> CAP_SETUID is the appropriate capability...
-> 
-> This is not a dimension we have not fully explored.
-> What is the problem with a user controlled mount having different
-> uid and gid values.
-> 
-> Yes they map into different users but how is this a problem.
-> The only problem that I can recall is the historic chown problem
-> where you could give files to other users and mess up their quotas.
-> 
-> Or is the problem other users writing to this user controlled
-> filesystem?
+On Sat, 21 Apr 2007 14:01:36 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Yes.  Or even just a suid process trying to access the user controlled
-filesystem.  See Documentation/filesystems/fuse.txt for the gory
-details.
+> On Sat, 2007-04-21 at 02:55 -0700, Andrew Morton wrote:
+>
+> > > +
+> > > +		__mod_bdi_stat64(bdi, BDI_WRITEOUT, -half);
+> > > +		bdi->cycles += cycle;
+> > > +	}
+> > > +	bdi->cycles = global_cycle;
+> > > +	spin_unlock_irqrestore(&bdi->lock, flags);
+> > > +}
+> > 
+> > Here we get to the real critical substance of the patchset, and I don't
+> > have a clue what it's doing nor how it's doing it.  And I bet nobody else
+> > does either.
+> 
+> I shall send a comment patch; but let me try to explain:
+> 
+> I am trying to keep a floating proportion between the BDIs based on
+> writeout events.
 
-Eric, thanks for the detailed review :)
+The term "writeout event" hasn't been defined.  I assume that it refers to
+something like "one call to balance_dirty_pages()".  Or maybe "one pass
+through balance_dirty_pages()'s inner loop".  Or maybe something else. 
+This is important, because the reader is already a bit lost.
 
-Miklos
+> That is, each device is given a share equal to its
+> proportion of completed writebacks
+
+In what units are "writebacks" measured?  Pages?
+
+> (writeback, we are in the process of
+> writing vs. writeout, we have written). This proportion is measured in a
+> 'time'-span measured itself in writeouts.
+
+time is measured how?  jiffies?  Calls to balance_dirty_pages(), or passes
+around its inner loop, or...
+
+> Example:
+> 
+>   device A completes 4, device B completes 12 and, device C 16 writes.
+
+writes of what?  One page??
+
+I think you get my point ;) Please start from the top.  Define terms before
+using them, always specify in what units all things are being measured,
+assume *no* prior knowledge apart from general kernel-fu.
+
