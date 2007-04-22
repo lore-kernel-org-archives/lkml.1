@@ -1,162 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXDVMTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030502AbXDVMYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030371AbXDVMTb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030502AbXDVMTb
+	id S1030502AbXDVMYv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030512AbXDVMYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:19:31 -0400
-Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:49899 "EHLO
-	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030371AbXDVMTa (ORCPT
+	Sun, 22 Apr 2007 08:24:51 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:43415 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030502AbXDVMYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:19:30 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>
-Subject: Re: [ck] Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Date: Sun, 22 Apr 2007 22:18:32 +1000
-User-Agent: KMail/1.9.5
-Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
-       Gene Heskett <gene.heskett@gmail.com>, Al Boldi <a1426z@gawab.com>,
-       Bill Huey <billh@gnuppy.monkey.org>, Mike Galbraith <efault@gmx.de>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Matt Mackall <mpm@selenic.com>
-References: <200704221441.48897.kernel@kolivas.org> <20070422091451.GA15913@1wt.eu> <200704222142.52325.kernel@kolivas.org>
-In-Reply-To: <200704222142.52325.kernel@kolivas.org>
+	Sun, 22 Apr 2007 08:24:50 -0400
+X-Sasl-enc: Sw2jHOahZNhgggJYHKDNFTTuzP1krPpvfou7cxOx5NGz 1177244689
+Message-ID: <462B54A0.9000203@imap.cc>
+Date: Sun, 22 Apr 2007 14:27:12 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 4617
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704222218.32754.kernel@kolivas.org>
+To: David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+CC: linux-kernel@vger.kernel.org, kkeil@suse.de,
+       i4ldeveloper@listserv.isdn4linux.de, akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+References: <20070115172912.GA3323@pingi.kke.suse.de>	<462A0CA7.2090908@imap.cc>	<20070421215844.542d3aab@the-village.bc.nu> <20070421.151052.78709111.davem@davemloft.net>
+In-Reply-To: <20070421.151052.78709111.davem@davemloft.net>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2EF6D7F6097185D6E7912C04"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007 21:42, Con Kolivas wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2EF6D7F6097185D6E7912C04
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Willy I'm still investigating the idle time and fluctuating load as a separate 
-issue. Is it possible the multiple ocbench processes are naturally 
-synchronising and desynchronising and choosing to sleep and/or run at the 
-same time? I can remove the idle time entirely by running ocbench at nice 19 
-which means they are all forced to run at basically the same time by the 
-scheduler.
+Am 22.04.2007 00:10 schrieb David Miller:
+> From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Date: Sat, 21 Apr 2007 21:58:44 +0100
+>=20
+>> On Sat, 21 Apr 2007 15:07:51 +0200
+>> Tilman Schmidt <tilman@imap.cc> wrote:
+>>
+>>> From: Tilman Schmidt <tilman@imap.cc>
+>>>
+>>> The "obsolete" label on the ISDN_I4L Kconfig option is not, and
+>>> has never been, accurate. It has already prompted repeated attempts
+>>> to remove actively used functionality from the kernel without a
+>>> working replacement. This patch removes the incorrect label and
+>>> corrects the accompanying help text.
+>>>
+>>> Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+>> Nak-by: Alan Cox <alan@redhat.com>
+>>
+>> If it isn't obsolete then fix the code to use the newer APIs
 
-Anyway the more important part is... Can you test this patch please? Dump
-all the other patches I sent you post 045. Michael, if you could test too
-please?
+Why should that be a precondition for removing the incorrect
+"obsolete" label?
 
-Thanks!
+The code works, and adapting it to newer APIs is the job of those
+who introduced those newer APIs in the first place, according to
+the oft-touted stable_api_nonsense.txt policy document. In fact I
+suspect the incorrect "obsolete" label is a major reason why they
+haven't done that job so far.
 
----
+Anyway, I'm not the right person for that job. I know neither the
+code in question nor those newer APIs well enough to do it. I am
+just trying to help by correcting an error I found. That doesn't
+make me responsible for every other problem that code may have.
 
-It appears load weight still wasn't being set in enough places and changing
-where rr_interval was being set a few iterations of SD ago might have revealed
-that bug. Ensure load_weight is set whenever p->quota is set and simplify
-dramatically the load_weight.
+>> as its about
+>> to end up && BROKEN let alone Obsolete.
 
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
+That can't happen. Any change that breaks isdn4linux before its
+replacement is ready would constitute a regression.
+We've been there once, remember?
 
----
- kernel/sched.c |   35 ++++++++++++++++-------------------
- 1 file changed, 16 insertions(+), 19 deletions(-)
+> There is zero work being done on that subsystem to freshen it up
+> and make it current in any way.
 
-Index: linux-2.6.21-rc7-sd/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-22 21:37:25.000000000 +1000
-+++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-22 22:01:48.000000000 +1000
-@@ -102,8 +102,6 @@ unsigned long long __attribute__((weak))
-  */
- int rr_interval __read_mostly = 8;
- 
--#define DEF_TIMESLICE		(rr_interval * 20)
--
- /*
-  * This contains a bitmap for each dynamic priority level with empty slots
-  * for the valid priorities each different nice level can have. It allows
-@@ -886,16 +884,10 @@ static int task_timeslice(struct task_st
- }
- 
- /*
-- * Assume: static_prio_timeslice(NICE_TO_PRIO(0)) == DEF_TIMESLICE
-- * If static_prio_timeslice() is ever changed to break this assumption then
-- * this code will need modification. Scaled as multiples of milliseconds.
-- */
--#define TIME_SLICE_NICE_ZERO DEF_TIMESLICE
--#define LOAD_WEIGHT(lp) \
--	(((lp) * SCHED_LOAD_SCALE) / TIME_SLICE_NICE_ZERO)
--#define TASK_LOAD_WEIGHT(p)	LOAD_WEIGHT(task_timeslice(p))
--#define RTPRIO_TO_LOAD_WEIGHT(rp)	\
--	(LOAD_WEIGHT((rr_interval + 20 + (rp))))
-+ * The load weight is basically the task_timeslice in ms. Realtime tasks are
-+ * special cased to be proportionately larger by their rt_priority.
-+ */
-+#define RTPRIO_TO_LOAD_WEIGHT(rp)	((rr_interval + 20 + (rp)))
- 
- static void set_load_weight(struct task_struct *p)
- {
-@@ -912,7 +904,7 @@ static void set_load_weight(struct task_
- #endif
- 			p->load_weight = RTPRIO_TO_LOAD_WEIGHT(p->rt_priority);
- 	} else
--		p->load_weight = TASK_LOAD_WEIGHT(p);
-+		p->load_weight = task_timeslice(p);
- }
- 
- static inline void
-@@ -995,7 +987,7 @@ static int effective_prio(struct task_st
-  * nice -20 = 10 * rr_interval. nice 1-19 = rr_interval / 2.
-  * Value returned is in microseconds.
-  */
--static unsigned int rr_quota(struct task_struct *p)
-+static inline unsigned int rr_quota(struct task_struct *p)
- {
- 	int nice = TASK_NICE(p), rr = rr_interval;
- 
-@@ -1009,6 +1001,13 @@ static unsigned int rr_quota(struct task
- 	return MS_TO_US(rr);
- }
- 
-+/* Every time we set the quota we need to set the load weight */
-+static void set_quota(struct task_struct *p)
-+{
-+	p->quota = rr_quota(p);
-+	set_load_weight(p);
-+}
-+
- /*
-  * activate_task - move a task to the runqueue and do priority recalculation
-  */
-@@ -1036,7 +1035,7 @@ static void activate_task(struct task_st
- 				     (now - p->timestamp) >> 20);
- 	}
- 
--	p->quota = rr_quota(p);
-+	set_quota(p);
- 	p->prio = effective_prio(p);
- 	p->timestamp = now;
- 	__activate_task(p, rq);
-@@ -3885,8 +3884,7 @@ void set_user_nice(struct task_struct *p
- 	p->static_prio = NICE_TO_PRIO(nice);
- 	old_prio = p->prio;
- 	p->prio = effective_prio(p);
--	p->quota = rr_quota(p);
--	set_load_weight(p);
-+	set_quota(p);
- 	delta = p->prio - old_prio;
- 
- 	if (queued) {
-@@ -4020,8 +4018,7 @@ static void __setscheduler(struct task_s
- 	p->normal_prio = normal_prio(p);
- 	/* we are holding p->pi_lock already */
- 	p->prio = rt_mutex_getprio(p);
--	p->quota = rr_quota(p);
--	set_load_weight(p);
-+	set_quota(p);
- }
- 
- /**
+Not true. What is true, however, is that the main effort of ISDN
+development is currently going into the future replacement for
+isdn4linux, the CAPI subsystem. But that's no reason to mark the
+current one as obsolete before the time.
 
--- 
--ck
+> Lack of a working replacement is not an argument for anything.
+
+I beg to differ. Existence of a working replacement is exactly
+the criterion we arrived at when discussing the meaning of the
+term "obsolete". So lack of a working replacement *is* an
+argument for concluding that something is not obsolete.
+
+To sum it up:
+
+- The "obsolete" label on the isdn4linux subsystem is, and has
+  always been, incorrect.
+
+- The authors of certain in-kernel API changes seem to have
+  neglected the isdn4linux subsystem in their work.
+
+- These are two independent problems. Blocking the correction of
+  one of them because the other one still exists doesn't help,
+  but only risks deadlock.
+
+I therefore kindly ask you to accept this patch even though I
+cannot offer a remedy for the other gripes you have with the
+isdn4linux subsystem, and even though you might personally not
+have any use for that subsystem.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+- In theory, there is no difference between theory and practice.
+  In practice, there is.
+
+
+--------------enig2EF6D7F6097185D6E7912C04
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGK1SpMdB4Whm86/kRAoAFAJ9JHp9htyb54IGNOWKTQj7xW4VA9wCfSdSg
+tg66TmIOv+FbS2SblAk3A2w=
+=SDPA
+-----END PGP SIGNATURE-----
+
+--------------enig2EF6D7F6097185D6E7912C04--
