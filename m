@@ -1,91 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXDVJy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753132AbXDVJ6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965606AbXDVJy2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 05:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030181AbXDVJy1
+	id S1753132AbXDVJ6n (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 05:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbXDVJ6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 05:54:27 -0400
-Received: from mail19.syd.optusnet.com.au ([211.29.132.200]:45426 "EHLO
-	mail19.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965606AbXDVJy1 (ORCPT
+	Sun, 22 Apr 2007 05:58:43 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:45339 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753132AbXDVJ6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 05:54:27 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
-Date: Sun, 22 Apr 2007 19:53:24 +1000
-User-Agent: KMail/1.9.5
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Al Boldi <a1426z@gawab.com>,
-       Peter Williams <pwil3058@bigpond.net.au>, Nick Piggin <npiggin@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Bill Huey <billh@gnuppy.monkey.org>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Gene Heskett <gene.heskett@gmail.com>
-References: <200704221441.48897.kernel@kolivas.org> <200704221853.59358.kernel@kolivas.org> <20070422091451.GA15913@1wt.eu>
-In-Reply-To: <20070422091451.GA15913@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 22 Apr 2007 05:58:42 -0400
+Date: Sun, 22 Apr 2007 02:57:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: Re: [PATCH 00/10] per device dirty throttling -v5
+Message-Id: <20070422025710.60dc9378.akpm@linux-foundation.org>
+In-Reply-To: <20070420155154.898600123@chello.nl>
+References: <20070420155154.898600123@chello.nl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704221953.25157.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007 19:14, Willy Tarreau wrote:
-> On Sun, Apr 22, 2007 at 06:53:58PM +1000, Con Kolivas wrote:
-> > On Sunday 22 April 2007 18:06, Willy Tarreau wrote:
-> > > On Sun, Apr 22, 2007 at 05:31:58PM +1000, Con Kolivas wrote:
-> > > > On Sunday 22 April 2007 17:27, Con Kolivas wrote:
-> > > > > On Sunday 22 April 2007 17:00, Willy Tarreau wrote:
-> > > > > > On Sun, Apr 22, 2007 at 02:41:48PM +1000, Con Kolivas wrote:
-> > > > > > > A significant bugfix for SMP balancing was just posted for the
-> > > > > > > staircase deadline cpu scheduler which improves behaviour
-> > > > > > > dramatically on any SMP machine.
-> > > > > > >
-> > > > > > > Thanks to Willy Tarreau for noticing likely fault point.
-> > > > > > >
-> > > > > > > Also requested was a version in the Makefile so this version of
-> > > > > > > the patch adds -sd045 to the kernel version.
-> > > > > >
-> > > > > > Con, I'm sorry, but it is worse with this one :-(
-> > > > >
-> > > > > Well that was quick testing, thanks.
-> > > > >
-> > > > > > The lag when typing in xterms is even more noticeable and vmstat
-> > > > > > output oscillates between 8 and 65, with idle rates around 50%,
-> > > > > > as you can see below :
-> > > > > >
-> > > > > > Renicing X or not does not change anything here.
-> > > > > >
-> > > > > > I suspect that the bug you fixed was hiding another one :-/
-> > > > > > If you want me to test another patch, feel free to ask.
-> > > >
-> > > > Just as a debug point could you please try this patch? Thanks.
-> > >
-> > > OK, this time, the ocbench took ages to start. They appeared
-> > > immediately but very few of them (less than 8 out of 64) really started
-> > > to work. The system remained very responsive and smooth during the
-> > > test. But I guess I know why : all the load was sent to CPU 0 :
-> >
-> > Shouldn't have affected smp balancing at all, but try this on top of the
-> > ontop please? Thanks
->
-> Does not change anything. There clearly is a huge regression somewhere :-/
-> The second CPU is not used by ocbench, and again, out of 64 tasks, only
-> a small bunch (between 4 and 8) do something.
->
-> Con, you should review the changes between 0.44 and 0.45, I think you
-> introduced a bug which broke fairness while fixing another one.
 
-Hmm; well it was "better" without the first debug patch I sent (even though it 
-ws worse than 0.44) which is important in itself. I thank you greatly for 
-your testing so far. Unfortunately I'm close to a one man code show so I'll 
-have to spend time reviewing it further. The changes so far look ok still. 
-Something else is lurking.
+So after a cheerful five hours making all the new crap with which they have
+inflicted me actually compile, first up is powerpc:
 
-Thanks!
+initcall 0xc0000000006dc650: .scsi_complete_async_scans+0x0/0x1dc() returned 0.
+initcall 0xc0000000006dc650 ran for 0 msecs: .scsi_complete_async_scans+0x0/0x1dc()
+Calling initcall 0xc0000000006ea1d0: .tcp_congestion_default+0x0/0x18()
+initcall 0xc0000000006ea1d0: .tcp_congestion_default+0x0/0x18() returned 0.
+initcall 0xc0000000006ea1d0 ran for 0 msecs: .tcp_congestion_default+0x0/0x18()
+Freeing unused kernel memory: 292k freed
+EXT3-fs: INFO: recovery required on readonly filesystem.
+EXT3-fs: write access will be enabled during recovery.
+Unable to handle kernel paging request for data at address 0x0000000f
+Faulting instruction address: 0xc0000000001d060c
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=4 PowerMac
+Modules linked in:
+NIP: c0000000001d060c LR: c0000000000aaecc CTR: 0000000000000000
+REGS: c0000000080f70c0 TRAP: 0300   Tainted: G      D  (2.6.21-rc7-mm1)
+MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 24024028  XER: 000fffff
+DAR: 000000000000000f, DSISR: 0000000040000000
+TASK = c0000000080e47f0[1] 'init' THREAD: c0000000080f4000 CPU: 2
+GPR00: c0000000000aaecc c0000000080f7340 c0000000006f69f8 c00000000c45d768 
+GPR04: 0000000000000001 0000000000000000 c00000000064e700 c00000000064e030 
+GPR08: 0000000000000030 ffffffffffffffff 0000000000000013 0000000000000010 
+GPR12: 0000000024024024 c000000000628980 0000000000000000 c0000000090090d8 
+GPR16: c0000000090090c0 c0000000090090a8 0000000000000000 0000000000000000 
+GPR20: 0000000000000000 c000000000733cd0 0000000000000000 0000000000000002 
+GPR24: c0000000080f7630 000000000007ccde c000000009858908 c00000000984400c 
+GPR28: c00000000c45d768 c00000000bc2bcb0 c000000000658aa0 c000000002372818 
+NIP [c0000000001d060c] .percpu_counter_mod+0x2c/0xd8
+LR [c0000000000aaecc] .__set_page_dirty_nobuffers+0x14c/0x17c
+Call Trace:
+[c0000000080f7340] [c0000000001088e4] .alloc_page_buffers+0x58/0x100 (unreliable)
+[c0000000080f73d0] [c0000000000aaecc] .__set_page_dirty_nobuffers+0x14c/0x17c
+[c0000000080f7460] [c000000000106328] .mark_buffer_dirty+0x5c/0x70
+[c0000000080f74e0] [c00000000015efb8] .do_one_pass+0x55c/0x6a8
+[c0000000080f75c0] [c00000000015f3f8] .journal_recover+0x1c0/0x1c8
+[c0000000080f7670] [c000000000164178] .journal_load+0xcc/0x178
+[c0000000080f7700] [c000000000151134] .ext3_fill_super+0xfc0/0x1a44
+[c0000000080f7840] [c0000000000d8554] .get_sb_bdev+0x200/0x260
+[c0000000080f7920] [c000000000152454] .ext3_get_sb+0x20/0x38
+[c0000000080f79a0] [c0000000000d8900] .vfs_kern_mount+0x80/0x108
+[c0000000080f7a40] [c0000000000f7a94] .do_mount+0x2e4/0x930
+[c0000000080f7d60] [c00000000011a4f4] .compat_sys_mount+0xf4/0x2b0
+[c0000000080f7e30] [c00000000000872c] syscall_exit+0x0/0x40
+Instruction dump:
+4bffff00 7c0802a6 fb81ffe0 fbe1fff8 fba1ffe8 7c7c1b78 f8010010 f821ff71 
+a16d000a e9230010 796b1f24 7d2948f8 <7fab482a> 801d0000 7c002214 7c1f07b4 
+DART table allocated at: c00000007f000000
 
--- 
--ck
+I'll drop 'em.
