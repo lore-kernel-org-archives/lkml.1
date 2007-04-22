@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbXDVR6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbXDVSAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754237AbXDVR6u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 13:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXDVR6u
+	id S1754249AbXDVSAX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 14:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbXDVSAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 13:58:50 -0400
-Received: from fed1rmmtao106.cox.net ([68.230.241.40]:62206 "EHLO
-	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934AbXDVR6t (ORCPT
+	Sun, 22 Apr 2007 14:00:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:59269 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbXDVSAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 13:58:49 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] GIT 1.5.1.2
-References: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
-	<7v1widrl0o.fsf@assigned-by-dhcp.cox.net>
-	<alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
-Date: Sun, 22 Apr 2007 10:58:48 -0700
-In-Reply-To: <alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
-	(Linus Torvalds's message of "Sun, 22 Apr 2007 10:22:47 -0700 (PDT)")
-Message-ID: <7vvefonvdz.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 22 Apr 2007 14:00:21 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Wrong free clusters count on FAT32
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, DervishD <lkml@dervishd.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Juergen Beisert <juergen127@kreuzholzen.de>,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Sun, 22 Apr 2007 19:21:04 +0200
+References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it> <8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it> <8cAMl-du-3@gated-at.bofh.it> <8cBS7-1Qa-1@gated-at.bofh.it> <8cIqE-3qZ-9@gated-at.bofh.it> <8cITG-40H-5@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1Hffkv-0001QP-3C@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX199IwNj0jb4nWUWi5Zv9adY3ODWPTqHyfa41Em
+ 5Osx1EZH0JDwjWaPaS8H7jWc2sAd1cWux7pKAqUrWHd/jmcjno
+ au8pKKaWSQ1H1rIIcHz4A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+> DervishD <lkml@dervishd.net> writes:
 
-> On Sat, 21 Apr 2007, Junio C Hamano wrote:
->>
->> The latest maintenance release GIT 1.5.1.2 is available at the
->> usual places:
->
-> Well, by "available" you probably mean "not available", because it doesn't 
-> actually work.
->
-> I get EPERM on pack-e00affefe0f779d0f9b0507aef25a1733f4a9117.idx/pack, 
-> because they are
->
-> 	-r-------- 1 junio junio  1120880
-> 	-r-------- 1 junio junio 15709370
->
-> respectively.
+>>     Probably it's stupid to update the free clusters count at mount time
+>> (sorry if so...) but it looks like a good idea to me. And of course, I
+>> don't mean to update the value _on disk_, but the kernel's idea of free
+>> clusters (so even FAT filesystems mounted R/O will report correct
+>> values).
+> 
+> It would add the limitation to following simple usage,
+> 
+> # mount -t vfat /dev/sda1 /mnt
+>         # cp -a * /mnt
+>         # umount
+> 
+> if /dev/sda1 was the large and slow device, "mount" will need several
+> minutes to counts free clusters. I think the user will be hard to
+> accept the several minutes at "mount".
 
-I've run fsck and then flipped the bits manually on these files
-to unblock people, but I have no idea how this happened.  These
-two were the only files that had the funny bits in the
-repository.
+I simulated recalculating the FAT using a suboptimal perl script on my
+32 GB FAT32 partition on a 40 GB drive. The results should show the worst
+case for my system.
 
-        -r-------- 1 junio junio  1120880 Apr 22 06:46
-        -r-------- 1 junio junio 15709370 Apr 22 06:46
+The results were below 2 seconds (optimized perl at 0.5 s) on my AMD Athlon
+XP 2400+. (BTW: I don't think the device speed itself will be relevant in
+many cases even if you'd asume a slow link, since you'll need to read the
+FAT anyway.)
 
-I can tell from the output of "last" on that machine that I was
-present and I am reasonably sure this was from "git repack -a -d"
-I manually did.  But my umask is 0002...
+I think this is acceptable, and on this system, I'd like to enable
+recalculating by default. On slower systems, you'll need to chose another
+default.
 
-Gaah.  "git repack -a -d" from 'master' leaves packs with 0400
-mode (maint is fine).
+I think you'll want that option as a module parameter to make all users happy.
+And while you're at it, fmask and dmask are good candidates for module
+parameters, too.-)
 
-> Oops.
 
-Oops indeed.
+# echo 3 > /proc/sys/vm/drop_caches
 
+# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
+'"'use POSIX;while (sysread STDIN,$x,4) {$n++ if $x eq "\0\0\0\0"} print
+$n*32,"\n"'\'
+4+0 records in
+4+0 records out
+13954720
+0.76user 0.60system 0:01.95elapsed 69%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (8major+1583minor)pagefaults 0swaps
+
+# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
+'"'use POSIX;while (sysread STDIN,$x,4) {$n++ if $x eq "\0\0\0\0"} print
+$n*32,"\n"'\'
+4+0 records in
+4+0 records out
+13955392
+0.74user 0.69system 0:01.50elapsed 95%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+1591minor)pagefaults 0swaps
+
+# /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
+'"'use POSIX;while (sysread STDIN,$x,4096) {for (unpack "L*",$x){$n++ if !$_}}
+print $n*32,"\n"'\'
+4+0 records in
+4+0 records out
+13955392
+0.43user 0.06system 0:00.50elapsed 97%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+1599minor)pagefaults 0swaps
+
+
+-- 
+The worse the weather, the more you are required to be out in it. 
+
+Friﬂ, Spammer: fv@upXs.7eggert.dyndns.org z@Z1rk.7eggert.dyndns.org
+ VRo@Gb2b4rxc.7eggert.dyndns.org LimmgYHv@smpZsGtB.7eggert.dyndns.org
