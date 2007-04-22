@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXDVHD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754102AbXDVHFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbXDVHD0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 03:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXDVHD0
+	id S1754102AbXDVHFb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 03:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXDVHFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 03:03:26 -0400
-Received: from holomorphy.com ([66.93.40.71]:56924 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbXDVHDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 03:03:25 -0400
-Date: Sun, 22 Apr 2007 00:02:38 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Willy Tarreau <w@1wt.eu>,
-       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070422070238.GH2986@holomorphy.com>
-References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <20070421154614.GA26169@elte.hu> <20070421161818.GC7840@1wt.eu> <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org> <20070421164241.GF2986@holomorphy.com> <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com> <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com> <alpine.LFD.0.98.0704211634130.9964@woody.linux-foundation.org> <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 22 Apr 2007 03:05:31 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:57571 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754102AbXDVHFa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 03:05:30 -0400
+To: ebiederm@xmission.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <m1wt05kgy8.fsf@ebiederm.dsl.xmission.com>
+Subject: Re: [patch 1/8] add user mounts to the kernel
+References: <20070420102532.385211890@szeredi.hu>
+	<20070420102624.975879175@szeredi.hu> <m1wt05kgy8.fsf@ebiederm.dsl.xmission.com>
+Message-Id: <E1HfW5I-00044y-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sun, 22 Apr 2007 09:02:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/21/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->> And how the hell do you imagine you'd even *know* what thread holds the
->> futex?
+> > The MNT_USER flag is not copied on any kind of mount cloning:
+> > namespace creation, binding or propagation.
+> 
+> I half agree, and as an initial approximation this works.
+> Ultimately we should be at the point that for mount propagation
+> that we copy the owner of the from the owner of our parent mount
+> at the propagation destination.
 
-On Sat, Apr 21, 2007 at 06:46:58PM -0700, Ulrich Drepper wrote:
-> We know this in most cases.  This is information recorded, for
-> instance, in the mutex data structure.  You might have missed my "the
-> interface must be extended" part.  This means the PID of the owning
-> thread will have to be passed done.  For PI mutexes this is not
-> necessary since the kernel already has access to the information.
+Yes, that sounds the most sane.
 
-I'm just looking for what people want the API to be here. With that in
-hand we can just go out and do whatever needs to be done.
+Ram, what do you think?
 
+> > +	if (mnt->mnt_flags & MNT_USER)
+> > +		seq_printf(m, ",user=%i", mnt->mnt_uid);
+> How about making the test "if (mnt->mnt_user != &root_user)"
 
--- wli
+We don't want to treat root_user special.  That's what capabilities
+were invented for.
+
+> > Index: linux/include/linux/fs.h
+> > ===================================================================
+> > --- linux.orig/include/linux/fs.h	2007-04-20 11:55:02.000000000 +0200
+> > +++ linux/include/linux/fs.h	2007-04-20 11:55:05.000000000 +0200
+> > @@ -123,6 +123,7 @@ extern int dir_notify_enable;
+> >  #define MS_SLAVE	(1<<19)	/* change to slave */
+> >  #define MS_SHARED	(1<<20)	/* change to shared */
+> >  #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+> > +#define MS_SETUSER	(1<<22) /* set mnt_uid to current user */
+> 
+> If we unconditionally use the fsuid I think we can get away without
+> this flag.
+
+That coudl work if we wouldn't have to worry about breaking the user
+interface.  As it is, we cannot be sure, that existing callers of
+mount(2) don't have fsuid set to some random value.
+
+> >  #define MNT_SHRINKABLE	0x100
+> > +#define MNT_USER	0x200
+> 
+> If we assign a user to all mount points and root gets to own the
+> initial set of mounts then we don't need the internal MNT_USER
+> flag.
+
+I think we do want to treat "owned" mounts special, rather than
+treating user=0 mounts special.
+
+> > +
+> > +	uid_t mnt_uid;			/* owner of the mount */
+> 
+> Can we please make this a user struct.   That requires a bit of
+> reference counting but it has uid namespace benefits as well
+> as making it easy to implement per user mount rlimits.
+
+OK, can you ellaborate, what the uid namespace benifits are?
+
+Miklos
