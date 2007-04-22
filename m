@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753215AbXDVRpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754237AbXDVR6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753215AbXDVRpX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 13:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbXDVRpX
+	id S1754237AbXDVR6u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 13:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXDVR6u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 13:45:23 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:4041 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753215AbXDVRpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 13:45:22 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: 7eggert@gmx.de
-Cc: DervishD <lkml@dervishd.net>, Andrew Morton <akpm@linux-foundation.org>,
-       Juergen Beisert <juergen127@kreuzholzen.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Wrong free clusters count on FAT32
-References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
-	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
-	<8cAMl-du-3@gated-at.bofh.it> <8cBS7-1Qa-1@gated-at.bofh.it>
-	<8cIqE-3qZ-9@gated-at.bofh.it> <8cITG-40H-5@gated-at.bofh.it>
-	<E1Hffkv-0001QP-3C@be1.lrz>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 23 Apr 2007 02:44:59 +0900
-In-Reply-To: <E1Hffkv-0001QP-3C@be1.lrz> (Bodo Eggert's message of "Sun\, 22 Apr 2007 19\:21\:04 +0200")
-Message-ID: <87slasqp5w.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
+	Sun, 22 Apr 2007 13:58:50 -0400
+Received: from fed1rmmtao106.cox.net ([68.230.241.40]:62206 "EHLO
+	fed1rmmtao106.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934AbXDVR6t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 13:58:49 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.1.2
+References: <7vhcrml4wx.fsf@assigned-by-dhcp.cox.net>
+	<7v1widrl0o.fsf@assigned-by-dhcp.cox.net>
+	<alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
+Date: Sun, 22 Apr 2007 10:58:48 -0700
+In-Reply-To: <alpine.LFD.0.98.0704221019100.9964@woody.linux-foundation.org>
+	(Linus Torvalds's message of "Sun, 22 Apr 2007 10:22:47 -0700 (PDT)")
+Message-ID: <7vvefonvdz.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert <7eggert@gmx.de> writes:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> # /usr/bin/time sh -c "dd if=/dev/hda2 bs=$((77834925/64)) count=4 | perl -e
-> '"'use POSIX;while (sysread STDIN,$x,4) {$n++ if $x eq "\0\0\0\0"} print
-> $n*32,"\n"'\'
-> 4+0 records in
-> 4+0 records out
-> 13954720
-> 0.76user 0.60system 0:01.95elapsed 69%CPU (0avgtext+0avgdata 0maxresident)k
-> 0inputs+0outputs (8major+1583minor)pagefaults 0swaps
+> On Sat, 21 Apr 2007, Junio C Hamano wrote:
+>>
+>> The latest maintenance release GIT 1.5.1.2 is available at the
+>> usual places:
+>
+> Well, by "available" you probably mean "not available", because it doesn't 
+> actually work.
+>
+> I get EPERM on pack-e00affefe0f779d0f9b0507aef25a1733f4a9117.idx/pack, 
+> because they are
+>
+> 	-r-------- 1 junio junio  1120880
+> 	-r-------- 1 junio junio 15709370
+>
+> respectively.
 
-dd will use readahead, and I'm thinking about usb. Well, anyway,
-recalc is default in new patch.
+I've run fsck and then flipped the bits manually on these files
+to unblock people, but I have no idea how this happened.  These
+two were the only files that had the funny bits in the
+repository.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+        -r-------- 1 junio junio  1120880 Apr 22 06:46
+        -r-------- 1 junio junio 15709370 Apr 22 06:46
+
+I can tell from the output of "last" on that machine that I was
+present and I am reasonably sure this was from "git repack -a -d"
+I manually did.  But my umask is 0002...
+
+Gaah.  "git repack -a -d" from 'master' leaves packs with 0400
+mode (maint is fine).
+
+> Oops.
+
+Oops indeed.
+
