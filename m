@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXDVMOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbXDVMPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbXDVMOi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbXDVMOi
+	id S1754214AbXDVMPZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbXDVMPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:14:38 -0400
-Received: from mail.suse.de ([195.135.220.2]:42216 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754200AbXDVMOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:14:37 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: Fix potential overflow in perfctr reservation
-Date: Sun, 22 Apr 2007 14:14:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200704172359.l3HNxAMV024586@hera.kernel.org> <20070422010917.6427e7a2.akpm@linux-foundation.org>
-In-Reply-To: <20070422010917.6427e7a2.akpm@linux-foundation.org>
+	Sun, 22 Apr 2007 08:15:25 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:59165 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbXDVMPX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 08:15:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G5rw0cAZEEg0SqhUYfdfcX/x1drF8bPanTo+Uud5AactoQfQ2SYxSyLmcEFWIT45EnukApz1QmNsI0PQgcA0CiNBiy8xRsC/vjyiJLmMswB1KQhbrYFKs0FK6xnr3OPsQpD8lyquxBqQXg8/YaJ0Tf3Wy3sMNF2A3u3/W9XHVq4=
+Message-ID: <5a04609e0704220515h4049afas4dc98b90e66d1d16@mail.gmail.com>
+Date: Sun, 22 Apr 2007 15:15:22 +0300
+From: "Sergey Yanovich" <ynvich@gmail.com>
+To: "Alex Dubov" <oakad@yahoo.com>
+Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070422013411.45105.qmail@web36709.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704221414.32946.ak@suse.de>
+References: <4627D402.8020107@gmail.com>
+	 <20070422013411.45105.qmail@web36709.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-> 
-> The created a warning storm:
+> > Finally, tifm_sd module needs to be manually inserted.
+>
+> By the way, the driver emits custom uevent when the new card is detected. I was going to look at
+> this some day in the future, but if you want to mess a little with hotplug scripts the issue can
+> be easily solved.
 
-Hmm, yes good idea to fix that. Probably for x86-64 too.
+It would be nice if you to provide a sample script. Unfortunately,
+hotplug scripts are distribution specific. And internal knowledge of
+your modules is required to write one.
 
-> 
-> I worry rather a lot about how well runtime tested this very late change
-> was, 
+For a typical, non-linux-geek user there are just two states of the device -
+available and not available. Ububtu is famous for its end-user support.
+They ship your driver since linux-2.6.17. But they pack it in one module.
+And that is _much_ easier, then a hotplug script.
 
-I tested it with oprofile and checked the nmi watchdog.
+And maybe, you would care to create a branch in you repository for
+in-the-tree compiles.
 
-> and whether it works correctly even with this fix applied.  Perhaps 
-> we should jsut revert?
+> As I already said before, many of the complications exist because this is  an universal adapter,
+> and memorystick support is quite near in the queue.
 
-Then you get the memory corruption back.
+The scope of your project is exceptionally wide. You plan to develop a whole
+new layer for memorystick as a part.
 
-The change really only enlarges the bitmaps a little anyways, it does not
-change any algorithms.
+At the same time, the [tifm_sd] code is device specific, and [tifm_7xx1]
+code is also device specific. And both modules depend on the same device
+(of family of devices). That makes me think that a bus/controller/slot
+construction is not going to make thing any easier, but adds complexity.
 
--Andi
- 
- 
-
+In case of MMC/SD all abstraction has already been separated by the mmc
+layer, in case of MS it is up to you, how to implement.
