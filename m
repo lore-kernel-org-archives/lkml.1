@@ -1,176 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030572AbXDVTjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030788AbXDVTkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030572AbXDVTjS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 15:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030727AbXDVTjS
+	id S1030788AbXDVTkH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 15:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDVTkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 15:39:18 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38134 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030572AbXDVTjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 15:39:17 -0400
-Date: Sun, 22 Apr 2007 20:38:43 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, "Darrick J. Wong" <djwong@us.ibm.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Subject: Re: [PATCH] sas_scsi_host: Convert to use the kthread API
-Message-ID: <20070422193843.GA17841@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
-	linux-kernel@vger.kernel.org, "Darrick J. Wong" <djwong@us.ibm.com>,
-	James Bottomley <James.Bottomley@SteelEye.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769695611073-git-send-email-ebiederm@xmission.com> <20070419173753.8ba2f955.akpm@linux-foundation.org>
+	Sun, 22 Apr 2007 15:40:07 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:44621 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030788AbXDVTkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 15:40:06 -0400
+Date: Sun, 22 Apr 2007 21:40:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mikael Starvik <mikael.starvik@axis.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 2.6.20 1/14] CRIS architecture update - Build system
+Message-ID: <20070422194056.GA17258@uranus.ravnborg.org>
+References: <BFECAF9E178F144FAEF2BF4CE739C66803BEEE17@exmail1.se.axis.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070419173753.8ba2f955.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C66803BEEE17@exmail1.se.axis.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 19, 2007 at 05:37:53PM -0700, Andrew Morton wrote:
-> On Thu, 19 Apr 2007 01:58:38 -0600
-> "Eric W. Biederman" <ebiederm@xmission.com> wrote:
-> 
-> > From: Eric W. Biederman <ebiederm@xmission.com>
-> > 
-> > This patch modifies the sas scsi host thread startup
-> > to use kthread_run not kernel_thread and deamonize.
-> > kthread_run is slightly simpler and more maintainable.
-> > 
-> 
-> Again, I'll rename this to "partially convert...".  This driver should be
-> using kthread_should_stop() and kthread_stop() rather than the
-> apparently-unnecessary ->queue_thread_kill thing.
-> 
-> This driver was merged two and a half years after the kthread API was
-> available.   Our coding-vs-reviewing effort is out of balance.
+On Sun, Apr 22, 2007 at 09:24:34PM +0200, Mikael Starvik wrote:
+> The attached patch improves the CRIS build system by allowing out-of-tree objdir everywhere
+I have browsed through the changes and this is in addition a much more readable
+set of Makefile's - good work!
 
-Here's a full conversion.
+I stumbled over this:
+
++AFLAGS = -traditional
++LD = gcc-cris -mlinux -nostdlib
++LDFLAGS = -T $(obj)/rescue.ld
+
+We have in i386 / x86_64 recently managed to get rid of -traditional.
+And it looks a bit strange that you use gcc as linker.
+
+But thats how it was also done before so not a big issue.
+
+>  
+> Signed-off-by: Mikael Starvik <starvik@axis.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/drivers/scsi/libsas/sas_scsi_host.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/libsas/sas_scsi_host.c	2007-04-22 20:30:39.000000000 +0200
-+++ linux-2.6/drivers/scsi/libsas/sas_scsi_host.c	2007-04-22 20:36:51.000000000 +0200
-@@ -23,6 +23,8 @@
-  *
-  */
- 
-+#include <linux/kthread.h>
-+
- #include "sas_internal.h"
- 
- #include <scsi/scsi_host.h>
-@@ -184,7 +186,7 @@ static int sas_queue_up(struct sas_task 
- 	list_add_tail(&task->list, &core->task_queue);
- 	core->task_queue_size += 1;
- 	spin_unlock_irqrestore(&core->task_queue_lock, flags);
--	up(&core->queue_thread_sema);
-+	wake_up_process(core->queue_thread);
- 
- 	return 0;
- }
-@@ -819,7 +821,7 @@ static void sas_queue(struct sas_ha_stru
- 	struct sas_internal *i = to_sas_internal(core->shost->transportt);
- 
- 	spin_lock_irqsave(&core->task_queue_lock, flags);
--	while (!core->queue_thread_kill &&
-+	while (!kthread_should_stop() &&
- 	       !list_empty(&core->task_queue)) {
- 
- 		can_queue = sas_ha->lldd_queue_size - core->task_queue_size;
-@@ -858,8 +860,6 @@ static void sas_queue(struct sas_ha_stru
- 	spin_unlock_irqrestore(&core->task_queue_lock, flags);
- }
- 
--static DECLARE_COMPLETION(queue_th_comp);
--
- /**
-  * sas_queue_thread -- The Task Collector thread
-  * @_sas_ha: pointer to struct sas_ha
-@@ -867,40 +867,33 @@ static DECLARE_COMPLETION(queue_th_comp)
- static int sas_queue_thread(void *_sas_ha)
- {
- 	struct sas_ha_struct *sas_ha = _sas_ha;
--	struct scsi_core *core = &sas_ha->core;
- 
--	daemonize("sas_queue_%d", core->shost->host_no);
- 	current->flags |= PF_NOFREEZE;
- 
--	complete(&queue_th_comp);
--
- 	while (1) {
--		down_interruptible(&core->queue_thread_sema);
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule();
- 		sas_queue(sas_ha);
--		if (core->queue_thread_kill)
-+		if (kthread_should_stop())
- 			break;
- 	}
- 
--	complete(&queue_th_comp);
--
- 	return 0;
- }
- 
- int sas_init_queue(struct sas_ha_struct *sas_ha)
- {
--	int res;
- 	struct scsi_core *core = &sas_ha->core;
- 
- 	spin_lock_init(&core->task_queue_lock);
- 	core->task_queue_size = 0;
- 	INIT_LIST_HEAD(&core->task_queue);
--	init_MUTEX_LOCKED(&core->queue_thread_sema);
- 
--	res = kernel_thread(sas_queue_thread, sas_ha, 0);
--	if (res >= 0)
--		wait_for_completion(&queue_th_comp);
--
--	return res < 0 ? res : 0;
-+	core->queue_thread = kthread_run(sas_queue_thread, sas_ha,
-+					 "sas_queue_%d", core->shost->host_no);
-+	if (IS_ERR(core->queue_thread))
-+		return PTR_ERR(core->queue_thread);
-+	return 0;
- }
- 
- void sas_shutdown_queue(struct sas_ha_struct *sas_ha)
-@@ -909,10 +902,7 @@ void sas_shutdown_queue(struct sas_ha_st
- 	struct scsi_core *core = &sas_ha->core;
- 	struct sas_task *task, *n;
- 
--	init_completion(&queue_th_comp);
--	core->queue_thread_kill = 1;
--	up(&core->queue_thread_sema);
--	wait_for_completion(&queue_th_comp);
-+	kthread_stop(core->queue_thread);
- 
- 	if (!list_empty(&core->task_queue))
- 		SAS_DPRINTK("HA: %llx: scsi core task queue is NOT empty!?\n",
-Index: linux-2.6/include/scsi/libsas.h
-===================================================================
---- linux-2.6.orig/include/scsi/libsas.h	2007-04-22 20:32:41.000000000 +0200
-+++ linux-2.6/include/scsi/libsas.h	2007-04-22 20:32:59.000000000 +0200
-@@ -314,8 +314,7 @@ struct scsi_core {
- 	struct list_head  task_queue;
- 	int               task_queue_size;
- 
--	struct semaphore  queue_thread_sema;
--	int               queue_thread_kill;
-+	struct task_struct *queue_thread;
- };
- 
- struct sas_ha_event {
+	Sam
