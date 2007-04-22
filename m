@@ -1,154 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030938AbXDVPNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030940AbXDVPOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030938AbXDVPNU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 11:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030940AbXDVPNU
+	id S1030940AbXDVPOU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 11:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030941AbXDVPOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 11:13:20 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:4010 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030938AbXDVPNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 11:13:19 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: Andreas Schwab <schwab@suse.de>
-Cc: 7eggert@gmx.de, Juergen Beisert <juergen127@kreuzholzen.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Wrong free clusters count on FAT32
-References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
-	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
-	<E1Hfc7X-00010D-09@be1.lrz> <87wt04sdyb.fsf@duaron.myhome.or.jp>
-	<877is4scre.fsf@duaron.myhome.or.jp> <jewt04e9zn.fsf@sykes.suse.de>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 23 Apr 2007 00:13:11 +0900
-In-Reply-To: <jewt04e9zn.fsf@sykes.suse.de> (Andreas Schwab's message of "Sun\, 22 Apr 2007 16\:53\:32 +0200")
-Message-ID: <873b2ssarc.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Apr 2007 11:14:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60962 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030940AbXDVPOT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 11:14:19 -0400
+Date: Sun, 22 Apr 2007 16:17:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       kkeil@suse.de, i4ldeveloper@listserv.isdn4linux.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
+Message-ID: <20070422161708.54253ab7@the-village.bc.nu>
+In-Reply-To: <462B712D.7070504@imap.cc>
+References: <20070115172912.GA3323@pingi.kke.suse.de>
+	<462A0CA7.2090908@imap.cc>
+	<20070421215844.542d3aab@the-village.bc.nu>
+	<20070421.151052.78709111.davem@davemloft.net>
+	<462B54A0.9000203@imap.cc>
+	<20070422135835.037e323c@the-village.bc.nu>
+	<462B712D.7070504@imap.cc>
+X-Mailer: Claws Mail 2.8.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab <schwab@suse.de> writes:
+> obsolete and correctly re-labelled as such. As for the && !HOTPLUG
+> menace you keep touting, that might perhaps be applied to some of
+> the individual hardware device drivers but certainly not to the
 
-> OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
->
->> diff -puN Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32 Documentation/filesystems/vfat.txt
->> --- linux-2.6/Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32	2007-04-22 23:06:21.000000000 +0900
->> +++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2007-04-22 23:28:19.000000000 +0900
->> @@ -34,6 +34,13 @@ iocharset=name -- Character set to use f
->>  		 NOTE: "iocharset=utf8" is not recommended. If unsure,
->>  		 you should consider the following option instead.
->
-> "the following option" is no longer correct.
+In my tree its just the drivers that still use pci_find_device.
 
-Whoops. Thanks for correcting it.
-The patch was fixed.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> > Want to be on that. There is nobody maintaining it. That isn't a
+> > sustainable situation so it will break.
+> 
+> Not sure I'm following you. There is an official maintainer, and
+> although he's currently rather silent on this topic, there's no
+> reason to believe he won't step up if there's actually some urgent
+> maintaining to be done.
 
+Well once it ends up && BROKEN perhaps patches will appear, or before
+that. If not well the pain factor will resolve the problem.
 
+> > No risk of deadlock. It'll progress to && BROKEN which will either cause
+> > sufficient pain for someone to get off their arse and fix it, for enough
+> > of a vendors users to get the vendor to do the work or for someone who
+> > cares to pay a third party to do the work.
+> 
+> Do I sense some hidden agenda there?
 
-It seems that the recent Windows changed specification, and it's
-undocumented. Windows doesn't update ->free_clusters correctly.
+No I'm speaking from experience - if a subsystem maintainer is too
+busy/working on other projects and the subsystem stops working it
+produces a rapid and sudden supply of new maintainers, unless nobody
+cares in which case it can go in the bitbucket.
 
-This patch doesn't use ->free_clusters by default. (instead, add
-"usefree" for forcing to use it)
+> The isdn4linux subsystem will not "progress" to BROKEN unless
+> somebody pushes it there. 
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
+It has drivers using functions that will soon be deleted. That isn't so
+much as pushing more like getting fed up of pulling someone elses cart
+along.
 
- Documentation/filesystems/vfat.txt |    7 +++++++
- fs/fat/inode.c                     |   14 +++++++++++---
- include/linux/msdos_fs.h           |    3 ++-
- 3 files changed, 20 insertions(+), 4 deletions(-)
-
-diff -puN fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32 fs/fat/inode.c
---- linux-2.6/fs/fat/inode.c~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
-+++ linux-2.6-hirofumi/fs/fat/inode.c	2007-04-22 13:18:07.000000000 +0900
-@@ -825,6 +825,8 @@ static int fat_show_options(struct seq_f
- 	}
- 	if (opts->name_check != 'n')
- 		seq_printf(m, ",check=%c", opts->name_check);
-+	if (opts->usefree)
-+		seq_puts(m, ",usefree");
- 	if (opts->quiet)
- 		seq_puts(m, ",quiet");
- 	if (opts->showexec)
-@@ -850,7 +852,7 @@ static int fat_show_options(struct seq_f
- 
- enum {
- 	Opt_check_n, Opt_check_r, Opt_check_s, Opt_uid, Opt_gid,
--	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_nocase,
-+	Opt_umask, Opt_dmask, Opt_fmask, Opt_codepage, Opt_usefree, Opt_nocase,
- 	Opt_quiet, Opt_showexec, Opt_debug, Opt_immutable,
- 	Opt_dots, Opt_nodots,
- 	Opt_charset, Opt_shortname_lower, Opt_shortname_win95,
-@@ -872,6 +874,7 @@ static match_table_t fat_tokens = {
- 	{Opt_dmask, "dmask=%o"},
- 	{Opt_fmask, "fmask=%o"},
- 	{Opt_codepage, "codepage=%u"},
-+	{Opt_usefree, "usefree"},
- 	{Opt_nocase, "nocase"},
- 	{Opt_quiet, "quiet"},
- 	{Opt_showexec, "showexec"},
-@@ -951,7 +954,7 @@ static int parse_options(char *options, 
- 	opts->quiet = opts->showexec = opts->sys_immutable = opts->dotsOK =  0;
- 	opts->utf8 = opts->unicode_xlate = 0;
- 	opts->numtail = 1;
--	opts->nocase = 0;
-+	opts->usefree = opts->nocase = 0;
- 	*debug = 0;
- 
- 	if (!options)
-@@ -979,6 +982,9 @@ static int parse_options(char *options, 
- 		case Opt_check_n:
- 			opts->name_check = 'n';
- 			break;
-+		case Opt_usefree:
-+			opts->usefree = 1;
-+			break;
- 		case Opt_nocase:
- 			if (!is_vfat)
- 				opts->nocase = 1;
-@@ -1306,7 +1312,9 @@ int fat_fill_super(struct super_block *s
- 			       le32_to_cpu(fsinfo->signature2),
- 			       sbi->fsinfo_sector);
- 		} else {
--			sbi->free_clusters = le32_to_cpu(fsinfo->free_clusters);
-+			if (sbi->options.usefree)
-+				sbi->free_clusters =
-+					le32_to_cpu(fsinfo->free_clusters);
- 			sbi->prev_free = le32_to_cpu(fsinfo->next_cluster);
- 		}
- 
-diff -puN include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32 include/linux/msdos_fs.h
---- linux-2.6/include/linux/msdos_fs.h~fat_dont-use_free_clusters-for-fat32	2007-04-22 13:07:05.000000000 +0900
-+++ linux-2.6-hirofumi/include/linux/msdos_fs.h	2007-04-22 13:09:14.000000000 +0900
-@@ -205,7 +205,8 @@ struct fat_mount_options {
- 		 numtail:1,       /* Does first alias have a numeric '~1' type tail? */
- 		 atari:1,         /* Use Atari GEMDOS variation of MS-DOS fs */
- 		 flush:1,	  /* write things quickly */
--		 nocase:1;	  /* Does this need case conversion? 0=need case conversion*/
-+		 nocase:1,	  /* Does this need case conversion? 0=need case conversion*/
-+		 usefree:1;	  /* Use free_clusters for FAT32 */
- };
- 
- #define FAT_HASH_BITS	8
-diff -puN Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32 Documentation/filesystems/vfat.txt
---- linux-2.6/Documentation/filesystems/vfat.txt~fat_dont-use_free_clusters-for-fat32	2007-04-22 23:06:21.000000000 +0900
-+++ linux-2.6-hirofumi/Documentation/filesystems/vfat.txt	2007-04-23 00:09:35.000000000 +0900
-@@ -57,6 +57,13 @@ nonumtail=<bool> -- When creating 8.3 al
-                  currently exist in the directory, 'longfile.txt' will
-                  be the short alias instead of 'longfi~1.txt'. 
-                   
-+usefree       -- Use the "free clusters" value stored on FSINFO. It'll
-+                 be used to determine number of free clusters without
-+                 scanning disk. But it's not used by default, because
-+                 recent Windows don't update it correctly in some
-+                 case. If you are sure the "free clusters" on FSINFO is
-+                 correct, by this option you can avoid scanning disk.
-+
- quiet         -- Stops printing certain warning messages.
- 
- check=s|r|n   -- Case sensitivity checking setting.
-_
