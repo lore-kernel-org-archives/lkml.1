@@ -1,199 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030484AbXDVMPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030371AbXDVMTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030484AbXDVMPl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 08:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030512AbXDVMPl
+	id S1030371AbXDVMTb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 08:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030502AbXDVMTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 08:15:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50388 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030484AbXDVMPj (ORCPT
+	Sun, 22 Apr 2007 08:19:31 -0400
+Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:49899 "EHLO
+	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030371AbXDVMTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 08:15:39 -0400
-Date: Sun, 22 Apr 2007 13:15:24 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Containers <containers@lists.osdl.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, greg@kroah.com,
-       kristen.c.accardi@intel.com
-Subject: Re: Remaining straight forward kthread API conversions...
-Message-ID: <20070422121524.GD20763@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Containers <containers@lists.osdl.org>,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-	greg@kroah.com, kristen.c.accardi@intel.com
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 22 Apr 2007 08:19:30 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>
+Subject: Re: [ck] Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Sun, 22 Apr 2007 22:18:32 +1000
+User-Agent: KMail/1.9.5
+Cc: Willy Tarreau <w@1wt.eu>, Nick Piggin <npiggin@suse.de>,
+       Gene Heskett <gene.heskett@gmail.com>, Al Boldi <a1426z@gawab.com>,
+       Bill Huey <billh@gnuppy.monkey.org>, Mike Galbraith <efault@gmx.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Matt Mackall <mpm@selenic.com>
+References: <200704221441.48897.kernel@kolivas.org> <20070422091451.GA15913@1wt.eu> <200704222142.52325.kernel@kolivas.org>
+In-Reply-To: <200704222142.52325.kernel@kolivas.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Length: 4617
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704222218.32754.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks like you were missing at least the pcie hotplug driver.  Another
-one of the horrible thread abuses in drivers/pci/hotpug.
+On Sunday 22 April 2007 21:42, Con Kolivas wrote:
 
- - full conversion to kthread infrastructure
- - use wake_up_process to wake the thread up
+Willy I'm still investigating the idle time and fluctuating load as a separate 
+issue. Is it possible the multiple ocbench processes are naturally 
+synchronising and desynchronising and choosing to sleep and/or run at the 
+same time? I can remove the idle time entirely by running ocbench at nice 19 
+which means they are all forced to run at basically the same time by the 
+scheduler.
 
-Like most pci hotplug drivers it still uses very race non-atomic variable
-assignment to communicated with the thread, but that's something the
-maintainers should look into.
+Anyway the more important part is... Can you test this patch please? Dump
+all the other patches I sent you post 045. Michael, if you could test too
+please?
 
+Thanks!
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
 
-Index: linux-2.6/drivers/pci/hotplug/pciehp_ctrl.c
+It appears load weight still wasn't being set in enough places and changing
+where rr_interval was being set a few iterations of SD ago might have revealed
+that bug. Ensure load_weight is set whenever p->quota is set and simplify
+dramatically the load_weight.
+
+Signed-off-by: Con Kolivas <kernel@kolivas.org>
+
+---
+ kernel/sched.c |   35 ++++++++++++++++-------------------
+ 1 file changed, 16 insertions(+), 19 deletions(-)
+
+Index: linux-2.6.21-rc7-sd/kernel/sched.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/hotplug/pciehp_ctrl.c	2007-04-22 11:36:58.000000000 +0200
-+++ linux-2.6/drivers/pci/hotplug/pciehp_ctrl.c	2007-04-22 11:42:56.000000000 +0200
-@@ -32,14 +32,13 @@
- #include <linux/types.h>
- #include <linux/smp_lock.h>
- #include <linux/pci.h>
-+#include <linux/kthread.h>
- #include "../pci.h"
- #include "pciehp.h"
+--- linux-2.6.21-rc7-sd.orig/kernel/sched.c	2007-04-22 21:37:25.000000000 +1000
++++ linux-2.6.21-rc7-sd/kernel/sched.c	2007-04-22 22:01:48.000000000 +1000
+@@ -102,8 +102,6 @@ unsigned long long __attribute__((weak))
+  */
+ int rr_interval __read_mostly = 8;
  
- static void interrupt_event_handler(struct controller *ctrl);
- 
--static struct semaphore event_semaphore;	/* mutex for process loop (up if something to process) */
--static struct semaphore event_exit;		/* guard ensure thread has exited before calling it quits */
--static int event_finished;
-+static struct task_struct *pciehpd_event_thread;
- static unsigned long pushbutton_pending;	/* = 0 */
- static unsigned long surprise_rm_pending;	/* = 0 */
- 
-@@ -93,8 +92,9 @@ u8 pciehp_handle_attention_button(u8 hp_
- 		info("Button ignore on Slot(%s)\n", slot_name(p_slot));
- 	}
- 
-+	/* signal event thread that new event is posted */
- 	if (rc)
--		up(&event_semaphore);	/* signal event thread that new event is posted */
-+		wake_up_process(pciehpd_event_thread);
- 
- 	return 0;
- 
-@@ -135,8 +135,9 @@ u8 pciehp_handle_switch_change(u8 hp_slo
- 		taskInfo->event_type = INT_SWITCH_CLOSE;
- 	}
- 
-+	/* signal event thread that new event is posted */
- 	if (rc)
--		up(&event_semaphore);	/* signal event thread that new event is posted */
-+		wake_up_process(pciehpd_event_thread);
- 
- 	return rc;
+-#define DEF_TIMESLICE		(rr_interval * 20)
+-
+ /*
+  * This contains a bitmap for each dynamic priority level with empty slots
+  * for the valid priorities each different nice level can have. It allows
+@@ -886,16 +884,10 @@ static int task_timeslice(struct task_st
  }
-@@ -178,8 +179,9 @@ u8 pciehp_handle_presence_change(u8 hp_s
- 		taskInfo->event_type = INT_PRESENCE_OFF;
- 	}
  
-+	/* signal event thread that new event is posted */
- 	if (rc)
--		up(&event_semaphore);	/* signal event thread that new event is posted */
-+		wake_up_process(pciehpd_event_thread);
+ /*
+- * Assume: static_prio_timeslice(NICE_TO_PRIO(0)) == DEF_TIMESLICE
+- * If static_prio_timeslice() is ever changed to break this assumption then
+- * this code will need modification. Scaled as multiples of milliseconds.
+- */
+-#define TIME_SLICE_NICE_ZERO DEF_TIMESLICE
+-#define LOAD_WEIGHT(lp) \
+-	(((lp) * SCHED_LOAD_SCALE) / TIME_SLICE_NICE_ZERO)
+-#define TASK_LOAD_WEIGHT(p)	LOAD_WEIGHT(task_timeslice(p))
+-#define RTPRIO_TO_LOAD_WEIGHT(rp)	\
+-	(LOAD_WEIGHT((rr_interval + 20 + (rp))))
++ * The load weight is basically the task_timeslice in ms. Realtime tasks are
++ * special cased to be proportionately larger by their rt_priority.
++ */
++#define RTPRIO_TO_LOAD_WEIGHT(rp)	((rr_interval + 20 + (rp)))
  
- 	return rc;
- }
-@@ -217,8 +219,10 @@ u8 pciehp_handle_power_fault(u8 hp_slot,
- 		taskInfo->event_type = INT_POWER_FAULT;
- 		info("power fault bit %x set\n", hp_slot);
- 	}
-+
-+	/* signal event thread that new event is posted */
- 	if (rc)
--		up(&event_semaphore);	/* signal event thread that new event is posted */
-+		wake_up_process(pciehpd_event_thread);
- 
- 	return rc;
- }
-@@ -362,7 +366,7 @@ static void pushbutton_helper_thread(uns
+ static void set_load_weight(struct task_struct *p)
  {
- 	pushbutton_pending = data;
+@@ -912,7 +904,7 @@ static void set_load_weight(struct task_
+ #endif
+ 			p->load_weight = RTPRIO_TO_LOAD_WEIGHT(p->rt_priority);
+ 	} else
+-		p->load_weight = TASK_LOAD_WEIGHT(p);
++		p->load_weight = task_timeslice(p);
+ }
  
--	up(&event_semaphore);
-+	wake_up_process(pciehpd_event_thread);
+ static inline void
+@@ -995,7 +987,7 @@ static int effective_prio(struct task_st
+  * nice -20 = 10 * rr_interval. nice 1-19 = rr_interval / 2.
+  * Value returned is in microseconds.
+  */
+-static unsigned int rr_quota(struct task_struct *p)
++static inline unsigned int rr_quota(struct task_struct *p)
+ {
+ 	int nice = TASK_NICE(p), rr = rr_interval;
+ 
+@@ -1009,6 +1001,13 @@ static unsigned int rr_quota(struct task
+ 	return MS_TO_US(rr);
+ }
+ 
++/* Every time we set the quota we need to set the load weight */
++static void set_quota(struct task_struct *p)
++{
++	p->quota = rr_quota(p);
++	set_load_weight(p);
++}
++
+ /*
+  * activate_task - move a task to the runqueue and do priority recalculation
+  */
+@@ -1036,7 +1035,7 @@ static void activate_task(struct task_st
+ 				     (now - p->timestamp) >> 20);
+ 	}
+ 
+-	p->quota = rr_quota(p);
++	set_quota(p);
+ 	p->prio = effective_prio(p);
+ 	p->timestamp = now;
+ 	__activate_task(p, rq);
+@@ -3885,8 +3884,7 @@ void set_user_nice(struct task_struct *p
+ 	p->static_prio = NICE_TO_PRIO(nice);
+ 	old_prio = p->prio;
+ 	p->prio = effective_prio(p);
+-	p->quota = rr_quota(p);
+-	set_load_weight(p);
++	set_quota(p);
+ 	delta = p->prio - old_prio;
+ 
+ 	if (queued) {
+@@ -4020,8 +4018,7 @@ static void __setscheduler(struct task_s
+ 	p->normal_prio = normal_prio(p);
+ 	/* we are holding p->pi_lock already */
+ 	p->prio = rt_mutex_getprio(p);
+-	p->quota = rr_quota(p);
+-	set_load_weight(p);
++	set_quota(p);
  }
  
  /**
-@@ -452,19 +456,14 @@ static void pciehp_surprise_rm_thread(un
- 
- 
- /* this is the main worker thread */
--static int event_thread(void* data)
-+static int event_thread(void *data)
- {
- 	struct controller *ctrl;
--	lock_kernel();
--	daemonize("pciehpd_event");
--
--	unlock_kernel();
- 
- 	while (1) {
--		dbg("!!!!event_thread sleeping\n");
--		down_interruptible (&event_semaphore);
--		dbg("event_thread woken finished = %d\n", event_finished);
--		if (event_finished || signal_pending(current))
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		schedule();
-+		if (kthread_should_stop())
- 			break;
- 		/* Do stuff here */
- 		if (pushbutton_pending)
-@@ -476,24 +475,15 @@ static int event_thread(void* data)
- 				interrupt_event_handler(ctrl);
- 	}
- 	dbg("event_thread signals exit\n");
--	up(&event_exit);
- 	return 0;
- }
- 
- int pciehp_event_start_thread(void)
- {
--	int pid;
--
--	/* initialize our semaphores */
--	init_MUTEX_LOCKED(&event_exit);
--	event_finished=0;
--
--	init_MUTEX_LOCKED(&event_semaphore);
--	pid = kernel_thread(event_thread, NULL, 0);
--
--	if (pid < 0) {
-+	pciehpd_event_thread = kthread_run(event_thread, NULL, "pciehpd_event");
-+	if (IS_ERR(pciehpd_event_thread)) {
- 		err ("Can't start up our event thread\n");
--		return -1;
-+		return PTR_ERR(pciehpd_event_thread);
- 	}
- 	return 0;
- }
-@@ -501,9 +491,7 @@ int pciehp_event_start_thread(void)
- 
- void pciehp_event_stop_thread(void)
- {
--	event_finished = 1;
--	up(&event_semaphore);
--	down(&event_exit);
-+	kthread_stop(pciehpd_event_thread);
- }
- 
- 
-@@ -624,7 +612,7 @@ static void interrupt_event_handler(stru
- 						dbg("Surprise Removal\n");
- 						if (p_slot) {
- 							surprise_rm_pending = (unsigned long) p_slot;
--							up(&event_semaphore);
-+							wake_up_process(pciehpd_event_thread);
- 							update_slot_info(p_slot);
- 						}
- 					}
+
+-- 
+-ck
