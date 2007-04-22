@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030848AbXDVNMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030847AbXDVNS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030848AbXDVNMJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 09:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030857AbXDVNMJ
+	id S1030847AbXDVNS3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 09:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030857AbXDVNS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 09:12:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:14234 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030852AbXDVNMI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 09:12:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:date:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type:from;
-        b=K7IjKkEpoOt8pjRXqWnWMsvoaIU7TSPxvObApHJJj0sfTLRgrPNbe/GYGtf5noaYNWELE26mra03c8xtcTQMMdXYgHbQF1gE63EOyBtbxGJlQWtw6UuATbItZyRln2hyvse5kXOB6dADmTTbO3s7iDHi1iBG/BTXP1+cAYGvZ7A=
-Date: Sun, 22 Apr 2007 14:20:26 +0100 (BST)
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: InitIO SCSI: Volunteers required
-In-Reply-To: <20070420103849.7358f1f1@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0704221416440.5217@thor.lan>
-References: <20070420103849.7358f1f1@the-village.bc.nu>
+	Sun, 22 Apr 2007 09:18:29 -0400
+Received: from rtr.ca ([64.26.128.89]:3076 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030847AbXDVNS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 09:18:28 -0400
+Message-ID: <462B60A1.1020407@rtr.ca>
+Date: Sun, 22 Apr 2007 09:18:25 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-From: Srdjan Todorovic <todorovic.s@googlemail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Con Kolivas <kernel@kolivas.org>,
+       Willy Tarreau <w@1wt.eu>, William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <Pine.LNX.4.61.0704211913130.9989@yvahk01.tjqt.qr> <20070421190026.GA25720@elte.hu>
+In-Reply-To: <20070421190026.GA25720@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007, Alan Cox wrote:
-
-> I'm looking for some testers for a revamp of the initio driver. No real
-> code changes other than to hopefully stop it exploding on load on 64bit,
-> but a major reorganisation, commenting and "de-windowsification" so the
-> code is actually readable and I can do the pci_find_device to
-> pci_get_device transitions.
+Ingo Molnar wrote:
+> * Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 > 
-> Alan
+>>> i've attached it below in a standalone form, feel free to put it 
+>>> into SD! :)
+>> Assume X went crazy (lacking any statistics, I make the unproven 
+>> statement that this happens more often than kthreads going berserk), 
+>> then having it niced with minus something is not too nice.
+> 
+> i've not experienced a 'runaway X' personally, at most it would crash or 
+> lock up ;) The value is boot-time and sysctl configurable as well back 
+> to 0.
+>
 
-I have such a card in my box right now, and would definitely be happy to
-test any changes.
+Mmmm.. I've had to kill off the odd X that was locking in 100% CPU usage.
+In the past, this has happened maybe 1-3 times a year or so on my notebook.
 
-I also have a couple of patches for the driver, but need to regenerate
-the diffs and test them. Hopefully I can do that sometime this coming
-week, and I'll be sure to CC you when I post them to linux-scsi ML.
+Now mind you, that usage could have been due to some client process,
+but X is where the 100% showed up, so X is what I nuked.
 
-Thanks
-
-Srdjan Todorovic
+Cheers
