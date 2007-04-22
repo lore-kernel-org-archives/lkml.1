@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbXDVNai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbXDVOEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbXDVNai (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 09:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbXDVNai
+	id S1754233AbXDVOEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 10:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030879AbXDVOEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 09:30:38 -0400
-Received: from rtr.ca ([64.26.128.89]:3631 "EHLO mail.rtr.ca"
+	Sun, 22 Apr 2007 10:04:20 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:3965 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754207AbXDVNah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 09:30:37 -0400
-Message-ID: <462B637A.5080304@rtr.ca>
-Date: Sun, 22 Apr 2007 09:30:34 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1754233AbXDVOEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 10:04:20 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: 7eggert@gmx.de
+Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Wrong free clusters count on FAT32
+References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
+	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
+	<E1Hfc7X-00010D-09@be1.lrz>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Sun, 22 Apr 2007 23:04:12 +0900
+In-Reply-To: <E1Hfc7X-00010D-09@be1.lrz> (Bodo Eggert's message of "Sun\, 22 Apr 2007 15\:28\:50 +0200")
+Message-ID: <87wt04sdyb.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, Con Kolivas <kernel@kolivas.org>,
-       Willy Tarreau <w@1wt.eu>, William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <Pine.LNX.4.61.0704211913130.9989@yvahk01.tjqt.qr> <20070421190026.GA25720@elte.hu> <462B60A1.1020407@rtr.ca> <20070422132732.GB18471@elte.hu>
-In-Reply-To: <20070422132732.GB18471@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> well, i just simulated a runaway X at nice -19 on CFS (on a UP box), and 
-> while the box was a tad laggy, i was able to killall it without 
-> problems, within 2 seconds that also included a 'su'. So it's not an 
-> issue in CFS, it can be turned off, and because every distro has another 
-> way to renice Xorg, this is a convenience hack until Xorg standardizes 
-> it into some xorg.conf field. (It also makes sure that X isnt preempted 
-> by other userspace stuff while it does timing-sensitive operations like 
-> setting the video modes up or switching video modes, etc.)
+Bodo Eggert <7eggert@gmx.de> writes:
 
-Good!
+> Windows _does_ care*, it will pretend the disk to be full.
+
+Did you test on 2000 or XP? (e.g. write 0 to free_clusters, then
+create new file.)
+
+> - usefree is a bad name (I'd suggest recalc_free instead),
+
+Is it about nofree option?
+
+> and your description is too cryptic to be understood by a non-linux
+> FAT expert.
+
+Um... why do we need to care about non-linux people in the patch?
+Anyway, if you correct it, I'll update it gladly.
+
+> - You forgot to update Documentation/
+
+Sure. If you can post the patch, it'll be great.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
