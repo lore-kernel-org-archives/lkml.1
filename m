@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbXDWXGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754469AbXDWXGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbXDWXGf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWXGf
+	id S1754469AbXDWXGl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWXGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:06:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35028 "EHLO ogre.sisk.pl"
+	Mon, 23 Apr 2007 19:06:41 -0400
+Received: from sf01.pol.net ([63.240.86.10]:20026 "EHLO sf01.pol.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460AbXDWXGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:06:34 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
-Date: Tue, 24 Apr 2007 01:10:34 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       ego@in.ibm.com, linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-References: <20070419120131.GB13435@in.ibm.com> <200704240040.18312.rjw@sisk.pl> <20070423225535.GB659@tv-sign.ru>
-In-Reply-To: <20070423225535.GB659@tv-sign.ru>
+	id S1754469AbXDWXGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 19:06:40 -0400
+Message-ID: <8245.10.250.10.1.1177369597.squirrel@www01.pol.sec1.webmd.com>
+Date: Tue, 24 Apr 2007 07:06:37 +0800 (PHT)
+Subject: Re: Prevent softlockup triggering in nvidiafb
+From: "Antonino A. Daplas" <adaplas@pol.net>
+To: <davej@redhat.com>
+In-Reply-To: <20070423161848.GA27649@redhat.com>
+References: <20070423151053.GA5653@redhat.com>
+        <20070423165505.4aecd186@the-village.bc.nu>
+        <20070423161848.GA27649@redhat.com>
+X-Priority: 3
+Importance: Normal
+X-MSMail-Priority: Normal
+Cc: <alan@lxorguk.ukuu.org.uk>, <linux-kernel@vger.kernel.org>,
+       <adaplas@pol.net>
+Reply-To: adaplas@pol.net
+X-Mailer: SquirrelMail (version 1.2.7)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704240110.35770.rjw@sisk.pl>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 24 April 2007 00:55, Oleg Nesterov wrote:
-> On 04/24, Rafael J. Wysocki wrote:
-> >
-> > Should I clear it in dup_task_struct() or is there a better place?
-> 
-> I personally think we should do this in dup_task_struct(). In fact, I believe
-> it is better to replace the
-> 
-> 	*tsk = *orig;
-> 
-> with some helper (like setup_thread_stack() below), and that helper clears
-> ->freezer_flags. Say, copy_task_struct().
+> On Mon, Apr 23, 2007 at 04:55:05PM +0100, Alan Cox wrote:
+>  > On Mon, 23 Apr 2007 11:36:30 -0400
+>  > Dave Jones <davej@redhat.com> wrote:
+>  >
+>  > > If the chip locks up, we get into a long polling loop,
+>  > > where the softlockup detector kicks in.
+>  > > See https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=151878
+> for an example.
+>  >
+>  > Surely in this situation the softlockup report and trap out is
+> precisely what should be occurring.
+>
+> We can't do anything useful with the trace.  It already prints out info
+> that the hardware locked up.
 
-Hmm, wouldn't that be overkill?  copy_task_struct() would have to do
-*tsk = *orig anyway, and we only need to clear one field apart from this.
+And when nvidiafb detects a lockup, it will go to safe mode. Better than
+rebooting, I think.
 
-Some other fields are cleared towards the end of dup_task_struct(), so perhaps
-we could clear freezer_flags in there too?
+Tony
 
-Rafael
+
+
