@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754396AbXDWWac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbXDWWbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754396AbXDWWac (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 18:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbXDWWac
+	id S1754412AbXDWWbD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 18:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbXDWWbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 18:30:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:32073 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbXDWWaY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 18:30:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=tlBh+NDbo+hZOEwxtHI/2uRat4aTroVy1cvPSeWper04k3+5l2je64CzloSooVzx1sluOkJtdrzm4h+AUADgEPp+azi/Ec/ZhSlQF3zUZzowDHMOHB5ShTL6LiTfklZPwfuE5QtZqgx830RQi6YPa38UF9trkfpcPt9DEUuCWmE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH pata-2.6 fix queue] aec62xx: fix PIO/DMA setup issues
-Date: Tue, 24 Apr 2007 00:33:21 +0200
-User-Agent: KMail/1.9.6
-Cc: codermattie@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200702032309.43867.sshtylyov@ru.mvista.com> <200702162321.40813.sshtylyov@ru.mvista.com> <200704222205.27410.sshtylyov@ru.mvista.com>
-In-Reply-To: <200704222205.27410.sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 23 Apr 2007 18:31:00 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35934 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754383AbXDWWae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 18:30:34 -0400
+Subject: Re: 2.6.21-rc7: HPET enabled freeze my machine at boot
+From: john stultz <johnstul@us.ibm.com>
+To: "Guilherme M. Schroeder" <guilherme@centralinf.com.br>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <462A9926.2030303@centralinf.com.br>
+References: <4627D7CF.3070002@centralinf.com.br>
+	 <1f1b08da0704201453i1b2388der1dfe778633fbf6ea@mail.gmail.com>
+	 <462A9926.2030303@centralinf.com.br>
+Content-Type: text/plain
+Date: Mon, 23 Apr 2007 15:30:28 -0700
+Message-Id: <1177367429.12242.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704240033.21244.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 April 2007, Sergei Shtylyov wrote:
-> Teach the driver's tuneproc() method to do PIO auto-runing properly since it
-> treated 5 instead of 255 as auto-tune request, and also passed the mode limit
-> of PIO5 to ide_get_best_pio_mode() despite supporting up to PIO4 only.
-> 
-> While at it, also:
-> 
-> - remove the driver's wrong claim about supporting SWDMA modes;
-> 
-> - stop hooking ide_dma_timeout() method as the handler clearly doesn't fit for
->   the task...
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> ---
-> Warning: the patch has only been compile tested (the driver was on the way of
-> some cleanup -- that's why I got around to fixing it :-).
+On Sat, 2007-04-21 at 20:07 -0300, Guilherme M. Schroeder wrote:
+> john stultz wrote:
+> > On 4/19/07, guilherme <guilherme@centralinf.com.br> wrote:
+> >> Hi,
+> >>
+> >> If i enable "High Resolution Timer Support", my machine stops here at 
+> >> boot:
+> >>
+> >> Clocksource tsc unstable (delta = -297340790165 ns)
+> >> Time: hpet clocksource has been installed.
+> >>
+> >> If i disable HPET, it boots fine.
+> > 
+> > Hmmm.. What happens if you boot w/ clocksource=acpi_pm ?
+> > 
+> > 
+>
+> Boot ok with clocksource=acpi_pm and HPET enabled.
+> Any clue?
 
-applied
+
+I'm suspecting that your HPET counter is being stopped for some reason,
+although why I have no idea.
+
+Just to get a clear picture, does this happen w/ "Tickless System
+(Dynamic ticks)" disabled in the menuconfig?
+
+Thomas, might we be actually stopping the HPET counter instead of
+disabling the HPET interrupt w/ dynticks?
+
+thanks
+-john
+
+
