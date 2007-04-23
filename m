@@ -1,50 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754478AbXDWXQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbXDWXRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754478AbXDWXQX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbXDWXH0
+	id S1754505AbXDWXRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWXG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:07:26 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38852 "EHLO
+	Mon, 23 Apr 2007 19:06:57 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38831 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932478AbXDWXHT (ORCPT
+	with ESMTP id S1754477AbXDWXGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:19 -0400
-Message-Id: <20070423215638.563901986@goop.org>
+	Mon, 23 Apr 2007 19:06:54 -0400
+Message-Id: <20070423215709.627070158@goop.org>
+References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:56:38 -0700
+Date: Mon, 23 Apr 2007 14:56:40 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 00/25] xen: Xen implementation for paravirt_ops
+       lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>, "Jan Beulich" <JBeulich@novell.com>,
+       "Andi Kleen" <ak@muc.de>
+Subject: [PATCH 02/25] xen: Allocate and free vmalloc areas
+Content-Disposition: inline; filename=alloc-vm-area.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+Allocate/destroy a 'vmalloc' VM area: alloc_vm_area and free_vm_area
+The alloc function ensures that page tables are constructed for the
+region of kernel virtual address space and mapped into init_mm.
 
-This series of patches implements the Xen paravirt-ops interface.
-It applies to 2.6.21-rc7 + your patches + the last batch of pv_ops
-patches I posted.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: "Jan Beulich" <JBeulich@novell.com>
+Cc: "Andi Kleen" <ak@muc.de>
 
-This patch generally restricts itself to Xen-specific parts of the tree,
-though it does make a few small changes elsewhere.
+---
+ include/linux/vmalloc.h |    4 +++
+ mm/vmalloc.c            |   51 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 55 insertions(+)
 
-These patches include:
- - some helper routines for allocating address space and walking pagetables
- - Xen interface header files
- - Core Xen implementation
- - Efficient late-pinning/early-unpinning pagetable handling
- - Virtualized time, including stolen time
- - SMP support
- - Preemption support
- - Batched pagetable updates
- - Xen console, based on hvc console
- - Xenbus
- - Netfront, the paravirtualized network device
- - Blockfront, the paravirtualized block device
+===================================================================
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -68,6 +68,10 @@ extern int map_vm_area(struct vm_struct 
+ 			struct page ***pages);
+ extern void unmap_vm_area(struct vm_struct *area);
+ 
++/* Allocate/destroy a 'vmalloc' VM area. */
++extern struct vm_struct *alloc_vm_area(unsigned long size);
++extern void free_vm_area(struct vm_struct *area);
++
+ /*
+  *	Internals.  Dont't use..
+  */
+===================================================================
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -757,3 +757,54 @@ out_einval_locked:
+ }
+ EXPORT_SYMBOL(remap_vmalloc_range);
+ 
++static int f(pte_t *pte, struct page *pmd_page, unsigned long addr, void *data)
++{
++	/* apply_to_page_range() does all the hard work. */
++	return 0;
++}
++
++/**
++ *	alloc_vm_area - allocate a range of kernel address space
++ *	@size:		size of the area
++ *	@returns:	NULL on failure, vm_struct on success
++ *
++ *	This function reserves a range of kernel address space, and
++ *	allocates pagetables to map that range.  No actual mappings
++ *	are created.  If the kernel address space is not shared
++ *	between processes, it syncs the pagetable across all
++ *	processes.
++ */
++struct vm_struct *alloc_vm_area(unsigned long size)
++{
++	struct vm_struct *area;
++
++	area = get_vm_area(size, VM_IOREMAP);
++	if (area == NULL)
++		return NULL;
++
++	/*
++	 * This ensures that page tables are constructed for this region
++	 * of kernel virtual address space and mapped into init_mm.
++	 */
++	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
++				area->size, f, NULL)) {
++		free_vm_area(area);
++		return NULL;
++	}
++
++	/* Make sure the pagetables are constructed in process kernel
++	   mappings */
++	vmalloc_sync_all();
++
++	return area;
++}
++EXPORT_SYMBOL_GPL(alloc_vm_area);
++
++void free_vm_area(struct vm_struct *area)
++{
++	struct vm_struct *ret;
++	ret = remove_vm_area(area->addr);
++	BUG_ON(ret != area);
++	kfree(area);
++}
++EXPORT_SYMBOL_GPL(free_vm_area);
 
-Thanks,
-	J
 -- 
 
