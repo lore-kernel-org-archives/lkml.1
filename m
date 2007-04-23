@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbXDWQLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbXDWQTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbXDWQLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 12:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXDWQLk
+	id S1753981AbXDWQTD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 12:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbXDWQTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 12:11:40 -0400
-Received: from sf01.pol.net ([63.240.86.10]:12285 "EHLO sf01.pol.net"
+	Mon, 23 Apr 2007 12:19:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40142 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753925AbXDWQLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 12:11:39 -0400
-X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 12:11:39 EDT
-Message-ID: <64604.10.250.10.1.1177344350.squirrel@webmail.medscape.com>
-Date: Tue, 24 Apr 2007 00:05:50 +0800 (PHT)
+	id S1753981AbXDWQTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 12:19:01 -0400
+Date: Mon, 23 Apr 2007 12:18:48 -0400
+From: Dave Jones <davej@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Antonino Daplas <adaplas@pol.net>
 Subject: Re: Prevent softlockup triggering in nvidiafb
-From: "Antonino A. Daplas" <adaplas@pol.net>
-To: <davej@redhat.com>
-In-Reply-To: <20070423151053.GA5653@redhat.com>
-References: <20070423151053.GA5653@redhat.com>
-X-Priority: 3
-Importance: Normal
-X-MSMail-Priority: Normal
-Cc: <linux-kernel@vger.kernel.org>, <adaplas@pol.net>
-Reply-To: adaplas@pol.net
-X-Mailer: SquirrelMail (version 1.2.7)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Message-ID: <20070423161848.GA27649@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Antonino Daplas <adaplas@pol.net>
+References: <20070423151053.GA5653@redhat.com> <20070423165505.4aecd186@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423165505.4aecd186@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If the chip locks up, we get into a long polling loop,
-> where the softlockup detector kicks in.
-> See https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=151878
-> for an example.
+On Mon, Apr 23, 2007 at 04:55:05PM +0100, Alan Cox wrote:
+ > On Mon, 23 Apr 2007 11:36:30 -0400
+ > Dave Jones <davej@redhat.com> wrote:
+ > 
+ > > If the chip locks up, we get into a long polling loop,
+ > > where the softlockup detector kicks in.
+ > > See https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=151878
+ > > for an example.
+ > 
+ > Surely in this situation the softlockup report and trap out is precisely
+ > what should be occurring.
 
-Okay. Thanks.
+We can't do anything useful with the trace.  It already prints out
+info that the hardware locked up.
 
->
-> Signed-off-by: Dave Jones <davej@redhat.com>
-Acked-by: Antonino Daplas <adaplas@gmail.com>
+	Dave
 
-Tony
-
-
-
+-- 
+http://www.codemonkey.org.uk
