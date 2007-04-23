@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXDWW4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbXDWW6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbXDWW4w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 18:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbXDWW4v
+	id S1754463AbXDWW6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 18:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWW6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 18:56:51 -0400
-Received: from thunk.org ([69.25.196.29]:40834 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754458AbXDWW4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 18:56:50 -0400
-Date: Mon, 23 Apr 2007 18:56:41 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Hopper <hopper@omnifarious.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Question about Reiser4
-Message-ID: <20070423225640.GA1663@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Hopper <hopper@omnifarious.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <462C2E5B.1080008@redhat.com> <Pine.LNX.4.64.0704230353000.25153@server.thyself> <462C4858.3050006@redhat.com> <Pine.LNX.4.64.0704230555020.25153@server.thyself> <462C4D32.4000909@redhat.com> <Pine.LNX.4.64.0704230611430.25153@server.thyself> <462C5034.9090403@redhat.com> <Pine.LNX.4.64.0704230640540.25153@server.thyself> <20070423010445.454eda63.akpm@linux-foundation.org> <20070423135216.GA2744@omnifarious.org>
+	Mon, 23 Apr 2007 18:58:22 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:16543 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754463AbXDWW6V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 18:58:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kMQlYa0qmxLScG2Qpp9XKtIvgX9+XsS3Ayr6UuyXwRkE6ipn46X3CdH/MUoMJXzeT+GHTvPF31d8F/SC91T1EBIR+jFOV2twVoNDSvMC3/WtuuF6F8WFYFA5GJd85/bdtoHg7fxW0T0Z/DeUiUByJcyIfgJf1nIrcYvdEhNHwOI=
+Message-ID: <62eb359a0704231558we55f553u44a77183ed3e5340@mail.gmail.com>
+Date: Mon, 23 Apr 2007 17:58:21 -0500
+From: "Marcos Pinto" <markybob@gmail.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: 2.6.20.7 locking up hard on boot
+Cc: "Adrian Bunk" <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Alan Cox" <alan@redhat.com>, "Greg KH" <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <462C8525.76E4.0078.0@novell.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070423135216.GA2744@omnifarious.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
+	 <20070421013454.GB4016@stusta.de>
+	 <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com>
+	 <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
+	 <462C8525.76E4.0078.0@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 06:52:16AM -0700, Eric Hopper wrote:
-> Oh, two things really interest me about Reiser4.  First, I despise
-> having to care about how many tiny files I leave lying around when
-> writing a program.  Berkeley DB and its ilk are evil, evil programs that
-> obscure data and make things harder.  Secondly, the moves Reiser4 has
-> made towards having actual transactions at the filesystem level also
-> intrigue me.
-> 
-> I want to use the filesystem as a DB.  IMHO, there is no reason that
-> filesystems shouldn't be a DB sans query language.  If there were a more
-> DB-like way to deal with filesystems, I think that it would be that much
-> easier to make something that was a decent replacement for NFS and
-> actually worked.
+I'm honestly not sure how to try what you suggested to try, since I'm
+nothing even remotely close to a kernel geek and it was over my head.
+However, I'd gladly test anything that you think would be worth
+testing, if you would please put it in way that I could understand,
+such as "change line 'foo' in probe.c into 'foolio'"
 
-One of the big problems of using a filesystem as a DB is the system
-call overheads.  If you use huge numbers of tiny files, then each
-attempt read an atom of information from the DB takes three system
-calls --- an open(), read(), and close(), with all of the overheads in
-terms of dentry and inode cache.
+Thanks again for all of your help,
+Marcos
 
-Hans of course had a solution to this problem --- namely the
-sys_reiser4 system call, where you download a program to the kernel to
-execute a open/read/close via a single system call, and which returns
-the combined results to userspace.  But now you have more complexity
-since there is now a reseir4-specific interpreter embeddeed in the
-kernel, the userspace application needs to write the equivalent of an
-channel program such as what was found in an IBM/360 mainframe (need I
-mention this can be a rich source of security bugs), and then the
-userspace application *still* needs to parse the result returned by
-the sys_reiser4() system call?
-
-So it adds a huge amount of complexity, and at the end of the day,
-given that you don't have the search capability, it is (a) less
-functional, (b) more complexitated, and (c) probably less performant
-than simply calling out to a database.
-
-> Sadly, unless someone pays me to maintain it, I can't do the fork
-> myself, and I likely wouldn't anyway as being a kernel hacker of
-> something as important as a filesystem is a full-time job and I have
-> other things that interest me a lot more.
-
-Unfortunately, the way OSS works is that you either (a) have to do the
-work yourself, (b) convince someone else to do the work, or (c)
-convince someone that it's worth paying you to do it.
-
-Personally, if I controlled large budget for Linux filesystem
-development, I'd put a lot more money into something like Val's
-chunkfs idea than resier4.  Being able to have filesystems designed
-for fast recovery given disks getting larger and larger (but not more
-reliable), is a whole lot more improtant than trying to create an
-alternate solution to an already solved problem --- namely that of a
-database.  When you consider that a similar idea, WinFS, was partially
-responsible for delaying Vista by years due to the complexity of
-shoving a database where it has no place being, it's another reason
-why I personally think that chunkfs is a much more promising avenue
-for future filesystem investment than reiserfs.
-
-But hey, the advantage of Open Source is that if *you* want to work on
-Reiser4, you're perfectly free to do so.  My personal opinion is that
-it'd be a waste of your time, but you're free to spend your time
-whichever way that you want.  What you don't get do is whine about how
-other people get to spend *their* time, or *their* money.
-
-						- Ted
+On 4/23/07, Jan Beulich <jbeulich@novell.com> wrote:
+> Given that all of the reports are in cases when the adjustment is *not*
+> being done (and only a message is being printed), I can only assume that
+> the breakage results from the adding of PCI_BASE_ADDRESS_SPACE_IO
+> into the resource flags. I considered this unconditional setting of the flags
+> odd already in the original code, and added this extra flag only for
+> consistency reasons (because the settings reported by X indicated that
+> this was missing). Perhaps the adjustment (original and the added
+> extra flag) shouldn't be done if IORESOURCE_IO wasn't already set.
+> Perhaps one of those seeing the issue could try out returning from the
+> function right after that printk(), without any adjustment to the flags.
+>
+> Jan
+>
+>
