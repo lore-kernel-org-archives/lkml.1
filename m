@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbXDWVFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbXDWVFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbXDWVFE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 17:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXDWVFE
+	id S1751762AbXDWVFK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 17:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbXDWVFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 17:05:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47283 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751762AbXDWVFB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 17:05:01 -0400
-Date: Mon, 23 Apr 2007 23:03:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070423210341.GA7675@elte.hu>
-References: <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <20070423203317.GA26668@elte.hu> <20070423204431.GA1240@elte.hu>
+	Mon, 23 Apr 2007 17:05:10 -0400
+Received: from [80.68.207.6] ([80.68.207.6]:45620 "EHLO smtp.unbit.it"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751762AbXDWVFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 17:05:08 -0400
+Subject: Re: [ANNOUNCE] UidBind LSM 0.1
+From: Roberto De Ioris <roberto@unbit.it>
+Reply-To: roberto@unbit.it
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704231435430.15351@mtl.rackplans.net>
+References: <1177318451.20613.8.camel@hagrid>
+	 <Pine.LNX.4.64.0704231435430.15351@mtl.rackplans.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8Aqp9hIFVvQGkaNYGSKr"
+Organization: UnBit
+Date: Mon, 23 Apr 2007 23:04:59 +0200
+Message-Id: <1177362299.20613.28.camel@hagrid>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423204431.GA1240@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+--=-8Aqp9hIFVvQGkaNYGSKr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> sorry, i was a bit imprecise here. There is a case where CFS can give 
-> out a 'loan' to tasks. The scheduler tick has a low resolution, so it 
-> is fundamentally inevitable [*] that tasks will run a bit more than 
-> they should, and at a heavy context-switching rates these errors can 
-> add up significantly. Furthermore, we want to batch up workloads.
-> 
-> So CFS has a "no loans larger than sched_granularity_ns" policy (which 
-> defaults to 5msec), and it captures these sub-granularity 'loans' with 
-> nanosec accounting. This too is a very sane economic policy and is 
-> anti-infationary :-)
+Il giorno lun, 23/04/2007 alle 14.38 -0400, Gerhard Mack ha scritto:
+> On Mon, 23 Apr 2007, Roberto De Ioris wrote:
+> > Hi all,
+> > this is a very simple module that allows bind() to tcp/udp port (>=3D10=
+24)
+> > only for the uids defined in a configfs tree.
+> >=20
+> > It is a first version, it only works for PF_INET sockets and makes no
+> > difference between tcp and udp (i am working on this)
+> >=20
+> > For (little) more info see=20
+> >=20
+> > http://projects.unbit.it/uidbind/
+> >=20
+> > Patch attached is for vanilla 2.6.20.7
+>=20
+> Is it possible to lock a range of ports to a uid? =20
 
-at which point i guess i should rename CFS to 'EFS' (the Economic Fair 
-Scheduler)? =B-)
+I think i can implement something like a configfs item named
+'8081-8090', instead of only '8081'.
+I will need to validate the range, but its not too difficult.
 
-	Ingo
+>=20
+> Also, is it possible to lock a uid to one ip address?  For example usera=20
+> can only bind to 10.0.0.23 while userb can only bind to 10.0.0.24.=20
+
+This is simple to add and i have already a patch for it.
+In the next few days i will post it.
+
+
+--=20
+Roberto De Ioris
+http://unbit.it
+JID: roberto@jabber.unbit.it
+Wii: 2999 4476 3509 0964
+
+--=-8Aqp9hIFVvQGkaNYGSKr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Questa =?ISO-8859-1?Q?=E8?= una parte del messaggio
+	firmata digitalmente
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGLR97l5tD0kpw00gRAgneAJ0fRCges28amoN9UOPNxMWlNkGvtQCeOUEt
+a339l35Ng1TTYcZI7CiO62o=
+=Obg0
+-----END PGP SIGNATURE-----
+
+--=-8Aqp9hIFVvQGkaNYGSKr--
+
