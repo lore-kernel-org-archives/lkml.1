@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965685AbXDWJfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965691AbXDWJf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965685AbXDWJfX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXDWJfX
+	id S965691AbXDWJf7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXDWJf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:35:23 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:36828 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965685AbXDWJfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:35:22 -0400
-Date: Mon, 23 Apr 2007 11:41:07 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] workqueue: cancel_rearming_delayed_work/workqueue usage warning
-Message-ID: <20070423094107.GD1684@ff.dom.local>
-References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com> <20070420102157.GD1695@ff.dom.local> <20070420110119.GS32602149@melbourne.sgi.com> <20070420121255.GA4042@ff.dom.local> <20070420172348.GC470@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420172348.GC470@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 23 Apr 2007 05:35:59 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48471 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965691AbXDWJf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:35:58 -0400
+Message-ID: <462C7D74.60003@gmail.com>
+Date: Mon, 23 Apr 2007 11:33:40 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+References: <46138B4C.2050409@gmail.com>	<20070404123311.GA18552@infradead.org>	<1175698135.5815.447.camel@violet>	<20070404150231.GE27660@stusta.de>	<4613C963.6070409@gmail.com> <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com>
+In-Reply-To: <4613D492.2070404@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 09:23:48PM +0400, Oleg Nesterov wrote:
-> On 04/20, Jarek Poplawski wrote:
-> > 
-> > Here is my proposal to make things clearer:
-> > (this time on 2.6.21-rc7)
-> > 
-> > CC: David Chinner <dgc@sgi.com>
-> > CC: Oleg Nesterov <oleg@tv-sign.ru>
-> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-> > 
-> > ---
-> > 
-> > diff -Nurp 2.6.21-rc7-/kernel/workqueue.c 2.6.21-rc7/kernel/workqueue.c
-> > --- 2.6.21-rc7-/kernel/workqueue.c	2007-04-18 10:14:16.000000000 +0200
-> > +++ 2.6.21-rc7/kernel/workqueue.c	2007-04-20 13:56:51.000000000 +0200
-> > @@ -662,6 +662,8 @@ EXPORT_SYMBOL(flush_scheduled_work);
-> >   * cancel_rearming_delayed_workqueue - reliably kill off a delayed work whose handler rearms the delayed work.
-> >   * @wq:   the controlling workqueue structure
-> >   * @dwork: the delayed work struct
-> > + *
-> > + * WARNING: use only with handlers, which rearm unconditionally with delay > 0
-> >   */
+On 04/04/2007 06:38 PM, Rene Herman wrote:
+
+Rusty?
+
+> On 04/04/2007 06:00 PM, Alan Cox wrote:
 > 
-> Nit: it is ok if the work re-arms itself with delay == 0 "sometimes". What we
-> need is that the handler use delay > 0 eventually.
-
-Probably it would be shorter to write it yourself, because I'm not sure
-of your intentions: so, you think we can call this function with such
-a work?
-
+>>> Given that people seem to agree that authorship information has no 
+>>> place in the binary, that might actually be best.
+>>
+>> Authorship information is very useful in the binary, especially when you
+>> have to get lawyers involved in explaining things to people.
 > 
-> I'd suggest to re-diff against -mm tree. I don't think this patch can find its
-> way to the soon to be released 2.6.21.
+> Okay.
+> 
+>>> So, MODULE_AUTHOR be gone?
+>>
+>> Not if I have anything to do with it. Putting maintainer in is not a
+>> bad idea but that assumes it gets maintained, the beauty of _AUTHOR
+>> is that it's generally right and stays that way or approximately so.
+> 
+> Case in point; someone is working with me in private on a new "mitsumi" 
+> legacy CD-ROM driver. He's authoring the actual driver and upto now I've 
+> just been doing some peripheral module infrastructure work. Given that I 
+> have the hardware to test the thing, I'll be the maintainer though.
+> 
+> Adding myself as a MODULE_AUTHOR would be largely incorrect and adding 
+> myself as the _only_ MODULE_AUTHOR would be so factually incorrect I 
+> wouldn't, even if only from a credits point of view. Yet I do want to 
+> make sure people contact me, and not the MODULE_AUTHOR (which will 
+> happen no matter the MAINTAINERS file).
+> 
+> Other cases-in-point; I've lately been rummaging through sound/isa a 
+> bit. Nothing much copyrightable again but especially in those situations 
+> where (some of the) original authors are no longer active, I do again 
+> want people to contact me about them if needed. And all the "which one 
+> of the three people listed here is maintaining this" is yet another.
+> 
+> MODULE_AUTHOR may be approximately right but especially with old drivers 
+> it also has little relation with who's maintaining the thing.
+> 
+> If MODULE_AUTHOR stays, can I just have MODULE_MAINTAINER please? It 
+> doesn't need to be added to drivers directly, it can just grow (and 
+> being inside the code, I suppose it'll likely stay up to date better 
+> than the MAINTAINERS file).
 
-The current thread seems to confirm my initial fear, this function
-is not explained enough, so it should help to remove errors as soon
-as possible from the current code. And I hope this functions will
-work other way soon...
+Rene.
 
-Jarek P.
