@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161256AbXDWGXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161206AbXDWGZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161256AbXDWGXh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161242AbXDWGXh
+	id S1161206AbXDWGZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161242AbXDWGZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:23:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43586 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Apr 2007 02:25:49 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51683 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161256AbXDWGXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:23:36 -0400
-Date: Mon, 23 Apr 2007 08:21:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch] CFS scheduler, -v5
-Message-ID: <20070423062116.GB4518@elte.hu>
-References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423051659.GA3929@gentoox2.trippelsdorf.de> <20070423052728.GB3929@gentoox2.trippelsdorf.de>
+	id S1161206AbXDWGZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:25:48 -0400
+Date: Mon, 23 Apr 2007 11:55:34 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jurriaan <thunder7@xs4all.nl>, Helge Hafting <helgehaf@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, Magnus Damm <magnus@valinux.co.jp>,
+       Horms <horms@verge.net.au>, fastboot@osdl.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 2/2] x86_64: Remove CONFIG_PHYSICAL_START and CONFIG_RELOCATABLE
+Message-ID: <20070423062534.GB14664@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <m1abxrf9o3.fsf@ebiederm.dsl.xmission.com> <20070402094520.GC13704@in.ibm.com> <m1648eg01d.fsf@ebiederm.dsl.xmission.com> <20070403040152.GA5108@in.ibm.com> <m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com> <20070403100349.GA21759@in.ibm.com> <m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com> <m14pn7zn5n.fsf_-_@ebiederm.dsl.xmission.com> <20070423060739.GA14664@in.ibm.com> <m1slary5ql.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070423052728.GB3929@gentoox2.trippelsdorf.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <m1slary5ql.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Markus Trippelsdorf <markus@trippelsdorf.de> wrote:
-
-> > The new version does not link here (amd64,smp):
-> > 
-> >   LD      .tmp_vmlinux1
-> >   arch/x86_64/kernel/built-in.o:(.rodata+0x1dd8): undefined reference to
-> >   `sys_yield_to'
+On Mon, Apr 23, 2007 at 12:17:22AM -0600, Eric W. Biederman wrote:
+> Vivek Goyal <vgoyal@in.ibm.com> writes:
 > 
-> Changing sys_yield_to to sys_sched_yield_to in 
-> include/asm-x86_64/unistd.h fixes the problem.
+> > On Sun, Apr 22, 2007 at 11:15:48PM -0600, Eric W. Biederman wrote:
+> >> +++ b/arch/x86_64/Kconfig
+> >> @@ -565,62 +565,9 @@ config CRASH_DUMP
+> >>            which are loaded in the main kernel with kexec-tools into
+> >>            a specially reserved region and then later executed after
+> >>            a crash by kdump/kexec. The crash dump kernel must be compiled
+> >> -	  to a memory address not used by the main kernel or BIOS using
+> >> -	  PHYSICAL_START.
+> >> +	  to a memory address not used by the main kernel or BIOS
+> >>            For more details see Documentation/kdump/kdump.txt
+> >
+> > Hi Eric,
+> >
+> > I think "must be compiled" should be replaced with "must be loaded" now.
+> 
+> Yes, that sounds right.  Ugh.  I didn't look at enough context to read
+> the whole sentence.  I just killed the part about PHYSICAL_START.
+> 
+> > Otherwise both the patches look fine.  I am planning to test these.
+> >
+> > This change will also require modifications to Documentation/kdump/kdump.txt
+> > file.
+> 
+> Do you think you can generate the patch fix up the CONFIG_CRASH_DUMP
+> and kdump.txt documentation.
+> 
 
-thanks. I edited the -v5 patch so new downloads should have the fix. (i 
-also test-booted x86_64 with this patch)
+Ok. I will send one.
 
-	Ingo
+Thanks
+Vivek
