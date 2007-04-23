@@ -1,238 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXDWJFL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbXDWJHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbXDWJFL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:05:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbXDWJFL
+	id S1754048AbXDWJHD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbXDWJHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:05:11 -0400
-Received: from [80.68.207.6] ([80.68.207.6]:53804 "EHLO smtp.unbit.it"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754015AbXDWJFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:05:08 -0400
-X-Greylist: delayed 646 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 05:05:08 EDT
-Subject: [ANNOUNCE] UidBind LSM 0.1
-From: Roberto De Ioris <roberto@unbit.it>
-Reply-To: roberto@unbit.it
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uvZ/vbBIhhLigGmEZpdT"
-Organization: UnBit
-Date: Mon, 23 Apr 2007 10:54:11 +0200
-Message-Id: <1177318451.20613.8.camel@hagrid>
+	Mon, 23 Apr 2007 05:07:03 -0400
+Received: from svr68.ehostpros.com ([67.15.48.48]:20328 "EHLO
+	svr68.ehostpros.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753941AbXDWJG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:06:59 -0400
+Subject: Re: Testing framework
+From: Kalpak Shah <kalpak@linsyssoft.com>
+To: Karuna sagar K <karunasagark@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <2e4afe1e0704221346u6d6baec1uab88dc273ff08de9@mail.gmail.com>
+References: <2e4afe1e0704221346u6d6baec1uab88dc273ff08de9@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 23 Apr 2007 14:39:39 +0530
+Message-Id: <1177319379.4579.13.camel@garfield>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Antivirus-Scanner: Clean mail though you should still use an Antivirus
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - svr68.ehostpros.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linsyssoft.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-04-23 at 02:16 +0530, Karuna sagar K wrote:
+> Hi,
+> 
+> For some time I had been working on this file system test framework.
+> Now I have a implementation for the same and below is the explanation.
+> Any comments are welcome.
+> 
+> Introduction:
+> The testing tools and benchmarks available around do not take into
+> account the repair and recovery aspects of file systems. The test
+> framework described here focuses on repair and recovery capabilities
+> of file systems. Since most file systems use 'fsck' to recover from
+> file system inconsistencies, the test framework characterizes file
+> systems based on outcomes of running 'fsck'.
 
---=-uvZ/vbBIhhLigGmEZpdT
-Content-Type: multipart/mixed; boundary="=-Yrh+InIvQX72VB0M9zui"
+<snip>
 
+> Higher level perspective/approach:
+> In this approach the file system is viewed as a tree of nodes, where
+> nodes are either files or directories. The metadata information
+> corresponding to some randomly chosen nodes of the tree are corrupted.
+> Nodes which are corrupted are marked or recorded to be able to replay
+> later. This file system is called source file system while the file
+> system on which we need to replay the corruption is called target file
+> system. The assumption is that the target file system contains a set
+> of files and directories which is a superset of that in the source
+> file system. Hence to replay the corruption we need point out which
+> nodes in the source file system were corrupted in the source file
+> system and corrupt the corresponding nodes in the target file system.
+> 
+> A major disadvantage with this approach is that on-disk structures
+> (like superblocks, block group descriptors, etc.) are not considered
+> for corruption.
+> 
+> Lower level perspective/approach:
+> The file system is looked upon as a set of blocks (more precisely
+> metadata blocks). We randomly choose from this set of blocks to
+> corrupt. Hence we would be able to overcome the deficiency of the
+> previous approach. However this approach makes it difficult to have a
+> replayable corruption. Further thought about this approach has to be
+> given.
+> 
 
---=-Yrh+InIvQX72VB0M9zui
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Fill a test filesystem with data and save it. Corrupt it by copying a
+chunk of data from random locations A to B. Save positions A and B so
+that you can reproduce the corruption. 
 
-Hi all,
-this is a very simple module that allows bind() to tcp/udp port (>=3D1024)
-only for the uids defined in a configfs tree.
+Or corrupt random bits (ideally in metadata blocks) and maintain the
+list of the bit numbers for reproducing the corruption.
 
-It is a first version, it only works for PF_INET sockets and makes no
-difference between tcp and udp (i am working on this)
+> We could have a blend of both the approaches in the program to
+> compromise between corruption and replayability.
+> 
+> Repair Phase:
+> The corrupted file system is repaired and recovered with 'fsck' or any
+> other tools; this phase considers the repair and recovery action on
+> the file system as a black box. The time taken to repair by the tool
+> is measured.
 
-For (little) more info see=20
+I see that you are running fsck just once on the test filesystem. It
+might be a good idea to run it twice and if second fsck does not find
+the filesystem to be completely clean that means it is a bug in fsck.
 
-http://projects.unbit.it/uidbind/
+<snip>
 
-Patch attached is for vanilla 2.6.20.7
+> Summary Phase:
+> This is the final phase in the model. A report file is prepared which
+> summarizes the result of this test run. The summary contains:
+> 
+> Average time taken for recovery
+> Number of files lost at the end of each iteration
+> Number of files with metadata corruption at the end of each iteration
+> Number of files with data corruption at the end of each iteration
+> Number of files lost and found at the end of each iteration
+> 
+> Putting it all together:
+> The Corruption, Repair and Comparison phases could be repeated a
+> number of times (each repetition is called an iteration) before the
+> summary of that test run is prepared.
+> 
+> TODO:
+> Account for files in the lost+found directory during the comparison phase.
+> Support for other file systems (only ext2 is supported currently)
+> State of the either file system is stored, which may be huge, time
+> consuming and not necessary. So, we could have better ways of storing
+> the state.
 
+Also, people may want to test with different mount options, so something
+like "mount -t $fstype -o loop,$MOUNT_OPTIONS $imgname $mountpt" may be
+useful. Similarly it may also be useful to have MKFS_OPTIONS while
+formatting the filesystem.
 
---=20
-Roberto De Ioris
-http://unbit.it
-JID: roberto@jabber.unbit.it
-Wii: 2999 4476 3509 0964
+Thanks,
+Kalpak.
 
---=-Yrh+InIvQX72VB0M9zui
-Content-Disposition: attachment; filename=uidbind-lsm-0.1.patch
-Content-Type: text/x-patch; name=uidbind-lsm-0.1.patch; charset=UTF-8
-Content-Transfer-Encoding: base64
-
-ZGlmZiAtTmF1ciBsaW51eC0yLjYuMjAuNy9zZWN1cml0eS9LY29uZmlnIGxpbnV4LTIuNi4yMC43
-LXVpZGJpbmQvc2VjdXJpdHkvS2NvbmZpZw0KLS0tIGxpbnV4LTIuNi4yMC43L3NlY3VyaXR5L0tj
-b25maWcJMjAwNy0wNC0xMyAyMjo0ODoxNC4wMDAwMDAwMDAgKzAyMDANCisrKyBsaW51eC0yLjYu
-MjAuNy11aWRiaW5kL3NlY3VyaXR5L0tjb25maWcJMjAwNy0wNC0yMyAwOTozMjoxNS4wMDAwMDAw
-MDAgKzAyMDANCkBAIC05Myw2ICs5MywxOCBAQA0KIAkgIA0KIAkgIElmIHlvdSBhcmUgdW5zdXJl
-IGhvdyB0byBhbnN3ZXIgdGhpcyBxdWVzdGlvbiwgYW5zd2VyIE4uDQogDQorY29uZmlnIFNFQ1VS
-SVRZX1VJREJJTkQNCisJdHJpc3RhdGUgIlVpZEJpbmQiDQorCWRlcGVuZHMgb24gQ09ORklHRlNf
-RlMgJiYgU0VDVVJJVFkgJiYgU0VDVVJJVFlfTkVUV09SSw0KKwloZWxwDQorCSAgVGhpcyBzaW1w
-bGUgbW9kdWxlIGFsbG93cyBjYWxsIHRvIGJpbmQoKSBmdW5jdGlvbiBvbmx5IGZvcg0KKyAgICAg
-ICAgICB1aWQgZGVmaW5lZCBpbiBhIGNvbmZpZ2ZzIHRyZWUuDQorCSAgVGhlIG9ubHkgc3VwcG9y
-dGVkIHNvY2tldCBpcyBQRl9JTkVULg0KKw0KKwkgIFNlZSAgPGh0dHA6Ly9wcm9qZWN0cy51bmJp
-dC5pdC91aWRiaW5kPiBmb3IgbW9yZSBpbmZvcm1hdGlvbiBhYm91dA0KKwkgIHRoaXMgbW9kdWxl
-DQorCSAgDQorDQogc291cmNlIHNlY3VyaXR5L3NlbGludXgvS2NvbmZpZw0KIA0KIGVuZG1lbnUN
-CmRpZmYgLU5hdXIgbGludXgtMi42LjIwLjcvc2VjdXJpdHkvTWFrZWZpbGUgbGludXgtMi42LjIw
-LjctdWlkYmluZC9zZWN1cml0eS9NYWtlZmlsZQ0KLS0tIGxpbnV4LTIuNi4yMC43L3NlY3VyaXR5
-L01ha2VmaWxlCTIwMDctMDQtMTMgMjI6NDg6MTQuMDAwMDAwMDAwICswMjAwDQorKysgbGludXgt
-Mi42LjIwLjctdWlkYmluZC9zZWN1cml0eS9NYWtlZmlsZQkyMDA3LTA0LTIzIDA5OjMwOjM3LjAw
-MDAwMDAwMCArMDIwMA0KQEAgLTE2LDMgKzE2LDQgQEANCiBvYmotJChDT05GSUdfU0VDVVJJVFlf
-U0VMSU5VWCkJCSs9IHNlbGludXgvYnVpbHQtaW4ubw0KIG9iai0kKENPTkZJR19TRUNVUklUWV9D
-QVBBQklMSVRJRVMpCSs9IGNvbW1vbmNhcC5vIGNhcGFiaWxpdHkubw0KIG9iai0kKENPTkZJR19T
-RUNVUklUWV9ST09UUExVRykJCSs9IGNvbW1vbmNhcC5vIHJvb3RfcGx1Zy5vDQorb2JqLSQoQ09O
-RklHX1NFQ1VSSVRZX1VJREJJTkQpCQkrPSBjb21tb25jYXAubyB1aWRiaW5kLm8NCmRpZmYgLU5h
-dXIgbGludXgtMi42LjIwLjcvc2VjdXJpdHkvdWlkYmluZC5jIGxpbnV4LTIuNi4yMC43LXVpZGJp
-bmQvc2VjdXJpdHkvdWlkYmluZC5jDQotLS0gbGludXgtMi42LjIwLjcvc2VjdXJpdHkvdWlkYmlu
-ZC5jCTE5NzAtMDEtMDEgMDE6MDA6MDAuMDAwMDAwMDAwICswMTAwDQorKysgbGludXgtMi42LjIw
-LjctdWlkYmluZC9zZWN1cml0eS91aWRiaW5kLmMJMjAwNy0wNC0yMyAxMDo0NzowNy4wMDAwMDAw
-MDAgKzAyMDANCkBAIC0wLDAgKzEsMjYzIEBADQorLyogVWlkQmluZCAwLjEgTFNNDQorICogUGVy
-bWl0IGJpbmQoKSBmdW5jdGlvbiBvbmx5IHRvIG9uZSB1aWQNCisgKg0KKyAqIFNlZSA8aHR0cDov
-L3Byb2plY3RzLnVuYml0Lml0L3VpZGJpbmQvPiBmb3IgKGxpdHRsZSkgbW9yZSBpbmZvDQorICoN
-CisgKiAgICAgIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJp
-YnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQorICogICAgICBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhl
-IEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZCBieQ0KKyAqICAgICAgdGhl
-IEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbjsgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUgTGljZW5z
-ZSwgb3INCisgKiAgICAgIChhdCB5b3VyIG9wdGlvbikgYW55IGxhdGVyIHZlcnNpb24uDQorICoN
-CisqLw0KKw0KKw0KKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCisjaW5jbHVkZSA8bGludXgv
-a2VybmVsLmg+DQorI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCisjaW5jbHVkZSA8bGludXgvc2Vj
-dXJpdHkuaD4NCisjaW5jbHVkZSA8bGludXgvc29ja2V0Lmg+DQorI2luY2x1ZGUgPG5ldC9pcC5o
-Pg0KKyNpbmNsdWRlIDxsaW51eC9jb25maWdmcy5oPg0KKw0KKw0KKy8qIGZsYWcgdG8ga2VlcCB0
-cmFjayBvZiBob3cgd2Ugd2VyZSByZWdpc3RlcmVkICovDQorc3RhdGljIGludCBzZWNvbmRhcnk7
-DQorDQorc3RhdGljIGludCBkZWJ1ZyA9IDE7DQorDQorDQorI2RlZmluZSBNWV9OQU1FICJ1aWRi
-aW5kIg0KKyNkZWZpbmUgVUlEQklORF9MQUJFTCAiW1VpZEJpbmRdICINCisNCitzdHJ1Y3QgcG9y
-dF9jb25maWdfaXRlbSB7DQorCXN0cnVjdCBjb25maWdfaXRlbSBpdGVtOw0KKwl1aWRfdCB1aWQ7
-DQorfTsNCisNCitzdGF0aWMgc3NpemVfdCBwb3J0X2F0dHJfc2hvdyhzdHJ1Y3QgY29uZmlnX2l0
-ZW0gKml0ZW0sIHN0cnVjdCBjb25maWdmc19hdHRyaWJ1dGUgKmF0dHIsIGNoYXIgKnBhZ2UpIHsN
-CisgICAgICAgIHNzaXplX3QgcmV0ID0gMDsNCisNCisJc3RydWN0IHBvcnRfY29uZmlnX2l0ZW0g
-KnBvcnRfY29uZmlnID0gY29udGFpbmVyX29mKGl0ZW0sIHN0cnVjdCBwb3J0X2NvbmZpZ19pdGVt
-LCBpdGVtKSA7DQorICAgICAgICByZXQgPSBzcHJpbnRmKHBhZ2UsICIldVxuIiwgcG9ydF9jb25m
-aWctPnVpZCApIDsNCisNCisJaWYgKGRlYnVnKQ0KKyAgICAgICAgCXByaW50ayhLRVJOX0RFQlVH
-IFVJREJJTkRfTEFCRUwgIlJlYWRpbmcgdWlkIGF0dHIgZm9yIHBvcnQgJXNcbiIsIGl0ZW0tPmNp
-X25hbWUpIDsNCisNCisgICAgICAgIHJldHVybiByZXQgOw0KK30NCisNCitzdGF0aWMgc3NpemVf
-dCBwb3J0X2F0dHJfc3RvcmUoc3RydWN0IGNvbmZpZ19pdGVtICppdGVtLCBzdHJ1Y3QgY29uZmln
-ZnNfYXR0cmlidXRlICphdHRyLCBjb25zdCBjaGFyICpwYWdlLCBzaXplX3QgY291bnQpIHsNCisg
-ICAgICAgIHNzaXplX3QgcmV0ID0gLUVJTlZBTDsNCisJdWlkX3QgdWlkIDsNCisNCisJc3RydWN0
-IHBvcnRfY29uZmlnX2l0ZW0gKnBvcnRfY29uZmlnID0gY29udGFpbmVyX29mKGl0ZW0sIHN0cnVj
-dCBwb3J0X2NvbmZpZ19pdGVtLCBpdGVtKSA7DQorDQorCXVpZCA9IHNpbXBsZV9zdHJ0b3VsKHBh
-Z2UsIE5VTEwsIDApIDsNCisNCisJaWYgKCF1aWQpDQorCQlyZXR1cm4gcmV0IDsNCisNCisNCisJ
-cG9ydF9jb25maWctPnVpZCA9IHVpZCA7DQorDQorCWlmIChkZWJ1ZykNCisgICAgICAgIAlwcmlu
-dGsoS0VSTl9ERUJVRyBVSURCSU5EX0xBQkVMICJBc3NpZ25lZCB1aWQgJXUgdG8gcG9ydCAlc1xu
-IiwgdWlkLCBpdGVtLT5jaV9uYW1lKSA7DQorDQorCXJldCA9IGNvdW50IDsNCisJDQorICAgICAg
-ICByZXR1cm4gcmV0Ow0KK30NCisNCitzdGF0aWMgc3RydWN0IGNvbmZpZ2ZzX2F0dHJpYnV0ZSBw
-b3J0X3VpZF9hdHRyID0geyAuY2Ffb3duZXIgPSBUSElTX01PRFVMRSwgLmNhX25hbWUgPSAidWlk
-IiwgLmNhX21vZGUgPSBTX0lSVVNSIHwgU19JV1VTUiB9IDsNCisNCisvKiBwb3J0IGF0dHJpYnV0
-ZXMgKi8NCitzdGF0aWMgc3RydWN0IGNvbmZpZ2ZzX2F0dHJpYnV0ZSAqcG9ydF9hdHRyc1tdID0g
-eyAmcG9ydF91aWRfYXR0ciAsIE5VTEwgfSA7DQorDQorLyogcG9ydCBvcHMgKi8NCitzdGF0aWMg
-c3RydWN0IGNvbmZpZ2ZzX2l0ZW1fb3BlcmF0aW9ucyBwb3J0X2l0ZW1fb3BzID0geyAuc2hvd19h
-dHRyaWJ1dGUgPSBwb3J0X2F0dHJfc2hvdywgLnN0b3JlX2F0dHJpYnV0ZSA9IHBvcnRfYXR0cl9z
-dG9yZSAgIH0gOw0KKw0KKy8qIHBvcnQgaXRlbSAqLw0KK3N0YXRpYyBzdHJ1Y3QgY29uZmlnX2l0
-ZW1fdHlwZSBwb3J0X3R5cGUgPSB7IC5jdF9pdGVtX29wcyA9ICZwb3J0X2l0ZW1fb3BzLCAuY3Rf
-YXR0cnMgPSBwb3J0X2F0dHJzLCAuY3Rfb3duZXIgPSBUSElTX01PRFVMRSB9IDsNCisNCisNCisN
-CisNCitzdGF0aWMgc3RydWN0IGNvbmZpZ19pdGVtICpwb3J0X2l0ZW1fbWFrZShzdHJ1Y3QgY29u
-ZmlnX2dyb3VwICpncm91cCwgY29uc3QgY2hhciAqbmFtZSkgew0KKw0KKwlzdHJ1Y3QgcG9ydF9j
-b25maWdfaXRlbSAqcG9ydGl0ZW0gOw0KKwl1bnNpZ25lZCBzaG9ydCBwb3J0X251bSA7DQorDQor
-CXBvcnRfbnVtID0gc2ltcGxlX3N0cnRvdWwobmFtZSxOVUxMLDApIDsNCisNCisJaWYgKHBvcnRf
-bnVtIDwgMTAyNCB8fCAhcG9ydF9udW0pIHsNCisJCWlmIChkZWJ1ZykNCisJCQlwcmludGsoS0VS
-Tl9ERUJVRyBVSURCSU5EX0xBQkVMICJJbnZhbGlkIHBvcnQgbnVtYmVyOiAlc1xuIiwgbmFtZSkg
-Ow0KKw0KKwkJcmV0dXJuIE5VTEwgOw0KKwl9DQorDQorCXBvcnRpdGVtID0ga21hbGxvYyhzaXpl
-b2Yoc3RydWN0IHBvcnRfY29uZmlnX2l0ZW0pLCBHRlBfS0VSTkVMKTsNCisNCisJaWYgKCFwb3J0
-aXRlbSkgcmV0dXJuIE5VTEwgOw0KKw0KKwkNCisJbWVtc2V0KHBvcnRpdGVtLCAwICwgc2l6ZW9m
-KHN0cnVjdCBwb3J0X2NvbmZpZ19pdGVtKSkgOw0KKw0KKwljb25maWdfaXRlbV9pbml0X3R5cGVf
-bmFtZSgmcG9ydGl0ZW0tPml0ZW0sIG5hbWUsICZwb3J0X3R5cGUpIDsNCisNCisJcG9ydGl0ZW0t
-PnVpZCA9IDAgOw0KKw0KKwlpZiAoZGVidWcpDQorCQlwcmludGsoS0VSTl9ERUJVRyBVSURCSU5E
-X0xBQkVMICJBc3NpZ25lZCBkZWZhdWx0IHJ1bGUgdG8gcG9ydCAlc1xuIiwgbmFtZSkgOw0KKw0K
-KwlyZXR1cm4gJnBvcnRpdGVtLT5pdGVtIDsNCit9DQorDQorDQorc3RhdGljIHN0cnVjdCBjb25m
-aWdmc19ncm91cF9vcGVyYXRpb25zIHVpZGJpbmRfZ3JvdXBfb3BzID0gew0KKwkubWFrZV9pdGVt
-ID0gcG9ydF9pdGVtX21ha2UsDQorfTsNCisNCisvKiBjb25maWdmcyB1aWRiaW5kICovDQorc3Rh
-dGljIHN0cnVjdCBjb25maWdfaXRlbV90eXBlIHVpZGJpbmRfdHlwZSA9IHsgLmN0X2dyb3VwX29w
-cyA9ICZ1aWRiaW5kX2dyb3VwX29wcywgLmN0X293bmVyID0gVEhJU19NT0RVTEUgfSA7DQorDQor
-DQorDQorDQorDQorLyogY29uZmlnZnMgc3Vic3lzICovDQorc3RhdGljIHN0cnVjdCBjb25maWdm
-c19zdWJzeXN0ZW0gdWlkYmluZF9zdWJzeXMgPSB7IC5zdV9ncm91cCA9IHsgLmNnX2l0ZW0gPSB7
-IC5jaV9uYW1lYnVmID0gInVpZGJpbmQiLCAuY2lfdHlwZSA9ICZ1aWRiaW5kX3R5cGV9IH0gfSA7
-DQorDQorDQorc3RhdGljIGludCB1aWRiaW5kX3NvY2tldF9iaW5kX2NoZWNrIChzdHJ1Y3Qgc29j
-a2V0ICpzb2NrLCBzdHJ1Y3Qgc29ja2FkZHIgKmFkZHJlc3MsIGludCBhZGRybGVuKQ0KK3sNCisN
-CisJdTE2IGZhbWlseSA7DQorCXN0cnVjdCBzb2NrYWRkcl9pbiAqYWRkcjQgPSBOVUxMOw0KKwlz
-dHJ1Y3QgY29uZmlnX2l0ZW0gKnBvcnRjb25maWcgPSBOVUxMIDsNCisJc3RydWN0IHBvcnRfY29u
-ZmlnX2l0ZW0gKnBvcnRpdGVtID0gTlVMTCA7DQorCXVuc2lnbmVkIHNob3J0IHNvY2tldF9wb3J0
-Ow0KKwljaGFyICpzdHJwb3J0ID0gIlwwIiA7DQorDQorCWlmIChjdXJyZW50LT51aWQgPT0gMCkN
-CisJCXJldHVybiAwIDsNCisNCisJZmFtaWx5ID0gc29jay0+c2stPnNrX2ZhbWlseTsNCisNCisN
-CisJaWYgKGZhbWlseSA9PSBQRl9JTkVUKSB7DQorDQorCQlhZGRyNCA9IChzdHJ1Y3Qgc29ja2Fk
-ZHJfaW4gKilhZGRyZXNzOw0KKyAgICAgICAgICAgICAgICBzb2NrZXRfcG9ydCA9IG50b2hzKGFk
-ZHI0LT5zaW5fcG9ydCk7DQorDQorCQlpZiAoZGVidWcpCQkNCisJCQlwcmludGsoS0VSTl9ERUJV
-RyBVSURCSU5EX0xBQkVMICJiaW5kKCkgYXR0ZW1wdCBvbiBwb3J0ICVkIGJ5IHByb2Nlc3MgWyVz
-XSB1aWQgWyVkXVxuIiwgc29ja2V0X3BvcnQsIGN1cnJlbnQtPmNvbW0sIGN1cnJlbnQtPnVpZCkg
-Ow0KKw0KKwkJc3ByaW50ZihzdHJwb3J0LCIldSIsIHNvY2tldF9wb3J0KSA7DQorDQorCQlwb3J0
-Y29uZmlnID0gY29uZmlnX2dyb3VwX2ZpbmRfb2JqKCZ1aWRiaW5kX3N1YnN5cy5zdV9ncm91cCxz
-dHJwb3J0KSA7DQorDQorCQlpZiAoIXBvcnRjb25maWcpIHsNCisJCQlpZiAoZGVidWcpDQorCQkJ
-CXByaW50ayhLRVJOX0RFQlVHIFVJREJJTkRfTEFCRUwgIkNvbmZpZ3VyYXRpb24gZm9yIHBvcnQg
-JXMgdW5hdmFpbGFibGVcbiIsIHN0cnBvcnQgKSA7DQorDQorCQkJcmV0dXJuIC1FUEVSTTsNCisJ
-CX0NCisNCisJCXBvcnRpdGVtID0gY29udGFpbmVyX29mKHBvcnRjb25maWcsIHN0cnVjdCBwb3J0
-X2NvbmZpZ19pdGVtLCBpdGVtKSA7DQorDQorCQlpZiAocG9ydGl0ZW0tPnVpZCAhPSBjdXJyZW50
-LT51aWQpIHsNCisJCQlpZiAoZGVidWcpDQorCQkJCXByaW50ayhLRVJOX0RFQlVHIFVJREJJTkRf
-TEFCRUwgImJpbmQoKSBwZXJtaXR0ZWQgb25seSB0byB1aWQgJXVcbiIsIHBvcnRpdGVtLT51aWQp
-IDsNCisJCQlyZXR1cm4gLUVQRVJNOw0KKwkJfQ0KKwkJDQorCX0NCisNCisJcmV0dXJuIDA7DQor
-fQ0KKw0KK3N0YXRpYyBzdHJ1Y3Qgc2VjdXJpdHlfb3BlcmF0aW9ucyB1aWRiaW5kX3NlY3VyaXR5
-X29wcyA9IHsNCisJLyogZ2VuZXJhbCBjYXBhYmlsaXR5ICovDQorCS5wdHJhY2UgPSAgICAgICAg
-ICAgICAgICAgICAgICAgY2FwX3B0cmFjZSwNCisgICAgICAgIC5jYXBnZXQgPSAgICAgICAgICAg
-ICAgICAgICAgICAgY2FwX2NhcGdldCwNCisgICAgICAgIC5jYXBzZXRfY2hlY2sgPSAgICAgICAg
-ICAgICAgICAgY2FwX2NhcHNldF9jaGVjaywNCisgICAgICAgIC5jYXBzZXRfc2V0ID0gICAgICAg
-ICAgICAgICAgICAgY2FwX2NhcHNldF9zZXQsDQorICAgICAgICAuY2FwYWJsZSA9ICAgICAgICAg
-ICAgICAgICAgICAgIGNhcF9jYXBhYmxlLA0KKyAgICAgICAgLnNldHRpbWUgPSAgICAgICAgICAg
-ICAgICAgICAgICBjYXBfc2V0dGltZSwNCisgICAgICAgIC5uZXRsaW5rX3NlbmQgPSAgICAgICAg
-ICAgICAgICAgY2FwX25ldGxpbmtfc2VuZCwNCisgICAgICAgIC5uZXRsaW5rX3JlY3YgPSAgICAg
-ICAgICAgICAgICAgY2FwX25ldGxpbmtfcmVjdiwNCisNCisgICAgICAgIC5icHJtX2FwcGx5X2Ny
-ZWRzID0gICAgICAgICAgICAgY2FwX2Jwcm1fYXBwbHlfY3JlZHMsDQorICAgICAgICAuYnBybV9z
-ZXRfc2VjdXJpdHkgPSAgICAgICAgICAgIGNhcF9icHJtX3NldF9zZWN1cml0eSwNCisgICAgICAg
-IC5icHJtX3NlY3VyZWV4ZWMgPSAgICAgICAgICAgICAgY2FwX2Jwcm1fc2VjdXJlZXhlYywNCisN
-CisgICAgICAgIC5pbm9kZV9zZXR4YXR0ciA9ICAgICAgICAgICAgICAgY2FwX2lub2RlX3NldHhh
-dHRyLA0KKyAgICAgICAgLmlub2RlX3JlbW92ZXhhdHRyID0gICAgICAgICAgICBjYXBfaW5vZGVf
-cmVtb3ZleGF0dHIsDQorDQorICAgICAgICAudGFza19wb3N0X3NldHVpZCA9ICAgICAgICAgICAg
-IGNhcF90YXNrX3Bvc3Rfc2V0dWlkLA0KKyAgICAgICAgLnRhc2tfcmVwYXJlbnRfdG9faW5pdCA9
-ICAgICAgICBjYXBfdGFza19yZXBhcmVudF90b19pbml0LA0KKw0KKyAgICAgICAgLnN5c2xvZyA9
-ICAgICAgICAgICAgICAgICAgICAgICBjYXBfc3lzbG9nLA0KKw0KKyAgICAgICAgLnZtX2Vub3Vn
-aF9tZW1vcnkgPSAgICAgICAgICAgICBjYXBfdm1fZW5vdWdoX21lbW9yeSwNCisNCisNCisJLyog
-dWlkYmluZCBob29rICovDQorCS5zb2NrZXRfYmluZCA9CQl1aWRiaW5kX3NvY2tldF9iaW5kX2No
-ZWNrDQorfTsNCisNCisNCitzdGF0aWMgaW50IF9faW5pdCB1aWRiaW5kX2luaXQgKHZvaWQpDQor
-ew0KKw0KKwlpbnQgcmV0IDsNCisNCisJaWYgKHJlZ2lzdGVyX3NlY3VyaXR5ICgmdWlkYmluZF9z
-ZWN1cml0eV9vcHMpKSB7DQorCQlwcmludGsgKEtFUk5fSU5GTyBVSURCSU5EX0xBQkVMICJGYWls
-dXJlIHJlZ2lzdGVyaW5nIG1vZHVsZSB3aXRoIHRoZSBrZXJuZWxcbiIpOw0KKwkJaWYgKG1vZF9y
-ZWdfc2VjdXJpdHkgKE1ZX05BTUUsICZ1aWRiaW5kX3NlY3VyaXR5X29wcykpIHsNCisJCQlwcmlu
-dGsgKEtFUk5fSU5GTyBVSURCSU5EX0xBQkVMICJGYWlsdXJlIHJlZ2lzdGVyaW5nIG1vZHVsZSBh
-cyBzZWNvbmRhcnlcbiIpIDsNCisJCQlyZXR1cm4gLUVJTlZBTDsNCisJCX0NCisJCXNlY29uZGFy
-eSA9IDE7DQorCX0NCisNCisJY29uZmlnX2dyb3VwX2luaXQoJnVpZGJpbmRfc3Vic3lzLnN1X2dy
-b3VwKTsNCisJaW5pdF9NVVRFWCgmdWlkYmluZF9zdWJzeXMuc3Vfc2VtKTsNCisJcmV0ID0gY29u
-ZmlnZnNfcmVnaXN0ZXJfc3Vic3lzdGVtKCZ1aWRiaW5kX3N1YnN5cyk7DQorDQorCWlmIChyZXQp
-IHsNCisJCXByaW50ayhLRVJOX0VSUiBVSURCSU5EX0xBQkVMICJFcnJvciB3aGlsZSByZWdpc3Rl
-cmluZyBjb25maWdmcyBzdWJzeXNcbiIpIDsNCisJCWNvbmZpZ2ZzX3VucmVnaXN0ZXJfc3Vic3lz
-dGVtKCZ1aWRiaW5kX3N1YnN5cyk7DQorCQlyZXR1cm4gcmV0IDsNCisJfQ0KKw0KKwlwcmludGsg
-KEtFUk5fSU5GTyBVSURCSU5EX0xBQkVMICJNb2R1bGUgaW5pdGlhbGl6ZWRcbiIpIDsNCisJcmV0
-dXJuIDA7DQorfQ0KKw0KK3N0YXRpYyB2b2lkIF9fZXhpdCB1aWRiaW5kX2V4aXQgKHZvaWQpDQor
-ew0KKwlpZiAoc2Vjb25kYXJ5KSB7DQorCQlpZiAobW9kX3VucmVnX3NlY3VyaXR5IChNWV9OQU1F
-LCAmdWlkYmluZF9zZWN1cml0eV9vcHMpKQ0KKwkJCXByaW50ayAoS0VSTl9JTkZPIFVJREJJTkRf
-TEFCRUwgIkZhaWx1cmUgdW5yZWdpc3RlcmluZyBtb2R1bGUgYXMgcHJpbWFyeVxuIikgOw0KKwl9
-IGVsc2UgeyANCisJCWlmICh1bnJlZ2lzdGVyX3NlY3VyaXR5ICgmdWlkYmluZF9zZWN1cml0eV9v
-cHMpKSB7DQorCQkJcHJpbnRrIChLRVJOX0lORk8gVUlEQklORF9MQUJFTCAiRmFpbHVyZSB1bnJl
-Z2lzdGVyaW5nIG1vZHVsZVxuIikgOw0KKwkJfQ0KKwl9DQorDQorCWNvbmZpZ2ZzX3VucmVnaXN0
-ZXJfc3Vic3lzdGVtKCZ1aWRiaW5kX3N1YnN5cykgOw0KKw0KKwlwcmludGsgKEtFUk5fSU5GTyBV
-SURCSU5EX0xBQkVMICJNb2R1bGUgcmVtb3ZlZFxuIik7DQorfQ0KKw0KKw0KKw0KK3NlY3VyaXR5
-X2luaXRjYWxsICh1aWRiaW5kX2luaXQpOw0KK21vZHVsZV9leGl0ICh1aWRiaW5kX2V4aXQpOw0K
-Kw0KK01PRFVMRV9ERVNDUklQVElPTigiVWlkQmluZCAwLjEiKTsNCitNT0RVTEVfQVVUSE9SKCJS
-b2JlcnRvIERlIElvcmlzIDxyb2JlcnRvQHVuYml0Lml0PiIpOw0KK01PRFVMRV9MSUNFTlNFKCJH
-UEwiKTsNCisNCk==
-
-
---=-Yrh+InIvQX72VB0M9zui--
-
---=-uvZ/vbBIhhLigGmEZpdT
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Questa =?ISO-8859-1?Q?=E8?= una parte del messaggio
-	firmata digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGLHQzl5tD0kpw00gRAvTyAJ4u5Zt7MOv2pJEnFN9OwLEzRGkaVgCeKOJs
-8sYtMByB1sMLmqGrj0VMD/g=
-=Cr2M
------END PGP SIGNATURE-----
-
---=-uvZ/vbBIhhLigGmEZpdT--
+> 
+> Comments are welcome!!
+> 
+> Thanks,
+> Karuna
 
