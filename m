@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXDWNmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbXDWNo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbXDWNmr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 09:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXDWNmr
+	id S1752326AbXDWNo2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 09:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbXDWNo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 09:42:47 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:9055 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbXDWNmq (ORCPT
+	Mon, 23 Apr 2007 09:44:28 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44931 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752326AbXDWNo2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 09:42:46 -0400
-X-AuditID: d80ac21c-adec9bb000003cc8-b7-462cb7d50262 
-Date: Mon, 23 Apr 2007 14:42:21 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
-In-Reply-To: <6.0.0.20.2.20070423210926.045668d0@172.19.0.2>
-Message-ID: <Pine.LNX.4.64.0704231438280.3516@blonde.wat.veritas.com>
-References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
- <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
- <6.0.0.20.2.20070423210926.045668d0@172.19.0.2>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 23 Apr 2007 13:42:28.0008 (UTC) FILETIME=[3BA87280:01C785AD]
-X-Brightmail-Tracker: AAAAAA==
+	Mon, 23 Apr 2007 09:44:28 -0400
+Date: Mon, 23 Apr 2007 14:47:59 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akpm@osdl.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: [PATCH]  PPC pci_32: Stop using old hotplug unsafe APIs
+Message-ID: <20070423144759.5875dec5@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Hisashi Hifumi wrote:
-> >No.  The PG_lru flag bit is just one bit amongst many others:
-> >what of concurrent operations changing other bits in that same
-> >unsigned long e.g. trying to lock the page by setting PG_locked?
-> >There are some places where such micro-optimizations can be made
-> >(typically while first allocating the page); but in general, no.
-> 
-> In i386 and x86_64, btsl is used to change page flag. In this case, if btsl
-> without lock prefix
-> set PG_locked and PG_lru flag concurrently, does only one operation
-> succeed ?
+pci_find_slot isn't hot-plug safe. Move this code to the pci hotplug safe equivalent and hold a refcount
+properly while doinmg make_one_node_map.
 
-That's right: on an SMP machine, without the lock prefix, the operation
-is no longer atomic: what's stored back may be missing the result of
-one or the other of the racing operations.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-Hugh
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/arch/powerpc/kernel/pci_32.c linux-2.6.21-rc6-mm1/arch/powerpc/kernel/pci_32.c
+--- linux.vanilla-2.6.21-rc6-mm1/arch/powerpc/kernel/pci_32.c	2007-04-12 14:14:43.000000000 +0100
++++ linux-2.6.21-rc6-mm1/arch/powerpc/kernel/pci_32.c	2007-04-23 12:20:22.007864440 +0100
+@@ -656,10 +656,13 @@
+ 		reg = get_property(node, "reg", NULL);
+ 		if (!reg)
+ 			continue;
+-		dev = pci_find_slot(pci_bus, ((reg[0] >> 8) & 0xff));
+-		if (!dev || !dev->subordinate)
++		dev = pci_get_bus_and_slot(pci_bus, ((reg[0] >> 8) & 0xff));
++		if (!dev || !dev->subordinate) {
++			pci_dev_put(dev);
+ 			continue;
++		}
+ 		make_one_node_map(node, dev->subordinate->number);
++		pci_dev_put(dev);
+ 	}
+ }
+ 	
