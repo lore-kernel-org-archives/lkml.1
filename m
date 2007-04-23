@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754433AbXDWWuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbXDWWxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754433AbXDWWuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 18:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbXDWWuN
+	id S1754446AbXDWWxJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 18:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbXDWWxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 18:50:13 -0400
-Received: from mx1.suse.de ([195.135.220.2]:45675 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754433AbXDWWuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 18:50:11 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 00/25] xen: Xen implementation for paravirt_ops
-Date: Tue, 24 Apr 2007 00:50:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-References: <20070423215638.563901986@goop.org>
-In-Reply-To: <20070423215638.563901986@goop.org>
+	Mon, 23 Apr 2007 18:53:09 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3728 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754440AbXDWWxH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 18:53:07 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: sendfile to nonblocking socket
+Date: Mon, 23 Apr 2007 15:52:58 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEAJDEAC.davids@webmaster.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704240050.06615.ak@suse.de>
+	charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <462D2177.1060609@amhost.net>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 23 Apr 2007 16:53:20 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 23 Apr 2007 16:53:21 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 April 2007 23:56:38 Jeremy Fitzhardinge wrote:
-> Hi Andi,
+
+> As I see, nonblocking mode is enabled - sendfile sends less than asked.  
+> But 2G via single 30 seconds sendfile call - this is blocking call. How 
+> can I  avoid that?  I prefer sendfile as fastest way to send file 
+> content to network socket. The problem with sendfile block on 
+> nonblocking socket has place only when I'm using network connection, 
+> that is faster than my hard disk, for example  gigabit NIC or localhost. 
+> When I use 100Mbit NIC, which is slower, than my hard disk,  I got small 
+> and fast sendfile calls without blocking.
 > 
-> It applies to 2.6.21-rc7 + your patches + the last batch of pv_ops
-> patches 
+> My kernel is  Linux 2.6.20.3-grsec x86_64. I verified that also on 
+> 2.6.18 - same results. Please advise.
 
-I got most of those except for the broken sched_clock change.
+You have a misunderstanding about the semantics of 'sendfile'. The 'sendfile' function is just a more efficient version of a read followed by a write. If you did a read followed by a write, it would block as well (in the read).
 
-> I posted. 
+DS
 
-How much testing outside Jeremylabs has it gotten? Some beta
-testing before merging would be good, otherwise we'll just have
-a flood of fixes shortly when it is exposed to users.
 
-> This patch generally restricts itself to Xen-specific parts of the tree,
-> though it does make a few small changes elsewhere.
-
-The general problem is that it is much more than just an architecture update.
-
-> These patches include:
->  - some helper routines for allocating address space and walking pagetables
-
-Needs review from mm people.
-
->  - Xen interface header files
->  - Core Xen implementation
->  - Efficient late-pinning/early-unpinning pagetable handling 
-
-The number of new paravirt hooks makes me thing of renaming it to
-everything_ops @|
-
->  - Virtualized time, including stolen time
-
-Can you let it be reviewed by the time people? (Thomas, Ingo, John, Roman etc.)
-
->  - SMP support
->  - Preemption support
->  - Batched pagetable updates
-
->  - Xen console, based on hvc console
->  - Xenbus
-
-That one would need to be reviewed first. It's so much code that I can't
-do it all myself.
-
->  - Netfront, the paravirtualized network device
-
-That one should go through the network device maintainer/netdev.
-
->  - Blockfront, the paravirtualized block device
-
-And that needs a block device review and whoever maintains that (Jens?) 
-
--Andi
