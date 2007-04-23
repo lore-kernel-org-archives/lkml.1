@@ -1,55 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161223AbXDWKXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXDWK1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161223AbXDWKXg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161242AbXDWKXg
+	id S1753865AbXDWK1m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXDWK1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:23:36 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2007 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161223AbXDWKXf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:23:35 -0400
-Message-ID: <462C8922.7070401@shadowen.org>
-Date: Mon, 23 Apr 2007 11:23:30 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 23 Apr 2007 06:27:42 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:50995 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753865AbXDWK1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 06:27:41 -0400
+Date: Mon, 23 Apr 2007 15:56:18 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>, akpm@linux-foundation.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
+Message-ID: <20070423102618.GA25144@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com> <200704192339.30783.rjw@sisk.pl> <20070420180208.GA721@tv-sign.ru>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [PATCH 3/3] introduce HIGH_ORDER delineating easily reclaimable
- orders
-References: <exportbomb.1177081388@pinky>	<cc3c22ba296c3d75cd7bd66747fb08c0@pinky>	<20070421012843.f5a814eb.akpm@linux-foundation.org> <20070421013210.1bed9ceb.akpm@linux-foundation.org>
-In-Reply-To: <20070421013210.1bed9ceb.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420180208.GA721@tv-sign.ru>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 21 Apr 2007 01:28:43 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+On Fri, Apr 20, 2007 at 10:02:08PM +0400, Oleg Nesterov wrote:
+> On 04/19, Rafael J. Wysocki wrote:
+> > 
+> > On Thursday, 19 April 2007 14:02, Gautham R Shenoy wrote:
+> > > This patch fixes the race pointed out by Oleg Nesterov.
+> > > 
+> > > * Freezer marks a thread as freezeable. 
+> > > * The thread now marks itself PF_NOFREEZE causing it to
+> > >   freeze on calling try_to_freeze(). Thus the task is frozen, even though
+> > >   it doesn't want to.
+> > > * Subsequent thaw_processes() will also fail to thaw the task since it is 
+> > >   marked PF_NOFREEZE.
+> > > 
+> > > Avoid this problem by checking the current task's PF_NOFREEZE status in the 
+> > > refrigerator before marking current as frozen.
+> > > 
+> > > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> > 
+> > Looks good, although I'm not sure if we don't need to call recalc_sigpending()
+> > for tasks that turn out to be PF_NOFREEZE.
 > 
->> It would have been better to have patched page_alloc.c independently, then
->> to have used HIGH_ORDER in "lumpy: increase pressure at the end of the inactive
->> list".
+> I agree, we should clear TIF_SIGPENDING. It is not so critical for user-space
+> tasks, but for the kernel thread it may remain pending forever, causing subtle
+> failures.
 > 
-> Actually that doesn't matter, because I plan on lumping all the lumpy patches
-> together into one lump.
+> Gautham, isn't it possible to make a more simpler patch ? Just add PF_NOFREEZE
+> check to frozen_process,
 > 
-> I was going to duck patches #2 and #3, such was my outrage.  But given that
-> it's all lined up to be a single patch, followup cleanup patches will fit in
-> OK.  Please.
+> 	static inline void frozen_process(struct task_struct *p)
+> 	{
+> 		if (!unlikely(current->flags & PF_NOFREEZE)) {
+> 			p->flags |= PF_FROZEN;
+> 			wmb();
+> 		}
+> 		clear_tsk_thread_flag(p, TIF_FREEZE);
+> 	}
+> 
+> No?
 
-Yes.  Its funny how you can get so close to a change that you can no
-longer see the obvious warts on it.
+Actually yes. The idea anyway was to check one last time before declaring
+ourselves as frozen. So I thought the best place was inside refrigerator since
+we are already holding the task_lock there.
+I wasn't too sure about calling recalc_sigpending(), but now that you
+mention it, I agree, this would be a nicer way to do it.
 
-I am actually travelling today, so it'll be tommorrow now.  But I'll
-roll the cleanups and get them to you.  I can also offer you a clean
-drop in lumpy stack with the HIGH_ORDER change pulled out to the top
-once you are happy.
+Btw, since frozen_process is currently being called only from
+refrigerator, I am wondering if we still need the struct task_struct *p
+parameter there. It's very unlikely that some other task would mark a
+particular task as frozen. No?
 
--apw
+Anyways, Andrew, Could you please replace the earlier sent patch titled
+"fix_pf_nofreeze_and_freezeable_race.patch" with the following one?
 
+Thanks and Regards
+gautham.
+
+-->
+This patch fixes the race pointed out by Oleg Nesterov.
+
+* Freezer marks a thread as freezeable.
+* The thread now marks itself PF_NOFREEZE causing it to
+  freeze on calling try_to_freeze(). Thus the task is frozen, even though
+  it doesn't want to.
+* Subsequent thaw_processes() will also fail to thaw the task since it is
+  marked PF_NOFREEZE.
+
+Avoid this problem by checking the task's PF_NOFREEZE status in 
+frozen_processes() before marking the task as frozen.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+ include/linux/freezer.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21-rc6/include/linux/freezer.h
+===================================================================
+--- linux-2.6.21-rc6.orig/include/linux/freezer.h
++++ linux-2.6.21-rc6/include/linux/freezer.h
+@@ -57,8 +57,10 @@ static inline int thaw_process(struct ta
+  */
+ static inline void frozen_process(struct task_struct *p)
+ {
+-	p->flags |= PF_FROZEN;
+-	wmb();
++	if (!unlikely(p->flags & PF_NOFREEZE)) {
++		p->flags |= PF_FROZEN;
++		wmb();
++	}
+ 	clear_tsk_thread_flag(p, TIF_FREEZE);
+ }
+ 
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
