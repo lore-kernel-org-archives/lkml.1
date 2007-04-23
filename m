@@ -1,108 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXDWARI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030308AbXDWBNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXDWARI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 20:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDWARI
+	id S1030308AbXDWBNm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 21:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXDWBNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 20:17:08 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:47429 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965287AbXDWARH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 20:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=sKkVQDp6SLS9kbQWi3tz4kpYEMXh50bL/IQocBGUjEkIhuDFCsT47l/nRwWi0vkcm6Ch6oiUuPPp6xYH+bB+/cxeuZCZsm51tf5IukORCoenMH5+qWBCY5zoLjmdrcmZW1sJ9Upx5ifOgymJcCZ5ANEcwV60ymH4qiShj4dR8gc=  ;
-X-YMail-OSG: 2df_SA0VM1nlF2ju13FSuF.Qb5zTorn1rpK_7JlI_ml50KlzBGz_JsbRkGxirkdWCo6P8Smfcw--
-Message-ID: <462BFAF3.4040509@yahoo.com.au>
-Date: Mon, 23 Apr 2007 10:16:51 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com>
-In-Reply-To: <462B0156.9020407@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Apr 2007 21:13:41 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35356 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030308AbXDWBNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 21:13:41 -0400
+Date: Mon, 23 Apr 2007 03:12:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
+Subject: [patch] CFS scheduler, -v5
+Message-ID: <20070423011229.GA20367@elte.hu>
+References: <20070420140457.GA14017@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420140457.GA14017@elte.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Nick Piggin wrote:
-> 
->> Rik van Riel wrote:
 
->>> Here are the transactions/seconds for each combination:
->>>
->>>    vanilla   new glibc  madv_free kernel   madv_free + mmap_sem
->>> threads
->>>
->>> 1     610         609             596                545
->>> 2    1032        1136            1196               1200
->>> 4    1070        1128            2014               2024
->>> 8    1000        1088            1665               2087
->>> 16    779        1073            1310               1999
->>
->>
->>
->> Is "new glibc" meaning MADV_DONTNEED + kernel with mmap_sem patch?
-> 
-> 
-> No, that's just the glibc change, with a vanilla kernel.
+i'm pleased to announce release -v5 of the CFS scheduler patchset. The 
+patch against v2.6.21-rc7 and v2.6.20.7 can be downloaded from:
 
-OK. That would be interesting to see with the mmap_sem change,
-because that should increase scalability.
+    http://redhat.com/~mingo/cfs-scheduler/
 
+this CFS release mainly fixes regressions and improves interactivity:
 
-> The third column is glibc change + mmap_sem patch.
-> 
-> The fourth column has your patch in it, too.
-> 
->> The strange thing with your madv_free kernel is that it doesn't
->> help single-threaded performance at all. So that work to avoid
->> zeroing the new page is not a win at all there (maybe due to the
->> cache effects I was worried about?).
-> 
-> 
-> Well, your patch causes the performance to drop from
-> 596 transactions/second to 545.  Your patch is the only
-> difference between the third and the fourth column.
+    13 files changed, 211 insertions(+), 199 deletions(-)
 
-Yeah. That's funny, because it means either there is some
-contention on the mmap_sem (or ptl) at 1 thread, or that my
-patch alters the uncontended performance.
+the biggest user-visible change in -v5 are various interactivity 
+improvements (especially under higher load) to fix reported regressions, 
+and an improved way of handling nice levels. There's also a new 
+sys_sched_yield_to() syscall implementation for i686 and x86_64.
 
+All known regressions have been fixed. (knock on wood)
 
->> However MADV_FREE does improve scalability, which is interesting.
->> The most likely reason I can see why that may be the case is that
->> it avoids mmap_sem when faulting pages back in (I doubt it is due
->> to avoiding the page allocator, but maybe?).
->>
->> So where is the down_write coming from in this workload, I wonder?
->> Heap management? What syscalls?
-> 
-> 
-> I wonder if the increased parallelism simply caused
-> more cache line bouncing, with bounces happening in
-> some inner loop instead of an outer loop.
-> 
-> Btw, it is quite possible that the MySQL sysbench
-> thing gives different results on your system.  It
-> would be good to know what it does on a real SMP
-> system, vs. a single quad-core chip :)
-> 
-> Other architectures would be interesting to know,
-> too.
+[ Note: while CFS's default preemption granularity is currently set to 5 
+  msecs, this value does not directly transform into timeslices: for 
+  example two CPU-intense tasks will have effective timeslices of 10 
+  msecs with this setting. ]
 
-I don't see why parallelism should come into it at 1 thread, unless
-MySQL is parallelising individual transactions. Anyway, I'll try to do
-some more digging.
+Changes since -v4:
 
--- 
-SUSE Labs, Novell Inc.
+ - interactivity bugfix: fix xterm latencies and general desktop delays 
+   and child task startup delays under load. (reported by Willy Tarreau 
+   and Caglar Onur)
+
+ - bugfix: the in_atomic_preempt_off() call on !PREEMPT_BKL was buggy
+   and spammed the console with bogus warnings.
+
+ - implementation fix: make the nice levels implementation
+   starvation-free and smpnice-friendly. Remove the nice_offset hack.
+
+ - feature: add initial sys_sched_yield_to() implementation. Not hooked 
+   into the futex code yet, but testers are encouraged to give the 
+   syscalls a try, on i686 the new syscall is __NR_yield_to==320, on 
+   x86_64 it's __NR_yield_to==280. The prototype is 
+   sys_sched_yield_to(pid_t), as suggested by Ulrich Drepper.
+
+ - usability feature: add CONFIG_RENICE_X: those who dont want the 
+   kernel to renice X should disable this option. (the boot option and 
+   the sysctl is still available too)
+
+ - removed my home-made "Con was right about scheduling fairness" 
+   attribution to Con's scheduler interactivity work - some have 
+   suggested that Con might want to see another text there. Con,
+   please feel free to fill it in!
+
+ - feature: make the CPU usage of nice levels logarithmic instead of 
+   linear. This is more usable and more intuitive. (Going four nice 
+   levels forward/backwards give half/twice the CPU power) [ This was
+   requested a number of times in the past few years and is 
+   straightforward under CFS because there nice levels are not tied to 
+   any timeslice distribution mechanism. ]
+
+ - cleanup: removed the stupid "Ingo was here" banner printk from 
+   sched_init(), the -cfs EXTRAVERSION serves the purpose (of 
+   identifying a booted up kernel as a CFS one) equally well.
+
+ - various other code cleanups
+
+As usual, any sort of feedback, bugreport, fix and suggestion is more 
+than welcome,
+
+	Ingo
