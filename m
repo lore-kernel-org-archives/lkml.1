@@ -1,114 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161520AbXDWMfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161523AbXDWMhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161520AbXDWMfX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 08:35:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161523AbXDWMfW
+	id S1161523AbXDWMhN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161526AbXDWMhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 08:35:22 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:33279 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161520AbXDWMex (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 08:34:53 -0400
-Message-ID: <462CA764.5080401@gmail.com>
-Date: Mon, 23 Apr 2007 14:32:36 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>, Andrew Morton <akpm@osdl.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@stusta.de>, Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com>  <20070404123311.GA18552@infradead.org> <1175698135.5815.447.camel@violet>  <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com>  <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com>  <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
-Content-Type: multipart/mixed;
- boundary="------------030603030204000309010909"
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 23 Apr 2007 08:37:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52977 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161523AbXDWMhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 08:37:11 -0400
+Date: Mon, 23 Apr 2007 14:36:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v5
+Message-ID: <20070423123658.GA15716@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <3d8471ca0704230520w5f395747v2bfb121f7f891f32@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3d8471ca0704230520w5f395747v2bfb121f7f891f32@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030603030204000309010909
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 04/23/2007 01:52 PM, Robert P. J. Day wrote:
+* Guillaume Chazarain <guichaz@yahoo.fr> wrote:
 
-> On Mon, 23 Apr 2007, Rusty Russell wrote:
-
->> Valid points have been made on both sides.  I suggest:
->>
->> #define MODULE_MAINTAINER(_maintainer) \
->> 	MODULE_AUTHOR("(Maintained by) "_maintainer)
+> 2007/4/23, Ingo Molnar <mingo@elte.hu>:
 > 
-> why bring MODULE_AUTHOR into it?  just define it in terms of
-> MODULE_INFO:
+> Index: linux/kernel/sched.c
+> ===================================================================
+> --- linux.orig/kernel/sched.c
+> +++ linux/kernel/sched.c
+> +#include "sched_stats.h"
+> +#include "sched_rt.c"
+> +#include "sched_fair.c"
+> +#include "sched_debug.c"
 > 
-> #define MODULE_MAINTAINER(_m) MODULE_INFO(_m, "(Maintained by)"  \
-> 	maintainer)
+> Index: linux/kernel/sched_stats.h
+> ===================================================================
+> --- /dev/null
+> +++ linux/kernel/sched_stats.h
 > 
-> technically, the maintainer is not the same as the author so why
-> confuse the issue with an extra unnecessary macro expansion?
+> These look unnatural if it were to be included in mainline.
 
-Swap arguments to MODULE_INFO, but yes, other than the extra "(Maintained 
-by)" that's what was originally submitted:
+agreed - these will likely be separate modules - i just wanted to have 
+an easy way of sharing infrastructure between sched.c and these.
 
-http://lkml.org/lkml/2007/4/4/170
-
-If you're going to be using a "maintainer" tag anyway as both that and yours 
-above does, the "(Maintained by)" becomes superfluous, so we're back at the 
-original.
-
-I must say I'm not particularly sure either why reusing MODULE_AUTHOR would 
-be better if MODULE_AUTHOR also remains (as Alan Cox pointed out might be 
-desirable for legal reasons if nothing else). As fas as I'm aware, the other 
-trivial patch I posted to init-module-tools:
-
-http://lkml.org/lkml/2007/4/4/171
-
-is all that's needed to make it useful.
-
-But, I also really only care about being able to add MODULE_MAINTAINER() to 
-some drivers that have outlived their authors and from that viewpoint there 
-is no difference, so if Rusty feels this is better, so be it.
-
-Andrew, mind if I submit this to you?
-
-===
-Provide MODULE_MAINTAINER() as a convenient place to stick a name and email 
-address both for drivers having multiple (current and non-current) authors 
-and for when someone who wants to maintain a driver isn't so much an author.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
-===
-
-Rene.
-
-
---------------030603030204000309010909
-Content-Type: text/plain;
- name="module_maintainer2.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="module_maintainer2.diff"
-
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 10f771a..3c54774 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -128,6 +128,10 @@ extern struct module __this_module;
- /* Author, ideally of form NAME <EMAIL>[, NAME <EMAIL>]*[ and NAME <EMAIL>] */
- #define MODULE_AUTHOR(_author) MODULE_INFO(author, _author)
-   
-+/* Maintainer, ideally of form NAME <EMAIL> */
-+#define MODULE_MAINTAINER(_maintainer) \
-+	MODULE_AUTHOR("(Maintained by) "_maintainer)
-+
- /* What your module does. */
- #define MODULE_DESCRIPTION(_description) MODULE_INFO(description, _description)
- 
-
---------------030603030204000309010909--
+	Ingo
