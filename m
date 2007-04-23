@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750773AbXDWIAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXDWIAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750773AbXDWIAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 04:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXDWIAF
+	id S1752068AbXDWIAn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 04:00:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbXDWIAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 04:00:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48573 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbXDWIAB (ORCPT
+	Mon, 23 Apr 2007 04:00:42 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44299 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752068AbXDWIAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 04:00:01 -0400
-Date: Mon, 23 Apr 2007 08:59:57 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-       linux-pcmcia@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
-Message-ID: <20070423075957.GA22811@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Vitaly Bordug <vitb@kernel.crashing.org>,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	linux-pcmcia@lists.infradead.org,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20070422232658.5f427fd3@localhost.localdomain> <200704222349.42368.arnd@arndb.de> <20070423101427.3a1d4983@localhost.localdomain>
+	Mon, 23 Apr 2007 04:00:39 -0400
+Date: Mon, 23 Apr 2007 01:00:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: William Heimbigner <icxcnika@mar.tar.cc>
+Cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>
+Subject: Re: BUG: Null pointer dereference (2.6.21-rc7)
+Message-Id: <20070423010032.c89e8d32.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
+References: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423101427.3a1d4983@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 10:14:27AM +0400, Vitaly Bordug wrote:
-> On Sun, 22 Apr 2007 23:49:41 +0200
-> Arnd Bergmann wrote:
+On Sun, 22 Apr 2007 23:13:54 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
+
+> On running "pktsetup 0 /dev/hdd", I get the following:
 > 
-> > On Sunday 22 April 2007, Vitaly Bordug wrote:
-> > > This utilizes PCMCIA on mpc885ads and mpc866ads from arch/powerpc.
-> > > In the new approach, direct IMMR accesses from within drivers/ were
-> > > totally eliminated, that requires hardware_enable,
-> > > hardware_disable, voltage_set board-specific functions to be moved
-> > > over to BSP code section (arch/powerpc/platforms/8xx in 885 case).
-> > > There is just no way to have both arch/ppc and arch/powerpc
-> > > approaches to work simultaneously because of that.  
-> > 
-> > Maybe I'm missing a key issue here, but what's the point of adding
-> > more platform_devices for stuff that is already in the device tree?
-> > Shouldn't this be made an of_platform_driver instead so you can
-> > use the existing of_device directly?
-> > 
-> Was thinking of it but platform_device is better for migration purposes. Hence,
-> assuming somebody would want to have pcmcia working not bothering to add whole arch/powerpc support,
-> it can be accomplished quickly.
+> [ 3970.461403] =============================================
+> [ 3970.482051] [ INFO: possible recursive locking detected ]
+> [ 3970.498210] 2.6.21-rc7 #2
+> [ 3970.506062] ---------------------------------------------
+> [ 3970.522228] vol_id/8686 is trying to acquire lock:
+> [ 3970.536576]  (&bdev->bd_mutex){--..}, at: [<c01826b2>] do_open+0x65/0x285
+> [ 3970.557104]
+> [ 3970.557109] but task is already holding lock:
+> [ 3970.574627]  (&bdev->bd_mutex){--..}, at: [<c01826b2>] do_open+0x65/0x285
+> [ 3970.595160]
+> [ 3970.595161] other info that might help us debug this:
+> [ 3970.614757] 2 locks held by vol_id/8686:
+> [ 3970.626505]  #0:  (&bdev->bd_mutex){--..}, at: [<c01826b2>] do_open+0x65/0x285
+> [ 3970.648388]  #1:  (&ctl_mutex#2){--..}, at: [<c03d6b54>] mutex_lock+0x1c/0x1f
+> [ 3970.670065]
+> [ 3970.670070] stack backtrace:
+> [ 3970.683165]  [<c0104df5>] show_trace_log_lvl+0x1a/0x2f
+> [ 3970.698604]  [<c010544b>] show_trace+0x12/0x14
+> [ 3970.711964]  [<c01054fd>] dump_stack+0x16/0x18
+> [ 3970.725322]  [<c013150a>] __lock_acquire+0x12e/0xb93
+> [ 3970.740243]  [<c0131fd7>] lock_acquire+0x68/0x82
+> [ 3970.754122]  [<c03d6c46>] mutex_lock_nested+0xef/0x275
+> [ 3970.769560]  [<c01826b2>] do_open+0x65/0x285
+> [ 3970.782397]  [<c0182945>] __blkdev_get+0x73/0x7e
+> [ 3970.796279]  [<c0182965>] blkdev_get+0x15/0x17
+> [ 3970.809638]  [<c027dbde>] pkt_open+0x95/0xc4e
+> [ 3970.822737]  [<c01826e1>] do_open+0x94/0x285
+> [ 3970.835578]  [<c0182a93>] blkdev_open+0x28/0x51
+> [ 3970.849196]  [<c0161918>] __dentry_open+0xff/0x1b1
+> [ 3970.863594]  [<c0161a4b>] nameidata_to_filp+0x27/0x37
+> [ 3970.878770]  [<c0161a8e>] do_filp_open+0x33/0x3b
+> [ 3970.892654]  [<c0161ad9>] do_sys_open+0x43/0xc2
+> [ 3970.906274]  [<c0161b90>] sys_open+0x1c/0x1e
+> [ 3970.919113]  [<c0103e24>] sysenter_past_esp+0x5d/0x99
+> [ 3970.934292]  =======================
+> [ 3971.630710] pktcdvd: pkt_get_last_written failed
+> [ 3971.645027] BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000e
+> [ 3971.670652]  printing eip:
+> [ 3971.678786] c0161aef
+> [ 3971.685361] *pde = 00000000
+> [ 3971.693761] Oops: 0000 [#1]
+> [ 3971.702120] PREEMPT
+> [ 3971.708722] Modules linked in: udf snd_intel8x0 snd_ac97_codec ac97_bus i810_audio ac97_codec 8139cp 8139too iTCO_wdt
+> [ 3971.741005] CPU:    0
+> [ 3971.741006] EIP:    0060:[<c0161aef>]    Not tainted VLI
+> [ 3971.741008] EFLAGS: 00010203   (2.6.21-rc7 #2)
+> [ 3971.777034] EIP is at do_sys_open+0x59/0xc2
+> [ 3971.789555] eax: 00000002   ebx: 00008000   ecx: c0182a6b   edx: dc8df650
+> [ 3971.809878] esi: ffffff9c   edi: 00000002   ebp: de336fa4   esp: de336f88
+> [ 3971.830200] ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> [ 3971.847674] Process vol_id (pid: 8686, ti=de336000 task=d0b90de0 task.ti=de336000)
+> [ 3971.869812] Stack: 00000000 00000000 cef97000 00000003 bf9d7f65 00008000 b7facff4 de336fb0
+> [ 3971.895286]        c0161b90 00000000 de336000 c0103e24 bf9d7f65 00008000 00000000 00008000
+> [ 3971.920755]        b7facff4 bf9d5e08 00000005 0000007b 0000007b 00000000 00000005 ffffe410
+> [ 3971.946228] Call Trace:
+> [ 3971.954126]  [<c0104df5>] show_trace_log_lvl+0x1a/0x2f
+> [ 3971.969563]  [<c0104ea7>] show_stack_log_lvl+0x9d/0xa5
+> [ 3971.985004]  [<c01050aa>] show_registers+0x1fb/0x33c
+> [ 3971.999924]  [<c01052f2>] die+0x107/0x21f
+> [ 3972.011984]  [<c03d9d20>] do_page_fault+0x448/0x520
+> [ 3972.026644]  [<c03d8594>] error_code+0x74/0x7c
+> [ 3972.040003]  [<c0161b90>] sys_open+0x1c/0x1e
+> [ 3972.052841]  [<c0103e24>] sysenter_past_esp+0x5d/0x99
+> [ 3972.068022]  =======================
+> [ 3972.078728] Code: f0 78 7e 8b 45 08 89 d9 8b 55 ec 89 04 24 89 f0 e8 82 ff ff ff 3d 00 f0 ff ff 89 c7 76 0d 8b 45 f0 e8 dc fb ff ff 89 7d f0 eb 56 <8b> 40 0c bb 20 00 00 40 8b 70 30 0f b7 56 66 81 e2 00 f0 00 00
+> [ 3972.138557] EIP: [<c0161aef>] do_sys_open+0x59/0xc2 SS:ESP 0068:de336f88
+> 
+> Is this a bug?
+> 
 
-That's a horrible argument.  Please do it properly, and let arch/ppc die
-as it should.  We shouldn't be adding anything to it anymore anyway.
+It certainly is.  Are you able to identify an earlier kernel in which this
+didn't happen?  2.6.20?  An earlier 2.6.21-rcX?
 
+Thanks.
