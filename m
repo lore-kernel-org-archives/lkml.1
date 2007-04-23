@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbXDWUp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXDWUqv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752311AbXDWUp2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 16:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbXDWUp1
+	id S1752490AbXDWUqv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 16:46:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDWUqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 16:45:27 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54549 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751965AbXDWUp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 16:45:27 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX195zkUYyFd5BtffOQOvESZGUuWAU/PpjnXDm46eQA
-	hp4mgdPNVe1fN2
-Date: Mon, 23 Apr 2007 22:45:21 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: linux-kernel@vger.kernel.org, jayalk@intworks.biz,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] dma_declare_coherent_memory wrong allocation
-In-Reply-To: <1177343905.6284.22.camel@mulgrave>
-Message-ID: <Pine.LNX.4.60.0704232239250.12939@poirot.grange>
-References: <Pine.LNX.4.60.0704132000030.5919@poirot.grange> 
- <1177260725.4268.9.camel@mulgrave.il.steeleye.com> 
- <Pine.LNX.4.60.0704222202050.4127@poirot.grange> <1177343905.6284.22.camel@mulgrave>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Mon, 23 Apr 2007 16:46:51 -0400
+Received: from mail.screens.ru ([213.234.233.54]:52616 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752490AbXDWUqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 16:46:50 -0400
+Date: Tue, 24 Apr 2007 00:46:37 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC][PATCH -mm 3/3] freezer: Fix problem with kthread_stop
+Message-ID: <20070423204637.GA441@tv-sign.ru>
+References: <20070419120131.GB13435@in.ibm.com> <200704222141.00680.rjw@sisk.pl> <20070423123558.GC25144@in.ibm.com> <200704232155.36820.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704232155.36820.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, James Bottomley wrote:
+On 04/23, Rafael J. Wysocki wrote:
+>
+> On Monday, 23 April 2007 14:35, Gautham R Shenoy wrote:
+> > > +	if (!freezer_should_exempt(current)) {
+> > 		task_lock(k);
+> > > +		/* We are freezable, so we must make sure that the thread being
+> > > +		 * stopped is not frozen and will not be frozen until it dies
+> > > +		 */
+> > > +		freezer_exempt(k);
+> > > +		if (frozen(k))
+> > > +			clear_frozen_flag(k);
+> > 		task_unlock(k);
+> > > +	}
+> 
+> Yes, that's correct.  We need to take task_lock() to avoid the race with
+> refrigerator().
 
-> On Mon, 2007-04-23 at 00:45 +0200, Guennadi Liakhovetski wrote:
-> > Right, thinko. How about using his:
-> > 
-> > +	int pages = DIV_ROUND_UP(size, PAGE_SIZE);
-> 
-> Actually, no ... this has to be size >> PAGE_SHIFT.  The reason being
-> that the  allocator is designed to allocate pages out of a device memory
-> buffer.  If the size isn't a multiple of page size, we have to round
-> down (we can't allocate the last page if the memory we have is only part
-> of a page).
-> 
-> I suppose if you want to catch the unlikely nutcase where size <
-> PAGE_SIZE you could
-> 
-> if (unlikely(pages == 0))
-> 	goto out;
-> 
-> > +	int bitmap_size = BITS_TO_LONGS(pages) * BYTES_PER_LONG;
-> 
-> This is fine, except the BYTES_PER_LONG.  Traditionally, we do this with
-> sizeof(long).  The only reason to have a #define for it is if it has to
-> be used in a macro (the compiler does sizeof() not the preprocessor).
-> 
-> How about just a simple
-> 
-> int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
+Even if we use thaw_task() ?
 
-Ok, version 3, small, and hopefully, beautiful:
+Even if I am wrong, I think we should not use task_lock() for the freezing
+related code, except in freezer.[ch]
 
-dma_declare_coherent_memory() allocates a bitmap 1 bit per page, it 
-calculates the bitmap size based on size of long, but allocates bytes...
-Thanks to James Bottomley for clarifications and corrections.
+Note also that without CONFIG_FREEZER freezer_should_exempt() == 0, so we
+will do unneeded task_lock/task_unlock.
 
-Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
-
-diff --git a/arch/cris/arch-v32/drivers/pci/dma.c b/arch/cris/arch-v32/drivers/pci/dma.c
-index 70d3bf0..832fc63 100644
---- a/arch/cris/arch-v32/drivers/pci/dma.c
-+++ b/arch/cris/arch-v32/drivers/pci/dma.c
-@@ -76,7 +76,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
- {
- 	void __iomem *mem_base;
- 	int pages = size >> PAGE_SHIFT;
--	int bitmap_size = (pages + 31)/32;
-+	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
- 
- 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
- 		goto out;
-diff --git a/arch/i386/kernel/pci-dma.c b/arch/i386/kernel/pci-dma.c
-index 3ebcea0..30b754f 100644
---- a/arch/i386/kernel/pci-dma.c
-+++ b/arch/i386/kernel/pci-dma.c
-@@ -77,7 +77,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
- {
- 	void __iomem *mem_base = NULL;
- 	int pages = size >> PAGE_SHIFT;
--	int bitmap_size = (pages + 31)/32;
-+	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
- 
- 	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
- 		goto out;
+Oleg.
 
