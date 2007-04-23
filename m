@@ -1,117 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161264AbXDWSML@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161196AbXDWSUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161264AbXDWSML (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 14:12:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161255AbXDWSML
+	id S1161196AbXDWSUX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 14:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161219AbXDWSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 14:12:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52204 "EHLO mx1.redhat.com"
+	Mon, 23 Apr 2007 14:20:23 -0400
+Received: from mail.screens.ru ([213.234.233.54]:49220 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161224AbXDWSMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 14:12:09 -0400
-Date: Mon, 23 Apr 2007 14:13:19 -0400
-From: Josef Bacik <jwhiter@redhat.com>
-To: Josef Bacik <jwhiter@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
-Message-ID: <20070423181318.GD22873@korben.rdu.redhat.com>
-References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org> <20070421135956.GA22873@korben.rdu.redhat.com>
-MIME-Version: 1.0
+	id S1161196AbXDWSUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 14:20:22 -0400
+Date: Mon, 23 Apr 2007 22:20:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
+       linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
+       rusty@rustcorp.com.au
+Subject: Re: [PATCH] kthread: Spontaneous exit support
+Message-ID: <20070423182014.GA243@tv-sign.ru>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969596686-git-send-email-ebiederm@xmission.com> <20070419162459.af7a182c.akpm@linux-foundation.org> <20070422194455.GA18561@infradead.org> <m1fy6rzsug.fsf_-_@ebiederm.dsl.xmission.com> <20070423112537.GA21941@infradead.org> <20070423165810.GA188@tv-sign.ru> <m1mz0zvvao.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070421135956.GA22873@korben.rdu.redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <m1mz0zvvao.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 21, 2007 at 09:59:56AM -0400, Josef Bacik wrote:
-> On Sat, Apr 21, 2007 at 12:23:45AM -0700, Andrew Morton wrote:
-> > On Thu, 19 Apr 2007 11:06:56 -0400 Josef Bacik <jwhiter@redhat.com> wrote:
-> > 
-> > > On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
-> > > > On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
-> > > > > Looking through everything I came to the conclusion that we don't really need
-> > > > > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
-> > > > > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
-> > > > > already be registering the device with sysfs so the scsi_sysfs_add_devices step
-> > > > > is kind of useless.
-> > > > 
-> > > > Unfortunately, it isn't.  The registration step while scanning is at the
-> > > > end of scsi_add_lun():
-> > > > 
-> > > > 
-> > > > 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
-> > > > 		return SCSI_SCAN_NO_RESPONSE;
-> > > > 
-> > > > 	return SCSI_SCAN_LUN_PRESENT;
-> > > > 
-> > > > The !async should mean that the addition *only* occurs for the non async
-> > > > scan case ... if you remove the post async scan add, we'll lose devices.
-> > > > 
+On 04/23, Eric W. Biederman wrote:
+>
+> So I propose we add a kthread_orphan as a basic primitive to decrement the
+> count on the task_struct if we want a kthread to simply exit after it
+> has done some work.
+> 
+> And as a helper function we can have a kthread_run_orphan.
 
-Ok I have a new patch that I've built and tested on both my UP and SMP machine
-and it appears to work fine.  I took the async check out of scsi_add_lun, I
-don't really see the point in waiting to do the sysfs registration stuff (if
-theres a reason I haven't been able to find it in the original submission of
-this functionality).  Please let me know if this is incorrect.  Thank you,
+Speaking about helpers, could we also add kthread_start(), which should be
+used instead of direct wake_up_process() ? Not that it is terribly important,
+but still.
 
-Josef
+Note that "kthread_create() pins the task_struct" allows us to cleanup the code.
+Look at this ugly "wait_to_die:" label in migration_thread(). Is is because
+migration_thread() can't exit until CPU_DEAD reaps it. Other reasons were already
+solved by kthread-enhance-kthread_stop-to-abort-interruptible-sleeps.patch
 
-diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-index 0949145..8af1e16 100644
---- a/drivers/scsi/scsi_scan.c
-+++ b/drivers/scsi/scsi_scan.c
-@@ -712,7 +712,7 @@ static int scsi_probe_lun(struct scsi_device *sdev, unsigned char *inq_result,
-  *     SCSI_SCAN_LUN_PRESENT: a new scsi_device was allocated and initialized
-  **/
- static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
--		int *bflags, int async)
-+		int *bflags)
- {
- 	/*
- 	 * XXX do not save the inquiry, since it can change underneath us,
-@@ -912,7 +912,7 @@ static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
- 	 * register it and tell the rest of the kernel
- 	 * about it.
- 	 */
--	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
-+	if (scsi_sysfs_add_sdev(sdev) != 0)
- 		return SCSI_SCAN_NO_RESPONSE;
- 
- 	return SCSI_SCAN_LUN_PRESENT;
-@@ -1081,7 +1081,7 @@ static int scsi_probe_and_add_lun(struct scsi_target *starget,
- 		goto out_free_result;
- 	}
- 
--	res = scsi_add_lun(sdev, result, &bflags, shost->async_scan);
-+	res = scsi_add_lun(sdev, result, &bflags);
- 	if (res == SCSI_SCAN_LUN_PRESENT) {
- 		if (bflags & BLIST_KEY) {
- 			sdev->lockable = 0;
-@@ -1661,15 +1661,6 @@ int scsi_scan_host_selected(struct Scsi_Host *shost, unsigned int channel,
- 	return 0;
- }
- 
--static void scsi_sysfs_add_devices(struct Scsi_Host *shost)
--{
--	struct scsi_device *sdev;
--	shost_for_each_device(sdev, shost) {
--		if (scsi_sysfs_add_sdev(sdev) != 0)
--			scsi_destroy_sdev(sdev);
--	}
--}
--
- /**
-  * scsi_prep_async_scan - prepare for an async scan
-  * @shost: the host which will be scanned
-@@ -1741,8 +1732,6 @@ static void scsi_finish_async_scan(struct async_scan_data *data)
- 
- 	wait_for_completion(&data->prev_finished);
- 
--	scsi_sysfs_add_devices(shost);
--
- 	spin_lock(&async_scan_lock);
- 	shost->async_scan = 0;
- 	list_del(&data->list);
+Oleg.
+
