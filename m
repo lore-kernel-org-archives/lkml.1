@@ -1,76 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030300AbXDWAIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXDWARI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030300AbXDWAIF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 20:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDWAIE
+	id S965287AbXDWARI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 20:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965656AbXDWARI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 20:08:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:56313 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965641AbXDWAIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 20:08:02 -0400
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kyle Moffett <mrmacman_g4@mac.com>, Willy Tarreau <w@1wt.eu>,
-       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-In-Reply-To: <a36005b50704220916u1ac5bd35gd1fa978761f02ab8@mail.gmail.com>
-References: <20070421154614.GA26169@elte.hu>
-	 <alpine.LFD.0.98.0704210931370.9964@woody.linux-foundation.org>
-	 <20070421164241.GF2986@holomorphy.com>
-	 <E1192E83-5E64-4782-8F92-DDCA09CA2F55@mac.com>
-	 <a36005b50704211249pb771b79k227914515b5f9906@mail.gmail.com>
-	 <alpine.LFD.0.98.0704211634130.9964@woody.linux-foundation.org>
-	 <a36005b50704211846g4ed1256fpad6a3a5670318314@mail.gmail.com>
-	 <20070422070238.GH2986@holomorphy.com>
-	 <a36005b50704220017y664eef89u5f78f1e089c5014@mail.gmail.com>
-	 <20070422084843.GJ2986@holomorphy.com>
-	 <a36005b50704220916u1ac5bd35gd1fa978761f02ab8@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 23 Apr 2007 10:07:20 +1000
-Message-Id: <1177286840.17026.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sun, 22 Apr 2007 20:17:08 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:47429 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965287AbXDWARH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 20:17:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=sKkVQDp6SLS9kbQWi3tz4kpYEMXh50bL/IQocBGUjEkIhuDFCsT47l/nRwWi0vkcm6Ch6oiUuPPp6xYH+bB+/cxeuZCZsm51tf5IukORCoenMH5+qWBCY5zoLjmdrcmZW1sJ9Upx5ifOgymJcCZ5ANEcwV60ymH4qiShj4dR8gc=  ;
+X-YMail-OSG: 2df_SA0VM1nlF2ju13FSuF.Qb5zTorn1rpK_7JlI_ml50KlzBGz_JsbRkGxirkdWCo6P8Smfcw--
+Message-ID: <462BFAF3.4040509@yahoo.com.au>
+Date: Mon, 23 Apr 2007 10:16:51 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com>
+In-Reply-To: <462B0156.9020407@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-22 at 09:16 -0700, Ulrich Drepper wrote:
-> On 4/22/07, William Lee Irwin III <wli@holomorphy.com> wrote:
-> > On Sun, Apr 22, 2007 at 12:17:31AM -0700, Ulrich Drepper wrote:
-> > > For futex(), the extension is needed for the FUTEX_WAIT operation.  We
-> > > need a new operation FUTEX_WAIT_FOR or so which takes another (the
-> > > fourth) parameter which is the PID of the target.
-> > > For FUTEX_LOCK_PI we need no extension.  The futex value is the PID of
-> > > the current owner.  This is required for the whole interface to work
-> > > in the first place.
-> >
-> > We'll have to send things out and see what sticks here. There seems to
-> > be some pickiness above.
+Rik van Riel wrote:
+> Nick Piggin wrote:
 > 
-> I know Rusty will shudder since it makes futexes yet more complicated
-> (although only if the user wants it) but if you introduce the concept
-> of "yield to" then this extension makes really sense and it is a quite
-> simple extension.  Plus: I'm the most affected by the change since I
-> have to change code to use it and I'm fine with it.
+>> Rik van Riel wrote:
 
-Hi Uli,
+>>> Here are the transactions/seconds for each combination:
+>>>
+>>>    vanilla   new glibc  madv_free kernel   madv_free + mmap_sem
+>>> threads
+>>>
+>>> 1     610         609             596                545
+>>> 2    1032        1136            1196               1200
+>>> 4    1070        1128            2014               2024
+>>> 8    1000        1088            1665               2087
+>>> 16    779        1073            1310               1999
+>>
+>>
+>>
+>> Is "new glibc" meaning MADV_DONTNEED + kernel with mmap_sem patch?
+> 
+> 
+> No, that's just the glibc change, with a vanilla kernel.
 
-	I wouldn't worry: futexes long ago jumped the shark.
-
-	I think it was inevitable that once we started endorsing programs
-bypassing the kernel for IPC that we'd want some form of yield_to().
-And yield_to(p) has much more sane semantics than yield().
-
-Cheers,
-Rusty.
+OK. That would be interesting to see with the mmap_sem change,
+because that should increase scalability.
 
 
+> The third column is glibc change + mmap_sem patch.
+> 
+> The fourth column has your patch in it, too.
+> 
+>> The strange thing with your madv_free kernel is that it doesn't
+>> help single-threaded performance at all. So that work to avoid
+>> zeroing the new page is not a win at all there (maybe due to the
+>> cache effects I was worried about?).
+> 
+> 
+> Well, your patch causes the performance to drop from
+> 596 transactions/second to 545.  Your patch is the only
+> difference between the third and the fourth column.
+
+Yeah. That's funny, because it means either there is some
+contention on the mmap_sem (or ptl) at 1 thread, or that my
+patch alters the uncontended performance.
+
+
+>> However MADV_FREE does improve scalability, which is interesting.
+>> The most likely reason I can see why that may be the case is that
+>> it avoids mmap_sem when faulting pages back in (I doubt it is due
+>> to avoiding the page allocator, but maybe?).
+>>
+>> So where is the down_write coming from in this workload, I wonder?
+>> Heap management? What syscalls?
+> 
+> 
+> I wonder if the increased parallelism simply caused
+> more cache line bouncing, with bounces happening in
+> some inner loop instead of an outer loop.
+> 
+> Btw, it is quite possible that the MySQL sysbench
+> thing gives different results on your system.  It
+> would be good to know what it does on a real SMP
+> system, vs. a single quad-core chip :)
+> 
+> Other architectures would be interesting to know,
+> too.
+
+I don't see why parallelism should come into it at 1 thread, unless
+MySQL is parallelising individual transactions. Anyway, I'll try to do
+some more digging.
+
+-- 
+SUSE Labs, Novell Inc.
