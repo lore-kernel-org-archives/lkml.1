@@ -1,74 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965687AbXDWJmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXDWJnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965687AbXDWJmc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXDWJmc
+	id S965693AbXDWJnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965694AbXDWJnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:42:32 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:1304 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965687AbXDWJmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:42:31 -0400
-Date: Mon, 23 Apr 2007 11:42:54 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       Christer Weinigel <wingel@nano-system.com>,
-       Jordan Crouse <jordan.crouse@amd.com>
-Subject: Re: [PATCH v3] Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070423114254.71787844@hyperion.delvare>
-In-Reply-To: <20070422154151.GJ5575@csclub.uwaterloo.ca>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
-	<20070414192807.60bdf84b@hyperion.delvare>
-	<20070418174256.GB5577@csclub.uwaterloo.ca>
-	<20070419085413.1520feef@hyperion.delvare>
-	<20070419205942.GC5577@csclub.uwaterloo.ca>
-	<20070420194933.0813a359@hyperion.delvare>
-	<20070422154151.GJ5575@csclub.uwaterloo.ca>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 05:43:32 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:31807 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965693AbXDWJnb convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:43:31 -0400
+X-BigFish: VP
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH] x86_64: make GART PTEs uncacheable
+Date: Mon, 23 Apr 2007 11:45:11 +0200
+User-Agent: KMail/1.9.5
+cc: linux-kernel@vger.kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>
+References: <200704231114.10327.joachim.deguara@amd.com>
+ <200704231132.30736.ak@suse.de>
+In-Reply-To: <200704231132.30736.ak@suse.de>
+MIME-Version: 1.0
+Message-ID: <200704231145.11806.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 23 Apr 2007 09:43:15.0867 (UTC)
+ FILETIME=[D11D86B0:01C7858B]
+X-WSS-ID: 6A32A0321SK68974-01-01
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart,
+On Monday 23 April 2007 11:32, Andi Kleen wrote:
+> On Monday 23 April 2007 11:14:10 Joachim Deguara wrote:
+> > This patches fixes the silent data corruption problems being seen using
+> > the GART iommu where 4kB of data where incorrect (seen mostly on Nvidia
+> > CK804 systems).
+>
+> Performance numbers? How much slower does this make this? Is it still
+> faster than swiotlb?
 
-On Sun, 22 Apr 2007 11:41:51 -0400, Lennart Sorensen wrote:
-> On Fri, Apr 20, 2007 at 07:49:33PM +0200, Jean Delvare wrote:
-> > The scx200_acb driver was heavily modified in 2.6.17 and 2.6.18, not
-> > much since then. I am not familiar with the hardware so I can't comment
-> > on which chips are supposed to work and which aren't.
-> 
-> Well 2.6.18's scx200_acb works on the geode LX module I have, but no on
-> the geode sc1200 module (where scx200_i2c does work).
-> 
-> scx200_acb doesn't detect any device that it can drive (nothing in dmesg
-> at all when loaded) on the sc1200.
+I can work on that as a side note, but while the GART IOMMU is still in the 
+kernel then we need this fix.
 
-On the SCx200, the scx200_acb driver doesn't actually detect the
-device. It uses arbitrary I/O addresses and hopes for the best. By
-default, two buses are created, at 0x820 and 0x840. This might simply
-not be the right addresses for your board. See
-Documentation/i2c/busses/scx200_acb.
+> Also this will always split up the direct memory mapping of the kernel,
+> so you'll lose more TLB entries even for other data.
+>
+> > This fix, to mark the memory regin the GART PTEs reside on as
+> > uncacheable, also brings the code in line with the AGP specification.
+>
+> Where in the AGP specification? I can't find any such requirement
+> in AGPv3
+>
 
-You should enable CONFIG_I2C_DEBUG_BUS and see what the driver says
-when being loaded.
+Mark pointed this out and he can answer best.  I believe he was referring to 
+section 5.3.4 point 8:
+"Core-logic accesses to the GART are not guaranteed to be coherent with host 
+processor caches. In
+order to avoid having to flush the cache after every GART update, portable 
+system software should
+place the GART in a range of the physical memory space that is considered 
+un-cacheable by host
+processors. (A good example is mapping the GART as UC in an IntelÒ PentiumÒ II 
+processor).
+However, the specification does not preclude the placement of the GART in 
+cachable memory
+space in cases where the coherency is guaranteed through some hardware or 
+software
+mechanism."
 
-I seem to remember there has been a patch floating around to
-auto-detect the right ports back in June 2006, but it seems to have
-been lost somehow. Jordan, do you remember?
+updated patch follows with corrected long lone.
 
-> I believe the main changes that
-> happened to scx200_acb was adding support for the newer CSxxxx chipsets,
-> such as the one used with the geode LX (which does work now).
+-Joachim
 
-Not only. There was also a log of bug fixing.
+---
+This patches fixes the silent data corruption problems being seen using the 
+GART iommu where 4kB of data where incorrect (seen mostly on Nvidia CK804 
+systems).  This fix to mark the memory regin the GART PTEs reside on as 
+uncacheable also brings the code in line with the AGP specification.
 
--- 
-Jean Delvare
+Signed-off-by: Joachim Deguara <joachim.deguara@amd.com>
+
+---
+ 
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index 2bac8c6..8fb4957 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -519,7 +519,12 @@ static __init int init_k8_gatt(struct ag
+ 	gatt_size = (aper_size >> PAGE_SHIFT) * sizeof(u32); 
+ 	gatt = (void *)__get_free_pages(GFP_KERNEL, get_order(gatt_size)); 
+ 	if (!gatt) 
+-		panic("Cannot allocate GATT table"); 
++		panic("Cannot allocate GATT table");
++	if (change_page_attr_addr((unsigned long)gatt, gatt_size >> PAGE_SHIFT,
++				PAGE_KERNEL_NOCACHE))
++		panic("Could not set GART PTEs to uncacheable pages");
++	global_flush_tlb();
++
+ 	memset(gatt, 0, gatt_size); 
+ 	agp_gatt_table = gatt;
+ 
+
+
