@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXDWOOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXDWOUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964810AbXDWOOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 10:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXDWOOp
+	id S1751892AbXDWOUh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDWOUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 10:14:45 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:36338 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964810AbXDWOOL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 10:14:11 -0400
-Date: Mon, 23 Apr 2007 16:14:27 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com,
-       arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
-Subject: [PATCH 9/9] Kconfig: broadcom 4400 dependency.
-Message-ID: <20070423141427.GJ21174@skybase>
+	Mon, 23 Apr 2007 10:20:37 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:33673 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751892AbXDWOUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 10:20:36 -0400
+Date: Mon, 23 Apr 2007 19:49:08 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Message-ID: <20070423141908.GA6842@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070419120131.GB13435@in.ibm.com> <20070420183118.GA695@elte.hu> <200704222128.49419.rjw@sisk.pl> <200704222139.27128.rjw@sisk.pl> <a781481a0704222109t5c92e4d6t280c21b256945ac8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <a781481a0704222109t5c92e4d6t280c21b256945ac8@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 9/9] Kconfig: broadcom 4400 dependency.
+Hi Satyam, 
+On Mon, Apr 23, 2007 at 09:39:30AM +0530, Satyam Sharma wrote:
+> Hi Rafael,
+> 
+> >+/*
+> >+ *     Per task flags used by the freezer
+> >+ *
+> >+ *     They should not be referred to directly outside of this file.
+> >+ */
+> >+#define TFF_NOFREEZE   0       /* task should not be frozen */
+> >+#define TFF_FREEZE     8       /* task should go to the refrigerator ASAP 
+> >*/
+> >+#define TFF_SKIP       9       /* do not count this task as freezable */
+> >+#define TFF_FROZEN     10      /* task is frozen */
+> 
+> Aren't NOFREEZE and SKIP doing the same thing? One of them appears
+> superfluous. I'm looking at 21-rc6-mm1 and vfork(2) seems to be its
+> only user. Seeing how vfork(2) used it, can't the call to
+> freezer_do_not_count() be replaced with a call to freezer_exempt()?
+> Similarly, the freezer_count() after the wait_for_completion might
+> just as well be a clear of the NOFREEZE bit followed by a
+> try_to_freeze(). Could you please explain the rationale behind the
+> SKIP flag?
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+The difference between the NOFREEZE and the SKIP flag is a subtle one.
 
-Add HAS_IOMEM dependency to the B44 "Broadcom 4400 ethernet support"
-config option. This hides the option for s390.
-Goes on top of git-wireless.patch.
+When a task (say p) sets it's NOFREEZE flag, it tells the freezer not to
+consider it for freezing. Which means freezeable(p) will return 0.
+So the freezer will not even mark it for freezing. 
 
-Cc: Michael Buesch <mb@bu3sch.de>
-Cc: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+However, when a task sets it SKIP flag, it tells the freezer - "I might
+block at a safe place. So when you are counting the processes which
+have been marked as freezeable, but have not frozen yet, please don't
+count me in. IOW, please skip me."  
+Thus such a task can still be marked for freezing.
 
- drivers/net/Kconfig |    1 +
- 1 files changed, 1 insertion(+)
+The typical usage is 
+freezer_do_not_count(current);
+/* currents goes to an uninterruptible sleep, like wait_for_completion. */
+freezer_count(current);
 
-diff -urpN linux-2.6/drivers/net/Kconfig linux-2.6-patched/drivers/net/Kconfig
---- linux-2.6/drivers/net/Kconfig	2007-04-23 15:51:44.000000000 +0200
-+++ linux-2.6-patched/drivers/net/Kconfig	2007-04-23 15:53:16.000000000 +0200
-@@ -1432,6 +1432,7 @@ config APRICOT
- 
- config B44
- 	tristate "Broadcom 4400 ethernet support"
-+	depends on HAS_IOMEM
- 	select SSB
- 	select MII
- 	help
+Once the task wakes up from it's uninterruptible sleep, it will 
+call freezer_count which in turn calls try_to_freeze.
+If the task was marked for freezing, it will be frozen now.
+
+You may want to check the thread http://lkml.org/lkml/2007/2/18/47 
+on how it came into existance.
+
+> 
+> Cheers,
+> Satyam
+
+Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
