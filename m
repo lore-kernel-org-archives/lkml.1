@@ -1,121 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161178AbXDWKVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161223AbXDWKXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161178AbXDWKVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDWKVr
+	id S1161223AbXDWKXg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161242AbXDWKXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:21:47 -0400
-Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:21167 "HELO
-	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161178AbXDWKVq (ORCPT
+	Mon, 23 Apr 2007 06:23:36 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2007 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161223AbXDWKXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:21:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=R3jyQnLbGAjpmy8L6R01i3oN2fuoML/xeXRdi97FtHpEJNCIiAVAAOzwABB8P8s/WyApU/5FcjjUymtGTWb/Spoqwc5bur8DLEXgRD2m/bPL0MWSI2uRQXz+26j4sWlpASL56+1/Baig3qkeTlnJNmoPj6Irjf643vBtidKfQPk=  ;
-X-YMail-OSG: QKEdhKAVM1k97lIqpqAEX11Tk_nm7TBFJ3Lznvx8bcsVmQv8KhwTocknSSt7UZj0PP8uFuBVrA--
-Message-ID: <462C88B1.8080906@yahoo.com.au>
-Date: Mon, 23 Apr 2007 20:21:37 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 23 Apr 2007 06:23:35 -0400
+Message-ID: <462C8922.7070401@shadowen.org>
+Date: Mon, 23 Apr 2007 11:23:30 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com>
-In-Reply-To: <462C7A6F.9030905@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 3/3] introduce HIGH_ORDER delineating easily reclaimable
+ orders
+References: <exportbomb.1177081388@pinky>	<cc3c22ba296c3d75cd7bd66747fb08c0@pinky>	<20070421012843.f5a814eb.akpm@linux-foundation.org> <20070421013210.1bed9ceb.akpm@linux-foundation.org>
+In-Reply-To: <20070421013210.1bed9ceb.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Use TLB batching for MADV_FREE.  Adds another 10-15% extra performance
-> to the MySQL sysbench results on my quad core system.
+Andrew Morton wrote:
+> On Sat, 21 Apr 2007 01:28:43 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> ---
-> Rik van Riel wrote:
+>> It would have been better to have patched page_alloc.c independently, then
+>> to have used HIGH_ORDER in "lumpy: increase pressure at the end of the inactive
+>> list".
 > 
->>> I've added a 5th column, with just your mmap_sem patch and
->>> without my madv_free patch.  It is run with the glibc patch,
->>> which should make it fall back to MADV_DONTNEED after the
->>> first MADV_FREE call fails.
+> Actually that doesn't matter, because I plan on lumping all the lumpy patches
+> together into one lump.
 > 
-> 
-> With the attached patch to make MADV_FREE use tlb batching, not
-> only do we gain an additional 10-15% performance but Nick's
-> mmap_sem patch also shows the performance increase that we
-> expected to see.
-> 
-> It looks like the tlb flushes (and IPIs) from zap_pte_range()
-> could have been the problem.  They're gone now.
+> I was going to duck patches #2 and #3, such was my outrage.  But given that
+> it's all lined up to be a single patch, followup cleanup patches will fit in
+> OK.  Please.
 
-I guess it is a good idea to batch these things. But can you
-do that on all architectures? What happens if your tlb flush
-happens after another thread already accesses it again, or
-after it subsequently gets removed from the address space via
-another CPU?
+Yes.  Its funny how you can get so close to a change that you can no
+longer see the obvious warts on it.
 
-> 
-> The second column from the right has Nick's patch and my own
-> two patches.  Performance with 16 threads is almost triple what
-> it used to be...
-> 
-> vanilla   glibc  glibc      glibc        glibc      glibc      glibc
->                  madv_free  madv_free               madv_free madv_free
->                             mmap_sem     mmap_sem   mmap_sem
->                                                     tlb batch  tlb_batch
-> threads
-> 
->  1     610     609     596         545         534     547     537
->  2    1032    1136    1196        1200        1180    1293    1194
->  4    1070    1128    2014        2024        2027    2248    2040
->  8    1000    1088    1665        2087        2089    2314    1869
->  16    779    1073    1310        1999        2012    2214    1557
-> 
-> 
->> Now that I think about it - this is all with the rawhide kernel
->> configuration, which has an ungodly number of debug config
->> options enabled.
->>
->> I should try this with a more normal kernel, on various different
->> systems.
-> 
-> 
-> This is for another day. :)
-> 
-> First some ebizzy runs...
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> --- linux-2.6.20.x86_64/mm/memory.c.orig	2007-04-23 02:48:36.000000000 -0400
-> +++ linux-2.6.20.x86_64/mm/memory.c	2007-04-23 02:54:42.000000000 -0400
-> @@ -677,11 +677,15 @@ static unsigned long zap_pte_range(struc
->  						remove_exclusive_swap_page(page);
->  						unlock_page(page);
->  					}
-> -					ptep_clear_flush_dirty(vma, addr, pte);
-> -					ptep_clear_flush_young(vma, addr, pte);
->  					SetPageLazyFree(page);
->  					if (PageActive(page))
->  						deactivate_tail_page(page);
-> +					ptent = *pte;
-> +					set_pte_at(mm, addr, pte,
-> +						pte_mkclean(pte_mkold(ptent)));
-> +					/* tlb_remove_page frees it again */
-> +					get_page(page);
-> +					tlb_remove_page(tlb, page);
->  					continue;
->  				}
->  			}
+I am actually travelling today, so it'll be tommorrow now.  But I'll
+roll the cleanups and get them to you.  I can also offer you a clean
+drop in lumpy stack with the HIGH_ORDER change pulled out to the top
+once you are happy.
 
+-apw
 
--- 
-SUSE Labs, Novell Inc.
