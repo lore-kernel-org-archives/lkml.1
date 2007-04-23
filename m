@@ -1,302 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXDWXHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXDWXHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbXDWXHZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:07:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbXDWXHY
+	id S1754490AbXDWXHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbXDWXHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:07:24 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38861 "EHLO
+	Mon, 23 Apr 2007 19:07:43 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38850 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754495AbXDWXHT (ORCPT
+	with ESMTP id S1754473AbXDWXHJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:19 -0400
-Message-Id: <20070423215710.683563417@goop.org>
+	Mon, 23 Apr 2007 19:07:09 -0400
+Message-Id: <20070423215711.049460061@goop.org>
 References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:56:46 -0700
+Date: Mon, 23 Apr 2007 14:56:48 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 08/25] xen: xen: fix multicall batching
-Content-Disposition: inline; filename=xen-fix-multicall.patch
+       lkml <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
+Subject: [PATCH 10/25] xen: Implement xen_sched_clock
+Content-Disposition: inline; filename=xen-sched-clock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disable interrupts between allocating a multicall entry and actually
-issuing it, to prevent an interrupt from coming in, allocating and
-initializing further multicall entries, and then issuing them all,
-including the partially completed one.
+Implement xen_sched_clock, which returns the number of ns the current
+vcpu has been actually in the running state (vs blocked,
+runnable-but-not-running, or offline) since boot.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: john stultz <johnstul@us.ibm.com>
 
 ---
- arch/i386/xen/enlighten.c  |   44 +++++++++++++++++++++++++++-----------------
- arch/i386/xen/mmu.c        |   18 ++++++++++++------
- arch/i386/xen/multicalls.c |    9 ++++++++-
- arch/i386/xen/multicalls.h |   27 +++++++++++++++++++++++----
- arch/i386/xen/xen-ops.h    |    5 +----
- 5 files changed, 71 insertions(+), 32 deletions(-)
+ arch/i386/xen/enlighten.c |    2 +-
+ arch/i386/xen/time.c      |   22 +++++++++++++++++++++-
+ arch/i386/xen/xen-ops.h   |    3 +--
+ 3 files changed, 23 insertions(+), 4 deletions(-)
 
 ===================================================================
 --- a/arch/i386/xen/enlighten.c
 +++ b/arch/i386/xen/enlighten.c
-@@ -160,13 +160,25 @@ static void xen_halt(void)
+@@ -676,7 +676,7 @@ static const struct paravirt_ops xen_par
+ 	.set_wallclock = xen_set_wallclock,
+ 	.get_wallclock = xen_get_wallclock,
+ 	.get_cpu_khz = xen_cpu_khz,
+-	.sched_clock = xen_clocksource_read,
++	.sched_clock = xen_sched_clock,
  
- static void xen_set_lazy_mode(enum paravirt_lazy_mode mode)
- {
--	enum paravirt_lazy_mode *lazy = &get_cpu_var(xen_lazy_mode);
-+	switch(mode) {
-+	case PARAVIRT_LAZY_NONE:
-+		BUG_ON(x86_read_percpu(xen_lazy_mode) == PARAVIRT_LAZY_NONE);
-+		break;
-+
-+	case PARAVIRT_LAZY_MMU:
-+	case PARAVIRT_LAZY_CPU:
-+		BUG_ON(x86_read_percpu(xen_lazy_mode) != PARAVIRT_LAZY_NONE);
-+		break;
-+
-+	case PARAVIRT_LAZY_FLUSH:
-+		/* flush if necessary, but don't change state */
-+		if (x86_read_percpu(xen_lazy_mode) != PARAVIRT_LAZY_NONE)
-+			xen_mc_flush();
-+		return;
-+	}
- 
- 	xen_mc_flush();
--
--	*lazy = mode;
--
--	put_cpu_var(xen_lazy_mode);
-+	x86_write_percpu(xen_lazy_mode, mode);
- }
- 
- static unsigned long xen_store_tr(void)
-@@ -193,7 +208,7 @@ static void xen_set_ldt(const void *addr
- 
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- 
--	xen_mc_issue();
-+	xen_mc_issue(PARAVIRT_LAZY_CPU);
- }
- 
- static void xen_load_gdt(const struct Xgt_desc_struct *dtr)
-@@ -217,7 +232,7 @@ static void xen_load_gdt(const struct Xg
- 
- 	MULTI_set_gdt(mcs.mc, frames, size/8);
- 
--	xen_mc_issue();
-+	xen_mc_issue(PARAVIRT_LAZY_CPU);
- }
- 
- static void load_TLS_descriptor(struct thread_struct *t,
-@@ -225,18 +240,20 @@ static void load_TLS_descriptor(struct t
- {
- 	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
- 	xmaddr_t maddr = virt_to_machine(&gdt[GDT_ENTRY_TLS_MIN+i]);
--	struct multicall_space mc = xen_mc_entry(0);
-+	struct multicall_space mc = __xen_mc_entry(0);
- 
- 	MULTI_update_descriptor(mc.mc, maddr.maddr, t->tls_array[i]);
- }
- 
- static void xen_load_tls(struct thread_struct *t, unsigned int cpu)
- {
-+	xen_mc_batch();
-+
- 	load_TLS_descriptor(t, cpu, 0);
- 	load_TLS_descriptor(t, cpu, 1);
- 	load_TLS_descriptor(t, cpu, 2);
- 
--	xen_mc_issue();
-+	xen_mc_issue(PARAVIRT_LAZY_CPU);
- }
- 
- static void xen_write_ldt_entry(struct desc_struct *dt, int entrynum, u32 low, u32 high)
-@@ -356,13 +373,9 @@ static void xen_load_esp0(struct tss_str
- static void xen_load_esp0(struct tss_struct *tss,
- 				   struct thread_struct *thread)
- {
--	if (xen_get_lazy_mode() != PARAVIRT_LAZY_CPU) {
--		if (HYPERVISOR_stack_switch(__KERNEL_DS, thread->esp0))
--			BUG();
--	} else {
--		struct multicall_space mcs = xen_mc_entry(0);
--		MULTI_stack_switch(mcs.mc, __KERNEL_DS, thread->esp0);
--	}
-+	struct multicall_space mcs = xen_mc_entry(0);
-+	MULTI_stack_switch(mcs.mc, __KERNEL_DS, thread->esp0);
-+	xen_mc_issue(PARAVIRT_LAZY_CPU);
- }
- 
- static void xen_set_iopl_mask(unsigned mask)
-@@ -452,7 +465,7 @@ static void xen_write_cr3(unsigned long 
- 
- 		MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- 
--		xen_mc_issue();
-+		xen_mc_issue(PARAVIRT_LAZY_CPU);
- 	}
- }
- 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	.apic_write = paravirt_nop,
 ===================================================================
---- a/arch/i386/xen/mmu.c
-+++ b/arch/i386/xen/mmu.c
-@@ -344,7 +344,7 @@ static int pin_page(struct page *page, u
- 	else {
- 		void *pt = lowmem_page_address(page);
- 		unsigned long pfn = page_to_pfn(page);
--		struct multicall_space mcs = xen_mc_entry(0);
-+		struct multicall_space mcs = __xen_mc_entry(0);
- 
- 		flush = 0;
- 
-@@ -364,10 +364,12 @@ void xen_pgd_pin(pgd_t *pgd)
- 	struct multicall_space mcs;
- 	struct mmuext_op *op;
- 
-+	xen_mc_batch();
+--- a/arch/i386/xen/time.c
++++ b/arch/i386/xen/time.c
+@@ -16,6 +16,8 @@
+ #define XEN_SHIFT 22
+ #define TIMER_SLOP	100000	/* Xen may fire a timer up to this many ns early */
+ #define NS_PER_TICK	(1000000000ll / HZ)
 +
- 	if (pgd_walk(pgd, pin_page, TASK_SIZE))
- 		kmap_flush_unused();
++static cycle_t xen_clocksource_read(void);
  
--	mcs = xen_mc_entry(sizeof(*op));
-+	mcs = __xen_mc_entry(sizeof(*op));
- 	op = mcs.args;
- 
- #ifdef CONFIG_X86_PAE
-@@ -378,7 +380,7 @@ void xen_pgd_pin(pgd_t *pgd)
- 	op->arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
- 	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
- 
--	xen_mc_flush();
-+	xen_mc_issue(0);
+ /* These are perodically updated in shared_info, and then copied here. */
+ struct shadow_time_info {
+@@ -118,6 +120,24 @@ static void do_stolen_accounting(void)
+ 	account_steal_time(idle_task(smp_processor_id()), ticks);
  }
  
- /* The init_mm pagetable is really pinned as soon as its created, but
-@@ -402,7 +404,7 @@ static int unpin_page(struct page *page,
- 	if (pgfl && !PageHighMem(page)) {
- 		void *pt = lowmem_page_address(page);
- 		unsigned long pfn = page_to_pfn(page);
--		struct multicall_space mcs = xen_mc_entry(0);
-+		struct multicall_space mcs = __xen_mc_entry(0);
- 
- 		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
- 					pfn_pte(pfn, PAGE_KERNEL),
-@@ -416,7 +418,11 @@ static void xen_pgd_unpin(pgd_t *pgd)
- static void xen_pgd_unpin(pgd_t *pgd)
- {
- 	struct mmuext_op *op;
--	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
-+	struct multicall_space mcs;
-+
-+	xen_mc_batch();
-+
-+	mcs = __xen_mc_entry(sizeof(*op));
- 
- 	op = mcs.args;
- 	op->cmd = MMUEXT_UNPIN_TABLE;
-@@ -426,7 +432,7 @@ static void xen_pgd_unpin(pgd_t *pgd)
- 
- 	pgd_walk(pgd, unpin_page, TASK_SIZE);
- 
--	xen_mc_flush();
-+	xen_mc_issue(0);
- }
- 
- 
-===================================================================
---- a/arch/i386/xen/multicalls.c
-+++ b/arch/i386/xen/multicalls.c
-@@ -14,11 +14,17 @@ struct mc_buffer {
- };
- 
- static DEFINE_PER_CPU(struct mc_buffer, mc_buffer);
-+DEFINE_PER_CPU(unsigned long, xen_mc_irq_flags);
- 
- void xen_mc_flush(void)
- {
- 	struct mc_buffer *b = &get_cpu_var(mc_buffer);
- 	int ret = 0;
-+	unsigned long flags;
-+
-+	/* Disable interrupts in case someone comes in and queues
-+	   something in the middle */
-+	local_irq_save(flags);
- 
- 	if (b->mcidx) {
- 		int i;
-@@ -34,11 +40,12 @@ void xen_mc_flush(void)
- 		BUG_ON(b->argidx != 0);
- 
- 	put_cpu_var(mc_buffer);
-+	local_irq_restore(flags);
- 
- 	BUG_ON(ret);
- }
- 
--struct multicall_space xen_mc_entry(size_t args)
-+struct multicall_space __xen_mc_entry(size_t args)
- {
- 	struct mc_buffer *b = &get_cpu_var(mc_buffer);
- 	struct multicall_space ret;
-===================================================================
---- a/arch/i386/xen/multicalls.h
-+++ b/arch/i386/xen/multicalls.h
-@@ -11,16 +11,35 @@ struct multicall_space
- };
- 
- /* Allocate room for a multicall and its args */
--struct multicall_space xen_mc_entry(size_t args);
-+struct multicall_space __xen_mc_entry(size_t args);
-+
-+DECLARE_PER_CPU(unsigned long, xen_mc_irq_flags);
-+
-+/* Call to start a batch of multiple __xen_mc_entry()s.  Must be
-+   paired with xen_mc_issue() */
-+static inline void xen_mc_batch(void)
++/*
++ * Xen sched_clock implementation.  Returns the number of unstolen
++ * nanoseconds, which is nanoseconds the VCPU spent in RUNNING+BLOCKED
++ * states.
++ */
++unsigned long long xen_sched_clock(void)
 +{
-+	/* need to disable interrupts until this entry is complete */
-+	local_irq_save(__get_cpu_var(xen_mc_irq_flags));
-+}
++	struct vcpu_runstate_info state;
++	cycle_t now = xen_clocksource_read();
 +
-+static inline struct multicall_space xen_mc_entry(size_t args)
-+{
-+	xen_mc_batch();
-+	return __xen_mc_entry(args);
++	get_runstate_snapshot(&state);
++
++	WARN_ON(state.state != RUNSTATE_running);
++
++	return state.time[RUNSTATE_blocked] +
++		state.time[RUNSTATE_running] +
++		(now - state.state_entry_time);
 +}
  
- /* Flush all pending multicalls */
- void xen_mc_flush(void);
  
--/* Issue a multicall if we're not in lazy mode */
--static inline void xen_mc_issue(void)
-+/* Issue a multicall if we're not in a lazy mode */
-+static inline void xen_mc_issue(unsigned mode)
- {
--	if (xen_get_lazy_mode() == PARAVIRT_LAZY_NONE)
-+	if ((xen_get_lazy_mode() & mode) == 0)
- 		xen_mc_flush();
-+
-+	/* restore flags saved in xen_mc_batch */
-+	local_irq_restore(x86_read_percpu(xen_mc_irq_flags));
+ /* Get the CPU speed from Xen */
+@@ -209,7 +229,7 @@ static u64 get_nsec_offset(struct shadow
+ 	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
  }
  
- #endif /* _XEN_MULTICALLS_H */
+-cycle_t xen_clocksource_read(void)
++static cycle_t xen_clocksource_read(void)
+ {
+ 	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
+ 	cycle_t ret;
 ===================================================================
 --- a/arch/i386/xen/xen-ops.h
 +++ b/arch/i386/xen/xen-ops.h
-@@ -26,10 +26,7 @@ DECLARE_PER_CPU(enum paravirt_lazy_mode,
+@@ -2,7 +2,6 @@
+ #define XEN_OPS_H
  
- static inline unsigned xen_get_lazy_mode(void)
- {
--	unsigned ret = get_cpu_var(xen_lazy_mode);
--	put_cpu_var(xen_lazy_mode);
--
--	return ret;
-+	return x86_read_percpu(xen_lazy_mode);
- }
+ #include <linux/init.h>
+-#include <linux/clocksource.h>
  
+ DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
+ DECLARE_PER_CPU(unsigned long, xen_cr3);
+@@ -18,7 +17,7 @@ void __init xen_time_init(void);
+ void __init xen_time_init(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+-cycle_t xen_clocksource_read(void);
++unsigned long long xen_sched_clock(void);
+ 
+ void xen_mark_init_mm_pinned(void);
  
 
 -- 
