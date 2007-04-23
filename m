@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbXDWOFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbXDWOLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbXDWOFZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 10:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXDWOFY
+	id S1753928AbXDWOLJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbXDWOLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 10:05:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45459 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753994AbXDWOFY (ORCPT
+	Mon, 23 Apr 2007 10:11:09 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:8707 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753876AbXDWOLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 10:05:24 -0400
-Date: Mon, 23 Apr 2007 15:08:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: driver-support@fabric7.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] vioc_irq: Switch to pci refcount safe API
-Message-ID: <20070423150855.67c3c849@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 10:11:07 -0400
+Date: Mon, 23 Apr 2007 16:11:23 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com,
+       arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
+Subject: [PATCH 0/9] Kconfig: cleanup s390 v2.
+Message-ID: <20070423141123.GA21174@skybase>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Greetings,
+I've added the results of the review to the Kconfig cleanup patches
+for s390. Patch #2 has been split, one half has all the HAS_IOMEM
+depends lines the other the remaining !S390 depends lines.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/net/vioc/vioc_irq.c linux-2.6.21-rc6-mm1/drivers/net/vioc/vioc_irq.c
---- linux.vanilla-2.6.21-rc6-mm1/drivers/net/vioc/vioc_irq.c	2007-04-12 14:15:05.000000000 +0100
-+++ linux-2.6.21-rc6-mm1/drivers/net/vioc/vioc_irq.c	2007-04-23 12:01:53.354405384 +0100
-@@ -233,8 +233,10 @@
- 
- 	devfn = PCI_DEVFN(slot, func);
- 	/* Find pci_dev structure of the requested function */
--	dev = pci_find_slot(dev_in->bus->number, devfn);
-+	dev = pci_get_bus_and_slot(dev_in->bus->number, devfn);
- 	if (dev) {
-+		int irq = dev->irq
-+		pci_dev_put(dev);
- 		return irq;
- 	} else {
- 		return VIOC_IRQ_NONE;
+Andrew: I plan to add patches 1-5 to the for-andrew branch of the
+git390 repository if that is fine with you. The only thing that will
+be missing in the tree is the patch that disables wireless for s390.
+The code does compile but without hardware it is mute to have the
+config options. I'll wait until the git-wireless.patch is upstream.
+Patches 7-9 depend on patches found in -mm.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
