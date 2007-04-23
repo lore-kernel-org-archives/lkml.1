@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbXDWGm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXDWGoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbXDWGm0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbXDWGm0
+	id S1751571AbXDWGoq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXDWGoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:42:26 -0400
-Received: from [70.254.190.220] ([70.254.190.220]:39717 "EHLO server.willdawg"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753077AbXDWGmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:42:25 -0400
-Date: Mon, 23 Apr 2007 06:42:24 +0000 (GMT)
-From: William Heimbigner <icxcnika@mar.tar.cc>
-X-X-Sender: icxcnika@server.thyself
-To: Rik van Riel <riel@redhat.com>
-cc: Eric Hopper <hopper@omnifarious.org>, linux-kernel@vger.kernel.org
-Subject: Re: Question about Reiser4
-In-Reply-To: <462C5034.9090403@redhat.com>
-Message-ID: <Pine.LNX.4.64.0704230640540.25153@server.thyself>
-References: <20070423020046.GA28477@omnifarious.org> <462C2E5B.1080008@redhat.com>
- <Pine.LNX.4.64.0704230353000.25153@server.thyself> <462C4858.3050006@redhat.com>
- <Pine.LNX.4.64.0704230555020.25153@server.thyself> <462C4D32.4000909@redhat.com>
- <Pine.LNX.4.64.0704230611430.25153@server.thyself> <462C5034.9090403@redhat.com>
+	Mon, 23 Apr 2007 02:44:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:39095 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751571AbXDWGop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:44:45 -0400
+From: Neil Brown <neilb@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Date: Mon, 23 Apr 2007 16:44:36 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17964.21972.961812.744601@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
+In-Reply-To: message from Christoph Lameter on Thursday April 19
+References: <17960.16739.870487.497750@notabene.brown>
+	<Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
+	<17960.20796.761309.771912@notabene.brown>
+	<Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday April 19, clameter@sgi.com wrote:
+> 
+> Right. Sigh. But there is no user of the symlinks.
+> 
+> I could drop the symlinks completely. Just do not track what names a cache 
+> aliases to?
+> 
 
-On Mon, 23 Apr 2007, Rik van Riel wrote:
-> William Heimbigner wrote:
->
->>  If there was 1) a maintainer and 2) code that didn't break "coding
->>  standards", would it be included in the kernel?
->
-> While I cannot speak for Linus and Andrew, code that fulfills
-> these criteria (and is useful to have - reiser4 seems to have
-> enough user interest) usually gets accepted.
->
-> http://kernelnewbies.org/UpstreamMerge has some hints.
+Suppose I have a kmem_cache which at different times has different
+sizes (like, for example, the cache used for 'stripe_head' in
+md/raid5.c.  If I 'grow' and array, I resize that kmem_cache).
 
-So in conclusion / to answer Eric's question,
-1) reiser4 needs a maintainer
-2) reiser4 needs the code quality cleaned up
-3) Until those two things happen, it's extremely unlikely that it will be 
-included in the kernel.
+Suppose that the first time I create it, it has size X, and then
+someone else creates a cache with size X.  The second cache will become
+an alias for the first.  So when the first is destroyed, the name
+says. 
 
-Correct?
-William Heimbigner
-icxcnika@mar.tar.cc
+Now I try to create another cache with the same name (it is serving
+the same purpose) but with a different size.  It will need to create a
+new cache, but the name is still in use.  Bang!
 
+I really think you need to return a different handle to each
+kmem_cache_create call so that you know which cache is being deleted
+so you can mangle names correctly.
 
+Another option might be to name each cache actually created with a
+unique name, and then create a symlink for each cache that was asked
+for (whether it was created or whether a pre-existing cache was used).
+Then being lazy about deletion shouldn't be a problem.
+
+NeilBrown
