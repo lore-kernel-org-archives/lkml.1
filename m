@@ -1,810 +1,2042 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbXDWXJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXDWXJL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754514AbXDWXJL (ORCPT <rfc822;w@1wt.eu>);
+	id S1754477AbXDWXJL (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 23 Apr 2007 19:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbXDWXJA
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbXDWXJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:09:00 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38867 "EHLO
+	Mon, 23 Apr 2007 19:09:06 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38855 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932796AbXDWXHt (ORCPT
+	with ESMTP id S1754478AbXDWXHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:49 -0400
-Message-Id: <20070423215710.515092096@goop.org>
+	Mon, 23 Apr 2007 19:07:48 -0400
+Message-Id: <20070423215713.355570737@goop.org>
 References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:56:45 -0700
+Date: Mon, 23 Apr 2007 14:56:59 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Zach Amsden <zach@vmware.com>
-Subject: [PATCH 07/25] xen: Complete pagetable pinning for Xen
-Content-Disposition: inline; filename=xen-pinned-pagetables.patch
+       lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>, netdev@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminge@linux-foundation.org>
+Subject: [PATCH 21/25] xen: Add the Xen virtual network device driver.
+Content-Disposition: inline; filename=xen-netfront.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen has a notion of pinned pagetables, which are pagetables that
-remain read-only to the guest and are validated by the hypervisor.
-This makes context switches much cheaper, because the hypervisor
-doesn't need to revalidate the pagetable each time.
+The network device frontend driver allows the kernel to access network
+devices exported exported by a virtual machine containing a physical
+network device driver.
 
-This patch adds a PG_pinned flag for pagetable pages so we can tell if
-it has been pinned or not.  This allows various pagetable update
-optimisations.
-
-This also adds a mm parameter to the alloc_pt pv_op, so that Xen can
-see if we're adding a page to a pinned pagetable.  This is not
-necessary for alloc_pd or release_p[dt], which is fortunate because it
-isn't available at all callsites.
-
-This also adds a new paravirt hook which is called during setup once
-the zones and memory allocator have been initialized.  When the
-init_mm pagetable is first built, the struct page array does not yet
-exist, and so there's nowhere to put he init_mm pagetable's PG_pinned
-flags.  Once the zones are initialized and the struct page array
-exists, we can set the PG_pinned flags for those pages.
-
-This patch also adds the Xen support for pte pages allocated out of
-highmem (highpte), principly by implementing xen_kmap_atomic_pte.
-
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Zach Amsden <zach@vmware.com>
-
+Cc: netdev@vger.kernel.org
+Cc: Jeff Garzik <jeff@garzik.org>
+Cc: Stephen Hemminger <shemminge@linux-foundation.org>
 ---
- arch/i386/kernel/setup.c    |    3 
- arch/i386/kernel/vmi.c      |    2 
- arch/i386/mm/init.c         |    2 
- arch/i386/mm/pageattr.c     |    2 
- arch/i386/xen/enlighten.c   |  105 +++++++++++-----
- arch/i386/xen/mmu.c         |  280 +++++++++++++++++++++++++++----------------
- arch/i386/xen/mmu.h         |    2 
- arch/i386/xen/xen-ops.h     |    2 
- include/asm-i386/paravirt.h |   16 +-
- include/asm-i386/pgalloc.h  |    6 
- include/asm-i386/setup.h    |    4 
- include/linux/page-flags.h  |    5 
- 12 files changed, 289 insertions(+), 140 deletions(-)
+ drivers/net/Kconfig        |   12 
+ drivers/net/Makefile       |    2 
+ drivers/net/xen-netfront.c | 1957 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 1971 insertions(+)
 
 ===================================================================
---- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -607,9 +607,12 @@ void __init setup_arch(char **cmdline_p)
- 	sparse_init();
- 	zone_sizes_init();
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2508,6 +2508,18 @@ source "drivers/atm/Kconfig"
  
+ source "drivers/s390/net/Kconfig"
+ 
++config XEN_NETDEV_FRONTEND
++	tristate "Xen network device frontend driver"
++	depends on XEN
++	default y
++	help
++	  The network device frontend driver allows the kernel to
++	  access network devices exported exported by a virtual
++	  machine containing a physical network device driver. The
++	  frontend driver is intended for unprivileged guest domains;
++	  if you are compiling a kernel for a Xen guest, you almost
++	  certainly want to enable this.
 +
- 	/*
- 	 * NOTE: at this point the bootmem allocator is fully available.
- 	 */
+ config ISERIES_VETH
+ 	tristate "iSeries Virtual Ethernet driver support"
+ 	depends on PPC_ISERIES
+===================================================================
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -218,3 +218,5 @@ obj-$(CONFIG_FS_ENET) += fs_enet/
+ obj-$(CONFIG_FS_ENET) += fs_enet/
+ 
+ obj-$(CONFIG_NETXEN_NIC) += netxen/
 +
-+	paravirt_post_allocator_init();
- 
- 	dmi_scan_machine();
- 
++obj-$(CONFIG_XEN_NETDEV_FRONTEND) += xen-netfront.o
 ===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -361,7 +361,7 @@ static void *vmi_kmap_atomic_pte(struct 
- }
- #endif
- 
--static void vmi_allocate_pt(u32 pfn)
-+static void vmi_allocate_pt(struct mm_struct *mm, u32 pfn)
- {
- 	vmi_set_page_type(pfn, VMI_PAGE_L1);
- 	vmi_ops.allocate_page(pfn, VMI_PAGE_L1, 0, 0, 0);
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -87,7 +87,7 @@ static pte_t * __init one_page_table_ini
- 	if (pmd_none(*pmd)) {
- 		pte_t *page_table = (pte_t *) alloc_bootmem_low_pages(PAGE_SIZE);
- 
--		paravirt_alloc_pt(__pa(page_table) >> PAGE_SHIFT);
-+		paravirt_alloc_pt(&init_mm, __pa(page_table) >> PAGE_SHIFT);
- 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
- 		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
- 	}
-===================================================================
---- a/arch/i386/mm/pageattr.c
-+++ b/arch/i386/mm/pageattr.c
-@@ -60,7 +60,7 @@ static struct page *split_large_page(uns
- 	address = __pa(address);
- 	addr = address & LARGE_PAGE_MASK; 
- 	pbase = (pte_t *)page_address(base);
--	paravirt_alloc_pt(page_to_pfn(base));
-+	paravirt_alloc_pt(&init_mm, page_to_pfn(base));
- 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
-                set_pte(&pbase[i], pfn_pte(addr >> PAGE_SHIFT,
-                                           addr == address ? prot : ref_prot));
-===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -8,6 +8,9 @@
- #include <linux/sched.h>
- #include <linux/bootmem.h>
- #include <linux/module.h>
+--- /dev/null
++++ b/drivers/net/xen-netfront.c
+@@ -0,0 +1,1957 @@
++/******************************************************************************
++ * Virtual network driver for conversing with remote driver backends.
++ *
++ * Copyright (c) 2002-2005, K A Fraser
++ * Copyright (c) 2005, XenSource Ltd
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include <linux/module.h>
++#include <linux/version.h>
++#include <linux/kernel.h>
++#include <linux/netdevice.h>
++#include <linux/etherdevice.h>
++#include <linux/skbuff.h>
++#include <linux/ethtool.h>
++#include <linux/in.h>
++#include <linux/if_ether.h>
++#include <linux/moduleparam.h>
 +#include <linux/mm.h>
-+#include <linux/page-flags.h>
-+#include <linux/highmem.h>
- 
- #include <xen/interface/xen.h>
- #include <xen/features.h>
-@@ -453,32 +456,59 @@ static void xen_write_cr3(unsigned long 
- 	}
- }
- 
--static void xen_alloc_pt(u32 pfn)
--{
--	/* XXX pfn isn't necessarily a lowmem page */
-+/* Early in boot, while setting up the initial pagetable, assume
-+   everything is pinned. */
-+static void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
-+{
-+	BUG_ON(mem_map);	/* should only be used early */
- 	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
- }
- 
--static void xen_alloc_pd(u32 pfn)
--{
--	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
--}
--
--static void xen_release_pd(u32 pfn)
--{
--	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
--}
--
-+/* This needs to make sure the new pte page is pinned iff its being
-+   attached to a pinned pagetable. */
-+static void xen_alloc_pt(struct mm_struct *mm, u32 pfn)
-+{
-+	struct page *page = pfn_to_page(pfn);
-+
-+	if (PagePinned(virt_to_page(mm->pgd))) {
-+		SetPagePinned(page);
-+
-+		if (!PageHighMem(page))
-+			make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
-+		else
-+			/* make sure there are no stray mappings of
-+			   this page */
-+			kmap_flush_unused();
-+	}
-+}
-+
-+/* This should never happen until we're OK to use struct page */
- static void xen_release_pt(u32 pfn)
- {
--	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
--}
--
--static void xen_alloc_pd_clone(u32 pfn, u32 clonepfn,
--					u32 start, u32 count)
--{
--	xen_alloc_pd(pfn);
--}
-+	struct page *page = pfn_to_page(pfn);
-+
-+	if (PagePinned(page)) {
-+		if (!PageHighMem(page))
-+			make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
-+	}
-+}
-+
-+#ifdef CONFIG_HIGHPTE
-+static void *xen_kmap_atomic_pte(struct page *page, enum km_type type)
-+{
-+	pgprot_t prot = PAGE_KERNEL;
-+
-+	if (PagePinned(page))
-+		prot = PAGE_KERNEL_RO;
-+
-+	if (0 && PageHighMem(page))
-+		printk("mapping highpte %lx type %d prot %s\n",
-+		       page_to_pfn(page), type,
-+		       (unsigned long)pgprot_val(prot) & _PAGE_RW ? "WRITE" : "READ");
-+
-+	return kmap_atomic_prot(page, type, prot);
-+}
++#include <xen/xenbus.h>
++#include <xen/interface/io/netif.h>
++#include <xen/interface/memory.h>
++#ifdef CONFIG_XEN_BALLOON
++#include <xen/balloon.h>
 +#endif
- 
- static __init void xen_pagetable_setup_start(pgd_t *base)
- {
-@@ -506,7 +536,7 @@ static __init void xen_pagetable_setup_s
- 				memcpy(pmd, (void *)pgd_page_vaddr(xen_pgd[i]),
- 				       PAGE_SIZE);
- 
--				xen_alloc_pd(PFN_DOWN(__pa(pmd)));
-+				make_lowmem_page_readonly(pmd);
- 
- 				set_pgd(&base[i], __pgd(1 + __pa(pmd)));
- 			} else
-@@ -527,6 +557,10 @@ static __init void xen_pagetable_setup_s
- 
- static __init void xen_pagetable_setup_done(pgd_t *base)
- {
-+	/* This will work as long as patching hasn't happened yet
-+	   (which it hasn't) */
-+	paravirt_ops.alloc_pt = xen_alloc_pt;
++#include <xen/interface/grant_table.h>
 +
- 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
- 		/*
- 		 * Create a mapping for the shared info page.
-@@ -544,7 +578,19 @@ static __init void xen_pagetable_setup_d
- 		HYPERVISOR_shared_info =
- 			(struct shared_info *)__va(xen_start_info->shared_info);
- 
--	xen_pgd_pin(base);
-+	/* Actually pin the pagetable down, but we can't set PG_pinned
-+	   yet because the page structures don't exist yet. */
-+	{
-+		struct mmuext_op op;
-+#ifdef CONFIG_X86_PAE
-+		op.cmd = MMUEXT_PIN_L3_TABLE;
-+#else
-+		op.cmd = MMUEXT_PIN_L3_TABLE;
-+#endif
-+		op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(base)));
-+		if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
-+			BUG();
-+	}
- 
- 	xen_vcpu_setup(smp_processor_id());
- }
-@@ -562,6 +608,7 @@ static const struct paravirt_ops xen_par
- 	.arch_setup = xen_arch_setup,
- 	.init_IRQ = xen_init_IRQ,
- 	.time_init = xen_time_init,
-+	.post_allocator_init = xen_mark_init_mm_pinned,
- 
- 	.cpuid = xen_cpuid,
- 
-@@ -647,11 +694,15 @@ static const struct paravirt_ops xen_par
- 	.set_pte_at = xen_set_pte_at,
- 	.set_pmd = xen_set_pmd,
- 
--	.alloc_pt = xen_alloc_pt,
--	.alloc_pd = xen_alloc_pd,
--	.alloc_pd_clone = xen_alloc_pd_clone,
--	.release_pd = xen_release_pd,
-+	.alloc_pt = xen_alloc_pt_init,
- 	.release_pt = xen_release_pt,
-+	.alloc_pd = paravirt_nop,
-+	.alloc_pd_clone = paravirt_nop,
-+	.release_pd = paravirt_nop,
++#include <xen/events.h>
++#include <xen/page.h>
++#include <xen/grant_table.h>
 +
-+#ifdef CONFIG_HIGHPTE
-+	.kmap_atomic_pte = xen_kmap_atomic_pte,
-+#endif
- 
- 	.pte_val = xen_pte_val,
- 	.pgd_val = xen_pgd_val,
-===================================================================
---- a/arch/i386/xen/mmu.c
-+++ b/arch/i386/xen/mmu.c
-@@ -1,15 +1,19 @@
-+#include <linux/highmem.h>
-+
- #include <asm/bug.h>
--
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
- 
- #include <asm/xen/hypercall.h>
-+#include <asm/xen/hypervisor.h>
- #include <asm/paravirt.h>
- 
- #include <xen/page.h>
- #include <xen/interface/xen.h>
- 
-+#include "multicalls.h"
-+
- #include "mmu.h"
- 
- xmaddr_t arbitrary_virt_to_machine(unsigned long address)
-@@ -47,17 +51,6 @@ void make_lowmem_page_readwrite(void *va
- 	ptev = pte_mkwrite(*pte);
- 
- 	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
--		BUG();
--}
--
--
--void xen_set_pte(pte_t *ptep, pte_t pte)
--{
--	struct mmu_update u;
--
--	u.ptr = virt_to_machine(ptep).maddr;
--	u.val = pte_val_ma(pte);
--	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
- 		BUG();
- }
- 
-@@ -70,18 +63,6 @@ void xen_set_pmd(pmd_t *ptr, pmd_t val)
- 	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
- 		BUG();
- }
--
--#ifdef CONFIG_X86_PAE
--void xen_set_pud(pud_t *ptr, pud_t val)
--{
--	struct mmu_update u;
--
--	u.ptr = virt_to_machine(ptr).maddr;
--	u.val = pud_val_ma(val);
--	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
--		BUG();
--}
--#endif
- 
- /*
-  * Associate a virtual page frame with a given physical page frame
-@@ -129,12 +110,29 @@ void xen_set_pte_at(struct mm_struct *mm
- }
- 
- #ifdef CONFIG_X86_PAE
-+void xen_set_pud(pud_t *ptr, pud_t val)
-+{
-+	struct mmu_update u;
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pud_val_ma(val);
-+	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+}
-+
-+void xen_set_pte(pte_t *ptep, pte_t pte)
-+{
-+	ptep->pte_high = pte.pte_high;
-+	smp_wmb();
-+	ptep->pte_low = pte.pte_low;
-+}
-+
- void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
- {
- 	set_64bit((u64 *)ptep, pte_val_ma(pte));
- }
- 
--void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep)
-+void xen_pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
- 	ptep->pte_low = 0;
- 	smp_wmb();
-@@ -198,6 +196,11 @@ pgd_t xen_make_pgd(unsigned long long pg
- 	return (pgd_t){ pgd };
- }
- #else  /* !PAE */
-+void xen_set_pte(pte_t *ptep, pte_t pte)
-+{
-+	*ptep = pte;
-+}
-+
- unsigned long xen_pte_val(pte_t pte)
- {
- 	unsigned long ret = pte.pte_low;
-@@ -206,12 +209,6 @@ unsigned long xen_pte_val(pte_t pte)
- 		ret = machine_to_phys(XMADDR(ret)).paddr;
- 
- 	return ret;
--}
--
--unsigned long xen_pmd_val(pmd_t pmd)
--{
--	BUG();
--	return 0;
- }
- 
- unsigned long xen_pgd_val(pgd_t pgd)
-@@ -230,12 +227,6 @@ pte_t xen_make_pte(unsigned long pte)
- 	return (pte_t){ pte };
- }
- 
--pmd_t xen_make_pmd(unsigned long pmd)
--{
--	BUG();
--	return __pmd(0);
--}
--
- pgd_t xen_make_pgd(unsigned long pgd)
- {
- 	if (pgd & _PAGE_PRESENT)
-@@ -246,109 +237,194 @@ pgd_t xen_make_pgd(unsigned long pgd)
- #endif	/* CONFIG_X86_PAE */
- 
- 
--
--static void pgd_walk_set_prot(void *pt, pgprot_t flags)
--{
--	unsigned long pfn = PFN_DOWN(__pa(pt));
--
--	if (HYPERVISOR_update_va_mapping((unsigned long)pt,
--					 pfn_pte(pfn, flags), 0) < 0)
--		BUG();
--}
--
--static void pgd_walk(pgd_t *pgd_base, pgprot_t flags)
 +/*
-+  (Yet another) pagetable walker.  This one is intended for pinning a
-+  pagetable.  This means that it walks a pagetable and calls the
-+  callback function on each page it finds making up the page table,
-+  at every level.  It walks the entire pagetable, but it only bothers
-+  pinning pte pages which are below pte_limit.  In the normal case
-+  this will be TASK_SIZE, but at boot we need to pin up to
-+  FIXADDR_TOP.  But the important bit is that we don't pin beyond
-+  there, because then we start getting into Xen's ptes.
-+*/
-+static int pgd_walk(pgd_t *pgd_base, int (*func)(struct page *, unsigned),
-+		    unsigned long limit)
- {
- 	pgd_t *pgd = pgd_base;
--	pud_t *pud;
--	pmd_t *pmd;
--	pte_t *pte;
--	int    g, u, m;
-+	int flush = 0;
-+	unsigned long addr = 0;
-+	unsigned long pgd_next;
++ * Mutually-exclusive module options to select receive data path:
++ *  rx_copy : Packets are copied by network backend into local memory
++ *  rx_flip : Page containing packet data is transferred to our ownership
++ * For fully-virtualised guests there is no option - copying must be used.
++ * For paravirtualised guests, flipping is the default.
++ */
++static int rx_copy;
++module_param(rx_copy, bool, 0);
++MODULE_PARM_DESC(rx_copy, "Copy packets from network card (rather than flip)");
++static int rx_flip;
++module_param(rx_flip, bool, 0);
++MODULE_PARM_DESC(rx_flip, "Flip packets from network card (rather than copy)");
 +
-+	BUG_ON(limit > FIXADDR_TOP);
- 
- 	if (xen_feature(XENFEAT_auto_translated_physmap))
--		return;
--
--	for (g = 0; g < USER_PTRS_PER_PGD; g++, pgd++) {
--		if (pgd_none(*pgd))
-+		return 0;
++#define RX_COPY_THRESHOLD 256
 +
-+	for (; addr != FIXADDR_TOP; pgd++, addr = pgd_next) {
-+		pud_t *pud;
-+		unsigned long pud_limit, pud_next;
++#define GRANT_INVALID_REF	0
 +
-+		pgd_next = pud_limit = pgd_addr_end(addr, FIXADDR_TOP);
++#define NET_TX_RING_SIZE __RING_SIZE((struct netif_tx_sring *)0, PAGE_SIZE)
++#define NET_RX_RING_SIZE __RING_SIZE((struct netif_rx_sring *)0, PAGE_SIZE)
 +
-+		if (!pgd_val(*pgd))
- 			continue;
++struct netfront_info {
++	struct list_head list;
++	struct net_device *netdev;
 +
- 		pud = pud_offset(pgd, 0);
- 
- 		if (PTRS_PER_PUD > 1) /* not folded */
--			pgd_walk_set_prot(pud,flags);
--
--		for (u = 0; u < PTRS_PER_PUD; u++, pud++) {
-+			flush |= (*func)(virt_to_page(pud), 0);
++	struct net_device_stats stats;
 +
-+		for (; addr != pud_limit; pud++, addr = pud_next) {
-+			pmd_t *pmd;
-+			unsigned long pmd_limit;
++	struct netif_tx_front_ring tx;
++	struct netif_rx_front_ring rx;
 +
-+			pud_next = pud_addr_end(addr, pud_limit);
++	spinlock_t   tx_lock;
++	spinlock_t   rx_lock;
 +
-+			if (pud_next < limit)
-+				pmd_limit = pud_next;
-+			else
-+				pmd_limit = limit;
++	unsigned int evtchn, irq;
++	unsigned int copying_receiver;
++	unsigned int carrier;
 +
- 			if (pud_none(*pud))
- 				continue;
++	/* Receive-ring batched refills. */
++#define RX_MIN_TARGET 8
++#define RX_DFL_MIN_TARGET 64
++#define RX_MAX_TARGET min_t(int, NET_RX_RING_SIZE, 256)
++	unsigned rx_min_target, rx_max_target, rx_target;
++	struct sk_buff_head rx_batch;
 +
- 			pmd = pmd_offset(pud, 0);
- 
- 			if (PTRS_PER_PMD > 1) /* not folded */
--				pgd_walk_set_prot(pmd,flags);
--
--			for (m = 0; m < PTRS_PER_PMD; m++, pmd++) {
-+				flush |= (*func)(virt_to_page(pmd), 0);
++	struct timer_list rx_refill_timer;
 +
-+			for (; addr != pmd_limit; pmd++) {
-+				addr += (PAGE_SIZE * PTRS_PER_PTE);
-+				if ((pmd_limit-1) < (addr-1)) {
-+					addr = pmd_limit;
-+					break;
-+				}
++	/*
++	 * {tx,rx}_skbs store outstanding skbuffs. The first entry in tx_skbs
++	 * is an index into a chain of free entries.
++	 */
++	struct sk_buff *tx_skbs[NET_TX_RING_SIZE+1];
++	struct sk_buff *rx_skbs[NET_RX_RING_SIZE];
 +
- 				if (pmd_none(*pmd))
- 					continue;
- 
--				/* This can get called before mem_map
--				   is set up, so we assume nothing is
--				   highmem at that point. */
--				if (mem_map == NULL ||
--				    !PageHighMem(pmd_page(*pmd))) {
--					pte = pte_offset_kernel(pmd,0);
--					pgd_walk_set_prot(pte,flags);
--				}
-+				flush |= (*func)(pmd_page(*pmd), 0);
- 			}
- 		}
- 	}
- 
--	if (HYPERVISOR_update_va_mapping((unsigned long)pgd_base,
--					 pfn_pte(PFN_DOWN(__pa(pgd_base)),
--						 flags),
--					 UVMF_TLB_FLUSH) < 0)
--		BUG();
--}
--
--
--/* This is called just after a mm has been duplicated from its parent,
--   but it has not been used yet.  We need to make sure that its
--   pagetable is all read-only, and can be pinned. */
-+	flush |= (*func)(virt_to_page(pgd_base), UVMF_TLB_FLUSH);
++#define TX_MAX_TARGET min_t(int, NET_RX_RING_SIZE, 256)
++	grant_ref_t gref_tx_head;
++	grant_ref_t grant_tx_ref[NET_TX_RING_SIZE + 1];
++	grant_ref_t gref_rx_head;
++	grant_ref_t grant_rx_ref[NET_RX_RING_SIZE];
 +
-+	return flush;
++	struct xenbus_device *xbdev;
++	int tx_ring_ref;
++	int rx_ring_ref;
++	u8 mac[ETH_ALEN];
++
++	unsigned long rx_pfn_array[NET_RX_RING_SIZE];
++	struct multicall_entry rx_mcl[NET_RX_RING_SIZE+1];
++	struct mmu_update rx_mmu[NET_RX_RING_SIZE];
++};
++
++struct netfront_rx_info {
++	struct netif_rx_response rx;
++	struct netif_extra_info extras[XEN_NETIF_EXTRA_TYPE_MAX - 1];
++};
++
++/*
++ * Implement our own carrier flag: the network stack's version causes delays
++ * when the carrier is re-enabled (in particular, dev_activate() may not
++ * immediately be called, which can cause packet loss).
++ */
++#define netfront_carrier_on(netif)	((netif)->carrier = 1)
++#define netfront_carrier_off(netif)	((netif)->carrier = 0)
++#define netfront_carrier_ok(netif)	((netif)->carrier)
++
++/*
++ * Access macros for acquiring freeing slots in tx_skbs[].
++ */
++
++static inline void add_id_to_freelist(struct sk_buff **list, unsigned short id)
++{
++	list[id] = list[0];
++	list[0]  = (void *)(unsigned long)id;
 +}
 +
-+static int pin_page(struct page *page, unsigned flags)
++static inline unsigned short get_id_from_freelist(struct sk_buff **list)
 +{
-+	unsigned pgfl = test_and_set_bit(PG_pinned, &page->flags);
-+	int flush;
++	unsigned int id = (unsigned int)(unsigned long)list[0];
++	list[0] = list[id];
++	return id;
++}
 +
-+	if (pgfl)
-+		flush = 0;		/* already pinned */
-+	else if (PageHighMem(page))
-+		/* kmaps need flushing if we found an unpinned
-+		   highpage */
-+		flush = 1;
-+	else {
-+		void *pt = lowmem_page_address(page);
-+		unsigned long pfn = page_to_pfn(page);
-+		struct multicall_space mcs = xen_mc_entry(0);
++static inline int xennet_rxidx(RING_IDX idx)
++{
++	return idx & (NET_RX_RING_SIZE - 1);
++}
 +
-+		flush = 0;
++static inline struct sk_buff *xennet_get_rx_skb(struct netfront_info *np,
++						RING_IDX ri)
++{
++	int i = xennet_rxidx(ri);
++	struct sk_buff *skb = np->rx_skbs[i];
++	np->rx_skbs[i] = NULL;
++	return skb;
++}
 +
-+		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
-+					pfn_pte(pfn, PAGE_KERNEL_RO),
-+					flags);
++static inline grant_ref_t xennet_get_rx_ref(struct netfront_info *np,
++					    RING_IDX ri)
++{
++	int i = xennet_rxidx(ri);
++	grant_ref_t ref = np->grant_rx_ref[i];
++	np->grant_rx_ref[i] = GRANT_INVALID_REF;
++	return ref;
++}
++
++static int setup_device(struct xenbus_device *, struct netfront_info *);
++static struct net_device *create_netdev(struct xenbus_device *);
++
++static void end_access(int, void *);
++static void netif_disconnect_backend(struct netfront_info *);
++
++static int network_connect(struct net_device *);
++static void network_tx_buf_gc(struct net_device *);
++static void network_alloc_rx_buffers(struct net_device *);
++
++static irqreturn_t netif_int(int irq, void *dev_id);
++
++#ifdef CONFIG_SYSFS
++static int xennet_sysfs_addif(struct net_device *netdev);
++static void xennet_sysfs_delif(struct net_device *netdev);
++#else /* !CONFIG_SYSFS */
++#define xennet_sysfs_addif(dev) (0)
++#define xennet_sysfs_delif(dev) do { } while(0)
++#endif
++
++static inline int xennet_can_sg(struct net_device *dev)
++{
++	return dev->features & NETIF_F_SG;
++}
++
++/**
++ * Entry point to this code when a new device is created.  Allocate the basic
++ * structures and the ring buffers for communication with the backend, and
++ * inform the backend of the appropriate details for those.
++ */
++static int __devinit netfront_probe(struct xenbus_device *dev,
++				    const struct xenbus_device_id *id)
++{
++	int err;
++	struct net_device *netdev;
++	struct netfront_info *info;
++
++	netdev = create_netdev(dev);
++	if (IS_ERR(netdev)) {
++		err = PTR_ERR(netdev);
++		xenbus_dev_fatal(dev, err, "creating netdev");
++		return err;
 +	}
 +
-+	return flush;
++	info = netdev_priv(netdev);
++	dev->dev.driver_data = info;
++
++	err = register_netdev(info->netdev);
++	if (err) {
++		printk(KERN_WARNING "%s: register_netdev err=%d\n",
++		       __FUNCTION__, err);
++		goto fail;
++	}
++
++	err = xennet_sysfs_addif(info->netdev);
++	if (err) {
++		unregister_netdev(info->netdev);
++		printk(KERN_WARNING "%s: add sysfs failed err=%d\n",
++		       __FUNCTION__, err);
++		goto fail;
++	}
++
++	return 0;
++
++ fail:
++	free_netdev(netdev);
++	dev->dev.driver_data = NULL;
++	return err;
 +}
 +
-+/* This is called just after a mm has been created, but it has not
-+   been used yet.  We need to make sure that its pagetable is all
-+   read-only, and can be pinned. */
- void xen_pgd_pin(pgd_t *pgd)
- {
--	struct mmuext_op op;
--
--	pgd_walk(pgd, PAGE_KERNEL_RO);
--
--#if defined(CONFIG_X86_PAE)
--	op.cmd = MMUEXT_PIN_L3_TABLE;
-+	struct multicall_space mcs;
-+	struct mmuext_op *op;
-+
-+	if (pgd_walk(pgd, pin_page, TASK_SIZE))
-+		kmap_flush_unused();
-+
-+	mcs = xen_mc_entry(sizeof(*op));
-+	op = mcs.args;
-+
-+#ifdef CONFIG_X86_PAE
-+	op->cmd = MMUEXT_PIN_L3_TABLE;
- #else
--	op.cmd = MMUEXT_PIN_L2_TABLE;
-+	op->cmd = MMUEXT_PIN_L2_TABLE;
- #endif
--	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
--	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
--		BUG();
-+	op->arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
-+	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
-+
-+	xen_mc_flush();
-+}
-+
-+/* The init_mm pagetable is really pinned as soon as its created, but
-+   that's before we have page structures to store the bits.  So do all
-+   the book-keeping now. */
-+static __init int mark_pinned(struct page *page, unsigned flags)
++static int __devexit netfront_remove(struct xenbus_device *dev)
 +{
-+	SetPagePinned(page);
++	struct netfront_info *info = dev->dev.driver_data;
++
++	dev_dbg(&dev->dev, "%s\n", dev->nodename);
++
++	netif_disconnect_backend(info);
++
++	del_timer_sync(&info->rx_refill_timer);
++
++	xennet_sysfs_delif(info->netdev);
++
++	unregister_netdev(info->netdev);
++
++	free_netdev(info->netdev);
++
 +	return 0;
 +}
 +
-+void __init xen_mark_init_mm_pinned(void)
++/**
++ * We are reconnecting to the backend, due to a suspend/resume, or a backend
++ * driver restart.  We tear down our netif structure and recreate it, but
++ * leave the device-layer structures intact so that this is transparent to the
++ * rest of the kernel.
++ */
++static int netfront_resume(struct xenbus_device *dev)
 +{
-+	pgd_walk(init_mm.pgd, mark_pinned, FIXADDR_TOP);
++	struct netfront_info *info = dev->dev.driver_data;
++
++	dev_dbg(&dev->dev, "%s\n", dev->nodename);
++
++	netif_disconnect_backend(info);
++	return 0;
 +}
 +
-+static int unpin_page(struct page *page, unsigned flags)
++static int xen_net_read_mac(struct xenbus_device *dev, u8 mac[])
 +{
-+	unsigned pgfl = test_and_clear_bit(PG_pinned, &page->flags);
++	char *s, *e, *macstr;
++	int i;
 +
-+	if (pgfl && !PageHighMem(page)) {
-+		void *pt = lowmem_page_address(page);
-+		unsigned long pfn = page_to_pfn(page);
-+		struct multicall_space mcs = xen_mc_entry(0);
++	macstr = s = xenbus_read(XBT_NIL, dev->nodename, "mac", NULL);
++	if (IS_ERR(macstr))
++		return PTR_ERR(macstr);
 +
-+		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
-+					pfn_pte(pfn, PAGE_KERNEL),
-+					flags);
++	for (i = 0; i < ETH_ALEN; i++) {
++		mac[i] = simple_strtoul(s, &e, 16);
++		if ((s == e) || (*e != ((i == ETH_ALEN-1) ? '\0' : ':'))) {
++			kfree(macstr);
++			return -ENOENT;
++		}
++		s = e+1;
 +	}
 +
-+	return 0;		/* never need to flush on unpin */
- }
- 
- /* Release a pagetables pages back as normal RW */
--void xen_pgd_unpin(pgd_t *pgd)
--{
--	struct mmuext_op op;
--
--	op.cmd = MMUEXT_UNPIN_TABLE;
--	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
--
--	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
--		BUG();
--
--	pgd_walk(pgd, PAGE_KERNEL);
-+static void xen_pgd_unpin(pgd_t *pgd)
-+{
-+	struct mmuext_op *op;
-+	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
-+
-+	op = mcs.args;
-+	op->cmd = MMUEXT_UNPIN_TABLE;
-+	op->arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
-+
-+	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
-+
-+	pgd_walk(pgd, unpin_page, TASK_SIZE);
-+
-+	xen_mc_flush();
- }
- 
- 
- void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next)
- {
-+	spin_lock(&next->page_table_lock);
- 	xen_pgd_pin(next->pgd);
-+	spin_unlock(&next->page_table_lock);
- }
- 
- void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
- {
-+	spin_lock(&mm->page_table_lock);
- 	xen_pgd_pin(mm->pgd);
-+	spin_unlock(&mm->page_table_lock);
- }
- 
- void xen_exit_mmap(struct mm_struct *mm)
-===================================================================
---- a/arch/i386/xen/mmu.h
-+++ b/arch/i386/xen/mmu.h
-@@ -15,7 +15,7 @@ void xen_exit_mmap(struct mm_struct *mm)
- void xen_exit_mmap(struct mm_struct *mm);
- 
- void xen_pgd_pin(pgd_t *pgd);
--void xen_pgd_unpin(pgd_t *pgd);
-+//void xen_pgd_unpin(pgd_t *pgd);
- 
- #ifdef CONFIG_X86_PAE
- unsigned long long xen_pte_val(pte_t);
-===================================================================
---- a/arch/i386/xen/xen-ops.h
-+++ b/arch/i386/xen/xen-ops.h
-@@ -20,6 +20,8 @@ int xen_set_wallclock(unsigned long time
- int xen_set_wallclock(unsigned long time);
- cycle_t xen_clocksource_read(void);
- 
-+void xen_mark_init_mm_pinned(void);
-+
- DECLARE_PER_CPU(enum paravirt_lazy_mode, xen_lazy_mode);
- 
- static inline unsigned xen_get_lazy_mode(void)
-===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -52,6 +52,8 @@ struct paravirt_ops
- 	/* Basic arch-specific setup */
- 	void (*arch_setup)(void);
- 	char *(*memory_setup)(void);
-+	void (*post_allocator_init)(void);
-+
- 	void (*init_IRQ)(void);
- 	void (*time_init)(void);
- 
-@@ -173,7 +175,7 @@ struct paravirt_ops
- 				 unsigned long va);
- 
- 	/* Hooks for allocating/releasing pagetable pages */
--	void (*alloc_pt)(u32 pfn);
-+	void (*alloc_pt)(struct mm_struct *mm, u32 pfn);
- 	void (*alloc_pd)(u32 pfn);
- 	void (*alloc_pd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
- 	void (*release_pt)(u32 pfn);
-@@ -682,6 +684,12 @@ static inline void setup_secondary_clock
- }
- #endif
- 
-+static inline void paravirt_post_allocator_init(void)
-+{
-+	if (paravirt_ops.post_allocator_init)
-+		(*paravirt_ops.post_allocator_init)();
++	kfree(macstr);
++	return 0;
 +}
 +
- static inline void paravirt_pagetable_setup_start(pgd_t *base)
- {
- 	if (paravirt_ops.pagetable_setup_start)
-@@ -738,9 +746,9 @@ static inline void flush_tlb_others(cpum
- 	PVOP_VCALL3(flush_tlb_others, &cpumask, mm, va);
- }
- 
--static inline void paravirt_alloc_pt(unsigned pfn)
--{
--	PVOP_VCALL1(alloc_pt, pfn);
-+static inline void paravirt_alloc_pt(struct mm_struct *mm, unsigned pfn)
++/* Common code used when first setting up, and when resuming. */
++static int talk_to_backend(struct xenbus_device *dev,
++			   struct netfront_info *info)
 +{
-+	PVOP_VCALL2(alloc_pt, mm, pfn);
- }
- static inline void paravirt_release_pt(unsigned pfn)
- {
-===================================================================
---- a/include/asm-i386/pgalloc.h
-+++ b/include/asm-i386/pgalloc.h
-@@ -7,7 +7,7 @@
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
--#define paravirt_alloc_pt(pfn) do { } while (0)
-+#define paravirt_alloc_pt(mm, pfn) do { } while (0)
- #define paravirt_alloc_pd(pfn) do { } while (0)
- #define paravirt_alloc_pd(pfn) do { } while (0)
- #define paravirt_alloc_pd_clone(pfn, clonepfn, start, count) do { } while (0)
-@@ -17,13 +17,13 @@
- 
- #define pmd_populate_kernel(mm, pmd, pte)			\
- do {								\
--	paravirt_alloc_pt(__pa(pte) >> PAGE_SHIFT);		\
-+	paravirt_alloc_pt(mm, __pa(pte) >> PAGE_SHIFT);		\
- 	set_pmd(pmd, __pmd(_PAGE_TABLE + __pa(pte)));		\
- } while (0)
- 
- #define pmd_populate(mm, pmd, pte) 				\
- do {								\
--	paravirt_alloc_pt(page_to_pfn(pte));			\
-+	paravirt_alloc_pt(mm, page_to_pfn(pte));		\
- 	set_pmd(pmd, __pmd(_PAGE_TABLE +			\
- 		((unsigned long long)page_to_pfn(pte) <<	\
- 			(unsigned long long) PAGE_SHIFT)));	\
-===================================================================
---- a/include/asm-i386/setup.h
-+++ b/include/asm-i386/setup.h
-@@ -79,6 +79,10 @@ void __init add_memory_region(unsigned l
- 
- extern unsigned long init_pg_tables_end;
- 
-+#ifndef CONFIG_PARAVIRT
-+#define paravirt_post_allocator_init()	do {} while(0)
++	const char *message;
++	struct xenbus_transaction xbt;
++	int err;
++
++	err = xen_net_read_mac(dev, info->mac);
++	if (err) {
++		xenbus_dev_fatal(dev, err, "parsing %s/mac", dev->nodename);
++		goto out;
++	}
++
++	/* Create shared ring, alloc event channel. */
++	err = setup_device(dev, info);
++	if (err)
++		goto out;
++
++again:
++	err = xenbus_transaction_start(&xbt);
++	if (err) {
++		xenbus_dev_fatal(dev, err, "starting transaction");
++		goto destroy_ring;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename, "tx-ring-ref","%u",
++			    info->tx_ring_ref);
++	if (err) {
++		message = "writing tx ring-ref";
++		goto abort_transaction;
++	}
++	err = xenbus_printf(xbt, dev->nodename, "rx-ring-ref","%u",
++			    info->rx_ring_ref);
++	if (err) {
++		message = "writing rx ring-ref";
++		goto abort_transaction;
++	}
++	err = xenbus_printf(xbt, dev->nodename,
++			    "event-channel", "%u", info->evtchn);
++	if (err) {
++		message = "writing event-channel";
++		goto abort_transaction;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename, "request-rx-copy", "%u",
++			    info->copying_receiver);
++	if (err) {
++		message = "writing request-rx-copy";
++		goto abort_transaction;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename, "feature-rx-notify", "%d", 1);
++	if (err) {
++		message = "writing feature-rx-notify";
++		goto abort_transaction;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename, "feature-sg", "%d", 1);
++	if (err) {
++		message = "writing feature-sg";
++		goto abort_transaction;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename, "feature-gso-tcpv4", "%d", 1);
++	if (err) {
++		message = "writing feature-gso-tcpv4";
++		goto abort_transaction;
++	}
++
++	err = xenbus_transaction_end(xbt, 0);
++	if (err) {
++		if (err == -EAGAIN)
++			goto again;
++		xenbus_dev_fatal(dev, err, "completing transaction");
++		goto destroy_ring;
++	}
++
++	return 0;
++
++ abort_transaction:
++	xenbus_transaction_end(xbt, 1);
++	xenbus_dev_fatal(dev, err, "%s", message);
++ destroy_ring:
++	netif_disconnect_backend(info);
++ out:
++	return err;
++}
++
++static int setup_device(struct xenbus_device *dev, struct netfront_info *info)
++{
++	struct netif_tx_sring *txs;
++	struct netif_rx_sring *rxs;
++	int err;
++	struct net_device *netdev = info->netdev;
++
++	info->tx_ring_ref = GRANT_INVALID_REF;
++	info->rx_ring_ref = GRANT_INVALID_REF;
++	info->rx.sring = NULL;
++	info->tx.sring = NULL;
++	info->irq = 0;
++
++	txs = (struct netif_tx_sring *)get_zeroed_page(GFP_KERNEL);
++	if (!txs) {
++		err = -ENOMEM;
++		xenbus_dev_fatal(dev, err, "allocating tx ring page");
++		goto fail;
++	}
++	SHARED_RING_INIT(txs);
++	FRONT_RING_INIT(&info->tx, txs, PAGE_SIZE);
++
++	err = xenbus_grant_ring(dev, virt_to_mfn(txs));
++	if (err < 0) {
++		free_page((unsigned long)txs);
++		goto fail;
++	}
++
++	info->tx_ring_ref = err;
++	rxs = (struct netif_rx_sring *)get_zeroed_page(GFP_KERNEL);
++	if (!rxs) {
++		err = -ENOMEM;
++		xenbus_dev_fatal(dev, err, "allocating rx ring page");
++		goto fail;
++	}
++	SHARED_RING_INIT(rxs);
++	FRONT_RING_INIT(&info->rx, rxs, PAGE_SIZE);
++
++	err = xenbus_grant_ring(dev, virt_to_mfn(rxs));
++	if (err < 0) {
++		free_page((unsigned long)rxs);
++		goto fail;
++	}
++	info->rx_ring_ref = err;
++
++	err = xenbus_alloc_evtchn(dev, &info->evtchn);
++	if (err)
++		goto fail;
++
++	memcpy(netdev->dev_addr, info->mac, ETH_ALEN);
++	err = bind_evtchn_to_irqhandler(info->evtchn, netif_int,
++					IRQF_SAMPLE_RANDOM, netdev->name,
++					netdev);
++	if (err < 0)
++		goto fail;
++	info->irq = err;
++	return 0;
++
++ fail:
++	return err;
++}
++
++/**
++ * Callback received when the backend's state changes.
++ */
++static void backend_changed(struct xenbus_device *dev,
++			    enum xenbus_state backend_state)
++{
++	struct netfront_info *np = dev->dev.driver_data;
++	struct net_device *netdev = np->netdev;
++
++	dev_dbg(&dev->dev, "%s\n", xenbus_strstate(backend_state));
++
++	switch (backend_state) {
++	case XenbusStateInitialising:
++	case XenbusStateInitialised:
++	case XenbusStateConnected:
++	case XenbusStateUnknown:
++	case XenbusStateClosed:
++		break;
++
++	case XenbusStateInitWait:
++		if (dev->state != XenbusStateInitialising)
++			break;
++		if (network_connect(netdev) != 0)
++			break;
++		xenbus_switch_state(dev, XenbusStateConnected);
++		break;
++
++	case XenbusStateClosing:
++		xenbus_frontend_closed(dev);
++		break;
++	}
++}
++
++static inline int netfront_tx_slot_available(struct netfront_info *np)
++{
++	return ((np->tx.req_prod_pvt - np->tx.rsp_cons) <
++		(TX_MAX_TARGET - MAX_SKB_FRAGS - 2));
++}
++
++static inline void network_maybe_wake_tx(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++
++	if (unlikely(netif_queue_stopped(dev)) &&
++	    netfront_tx_slot_available(np) &&
++	    likely(netif_running(dev)))
++		netif_wake_queue(dev);
++}
++
++static int network_open(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++
++	memset(&np->stats, 0, sizeof(np->stats));
++
++	spin_lock(&np->rx_lock);
++	if (netfront_carrier_ok(np)) {
++		network_alloc_rx_buffers(dev);
++		np->rx.sring->rsp_event = np->rx.rsp_cons + 1;
++		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx))
++			netif_rx_schedule(dev);
++	}
++	spin_unlock(&np->rx_lock);
++
++	network_maybe_wake_tx(dev);
++
++	return 0;
++}
++
++static void network_tx_buf_gc(struct net_device *dev)
++{
++	RING_IDX cons, prod;
++	unsigned short id;
++	struct netfront_info *np = netdev_priv(dev);
++	struct sk_buff *skb;
++
++	BUG_ON(!netfront_carrier_ok(np));
++
++	do {
++		prod = np->tx.sring->rsp_prod;
++		rmb(); /* Ensure we see responses up to 'rp'. */
++
++		for (cons = np->tx.rsp_cons; cons != prod; cons++) {
++			struct netif_tx_response *txrsp;
++
++			txrsp = RING_GET_RESPONSE(&np->tx, cons);
++			if (txrsp->status == NETIF_RSP_NULL)
++				continue;
++
++			id  = txrsp->id;
++			skb = np->tx_skbs[id];
++			if (unlikely(gnttab_query_foreign_access(
++				np->grant_tx_ref[id]) != 0)) {
++				printk(KERN_ALERT "network_tx_buf_gc: warning "
++				       "-- grant still in use by backend "
++				       "domain.\n");
++				BUG();
++			}
++			gnttab_end_foreign_access_ref(
++				np->grant_tx_ref[id], GNTMAP_readonly);
++			gnttab_release_grant_reference(
++				&np->gref_tx_head, np->grant_tx_ref[id]);
++			np->grant_tx_ref[id] = GRANT_INVALID_REF;
++			add_id_to_freelist(np->tx_skbs, id);
++			dev_kfree_skb_irq(skb);
++		}
++
++		np->tx.rsp_cons = prod;
++
++		/*
++		 * Set a new event, then check for race with update of tx_cons.
++		 * Note that it is essential to schedule a callback, no matter
++		 * how few buffers are pending. Even if there is space in the
++		 * transmit ring, higher layers may be blocked because too much
++		 * data is outstanding: in such cases notification from Xen is
++		 * likely to be the only kick that we'll get.
++		 */
++		np->tx.sring->rsp_event =
++			prod + ((np->tx.sring->req_prod - prod) >> 1) + 1;
++		mb();
++	} while ((cons == prod) && (prod != np->tx.sring->rsp_prod));
++
++	network_maybe_wake_tx(dev);
++}
++
++static void rx_refill_timeout(unsigned long data)
++{
++	struct net_device *dev = (struct net_device *)data;
++	netif_rx_schedule(dev);
++}
++
++static void network_alloc_rx_buffers(struct net_device *dev)
++{
++	unsigned short id;
++	struct netfront_info *np = netdev_priv(dev);
++	struct sk_buff *skb;
++	struct page *page;
++	int i, batch_target, notify;
++	RING_IDX req_prod = np->rx.req_prod_pvt;
++	struct xen_memory_reservation reservation;
++	grant_ref_t ref;
++	unsigned long pfn;
++	void *vaddr;
++	int nr_flips;
++	struct netif_rx_request *req;
++
++	if (unlikely(!netfront_carrier_ok(np)))
++		return;
++
++	/*
++	 * Allocate skbuffs greedily, even though we batch updates to the
++	 * receive ring. This creates a less bursty demand on the memory
++	 * allocator, so should reduce the chance of failed allocation requests
++	 * both for ourself and for other kernel subsystems.
++	 */
++	batch_target = np->rx_target - (req_prod - np->rx.rsp_cons);
++	for (i = skb_queue_len(&np->rx_batch); i < batch_target; i++) {
++		/*
++		 * Allocate an skb and a page. Do not use __dev_alloc_skb as
++		 * that will allocate page-sized buffers which is not
++		 * necessary here.
++		 * 16 bytes added as necessary headroom for netif_receive_skb.
++		 */
++		skb = alloc_skb(RX_COPY_THRESHOLD + 16 + NET_IP_ALIGN,
++				GFP_ATOMIC | __GFP_NOWARN);
++		if (unlikely(!skb))
++			goto no_skb;
++
++		page = alloc_page(GFP_ATOMIC | __GFP_NOWARN);
++		if (!page) {
++			kfree_skb(skb);
++no_skb:
++			/* Any skbuffs queued for refill? Force them out. */
++			if (i != 0)
++				goto refill;
++			/* Could not allocate any skbuffs. Try again later. */
++			mod_timer(&np->rx_refill_timer,
++				  jiffies + (HZ/10));
++			break;
++		}
++
++		skb_reserve(skb, 16 + NET_IP_ALIGN); /* mimic dev_alloc_skb() */
++		skb_shinfo(skb)->frags[0].page = page;
++		skb_shinfo(skb)->nr_frags = 1;
++		__skb_queue_tail(&np->rx_batch, skb);
++	}
++
++	/* Is the batch large enough to be worthwhile? */
++	if (i < (np->rx_target/2)) {
++		if (req_prod > np->rx.sring->req_prod)
++			goto push;
++		return;
++	}
++
++	/* Adjust our fill target if we risked running out of buffers. */
++	if (((req_prod - np->rx.sring->rsp_prod) < (np->rx_target / 4)) &&
++	    ((np->rx_target *= 2) > np->rx_max_target))
++		np->rx_target = np->rx_max_target;
++
++ refill:
++	for (nr_flips = i = 0; ; i++) {
++		if ((skb = __skb_dequeue(&np->rx_batch)) == NULL)
++			break;
++
++		skb->dev = dev;
++
++		id = xennet_rxidx(req_prod + i);
++
++		BUG_ON(np->rx_skbs[id]);
++		np->rx_skbs[id] = skb;
++
++		ref = gnttab_claim_grant_reference(&np->gref_rx_head);
++		BUG_ON((signed short)ref < 0);
++		np->grant_rx_ref[id] = ref;
++
++		pfn = page_to_pfn(skb_shinfo(skb)->frags[0].page);
++		vaddr = page_address(skb_shinfo(skb)->frags[0].page);
++
++		req = RING_GET_REQUEST(&np->rx, req_prod + i);
++		if (!np->copying_receiver) {
++			gnttab_grant_foreign_transfer_ref(ref,
++							  np->xbdev->otherend_id,
++							  pfn);
++			np->rx_pfn_array[nr_flips] = pfn_to_mfn(pfn);
++			if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++				/* Remove this page before passing
++				 * back to Xen. */
++				set_phys_to_machine(pfn, INVALID_P2M_ENTRY);
++				MULTI_update_va_mapping(np->rx_mcl+i,
++							(unsigned long)vaddr,
++							__pte(0), 0);
++			}
++			nr_flips++;
++		} else {
++			gnttab_grant_foreign_access_ref(ref,
++							np->xbdev->otherend_id,
++							pfn_to_mfn(pfn),
++							0);
++		}
++
++		req->id = id;
++		req->gref = ref;
++	}
++
++	if ( nr_flips != 0 ) {
++#ifdef CONFIG_XEN_BALLOON
++		/* Tell the ballon driver what is going on. */
++		balloon_update_driver_allowance(i);
 +#endif
 +
- #endif /* __ASSEMBLY__ */
- 
- #endif  /*  __KERNEL__  */
-===================================================================
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -93,6 +93,7 @@
- 
- /* PG_owner_priv_1 users should have descriptive aliases */
- #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
-+#define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
- 
- #if (BITS_PER_LONG > 32)
- /*
-@@ -170,6 +171,10 @@ static inline void SetPageUptodate(struc
- #define PageChecked(page)	test_bit(PG_checked, &(page)->flags)
- #define SetPageChecked(page)	set_bit(PG_checked, &(page)->flags)
- #define ClearPageChecked(page)	clear_bit(PG_checked, &(page)->flags)
++		reservation.extent_start = np->rx_pfn_array;
++		reservation.nr_extents   = nr_flips;
++		reservation.extent_order = 0;
++		reservation.address_bits = 0;
++		reservation.domid        = DOMID_SELF;
 +
-+#define PagePinned(page)	test_bit(PG_pinned, &(page)->flags)
-+#define SetPagePinned(page)	set_bit(PG_pinned, &(page)->flags)
-+#define ClearPagePinned(page)	clear_bit(PG_pinned, &(page)->flags)
- 
- #define PageReserved(page)	test_bit(PG_reserved, &(page)->flags)
- #define SetPageReserved(page)	set_bit(PG_reserved, &(page)->flags)
++		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++			/* After all PTEs have been zapped, flush the TLB. */
++			np->rx_mcl[i-1].args[MULTI_UVMFLAGS_INDEX] =
++				UVMF_TLB_FLUSH|UVMF_ALL;
++
++			/* Give away a batch of pages. */
++			np->rx_mcl[i].op = __HYPERVISOR_memory_op;
++			np->rx_mcl[i].args[0] = XENMEM_decrease_reservation;
++			np->rx_mcl[i].args[1] = (unsigned long)&reservation;
++
++			/* Zap PTEs and give away pages in one big
++			 * multicall. */
++			(void)HYPERVISOR_multicall(np->rx_mcl, i+1);
++
++			/* Check return status of HYPERVISOR_memory_op(). */
++			if (unlikely(np->rx_mcl[i].result != i))
++				panic("Unable to reduce memory reservation\n");
++		} else {
++			if (HYPERVISOR_memory_op(XENMEM_decrease_reservation,
++						 &reservation) != i)
++				panic("Unable to reduce memory reservation\n");
++		}
++	} else {
++		wmb();
++	}
++
++	/* Above is a suitable barrier to ensure backend will see requests. */
++	np->rx.req_prod_pvt = req_prod + i;
++ push:
++	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&np->rx, notify);
++	if (notify)
++		notify_remote_via_irq(np->irq);
++}
++
++static void xennet_move_rx_slot(struct netfront_info *np, struct sk_buff *skb,
++				grant_ref_t ref)
++{
++	int new = xennet_rxidx(np->rx.req_prod_pvt);
++
++	BUG_ON(np->rx_skbs[new]);
++	np->rx_skbs[new] = skb;
++	np->grant_rx_ref[new] = ref;
++	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->id = new;
++	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->gref = ref;
++	np->rx.req_prod_pvt++;
++}
++
++static void xennet_make_frags(struct sk_buff *skb, struct net_device *dev,
++			      struct netif_tx_request *tx)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	char *data = skb->data;
++	unsigned long mfn;
++	RING_IDX prod = np->tx.req_prod_pvt;
++	int frags = skb_shinfo(skb)->nr_frags;
++	unsigned int offset = offset_in_page(data);
++	unsigned int len = skb_headlen(skb);
++	unsigned int id;
++	grant_ref_t ref;
++	int i;
++
++	while (len > PAGE_SIZE - offset) {
++		tx->size = PAGE_SIZE - offset;
++		tx->flags |= NETTXF_more_data;
++		len -= tx->size;
++		data += tx->size;
++		offset = 0;
++
++		id = get_id_from_freelist(np->tx_skbs);
++		np->tx_skbs[id] = skb_get(skb);
++		tx = RING_GET_REQUEST(&np->tx, prod++);
++		tx->id = id;
++		ref = gnttab_claim_grant_reference(&np->gref_tx_head);
++		BUG_ON((signed short)ref < 0);
++
++		mfn = virt_to_mfn(data);
++		gnttab_grant_foreign_access_ref(ref, np->xbdev->otherend_id,
++						mfn, GNTMAP_readonly);
++
++		tx->gref = np->grant_tx_ref[id] = ref;
++		tx->offset = offset;
++		tx->size = len;
++		tx->flags = 0;
++	}
++
++	for (i = 0; i < frags; i++) {
++		skb_frag_t *frag = skb_shinfo(skb)->frags + i;
++
++		tx->flags |= NETTXF_more_data;
++
++		id = get_id_from_freelist(np->tx_skbs);
++		np->tx_skbs[id] = skb_get(skb);
++		tx = RING_GET_REQUEST(&np->tx, prod++);
++		tx->id = id;
++		ref = gnttab_claim_grant_reference(&np->gref_tx_head);
++		BUG_ON((signed short)ref < 0);
++
++		mfn = pfn_to_mfn(page_to_pfn(frag->page));
++		gnttab_grant_foreign_access_ref(ref, np->xbdev->otherend_id,
++						mfn, GNTMAP_readonly);
++
++		tx->gref = np->grant_tx_ref[id] = ref;
++		tx->offset = frag->page_offset;
++		tx->size = frag->size;
++		tx->flags = 0;
++	}
++
++	np->tx.req_prod_pvt = prod;
++}
++
++static int network_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	unsigned short id;
++	struct netfront_info *np = netdev_priv(dev);
++	struct netif_tx_request *tx;
++	struct netif_extra_info *extra;
++	char *data = skb->data;
++	RING_IDX i;
++	grant_ref_t ref;
++	unsigned long mfn;
++	int notify;
++	int frags = skb_shinfo(skb)->nr_frags;
++	unsigned int offset = offset_in_page(data);
++	unsigned int len = skb_headlen(skb);
++
++	frags += (offset + len + PAGE_SIZE - 1) / PAGE_SIZE;
++	if (unlikely(frags > MAX_SKB_FRAGS + 1)) {
++		printk(KERN_ALERT "xennet: skb rides the rocket: %d frags\n",
++		       frags);
++		dump_stack();
++		goto drop;
++	}
++
++	spin_lock_irq(&np->tx_lock);
++
++	if (unlikely(!netfront_carrier_ok(np) ||
++		     (frags > 1 && !xennet_can_sg(dev)) ||
++		     netif_needs_gso(dev, skb))) {
++		spin_unlock_irq(&np->tx_lock);
++		goto drop;
++	}
++
++	i = np->tx.req_prod_pvt;
++
++	id = get_id_from_freelist(np->tx_skbs);
++	np->tx_skbs[id] = skb;
++
++	tx = RING_GET_REQUEST(&np->tx, i);
++
++	tx->id   = id;
++	ref = gnttab_claim_grant_reference(&np->gref_tx_head);
++	BUG_ON((signed short)ref < 0);
++	mfn = virt_to_mfn(data);
++	gnttab_grant_foreign_access_ref(
++		ref, np->xbdev->otherend_id, mfn, GNTMAP_readonly);
++	tx->gref = np->grant_tx_ref[id] = ref;
++	tx->offset = offset;
++	tx->size = len;
++	extra = NULL;
++
++ 	tx->flags = 0;
++ 	if (skb->ip_summed == CHECKSUM_PARTIAL) /* local packet? */
++ 		tx->flags |= NETTXF_csum_blank | NETTXF_data_validated;
++
++	if (skb_shinfo(skb)->gso_size) {
++		struct netif_extra_info *gso = (struct netif_extra_info *)
++			RING_GET_REQUEST(&np->tx, ++i);
++
++		if (extra)
++			extra->flags |= XEN_NETIF_EXTRA_FLAG_MORE;
++		else
++			tx->flags |= NETTXF_extra_info;
++
++		gso->u.gso.size = skb_shinfo(skb)->gso_size;
++		gso->u.gso.type = XEN_NETIF_GSO_TYPE_TCPV4;
++		gso->u.gso.pad = 0;
++		gso->u.gso.features = 0;
++
++		gso->type = XEN_NETIF_EXTRA_TYPE_GSO;
++		gso->flags = 0;
++		extra = gso;
++	}
++
++	np->tx.req_prod_pvt = i + 1;
++
++	xennet_make_frags(skb, dev, tx);
++	tx->size = skb->len;
++
++	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&np->tx, notify);
++	if (notify)
++		notify_remote_via_irq(np->irq);
++
++	network_tx_buf_gc(dev);
++
++	if (!netfront_tx_slot_available(np))
++		netif_stop_queue(dev);
++
++	spin_unlock_irq(&np->tx_lock);
++
++	np->stats.tx_bytes += skb->len;
++	np->stats.tx_packets++;
++
++	return 0;
++
++ drop:
++	np->stats.tx_dropped++;
++	dev_kfree_skb(skb);
++	return 0;
++}
++
++static irqreturn_t netif_int(int irq, void *dev_id)
++{
++	struct net_device *dev = dev_id;
++	struct netfront_info *np = netdev_priv(dev);
++	unsigned long flags;
++
++	spin_lock_irqsave(&np->tx_lock, flags);
++
++	if (likely(netfront_carrier_ok(np))) {
++		network_tx_buf_gc(dev);
++		/* Under tx_lock: protects access to rx shared-ring indexes. */
++		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx))
++			netif_rx_schedule(dev);
++	}
++
++	spin_unlock_irqrestore(&np->tx_lock, flags);
++
++	return IRQ_HANDLED;
++}
++
++static void handle_incoming_queue(struct net_device *dev, struct sk_buff_head *rxq)
++{
++	struct sk_buff *skb;
++
++	while ((skb = __skb_dequeue(rxq)) != NULL) {
++		struct page *page = (struct page *)skb->nh.raw;
++		void *vaddr = page_address(page);
++
++		memcpy(skb->data, vaddr + (skb->h.raw - skb->nh.raw),
++		       skb_headlen(skb));
++
++		if (page != skb_shinfo(skb)->frags[0].page)
++			__free_page(page);
++
++		/* Ethernet work: Delayed to here as it peeks the header. */
++		skb->protocol = eth_type_trans(skb, dev);
++
++		/* Pass it up. */
++		netif_receive_skb(skb);
++		dev->last_rx = jiffies;
++	}
++}
++
++int xennet_get_extras(struct netfront_info *np,
++		      struct netif_extra_info *extras, RING_IDX rp)
++
++{
++	struct netif_extra_info *extra;
++	struct device *dev = &np->netdev->dev;
++	RING_IDX cons = np->rx.rsp_cons;
++	int err = 0;
++
++	do {
++		struct sk_buff *skb;
++		grant_ref_t ref;
++
++		if (unlikely(cons + 1 == rp)) {
++			if (net_ratelimit())
++				dev_warn(dev, "Missing extra info\n");
++			err = -EBADR;
++			break;
++		}
++
++		extra = (struct netif_extra_info *)
++			RING_GET_RESPONSE(&np->rx, ++cons);
++
++		if (unlikely(!extra->type ||
++			     extra->type >= XEN_NETIF_EXTRA_TYPE_MAX)) {
++			if (net_ratelimit())
++				dev_warn(dev, "Invalid extra type: %d\n",
++					extra->type);
++			err = -EINVAL;
++		} else {
++			memcpy(&extras[extra->type - 1], extra,
++			       sizeof(*extra));
++		}
++
++		skb = xennet_get_rx_skb(np, cons);
++		ref = xennet_get_rx_ref(np, cons);
++		xennet_move_rx_slot(np, skb, ref);
++	} while (extra->flags & XEN_NETIF_EXTRA_FLAG_MORE);
++
++	np->rx.rsp_cons = cons;
++	return err;
++}
++
++static int xennet_get_responses(struct netfront_info *np,
++				struct netfront_rx_info *rinfo, RING_IDX rp,
++				struct sk_buff_head *list,
++				int *pages_flipped_p)
++{
++	int pages_flipped = *pages_flipped_p;
++	struct mmu_update *mmu;
++	struct multicall_entry *mcl;
++	struct netif_rx_response *rx = &rinfo->rx;
++	struct netif_extra_info *extras = rinfo->extras;
++	struct device *dev = &np->netdev->dev;
++	RING_IDX cons = np->rx.rsp_cons;
++	struct sk_buff *skb = xennet_get_rx_skb(np, cons);
++	grant_ref_t ref = xennet_get_rx_ref(np, cons);
++	int max = MAX_SKB_FRAGS + (rx->status <= RX_COPY_THRESHOLD);
++	int frags = 1;
++	int err = 0;
++	unsigned long ret;
++
++	if (rx->flags & NETRXF_extra_info) {
++		err = xennet_get_extras(np, extras, rp);
++		cons = np->rx.rsp_cons;
++	}
++
++	for (;;) {
++		unsigned long mfn;
++
++		if (unlikely(rx->status < 0 ||
++			     rx->offset + rx->status > PAGE_SIZE)) {
++			if (net_ratelimit())
++				dev_warn(dev, "rx->offset: %x, size: %u\n",
++					 rx->offset, rx->status);
++			xennet_move_rx_slot(np, skb, ref);
++			err = -EINVAL;
++			goto next;
++		}
++
++		/*
++		 * This definitely indicates a bug, either in this driver or in
++		 * the backend driver. In future this should flag the bad
++		 * situation to the system controller to reboot the backed.
++		 */
++		if (ref == GRANT_INVALID_REF) {
++			if (net_ratelimit())
++				dev_warn(dev, "Bad rx response id %d.\n",
++					 rx->id);
++			err = -EINVAL;
++			goto next;
++		}
++
++		if (!np->copying_receiver) {
++			/* Memory pressure, insufficient buffer
++			 * headroom, ... */
++			mfn = gnttab_end_foreign_transfer_ref(ref);
++			if (!mfn) {
++				if (net_ratelimit())
++					dev_warn(dev, "Unfulfilled rx req "
++						 "(id=%d, st=%d).\n",
++						 rx->id, rx->status);
++				xennet_move_rx_slot(np, skb, ref);
++				err = -ENOMEM;
++				goto next;
++			}
++
++			if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++				/* Remap the page. */
++				struct page *page =
++					skb_shinfo(skb)->frags[0].page;
++				unsigned long pfn = page_to_pfn(page);
++				void *vaddr = page_address(page);
++
++				mcl = np->rx_mcl + pages_flipped;
++				mmu = np->rx_mmu + pages_flipped;
++
++				MULTI_update_va_mapping(mcl,
++							(unsigned long)vaddr,
++							mfn_pte(mfn, PAGE_KERNEL),
++							0);
++				mmu->ptr = ((u64)mfn << PAGE_SHIFT)
++					| MMU_MACHPHYS_UPDATE;
++				mmu->val = pfn;
++
++				set_phys_to_machine(pfn, mfn);
++			}
++			pages_flipped++;
++		} else {
++			ret = gnttab_end_foreign_access_ref(ref, 0);
++			BUG_ON(!ret);
++		}
++
++		gnttab_release_grant_reference(&np->gref_rx_head, ref);
++
++		__skb_queue_tail(list, skb);
++
++next:
++		if (!(rx->flags & NETRXF_more_data))
++			break;
++
++		if (cons + frags == rp) {
++			if (net_ratelimit())
++				dev_warn(dev, "Need more frags\n");
++			err = -ENOENT;
++			break;
++		}
++
++		rx = RING_GET_RESPONSE(&np->rx, cons + frags);
++		skb = xennet_get_rx_skb(np, cons + frags);
++		ref = xennet_get_rx_ref(np, cons + frags);
++		frags++;
++	}
++
++	if (unlikely(frags > max)) {
++		if (net_ratelimit())
++			dev_warn(dev, "Too many frags\n");
++		err = -E2BIG;
++	}
++
++	if (unlikely(err))
++		np->rx.rsp_cons = cons + frags;
++
++	*pages_flipped_p = pages_flipped;
++
++	return err;
++}
++
++static RING_IDX xennet_fill_frags(struct netfront_info *np,
++				  struct sk_buff *skb,
++				  struct sk_buff_head *list)
++{
++	struct skb_shared_info *shinfo = skb_shinfo(skb);
++	int nr_frags = shinfo->nr_frags;
++	RING_IDX cons = np->rx.rsp_cons;
++	skb_frag_t *frag = shinfo->frags + nr_frags;
++	struct sk_buff *nskb;
++
++	while ((nskb = __skb_dequeue(list))) {
++		struct netif_rx_response *rx =
++			RING_GET_RESPONSE(&np->rx, ++cons);
++
++		frag->page = skb_shinfo(nskb)->frags[0].page;
++		frag->page_offset = rx->offset;
++		frag->size = rx->status;
++
++		skb->data_len += rx->status;
++
++		skb_shinfo(nskb)->nr_frags = 0;
++		kfree_skb(nskb);
++
++		frag++;
++		nr_frags++;
++	}
++
++	shinfo->nr_frags = nr_frags;
++	return cons;
++}
++
++static int xennet_set_skb_gso(struct sk_buff *skb, struct netif_extra_info *gso)
++{
++	if (!gso->u.gso.size) {
++		if (net_ratelimit())
++			printk(KERN_WARNING "GSO size must not be zero.\n");
++		return -EINVAL;
++	}
++
++	/* Currently only TCPv4 S.O. is supported. */
++	if (gso->u.gso.type != XEN_NETIF_GSO_TYPE_TCPV4) {
++		if (net_ratelimit())
++			printk(KERN_WARNING "Bad GSO type %d.\n", gso->u.gso.type);
++		return -EINVAL;
++	}
++
++	skb_shinfo(skb)->gso_size = gso->u.gso.size;
++	skb_shinfo(skb)->gso_type = SKB_GSO_TCPV4;
++
++	/* Header must be checked, and gso_segs computed. */
++	skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
++	skb_shinfo(skb)->gso_segs = 0;
++
++	return 0;
++}
++
++static int netif_poll(struct net_device *dev, int *pbudget)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	struct sk_buff *skb;
++	struct netfront_rx_info rinfo;
++	struct netif_rx_response *rx = &rinfo.rx;
++	struct netif_extra_info *extras = rinfo.extras;
++	RING_IDX i, rp;
++	struct multicall_entry *mcl;
++	int work_done, budget, more_to_do = 1;
++	struct sk_buff_head rxq;
++	struct sk_buff_head errq;
++	struct sk_buff_head tmpq;
++	unsigned long flags;
++	unsigned int len;
++	int pages_flipped = 0;
++	int err;
++
++	spin_lock(&np->rx_lock);
++
++	if (unlikely(!netfront_carrier_ok(np))) {
++		spin_unlock(&np->rx_lock);
++		return 0;
++	}
++
++	skb_queue_head_init(&rxq);
++	skb_queue_head_init(&errq);
++	skb_queue_head_init(&tmpq);
++
++	if ((budget = *pbudget) > dev->quota)
++		budget = dev->quota;
++	rp = np->rx.sring->rsp_prod;
++	rmb(); /* Ensure we see queued responses up to 'rp'. */
++
++	i = np->rx.rsp_cons;
++	work_done = 0;
++	while ((i != rp) && (work_done < budget)) {
++		memcpy(rx, RING_GET_RESPONSE(&np->rx, i), sizeof(*rx));
++		memset(extras, 0, sizeof(rinfo.extras));
++
++		err = xennet_get_responses(np, &rinfo, rp, &tmpq,
++					   &pages_flipped);
++
++		if (unlikely(err)) {
++err:
++			while ((skb = __skb_dequeue(&tmpq)))
++				__skb_queue_tail(&errq, skb);
++			np->stats.rx_errors++;
++			i = np->rx.rsp_cons;
++			continue;
++		}
++
++		skb = __skb_dequeue(&tmpq);
++
++		if (extras[XEN_NETIF_EXTRA_TYPE_GSO - 1].type) {
++			struct netif_extra_info *gso;
++			gso = &extras[XEN_NETIF_EXTRA_TYPE_GSO - 1];
++
++			if (unlikely(xennet_set_skb_gso(skb, gso))) {
++				__skb_queue_head(&tmpq, skb);
++				np->rx.rsp_cons += skb_queue_len(&tmpq);
++				goto err;
++			}
++		}
++
++		skb->nh.raw = (void *)skb_shinfo(skb)->frags[0].page;
++		skb->h.raw = skb->nh.raw + rx->offset;
++
++		len = rx->status;
++		if (len > RX_COPY_THRESHOLD)
++			len = RX_COPY_THRESHOLD;
++		skb_put(skb, len);
++
++		if (rx->status > len) {
++			skb_shinfo(skb)->frags[0].page_offset =
++				rx->offset + len;
++			skb_shinfo(skb)->frags[0].size = rx->status - len;
++			skb->data_len = rx->status - len;
++		} else {
++			skb_shinfo(skb)->frags[0].page = NULL;
++			skb_shinfo(skb)->nr_frags = 0;
++		}
++
++		i = xennet_fill_frags(np, skb, &tmpq);
++
++		/*
++		 * Truesize must approximates the size of true data plus
++		 * any supervisor overheads. Adding hypervisor overheads
++		 * has been shown to significantly reduce achievable
++		 * bandwidth with the default receive buffer size. It is
++		 * therefore not wise to account for it here.
++		 *
++		 * After alloc_skb(RX_COPY_THRESHOLD), truesize is set to
++		 * RX_COPY_THRESHOLD + the supervisor overheads. Here, we
++		 * add the size of the data pulled in xennet_fill_frags().
++		 *
++		 * We also adjust for any unused space in the main data
++		 * area by subtracting (RX_COPY_THRESHOLD - len). This is
++		 * especially important with drivers which split incoming
++		 * packets into header and data, using only 66 bytes of
++		 * the main data area (see the e1000 driver for example.)
++		 * On such systems, without this last adjustement, our
++		 * achievable receive throughout using the standard receive
++		 * buffer size was cut by 25%(!!!).
++		 */
++		skb->truesize += skb->data_len - (RX_COPY_THRESHOLD - len);
++		skb->len += skb->data_len;
++
++		if (rx->flags & NETRXF_data_validated)
++			skb->ip_summed = CHECKSUM_UNNECESSARY;
++
++		np->stats.rx_packets++;
++		np->stats.rx_bytes += skb->len;
++
++		__skb_queue_tail(&rxq, skb);
++
++		np->rx.rsp_cons = ++i;
++		work_done++;
++	}
++
++	if (pages_flipped) {
++#ifdef CONFIG_XEN_BALLOON
++		/* Some pages are no longer absent... */
++		balloon_update_driver_allowance(-pages_flipped);
++#endif
++		/* Do all the remapping work, and M2P updates. */
++		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++			mcl = np->rx_mcl + pages_flipped;
++			MULTI_mmu_update(mcl, np->rx_mmu,
++					 pages_flipped, 0, DOMID_SELF);
++			(void)HYPERVISOR_multicall(np->rx_mcl,
++						   pages_flipped + 1);
++		}
++	}
++
++	while ((skb = __skb_dequeue(&errq)))
++		kfree_skb(skb);
++
++	handle_incoming_queue(dev, &rxq);
++
++	/* If we get a callback with very few responses, reduce fill target. */
++	/* NB. Note exponential increase, linear decrease. */
++	if (((np->rx.req_prod_pvt - np->rx.sring->rsp_prod) >
++	     ((3*np->rx_target) / 4)) &&
++	    (--np->rx_target < np->rx_min_target))
++		np->rx_target = np->rx_min_target;
++
++	network_alloc_rx_buffers(dev);
++
++	*pbudget   -= work_done;
++	dev->quota -= work_done;
++
++	if (work_done < budget) {
++		local_irq_save(flags);
++
++		RING_FINAL_CHECK_FOR_RESPONSES(&np->rx, more_to_do);
++		if (!more_to_do)
++			__netif_rx_complete(dev);
++
++		local_irq_restore(flags);
++	}
++
++	spin_unlock(&np->rx_lock);
++
++	return more_to_do;
++}
++
++static void netif_release_tx_bufs(struct netfront_info *np)
++{
++	struct sk_buff *skb;
++	int i;
++
++	for (i = 1; i <= NET_TX_RING_SIZE; i++) {
++		if ((unsigned long)np->tx_skbs[i] < PAGE_OFFSET)
++			continue;
++
++		skb = np->tx_skbs[i];
++		gnttab_end_foreign_access_ref(
++			np->grant_tx_ref[i], GNTMAP_readonly);
++		gnttab_release_grant_reference(
++			&np->gref_tx_head, np->grant_tx_ref[i]);
++		np->grant_tx_ref[i] = GRANT_INVALID_REF;
++		add_id_to_freelist(np->tx_skbs, i);
++		dev_kfree_skb_irq(skb);
++	}
++}
++
++static void netif_release_rx_bufs(struct netfront_info *np)
++{
++	struct mmu_update      *mmu = np->rx_mmu;
++	struct multicall_entry *mcl = np->rx_mcl;
++	struct sk_buff_head free_list;
++	struct sk_buff *skb;
++	unsigned long mfn;
++	int xfer = 0, noxfer = 0, unused = 0;
++	int id, ref;
++
++	if (np->copying_receiver) {
++		dev_warn(&np->netdev->dev, "%s: fix me for copying receiver.\n",
++			 __FUNCTION__);
++		return;
++	}
++
++	skb_queue_head_init(&free_list);
++
++	spin_lock(&np->rx_lock);
++
++	for (id = 0; id < NET_RX_RING_SIZE; id++) {
++		if ((ref = np->grant_rx_ref[id]) == GRANT_INVALID_REF) {
++			unused++;
++			continue;
++		}
++
++		skb = np->rx_skbs[id];
++		mfn = gnttab_end_foreign_transfer_ref(ref);
++		gnttab_release_grant_reference(&np->gref_rx_head, ref);
++		np->grant_rx_ref[id] = GRANT_INVALID_REF;
++		add_id_to_freelist(np->rx_skbs, id);
++
++		if (0 == mfn) {
++#ifdef CONFIG_XEN_BALLOON
++			struct page *page = skb_shinfo(skb)->frags[0].page;
++			balloon_release_driver_page(page);
++#endif
++			skb_shinfo(skb)->nr_frags = 0;
++			dev_kfree_skb(skb);
++			noxfer++;
++			continue;
++		}
++
++		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++			/* Remap the page. */
++			struct page *page = skb_shinfo(skb)->frags[0].page;
++			unsigned long pfn = page_to_pfn(page);
++			void *vaddr = page_address(page);
++
++			MULTI_update_va_mapping(mcl, (unsigned long)vaddr,
++						mfn_pte(mfn, PAGE_KERNEL),
++						0);
++			mcl++;
++			mmu->ptr = ((u64)mfn << PAGE_SHIFT)
++				| MMU_MACHPHYS_UPDATE;
++			mmu->val = pfn;
++			mmu++;
++
++			set_phys_to_machine(pfn, mfn);
++		}
++		__skb_queue_tail(&free_list, skb);
++		xfer++;
++	}
++
++	dev_info(&np->netdev->dev, "%s: %d xfer, %d noxfer, %d unused\n",
++		 __FUNCTION__, xfer, noxfer, unused);
++
++	if (xfer) {
++#ifdef CONFIG_XEN_BALLOON
++		/* Some pages are no longer absent... */
++		balloon_update_driver_allowance(-xfer);
++#endif
++
++		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
++			/* Do all the remapping work and M2P updates. */
++			mcl->op = __HYPERVISOR_mmu_update;
++			mcl->args[0] = (unsigned long)np->rx_mmu;
++			mcl->args[1] = mmu - np->rx_mmu;
++			mcl->args[2] = 0;
++			mcl->args[3] = DOMID_SELF;
++			mcl++;
++			HYPERVISOR_multicall(np->rx_mcl, mcl - np->rx_mcl);
++		}
++	}
++
++	while ((skb = __skb_dequeue(&free_list)) != NULL)
++		dev_kfree_skb(skb);
++
++	spin_unlock(&np->rx_lock);
++}
++
++static int network_close(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	netif_stop_queue(np->netdev);
++	return 0;
++}
++
++
++static struct net_device_stats *network_get_stats(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	return &np->stats;
++}
++
++static int xennet_change_mtu(struct net_device *dev, int mtu)
++{
++	int max = xennet_can_sg(dev) ? 65535 - ETH_HLEN : ETH_DATA_LEN;
++
++	if (mtu > max)
++		return -EINVAL;
++	dev->mtu = mtu;
++	return 0;
++}
++
++static int xennet_set_sg(struct net_device *dev, u32 data)
++{
++	if (data) {
++		struct netfront_info *np = netdev_priv(dev);
++		int val;
++
++		if (xenbus_scanf(XBT_NIL, np->xbdev->otherend, "feature-sg",
++				 "%d", &val) < 0)
++			val = 0;
++		if (!val)
++			return -ENOSYS;
++	} else if (dev->mtu > ETH_DATA_LEN)
++		dev->mtu = ETH_DATA_LEN;
++
++	return ethtool_op_set_sg(dev, data);
++}
++
++static int xennet_set_tso(struct net_device *dev, u32 data)
++{
++	if (data) {
++		struct netfront_info *np = netdev_priv(dev);
++		int val;
++
++		if (xenbus_scanf(XBT_NIL, np->xbdev->otherend,
++				 "feature-gso-tcpv4", "%d", &val) < 0)
++			val = 0;
++		if (!val)
++			return -ENOSYS;
++	}
++
++	return ethtool_op_set_tso(dev, data);
++}
++
++static void xennet_set_features(struct net_device *dev)
++{
++	/* Turn off all GSO bits except ROBUST. */
++	dev->features &= (1 << NETIF_F_GSO_SHIFT) - 1;
++	dev->features |= NETIF_F_GSO_ROBUST;
++	xennet_set_sg(dev, 0);
++
++	/* We need checksum offload to enable scatter/gather and TSO. */
++	if (!(dev->features & NETIF_F_IP_CSUM))
++		return;
++
++	if (!xennet_set_sg(dev, 1))
++		xennet_set_tso(dev, 1);
++}
++
++static int network_connect(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	int i, requeue_idx, err;
++	struct sk_buff *skb;
++	grant_ref_t ref;
++	struct netif_rx_request *req;
++	unsigned int feature_rx_copy, feature_rx_flip;
++
++	err = xenbus_scanf(XBT_NIL, np->xbdev->otherend,
++			   "feature-rx-copy", "%u", &feature_rx_copy);
++	if (err != 1)
++		feature_rx_copy = 0;
++	err = xenbus_scanf(XBT_NIL, np->xbdev->otherend,
++			   "feature-rx-flip", "%u", &feature_rx_flip);
++	if (err != 1)
++		feature_rx_flip = 1;
++
++	/*
++	 * Copy packets on receive path if:
++	 *  (a) This was requested by user, and the backend supports it; or
++	 *  (b) Flipping was requested, but this is unsupported by the backend.
++	 */
++	np->copying_receiver = ((rx_copy && feature_rx_copy) ||
++				(rx_flip && !feature_rx_flip));
++
++	err = talk_to_backend(np->xbdev, np);
++	if (err)
++		return err;
++
++	xennet_set_features(dev);
++
++	dev_info(&dev->dev, "has %sing receive path.\n",
++		 np->copying_receiver ? "copy" : "flipp");
++
++	spin_lock_irq(&np->tx_lock);
++	spin_lock(&np->rx_lock);
++
++	/*
++	 * Recovery procedure:
++	 *  NB. Freelist index entries are always going to be less than
++	 *  PAGE_OFFSET, whereas pointers to skbs will always be equal or
++	 *  greater than PAGE_OFFSET: we use this property to distinguish
++	 *  them.
++	 */
++
++	/* Step 1: Discard all pending TX packet fragments. */
++	netif_release_tx_bufs(np);
++
++	/* Step 2: Rebuild the RX buffer freelist and the RX ring itself. */
++	for (requeue_idx = 0, i = 0; i < NET_RX_RING_SIZE; i++) {
++		if (!np->rx_skbs[i])
++			continue;
++
++		skb = np->rx_skbs[requeue_idx] = xennet_get_rx_skb(np, i);
++		ref = np->grant_rx_ref[requeue_idx] = xennet_get_rx_ref(np, i);
++		req = RING_GET_REQUEST(&np->rx, requeue_idx);
++
++		if (!np->copying_receiver) {
++			gnttab_grant_foreign_transfer_ref(
++				ref, np->xbdev->otherend_id,
++				page_to_pfn(skb_shinfo(skb)->frags->page));
++		} else {
++			gnttab_grant_foreign_access_ref(
++				ref, np->xbdev->otherend_id,
++				pfn_to_mfn(page_to_pfn(skb_shinfo(skb)->
++						       frags->page)),
++				0);
++		}
++		req->gref = ref;
++		req->id   = requeue_idx;
++
++		requeue_idx++;
++	}
++
++	np->rx.req_prod_pvt = requeue_idx;
++
++	/*
++	 * Step 3: All public and private state should now be sane.  Get
++	 * ready to start sending and receiving packets and give the driver
++	 * domain a kick because we've probably just requeued some
++	 * packets.
++	 */
++	netfront_carrier_on(np);
++	notify_remote_via_irq(np->irq);
++	network_tx_buf_gc(dev);
++	network_alloc_rx_buffers(dev);
++
++	spin_unlock(&np->rx_lock);
++	spin_unlock_irq(&np->tx_lock);
++
++	return 0;
++}
++
++static void netif_uninit(struct net_device *dev)
++{
++	struct netfront_info *np = netdev_priv(dev);
++	netif_release_tx_bufs(np);
++	netif_release_rx_bufs(np);
++	gnttab_free_grant_references(np->gref_tx_head);
++	gnttab_free_grant_references(np->gref_rx_head);
++}
++
++static struct ethtool_ops network_ethtool_ops =
++{
++	.get_tx_csum = ethtool_op_get_tx_csum,
++	.set_tx_csum = ethtool_op_set_tx_csum,
++	.get_sg = ethtool_op_get_sg,
++	.set_sg = xennet_set_sg,
++	.get_tso = ethtool_op_get_tso,
++	.set_tso = xennet_set_tso,
++	.get_link = ethtool_op_get_link,
++};
++
++#ifdef CONFIG_SYSFS
++static ssize_t show_rxbuf_min(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct netfront_info *info = netdev_priv(netdev);
++
++	return sprintf(buf, "%u\n", info->rx_min_target);
++}
++
++static ssize_t store_rxbuf_min(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct netfront_info *np = netdev_priv(netdev);
++	char *endp;
++	unsigned long target;
++
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
++	target = simple_strtoul(buf, &endp, 0);
++	if (endp == buf)
++		return -EBADMSG;
++
++	if (target < RX_MIN_TARGET)
++		target = RX_MIN_TARGET;
++	if (target > RX_MAX_TARGET)
++		target = RX_MAX_TARGET;
++
++	spin_lock(&np->rx_lock);
++	if (target > np->rx_max_target)
++		np->rx_max_target = target;
++	np->rx_min_target = target;
++	if (target > np->rx_target)
++		np->rx_target = target;
++
++	network_alloc_rx_buffers(netdev);
++
++	spin_unlock(&np->rx_lock);
++	return len;
++}
++
++static ssize_t show_rxbuf_max(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct netfront_info *info = netdev_priv(netdev);
++
++	return sprintf(buf, "%u\n", info->rx_max_target);
++}
++
++static ssize_t store_rxbuf_max(struct device *dev,
++			       struct device_attribute *attr,
++			       const char *buf, size_t len)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct netfront_info *np = netdev_priv(netdev);
++	char *endp;
++	unsigned long target;
++
++	if (!capable(CAP_NET_ADMIN))
++		return -EPERM;
++
++	target = simple_strtoul(buf, &endp, 0);
++	if (endp == buf)
++		return -EBADMSG;
++
++	if (target < RX_MIN_TARGET)
++		target = RX_MIN_TARGET;
++	if (target > RX_MAX_TARGET)
++		target = RX_MAX_TARGET;
++
++	spin_lock(&np->rx_lock);
++	if (target < np->rx_min_target)
++		np->rx_min_target = target;
++	np->rx_max_target = target;
++	if (target < np->rx_target)
++		np->rx_target = target;
++
++	network_alloc_rx_buffers(netdev);
++
++	spin_unlock(&np->rx_lock);
++	return len;
++}
++
++static ssize_t show_rxbuf_cur(struct device *dev,
++			      struct device_attribute *attr, char *buf)
++{
++	struct net_device *netdev = to_net_dev(dev);
++	struct netfront_info *info = netdev_priv(netdev);
++
++	return sprintf(buf, "%u\n", info->rx_target);
++}
++
++static struct device_attribute xennet_attrs[] = {
++	__ATTR(rxbuf_min, S_IRUGO|S_IWUSR, show_rxbuf_min, store_rxbuf_min),
++	__ATTR(rxbuf_max, S_IRUGO|S_IWUSR, show_rxbuf_max, store_rxbuf_max),
++	__ATTR(rxbuf_cur, S_IRUGO, show_rxbuf_cur, NULL),
++};
++
++static int xennet_sysfs_addif(struct net_device *netdev)
++{
++	int i;
++	int error = 0;
++
++	for (i = 0; i < ARRAY_SIZE(xennet_attrs); i++) {
++		error = device_create_file(&netdev->dev,
++					   &xennet_attrs[i]);
++		if (error)
++			goto fail;
++	}
++	return 0;
++
++ fail:
++	while (--i >= 0)
++		device_remove_file(&netdev->dev, &xennet_attrs[i]);
++	return error;
++}
++
++static void xennet_sysfs_delif(struct net_device *netdev)
++{
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(xennet_attrs); i++) {
++		device_remove_file(&netdev->dev, &xennet_attrs[i]);
++	}
++}
++
++#endif /* CONFIG_SYSFS */
++
++
++/*
++ * Nothing to do here. Virtual interface is point-to-point and the
++ * physical interface is probably promiscuous anyway.
++ */
++static void network_set_multicast_list(struct net_device *dev)
++{
++}
++
++static struct net_device * __devinit create_netdev(struct xenbus_device *dev)
++{
++	int i, err = 0;
++	struct net_device *netdev = NULL;
++	struct netfront_info *np = NULL;
++
++	netdev = alloc_etherdev(sizeof(struct netfront_info));
++	if (!netdev) {
++		printk(KERN_WARNING "%s> alloc_etherdev failed.\n",
++		       __FUNCTION__);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	np                   = netdev_priv(netdev);
++	np->xbdev            = dev;
++
++	spin_lock_init(&np->tx_lock);
++	spin_lock_init(&np->rx_lock);
++
++	skb_queue_head_init(&np->rx_batch);
++	np->rx_target     = RX_DFL_MIN_TARGET;
++	np->rx_min_target = RX_DFL_MIN_TARGET;
++	np->rx_max_target = RX_MAX_TARGET;
++
++	init_timer(&np->rx_refill_timer);
++	np->rx_refill_timer.data = (unsigned long)netdev;
++	np->rx_refill_timer.function = rx_refill_timeout;
++
++	/* Initialise {tx,rx}_skbs as a free chain containing every entry. */
++	for (i = 0; i <= NET_TX_RING_SIZE; i++) {
++		np->tx_skbs[i] = (void *)((unsigned long) i+1);
++		np->grant_tx_ref[i] = GRANT_INVALID_REF;
++	}
++
++	for (i = 0; i < NET_RX_RING_SIZE; i++) {
++		np->rx_skbs[i] = NULL;
++		np->grant_rx_ref[i] = GRANT_INVALID_REF;
++	}
++
++	/* A grant for every tx ring slot */
++	if (gnttab_alloc_grant_references(TX_MAX_TARGET,
++					  &np->gref_tx_head) < 0) {
++		printk(KERN_ALERT "#### netfront can't alloc tx grant refs\n");
++		err = -ENOMEM;
++		goto exit;
++	}
++	/* A grant for every rx ring slot */
++	if (gnttab_alloc_grant_references(RX_MAX_TARGET,
++					  &np->gref_rx_head) < 0) {
++		printk(KERN_ALERT "#### netfront can't alloc rx grant refs\n");
++		err = -ENOMEM;
++		goto exit_free_tx;
++	}
++
++	netdev->open            = network_open;
++	netdev->hard_start_xmit = network_start_xmit;
++	netdev->stop            = network_close;
++	netdev->get_stats       = network_get_stats;
++	netdev->poll            = netif_poll;
++	netdev->set_multicast_list = network_set_multicast_list;
++	netdev->uninit          = netif_uninit;
++	netdev->change_mtu	= xennet_change_mtu;
++	netdev->weight          = 64;
++	netdev->features        = NETIF_F_IP_CSUM;
++
++	SET_ETHTOOL_OPS(netdev, &network_ethtool_ops);
++	SET_MODULE_OWNER(netdev);
++	SET_NETDEV_DEV(netdev, &dev->dev);
++
++	np->netdev = netdev;
++
++	netfront_carrier_off(np);
++
++	return netdev;
++
++ exit_free_tx:
++	gnttab_free_grant_references(np->gref_tx_head);
++ exit:
++	free_netdev(netdev);
++	return ERR_PTR(err);
++}
++
++
++static void netif_disconnect_backend(struct netfront_info *info)
++{
++	/* Stop old i/f to prevent errors whilst we rebuild the state. */
++	spin_lock_irq(&info->tx_lock);
++	spin_lock(&info->rx_lock);
++	netfront_carrier_off(info);
++	spin_unlock(&info->rx_lock);
++	spin_unlock_irq(&info->tx_lock);
++
++	if (info->irq)
++		unbind_from_irqhandler(info->irq, info->netdev);
++	info->evtchn = info->irq = 0;
++
++	end_access(info->tx_ring_ref, info->tx.sring);
++	end_access(info->rx_ring_ref, info->rx.sring);
++	info->tx_ring_ref = GRANT_INVALID_REF;
++	info->rx_ring_ref = GRANT_INVALID_REF;
++	info->tx.sring = NULL;
++	info->rx.sring = NULL;
++}
++
++
++static void end_access(int ref, void *page)
++{
++	if (ref != GRANT_INVALID_REF)
++		gnttab_end_foreign_access(ref, 0, (unsigned long)page);
++}
++
++
++/* ** Driver registration ** */
++
++
++static struct xenbus_device_id netfront_ids[] = {
++	{ "vif" },
++	{ "" }
++};
++
++
++static struct xenbus_driver netfront = {
++	.name = "vif",
++	.owner = THIS_MODULE,
++	.ids = netfront_ids,
++	.probe = netfront_probe,
++	.remove = __devexit_p(netfront_remove),
++	.resume = netfront_resume,
++	.otherend_changed = backend_changed,
++};
++
++static int __init netif_init(void)
++{
++	if (!is_running_on_xen())
++		return -ENODEV;
++
++	if (rx_flip && rx_copy) {
++		printk(KERN_WARNING "netfront: Cannot specify both rx_copy and rx_flip.\n");
++		return -EINVAL;
++	}
++
++	if (!rx_flip && !rx_copy)
++		rx_flip = 1; /* Default is to flip. */
++
++	if (is_initial_xendomain())
++		return 0;
++
++	printk(KERN_INFO "Initialising virtual ethernet driver.\n");
++
++	return xenbus_register_frontend(&netfront);
++}
++module_init(netif_init);
++
++
++static void __exit netif_exit(void)
++{
++	if (is_initial_xendomain())
++		return;
++
++	return xenbus_unregister_driver(&netfront);
++}
++module_exit(netif_exit);
++
++MODULE_LICENSE("Dual BSD/GPL");
 
 -- 
 
