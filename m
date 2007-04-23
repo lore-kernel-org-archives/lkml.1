@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXDWONb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXDWOOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXDWONb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 10:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXDWONb
+	id S932785AbXDWOOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXDWOOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 10:13:31 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:36298 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754119AbXDWONZ (ORCPT
+	Mon, 23 Apr 2007 10:14:01 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:36200 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbXDWON4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 10:13:25 -0400
-Date: Mon, 23 Apr 2007 16:13:42 +0200
+	Mon, 23 Apr 2007 10:13:56 -0400
+Date: Mon, 23 Apr 2007 16:14:12 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com,
        arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
-Subject: [PATCH 6/9] Kconfig: no wireless on s390.
-Message-ID: <20070423141342.GG21174@skybase>
+Subject: [PATCH 8/9] Kconfig: silicon backplane dependency.
+Message-ID: <20070423141412.GI21174@skybase>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,36 +26,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Hide the config menues for wireless on s390.
+Add HAS_IOMEM dependency to the "Sonics Silicon Backplane" menu.
+This hides the menu for s390.
 Goes on top of git-wireless.patch.
 
+Cc: Michael Buesch <mb@bu3sch.de>
 Cc: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/net/wireless/Kconfig |    1 +
- net/Kconfig                  |    1 +
- 2 files changed, 2 insertions(+)
+ drivers/ssb/Kconfig |    1 +
+ 1 files changed, 1 insertion(+)
 
-diff -urpN linux-2.6/drivers/net/wireless/Kconfig linux-2.6-patched/drivers/net/wireless/Kconfig
---- linux-2.6/drivers/net/wireless/Kconfig	2007-04-23 15:51:50.000000000 +0200
-+++ linux-2.6-patched/drivers/net/wireless/Kconfig	2007-04-23 15:53:12.000000000 +0200
-@@ -3,6 +3,7 @@
- #
+diff -urpN linux-2.6/drivers/ssb/Kconfig linux-2.6-patched/drivers/ssb/Kconfig
+--- linux-2.6/drivers/ssb/Kconfig	2007-04-23 15:51:57.000000000 +0200
++++ linux-2.6-patched/drivers/ssb/Kconfig	2007-04-23 15:53:15.000000000 +0200
+@@ -1,4 +1,5 @@
+ menu "Sonics Silicon Backplane"
++	depends on HAS_IOMEM
  
- menu "Wireless LAN"
-+	depends on !S390
- 
- config WLAN_PRE80211
- 	bool "Wireless LAN (pre-802.11)"
-diff -urpN linux-2.6/net/Kconfig linux-2.6-patched/net/Kconfig
---- linux-2.6/net/Kconfig	2007-04-23 15:52:26.000000000 +0200
-+++ linux-2.6-patched/net/Kconfig	2007-04-23 15:53:12.000000000 +0200
-@@ -217,6 +217,7 @@ config FIB_RULES
- 	bool
- 
- menu "Wireless"
-+	depends on !S390
- 
- source "net/wireless/Kconfig"
- source "net/mac80211/Kconfig"
+ config SSB
+ 	tristate "Sonics Silicon Backplane support"
