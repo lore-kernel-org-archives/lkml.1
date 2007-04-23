@@ -1,90 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbXDWRrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXDWRts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbXDWRrj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 13:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDWRrj
+	id S1161071AbXDWRts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 13:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161113AbXDWRts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 13:47:39 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41874 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbXDWRri (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 13:47:38 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH] kthread: Spontaneous exit support
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<1176969596686-git-send-email-ebiederm@xmission.com>
-	<20070419162459.af7a182c.akpm@linux-foundation.org>
-	<20070422194455.GA18561@infradead.org>
-	<m1fy6rzsug.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070423112537.GA21941@infradead.org>
-	<20070423165810.GA188@tv-sign.ru>
-Date: Mon, 23 Apr 2007 11:45:51 -0600
-In-Reply-To: <20070423165810.GA188@tv-sign.ru> (Oleg Nesterov's message of
-	"Mon, 23 Apr 2007 20:58:10 +0400")
-Message-ID: <m1mz0zvvao.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 23 Apr 2007 13:49:48 -0400
+Received: from mail.screens.ru ([213.234.233.54]:36437 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161071AbXDWRtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 13:49:47 -0400
+Date: Mon, 23 Apr 2007 21:49:34 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: akpm@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
+Message-ID: <20070423174934.GA229@tv-sign.ru>
+References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com> <200704192339.30783.rjw@sisk.pl> <20070420180208.GA721@tv-sign.ru> <20070423102618.GA25144@in.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423102618.GA25144@in.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> writes:
-
-> On 04/23, Christoph Hellwig wrote:
->>
->> On Sun, Apr 22, 2007 at 09:12:55PM -0600, Eric W. Biederman wrote:
->> > 
->> > This patch implements the kthread helper functions kthread_start
->> > and kthread_end which make it simple to support a kernel thread
->> > that may decided to exit on it's own before we request it to.
->> > It is still assumed that eventually we will get around to requesting
->> > that the kernel thread stop.
->> 
->> I don't think having to parallel APIs is a good idea, people will
->> get utterly confused which one to use.  Better always grab a reference
->> in kthread_create and drop it in kthread_stop.  For normal thread
->> no change in behaviour and only slightly more code in the slowpath.
->> 
->> Of course it will need an audit for half-assed kthread conversion
->> first to avoid task_struct reference count leaks.
+On 04/23, Gautham R Shenoy wrote:
 >
-> In that case it is better to grab a reference in kthread(). This also
-> close the race when a new thread is woken (freezer) and exits before
-> kthread_create() does get_task_struct().
+> On Fri, Apr 20, 2007 at 10:02:08PM +0400, Oleg Nesterov wrote:
+> > 
+> > Gautham, isn't it possible to make a more simpler patch ? Just add PF_NOFREEZE
+> > check to frozen_process,
+> > 
+> > 	static inline void frozen_process(struct task_struct *p)
+> > 	{
+> > 		if (!unlikely(current->flags & PF_NOFREEZE)) {
+> > 			p->flags |= PF_FROZEN;
+> > 			wmb();
+> > 		}
+> > 		clear_tsk_thread_flag(p, TIF_FREEZE);
+> > 	}
+> > 
+> 
+> Btw, since frozen_process is currently being called only from
+> refrigerator, I am wondering if we still need the struct task_struct *p
+> parameter there. It's very unlikely that some other task would mark a
+> particular task as frozen. No?
+
+I agree. Only "current" can set PF_FROZEN anyway. I also think it is better
+to move this function into kernel/power/process.c, no need to export it in
+freezer.h. It is special, should be called from refrigerator() with task_lock()
+held.
+
+> Anyways, Andrew, Could you please replace the earlier sent patch titled
+> "fix_pf_nofreeze_and_freezeable_race.patch" with the following one?
 >
->> In addition to that kthrad_end implementation look wrong. When
->> the kthread has exited prematurely no one will call complete
->> on kthread_stop_info.done before it's been setup.
+> ...
 >
-> This is not true anymore, see another patch from Eric
->
-> 	kthread-enhance-kthread_stop-to-abort-interruptible-sleeps.patch
+> --- linux-2.6.21-rc6.orig/include/linux/freezer.h
+> +++ linux-2.6.21-rc6/include/linux/freezer.h
+> @@ -57,8 +57,10 @@ static inline int thaw_process(struct ta
+>   */
+>  static inline void frozen_process(struct task_struct *p)
+>  {
+> -	p->flags |= PF_FROZEN;
+> -	wmb();
+> +	if (!unlikely(p->flags & PF_NOFREEZE)) {
+> +		p->flags |= PF_FROZEN;
+> +		wmb();
+> +	}
+>  	clear_tsk_thread_flag(p, TIF_FREEZE);
+>  }
 
-Ok.  Thinking about it I agree with Christoph that parallel API's can
-be a problem.
+On the second thought, this patch doesn't help if the thread never
+calls try_to_freeze() exactly because it marks itself PF_NOFREEZE.
 
-However we do still need to support kernel threads where kthread_stop will
-never be called.  There appear to be a few legitimate cases where
-someone wants to fire off a thread and have it do some work but don't
-care at all for stopping it before it is done.
+Perhaps it is better to cancel freezing in soon-to-be-introduced
+freezer_exempt().
 
-So I propose we add a kthread_orphan as a basic primitive to decrement the
-count on the task_struct if we want a kthread to simply exit after it
-has done some work.
+In any case I agree, this one is better than current
+	fix_pf_nofreeze_and_freezeable_race.patch
 
-And as a helper function we can have a kthread_run_orphan.
+Oleg.
 
-I think having a kthread_orphan will document what we are doing better
-and make it easy to find kernel threads that don't use kthread_stop.
-
-The pain is that this requires an audit of all kernel kthread creators
-so that we call kthread_orphan on the right ones, or else we will have
-a task_struct leak.  At least that isn't a fatal condition.
-
-Eric
