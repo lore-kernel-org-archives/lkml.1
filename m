@@ -1,41 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbXDWCUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbXDWC1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752795AbXDWCUx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 22:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbXDWCUx
+	id S1753014AbXDWC1l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 22:27:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXDWC1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 22:20:53 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:4074 "EHLO parknet.jp"
+	Sun, 22 Apr 2007 22:27:41 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:4078 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbXDWCUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 22:20:52 -0400
+	id S1753014AbXDWC1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 22:27:40 -0400
 X-AuthUser: hirofumi@parknet.jp
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
+To: DervishD <lkml@dervishd.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Juergen Beisert <juergen127@kreuzholzen.de>,
+       linux-kernel@vger.kernel.org
 Subject: Re: Wrong free clusters count on FAT32
-References: <8bAF0-3Yj-29@gated-at.bofh.it> <8bDta-8rc-31@gated-at.bofh.it>
-	<8bFEr-3B4-1@gated-at.bofh.it> <8cwz8-2fE-13@gated-at.bofh.it>
-	<E1Hfc7X-00010D-09@be1.lrz> <87wt04sdyb.fsf@duaron.myhome.or.jp>
-	<Pine.LNX.4.58.0704222342110.3424@be1.lrz>
+References: <20070419085750.GA2833@DervishD>
+	<200704191352.06456.juergen127@kreuzholzen.de>
+	<20070419141942.GF8287@DervishD> <87d51xtkmp.fsf@duaron.myhome.or.jp>
+	<20070421201841.85717088.akpm@linux-foundation.org>
+	<87wt05vxu7.fsf@duaron.myhome.or.jp> <20070422112658.GB5786@DervishD>
+	<87mz10tyi1.fsf@duaron.myhome.or.jp> <20070422200839.GC12748@DervishD>
 From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 23 Apr 2007 11:20:41 +0900
-In-Reply-To: <Pine.LNX.4.58.0704222342110.3424@be1.lrz> (Bodo Eggert's message of "Sun\, 22 Apr 2007 23\:46\:33 +0200 \(CEST\)")
-Message-ID: <87zm4zq1ae.fsf@duaron.myhome.or.jp>
+Date: Mon, 23 Apr 2007 11:27:35 +0900
+In-Reply-To: <20070422200839.GC12748@DervishD> (DervishD's message of "Sun\, 22 Apr 2007 22\:08\:39 +0200")
+Message-ID: <87ps5vq0yw.fsf@duaron.myhome.or.jp>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bodo Eggert <7eggert@gmx.de> writes:
+DervishD <lkml@dervishd.net> writes:
 
->> > - usefree is a bad name (I'd suggest recalc_free instead),
+>> It would add the limitation to following simple usage,
 >> 
->> Is it about nofree option?
+>> 	# mount -t vfat /dev/sda1 /mnt
+>>         # cp -a * /mnt
+>>         # umount
+>> 
+>> if /dev/sda1 was the large and slow device, "mount" will need several
+>> minutes to counts free clusters. I think the user will be hard to
+>> accept the several minutes at "mount".
 >
-> Yes. I think recalc_free is way more descriptive.
+>     I can carry some tests, but if Windows does that tasks lightning
+> fast, Linux surely does it faster ;) I don't think, anyway, that having
+> a huge USB disk is a common practice when using "modest" machines.
+>
+>     If you want, I can perform a couple of tests. I have a 80GB disk
+> that I can connect using an USB adapter and my machine is AMD Athlon XP
+> 1900+ with 1GB of RAM, which looks pretty slow nowadays O:)
 
-Recalc is already default on current patch.
+Yes, I think it's not common practice too. But I don't see why do you
+want to scanning at the mount.
+
+Thanks.
 -- 
 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
