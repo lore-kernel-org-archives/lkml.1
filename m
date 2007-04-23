@@ -1,127 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXDWN4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbXDWN55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbXDWN4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 09:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbXDWN4c
+	id S1753932AbXDWN55 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 09:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXDWN55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 09:56:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:20741 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbXDWN4a (ORCPT
+	Mon, 23 Apr 2007 09:57:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58428 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753932AbXDWN54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 09:56:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OBKHYMI+mB937ZUZ6L9V3GZGNLDgubbH7g2xp+YbW7vZ/QfteRCqb3X7Q4R2+a9F8rRic+grovNvCU//DS/bkO6KxrsUmebkERNlPcEdC8etfd8B8igb570MuOi+FGWKdoVsBIio6sBBx1tA+HTffFCdqpW1typ/S49cKHQ45Do=
-Message-ID: <38b2ab8a0704230656k4863cfb6ne019a443efb22a4b@mail.gmail.com>
-Date: Mon, 23 Apr 2007 15:56:28 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [CRYPTO] is it really optimized ?
-Cc: "Herbert Xu" <herbert@gondor.apana.org.au>, helge.hafting@aitel.hist.no,
-       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-In-Reply-To: <38b2ab8a0704190107x2c151bafx824beca052f97ef6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 23 Apr 2007 09:57:56 -0400
+Date: Mon, 23 Apr 2007 15:01:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: adaplas@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] Nvidia/Riva FB: Switch to pci_get refcounting APIs not
+ pci_find_slot
+Message-ID: <20070423150134.6fcb815e@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0704170659o3f65f5fbo94a59be58727d21c@mail.gmail.com>
-	 <E1HdoGm-0005WU-00@gondolin.me.apana.org.au>
-	 <38b2ab8a0704170741n619e169s6a2f3ac5b768a950@mail.gmail.com>
-	 <adairbv57s2.fsf@cisco.com>
-	 <38b2ab8a0704170914h3a766236t47bc7e1c8de67662@mail.gmail.com>
-	 <ada7isb3qr2.fsf@cisco.com>
-	 <38b2ab8a0704171024m3d838bdak14370a7d0931557f@mail.gmail.com>
-	 <adalkgq3nx6.fsf@cisco.com>
-	 <38b2ab8a0704190107x2c151bafx824beca052f97ef6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-[Sorry for the late answer]
-
-On 4/19/07, Francis Moreau <francis.moro@gmail.com> wrote:
-> On 4/17/07, Roland Dreier <rdreier@cisco.com> wrote:
-> >  > > It seems trivial to keep the last key you were given and do a quick
-> >  > > memcmp in your setkey method to see if it's different from the last
-> >  > > key you pushed to hardware, and set a flag if it is.  Then only do
-> >  > > your set_key() if you have a new key to pass to hardware.
-> >  > >
-> >  > > I'm assuming the expense is in the aes_write() calls, and you could
-> >  > > avoid them if you know you're not writing something new.
-> >
-> >  > that's a wrong assumption. aes_write()/aes_read() are both used to
-> >  > access to the controller and are slow (no cache involved).
-> >
-> > Sorry, I wasn't clear.  I meant that the hardware access is what is
-> > slow, and that anything you do on the CPU is relatively cheap compared
-> > to that.
-> >
-> > So my suggestion is just to keep a cache (in CPU memory) of what you
-> > have already loaded into the HW, and before reloading the HW just
-> > check the cache and don't do the actual HW access if you're not going
-> > to change the HW contents.  So you avoid any extra aes_write and
-> > aes_read calls in the cache hit case.
-> >
-> > This would have the advantage of making anything that does lots of
-> > bulk encryption fast without special casing ecryptfs.
-> >
->
-> I'm not sure how "memcmp(key, cache, KEY_SIZE)" would impact AES
-> performance. I need to give it a test but can't today. I'll do
-> tomorrow and give you back the result.
->
-
-OK, I gave it a test and it appears that the cache hit case is
-slightly worse than unconditionnal key loading. So it means that
-testing that hte key is cached is as long as loading the key into the
-controller. Here is what I did in set_key() function:
-
-static void set_key(const char *key)
-{
-	static u32 my_key[4] __cacheline_aligned;
-
-	u32 key0 = *(const u32 *)(key + 12);
-	u32 key1 = *(const u32 *)(key + 8);
-	u32 key2 = *(const u32 *)(key + 4);
-	u32 key3 = *(const u32 *)(key);
-	int timeout = 100;
-	u32 miss = 0;
-
-	miss |= key0 ^ my_key[0];
-	miss |= key1 ^ my_key[1];
-	miss |= key2 ^ my_key[2];
-	miss |= key3 ^ my_key[3];
-	if (miss == 0)
-		return;
-
-	my_key[0] = key0;
-	my_key[1] = key1;
-	my_key[2] = key2;
-	my_key[3] = key3;
-	
-	aes_write(be32_to_cpu(key0), AES_KEY0);
-	aes_write(be32_to_cpu(key1), AES_KEY1);
-	aes_write(be32_to_cpu(key2), AES_KEY2);
-	aes_write(be32_to_cpu(key3), AES_KEY3);
-
-	/* generate dkey: should take 11 cycles */
-	aes_write(aes_read(AES_CR) | CR_DKEYGEN, AES_CR);
-
-	while (aes_read(AES_CR) & CR_DKEYGEN) {
-		if (--timeout == 0)
-			break;
-	}
-}
-
-So I was wrong, hardware access is not so expensive as I thought. But
-it also means that all instructions executed in the drivers'
-encrypt()/decrypt() methods have a real cost and skipping key loadings
-is a win.
-
-Using the driver exclusively doesn't seem to be the right solution,
-but I don't see another way to do that...
--- 
-Francis
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/video/nvidia/nv_hw.c linux-2.6.21-rc6-mm1/drivers/video/nvidia/nv_hw.c
+--- linux.vanilla-2.6.21-rc6-mm1/drivers/video/nvidia/nv_hw.c	2007-04-12 13:40:47.000000000 +0100
++++ linux-2.6.21-rc6-mm1/drivers/video/nvidia/nv_hw.c	2007-04-23 12:16:11.636926608 +0100
+@@ -686,7 +686,7 @@
+ 
+ 	if ((par->Chipset & 0x0FF0) == 0x01A0) {
+ 		unsigned int uMClkPostDiv;
+-		dev = pci_find_slot(0, 3);
++		dev = pci_get_bus_and_slot(0, 3);
+ 		pci_read_config_dword(dev, 0x6C, &uMClkPostDiv);
+ 		uMClkPostDiv = (uMClkPostDiv >> 8) & 0xf;
+ 
+@@ -694,11 +694,11 @@
+ 			uMClkPostDiv = 4;
+ 		MClk = 400000 / uMClkPostDiv;
+ 	} else {
+-		dev = pci_find_slot(0, 5);
++		dev = pci_get_bus_and_slot(0, 5);
+ 		pci_read_config_dword(dev, 0x4c, &MClk);
+ 		MClk /= 1000;
+ 	}
+-
++	
+ 	pll = NV_RD32(par->PRAMDAC0, 0x0500);
+ 	M = (pll >> 0) & 0xFF;
+ 	N = (pll >> 8) & 0xFF;
+@@ -707,19 +707,21 @@
+ 	sim_data.pix_bpp = (char)pixelDepth;
+ 	sim_data.enable_video = 0;
+ 	sim_data.enable_mp = 0;
+-	pci_find_slot(0, 1);
++	/* pci_find_slot(0, 1); */
+ 	pci_read_config_dword(dev, 0x7C, &sim_data.memory_type);
++	pci_dev_put(dev);
+ 	sim_data.memory_type = (sim_data.memory_type >> 12) & 1;
+ 	sim_data.memory_width = 64;
+ 
+-	dev = pci_find_slot(0, 3);
++	dev = pci_get_bus_and_slot(0, 3);
+ 	pci_read_config_dword(dev, 0, &memctrl);
++	pci_dev_put(dev);
+ 	memctrl >>= 16;
+ 
+ 	if ((memctrl == 0x1A9) || (memctrl == 0x1AB) || (memctrl == 0x1ED)) {
+ 		int dimm[3];
+ 
+-		pci_find_slot(0, 2);
++		/* pci_find_slot(0, 2); */
+ 		pci_read_config_dword(dev, 0x40, &dimm[0]);
+ 		dimm[0] = (dimm[0] >> 8) & 0x4f;
+ 		pci_read_config_dword(dev, 0x44, &dimm[1]);
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/video/nvidia/nv_setup.c linux-2.6.21-rc6-mm1/drivers/video/nvidia/nv_setup.c
+--- linux.vanilla-2.6.21-rc6-mm1/drivers/video/nvidia/nv_setup.c	2007-04-12 13:40:47.000000000 +0100
++++ linux-2.6.21-rc6-mm1/drivers/video/nvidia/nv_setup.c	2007-04-23 12:16:47.848421624 +0100
+@@ -261,7 +261,7 @@
+ 	}
+ #endif
+ 
+-	dev = pci_find_slot(0, 1);
++	dev = pci_get_bus_and_slot(0, 1);
+ 	if ((par->Chipset & 0xffff) == 0x01a0) {
+ 		int amt = 0;
+ 
+@@ -276,6 +276,7 @@
+ 		par->RamAmountKBytes =
+ 		    (NV_RD32(par->PFB, 0x020C) & 0xFFF00000) >> 10;
+ 	}
++	pci_dev_put(dev);
+ 
+ 	par->CrystalFreqKHz = (NV_RD32(par->PEXTDEV, 0x0000) & (1 << 6)) ?
+ 	    14318 : 13500;
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/video/riva/nv_driver.c linux-2.6.21-rc6-mm1/drivers/video/riva/nv_driver.c
+--- linux.vanilla-2.6.21-rc6-mm1/drivers/video/riva/nv_driver.c	2007-04-12 13:40:47.000000000 +0100
++++ linux-2.6.21-rc6-mm1/drivers/video/riva/nv_driver.c	2007-04-23 12:17:38.764681176 +0100
+@@ -231,12 +231,14 @@
+ 	case NV_ARCH_30:
+ 		if(chipset == NV_CHIP_IGEFORCE2) {
+ 
+-			dev = pci_find_slot(0, 1);
++			dev = pci_get_bus_and_slot(0, 1);
+ 			pci_read_config_dword(dev, 0x7C, &amt);
++			pci_dev_put(dev);
+ 			memlen = (((amt >> 6) & 31) + 1) * 1024;
+ 		} else if (chipset == NV_CHIP_0x01F0) {
+-			dev = pci_find_slot(0, 1);
++			dev = pci_get_bus_and_slot(0, 1);
+ 			pci_read_config_dword(dev, 0x84, &amt);
++			pci_dev_put(dev);
+ 			memlen = (((amt >> 4) & 127) + 1) * 1024;
+ 		} else {
+ 			switch ((NV_RD32(chip->PFB, 0x0000020C) >> 20) &
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/video/riva/riva_hw.c linux-2.6.21-rc6-mm1/drivers/video/riva/riva_hw.c
+--- linux.vanilla-2.6.21-rc6-mm1/drivers/video/riva/riva_hw.c	2007-04-12 14:15:05.000000000 +0100
++++ linux-2.6.21-rc6-mm1/drivers/video/riva/riva_hw.c	2007-04-23 12:19:03.149852680 +0100
+@@ -1118,8 +1118,9 @@
+     unsigned int uMClkPostDiv;
+     struct pci_dev *dev;
+ 
+-    dev = pci_find_slot(0, 3);
++    dev = pci_get_bus_and_slot(0, 3);
+     pci_read_config_dword(dev, 0x6C, &uMClkPostDiv);
++    pci_dev_put(dev);
+     uMClkPostDiv = (uMClkPostDiv >> 8) & 0xf;
+ 
+     if(!uMClkPostDiv) uMClkPostDiv = 4;
+@@ -1132,8 +1133,9 @@
+     sim_data.enable_video   = 0;
+     sim_data.enable_mp      = 0;
+ 
+-    dev = pci_find_slot(0, 1);
++    dev = pci_get_bus_and_slot(0, 1);
+     pci_read_config_dword(dev, 0x7C, &sim_data.memory_type);
++    pci_dev_put(dev);
+     sim_data.memory_type    = (sim_data.memory_type >> 12) & 1;
+ 
+     sim_data.memory_width   = 64;
+@@ -2112,12 +2114,14 @@
+      * Fill in chip configuration.
+      */
+     if(chipset == NV_CHIP_IGEFORCE2) {
+-        dev = pci_find_slot(0, 1);
++        dev = pci_get_bus_and_slot(0, 1);
+         pci_read_config_dword(dev, 0x7C, &amt);
++        pci_dev_put(dev);
+         chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+     } else if(chipset == NV_CHIP_0x01F0) {
+-        dev = pci_find_slot(0, 1);
++        dev = pci_get_bus_and_slot(0, 1);
+         pci_read_config_dword(dev, 0x84, &amt);
++        pci_dev_put(dev);
+         chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
+     } else {
+         switch ((NV_RD32(chip->PFB, 0x0000020C) >> 20) & 0x000000FF)
