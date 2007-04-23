@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXDWHER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXDWHF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbXDWHER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 03:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXDWHER
+	id S1753532AbXDWHF3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 03:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbXDWHF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 03:04:17 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:34526 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbXDWHEP (ORCPT
+	Mon, 23 Apr 2007 03:05:29 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:15992 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753532AbXDWHF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 03:04:15 -0400
-Date: Mon, 23 Apr 2007 08:04:01 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Sergey Yanovich <ynvich@gmail.com>
-Cc: Alex Dubov <oakad@yahoo.com>, linux-kernel@vger.kernel.org
-Message-ID: <20070423070401.GA26428@srcf.ucam.org>
-References: <4627D402.8020107@gmail.com> <20070422013411.45105.qmail@web36709.mail.mud.yahoo.com> <5a04609e0704220515h4049afas4dc98b90e66d1d16@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5a04609e0704220515h4049afas4dc98b90e66d1d16@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Mon, 23 Apr 2007 03:05:28 -0400
+Date: Mon, 23 Apr 2007 09:08:10 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070423090810.2fc0e864@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070422174051.GA21680@kroah.com>
+References: <20070421000340.GB12155@kroah.com>
+	<Pine.LNX.4.44L0.0704211654080.12439-100000@netrider.rowland.org>
+	<20070422174051.GA21680@kroah.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 22, 2007 at 03:15:22PM +0300, Sergey Yanovich wrote:
+On Sun, 22 Apr 2007 10:40:51 -0700,
+Greg KH <greg@kroah.com> wrote:
 
-> For a typical, non-linux-geek user there are just two states of the device -
-> available and not available. Ububtu is famous for its end-user support.
-> They ship your driver since linux-2.6.17. But they pack it in one module.
-> And that is _much_ easier, then a hotplug script.
+> > Looking some more, kobject_get_path() is used for kobject renaming,
+> > uevent handling, and a little bit in the input core.  None of these things 
+> > should try to access a kobject after it has been del()ed.  After all, it's 
+> > no longer present in the filesystem so it doesn't _have_ a path.
+> 
+> But we _have_ to have a full path at that time to tell userspace what
+> just went away.  That is the main reason we enforce this (there were
+> tons of issues with scsi devices and this in the past which is what
+> caused us to enforce this.)
 
-No, we ship a udev script.
-
-> At the same time, the [tifm_sd] code is device specific, and [tifm_7xx1]
-> code is also device specific. And both modules depend on the same device
-> (of family of devices). That makes me think that a bus/controller/slot
-> construction is not going to make thing any easier, but adds complexity.
-
-At one point it looked like it might be possible to drive the tifm_7xx0 
-devices in a similar way. I'm not sure if this is actually the case, but 
-right now the driver design seems to accurately reflect the reality of 
-the hardware design. I don't see any especially strong argument for 
-breaking that.
-
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+What we need to ensure is that the parent device is kept at least until
+all children, grandchildren and so on are done with their uevent needs.
+This would imply it needed to stay as long as those children,
+grandchildren, ... are still registered. Would it be save to suggest
+that a ->remove callback would always need to unregister the children?
+Then putting the parent reference at the end of kobject_del() (which is
+after kobject_uevent() in kobject_unregister()) should be safe.
