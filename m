@@ -1,240 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbXDWXMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbXDWXNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbXDWXMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXDWXMV
+	id S1751908AbXDWXNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXDWXHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:12:21 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38873 "EHLO
+	Mon, 23 Apr 2007 19:07:35 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38854 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932966AbXDWXHq (ORCPT
+	with ESMTP id S1754488AbXDWXHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:46 -0400
-Message-Id: <20070423215712.328111104@goop.org>
+	Mon, 23 Apr 2007 19:07:12 -0400
+Message-Id: <20070423215711.742425039@goop.org>
 References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:56:54 -0700
+Date: Mon, 23 Apr 2007 14:56:51 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 16/25] xen: Use the hvc console infrastructure for Xen console
-Content-Disposition: inline; filename=xen-hvc-console.patch
+Subject: [PATCH 13/25] xen: xen: lazy-mmu operations
+Content-Disposition: inline; filename=xen-lazy-mmu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a Xen back-end for hvc console.
+This patch uses the lazy-mmu hooks to batch mmu operations where
+possible.  This is primarily useful for batching operations applied to
+active pagetables, which happens during mprotect, munmap, mremap and
+the like (mmap does not do bulk pagetable operations, so it isn't
+helped).
 
-From: Gerd Hoffmann <kraxel@suse.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
 ---
- arch/i386/xen/Kconfig     |    1 
- arch/i386/xen/events.c    |    3 -
- drivers/Makefile          |    3 +
- drivers/xen/Makefile      |    1 
- drivers/xen/hvc-console.c |  134 +++++++++++++++++++++++++++++++++++++++++++++
- include/xen/events.h      |    1 
- 6 files changed, 142 insertions(+), 1 deletion(-)
+ arch/i386/xen/enlighten.c  |   56 +++++++++++++++++++++++++++-----------------
+ arch/i386/xen/mmu.c        |   56 ++++++++++++++++++++++++++++++++------------
+ arch/i386/xen/multicalls.c |    4 +--
+ 3 files changed, 78 insertions(+), 38 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/Kconfig
-+++ b/arch/i386/xen/Kconfig
-@@ -5,6 +5,7 @@ config XEN
- config XEN
- 	bool "Enable support for Xen hypervisor"
- 	depends on PARAVIRT
-+	select HVC_DRIVER
- 	default y
- 	help
- 	  This is the Linux Xen port.
-===================================================================
---- a/arch/i386/xen/events.c
-+++ b/arch/i386/xen/events.c
-@@ -219,7 +219,7 @@ static int find_unbound_irq(void)
- 	return irq;
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -451,28 +451,38 @@ static void xen_apic_write(unsigned long
+ 
+ static void xen_flush_tlb(void)
+ {
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_TLB_FLUSH_LOCAL;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
++
++	op = mcs.args;
++	op->cmd = MMUEXT_TLB_FLUSH_LOCAL;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
  }
  
--static int bind_evtchn_to_irq(unsigned int evtchn)
-+int bind_evtchn_to_irq(unsigned int evtchn)
+ static void xen_flush_tlb_single(unsigned long addr)
  {
- 	int irq;
- 
-@@ -244,6 +244,7 @@ static int bind_evtchn_to_irq(unsigned i
- 
- 	return irq;
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_INVLPG_LOCAL;
+-	op.arg1.linear_addr = addr & PAGE_MASK;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
++
++	op = mcs.args;
++	op->cmd = MMUEXT_INVLPG_LOCAL;
++	op->arg1.linear_addr = addr & PAGE_MASK;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
  }
-+EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
  
- static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+ static void xen_flush_tlb_others(const cpumask_t *cpus, struct mm_struct *mm,
+ 				 unsigned long va)
  {
-===================================================================
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -14,6 +14,9 @@ obj-$(CONFIG_ACPI)		+= acpi/
- # was used and do nothing if so
- obj-$(CONFIG_PNP)		+= pnp/
- obj-$(CONFIG_ARM_AMBA)		+= amba/
-+
-+# Xen is the default console when running as a guest
-+obj-$(CONFIG_XEN)		+= xen/
+-	struct mmuext_op op;
++	struct {
++		struct mmuext_op op;
++		cpumask_t mask;
++	} *args;
+ 	cpumask_t cpumask = *cpus;
++	struct multicall_space mcs;
  
- # char/ comes before serial/ etc so that the VT console is the boot-time
- # default.
-===================================================================
---- /dev/null
-+++ b/drivers/xen/Makefile
-@@ -0,0 +1,1 @@
-+obj-y	+= hvc-console.o
-===================================================================
---- /dev/null
-+++ b/drivers/xen/hvc-console.c
-@@ -0,0 +1,134 @@
-+/*
-+ * xen console driver interface to hvc_console.c
-+ *
-+ * (c) 2007 Gerd Hoffmann <kraxel@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+
-+#include <asm/xen/hypervisor.h>
-+#include <xen/page.h>
-+#include <xen/events.h>
-+#include <xen/interface/io/console.h>
-+
-+#include "../char/hvc_console.h"
-+
-+#define HVC_COOKIE   0x58656e /* "Xen" in hex */
-+
-+static struct hvc_struct *hvc;
-+static int xencons_irq;
-+
-+/* ------------------------------------------------------------------ */
-+
-+static inline struct xencons_interface *xencons_interface(void)
-+{
-+	return mfn_to_virt(xen_start_info->console.domU.mfn);
-+}
-+
-+static inline void notify_daemon(void)
-+{
-+	/* Use evtchn: this is called early, before irq is set up. */
-+	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
-+}
-+
-+static int write_console(uint32_t vtermno, const char *data, int len)
-+{
-+	struct xencons_interface *intf = xencons_interface();
-+	XENCONS_RING_IDX cons, prod;
-+	int sent = 0;
-+
-+	cons = intf->out_cons;
-+	prod = intf->out_prod;
-+	mb();
-+	BUG_ON((prod - cons) > sizeof(intf->out));
-+
-+	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
-+		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
-+
-+	wmb();
-+	intf->out_prod = prod;
-+
-+	notify_daemon();
-+	return sent;
-+}
-+
-+static int read_console(uint32_t vtermno, char *buf, int len)
-+{
-+	struct xencons_interface *intf = xencons_interface();
-+	XENCONS_RING_IDX cons, prod;
-+	int recv = 0;
-+
-+	cons = intf->in_cons;
-+	prod = intf->in_prod;
-+	mb();
-+	BUG_ON((prod - cons) > sizeof(intf->in));
-+
-+	while (cons != prod && recv < len)
-+		buf[recv++] = intf->in[MASK_XENCONS_IDX(cons++,intf->in)];
-+
-+	mb();
-+	intf->in_cons = cons;
-+
-+	notify_daemon();
-+	return recv;
-+}
-+
-+static struct hv_ops hvc_ops = {
-+	.get_chars = read_console,
-+	.put_chars = write_console,
-+};
-+
-+static int __init xen_init(void)
-+{
-+	struct hvc_struct *hp;
-+
-+	if (!is_running_on_xen())
-+		return 0;
-+
-+	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
-+	if (xencons_irq < 0)
-+		xencons_irq = 0 /* NO_IRQ */;
-+	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+
-+	hvc = hp;
-+	return 0;
-+}
-+
-+static void __exit xen_fini(void)
-+{
-+	if (hvc)
-+		hvc_remove(hvc);
-+}
-+
-+static int xen_cons_init(void)
-+{
-+	if (!is_running_on_xen())
-+		return 0;
-+
-+	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
-+	return 0;
-+}
-+
-+module_init(xen_init);
-+module_exit(xen_fini);
-+console_initcall(xen_cons_init);
-===================================================================
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -13,6 +13,7 @@ enum ipi_vector {
- 	XEN_NR_IPIS,
- };
+ 	/*
+ 	 * A couple of (to be removed) sanity checks:
+@@ -489,17 +499,21 @@ static void xen_flush_tlb_others(const c
+ 	if (cpus_empty(cpumask))
+ 		return;
  
-+int bind_evtchn_to_irq(unsigned int evtchn);
- int bind_evtchn_to_irqhandler(unsigned int evtchn,
- 			      irq_handler_t handler,
- 			      unsigned long irqflags, const char *devname,
++	mcs = xen_mc_entry(sizeof(*args));
++	args = mcs.args;
++	args->mask = cpumask;
++	args->op.arg2.vcpumask = &args->mask;
++
+ 	if (va == TLB_FLUSH_ALL) {
+-		op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+-		op.arg2.vcpumask = (void *)cpus;
++		args->op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+ 	} else {
+-		op.cmd = MMUEXT_INVLPG_MULTI;
+-		op.arg1.linear_addr = va;
+-		op.arg2.vcpumask = (void *)cpus;
+-	}
+-
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++		args->op.cmd = MMUEXT_INVLPG_MULTI;
++		args->op.arg1.linear_addr = va;
++	}
++
++	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+ static unsigned long xen_read_cr2(void)
+===================================================================
+--- a/arch/i386/xen/mmu.c
++++ b/arch/i386/xen/mmu.c
+@@ -56,12 +56,20 @@ void make_lowmem_page_readwrite(void *va
+ 
+ void xen_set_pmd(pmd_t *ptr, pmd_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pmd_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pmd_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ /*
+@@ -104,20 +112,38 @@ void xen_set_pte_at(struct mm_struct *mm
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, pte_t pteval)
+ {
+-	if ((mm != current->mm && mm != &init_mm) ||
+-	    HYPERVISOR_update_va_mapping(addr, pteval, 0) != 0)
+-		xen_set_pte(ptep, pteval);
++	if (mm == current->mm || mm == &init_mm) {
++		if (xen_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
++			struct multicall_space mcs;
++			mcs = xen_mc_entry(0);
++
++			MULTI_update_va_mapping(mcs.mc, addr, pteval, 0);
++			xen_mc_issue(PARAVIRT_LAZY_MMU);
++			return;
++		} else
++			if (HYPERVISOR_update_va_mapping(addr, pteval, 0) == 0)
++				return;
++	}
++	xen_set_pte(ptep, pteval);
+ }
+ 
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pud(pud_t *ptr, pud_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pud_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pud_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+===================================================================
+--- a/arch/i386/xen/multicalls.c
++++ b/arch/i386/xen/multicalls.c
+@@ -5,8 +5,8 @@
+ 
+ #include "multicalls.h"
+ 
+-#define MC_BATCH	8
+-#define MC_ARGS		(MC_BATCH * 32 / sizeof(u64))
++#define MC_BATCH	32
++#define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
+ 
+ struct mc_buffer {
+ 	struct multicall_entry entries[MC_BATCH];
 
 -- 
 
