@@ -1,118 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXDWUz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbXDWU4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753423AbXDWUz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 16:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXDWUz6
+	id S1753430AbXDWU4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 16:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXDWU4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 16:55:58 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5062 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423AbXDWUz5 (ORCPT
+	Mon, 23 Apr 2007 16:56:36 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:28191 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430AbXDWU4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 16:55:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=mIGB1WQl1BgZA8ewVy+hJ3dzjiT4UphaOXLlUbegbrfEq7B2ZRpOVEm/oaNKTUzX7
-	1EUNEJMQt7Ko5Ltu1AchQ==
-Date: Mon, 23 Apr 2007 13:55:39 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andi Kleen <ak@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@engr.sgi.com>, linux-kernel@vger.kernel.org
-Subject: [patch -mm v2] cpusets: allow TIF_MEMDIE threads to allocate anywhere
-In-Reply-To: <200704232203.13659.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0704231354190.19878@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0704231235280.18240@chino.kir.corp.google.com>
- <200704232203.13659.ak@suse.de>
+	Mon, 23 Apr 2007 16:56:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=grzMh1NjgE+J/Jnew9USj85H0vgFK1L+z/TXOerpZ4E3Uk1PLqh4mAjqVqGlqfmDIfPW6T+rAmopa0GqdycaNduCKKkuxUx3PKC9NvWFK4pubqJAtDvddWtUrMvsX1JDzaZAGHFBZEZFUsV+9IorOd9NYWL2G+yXPxpTudGW92c=
+Message-ID: <f2b55d220704231356j7b1b039ew82e10a231eeb7749@mail.gmail.com>
+Date: Mon, 23 Apr 2007 13:56:33 -0700
+From: "Michael K. Edwards" <medwards.linux@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [report] renicing X, cfs-v5 vs sd-0.46
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Juliusz Chroboczek" <jch@pps.jussieu.fr>,
+       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
+       "Bill Davidsen" <davidsen@tmr.com>, "Willy Tarreau" <w@1wt.eu>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Piggin" <npiggin@suse.de>, "Mike Galbraith" <efault@gmx.de>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
+       "Gene Heskett" <gene.heskett@gmail.com>
+In-Reply-To: <20070423194821.GA10286@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070420140457.GA14017@elte.hu>
+	 <200704220155.20856.kernel@kolivas.org>
+	 <20070421160008.GA28783@elte.hu>
+	 <200704220959.34978.kernel@kolivas.org>
+	 <87647oblx5.fsf@pps.jussieu.fr>
+	 <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org>
+	 <20070423024245.GA8378@elte.hu>
+	 <alpine.LFD.0.98.0704230805510.9964@woody.linux-foundation.org>
+	 <20070423194821.GA10286@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OOM killed tasks have access to memory reserves as specified by the
-TIF_MEMDIE flag in the hopes that it will quickly exit.  If such a task
-has memory allocations constrained by cpusets, we may encounter a
-deadlock if a blocking task cannot exit because it cannot allocate the
-necessary memory.
+On 4/23/07, Ingo Molnar <mingo@elte.hu> wrote:
+> Basically this hack is bad on policy grounds because it is giving X an
+> "legislated, unfair monopoly" on the system. It's the equivalent of a
+> state-guaranteed monopoly in certain 'strategic industries'. It has some
+> advantages but it is very much net harmful. Most of the time the
+> "strategic importance" of any industry can be cleanly driven by the
+> normal mechanics of supply and demand: anything important is recognized
+> by 'people' as important via actual actions of giving it 'money'. (This
+> approach also gives formerly-strategic industries the boot quickly, were
+> they to become less strategic to people as things evolve.)
 
-We allow tasks that have the TIF_MEMDIE flag to allocate memory anywhere,
-including outside its cpuset restriction, so that it can quickly die
-regardless of whether it is __GFP_HARDWALL.
+If you're going to drag free-market economics into it, why not
+actually use the techniques of free-market economics?  Design a
+bidding system in which agents (tasks) earn "money" by getting things
+done, and can use that "money" to bid on "resources".  You will of
+course need accurate cost accounting in order to decide which bids are
+most "profitable" for the scheduler to accept, and accurate transfer
+accounting to design price structures for contracts between agents in
+which one agrees to accomplish work on behalf on another.  Actual
+revenues come from doing the work that the consumer wants done and is
+willing to pay for.  Etc., etc.  Has your horsepucky filter kicked in
+yet?
 
-Cc: Andi Kleen <ak@suse.de>
-Cc: Paul Jackson <pj@sgi.com>
-Cc: Christoph Lameter <clameter@engr.sgi.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- kernel/cpuset.c |   22 ++++++++++++++++++++--
- 1 files changed, 20 insertions(+), 2 deletions(-)
+If your system doesn't work this way -- perhaps because you think as I
+do that scheduler design is principally an engineering problem, not an
+economics problem -- then analogies from economics are probably worth
+zip.  Yes, I wrote earlier about "economic dispatch" -- that's an
+operations problem, a control theory problem, an _engineering_
+problem, that happens to have a set of engineering goals and
+constraints that take profitability into account.  I think you might
+be able to design a better Linux scheduler anchored in the techniques
+and literature of control theory, perhaps specifically with reference
+to electric-utility economic dispatch, because the systems under
+control and the goals of control are similar.
 
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -2351,6 +2351,8 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
-  * z's node is in our tasks mems_allowed, yes.  If it's not a
-  * __GFP_HARDWALL request and this zone's nodes is in the nearest
-  * mem_exclusive cpuset ancestor to this tasks cpuset, yes.
-+ * If the task has been OOM killed and has access to memory reserves
-+ * as specified by the TIF_MEMDIE flag, yes.
-  * Otherwise, no.
-  *
-  * If __GFP_HARDWALL is set, cpuset_zone_allowed_softwall()
-@@ -2368,7 +2370,8 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
-  * calls get to this routine, we should just shut up and say 'yes'.
-  *
-  * GFP_USER allocations are marked with the __GFP_HARDWALL bit,
-- * and do not allow allocations outside the current tasks cpuset.
-+ * and do not allow allocations outside the current tasks cpuset
-+ * unless the task has been OOM killed as is marked TIF_MEMDIE.
-  * GFP_KERNEL allocations are not so marked, so can escape to the
-  * nearest enclosing mem_exclusive ancestor cpuset.
-  *
-@@ -2392,6 +2395,7 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
-  * affect that:
-  *	in_interrupt - any node ok (current task context irrelevant)
-  *	GFP_ATOMIC   - any node ok
-+ *	TIF_MEMDIE   - any node ok
-  *	GFP_KERNEL   - any node in enclosing mem_exclusive cpuset ok
-  *	GFP_USER     - only nodes in current tasks mems allowed ok.
-  *
-@@ -2413,6 +2417,12 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
- 	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
- 	if (node_isset(node, current->mems_allowed))
- 		return 1;
-+	/*
-+	 * Allow tasks that have access to memory reserves because they have
-+	 * been OOM killed to get memory anywhere.
-+	 */
-+	if (unlikely(test_thread_flag(TIF_MEMDIE)))
-+		return 1;
- 	if (gfp_mask & __GFP_HARDWALL)	/* If hardwall request, stop here */
- 		return 0;
- 
-@@ -2438,7 +2448,9 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
-  *
-  * If we're in interrupt, yes, we can always allocate.
-  * If __GFP_THISNODE is set, yes, we can always allocate.  If zone
-- * z's node is in our tasks mems_allowed, yes.   Otherwise, no.
-+ * z's node is in our tasks mems_allowed, yes.   If the task has been
-+ * OOM killed and has access to memory reserves as specified by the
-+ * TIF_MEMDIE flag, yes.  Otherwise, no.
-  *
-  * The __GFP_THISNODE placement logic is really handled elsewhere,
-  * by forcibly using a zonelist starting at a specified node, and by
-@@ -2462,6 +2474,12 @@ int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
- 	node = zone_to_nid(z);
- 	if (node_isset(node, current->mems_allowed))
- 		return 1;
-+        /*
-+         * Allow tasks that have access to memory reserves because they have
-+         * been OOM killed to get memory anywhere.
-+         */
-+        if (unlikely(test_thread_flag(TIF_MEMDIE)))
-+                return 1;
- 	return 0;
- }
- 
+But there's a good reason not to treat X as special.  Namely, that it
+_isn't_.  It may be the only program on many people's Linux desktops
+with an opaque control structure -- a separate class of interactive
+activities hidden inside an oversubscribed push-model pipeline stage
+-- but it's hardly the only program designed this way.  Treat the X
+server as a easily instrumented exemplar of a event-loop-centric
+design whose thread structure doesn't distinguish between fast-twitch
+and best-effort activity patterns.  I wrote earlier about what one
+might do about this (attach urgency to to the work in the queue
+instead of the worker being asked to do it).
+
+Cheers,
+- Michael
