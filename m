@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbXDWXCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbXDWXGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754468AbXDWXCK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbXDWXCK
+	id S1754460AbXDWXGf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWXGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:02:10 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46185 "EHLO mx1.suse.de"
+	Mon, 23 Apr 2007 19:06:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35028 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754468AbXDWXCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:02:08 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 04/25] xen: Add XEN config options
-Date: Tue, 24 Apr 2007 01:00:30 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Chris Wright <chrisw@sous-sol.org>
-References: <20070423215638.563901986@goop.org> <20070423215709.990824532@goop.org>
-In-Reply-To: <20070423215709.990824532@goop.org>
+	id S1754460AbXDWXGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 19:06:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Date: Tue, 24 Apr 2007 01:10:34 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       ego@in.ibm.com, linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <200704240040.18312.rjw@sisk.pl> <20070423225535.GB659@tv-sign.ru>
+In-Reply-To: <20070423225535.GB659@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704240100.31011.ak@suse.de>
+Message-Id: <200704240110.35770.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 April 2007 23:56:42 Jeremy Fitzhardinge wrote:
-> The XEN config option enables the Xen paravirt_ops interface, which is
-> installed when the kernel finds itself running under Xen.
+On Tuesday, 24 April 2007 00:55, Oleg Nesterov wrote:
+> On 04/24, Rafael J. Wysocki wrote:
+> >
+> > Should I clear it in dup_task_struct() or is there a better place?
 > 
-> Xen is no longer a sub-architecture, so the X86_XEN subarch config
-> option has gone.
+> I personally think we should do this in dup_task_struct(). In fact, I believe
+> it is better to replace the
 > 
-> Xen is currently incompatible with PREEMPT, but this is fixed up later
-> in the series.
+> 	*tsk = *orig;
+> 
+> with some helper (like setup_thread_stack() below), and that helper clears
+> ->freezer_flags. Say, copy_task_struct().
 
-Shouldn't this be after the change that adds arch/i386/xen/Kconfig?
+Hmm, wouldn't that be overkill?  copy_task_struct() would have to do
+*tsk = *orig anyway, and we only need to clear one field apart from this.
 
-Otherwise you break bisects
+Some other fields are cleared towards the end of dup_task_struct(), so perhaps
+we could clear freezer_flags in there too?
 
--Andi
+Rafael
