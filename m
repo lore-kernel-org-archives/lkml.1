@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbXDWVL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbXDWVM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753170AbXDWVL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 17:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbXDWVL6
+	id S1753934AbXDWVM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 17:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbXDWVM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 17:11:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37127 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753170AbXDWVL6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 17:11:58 -0400
-Date: Mon, 23 Apr 2007 14:11:57 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: linux-kernel@vger.kernel.org, pj@sgi.com, akpm@linux-foundation.org,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Pagecache: find_or_create_page does not call a proper page allocator
- function
-Message-ID: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+	Mon, 23 Apr 2007 17:12:59 -0400
+Received: from smtp2.cc.ksu.edu ([129.130.7.16]:44656 "EHLO smtp2.cc.ksu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753296AbXDWVM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 17:12:58 -0400
+Message-ID: <462CCFD8.2040907@ksu.edu>
+Date: Mon, 23 Apr 2007 10:25:12 -0500
+From: Amit Gud <gud@ksu.edu>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: suparna@in.ibm.com
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       val_henson@linux.intel.com, riel@surriel.com, zab@zabbo.net,
+       arjan@infradead.org, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <20070423162849.GB14113@in.ibm.com>
+In-Reply-To: <20070423162849.GB14113@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The find_or_create function calls alloc_page with a local gfp mask instead
-of using page_cache_alloc. This means that the page allocation will not
-obey cpuset memory spreading and page allocation will not properly use the
-gfp flags in the address space. Highmem is not set correctly.
+Suparna Bhattacharya wrote:
+> Could you send this out as a patch to ext2 codebase, so we can just look
+> at the changes for chunkfs ? That might also make it small enough
+> to inline your patch in email for review. 
+> 
+> What kind of results are you planning to gather to evaluate/optimize this ?
+> 
 
-It turns out that there is no function to allocate a page for the page cache
-with a gfp mask. So we create one ORing the context gfp flags with the gfp flags
-from the mapping.
+Mainly I'm trying to gather following:
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+- Graph of continuation inodes vs. the file system fragmentation (or 
+aging) factor with varying configurations of chunk sizes
 
----
- include/linux/pagemap.h |   10 ++++++++--
- mm/filemap.c            |    3 ++-
- 2 files changed, 10 insertions(+), 3 deletions(-)
+- Graph of wall clock time vs. disk size + data on the disk with both 
+chunkfs and native ext2, and/or other file systems
 
-Index: linux-2.6.21-rc7/include/linux/pagemap.h
-===================================================================
---- linux-2.6.21-rc7.orig/include/linux/pagemap.h	2007-04-23 13:52:20.000000000 -0700
-+++ linux-2.6.21-rc7/include/linux/pagemap.h	2007-04-23 14:01:09.000000000 -0700
-@@ -60,14 +60,20 @@ static inline struct page *__page_cache_
- }
- #endif
- 
-+static inline struct page *page_cache_alloc_mask(struct address_space *x,
-+			gfp_t gfp)
-+{
-+	return __page_cache_alloc(mapping_gfp_mask(x) | gfp);
-+}
-+
- static inline struct page *page_cache_alloc(struct address_space *x)
- {
--	return __page_cache_alloc(mapping_gfp_mask(x));
-+	return page_cache_alloc_mask(x, 0);
- }
- 
- static inline struct page *page_cache_alloc_cold(struct address_space *x)
- {
--	return __page_cache_alloc(mapping_gfp_mask(x)|__GFP_COLD);
-+	return page_cache_alloc_mask(x, __GFP_COLD);
- }
- 
- typedef int filler_t(void *, struct page *);
-Index: linux-2.6.21-rc7/mm/filemap.c
-===================================================================
---- linux-2.6.21-rc7.orig/mm/filemap.c	2007-04-23 13:50:24.000000000 -0700
-+++ linux-2.6.21-rc7/mm/filemap.c	2007-04-23 13:52:14.000000000 -0700
-@@ -670,7 +670,8 @@ repeat:
- 	page = find_lock_page(mapping, index);
- 	if (!page) {
- 		if (!cached_page) {
--			cached_page = alloc_page(gfp_mask);
-+			cached_page =
-+				page_cache_alloc_mask(mapping, gfp_mask);
- 			if (!cached_page)
- 				return NULL;
- 		}
+
+AG
+-- 
+May the source be with you.
+http://www.cis.ksu.edu/~gud
+
