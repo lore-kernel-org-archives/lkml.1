@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161293AbXDWKlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXDWKof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161293AbXDWKlV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161263AbXDWKlV
+	id S1161323AbXDWKof (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161333AbXDWKof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:41:21 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56712 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161323AbXDWKlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:41:20 -0400
-Date: Mon, 23 Apr 2007 12:41:11 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       ego@in.ibm.com, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, vatsa@in.ibm.com, paulmck@us.ibm.com
-Subject: Re: [RFC][PATCH -mm 1/3] Separate freezer from PM code
-Message-ID: <20070423104111.GC5635@elf.ucw.cz>
-References: <20070419120131.GB13435@in.ibm.com> <20070420183118.GA695@elte.hu> <200704222128.49419.rjw@sisk.pl> <200704222133.38400.rjw@sisk.pl>
-MIME-Version: 1.0
+	Mon, 23 Apr 2007 06:44:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37330 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161323AbXDWKoe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 06:44:34 -0400
+Date: Mon, 23 Apr 2007 06:44:29 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
+       drepper@redhat.com
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+Message-ID: <20070423104429.GJ355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com> <462C88B1.8080906@yahoo.com.au>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704222133.38400.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <462C88B1.8080906@yahoo.com.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Apr 23, 2007 at 08:21:37PM +1000, Nick Piggin wrote:
+> I guess it is a good idea to batch these things. But can you
+> do that on all architectures? What happens if your tlb flush
+> happens after another thread already accesses it again, or
+> after it subsequently gets removed from the address space via
+> another CPU?
 
-> Now that the freezer is used by kprobes, it is no longer a PM-specific piece of
-> code.  Move the freezer code out of kernel/power and introduce the
-> CONFIG_FREEZER option that will be chosen automatically if PM or KPROBES is set.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Accessing the page by another thread before madvise (MADV_FREE)
+returns is undefined behavior, it can act as if that access happened
+right before the madvise (MADV_FREE) call or right after it.
+That's ok for glibc and supposedly any other malloc implementation,
+madvise (MADV_FREE) is called while holding containing's arena lock
+and for whatever malloc implementaton, madvise (MADV_FREE) would be
+part of free operations and you definitely need some synchronization
+between one thread freeing some memory and other thread deciding
+to reuse that memory and return it from malloc/realloc/calloc/etc.
 
-ACK.
-									Pavel
+My only concern is whether using non-atomic update of the pte is
+ok or not.
+ptep_test_and_clear_young/ptep_test_and_clear_dirty Rik's patch
+was doing before are done using atomic instructions, at least on x86_64.
+The operation we want for MADV_FREE is, clear young/dirty bits if they
+have been set on entry to the MADV_FREE madvise call, undefined values
+for these 2 bits if some other task modifies the young/dirty bits
+concurrently with this MADV_FREE zap_page_range, but I'd say other
+bits need to be unmodified.
+Now, is there some kernel code which while either not holding corresponding
+mmap_sem at all or holding it just down_read modifies other bits
+in the pte?  If yes, we need to do this clearing atomically, basically
+do a cmpxchg loop until we succeed to clear the 2 bits and then flush
+the tlb if any of them was set before (ptep_test_and_clear_dirty_and_young?),
+if not, set_pte_at is ok and faster than a lock prefixed insn.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Jakub
