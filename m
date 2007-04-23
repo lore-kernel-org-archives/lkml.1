@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754399AbXDWWdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbXDWWgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754399AbXDWWdL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 18:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbXDWWdK
+	id S1754410AbXDWWgv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 18:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbXDWWgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 18:33:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41528 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754399AbXDWWdJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 18:33:09 -0400
-Date: Mon, 23 Apr 2007 15:33:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070423142919.5809e03f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
+	Mon, 23 Apr 2007 18:36:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34941 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754390AbXDWWgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 18:36:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Date: Tue, 24 Apr 2007 00:40:17 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       ego@in.ibm.com, linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <200704222139.27128.rjw@sisk.pl> <20070423222358.GA627@tv-sign.ru>
+In-Reply-To: <20070423222358.GA627@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200704240040.18312.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Andrew Morton wrote:
-
-> There are few calls to page_cache_alloc().  Would it not be simpler to just
-> add the additional argument to page_cache_alloc() (called "extra_gfp",
-> please) and to update all callers?  And to remove page_cache_alloc_cold()
-> and replace all it callers with page_cache_alloc(mapping, __GFP_COLD)?
+On Tuesday, 24 April 2007 00:23, Oleg Nesterov wrote:
+> On 04/22, Rafael J. Wysocki wrote:
+> > 
+> > Move all of the freezer-related flags to a separate field in task_struct and
+> > introduce functions to operate them using set_bit() etc.
+> >
+> > [...snip...]
+> >
+> > --- linux-2.6.21-rc6-mm1.orig/kernel/fork.c	2007-04-22 19:37:42.000000000 +0200
+> > +++ linux-2.6.21-rc6-mm1/kernel/fork.c	2007-04-22 20:55:01.000000000 +0200
+> > @@ -922,7 +922,7 @@ static inline void copy_flags(unsigned l
+> >  {
+> >  	unsigned long new_flags = p->flags;
+> >  
+> > -	new_flags &= ~(PF_SUPERPRIV | PF_NOFREEZE);
+> > +	new_flags &= ~PF_SUPERPRIV;
+> >  	new_flags |= PF_FORKNOEXEC;
+> >  	new_flags |= PF_STARTING;
+> >  	p->flags = new_flags;
 > 
-> The way we actually get rid of an API call instead of adding another one.
+> OK, but you forgot to clear p->freezer_flags on copy_process()->dup_task_struct()
+> path ?
 
-I am not quite sure about the ORing of the gfpmasks in
-find_or_create_page. There is a conflict between the needs for the
-allocation for the radix tree which has to be done with the specified 
-mask and the allocation for the page in the mapping which has to be
-done with the gfp mask from the mapping (?). What a mess.
+Yes, thanks for pointing that out.
 
-Looking at the callers of find_or_create_page ..... They mostly
-specify the mapping_gfp_mask except for
-
-1. grow_dev_page which wants GFP_NOFS but there is no way to switch off 
-the proper flags if we go through page_cache_alloc(). Sigh. The mask
-is not usable since it does not switch on the mapping bits. It simply ORs 
-the flags...
-
-2. __page_symlink filters __GFP_FS from the mapping flags. Hmmm.. 
-interesting. A way to fix it.
-
-So if we fix grow_dev_page to use the mapping flags like in __page_symlink 
-uses then we have the right flags for the tree lock alloc and the page 
-allocation. We do not need to determine the flags again in find_or_create_page.
-
-We have a bug here that needs fixing
-
-
-
-
-Fix page allocation flags in grow_dev_page()
-
-Grow dev page simply passes GFP_NOFS to find_or_create_page. This means the
-allocation of radix tree nodes is done with GFP_NOFS and the allocation
-of a new page is done using GFP_NOFS as well.
-
-The mapping has a flags field that contains the necessary allocation flags for
-the page cache allocation. These need to be consulted in order to get DMA
-and HIGHMEM allocations etc right.
-
-So fix grow_dev_page to do the same as __page_symlink calls. Retrieve the
-mask from the mapping and then remove __GFP_FS.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- fs/buffer.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc7/fs/buffer.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/buffer.c	2007-04-23 15:29:18.000000000 -0700
-+++ linux-2.6.21-rc7/fs/buffer.c	2007-04-23 15:29:43.000000000 -0700
-@@ -988,7 +988,8 @@ grow_dev_page(struct block_device *bdev,
- 	struct page *page;
- 	struct buffer_head *bh;
- 
--	page = find_or_create_page(inode->i_mapping, index, GFP_NOFS);
-+	page = find_or_create_page(inode->i_mapping, index,
-+		mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS);
- 	if (!page)
- 		return NULL;
- 
-
-
-
-
+Should I clear it in dup_task_struct() or is there a better place?
