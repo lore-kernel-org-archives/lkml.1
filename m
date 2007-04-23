@@ -1,177 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbXDWXHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbXDWXHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbXDWXHp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXDWXHl
+	id S1754473AbXDWXHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbXDWXHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:07:41 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38849 "EHLO
+	Mon, 23 Apr 2007 19:07:45 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38859 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754489AbXDWXHK (ORCPT
+	with ESMTP id S932500AbXDWXHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:10 -0400
-Message-Id: <20070423215709.339043724@goop.org>
+	Mon, 23 Apr 2007 19:07:23 -0400
+Message-Id: <20070423215713.941180180@goop.org>
 References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:56:39 -0700
+Date: Mon, 23 Apr 2007 14:57:02 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@waste.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 01/25] xen: Add apply_to_page_range() which applies a function to a pte range.
-Content-Disposition: inline; filename=apply-to-page-range.patch
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 24/25] xen: xen: diddle netfront
+Content-Disposition: inline; filename=xen-netfront-diddle.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new mm function apply_to_page_range() which applies a given
-function to every pte in a given virtual address range in a given mm
-structure. This is a generic alternative to cut-and-pasting the Linux
-idiomatic pagetable walking code in every place that a sequence of
-PTEs must be accessed.
+Move things around a bit to match xen-unstable netfront.
 
-Although this interface is intended to be useful in a wide range of
-situations, it is currently used specifically by several Xen
-subsystems, for example: to ensure that pagetables have been allocated
-for a virtual address range, and to construct batched special
-pagetable update requests to map I/O memory (in ioremap()).
-
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@waste.org>
-Acked-by: Ingo Molnar <mingo@elte.hu> 
 
 ---
- include/linux/mm.h |    5 ++
- mm/memory.c        |   94 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 99 insertions(+)
+ drivers/net/xen-netfront.c |   36 +++++++++++++++++-------------------
+ 1 file changed, 17 insertions(+), 19 deletions(-)
 
 ===================================================================
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1135,6 +1135,11 @@ struct page *follow_page(struct vm_area_
- #define FOLL_GET	0x04	/* do get_page on page */
- #define FOLL_ANON	0x08	/* give ZERO_PAGE if no pgtable */
- 
-+typedef int (*pte_fn_t)(pte_t *pte, struct page *pmd_page, unsigned long addr,
-+			void *data);
-+extern int apply_to_page_range(struct mm_struct *mm, unsigned long address,
-+			       unsigned long size, pte_fn_t fn, void *data);
-+
- #ifdef CONFIG_PROC_FS
- void vm_stat_account(struct mm_struct *, unsigned long, struct file *, long);
- #else
-===================================================================
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1448,6 +1448,100 @@ int remap_pfn_range(struct vm_area_struc
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -750,19 +750,6 @@ no_skb:
+ 		notify_remote_via_irq(np->irq);
  }
- EXPORT_SYMBOL(remap_pfn_range);
  
-+static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pte_t *pte;
-+	int err;
-+	struct page *pmd_page;
-+	spinlock_t *ptl;
-+
-+	pte = (mm == &init_mm) ?
-+		pte_alloc_kernel(pmd, addr) :
-+		pte_alloc_map_lock(mm, pmd, addr, &ptl);
-+	if (!pte)
-+		return -ENOMEM;
-+
-+	BUG_ON(pmd_huge(*pmd));
-+
-+	pmd_page = pmd_page(*pmd);
-+
-+	do {
-+		err = fn(pte, pmd_page, addr, data);
-+		if (err)
-+			break;
-+	} while (pte++, addr += PAGE_SIZE, addr != end);
-+
-+	if (mm != &init_mm)
-+		pte_unmap_unlock(pte-1, ptl);
-+	return err;
+-static void xennet_move_rx_slot(struct netfront_info *np, struct sk_buff *skb,
+-				grant_ref_t ref)
+-{
+-	int new = xennet_rxidx(np->rx.req_prod_pvt);
+-
+-	BUG_ON(np->rx_skbs[new]);
+-	np->rx_skbs[new] = skb;
+-	np->grant_rx_ref[new] = ref;
+-	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->id = new;
+-	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->gref = ref;
+-	np->rx.req_prod_pvt++;
+-}
+-
+ static void xennet_make_frags(struct sk_buff *skb, struct net_device *dev,
+ 			      struct netif_tx_request *tx)
+ {
+@@ -944,6 +931,19 @@ static irqreturn_t netif_int(int irq, vo
+ 	spin_unlock_irqrestore(&np->tx_lock, flags);
+ 
+ 	return IRQ_HANDLED;
 +}
 +
-+static int apply_to_pmd_range(struct mm_struct *mm, pud_t *pud,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
++static void xennet_move_rx_slot(struct netfront_info *np, struct sk_buff *skb,
++				grant_ref_t ref)
 +{
-+	pmd_t *pmd;
-+	unsigned long next;
-+	int err;
++	int new = xennet_rxidx(np->rx.req_prod_pvt);
 +
-+	pmd = pmd_alloc(mm, pud, addr);
-+	if (!pmd)
-+		return -ENOMEM;
-+	do {
-+		next = pmd_addr_end(addr, end);
-+		err = apply_to_pte_range(mm, pmd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pmd++, addr = next, addr != end);
-+	return err;
-+}
-+
-+static int apply_to_pud_range(struct mm_struct *mm, pgd_t *pgd,
-+				     unsigned long addr, unsigned long end,
-+				     pte_fn_t fn, void *data)
-+{
-+	pud_t *pud;
-+	unsigned long next;
-+	int err;
-+
-+	pud = pud_alloc(mm, pgd, addr);
-+	if (!pud)
-+		return -ENOMEM;
-+	do {
-+		next = pud_addr_end(addr, end);
-+		err = apply_to_pmd_range(mm, pud, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pud++, addr = next, addr != end);
-+	return err;
-+}
-+
-+/*
-+ * Scan a region of virtual memory, filling in page tables as necessary
-+ * and calling a provided function on each leaf page table.
-+ */
-+int apply_to_page_range(struct mm_struct *mm, unsigned long addr,
-+			unsigned long size, pte_fn_t fn, void *data)
-+{
-+	pgd_t *pgd;
-+	unsigned long next;
-+	unsigned long end = addr + size;
-+	int err;
-+
-+	BUG_ON(addr >= end);
-+	pgd = pgd_offset(mm, addr);
-+	do {
-+		next = pgd_addr_end(addr, end);
-+		err = apply_to_pud_range(mm, pgd, addr, next, fn, data);
-+		if (err)
-+			break;
-+	} while (pgd++, addr = next, addr != end);
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(apply_to_page_range);
-+
- /*
-  * handle_pte_fault chooses page fault handler according to an entry
-  * which was read non-atomically.  Before making any commitment, on
++	BUG_ON(np->rx_skbs[new]);
++	np->rx_skbs[new] = skb;
++	np->grant_rx_ref[new] = ref;
++	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->id = new;
++	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->gref = ref;
++	np->rx.req_prod_pvt++;
+ }
+ 
+ static void handle_incoming_queue(struct net_device *dev, struct sk_buff_head *rxq)
+@@ -1169,7 +1169,8 @@ static RING_IDX xennet_fill_frags(struct
+ 	return cons;
+ }
+ 
+-static int xennet_set_skb_gso(struct sk_buff *skb, struct netif_extra_info *gso)
++static int xennet_set_skb_gso(struct sk_buff *skb,
++			      struct netif_extra_info *gso)
+ {
+ 	if (!gso->u.gso.size) {
+ 		if (net_ratelimit())
+@@ -1456,11 +1457,8 @@ static void netif_release_rx_bufs(struct
+ 
+ 		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
+ 			/* Do all the remapping work and M2P updates. */
+-			mcl->op = __HYPERVISOR_mmu_update;
+-			mcl->args[0] = (unsigned long)np->rx_mmu;
+-			mcl->args[1] = mmu - np->rx_mmu;
+-			mcl->args[2] = 0;
+-			mcl->args[3] = DOMID_SELF;
++			MULTI_mmu_update(mcl, np->rx_mmu, mmu - np->rx_mmu,
++					 0, DOMID_SELF);
+ 			mcl++;
+ 			HYPERVISOR_multicall(np->rx_mcl, mcl - np->rx_mcl);
+ 		}
 
 -- 
 
