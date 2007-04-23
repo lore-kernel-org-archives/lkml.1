@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161519AbXDWMeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161521AbXDWMfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161519AbXDWMeh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 08:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161520AbXDWMeh
+	id S1161521AbXDWMfU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161523AbXDWMfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 08:34:37 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:43997 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161519AbXDWMeg (ORCPT
+	Mon, 23 Apr 2007 08:35:20 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:54611 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161521AbXDWMey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 08:34:36 -0400
-Message-Id: <6.0.0.20.2.20070423210926.045668d0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Mon, 23 Apr 2007 21:34:07 +0900
-To: Hugh Dickins <hugh@veritas.com>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
-References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
- <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
+	Mon, 23 Apr 2007 08:34:54 -0400
+Subject: POST STARTUP ERRORS ( BIOS )
+From: J-P Van Bylen <j-p.van.bylen@telenet.be>
+To: security@debian.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 23 Apr 2007 14:34:26 +0200
+Message-Id: <1177331666.4633.13.camel@simba.telenet.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+PC: IBM NetVista - Type: 6269-R2G - S/N 55224PG
+Operating system: Linux 2.6.18-4-686 #1 SMP Mon Mar 26 17:17:36 UTC 2007 i686 GNU/Linux
 
- >No.  The PG_lru flag bit is just one bit amongst many others:
- >what of concurrent operations changing other bits in that same
- >unsigned long e.g. trying to lock the page by setting PG_locked?
- >There are some places where such micro-optimizations can be made
- >(typically while first allocating the page); but in general, no.
+Dear sir/madam,
 
-In i386 and x86_64, btsl is used to change page flag. In this case, if btsl 
-without lock prefix
-set PG_locked and PG_lru flag concurrently, does only one operation
-succeed ?
+This is what I got after upgrading from sarge to etch (Debian):
+
+<<
+
+POST STARTUP ERRORS ( BIOS )
+
+The following error(s) were detected when the system was started:
+
+177 System security - Asset control has been violated
+
+Select one of the following:
+	Continue
+	Exit Setup
+
+>>
+
+A search on internet revealed that I am not the only one with this 
+BIOS error, but I couldn't find any solution until now.
+
+Do you have any idea how to solve this problem?
+
+Sincerely,
+
+-- 
+J-P Van Bylen <j-p.van.bylen@telenet.be>
 
