@@ -1,109 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161502AbXDWLrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161461AbXDWLt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161502AbXDWLrN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 07:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161514AbXDWLrN
+	id S1161461AbXDWLt0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 07:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161497AbXDWLt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 07:47:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59453 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161502AbXDWLrL (ORCPT
+	Mon, 23 Apr 2007 07:49:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:56115 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161467AbXDWLtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 07:47:11 -0400
-Date: Mon, 23 Apr 2007 20:46:15 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
-Cc: Mel Gorman <mel@csn.ul.ie>, Linux Kernel ML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070421232248.431ef2da.akpm@linux-foundation.org>
-References: <20070413140533.A239.Y-GOTO@jp.fujitsu.com> <20070421232248.431ef2da.akpm@linux-foundation.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070423203837.23AD.Y-GOTO@jp.fujitsu.com>
+	Mon, 23 Apr 2007 07:49:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: schwidefsky@de.ibm.com
+Subject: Re: [PATCH 7/8] Kconfig: silicon backplane dependency.
+Date: Mon, 23 Apr 2007 13:48:05 +0200
+User-Agent: KMail/1.9.6
+Cc: Michael Buesch <mb@bu3sch.de>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, akpm@linux-foundation.org,
+       linville@tuxdriver.com
+References: <20070420113505.GH3738@skybase> <200704231322.36970.arnd@arndb.de> <1177327676.5984.12.camel@localhost>
+In-Reply-To: <1177327676.5984.12.camel@localhost>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+Content-Disposition: inline
+Message-Id: <200704231348.06148.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18SSDzsDrZu9dhhrbxd4OJOhUo1VT0caXe3h2U
+ gTJmjlrXVqhTnlEyc59gqScar1s7kwOszDsXdsFk3pysdHwdZD
+ JyXR+4cjjwyolzvLNQ0pA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 13 Apr 2007 14:26:22 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+On Monday 23 April 2007, Martin Schwidefsky wrote:
 > 
-> > Hello.
-> > 
-> > cmdline_parse_kernelcore() should return the next pointer of boot option
-> > like memparse() doing. If not, it is cause of eternal loop on ia64 box.
-> > This patch is for 2.6.21-rc6-mm1.
-> > 
-> > Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > 
-> > ----
-> > 
-> >  arch/ia64/kernel/efi.c |    2 +-
-> >  include/linux/mm.h     |    2 +-
-> >  mm/page_alloc.c        |    4 ++--
-> >  3 files changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > Index: current_test/arch/ia64/kernel/efi.c
-> > ===================================================================
-> > --- current_test.orig/arch/ia64/kernel/efi.c	2007-04-12 17:33:28.000000000 +0900
-> > +++ current_test/arch/ia64/kernel/efi.c	2007-04-13 12:13:21.000000000 +0900
-> > @@ -424,7 +424,7 @@ efi_init (void)
-> >  		} else if (memcmp(cp, "max_addr=", 9) == 0) {
-> >  			max_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
-> >  		} else if (memcmp(cp, "kernelcore=",11) == 0) {
-> > -			cmdline_parse_kernelcore(cp+11);
-> > +			cmdline_parse_kernelcore(cp+11, &cp);
-> >  		} else if (memcmp(cp, "min_addr=", 9) == 0) {
-> >  			min_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
-> >  		} else {
-> > Index: current_test/mm/page_alloc.c
-> > ===================================================================
-> > --- current_test.orig/mm/page_alloc.c	2007-04-12 18:25:37.000000000 +0900
-> > +++ current_test/mm/page_alloc.c	2007-04-13 12:12:58.000000000 +0900
-> > @@ -3736,13 +3736,13 @@ void __init free_area_init_nodes(unsigne
-> >   * kernelcore=size sets the amount of memory for use for allocations that
-> >   * cannot be reclaimed or migrated.
-> >   */
-> > -int __init cmdline_parse_kernelcore(char *p)
-> > +int __init cmdline_parse_kernelcore(char *p, char **retp)
-> >  {
-> >  	unsigned long long coremem;
-> >  	if (!p)
-> >  		return -EINVAL;
-> >  
-> > -	coremem = memparse(p, &p);
-> > +	coremem = memparse(p, retp);
-> >  	required_kernelcore = coremem >> PAGE_SHIFT;
-> >  
-> >  	/* Paranoid check that UL is enough for required_kernelcore */
-> > Index: current_test/include/linux/mm.h
-> > ===================================================================
-> > --- current_test.orig/include/linux/mm.h	2007-04-11 14:15:33.000000000 +0900
-> > +++ current_test/include/linux/mm.h	2007-04-13 12:12:20.000000000 +0900
-> > @@ -1051,7 +1051,7 @@ extern unsigned long find_max_pfn_with_a
-> >  extern void free_bootmem_with_active_regions(int nid,
-> >  						unsigned long max_low_pfn);
-> >  extern void sparse_memory_present_with_active_regions(int nid);
-> > -extern int cmdline_parse_kernelcore(char *p);
-> > +extern int cmdline_parse_kernelcore(char *p, char **retp);
-> >  #ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
-> >  extern int early_pfn_to_nid(unsigned long pfn);
-> >  #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
-> > 
+> > Isn't B44 already behind a WIRELESS or IEEE80211 or similar option that
+> > can't be selected on s390?
 > 
-> This will cause all other architectures to crash when kernelcore= is used.
-> 
-> I wasn't even aware of this kernelcore thing.  It's pretty nasty-looking. 
-> yet another reminder that this code hasn't been properly reviewed in the
-> past year or three.
+> No, the option can be found in drivers/net/Kconfig under menu "Ethernet
+> (10 or 100Mbit)".
 
-Just now, I'm making memory-unplug patches with current MOVABLE_ZONE
-code. So, I might be the first user of it on ia64.
+Ah, I was confusing it with b43.
 
-Anyway, I'll try to fix it.
+Depends on HAS_IOMEM sounds good then. I'd prefer to make it
+'depends on SSB' instead of 'select SSB', but I don't want to get into
+that argument ;-)
 
-
--- 
-Yasunori Goto 
-
-
+	Arnd <><
