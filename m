@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXDWKMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXDWKTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXDWKMW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXDWKMW
+	id S965724AbXDWKTH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXDWKTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:12:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51596 "EHLO mx1.redhat.com"
+	Mon, 23 Apr 2007 06:19:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53223 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965698AbXDWKMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:12:21 -0400
-Message-ID: <462C8675.9000302@redhat.com>
-Date: Mon, 23 Apr 2007 06:12:05 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2EDE.4090805@yahoo.com.au> <462C8560.7060703@yahoo.com.au>
-In-Reply-To: <462C8560.7060703@yahoo.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S965724AbXDWKTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 06:19:06 -0400
+Date: Mon, 23 Apr 2007 12:18:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       kvm-devel@lists.sourceforge.net, Avi Kivity <avi@qumranet.com>
+Subject: Re: crash with CFS v4 and qemu/kvm (was: [patch] CFS scheduler, v4)
+Message-ID: <20070423101839.GA19599@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <200704231128.23594.mail@earthworm.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704231128.23594.mail@earthworm.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
 
-> I haven't tested your MADV_FREE patch yet.
+* Christian Hesse <mail@earthworm.de> wrote:
 
-Good.  It turned out that one behaved a bit strange without tlb batching 
-anyway.
+> On Friday 20 April 2007, Ingo Molnar wrote:
+> > i'm pleased to announce release -v4 of the CFS patchset.
+> 
+> Hi Ingo, hi Avi, hi all,
+> 
+> I'm trying to use kvm-20 with cfs v4 and get a crash:
+> 
+> eworm@revo:~$ /usr/local/kvm/bin/qemu -snapshot /mnt/data/virtual/qemu/winxp.img
+> kvm_run: failed entry, reason 7
+> kvm_run returned -8
+> 
+> It works (though it is a bit slow) if I start qemu with strace, so for 
+> me it looks like a race condition?
 
-I'm now running ebizzy across the whole set of kernels I tested before,
-and will post the results in a bit.
+hm. Can you work it around with:
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+   echo 0 > /proc/sys/kernel/sched_granularity_ns
+
+?
+
+If yes then this is a wakeup race: some piece of code relies on the 
+upstream scheduler preempting the waker task immediately in 99% of the 
+cases.
+
+and you might want to test -v5 too which i released earlier today. It 
+has no bugfix in this area though, so it will likely still trigger this 
+race - but it will also hopefully be even more pleasant to use than -v4 
+;-)
+
+	Ingo
