@@ -1,61 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161444AbXDWLqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161502AbXDWLrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161444AbXDWLqP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 07:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161460AbXDWLqP
+	id S1161502AbXDWLrN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 07:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161514AbXDWLrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 07:46:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54289 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161444AbXDWLqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 07:46:14 -0400
-Message-ID: <462C9C74.8040707@redhat.com>
-Date: Mon, 23 Apr 2007 07:45:56 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 23 Apr 2007 07:47:13 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59453 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161502AbXDWLrL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 07:47:11 -0400
+Date: Mon, 23 Apr 2007 20:46:15 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
+Cc: Mel Gorman <mel@csn.ul.ie>, Linux Kernel ML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070421232248.431ef2da.akpm@linux-foundation.org>
+References: <20070413140533.A239.Y-GOTO@jp.fujitsu.com> <20070421232248.431ef2da.akpm@linux-foundation.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070423203837.23AD.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com>
-In-Reply-To: <462C7A6F.9030905@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
+> On Fri, 13 Apr 2007 14:26:22 +0900 Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > Hello.
+> > 
+> > cmdline_parse_kernelcore() should return the next pointer of boot option
+> > like memparse() doing. If not, it is cause of eternal loop on ia64 box.
+> > This patch is for 2.6.21-rc6-mm1.
+> > 
+> > Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > 
+> > ----
+> > 
+> >  arch/ia64/kernel/efi.c |    2 +-
+> >  include/linux/mm.h     |    2 +-
+> >  mm/page_alloc.c        |    4 ++--
+> >  3 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > Index: current_test/arch/ia64/kernel/efi.c
+> > ===================================================================
+> > --- current_test.orig/arch/ia64/kernel/efi.c	2007-04-12 17:33:28.000000000 +0900
+> > +++ current_test/arch/ia64/kernel/efi.c	2007-04-13 12:13:21.000000000 +0900
+> > @@ -424,7 +424,7 @@ efi_init (void)
+> >  		} else if (memcmp(cp, "max_addr=", 9) == 0) {
+> >  			max_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+> >  		} else if (memcmp(cp, "kernelcore=",11) == 0) {
+> > -			cmdline_parse_kernelcore(cp+11);
+> > +			cmdline_parse_kernelcore(cp+11, &cp);
+> >  		} else if (memcmp(cp, "min_addr=", 9) == 0) {
+> >  			min_addr = GRANULEROUNDDOWN(memparse(cp + 9, &cp));
+> >  		} else {
+> > Index: current_test/mm/page_alloc.c
+> > ===================================================================
+> > --- current_test.orig/mm/page_alloc.c	2007-04-12 18:25:37.000000000 +0900
+> > +++ current_test/mm/page_alloc.c	2007-04-13 12:12:58.000000000 +0900
+> > @@ -3736,13 +3736,13 @@ void __init free_area_init_nodes(unsigne
+> >   * kernelcore=size sets the amount of memory for use for allocations that
+> >   * cannot be reclaimed or migrated.
+> >   */
+> > -int __init cmdline_parse_kernelcore(char *p)
+> > +int __init cmdline_parse_kernelcore(char *p, char **retp)
+> >  {
+> >  	unsigned long long coremem;
+> >  	if (!p)
+> >  		return -EINVAL;
+> >  
+> > -	coremem = memparse(p, &p);
+> > +	coremem = memparse(p, retp);
+> >  	required_kernelcore = coremem >> PAGE_SHIFT;
+> >  
+> >  	/* Paranoid check that UL is enough for required_kernelcore */
+> > Index: current_test/include/linux/mm.h
+> > ===================================================================
+> > --- current_test.orig/include/linux/mm.h	2007-04-11 14:15:33.000000000 +0900
+> > +++ current_test/include/linux/mm.h	2007-04-13 12:12:20.000000000 +0900
+> > @@ -1051,7 +1051,7 @@ extern unsigned long find_max_pfn_with_a
+> >  extern void free_bootmem_with_active_regions(int nid,
+> >  						unsigned long max_low_pfn);
+> >  extern void sparse_memory_present_with_active_regions(int nid);
+> > -extern int cmdline_parse_kernelcore(char *p);
+> > +extern int cmdline_parse_kernelcore(char *p, char **retp);
+> >  #ifndef CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID
+> >  extern int early_pfn_to_nid(unsigned long pfn);
+> >  #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
+> > 
+> 
+> This will cause all other architectures to crash when kernelcore= is used.
+> 
+> I wasn't even aware of this kernelcore thing.  It's pretty nasty-looking. 
+> yet another reminder that this code hasn't been properly reviewed in the
+> past year or three.
 
-> First some ebizzy runs...
+Just now, I'm making memory-unplug patches with current MOVABLE_ZONE
+code. So, I might be the first user of it on ia64.
 
-This is interesting.  Ginormous speedups in ebizzy[1] on my quad core
-test system.  The following numbers are the average of 10 runs, since
-ebizzy shows some variability.
+Anyway, I'll try to fix it.
 
-You can see a big influence from the tlb batching and from Nick's
-madv_sem patch.  The reduction in system time from 100 seconds to
-3 seconds is way more than I had expected, but I'm not complaining.
-The 4 fold reduction in wall clock time is a nice bonus.
 
-According to Val, ebizzy shows the weaknesses of Linux with a real
-workload, so this could be a useful result.
-
-kernel
-                    user     system     wall clock    %CPU
-
-vanilla             186s    101s       123s          230%
-madv_free (madv)    175s     96s       120s          230%
-mmap_sem (sem)      100s     40s        40s          370%
-madv+sem            200s    140s       100s          393%
-madv+sem+tlb        118s      3s        30s          395%
-madv+tlb            150s     10s        50s          310%
-
-[1] http://www.ussg.iu.edu/hypermail/linux/kernel/0604.2/1699.html
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Yasunori Goto 
+
+
