@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161497AbXDWLxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbXDWMEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161497AbXDWLxV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 07:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161507AbXDWLxV
+	id S1754050AbXDWMEp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbXDWMEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 07:53:21 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58444 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161497AbXDWLxU (ORCPT
+	Mon, 23 Apr 2007 08:04:45 -0400
+Received: from wx-out-0506.google.com ([66.249.82.236]:61831 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754050AbXDWMEo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 07:53:20 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Mon, 23 Apr 2007 07:52:09 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Rene Herman <rene.herman@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian Bunk <bunk@stusta.de>, Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-In-Reply-To: <1177327476.17026.75.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
-References: <46138B4C.2050409@gmail.com>  <20070404123311.GA18552@infradead.org>
- <1175698135.5815.447.camel@violet>  <20070404150231.GE27660@stusta.de>
- <4613C963.6070409@gmail.com>  <20070404170016.453d26f1@the-village.bc.nu>
- <4613D492.2070404@gmail.com>  <462C7D74.60003@gmail.com>
- <1177327476.17026.75.camel@localhost.localdomain>
+	Mon, 23 Apr 2007 08:04:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type:from;
+        b=YDSaqHN06H2HRDMOLQJrHPQhTKI2J+ZZCCARm1plT9hqAtRr8AcIq7NvvCkzrS1/FpC8DbYlf2Fki7bbACjEz12MOrday2mCYTMyi4NWT9lr7UtVOQ49op+sH51pAbrEYs8KWZ2SiVNUhYBa7odnY6Bwxbg3pGz+qOcmAfAOpN8=
+Date: Mon, 23 Apr 2007 08:04:04 -0400 (EDT)
+X-X-Sender: paragw@paragw-desktop
+Reply-To: pwarudkar@aol.com
+To: Jiri Kosina <jikos@jikos.cz>
+cc: Andrew Morton <akpm@linux-foundation.org>, dsk6@pitt.edu,
+       pwarudkar@aol.com, linux-kernel@vger.kernel.org
+Subject: Re: Sleep during spinlock in TPM driver
+In-Reply-To: <Pine.LNX.4.64.0704230941390.20657@twin.jikos.cz>
+Message-ID: <alpine.DEB.0.82.0704230801230.6240@paragw-desktop>
+References: <alpine.DEB.0.82.0704221505370.14039@paragw-desktop>
+ <Pine.LNX.4.64.0704230941390.20657@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+From: Parag Warudkar <parag.warudkar@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Rusty Russell wrote:
 
-> On Mon, 2007-04-23 at 11:33 +0200, Rene Herman wrote:
-> > On 04/04/2007 06:38 PM, Rene Herman wrote:
-> >
-> > Rusty?
+
+On Mon, 23 Apr 2007, Jiri Kosina wrote:
+
+> On Sun, 22 Apr 2007, Parag Warudkar wrote:
 >
-> Valid points have been made on both sides.  I suggest:
+>> @@ -1097,8 +1097,13 @@
+>>
+>>       /* Driver specific per-device data */
+>>       chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+>> - if (chip == NULL)
+>> + devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
+>> + +   if (chip == NULL || devname == NULL) {
 >
-> #define MODULE_MAINTAINER(_maintainer) \
-> 	MODULE_AUTHOR("(Maintained by) "_maintainer)
+> Hi,
+>
+> this line looks bogus to me.
+>
 
-why bring MODULE_AUTHOR into it?  just define it in terms of
-MODULE_INFO:
+Hi - Yep, thanks for catching. Really not sure how that extra + got in 
+there - I diffed the exact same file this morning and it isn't there - new 
+diff attached.
 
-#define MODULE_MAINTAINER(_m) MODULE_INFO(_m, "(Maintained by)"  \
-	maintainer)
+--- linux-2.6-us/drivers/char/tpm/tpm.c	2007-04-21 14:55:03.134975360 -0400
++++ linux-2.6-wk/drivers/char/tpm/tpm.c	2007-04-22 14:58:51.957999963 -0400
+@@ -942,12 +942,12 @@
+  {
+  	struct tpm_chip *chip = file->private_data;
 
-technically, the maintainer is not the same as the author so why
-confuse the issue with an extra unnecessary macro expansion?
++	flush_scheduled_work();
+  	spin_lock(&driver_lock);
+  	file->private_data = NULL;
+-	chip->num_opens--;
+  	del_singleshot_timer_sync(&chip->user_read_timer);
+-	flush_scheduled_work();
+  	atomic_set(&chip->data_pending, 0);
++	chip->num_opens--;
+  	put_device(chip->dev);
+  	kfree(chip->data_buffer);
+  	spin_unlock(&driver_lock);
+@@ -1097,8 +1097,13 @@
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+  	/* Driver specific per-device data */
+  	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+-	if (chip == NULL)
++	devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
++ 
++	if (chip == NULL || devname == NULL) {
++		kfree(chip);
++		kfree(devname);
+  		return NULL;
++	}
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+  	init_MUTEX(&chip->buffer_mutex);
+  	init_MUTEX(&chip->tpm_mutex);
+@@ -1124,7 +1129,6 @@
+
+  	set_bit(chip->dev_num, dev_mask);
+
+-	devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
+  	scnprintf(devname, DEVNAME_SIZE, "%s%d", "tpm", chip->dev_num);
+  	chip->vendor.miscdev.name = devname;
+
