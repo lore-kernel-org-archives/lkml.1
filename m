@@ -1,96 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161399AbXDWSgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161219AbXDWSiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161399AbXDWSgo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 14:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161390AbXDWSgn
+	id S1161219AbXDWSiG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 14:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161218AbXDWSiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 14:36:43 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:57922 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161371AbXDWSgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 14:36:40 -0400
-Date: Mon, 23 Apr 2007 19:36:38 +0100
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tony.luck@intel.com,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
-Message-ID: <20070423183637.GA11982@skynet.ie>
-References: <20070413140533.A239.Y-GOTO@jp.fujitsu.com> <20070421232248.431ef2da.akpm@linux-foundation.org> <20070423203837.23AD.Y-GOTO@jp.fujitsu.com> <20070423183246.GA11841@skynet.ie>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070423183246.GA11841@skynet.ie>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Mon, 23 Apr 2007 14:38:06 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:39976 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161255AbXDWSiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 14:38:04 -0400
+Date: Mon, 23 Apr 2007 14:38:03 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Roberto De Ioris <roberto@unbit.it>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] UidBind LSM 0.1
+In-Reply-To: <1177318451.20613.8.camel@hagrid>
+Message-ID: <Pine.LNX.4.64.0704231435430.15351@mtl.rackplans.net>
+References: <1177318451.20613.8.camel@hagrid>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (23/04/07 19:32), Mel Gorman didst pronounce:
-> There
-> was a second problem that showed up while testing this in relation to the
-> bootmem allocator assumptions about zone boundary alignment. I'll follow up
-> this mail with the patch in case you are seeing that problem.
+On Mon, 23 Apr 2007, Roberto De Ioris wrote:
+> Hi all,
+> this is a very simple module that allows bind() to tcp/udp port (>=1024)
+> only for the uids defined in a configfs tree.
 > 
+> It is a first version, it only works for PF_INET sockets and makes no
+> difference between tcp and udp (i am working on this)
+> 
+> For (little) more info see 
+> 
+> http://projects.unbit.it/uidbind/
+> 
+> Patch attached is for vanilla 2.6.20.7
 
-Tony Luck added to cc list as I believe he had a lot to do with the speed
-improvements within the bootmem allocator and might suggest a better fix.
+Is it possible to lock a range of ports to a uid?  
+
+Also, is it possible to lock a uid to one ip address?  For example usera 
+can only bind to 10.0.0.23 while userb can only bind to 10.0.0.24. 
+
+	Gerhard
 
 
+--
+Gerhard Mack
 
-Subject: Check zone boundaries when freeing bootmem
-Zone boundaries do not have to be aligned to MAX_ORDER_NR_PAGES. However,
-during boot, there is an implicit assumption that they are aligned to a
-BITS_PER_LONG boundary when freeing pages as quickly as possible. This
-patch checks the zone boundaries when freeing pages from the bootmem allocator.
+gmack@innerfire.net
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc6-mm1-002_ia64cmdline/mm/bootmem.c linux-2.6.21-rc6-mm1-003_bootmem_zonecheck/mm/bootmem.c
---- linux-2.6.21-rc6-mm1-002_ia64cmdline/mm/bootmem.c	2007-04-06 03:36:56.000000000 +0100
-+++ linux-2.6.21-rc6-mm1-003_bootmem_zonecheck/mm/bootmem.c	2007-04-23 18:58:10.000000000 +0100
-@@ -302,13 +302,15 @@ found:
- 
- static unsigned long __init free_all_bootmem_core(pg_data_t *pgdat)
- {
--	struct page *page;
-+	struct page *page = NULL, *end_page = NULL;
- 	unsigned long pfn;
- 	bootmem_data_t *bdata = pgdat->bdata;
- 	unsigned long i, count, total = 0;
- 	unsigned long idx;
- 	unsigned long *map; 
- 	int gofast = 0;
-+	int gofast_order = ffs(BITS_PER_LONG) - 1;
-+	int gofast_size = 1 << gofast_order;
- 
- 	BUG_ON(!bdata->node_bootmem_map);
- 
-@@ -324,19 +326,21 @@ static unsigned long __init free_all_boo
- 	for (i = 0; i < idx; ) {
- 		unsigned long v = ~map[i / BITS_PER_LONG];
- 
--		if (gofast && v == ~0UL) {
--			int order;
--
-+		if (v) {
- 			page = pfn_to_page(pfn);
-+			end_page = page + gofast_size - 1;
-+		}
-+
-+		/* Do not cross zone boundaries when fast freeing */
-+		if (gofast && v == ~0UL &&
-+				page_zone_id(page) == page_zone_id(end_page)) {
- 			count += BITS_PER_LONG;
--			order = ffs(BITS_PER_LONG) - 1;
--			__free_pages_bootmem(page, order);
-+			__free_pages_bootmem(page, gofast_order);
- 			i += BITS_PER_LONG;
- 			page += BITS_PER_LONG;
- 		} else if (v) {
- 			unsigned long m;
- 
--			page = pfn_to_page(pfn);
- 			for (m = 1; m && i < idx; m<<=1, page++, i++) {
- 				if (v & m) {
- 					count++;
+<>< As a computer I find your faith in technology amusing.
