@@ -1,83 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXDWKFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXDWKJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965692AbXDWKFn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDWKFm
+	id S965695AbXDWKJE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965701AbXDWKJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:05:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43899 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965692AbXDWKFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:05:42 -0400
-Date: Mon, 23 Apr 2007 12:03:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Zach Carter <linux@zachcarter.com>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch] CFS scheduler, -v5 (build problem - make headers_check fails)
-Message-ID: <20070423100356.GA17231@elte.hu>
-References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <462C25C9.9040107@zachcarter.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462C25C9.9040107@zachcarter.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Apr 2007 06:09:04 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:34230 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965695AbXDWKJD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 06:09:03 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=wJR0r+C7q708GO5HUlue39e+ueCP/zKnj7iLzgK3KUGg4gQuctfIOto68DyxdJSsFAbW3heL1m0pTG4Fi1/NHYBkVwI6AnIseqhPqFzBRvdVO1CmyFxtNnxlydLiu5ZT5m1cTxPNxS+OUBStgVMojGQhlU0k9l7nAh/OrjtcTrs=  ;
+X-YMail-OSG: OQ7WT4AVM1koB8PNEraGOHMhtV_eGdKT3EXYWjdpSVxbtYQvg4uyscCqOhw1SoH8Thujdu6Svw--
+Message-ID: <462C8560.7060703@yahoo.com.au>
+Date: Mon, 23 Apr 2007 20:07:28 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
+       jakub@redhat.com, drepper@redhat.com
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2EDE.4090805@yahoo.com.au>
+In-Reply-To: <462C2EDE.4090805@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Zach Carter <linux@zachcarter.com> wrote:
-
-> FYI, make headers_check seems to fail on this:
+Nick Piggin wrote:
+> Rik van Riel wrote:
 > 
-> [carter@hoth linux-2.6]$ make headers_check
-
-> make[2]: *** No rule to make target 
-> `/src/linux-2.6/usr/include/linux/.check.sched.h', needed by 
-> `__headerscheck'.  Stop.
-> make[1]: *** [linux] Error 2
-> make: *** [headers_check] Error 2
-> [carter@hoth linux-2.6]$
+>> I've added a 5th column, with just your mmap_sem patch and
+>> without my madv_free patch.  It is run with the glibc patch,
+>> which should make it fall back to MADV_DONTNEED after the
+>> first MADV_FREE call fails.
 > 
-> This also fails if I have CONFIG_HEADERS_CHECK=y in my .config
+> 
+> Thanks! (I edited slightly so it doesn't wrap)
+> 
+> 
+>>   vanilla   new glibc   madv_free    mmap_sem        both
+>> threads
+>>
+>> 1     610         609         596         534         545
+>> 2    1032        1136        1196        1180        1200
+>> 4    1070        1128        2014        2027        2024
+>> 8    1000        1088        1665        2089        2087
+>> 16    779        1073        1310        2012        1999
+>>
+>>
+>> Not doing the mprotect calls is the big one I guess, especially
+>> the fact that we don't need to take the mmap_sem for writing.
+> 
+> 
+> Yes.
+> 
+> 
+>> With both our patches, single and two thread performance with
+>> MySQL sysbench is somewhat better than with just your patch,
+>> 4 and 8 thread performance are basically the same and just
+>> your patch gives a slight benefit with 16 threads.
+>>
+>> I guess I should benchmark up to 64 or 128 threads tomorrow,
+>> to see if this is just luck or if the cache benefit of doing
+>> the page faults and reusing hot pages is faster than not
+>> having page faults at all.
+>>
+>> I should run some benchmarks on other systems, too.  Some of
+>> these results could be an artifact of my quad core CPU.  The
+>> results could be very different on other systems...
+> 
+> 
+> I'm getting the 16 core box out of retirement as we speak :)
+> 
 
-ah, indeed - the patch below should fix this. It will be in -v6.
+OK, 10 runs at 1 client, 2.6.21-rc6, MySQL version 5.33, and new
+Jakub's glibc gives a 99.9% confidence of:
 
-	Ingo
+vanilla:  467.2 +/- 7.9 (tps)
+mmap_sem: 470.5 +/- 9.3 (tps)
 
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -2,7 +2,6 @@
- #define _LINUX_SCHED_H
- 
- #include <linux/auxvec.h>	/* For AT_VECTOR_SIZE */
--#include <linux/rbtree.h>	/* For run_node */
- /*
-  * cloning flags:
-  */
-@@ -37,6 +36,8 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/rbtree.h>	/* For run_node */
-+
- struct sched_param {
- 	int sched_priority;
- };
+However, it seems those means jump around a bit from boot to boot,
+so there could be some some memory placement luck for cache and/or
+NUMA goodness involved.
+
+So I think it is safe to say that the mmap_sem patch doesn't hurt
+single threaded performance (from looking at the numbers and the
+patch). And that's the most important thing for that patch.
+
+I'll post some scalability results tomorrow. From my first round
+of tests, after new glibc and the mmap_sem patch, it doesn't seem
+like rwsem improvements, private futexes, or avoiding zero_page
+make any significant differences.
+
+I haven't tested your MADV_FREE patch yet.
+
+-- 
+SUSE Labs, Novell Inc.
