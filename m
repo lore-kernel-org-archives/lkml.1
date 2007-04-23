@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbXDWG7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbXDWHDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753100AbXDWG7r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDWG7r
+	id S1753225AbXDWHDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 03:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDWHDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:59:47 -0400
-Received: from 65-117-135-114.dia.static.qwest.net ([65.117.135.114]:52819
-	"EHLO postfix.timesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753100AbXDWG7q (ORCPT
+	Mon, 23 Apr 2007 03:03:30 -0400
+Received: from mail14.syd.optusnet.com.au ([211.29.132.195]:49837 "EHLO
+	mail14.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753225AbXDWHD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:59:46 -0400
-Subject: Re: PREEMPT_RT: 2.6.20-rt8 patch tweaked for 2.6.20.7
-From: Thomas Gleixner <tglx@timesys.com>
-Reply-To: tglx@timesys.com
-To: John Sigler <linux.kernel@free.fr>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-In-Reply-To: <4628BD0E.3040206@free.fr>
-References: <4628BD0E.3040206@free.fr>
-Content-Type: text/plain
-Date: Mon, 23 Apr 2007 09:01:17 +0200
-Message-Id: <1177311677.30986.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Mon, 23 Apr 2007 03:03:29 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [ck] Re: [ANNOUNCE] Staircase Deadline cpu scheduler version 0.45
+Date: Mon, 23 Apr 2007 17:02:40 +1000
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Al Boldi <a1426z@gawab.com>, Bill Huey <billh@gnuppy.monkey.org>,
+       Mike Galbraith <efault@gmx.de>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Matt Mackall <mpm@selenic.com>
+References: <200704221441.48897.kernel@kolivas.org> <20070422142216.GA17210@1wt.eu> <200704230035.54002.kernel@kolivas.org>
+In-Reply-To: <200704230035.54002.kernel@kolivas.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704231702.40730.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John,
+On Monday 23 April 2007 00:35, Con Kolivas wrote:
+> On Monday 23 April 2007 00:22, Willy Tarreau wrote:
+> > X is still somewhat jerky, even
+> > at nice -19. I'm sure it happens when it's waiting in the other array. We
+> > should definitely manage to get rid of this if we want to ensure low
+> > latency.
+>
+> Yeah that would be correct. It's clearly possible to keep the whole design
+> philosophy and priority system intact with SD and do away with the arrays
+> if it becomes a continuous stream instead of two arrays but that requires
+> some architectural changes. I've been concentrating on nailing all the
+> remaining issues (and they kept cropping up as you've seen *blush*).
+> However... I haven't quite figured out how to do that architectural change
+> just yet either so let's just iron out all the bugs out of this now.
 
-On Fri, 2007-04-20 at 15:15 +0200, John Sigler wrote:
-> I've tweaked patch-2.6.20-rt8(*) so that it applies to 2.6.20.7
-> (*) http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> The original patch can be found here:
-> http://people.redhat.com/mingo/realtime-preempt/older/patch-2.6.20-rt8
-> http://linux.kernel.free.fr/patch-2.6.20-rt8
-> 
-> diff to the original patch to show what was tweaked:
-> http://linux.kernel.free.fr/patch-2.6.20-rt8.diff
-> 
-> New patch that applies cleanly to 2.6.20.7:
-> http://linux.kernel.free.fr/patch-2.6.20.7-rt8
-> 
-> As always, if someone spots something I've done wrong,
-> I'd be happy to fix it in a hurry :-)
-> 
-> Ingo, Thomas, are there any fixes that were included in the 2.6.21-rt 
-> branch only that need to be back-ported to the 2.6.20-rt branch?
+By the way, Ingo et al, this is yet again an open invitation to suggest ideas, 
+or better yet, provide code to do this with now that the core of SD is 
+finally looking to be doing everything as expected within its constraints. 
+I'm low on cycles and would appreciate the help. I'd prefer to leave 
+everything that's queued in -mm as is for the moment before someone wants to 
+take this into another wild direction.
 
-I've been busy with mainline merge of highres timers lately, so I have
-no good overview of the -rt state at the moment, but I will check on
-this later that week.
+Thanks!
 
-Can you create an entry in the rt-wiki, so people can find your
-patches ?
-
-	tglx
-
-
+-- 
+-ck
