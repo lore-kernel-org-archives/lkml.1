@@ -1,57 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXDWQUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXDWQVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965153AbXDWQUb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 12:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965148AbXDWQUb
+	id S965148AbXDWQVw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 12:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXDWQVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 12:20:31 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:13178 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965153AbXDWQUa convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 12:20:30 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>
-Date: Mon, 23 Apr 2007 18:20:27 +0200
-User-Agent: KMail/1.8.2
-Cc: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-MIME-Version: 1.0
+	Mon, 23 Apr 2007 12:21:51 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47137 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754038AbXDWQVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 12:21:49 -0400
+Date: Mon, 23 Apr 2007 21:58:49 +0530
+From: Suparna Bhattacharya <suparna@in.ibm.com>
+To: Amit Gud <gud@cis.ksu.edu>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       val_henson@linux.intel.com, riel@surriel.com, zab@zabbo.net,
+       arjan@infradead.org, brandon@ifup.org, karunasagark@gmail.com,
+       gud@ksu.edu
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070423162849.GB14113@in.ibm.com>
+Reply-To: suparna@in.ibm.com
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Length: 1791
-Subject: [PATCH] ib_core: Add missing device link to class device
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200704231820.27752.fenkes@de.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the missing device link from /sys/class/infiniband/* to the actual device.
+On Mon, Apr 23, 2007 at 06:21:34AM -0500, Amit Gud wrote:
+> 
+> This is an initial implementation of ChunkFS technique, briefly discussed
+> at: http://lwn.net/Articles/190222 and 
+> http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
+> 
+> This implementation is done within ext2 driver. Every chunk is an 
+> independent ext2 file system. The knowledge about chunks is kept within 
+> ext2 and 'continuation inodes', which are used to allow files and 
+> directories span across multiple chunks, are managed within ext2.
+> 
+> At mount time, super blocks for all the chunks are created and linked with 
+> the global super_blocks list maintained by VFS. This allows independent 
+> behavior or individual chunks and also helps writebacks to happen 
+> seamlessly.
+> 
+> Apart from this, chunkfs code in ext2 effectively only provides knowledge 
+> of:
+> 
+> - what inode's which block number to look for, for a given file's logical 
+> block number
+> - in which chunk to allocate next inode / block
+> - number of inodes to scan when a directory is being read
+> 
+> To maintain the ext2's inode number uniqueness property, 8 msb bits of 
+> inode number are used to indicate the chunk number in which it resides.
+> 
+> As said, this is a preliminary implementation and lots of changes are 
+> expected before this code is even sanely usable. Some known issues and 
+> obvious optimizations are listed in the TODO file in the chunkfs patch.
+> 
+> http://cis.ksu.edu/~gud/patches/chunkfs-v0.0.8.patch
+> - one big patch
+> - applies to 2.6.18
 
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+Could you send this out as a patch to ext2 codebase, so we can just look
+at the changes for chunkfs ? That might also make it small enough
+to inline your patch in email for review. 
 
- sysfs.c |    1 +
- 1 file changed, 1 insertion(+)
+What kind of results are you planning to gather to evaluate/optimize this ?
 
---- linux-2.6.20/drivers/infiniband/core/sysfs.c.old    2007-04-23 15:37:37.000000000 +0200
-+++ linux-2.6.20/drivers/infiniband/core/sysfs.c        2007-04-23 15:38:22.000000000 +0200
-@@ -683,6 +683,7 @@ int ib_device_register_sysfs(struct ib_d
+Regards
+Suparna
 
-        class_dev->class      = &ib_class;
-        class_dev->class_data = device;
-+       class_dev->dev        = device->dma_device;
-        strlcpy(class_dev->class_id, device->name, BUS_ID_SIZE);
+> 
+> Attached - ext2-chunkfs-diff.patch.gz
+> - since the code is a spin-off of ext2, this patch explains better what
+>   has changed from the ext2.
+> 
+> git://cislinux.cis.ksu.edu/chunkfs-tools
+> - mkfs, and fsck for chunkfs.
+> 
+> http://cis.ksu.edu/~gud/patches/config-chunkfs-2.6.18-uml
+> - config file used; tested mostly on UML with loopback file systems.
+> 
+> NOTE: No xattrs and xips yet, CONFIG_EXT2_FS_XATTR and CONFIG_EXT2_FS_XIP 
+> should be "no" for clean compile.
+> 
+> 
+> Please comment, suggest, criticize. Patches most welcome.
+> 
+> 
+> Best,
+> AG
+> --
+> May the source be with you.
+> http://www.cis.ksu.edu/~gud
 
-        INIT_LIST_HEAD(&device->port_list);
+
 
 -- 
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239
+Suparna Bhattacharya (suparna@in.ibm.com)
+Linux Technology Center
+IBM Software Lab, India
 
