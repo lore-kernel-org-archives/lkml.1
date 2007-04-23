@@ -1,55 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbXDWUqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751208AbXDWUuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbXDWUqv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 16:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXDWUqv
+	id S1751208AbXDWUuB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 16:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbXDWUuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 16:46:51 -0400
-Received: from mail.screens.ru ([213.234.233.54]:52616 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752490AbXDWUqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 16:46:50 -0400
-Date: Tue, 24 Apr 2007 00:46:37 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC][PATCH -mm 3/3] freezer: Fix problem with kthread_stop
-Message-ID: <20070423204637.GA441@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <200704222141.00680.rjw@sisk.pl> <20070423123558.GC25144@in.ibm.com> <200704232155.36820.rjw@sisk.pl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704232155.36820.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+	Mon, 23 Apr 2007 16:50:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41201 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751208AbXDWUuA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 16:50:00 -0400
+Date: Mon, 23 Apr 2007 13:49:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Neil Brown <neilb@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
+In-Reply-To: <17964.21972.961812.744601@notabene.brown>
+Message-ID: <Pine.LNX.4.64.0704231340180.512@schroedinger.engr.sgi.com>
+References: <17960.16739.870487.497750@notabene.brown>
+ <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
+ <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+ <17964.21972.961812.744601@notabene.brown>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/23, Rafael J. Wysocki wrote:
->
-> On Monday, 23 April 2007 14:35, Gautham R Shenoy wrote:
-> > > +	if (!freezer_should_exempt(current)) {
-> > 		task_lock(k);
-> > > +		/* We are freezable, so we must make sure that the thread being
-> > > +		 * stopped is not frozen and will not be frozen until it dies
-> > > +		 */
-> > > +		freezer_exempt(k);
-> > > +		if (frozen(k))
-> > > +			clear_frozen_flag(k);
-> > 		task_unlock(k);
-> > > +	}
-> 
-> Yes, that's correct.  We need to take task_lock() to avoid the race with
-> refrigerator().
+Would this work? Contains a solution somewhat along the lines of your 
+thoughts on the subject.
 
-Even if we use thaw_task() ?
 
-Even if I am wrong, I think we should not use task_lock() for the freezing
-related code, except in freezer.[ch]
+SLAB: Fix sysfs directory handling
 
-Note also that without CONFIG_FREEZER freezer_should_exempt() == 0, so we
-will do unneeded task_lock/task_unlock.
+This fixes the problem that SLUB does not track the names of aliased
+slabs by changing the way that SLUB manages the files in /sys/slab.
 
-Oleg.
+If the slab that is being created is not mergeable (usually the
+case if we are debugging) then do not create any aliases. If an alias
+exists that we conflict with then remove it before creating the
+directory for the unmergeable slab. If there is a true slab cache there
+and not an alias then we fail since there is a true duplication of
+slab cache names. So debugging allows the detection of slab name
+duplication as usual.
+
+If the slab is mergeable then we create a directory with a unique name
+created from the slab size, slab options and the pointer to the kmem_cache
+structure (disambiguation). All names referring to the slabs will
+then be created as symlinks to that unique name. These symlinks are
+not going to be removed on kmem_cache_destroy() since we only carry
+a counter for the number of aliases. If a new symlink is created
+then it may just replace an existing one. This means that one can create
+a gazillion slabs with the same name (if they all refer to mergeable
+caches). Doing so will only increase the alias count. So we have the 
+potential of not detecting duplicate slab names (SLUB works fine
+with duplicate slab names anyways). We will detect the duplications when
+debugging is enabled because we will then no longer generate symlinks and 
+special unique names.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.21-rc6/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-23 13:08:41.000000000 -0700
++++ linux-2.6.21-rc6/mm/slub.c	2007-04-23 13:09:10.000000000 -0700
+@@ -3307,16 +3307,66 @@ static struct kset_uevent_ops slab_ueven
+ 
+ decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
+ 
++#define ID_STR_LENGTH 30
++
++/* Create a unique string id for a slab cache:
++ * format
++ * :[flags-]size:[memory address of kmemcache]
++ */
++static char *create_unique_id(struct kmem_cache *s)
++{
++	char *name = kmalloc(ID_STR_LENGTH, GFP_KERNEL);
++	char *p = name;
++
++	BUG_ON(!name);
++
++	*p++ = ':';
++	/*
++	 * First flags affecting slabcache operations */
++	if (s->flags & SLAB_CACHE_DMA)
++		*p++ = 'd';
++	if (s->flags & SLAB_RECLAIM_ACCOUNT)
++		*p++ = 'a';
++	if (s->flags & SLAB_DESTROY_BY_RCU)
++		*p++ = 'r';
++	/* Debug flags */
++	if (s->flags & SLAB_RED_ZONE)
++		*p++ = 'Z';
++	if (s->flags & SLAB_POISON)
++		*p++ = 'P';
++	if (s->flags & SLAB_STORE_USER)
++		*p++ = 'U';
++	if (p != name + 1)
++		*p++ = '-';
++	p += sprintf(p,"%06d:0x%p" ,s->size, s);
++	BUG_ON(p > name + ID_STR_LENGTH - 1);
++	return name;
++}
++
+ static int sysfs_slab_add(struct kmem_cache *s)
+ {
+ 	int err;
++	const char *name;
+ 
+ 	if (slab_state < SYSFS)
+ 		/* Defer until later */
+ 		return 0;
+-
++	if (s->flags & SLUB_NEVER_MERGE) {
++		/*
++		 * Slabcache can never be merged so we can use the name proper.
++		 * This is typically the case for debug situations. In that
++		 * case we can catch duplicate names easily.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, s->name);
++		name = s->name;
++	} else
++		/*
++		 * Create a unique name for the slab as a target
++		 * for the symlinks.
++		 */
++		name = create_unique_id(s);
+ 	kobj_set_kset_s(s, slab_subsys);
+-	kobject_set_name(&s->kobj, s->name);
++	kobject_set_name(&s->kobj, name);
+ 	kobject_init(&s->kobj);
+ 	err = kobject_add(&s->kobj);
+ 	if (err)
+@@ -3326,6 +3376,8 @@ static int sysfs_slab_add(struct kmem_ca
+ 	if (err)
+ 		return err;
+ 	kobject_uevent(&s->kobj, KOBJ_ADD);
++	if (!(s->flags & SLUB_NEVER_MERGE))
++		sysfs_slab_alias(s, s->name);
+ 	return 0;
+ }
+ 
+@@ -3351,9 +3403,14 @@ static int sysfs_slab_alias(struct kmem_
+ {
+ 	struct saved_alias *al;
+ 
+-	if (slab_state == SYSFS)
++	if (slab_state == SYSFS) {
++		/*
++		 * If we have a leftover link then remove it.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, name);
+ 		return sysfs_create_link(&slab_subsys.kset.kobj,
+ 						&s->kobj, name);
++	}
+ 
+ 	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
+ 	if (!al)
+
 
