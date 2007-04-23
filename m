@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXDWIFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXDWIFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbXDWIFg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 04:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXDWIFg
+	id S1752151AbXDWIFy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 04:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXDWIFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 04:05:36 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:4672 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752868AbXDWIFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 04:05:34 -0400
-Message-ID: <462C6A59.40704@sw.ru>
-Date: Mon, 23 Apr 2007 12:12:09 +0400
-From: Kirill Korotaev <dev@sw.ru>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: en-us, en, ru
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Pavel Emelianov <xemul@sw.ru>, dev@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Dave Hansen <hansendc@us.ibm.com>
-Subject: Re: [Devel] Re: [PATCH] Show slab memory usage on OOM and SysRq-M
- (v3)
-References: <4625C4FD.9020600@sw.ru> <20070419220801.2f73083f.akpm@linux-foundation.org>
-In-Reply-To: <20070419220801.2f73083f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 04:05:54 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:38225
+	"EHLO gwia-smtp.id2.novell.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752885AbXDWIFm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 04:05:42 -0400
+Message-Id: <462C8525.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Mon, 23 Apr 2007 09:06:29 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Cc: <linux-pci@atrey.karlin.mff.cuni.cz>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Marcos Pinto" <markybob@gmail.com>, "Alan Cox" <alan@redhat.com>,
+       "Greg KH" <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.20.7 locking up hard on boot
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
+ <20070421013454.GB4016@stusta.de>
+ <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com>
+ <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
+In-Reply-To: <20070421103632.GC4016@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 18 Apr 2007 11:13:01 +0400 Pavel Emelianov <xemul@sw.ru> wrote:
-> 
-> 
->>The out_of_memory() function and SysRq-M handler call
->>show_mem() to show the current memory usage state.
->>
->>This is also helpful to see which slabs are the largest
->>in the system.
->>
->>Thanks Pekka for good idea of how to make it better.
->>
->>The nr_pages is stored on kmem_list3 because:
->>
->>1. as Eric pointed out, we do not want to defeat 
->>   NUMA optimizations;
->>2. we do not need for additional LOCK-ed operation on
->>   altering this field - l3->list_lock is already taken
->>   where needed.
->>
->>Made naming more descriptive according to Dave.
->>
->>Signed-off-by: Pavel Emelianov <xemul@openvz.org>
->>Signed-off-by: Kirill Korotaev <dev@openvz.org>
->>Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
->>Cc: Eric Dumazet <dada1@cosmosbay.com>
->>Cc: Dave Hansen <hansendc@us.ibm.com>
->>
-> 
-> This is rather a lot of new code and even new locking.
-> 
-> Any time we actually need this what-the-heck-is-happening-in-slab info, the
-> reporter is able to work out the problem via /proc/slabinfo.  Either by
-> taking a look in there before the system dies completely, or by looking in
-> there after the oom-killing.
-the reality looks a bit differently (at least on machines overcommited with containers):
-1. OOM can be unable to free enough memory for the system to do some
-   real progress in some real-life situations. So you can't login and check.
-2. People do not tend to monitor the logs and check the issue immeadeately when
-   it happened. So having an information collected from the kernel is really helpfull.
-   show_mem() does exactly the same on OOM.
+>Considering where it failed and that 2.6.20.3 worked, I would be 
+>extremely surprised if this wasn't one more report of 
+>adjust-legacy-ide-resource-setting.patch breaking booting (and we 
+>already have confirmed reports for this)...
+>
+>But AFAIK we still don't understand how this patch managed to break 
+>things.
 
-So it is up to you, but I would suggest to commit.
-Locking introduced here is simple and overhead-free on fast paths.
+Given that all of the reports are in cases when the adjustment is *not*
+being done (and only a message is being printed), I can only assume that
+the breakage results from the adding of PCI_BASE_ADDRESS_SPACE_IO
+into the resource flags. I considered this unconditional setting of the flags
+odd already in the original code, and added this extra flag only for
+consistency reasons (because the settings reported by X indicated that
+this was missing). Perhaps the adjustment (original and the added
+extra flag) shouldn't be done if IORESOURCE_IO wasn't already set.
+Perhaps one of those seeing the issue could try out returning from the
+function right after that printk(), without any adjustment to the flags.
 
-Thanks,
-Kirill
+Jan
+
