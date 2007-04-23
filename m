@@ -1,97 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXDWUgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbXDWUmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbXDWUgW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 16:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXDWUgW
+	id S1754175AbXDWUmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 16:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbXDWUmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 16:36:22 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:33240 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754171AbXDWUgV (ORCPT
+	Mon, 23 Apr 2007 16:42:39 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35362 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754175AbXDWUmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 16:36:21 -0400
-Date: Tue, 24 Apr 2007 02:04:15 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070423203415.GA26669@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com> <20070420211209.GA820@tv-sign.ru> <20070423103833.GB25144@in.ibm.com> <20070423183956.GA265@tv-sign.ru>
+	Mon, 23 Apr 2007 16:42:38 -0400
+Message-ID: <462D1A02.5060403@zytor.com>
+Date: Mon, 23 Apr 2007 13:41:38 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423183956.GA265@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       virtualization@lists.osdl.org, Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
+ mappings
+References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>	<462CE1E0.9060007@zytor.com>	<m1zm4zvwfr.fsf@ebiederm.dsl.xmission.com>	<462CF5B8.4070708@xensource.com>	<m1y7kivs3s.fsf@ebiederm.dsl.xmission.com> <462D04B2.6080008@goop.org>	<462D05A0.1020100@zytor.com> <462D072F.6030809@goop.org> <m1r6qavq0y.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6qavq0y.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 10:39:56PM +0400, Oleg Nesterov wrote:
-> On 04/23, Gautham R Shenoy wrote:
-> >
-> > On Sat, Apr 21, 2007 at 01:12:09AM +0400, Oleg Nesterov wrote:
-> > > On 04/19, Gautham R Shenoy wrote:
-> > > >
-> > > > @@ -63,12 +74,16 @@ void refrigerator(void)
-> > > >  	recalc_sigpending(); /* We sent fake signal, clean it up */
-> > > >  	spin_unlock_irq(&current->sighand->siglock);
-> > > >  
-> > > > +	task_lock(current);
-> > > >  	for (;;) {
-> > > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > > >  		if (!frozen(current))
-> > > >  			break;
-> > > > +		task_unlock(current);
-> > > >  		schedule();
-> > > > +		task_lock(current);
-> > > >  	}
-> > > > +	task_unlock(current);
-> > > >  	pr_debug("%s left refrigerator\n", current->comm);
-> > > >  	current->state = save;
-> > > 
-> > > Just curious, why this change?
-> >
-> > This can race with hold_freezer_for_task() calling thaw_process. Earlier
-> > thaw_process(p) was called only after the process 'p' was frozen.
-> > Now with hold_freezer_for_task(), we can as well call thaw_process(p)
-> > when 'p' is in the freezing stage. Hence the task_lock.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
 > 
-> hold_freezer_for_task()->thaw_process(p) will wake up the task. Or the
-> caller of refrigerator will notice "!frozen()". Note that refrigerator()
-> sets PF_FROZEN under task_lock().
+>> H. Peter Anvin wrote:
+>>> It would be *trivial* to make a certain number of page table slots
+>>> available at the end of the head.S-generated map. 
+>> Or you could use a fixmap.
 > 
-> In fact we have the same issue when thaw_tasks()->thaw_process(p) happens
-> when the freezing fails. In that case 'p' may be not frozen.
+> That certain number of page table slots should be the fixmap slots.
+> If you do that bt_ioremap works, we remove a boatload of special cases
+> and the code becomes simpler.
 
-Yes. I guess I was being too cautious :)
+It's probably worth noting that several of the non-PC ports already do 
+exactly this, although in a hacky way.  Grep for pg0 and you'll find it.
 
-> 
-> > > Also, you are planning to add different freezing states (FE_HOTPLUG_CPU,
-> > > FE_SUSPEND, etc). In that case each of them needs a separate .count, because
-> > > it should be negative when try_to_freeze_tasks() returns. Now consider
-> > > the case when we are doing freeze_processes(FE_A | FE_B) ...
-> > 
-> > So can't we in that case find out the weight of the freeze_event variable and
-> > subtract that weight from the count (if the count is <=0 ) ?
-> 
-> Probably yes... but if we are speaking about kthrad_stop() only, this could
-> be afaics solved in more simple way, as Rafael suggests.
-
-I agree on this one. kthread_stop appears to be the only valid place
-where such a correction is required. So Rafael's approach makes sense
-here.
-
-> 
-> Oleg.
-> 
-Thanks and Regards
-gautham.
-
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+	-hpa
