@@ -1,39 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964935AbXDWQIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbXDWQLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964935AbXDWQIG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 12:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXDWQIG
+	id S1753925AbXDWQLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 12:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXDWQLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 12:08:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42793 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964935AbXDWQIF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 12:08:05 -0400
-Date: Mon, 23 Apr 2007 09:08:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-In-Reply-To: <1177343900.26937.6.camel@twins>
-Message-ID: <Pine.LNX.4.64.0704230907470.11250@schroedinger.engr.sgi.com>
-References: <20070420155154.898600123@chello.nl>  <20070420155503.608300342@chello.nl>
-  <20070421025532.916b1e2e.akpm@linux-foundation.org>  <1177156902.2934.96.camel@lappy>
- <1177157708.2934.100.camel@lappy>  <Pine.LNX.4.64.0704230847400.10624@schroedinger.engr.sgi.com>
- <1177343900.26937.6.camel@twins>
+	Mon, 23 Apr 2007 12:11:40 -0400
+Received: from sf01.pol.net ([63.240.86.10]:12285 "EHLO sf01.pol.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753925AbXDWQLj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 12:11:39 -0400
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 12:11:39 EDT
+Message-ID: <64604.10.250.10.1.1177344350.squirrel@webmail.medscape.com>
+Date: Tue, 24 Apr 2007 00:05:50 +0800 (PHT)
+Subject: Re: Prevent softlockup triggering in nvidiafb
+From: "Antonino A. Daplas" <adaplas@pol.net>
+To: <davej@redhat.com>
+In-Reply-To: <20070423151053.GA5653@redhat.com>
+References: <20070423151053.GA5653@redhat.com>
+X-Priority: 3
+Importance: Normal
+X-MSMail-Priority: Normal
+Cc: <linux-kernel@vger.kernel.org>, <adaplas@pol.net>
+Reply-To: adaplas@pol.net
+X-Mailer: SquirrelMail (version 1.2.7)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Peter Zijlstra wrote:
+> If the chip locks up, we get into a long polling loop,
+> where the softlockup detector kicks in.
+> See https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=151878
+> for an example.
 
-> Ooh, thats handy... /me ditches the hotplug code again.
-> That is, unless its very common to have half empty boxens.. ?
+Okay. Thanks.
 
-Its up to the arch code to establish reasonable boundaries.....
+>
+> Signed-off-by: Dave Jones <davej@redhat.com>
+Acked-by: Antonino Daplas <adaplas@gmail.com>
+
+Tony
+
+
 
