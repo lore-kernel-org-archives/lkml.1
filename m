@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752857AbXDWIFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbXDWIFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752857AbXDWIFM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 04:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbXDWIFM
+	id S1752868AbXDWIFg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 04:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXDWIFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 04:05:12 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42474 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752868AbXDWIFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 04:05:03 -0400
-Date: Mon, 23 Apr 2007 01:04:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Heimbigner <icxcnika@mar.tar.cc>
-Cc: Rik van Riel <riel@redhat.com>, Eric Hopper <hopper@omnifarious.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about Reiser4
-Message-Id: <20070423010445.454eda63.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704230640540.25153@server.thyself>
-References: <20070423020046.GA28477@omnifarious.org>
-	<462C2E5B.1080008@redhat.com>
-	<Pine.LNX.4.64.0704230353000.25153@server.thyself>
-	<462C4858.3050006@redhat.com>
-	<Pine.LNX.4.64.0704230555020.25153@server.thyself>
-	<462C4D32.4000909@redhat.com>
-	<Pine.LNX.4.64.0704230611430.25153@server.thyself>
-	<462C5034.9090403@redhat.com>
-	<Pine.LNX.4.64.0704230640540.25153@server.thyself>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Apr 2007 04:05:36 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:4672 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752868AbXDWIFe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 04:05:34 -0400
+Message-ID: <462C6A59.40704@sw.ru>
+Date: Mon, 23 Apr 2007 12:12:09 +0400
+From: Kirill Korotaev <dev@sw.ru>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: en-us, en, ru
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>
+CC: Pavel Emelianov <xemul@sw.ru>, dev@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Dave Hansen <hansendc@us.ibm.com>
+Subject: Re: [Devel] Re: [PATCH] Show slab memory usage on OOM and SysRq-M
+ (v3)
+References: <4625C4FD.9020600@sw.ru> <20070419220801.2f73083f.akpm@linux-foundation.org>
+In-Reply-To: <20070419220801.2f73083f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007 06:42:24 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
-
+Andrew Morton wrote:
+> On Wed, 18 Apr 2007 11:13:01 +0400 Pavel Emelianov <xemul@sw.ru> wrote:
 > 
-> On Mon, 23 Apr 2007, Rik van Riel wrote:
-> > William Heimbigner wrote:
-> >
-> >>  If there was 1) a maintainer and 2) code that didn't break "coding
-> >>  standards", would it be included in the kernel?
-> >
-> > While I cannot speak for Linus and Andrew, code that fulfills
-> > these criteria (and is useful to have - reiser4 seems to have
-> > enough user interest) usually gets accepted.
-> >
-> > http://kernelnewbies.org/UpstreamMerge has some hints.
 > 
-> So in conclusion / to answer Eric's question,
-> 1) reiser4 needs a maintainer
-> 2) reiser4 needs the code quality cleaned up
-> 3) Until those two things happen, it's extremely unlikely that it will be 
-> included in the kernel.
+>>The out_of_memory() function and SysRq-M handler call
+>>show_mem() to show the current memory usage state.
+>>
+>>This is also helpful to see which slabs are the largest
+>>in the system.
+>>
+>>Thanks Pekka for good idea of how to make it better.
+>>
+>>The nr_pages is stored on kmem_list3 because:
+>>
+>>1. as Eric pointed out, we do not want to defeat 
+>>   NUMA optimizations;
+>>2. we do not need for additional LOCK-ed operation on
+>>   altering this field - l3->list_lock is already taken
+>>   where needed.
+>>
+>>Made naming more descriptive according to Dave.
+>>
+>>Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+>>Signed-off-by: Kirill Korotaev <dev@openvz.org>
+>>Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+>>Cc: Eric Dumazet <dada1@cosmosbay.com>
+>>Cc: Dave Hansen <hansendc@us.ibm.com>
+>>
 > 
+> This is rather a lot of new code and even new locking.
+> 
+> Any time we actually need this what-the-heck-is-happening-in-slab info, the
+> reporter is able to work out the problem via /proc/slabinfo.  Either by
+> taking a look in there before the system dies completely, or by looking in
+> there after the oom-killing.
+the reality looks a bit differently (at least on machines overcommited with containers):
+1. OOM can be unable to free enough memory for the system to do some
+   real progress in some real-life situations. So you can't login and check.
+2. People do not tend to monitor the logs and check the issue immeadeately when
+   it happened. So having an information collected from the kernel is really helpfull.
+   show_mem() does exactly the same on OOM.
 
-The namesys engineers continue to maintain reiser4 and I continue to
-receive patches for it.
+So it is up to you, but I would suggest to commit.
+Locking introduced here is simple and overhead-free on fast paths.
 
-Right now I'd say that the main blockages for reiser4 are a) the developers
-aren't presently asking for inclusion (afaik) and b) lack of reviewing
-effort from other kernel developers.  
+Thanks,
+Kirill
