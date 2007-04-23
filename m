@@ -1,128 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbXDWQd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbXDWQe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbXDWQd1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 12:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbXDWQd1
+	id S1754038AbXDWQe0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 12:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXDWQe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 12:33:27 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40297 "EHLO mail.screens.ru"
+	Mon, 23 Apr 2007 12:34:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:42188 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032AbXDWQd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 12:33:26 -0400
-Date: Mon, 23 Apr 2007 20:33:12 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070423163312.GA129@tv-sign.ru>
-References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423090030.GC1684@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	id S1754038AbXDWQeZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 12:34:25 -0400
+Message-ID: <462CE027.4030302@goop.org>
+Date: Mon, 23 Apr 2007 09:34:47 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
+ mappings
+References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org> <m1d51vxxm4.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1d51vxxm4.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/23, Jarek Poplawski wrote:
->
-> On Fri, Apr 20, 2007 at 09:08:36PM +0400, Oleg Nesterov wrote:
-> > 
-> > First, this flag should be cleared after return from cancel_rearming_delayed_work().
-> 
-> I think this flag, if at all, probably should be cleared only
-> consciously by the owner of a work, maybe as a schedule_xxx_work
-> parameter, (but shouldn't be used from work handlers for rearming).
-> Mostly it should mean: we are closing (and have no time to chase
-> our work)...
+Eric W. Biederman wrote:
+> The only way to ensure this will not happen is to do what we do
+> on x86_64 and map the new page table page into our address space
+> before we write to it.  Assuming the page we allocate is already
+> mapped is simply not robust.
+>   
 
-This will change the API. Currently it is possible to do:
+So you mean make alloc_bootmem make sure there's a mapping for the
+returned page?  That would be simple enough, though it might interact
+strangely with the actual construction of the memory mappings (what if
+the page alloc_bootmem just allocated for the pagetable is the page
+pagetable_init is actually trying to map?).
 
-	cancel_delayed_work(dwork);
-	schedule_delayed_work(dwork, delay);
+I'm not sure about the issue with holes.  I assume you mean that just
+because head.S maps a chunk of memory, it isn't necessarily available
+for allocation because its a hole.  But does alloc_bootmem know to avoid
+them anyway?  Has it already parsed e820 at that point?
 
-and we have such a code. With the change you propose this can't work.
-
-> > Also, we should add a lot of nasty checks to workqueue.c
-> 
-> Checking a flag isn't nasty - it's clear. IMHO current way of checking,
-> whether cancel succeeded, is nasty.
-> 
-> > 
-> > I _think_ we can re-use WORK_STRUCT_PENDING to improve this interface.
-> > Note that if we set WORK_STRUCT_PENDING, the work can't be queued, and
-> > dwork->timer can't be started. The only problem is that it is not so
-> > trivial to avoid races.
-> 
-> If there were no place, it would be better, then current way.
-> But WORK_STRUCT_PENDING couldn't be used for some error checking,
-> as it's now.
-
-Look,
-
-	void cancel_rearming_delayed_work(struct delayed_work *dwork)
-	{
-		struct work_struct *work = &dwork->work;
-		struct cpu_workqueue_struct *cwq = get_wq_data(work);
-		struct workqueue_struct *wq;
-		const cpumask_t *cpu_map;
-		int retry;
-		int cpu;
-
-		if (!cwq)
-			return;
-
-	retry:
-		spin_lock_irq(&cwq->lock);
-		list_del_init(&work->entry);
-		__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
-		retry = try_to_del_timer_sync(&dwork->timer) < 0;
-		spin_unlock_irq(&cwq->lock);
-
-		if (unlikely(retry))
-			goto retry;
-
-		// the work can't be re-queued and the timer can't
-		// be re-started due to WORK_STRUCT_PENDING
-
-		wq = cwq->wq;
-		cpu_map = wq_cpu_map(wq);
-
-		for_each_cpu_mask(cpu, *cpu_map)
-			wait_on_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-
-		work_clear_pending(work);
-	}
-
-I think this almost works, except:
-
-	- we should change run_workqueue() to call work_clear_pending()
-	  under cwq->lock. I'd like to avoid this.
-
-	- this is racy wrt cpu-hotplug. We should re-check get_wq_data()
-	  when we take the lock. This is easy.
-
-	- we should factor out the common code with cancel_work_sync().
-
-I may be wrong, still had no time to concentrate on this with a "clear head".
-May be tomorrow.
-
-> > > - for a work function: to stop execution as soon as possible,
-> > > even without completing the usual job, at first possible check.
-> > 
-> > I doubt we need this "in general". It is easy to add some flag to the
-> > work_struct's container and check it in work->func() when needed.
-> 
-> Yes, but currently you cannot to behave like this e.g. with
-> "rearming" work.
-
-Why?
-
->                   And maybe a common api could save some work.
-
-May be you are right, but still I don't think we should introduce
-the new flag to implement this imho not-so-useful feature.
-
-Oleg.
-
+    J
