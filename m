@@ -1,61 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbXDWJOy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXDWJO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbXDWJOy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:14:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXDWJOx
+	id S1754069AbXDWJO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbXDWJO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:14:53 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:37937 "EHLO
-	outbound3-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754037AbXDWJOv (ORCPT
+	Mon, 23 Apr 2007 05:14:58 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:35241 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbXDWJO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:14:51 -0400
-X-BigFish: VP
-X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
-From: "Joachim Deguara" <joachim.deguara@amd.com>
-Organization: AMD
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: make GART PTEs uncacheable
-Date: Mon, 23 Apr 2007 11:14:10 +0200
-User-Agent: KMail/1.9.5
-cc: ak@suse.de, "Langsdorf, Mark" <mark.langsdorf@amd.com>
+	Mon, 23 Apr 2007 05:14:57 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
+References: <20070414204154.871250608@goop.org>
+	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
+	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
+	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
+Date: Mon, 23 Apr 2007 03:12:51 -0600
+In-Reply-To: <4627E099.209@goop.org> (Jeremy Fitzhardinge's message of "Thu,
+	19 Apr 2007 14:35:21 -0700")
+Message-ID: <m1d51vxxm4.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Message-ID: <200704231114.10327.joachim.deguara@amd.com>
-X-OriginalArrivalTime: 23 Apr 2007 09:12:17.0032 (UTC)
- FILETIME=[7D29D080:01C78587]
-X-WSS-ID: 6A32A7FE1SK67439-01-01
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patches fixes the silent data corruption problems being seen using the 
-GART iommu where 4kB of data where incorrect (seen mostly on Nvidia CK804 
-systems).  This fix, to mark the memory regin the GART PTEs reside on as 
-uncacheable, also brings the code in line with the AGP specification.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Signed-off-by: Joachim Deguara <joachim.deguara@amd.com>
+> Chuck Ebbert wrote:
+>> H. Peter Anvin wrote:
+>>   
+>>> Andi Kleen wrote:
+>>>     
+>>>> Then we would have seen reports surely?
+>>>>       
+>
+> Yes, I would have thought so.  It surprised me that such an obvious bug
+> could be there, apparently for a long time.  But it's real, and
+> potentially affects everyone.  It probably doesn't affect highly modular
+> distros much, since the kernel itself will be relatively small.
+>
+>> I never saw a description of the symptoms of encountering this bug.
+>> Does it just hang, or what?
+>>   
+>
+> You get an early-fault message on-screen, assuming that's enabled;
+> otherwise it will just appear to hang.  It happens in pagetable_init,
+> when it allocates a new pagetable above the head.S mapping (8M in my
+> case).  It will only hit if the kernel size approaches a 4M boundary,
+> since it won't leave enough space mapped to construct the lowmem mappings.
+>
+> It only affects native booting, since under Xen all those mappings have
+> already been constructed.  It happened to me with a paravirt kernel that
+> happened to Xen compiled into it, but that was irrelevent (though
+> misleading; the 40k difference in kernel size was enough to make it not
+> happen in a non-Xen kernel).
 
----
-diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
-index 2bac8c6..0bae862 100644
---- a/arch/x86_64/kernel/pci-gart.c
-+++ b/arch/x86_64/kernel/pci-gart.c
-@@ -519,7 +519,11 @@ static __init int init_k8_gatt(struct ag
- 	gatt_size = (aper_size >> PAGE_SHIFT) * sizeof(u32); 
- 	gatt = (void *)__get_free_pages(GFP_KERNEL, get_order(gatt_size)); 
- 	if (!gatt) 
--		panic("Cannot allocate GATT table"); 
-+		panic("Cannot allocate GATT table");
-+	if (change_page_attr_addr((unsigned long)gatt, gatt_size >> PAGE_SHIFT, 
-PAGE_KERNEL_NOCACHE))
-+		panic("Could not set GART PTEs to uncacheable pages");
-+	global_flush_tlb();
-+
- 	memset(gatt, 0, gatt_size); 
- 	agp_gatt_table = gatt;
- 
+I happened to be looking at this stretch of code and I have realized
+that this is quite simply the wrong fix.
 
+The problem is that it depends intimately on the details of
+alloc_bootmem_pages_low.  Essentially the problem is that when
+we are setting up the identity mappings in paging_init we assume
+the identity mappings already exist.
 
+If there are holes in the memory map or someone changes the way
+pages are returned from alloc_bootmem_pages_low() this code
+will break again.
+
+The only way to ensure this will not happen is to do what we do
+on x86_64 and map the new page table page into our address space
+before we write to it.  Assuming the page we allocate is already
+mapped is simply not robust.
+
+Eric
