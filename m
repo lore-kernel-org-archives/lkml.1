@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161235AbXDWGUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161216AbXDWGU4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161235AbXDWGUE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDWGUD
+	id S1161216AbXDWGU4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:20:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161223AbXDWGU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:20:03 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39824 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161216AbXDWGUC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:20:02 -0400
-Date: Sun, 22 Apr 2007 23:20:00 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: slab allocators: Remove SLAB_DEBUG_INITIAL flag
-In-Reply-To: <20070422230841.7d99ebb1.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704222318010.2338@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704201832030.13607@schroedinger.engr.sgi.com>
- <20070422230841.7d99ebb1.akpm@linux-foundation.org>
+	Mon, 23 Apr 2007 02:20:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45246 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161216AbXDWGUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:20:54 -0400
+Message-ID: <462C5034.9090403@redhat.com>
+Date: Mon, 23 Apr 2007 02:20:36 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: William Heimbigner <icxcnika@mar.tar.cc>
+CC: Eric Hopper <hopper@omnifarious.org>, linux-kernel@vger.kernel.org
+Subject: Re: Question about Reiser4
+References: <20070423020046.GA28477@omnifarious.org> <462C2E5B.1080008@redhat.com> <Pine.LNX.4.64.0704230353000.25153@server.thyself> <462C4858.3050006@redhat.com> <Pine.LNX.4.64.0704230555020.25153@server.thyself> <462C4D32.4000909@redhat.com> <Pine.LNX.4.64.0704230611430.25153@server.thyself>
+In-Reply-To: <Pine.LNX.4.64.0704230611430.25153@server.thyself>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007, Andrew Morton wrote:
+William Heimbigner wrote:
 
-> This patch causes a use-uninitialised crash in the locks code.
+> If there was 1) a maintainer and 2) code that didn't break "coding 
+> standards", would it be included in the kernel?
 
-Sigh. The only case in which the check is inverted in a constructor.
+While I cannot speak for Linus and Andrew, code that fulfills
+these criteria (and is useful to have - reiser4 seems to have
+enough user interest) usually gets accepted.
 
-Invert the check.
+http://kernelnewbies.org/UpstreamMerge has some hints.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6.21-rc6/fs/locks.c
-===================================================================
---- linux-2.6.21-rc6.orig/fs/locks.c	2007-04-22 23:17:29.000000000 -0700
-+++ linux-2.6.21-rc6/fs/locks.c	2007-04-22 23:17:45.000000000 -0700
-@@ -203,7 +203,7 @@ static void init_once(void *foo, struct 
- {
- 	struct file_lock *lock = (struct file_lock *) foo;
- 
--	if (flags & SLAB_CTOR_CONSTRUCTOR)
-+	if (!(flags & SLAB_CTOR_CONSTRUCTOR))
- 		return;
- 
- 	locks_init_lock(lock);
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
