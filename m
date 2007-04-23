@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751778AbXDWHyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750773AbXDWIAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751778AbXDWHyU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 03:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXDWHyU
+	id S1750773AbXDWIAF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 04:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbXDWIAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 03:54:20 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:56648
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750773AbXDWHyT (ORCPT
+	Mon, 23 Apr 2007 04:00:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48573 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbXDWIAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 03:54:19 -0400
-Date: Mon, 23 Apr 2007 09:57:22 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: "Eddie C. Dost" <ecd@atecom.com>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, chas@cmf.nrl.navy.mil,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] use spinlock instead of binary mutex in idt77252 driver
-Message-ID: <20070423075722.GE10339@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	"Eddie C. Dost" <ecd@atecom.com>,
-	Kyle Moffett <mrmacman_g4@mac.com>, chas@cmf.nrl.navy.mil,
-	linux-kernel@vger.kernel.org
-References: <20070422213959.GP5013@traven> <45C4C5F0-4F09-416D-A237-82FC28DF1883@mac.com> <20070423065520.GR5013@traven> <20070423071608.GA15338@gannet> <20070423074026.GC10339@traven> <20070423074019.GA14549@gannet>
-MIME-Version: 1.0
+	Mon, 23 Apr 2007 04:00:01 -0400
+Date: Mon, 23 Apr 2007 08:59:57 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+       linux-pcmcia@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
+Message-ID: <20070423075957.GA22811@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Vitaly Bordug <vitb@kernel.crashing.org>,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	linux-pcmcia@lists.infradead.org,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20070422232658.5f427fd3@localhost.localdomain> <200704222349.42368.arnd@arndb.de> <20070423101427.3a1d4983@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070423074019.GA14549@gannet>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070423101427.3a1d4983@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-
-El Mon, Apr 23, 2007 at 09:40:19AM +0200 Eddie C. Dost ha dit:
-
-> as long as mutexes are not converted to nop when CONFIG_SMP is not
-> defined (I don't know what current kernels do), this is of course
-> correct. You need to verify the headerfiles for the above.
-
-i just checked this, neither the mutex header nor implementation files
-handle things different for CONFIG_SMP. 
-
-thanks for your comments
-
-> On Mon, Apr 23, 2007 at 09:40:26AM +0200, Matthias Kaehlcke wrote:
-> > El Mon, Apr 23, 2007 at 09:16:08AM +0200 Eddie C. Dost ha dit:
-> >  
-> > > Please note that the semaphore is used to lock the idt77252 config
-> > > tables among multiple users including atmsigd even on single processor
-> > > machines. Does this work with mutexes?
+On Mon, Apr 23, 2007 at 10:14:27AM +0400, Vitaly Bordug wrote:
+> On Sun, 22 Apr 2007 23:49:41 +0200
+> Arnd Bergmann wrote:
+> 
+> > On Sunday 22 April 2007, Vitaly Bordug wrote:
+> > > This utilizes PCMCIA on mpc885ads and mpc866ads from arch/powerpc.
+> > > In the new approach, direct IMMR accesses from within drivers/ were
+> > > totally eliminated, that requires hardware_enable,
+> > > hardware_disable, voltage_set board-specific functions to be moved
+> > > over to BSP code section (arch/powerpc/platforms/8xx in 885 case).
+> > > There is just no way to have both arch/ppc and arch/powerpc
+> > > approaches to work simultaneously because of that.  
 > > 
-> > afaik mutexes have the same behaviour as binary semaphores that are
-> > used as mutexes (always locked and unlocked by the same
-> > process/thread):
+> > Maybe I'm missing a key issue here, but what's the point of adding
+> > more platform_devices for stuff that is already in the device tree?
+> > Shouldn't this be made an of_platform_driver instead so you can
+> > use the existing of_device directly?
 > > 
-> > ".. the semaphore type can officially be considered to be on its way
-> > out. New code should not use semaphores, and old code which uses
-> > semaphores as mutexes should be converted over when an opportunity
-> > presents itself."
-> > 
-> > http://lwn.net/Articles/167034/
-> > 
-> > please correct me if i'm wrong, i'm just doing my first steps with
-> > linux kernel development
+> Was thinking of it but platform_device is better for migration purposes. Hence,
+> assuming somebody would want to have pcmcia working not bothering to add whole arch/powerpc support,
+> it can be accomplished quickly.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+That's a horrible argument.  Please do it properly, and let arch/ppc die
+as it should.  We shouldn't be adding anything to it anymore anyway.
 
-             You must have a plan. If you don't have a plan,
-               you'll become part of somebody else's plan
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
