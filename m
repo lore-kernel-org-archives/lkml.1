@@ -1,122 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161382AbXDWKzY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161369AbXDWLIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161382AbXDWKzY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:55:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161379AbXDWKzY
+	id S1161369AbXDWLIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 07:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161373AbXDWLIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:55:24 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:43893 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161369AbXDWKzW (ORCPT
+	Mon, 23 Apr 2007 07:08:22 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:46770 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161369AbXDWLIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:55:22 -0400
-Message-Id: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Mon, 23 Apr 2007 19:54:52 +0900
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [PATCH] mm: PageLRU can be non-atomic bit operation
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 07:08:21 -0400
+Message-ID: <462C9375.5030901@linux.vnet.ibm.com>
+Date: Mon, 23 Apr 2007 16:37:33 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.5 (X11/20060728)
+MIME-Version: 1.0
+To: menage@google.com
+CC: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+Subject: Re: [PATCH 0/7] Containers (V8): Generic Process Containers
+References: <20070406233221.989528000@menage.corp.google.com>
+In-Reply-To: <20070406233221.989528000@menage.corp.google.com>
+Content-Type: multipart/mixed;
+ boundary="------------080409020304030505050101"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+This is a multi-part message in MIME format.
+--------------080409020304030505050101
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-PageLRU flag operation is protected by zone->lru_lock, so SetPageLRU/ClearPageLRU
-can be replaced to __SetPageLRU/__ClearPageLRU non-atomic bit operation.
+Hi Paul,
 
-Thanks.
+In [patch 3/7] Containers (V8): Add generic multi-subsystem API to
+containers, you have forcefully enabled interrupt in
+container_init_subsys() with spin_unlock_irq() which breaks on PPC64.
 
-Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
 
-diff -Nrup linux-2.6.21-rc7.org/include/linux/page-flags.h 
-linux-2.6.21-rc7/include/linux/page-flags.h
---- linux-2.6.21-rc7.org/include/linux/page-flags.h	2007-04-17 
-16:36:05.000000000 +0900
-+++ linux-2.6.21-rc7/include/linux/page-flags.h	2007-04-23 
-18:28:19.000000000 +0900
-@@ -148,8 +148,7 @@ static inline void SetPageUptodate(struc
-  #define TestClearPageDirty(page) test_and_clear_bit(PG_dirty, &(page)->flags)
+> +static void container_init_subsys(struct container_subsys *ss) {
+> +	int retval;
+> +	struct list_head *l;
+> +	printk(KERN_ERR "Initializing container subsys %s\n",
+> ss->name);
+> +
+> +	/* Create the top container state for this subsystem */
+> +	ss->root = &rootnode;
+> +	retval = ss->create(ss, dummytop);
+> +	BUG_ON(retval);
+> +	init_container_css(ss, dummytop);
+> +
+> +	/* Update all container groups to contain a subsys
+> +	 * pointer to this state - since the subsystem is
+> +	 * newly registered, all tasks and hence all container
+> +	 * groups are in the subsystem's top container. */
+> +	spin_lock_irq(&container_group_lock);
+> +	l = &init_container_group.list;
+> +	do {
+> +		struct container_group *cg =
+> +			list_entry(l, struct container_group, list);
+> +		cg->subsys[ss->subsys_id] =
+> dummytop->subsys[ss->subsys_id];
+> +		l = l->next;
+> +	} while (l != &init_container_group.list);
+> +	spin_unlock_irq(&container_group_lock);
 
-  #define PageLRU(page)		test_bit(PG_lru, &(page)->flags)
--#define SetPageLRU(page)	set_bit(PG_lru, &(page)->flags)
--#define ClearPageLRU(page)	clear_bit(PG_lru, &(page)->flags)
-+#define __SetPageLRU(page)	__set_bit(PG_lru, &(page)->flags)
-  #define __ClearPageLRU(page)	__clear_bit(PG_lru, &(page)->flags)
+Interrupt gets enabled here and on PPC64, the kernel takes a pending
+decrementer and crashes because it is too early to handle them.
 
-  #define PageActive(page)	test_bit(PG_active, &(page)->flags)
-diff -Nrup linux-2.6.21-rc7.org/mm/migrate.c linux-2.6.21-rc7/mm/migrate.c
---- linux-2.6.21-rc7.org/mm/migrate.c	2007-04-17 16:36:05.000000000 +0900
-+++ linux-2.6.21-rc7/mm/migrate.c	2007-04-23 18:30:43.000000000 +0900
-@@ -52,7 +52,7 @@ int isolate_lru_page(struct page *page,
-  		if (PageLRU(page)) {
-  			ret = 0;
-  			get_page(page);
--			ClearPageLRU(page);
-+			__ClearPageLRU(page);
-  			if (PageActive(page))
-  				del_page_from_active_list(zone, page);
-  			else
-diff -Nrup linux-2.6.21-rc7.org/mm/swap.c linux-2.6.21-rc7/mm/swap.c
---- linux-2.6.21-rc7.org/mm/swap.c	2007-02-05 03:44:54.000000000 +0900
-+++ linux-2.6.21-rc7/mm/swap.c	2007-04-23 18:29:51.000000000 +0900
-@@ -364,7 +364,7 @@ void __pagevec_lru_add(struct pagevec *p
-  			spin_lock_irq(&zone->lru_lock);
-  		}
-  		VM_BUG_ON(PageLRU(page));
--		SetPageLRU(page);
-+		__SetPageLRU(page);
-  		add_page_to_inactive_list(zone, page);
-  	}
-  	if (zone)
-@@ -391,7 +391,7 @@ void __pagevec_lru_add_active(struct pag
-  			spin_lock_irq(&zone->lru_lock);
-  		}
-  		VM_BUG_ON(PageLRU(page));
--		SetPageLRU(page);
-+		__SetPageLRU(page);
-  		VM_BUG_ON(PageActive(page));
-  		SetPageActive(page);
-  		add_page_to_active_list(zone, page);
-diff -Nrup linux-2.6.21-rc7.org/mm/vmscan.c linux-2.6.21-rc7/mm/vmscan.c
---- linux-2.6.21-rc7.org/mm/vmscan.c	2007-04-17 16:36:05.000000000 +0900
-+++ linux-2.6.21-rc7/mm/vmscan.c	2007-04-23 18:30:30.000000000 +0900
-@@ -642,7 +642,7 @@ static unsigned long isolate_lru_pages(u
-  			 * sure the page is not being freed elsewhere -- the
-  			 * page release code relies on it.
-  			 */
--			ClearPageLRU(page);
-+			__ClearPageLRU(page);
-  			target = dst;
-  			nr_taken++;
-  		} /* else it is being freed elsewhere */
-@@ -704,7 +704,7 @@ static unsigned long shrink_inactive_lis
-  		while (!list_empty(&page_list)) {
-  			page = lru_to_page(&page_list);
-  			VM_BUG_ON(PageLRU(page));
--			SetPageLRU(page);
-+			__SetPageLRU(page);
-  			list_del(&page->lru);
-  			if (PageActive(page))
-  				add_page_to_active_list(zone, page);
-@@ -851,7 +851,7 @@ force_reclaim_mapped:
-  		page = lru_to_page(&l_inactive);
-  		prefetchw_prev_lru_page(page, &l_inactive, flags);
-  		VM_BUG_ON(PageLRU(page));
--		SetPageLRU(page);
-+		__SetPageLRU(page);
-  		VM_BUG_ON(!PageActive(page));
-  		ClearPageActive(page);
+Use of irqsave and restore routines would fix the problem.
+I have included the fix along with minor Kconfig correction.
 
-@@ -881,7 +881,7 @@ force_reclaim_mapped:
-  		page = lru_to_page(&l_active);
-  		prefetchw_prev_lru_page(page, &l_active, flags);
-  		VM_BUG_ON(PageLRU(page));
--		SetPageLRU(page);
-+		__SetPageLRU(page);
-  		VM_BUG_ON(!PageActive(page));
-  		list_move(&page->lru, &zone->active_list);
-  		pgmoved++; 
+Also your 3/7 patch did not showup on LKML.
 
+--Vaidy
+
+> +
+> +	need_forkexit_callback |= ss->fork || ss->exit;
+
+--------------080409020304030505050101
+Content-Type: text/x-patch;
+ name="container-irq-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="container-irq-fix.patch"
+
+Index: linux-2.6.20/kernel/container.c
+===================================================================
+--- linux-2.6.20.orig/kernel/container.c
++++ linux-2.6.20/kernel/container.c
+@@ -1638,6 +1638,7 @@ int container_is_descendant(const struct
+ 
+ static void container_init_subsys(struct container_subsys *ss) {
+ 	int retval;
++	unsigned long flags;
+ 	struct list_head *l;
+ 	printk(KERN_ERR "Initializing container subsys %s\n", ss->name);
+ 
+@@ -1651,7 +1652,7 @@ static void container_init_subsys(struct
+ 	 * pointer to this state - since the subsystem is
+ 	 * newly registered, all tasks and hence all container
+ 	 * groups are in the subsystem's top container. */
+-	spin_lock_irq(&container_group_lock);
++	spin_lock_irqsave(&container_group_lock, flags);
+ 	l = &init_container_group.list;
+ 	do {
+ 		struct container_group *cg =
+@@ -1659,7 +1660,7 @@ static void container_init_subsys(struct
+ 		cg->subsys[ss->subsys_id] = dummytop->subsys[ss->subsys_id];
+ 		l = l->next;
+ 	} while (l != &init_container_group.list);
+-	spin_unlock_irq(&container_group_lock);
++	spin_unlock_irqrestore(&container_group_lock, flags);
+ 
+ 	need_forkexit_callback |= ss->fork || ss->exit;
+ 
+Index: linux-2.6.20/init/Kconfig
+===================================================================
+--- linux-2.6.20.orig/init/Kconfig
++++ linux-2.6.20/init/Kconfig
+@@ -239,8 +239,13 @@ config IKCONFIG_PROC
+ 	  through /proc/config.gz.
+ 
+ config CONTAINERS
+-	bool
+-	
++	bool "Container support"
++	help
++	  This option will let you create and manage process containers,
++	  which can be used to aggregate multiple processes, e.g. for
++	  the purposes of resource tracking.
++
++	  Say N if unsure
+ 
+ config CPUSETS
+ 	bool "Cpuset support"
+
+--------------080409020304030505050101--
