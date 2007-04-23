@@ -1,569 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161802AbXDXPNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161813AbXDXPNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161802AbXDXPNp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422696AbXDXPLv
+	id S1161813AbXDXPNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161807AbXDXPIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:11:51 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6950 "EHLO mga02.intel.com"
+	Tue, 24 Apr 2007 11:08:21 -0400
+Received: from mga09.intel.com ([134.134.136.24]:27094 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161797AbXDXPI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:08:29 -0400
+	id S1161795AbXDXPIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:08:15 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="233076262:sNHT28975996"
-Message-Id: <20070424061037.361212000@intel.com>
-References: <20070424060259.426374000@intel.com>
+   d="scan'208"; a="78354389:sNHT18267561"
+Message-Id: <20070423164957.376691000@linux.intel.com>
+References: <20070423163837.447443000@linux.intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 23:03:00 -0700
+Date: Mon, 23 Apr 2007 09:38:43 -0700
 From: Ashok Raj <ashok.raj@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com
-Subject: [Intel IOMMU][patch 1/8] ACPI support for Intel Virtualization Technology for Directed I/O
-Content-Disposition: inline; filename=iommu-acpi-mods.patch
+Subject: [Intel IOMMU][patch 6/8] Doc updates for Intel Virtualization Technology for Directed I/O.
+Content-Disposition: inline; filename=iommu-doc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains basic ACPI parsing and enumeration support.
+Document Intel IOMMU driver boot option.
 
 Signed-off-by: Ashok Raj <ashok.raj@intel.com>
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Index: linux-2.6.21-rc5/arch/x86_64/Kconfig
-===================================================================
---- linux-2.6.21-rc5.orig/arch/x86_64/Kconfig	2007-04-23 07:11:49.000000000 -0700
-+++ linux-2.6.21-rc5/arch/x86_64/Kconfig	2007-04-23 07:11:51.000000000 -0700
-@@ -687,6 +687,14 @@
- 	bool "Support mmconfig PCI config space access"
- 	depends on PCI && ACPI
- 
-+config DMAR
-+	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
-+	depends on PCI_MSI && ACPI && EXPERIMENTAL
-+	help
-+	  Support DMA Remapping Devices. The devices are reported via
-+	  ACPI tables and includes pci device scope under each DMA
-+	  remapping device.
-+
- source "drivers/pci/pcie/Kconfig"
- 
- source "drivers/pci/Kconfig"
-Index: linux-2.6.21-rc5/drivers/pci/Makefile
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/pci/Makefile	2007-04-23 07:11:49.000000000 -0700
-+++ linux-2.6.21-rc5/drivers/pci/Makefile	2007-04-23 07:11:51.000000000 -0700
-@@ -38,6 +38,7 @@
- #
- obj-$(CONFIG_ACPI)    += pci-acpi.o
- 
-+obj-$(CONFIG_DMAR)		+= dmar.o
- # Cardbus & CompactPCI use setup-bus
- obj-$(CONFIG_HOTPLUG) += setup-bus.o
- 
-Index: linux-2.6.21-rc5/drivers/pci/dmar.c
+Index: linux-2.6.21-rc5/Documentation/Intel-IOMMU.txt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.21-rc5/drivers/pci/dmar.c	2007-04-23 07:12:00.000000000 -0700
-@@ -0,0 +1,350 @@
-+/*
-+ * Copyright (c) 2006, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-+ * Place - Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * Copyright (C) Ashok Raj <ashok.raj@intel.com>
-+ * Copyright (C) Shaohua Li <shaohua.li@intel.com>
-+ */
++++ linux-2.6.21-rc5/Documentation/Intel-IOMMU.txt	2007-04-17 05:41:56.000000000 -0700
+@@ -0,0 +1,119 @@
++Linux IOMMU Support
++===================
 +
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
++The architecture spec can be obtained from the below location.
 +
-+#include "dmar.h"
++http://www.intel.com/technology/virtualization/
 +
-+#undef PREFIX
-+#define PREFIX "DMAR:"
++This guide gives a quick cheat sheet for some basic understanding.
 +
-+#define MIN_SCOPE_LEN (sizeof(struct acpi_dmar_pci_path) + \
-+	sizeof(struct acpi_dmar_device_scope))
++Some Keywords
 +
-+LIST_HEAD(dmar_drhd_units);
-+LIST_HEAD(dmar_rmrr_units);
-+u8 dmar_host_address_width;
++DMAR - DMA remapping
++DRHD - DMA Engine Reporting Structure
++RMRR - Reserved memory Region Reporting Structure
++ZLR  - Zero length reads from PCI devices
++IOVA - IO Virtual address.
 +
-+static struct acpi_table_header *dmar_tbl;
++Basic stuff
++-----------
 +
-+static int __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
-+{
-+	/*
-+	 * add INCLUDE_ALL at the tail, so scan the list will find it at
-+	 * the very end.
-+	 */
-+	if (drhd->include_all)
-+		list_add_tail(&drhd->list, &dmar_drhd_units);
-+	else
-+		list_add(&drhd->list, &dmar_drhd_units);
-+	return 0;
-+}
++ACPI enumerates and lists the different DMA engines in the platform, and
++device scope relationships between PCI devices and which DMA engine  controls
++them.
 +
-+static int __init dmar_register_rmrr_unit(struct dmar_rmrr_unit *rmrr)
-+{
-+	list_add(&rmrr->list, &dmar_rmrr_units);
-+	return 0;
-+}
++What is RMRR?
++-------------
 +
-+static int dmar_pci_device_match(struct pci_dev *devices[], int cnt,
-+			     struct pci_dev *dev)
-+{
-+	int index;
++There are some devices the BIOS controls, for e.g USB devices to perform
++PS2 emulation. The regions of memory used for these devices are marked
++reserved in the e820 map. When we turn on DMA translation, DMA to those
++regions will fail. Hence BIOS uses RMRR to specify these regions along with
++devices that need to access these regions. OS is expected to setup
++unity mappings for these regions for these devices to access these regions.
 +
-+	while (dev) {
-+		for (index = 0; index < cnt; index ++)
-+			if (dev == devices[index])
-+				return 1;
++How is IOVA generated?
++---------------------
 +
-+		/* Check our parent */
-+		dev = dev->bus->self;
-+	}
++Well behaved drivers call pci_map_*() calls before sending command to device
++that needs to perform DMA. Once DMA is completed and mapping is no longer
++required, device performs a pci_unmap_*() calls to unmap the region.
 +
-+	return 0;
-+}
++The Intel IOMMU driver allocates a virtual address per domain. Each PCIE
++device has its own domain (hence protection). Devices under p2p bridges
++share the virtual address with all devices under the p2p bridge due to
++transaction id aliasing for p2p bridges.
 +
-+struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev)
-+{
-+	struct dmar_drhd_unit *drhd = NULL;
++IOVA generation is pretty generic. We used the same technique as vmalloc()
++but these are not global address spaces, but separate for each domain.
++Different DMA engines may support different number of domains.
 +
-+	list_for_each_entry(drhd, &dmar_drhd_units, list) {
-+		if (drhd->include_all || dmar_pci_device_match(drhd->devices,
-+						drhd->devices_cnt, dev))
-+			break;
-+	}
++We also allocate gaurd pages with each mapping, so we can attempt to catch
++any overflow that might happen.
 +
-+	return drhd;
-+}
 +
-+struct dmar_rmrr_unit * dmar_find_matched_rmrr_unit(struct pci_dev *dev)
-+{
-+	struct dmar_rmrr_unit *rmrr;
++Graphics Problems?
++------------------
++If you encounter issues with graphics devices, you can try adding
++option intel_iommu=igfx_off to turn off the integrated graphics engine.
 +
-+	list_for_each_entry(rmrr, &dmar_rmrr_units, list) {
-+		if (dmar_pci_device_match(rmrr->devices,
-+						rmrr->devices_cnt, dev))
-+			goto out;
-+	}
-+	rmrr = NULL;
-+out:
-+	return rmrr;
-+}
++If it happens to be a PCI device included in the INCLUDE_ALL Engine,
++then try the intel_iommu=gfx_workaround to setup a 1-1 map. We hear
++graphics drivers may be in process of using DMA api's in the near
++future....
 +
-+static int __init dmar_parse_one_dev_scope(struct acpi_dmar_device_scope *scope,
-+					   struct pci_dev **dev, u16 segment)
-+{
-+	struct pci_bus *bus;
-+	struct pci_dev *pdev = NULL;
-+	struct acpi_dmar_pci_path *path;
-+	int count;
++Some exceptions to IOVA
++-----------------------
++Interrupt ranges are not address translated, (0xfee00000 - 0xfeefffff).
++The same is true for peer to peer transactions. Hence we reserve the
++address from PCI MMIO ranges so they are not allocated for IOVA addresses.
 +
-+	bus = pci_find_bus(segment, scope->bus);
-+	path = (struct acpi_dmar_pci_path *)(scope + 1);
-+	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
-+		/sizeof(struct acpi_dmar_pci_path);
 +
-+	while (count) {
-+		if (pdev)
-+			pci_dev_put(pdev);
-+		/*
-+		 * Some BIOSes list non-exist devices in DMAR table, just
-+		 * ignore it
-+		 */
-+		if (!bus) {
-+			printk(KERN_WARNING
-+			PREFIX "Device scope bus [%d] not found\n",
-+			scope->bus);
-+			break;
-+		}
-+		pdev = pci_get_slot(bus, PCI_DEVFN(path->dev, path->fn));
-+		if (!pdev) {
-+			printk(KERN_WARNING PREFIX
-+			"Device scope device [%04x:%02x:%02x.%02x] not found\n",
-+				segment, bus->number, path->dev, path->fn);
-+			break;
-+		}
-+		path ++;
-+		count --;
-+		bus = pdev->subordinate;
-+	}
-+	if (!pdev) {
-+		printk(KERN_WARNING PREFIX
-+		"Device scope device [%04x:%02x:%02x.%02x] not found\n",
-+		segment, scope->bus, path->dev, path->fn);
-+		*dev = NULL;
-+		return 0;
-+	}
-+	if ((scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT && pdev->subordinate)
-+	   || (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE && !pdev->subordinate)) {
-+		pci_dev_put(pdev);
-+		printk(KERN_WARNING PREFIX "Device scope type does not match for %s\n", pci_name(pdev));
-+		return -EINVAL;
-+	}
-+	*dev = pdev;
-+	return 0;
-+}
++Fault reporting
++---------------
++When errors are reported, the DMA engine signals via an interrupt. The fault
++reason and device that caused it with fault reason is printed on console.
 +
-+static int __init dmar_parse_dev_scope(void *start, void *end, int *cnt,
-+				       struct pci_dev ***devices, u16 segment)
-+{
-+	struct acpi_dmar_device_scope *scope;
-+	void * tmp = start;
-+	int index;
-+	int ret;
++See below for sample.
 +
-+	*cnt = 0;
-+	while (start < end) {
-+		scope = start;
-+		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
-+		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE)
-+			(*cnt)++;
-+		else
-+			printk(KERN_WARNING PREFIX "Unsupported device scope\n");
-+		start += scope->length;
-+	}
-+	if (*cnt == 0)
-+		return 0;
 +
-+	*devices = kcalloc(*cnt, sizeof(struct pci_dev *), GFP_KERNEL);
-+	if (!*devices)
-+		return -ENOMEM;
++Boot Message Sample
++-------------------
 +
-+	start = tmp;
-+	index = 0;
-+	while (start < end) {
-+		scope = start;
-+		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
-+		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE) {
-+			ret = dmar_parse_one_dev_scope(scope,
-+				&(*devices)[index], segment);
-+			if (ret) {
-+				kfree(*devices);
-+				return ret;
-+			}
-+			index ++;
-+		}
-+		start += scope->length;
-+	}
++Something like this gets printed indicating presence of DMAR tables
++in ACPI.
 +
-+	return 0;
-+}
++ACPI: DMAR (v001 A M I  OEMDMAR  0x00000001 MSFT 0x00000097) @ 0x000000007f5b5ef0
 +
-+static int __init
-+dmar_parse_one_drhd(struct acpi_dmar_header *header)
-+{
-+	struct acpi_dmar_hardware_unit * drhd = (struct acpi_dmar_hardware_unit *)header;
-+	struct dmar_drhd_unit *dmaru;
-+	int ret = 0;
-+	static int include_all;
++When DMAR is being processed and initialized by ACPI, prints DMAR locations
++and any RMRR's processed.
 +
-+	dmaru = kzalloc(sizeof(*dmaru), GFP_KERNEL);
-+	if (!dmaru)
-+		return -ENOMEM;
++ACPI DMAR:Host address width 36
++ACPI DMAR:DRHD (flags: 0x00000000)base: 0x00000000fed90000
++ACPI DMAR:DRHD (flags: 0x00000000)base: 0x00000000fed91000
++ACPI DMAR:DRHD (flags: 0x00000001)base: 0x00000000fed93000
++ACPI DMAR:RMRR base: 0x00000000000ed000 end: 0x00000000000effff
++ACPI DMAR:RMRR base: 0x000000007f600000 end: 0x000000007fffffff
 +
-+	dmaru->address = drhd->address;
-+	dmaru->include_all = drhd->flags & 1; /* BIT0: INCLUDE_ALL */
++When DMAR is enabled for use, you will notice..
 +
-+	if (!dmaru->include_all)
-+		ret = dmar_parse_dev_scope((void *)(drhd + 1),
-+				((void *)drhd) + header->length,
-+				&dmaru->devices_cnt, &dmaru->devices,
-+				drhd->segment);
-+	else {
-+		/* Only allow one INCLUDE_ALL */
-+		if (include_all) {
-+			printk(KERN_WARNING PREFIX "Only one INCLUDE_ALL "
-+				"device scope is allowed\n");
-+			ret = -EINVAL;
-+		}
-+		include_all = 1;
-+	}
++PCI-DMA: Using DMAR IOMMU
 +
-+	if (ret || (dmaru->devices_cnt == 0 && !dmaru->include_all))
-+		kfree(dmaru);
-+	else
-+		dmar_register_drhd_unit(dmaru);
-+	return ret;
-+}
++Fault reporting
++---------------
 +
-+static int __init
-+dmar_parse_one_rmrr(struct acpi_dmar_header *header)
-+{
-+	struct acpi_dmar_reserved_memory *rmrr = (struct acpi_dmar_reserved_memory *)header;
-+	struct dmar_rmrr_unit *rmrru;
-+	int ret = 0;
++DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
++DMAR:[fault reason 05] PTE Write access is not set
++DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
++DMAR:[fault reason 05] PTE Write access is not set
 +
-+	rmrru = kzalloc(sizeof(*rmrru), GFP_KERNEL);
-+	if (!rmrru)
-+		return -ENOMEM;
++TBD
++----
 +
-+	rmrru->base_address = rmrr->base_address;
-+	rmrru->end_address = rmrr->end_address;
-+	ret = dmar_parse_dev_scope((void *)(rmrr + 1),
-+		((void*)rmrr) + header->length,
-+		&rmrru->devices_cnt, &rmrru->devices, rmrr->segment);
-+
-+	if (ret || (rmrru->devices_cnt == 0))
-+		kfree(rmrru);
-+	else
-+		dmar_register_rmrr_unit(rmrru);
-+	return ret;
-+}
-+
-+static void __init
-+dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
-+{
-+	struct acpi_dmar_hardware_unit *drhd;
-+	struct acpi_dmar_reserved_memory *rmrr;
-+
-+	switch (header->type) {
-+	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
-+		drhd = (struct acpi_dmar_hardware_unit *)header;
-+		printk (KERN_INFO PREFIX
-+			"DRHD (flags: 0x%08x)base: 0x%016Lx\n",
-+			drhd->flags, drhd->address);
-+		break;
-+	case ACPI_DMAR_TYPE_RESERVED_MEMORY:
-+		rmrr = (struct acpi_dmar_reserved_memory *)header;
-+
-+		printk (KERN_INFO PREFIX
-+			"RMRR base: 0x%016Lx end: 0x%016Lx\n",
-+			rmrr->base_address, rmrr->end_address);
-+		break;
-+	}
-+}
-+
-+static int __init
-+parse_dmar(struct acpi_table_header *table)
-+{
-+	struct acpi_table_dmar *dmar;
-+	struct acpi_dmar_header *entry_header;
-+	int ret = 0;
-+
-+	dmar = (struct acpi_table_dmar *)table;
-+	if (!dmar) {
-+		printk (KERN_WARNING PREFIX "Unable to map DMAR\n");
-+		return -ENODEV;
-+	}
-+
-+	if (!dmar->width) {
-+		printk (KERN_WARNING PREFIX "Zero: Invalid DMAR haw\n");
-+		return -EINVAL;
-+	}
-+
-+	dmar_host_address_width = dmar->width + 1;
-+	printk (KERN_INFO PREFIX "Host address width %d\n",
-+		dmar_host_address_width);
-+
-+	entry_header = (struct acpi_dmar_header *)(dmar + 1);
-+	while (((unsigned long)entry_header) < (((unsigned long)dmar) + table->length)) {
-+		dmar_table_print_dmar_entry(entry_header);
-+
-+		switch (entry_header->type) {
-+		case ACPI_DMAR_TYPE_HARDWARE_UNIT:
-+			ret = dmar_parse_one_drhd(entry_header);
-+			break;
-+		case ACPI_DMAR_TYPE_RESERVED_MEMORY:
-+			ret = dmar_parse_one_rmrr(entry_header);
-+			break;
-+		default:
-+			printk(KERN_WARNING PREFIX "Unknown DMAR structure type\n");
-+			ret = 0; /* for forward compatibility */
-+			break;
-+		}
-+		if (ret)
-+			break;
-+
-+		entry_header = ((void *)entry_header + entry_header->length);
-+	}
-+	return ret;
-+}
-+
-+int __init early_dmar_detect(void)
-+{
-+	acpi_status status = AE_OK;
-+
-+	/* if we could find DMAR table, then there are DMAR devices */
-+	status = acpi_get_table(ACPI_SIG_DMAR, 0,
-+				(struct acpi_table_header **)&dmar_tbl);
-+	return (ACPI_SUCCESS(status) ? 1 : 0);
-+}
-+
-+int __init dmar_table_init(void)
-+{
-+
-+	parse_dmar(dmar_tbl);
-+	if (list_empty(&dmar_drhd_units)) {
-+		printk(KERN_ERR PREFIX "No DMAR devices found\n");
-+		return -ENODEV;
-+	}
-+	return 0;
-+}
-Index: linux-2.6.21-rc5/drivers/pci/dmar.h
++- No Performance tuning / analysis yet.
++- sysfs needs useful data to be populated.
++  DMAR info, device scope, stats could be exposed to some extent.
++- Add support to Firmware Developer Kit to test ACPI tables for DMAR.
++- For compatibility testing, could use unity map domain for all devices, just
++  provide a 1-1 for all useful memory under a single domain for all devices.
++- API for paravirt ops for abstracting functionlity for VMM folks.
+Index: linux-2.6.21-rc5/Documentation/kernel-parameters.txt
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.21-rc5/drivers/pci/dmar.h	2007-04-23 07:11:51.000000000 -0700
-@@ -0,0 +1,65 @@
-+/*
-+ * Copyright (c) 2006, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-+ * Place - Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ * Copyright (C) Ashok Raj <ashok.raj@intel.com>
-+ * Copyright (C) Shaohua Li <shaohua.li@intel.com>
-+ */
-+
-+#ifndef __DMAR_H__
-+#define __DMAR_H__
-+#include <linux/acpi.h>
-+extern u8 dmar_host_address_width;
-+extern struct list_head dmar_drhd_units;
-+extern struct list_head dmar_rmrr_units;
-+
-+#define no_drhd_detected()	(list_empty(&dmar_drhd_units))
-+
-+struct iommu;
-+struct dmar_drhd_unit {
-+	struct list_head list;
-+	u64	address; /* register base address of the unit */
-+	struct	pci_dev **devices; /* target devices */
-+	int	devices_cnt;
-+	u8	include_all:1;
-+	struct iommu *iommu;
-+};
-+
-+struct dmar_rmrr_unit {
-+	struct list_head list;
-+	u64	base_address;
-+	u64	end_address;
-+	struct pci_dev **devices; /* target devices */
-+	int	devices_cnt;
-+};
-+
-+#define for_each_drhd_unit(drhd) \
-+	list_for_each_entry(drhd, &dmar_drhd_units, list)
-+#define for_each_rmrr_device(rmrr, pdev) \
-+	list_for_each_entry(rmrr, &dmar_rmrr_units, list) { \
-+		int _i; \
-+		for (_i = 0; _i < rmrr->devices_cnt; _i++) { \
-+			pdev = rmrr->devices[_i]; \
-+			/* some BIOS lists non-exist devices in DMAR table */\
-+			if (!pdev) \
-+				continue;
-+#define end_for_each_rmrr_device(rmrr, pdev) \
-+		} \
-+	}
-+
-+struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
-+struct dmar_rmrr_unit * dmar_find_matched_rmrr_unit(struct pci_dev *dev);
-+int dmar_table_init(void);
-+#endif /* __DMAR_H__ */
-Index: linux-2.6.21-rc5/include/acpi/actbl1.h
-===================================================================
---- linux-2.6.21-rc5.orig/include/acpi/actbl1.h	2007-04-23 07:11:49.000000000 -0700
-+++ linux-2.6.21-rc5/include/acpi/actbl1.h	2007-04-23 07:11:51.000000000 -0700
-@@ -257,7 +257,8 @@
- struct acpi_table_dmar {
- 	struct acpi_table_header header;	/* Common ACPI table header */
- 	u8 width;		/* Host Address Width */
--	u8 reserved[11];
-+	u8 flags;
-+	u8 reserved[10];
- };
+--- linux-2.6.21-rc5.orig/Documentation/kernel-parameters.txt	2007-04-17 04:59:42.000000000 -0700
++++ linux-2.6.21-rc5/Documentation/kernel-parameters.txt	2007-04-17 05:41:56.000000000 -0700
+@@ -710,6 +710,26 @@
  
- /* DMAR subtable header */
-@@ -265,8 +266,6 @@
- struct acpi_dmar_header {
- 	u16 type;
- 	u16 length;
--	u8 flags;
--	u8 reserved[3];
- };
+ 	inttest=	[IA64]
  
- /* Values for subtable type in struct acpi_dmar_header */
-@@ -274,13 +273,15 @@
- enum acpi_dmar_type {
- 	ACPI_DMAR_TYPE_HARDWARE_UNIT = 0,
- 	ACPI_DMAR_TYPE_RESERVED_MEMORY = 1,
--	ACPI_DMAR_TYPE_RESERVED = 2	/* 2 and greater are reserved */
-+	ACPI_DMAR_TYPE_ATSR = 2,
-+	ACPI_DMAR_TYPE_RESERVED = 3	/* 3 and greater are reserved */
- };
- 
- struct acpi_dmar_device_scope {
- 	u8 entry_type;
- 	u8 length;
--	u8 segment;
-+	u16 reserved;
-+	u8 enumeration_id;
- 	u8 bus;
- };
- 
-@@ -290,7 +291,14 @@
- 	ACPI_DMAR_SCOPE_TYPE_NOT_USED = 0,
- 	ACPI_DMAR_SCOPE_TYPE_ENDPOINT = 1,
- 	ACPI_DMAR_SCOPE_TYPE_BRIDGE = 2,
--	ACPI_DMAR_SCOPE_TYPE_RESERVED = 3	/* 3 and greater are reserved */
-+	ACPI_DMAR_SCOPE_TYPE_IOAPIC = 3,
-+	ACPI_DMAR_SCOPE_TYPE_HPET = 4,
-+	ACPI_DMAR_SCOPE_TYPE_RESERVED = 5	/* 5 and greater are reserved */
-+};
-+
-+struct acpi_dmar_pci_path {
-+	u8 dev;
-+	u8 fn;
- };
- 
- /*
-@@ -301,6 +309,9 @@
- 
- struct acpi_dmar_hardware_unit {
- 	struct acpi_dmar_header header;
-+	u8 flags;
-+	u8 reserved;
-+	u16 segment;
- 	u64 address;		/* Register Base Address */
- };
- 
-@@ -312,7 +323,9 @@
- 
- struct acpi_dmar_reserved_memory {
- 	struct acpi_dmar_header header;
--	u64 address;		/* 4_k aligned base address */
-+	u16 reserved;
-+	u16 segment;
-+	u64 base_address;		/* 4_k aligned base address */
- 	u64 end_address;	/* 4_k aligned limit address */
- };
- 
++	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
++		off
++			Disable intel iommu driver.
++		forcerw
++			Some drivers might incorrectly map DMA buffers as
++			write-only even when the device, requires read/write
++			mapping.  This option works around the issue in IOMMU
++			driver by making all write-only map as read/write.
++			Default is off.
++		igfx_off [Default Off]
++			By default, gfx is mapped as normal device. If a gfx
++			device has a dedicated DMAR unit, the DMAR unit is
++			bypassed with this option. In this case, gfx device
++			will use physical address for DMA.
++		gfx_workaround [Default Off]
++			gfx devices tend to use physical address for DMA and
++			avoid using DMA api's. Setting this option permits
++			the IOMMU driver to set a unity map for all OS
++			visible memory. Hence the driver can continue to use
++			physical addresses for DMA.
+ 	io7=		[HW] IO7 for Marvel based alpha systems
+ 			See comment before marvel_specify_io7 in
+ 			arch/alpha/kernel/core_marvel.c.
 
 -- 
