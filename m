@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161217AbXDWSJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161264AbXDWSML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161217AbXDWSJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 14:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161218AbXDWSJd
+	id S1161264AbXDWSML (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 14:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161255AbXDWSML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 14:09:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35401 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161217AbXDWSJc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 14:09:32 -0400
-Date: Mon, 23 Apr 2007 19:09:18 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, containers@lists.osdl.org,
-       linux-kernel@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>,
-       rusty@rustcorp.com.au
-Subject: Re: [PATCH] kthread: Spontaneous exit support
-Message-ID: <20070423180918.GA19439@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	Oleg Nesterov <oleg@tv-sign.ru>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	containers@lists.osdl.org, linux-kernel@vger.kernel.org,
-	Marcel Holtmann <marcel@holtmann.org>, rusty@rustcorp.com.au
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969596686-git-send-email-ebiederm@xmission.com> <20070419162459.af7a182c.akpm@linux-foundation.org> <20070422194455.GA18561@infradead.org> <m1fy6rzsug.fsf_-_@ebiederm.dsl.xmission.com> <20070423112537.GA21941@infradead.org> <20070423165810.GA188@tv-sign.ru> <m1mz0zvvao.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
+	Mon, 23 Apr 2007 14:12:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52204 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161224AbXDWSMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 14:12:09 -0400
+Date: Mon, 23 Apr 2007 14:13:19 -0400
+From: Josef Bacik <jwhiter@redhat.com>
+To: Josef Bacik <jwhiter@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
+Message-ID: <20070423181318.GD22873@korben.rdu.redhat.com>
+References: <20070419132459.GB1481@korben.rdu.redhat.com> <1176991356.31764.3.camel@mulgrave.il.steeleye.com> <20070419150655.GC1481@korben.rdu.redhat.com> <20070421002345.673d9988.akpm@linux-foundation.org> <20070421135956.GA22873@korben.rdu.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1mz0zvvao.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20070421135956.GA22873@korben.rdu.redhat.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 11:45:51AM -0600, Eric W. Biederman wrote:
-> Ok.  Thinking about it I agree with Christoph that parallel API's can
-> be a problem.
-> 
-> However we do still need to support kernel threads where kthread_stop will
-> never be called.  There appear to be a few legitimate cases where
-> someone wants to fire off a thread and have it do some work but don't
-> care at all for stopping it before it is done.
+On Sat, Apr 21, 2007 at 09:59:56AM -0400, Josef Bacik wrote:
+> On Sat, Apr 21, 2007 at 12:23:45AM -0700, Andrew Morton wrote:
+> > On Thu, 19 Apr 2007 11:06:56 -0400 Josef Bacik <jwhiter@redhat.com> wrote:
+> > 
+> > > On Thu, Apr 19, 2007 at 10:02:36AM -0400, James Bottomley wrote:
+> > > > On Thu, 2007-04-19 at 09:25 -0400, Josef Bacik wrote:
+> > > > > Looking through everything I came to the conclusion that we don't really need
+> > > > > the scsi_sysfs_add_devices in scsi_finish_async_scan, which gets run everytime
+> > > > > we do a do_scan_async.  In doing the scanning, if we come upon anything we will
+> > > > > already be registering the device with sysfs so the scsi_sysfs_add_devices step
+> > > > > is kind of useless.
+> > > > 
+> > > > Unfortunately, it isn't.  The registration step while scanning is at the
+> > > > end of scsi_add_lun():
+> > > > 
+> > > > 
+> > > > 	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
+> > > > 		return SCSI_SCAN_NO_RESPONSE;
+> > > > 
+> > > > 	return SCSI_SCAN_LUN_PRESENT;
+> > > > 
+> > > > The !async should mean that the addition *only* occurs for the non async
+> > > > scan case ... if you remove the post async scan add, we'll lose devices.
+> > > > 
 
-There's two cases where it's valid that kthread_stop is not called:
+Ok I have a new patch that I've built and tested on both my UP and SMP machine
+and it appears to work fine.  I took the async check out of scsi_add_lun, I
+don't really see the point in waiting to do the sysfs registration stuff (if
+theres a reason I haven't been able to find it in the original submission of
+this functionality).  Please let me know if this is incorrect.  Thank you,
 
- a) the user is always builtin and the thread runs until the kernel halts.
-    examples: voyager, arm ecard
- b) the thread is normally started/stopped, e.g. at module_init/module_exit
-    but there is some reason why it could terminate earlier.
-    examples:  the various bluetooth threads, nfs-related threads that
-    can be killed using signals
- c) we have some kind of asynchronous helper thread.
-    examples: various s390 drivers, usbatm, therm_pm72
- d) a driver has threadpools were we need to start/stop threads on demand.
-    examples: nfsd, xpc
+Josef
 
-
-case a)
-	is trivial, we can just ignore the refcounting issue.
-
-case b)
-	is what refcounting the task struct and proper handling in
-	kthread_stop will deal with.
-
-case c)
-	should get a new kthread_create_async api which starts a thread
-	without blocking, so we can get rid of the workqueues in the
-	s390 drivers.  it should probably also be safe to be called from
-	irq context.  What makes this a bit complicated is the need to
-	make sure no more thread is running in case the caller terminates
-	(shutdown of the structure it's associated with or module removal)
-
-case d)
-	should be deal with with a kthread_pool api
-
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 0949145..8af1e16 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -712,7 +712,7 @@ static int scsi_probe_lun(struct scsi_device *sdev, unsigned char *inq_result,
+  *     SCSI_SCAN_LUN_PRESENT: a new scsi_device was allocated and initialized
+  **/
+ static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
+-		int *bflags, int async)
++		int *bflags)
+ {
+ 	/*
+ 	 * XXX do not save the inquiry, since it can change underneath us,
+@@ -912,7 +912,7 @@ static int scsi_add_lun(struct scsi_device *sdev, unsigned char *inq_result,
+ 	 * register it and tell the rest of the kernel
+ 	 * about it.
+ 	 */
+-	if (!async && scsi_sysfs_add_sdev(sdev) != 0)
++	if (scsi_sysfs_add_sdev(sdev) != 0)
+ 		return SCSI_SCAN_NO_RESPONSE;
+ 
+ 	return SCSI_SCAN_LUN_PRESENT;
+@@ -1081,7 +1081,7 @@ static int scsi_probe_and_add_lun(struct scsi_target *starget,
+ 		goto out_free_result;
+ 	}
+ 
+-	res = scsi_add_lun(sdev, result, &bflags, shost->async_scan);
++	res = scsi_add_lun(sdev, result, &bflags);
+ 	if (res == SCSI_SCAN_LUN_PRESENT) {
+ 		if (bflags & BLIST_KEY) {
+ 			sdev->lockable = 0;
+@@ -1661,15 +1661,6 @@ int scsi_scan_host_selected(struct Scsi_Host *shost, unsigned int channel,
+ 	return 0;
+ }
+ 
+-static void scsi_sysfs_add_devices(struct Scsi_Host *shost)
+-{
+-	struct scsi_device *sdev;
+-	shost_for_each_device(sdev, shost) {
+-		if (scsi_sysfs_add_sdev(sdev) != 0)
+-			scsi_destroy_sdev(sdev);
+-	}
+-}
+-
+ /**
+  * scsi_prep_async_scan - prepare for an async scan
+  * @shost: the host which will be scanned
+@@ -1741,8 +1732,6 @@ static void scsi_finish_async_scan(struct async_scan_data *data)
+ 
+ 	wait_for_completion(&data->prev_finished);
+ 
+-	scsi_sysfs_add_devices(shost);
+-
+ 	spin_lock(&async_scan_lock);
+ 	shost->async_scan = 0;
+ 	list_del(&data->list);
