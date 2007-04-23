@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161221AbXDWGRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXDWGTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161221AbXDWGRj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161216AbXDWGRj
+	id S1161199AbXDWGTK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161216AbXDWGTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:17:39 -0400
-Received: from smtp01.cdmon.com ([86.109.99.230]:63271 "EHLO smtp01.cdmon.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161221AbXDWGRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:17:38 -0400
-Date: Mon, 23 Apr 2007 08:19:27 +0200
-From: DervishD <lkml@dervishd.net>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Juergen Beisert <juergen127@kreuzholzen.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Wrong free clusters count on FAT32
-Message-ID: <20070423061927.GA2428@DervishD>
-Mail-Followup-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Juergen Beisert <juergen127@kreuzholzen.de>,
-	linux-kernel@vger.kernel.org
-References: <20070419085750.GA2833@DervishD> <200704191352.06456.juergen127@kreuzholzen.de> <20070419141942.GF8287@DervishD> <87d51xtkmp.fsf@duaron.myhome.or.jp> <20070421201841.85717088.akpm@linux-foundation.org> <87wt05vxu7.fsf@duaron.myhome.or.jp> <20070422112658.GB5786@DervishD> <87mz10tyi1.fsf@duaron.myhome.or.jp> <20070422200839.GC12748@DervishD> <87ps5vq0yw.fsf@duaron.myhome.or.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <87ps5vq0yw.fsf@duaron.myhome.or.jp>
-User-Agent: Mutt/1.4.2.2i
-Organization: DervishD
+	Mon, 23 Apr 2007 02:19:10 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49174 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161199AbXDWGTI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:19:08 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: vgoyal@in.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Jurriaan <thunder7@xs4all.nl>, Helge Hafting <helgehaf@aitel.hist.no>,
+       linux-kernel@vger.kernel.org, Magnus Damm <magnus@valinux.co.jp>,
+       Horms <horms@verge.net.au>, fastboot@osdl.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH 2/2] x86_64: Remove CONFIG_PHYSICAL_START and CONFIG_RELOCATABLE
+References: <20070331232957.e1c93f19.akpm@linux-foundation.org>
+	<20070402074159.GA13704@in.ibm.com>
+	<m1abxrf9o3.fsf@ebiederm.dsl.xmission.com>
+	<20070402094520.GC13704@in.ibm.com>
+	<m1648eg01d.fsf@ebiederm.dsl.xmission.com>
+	<20070403040152.GA5108@in.ibm.com>
+	<m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com>
+	<20070403100349.GA21759@in.ibm.com>
+	<m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pn7zn5n.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070423060739.GA14664@in.ibm.com>
+Date: Mon, 23 Apr 2007 00:17:22 -0600
+In-Reply-To: <20070423060739.GA14664@in.ibm.com> (Vivek Goyal's message of
+	"Mon, 23 Apr 2007 11:37:39 +0530")
+Message-ID: <m1slary5ql.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-    Hi Ogawa :)
+Vivek Goyal <vgoyal@in.ibm.com> writes:
 
- * OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> dixit:
-> DervishD <lkml@dervishd.net> writes:
-> >> It would add the limitation to following simple usage,
-> >> 
-> >> 	# mount -t vfat /dev/sda1 /mnt
-> >>         # cp -a * /mnt
-> >>         # umount
-> >> 
-> >> if /dev/sda1 was the large and slow device, "mount" will need several
-> >> minutes to counts free clusters. I think the user will be hard to
-> >> accept the several minutes at "mount".
-> >
-> >     I can carry some tests, but if Windows does that tasks lightning
-> > fast, Linux surely does it faster ;) I don't think, anyway, that having
-> > a huge USB disk is a common practice when using "modest" machines.
-> >
-> >     If you want, I can perform a couple of tests. I have a 80GB disk
-> > that I can connect using an USB adapter and my machine is AMD Athlon XP
-> > 1900+ with 1GB of RAM, which looks pretty slow nowadays O:)
-> 
-> Yes, I think it's not common practice too. But I don't see why do you
-> want to scanning at the mount.
+> On Sun, Apr 22, 2007 at 11:15:48PM -0600, Eric W. Biederman wrote:
+>> +++ b/arch/x86_64/Kconfig
+>> @@ -565,62 +565,9 @@ config CRASH_DUMP
+>>            which are loaded in the main kernel with kexec-tools into
+>>            a specially reserved region and then later executed after
+>>            a crash by kdump/kexec. The crash dump kernel must be compiled
+>> -	  to a memory address not used by the main kernel or BIOS using
+>> -	  PHYSICAL_START.
+>> +	  to a memory address not used by the main kernel or BIOS
+>>            For more details see Documentation/kdump/kdump.txt
+>
+> Hi Eric,
+>
+> I think "must be compiled" should be replaced with "must be loaded" now.
 
-    Just because I was thinking that, otherwise, the scanning would need
-to be done at each statfs call, but I was wrong: once the scanning is
-done and the count is right, it is written at free_clusters and used
-afterwards.
+Yes, that sounds right.  Ugh.  I didn't look at enough context to read
+the whole sentence.  I just killed the part about PHYSICAL_START.
 
-    I thought the mount was the best point in time for doing this.
+> Otherwise both the patches look fine.  I am planning to test these.
+>
+> This change will also require modifications to Documentation/kdump/kdump.txt
+> file.
 
-    Raúl Núñez de Arenas Coronado
+Do you think you can generate the patch fix up the CONFIG_CRASH_DUMP
+and kdump.txt documentation.
 
--- 
-Linux Registered User 88736 | http://www.dervishd.net
-It's my PC and I'll cry if I want to... RAmen!
+I was just interested enough to spend the 15 minutes needed to generate
+this patch.  I don't think I care enough to dot the i's and cross the t's
+in the documentation.
+
+Eric
