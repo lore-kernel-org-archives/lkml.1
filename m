@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030776AbXDWETh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030782AbXDWE0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030776AbXDWETh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 00:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030782AbXDWETh
+	id S1030782AbXDWE0F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 00:26:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030787AbXDWE0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 00:19:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45706 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030776AbXDWETg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 00:19:36 -0400
-Message-ID: <462C35FC.3050109@redhat.com>
-Date: Mon, 23 Apr 2007 00:28:44 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070130)
+	Mon, 23 Apr 2007 00:26:05 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:31047 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030782AbXDWE0E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 00:26:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=vbsR5hMZlPL3G7Cd8d6MR2X6WbPDlImTRHIY6LajlQfQoEc3SVnTrI1Ha5O/Iuy7nbvZPXLj3L4zXu3Eroyq9xCdWIvoO9KahpaaVeFRiJo0UkXaalbYladL8E0rlkO6xLTU25Iu97s6hdLtXhc5fvy/50pXYqBVdduFxHtnycs=  ;
+X-YMail-OSG: Ds_P13AVM1mcuXGWWMjEPkn40JxwRpMnl8_LsbhSHVw8X6u3_R_paf9ekbPvPdXiVq6IYrnhLg--
+Message-ID: <462C3554.5000906@yahoo.com.au>
+Date: Mon, 23 Apr 2007 14:25:56 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au>
-In-Reply-To: <462ACA40.8070407@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
+CC: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: How to make mmap'ed kernel buffer non-cacheable
+References: <008e01c7855d$7af41de0$142ec70a@dlh.st.com>
+In-Reply-To: <008e01c7855d$7af41de0$142ec70a@dlh.st.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+Bhuvan Kumar MITTAL wrote:
+> Hi Alan,
+> 
+> I believe that dma_alloc_coherent will mark the kernel buffer as uncached at alocation time. 
+> But that is not my intention. I have mapped some user space memory to the kernel buffer and I wish to ensure that the contents of both are coherent and correctly ordered. 
+> 
+> In other words I wish to flush the contents of the kernel buffer to user space as soon as new data is available in my kernel buffer. How to do that? Will doing mysnc from the user space help?
 
-> So where is the down_write coming from in this workload, I wonder?
-> Heap management? What syscalls?
+msync is only for pagecache. If you modify user mapped RAM from the kernel, or wish
+to read user modified RAM from the kernel, you should issue a flush_dcache_page after
+and before, respectively. See Documentation/cachetlb.h.
 
-Trying to answer this question, I straced the mysql threads that
-showed up in top when running a single threaded sysbench workload.
+Does that fix it? What are the details of your platform?
 
-There were no mmap, munmap, brk, mprotect or madvise system calls
-in the trace.
-
-MySQL has me puzzled, but it seems to have some other people
-interested too.
-
-I think I'll go play a bit with ebizzy now, to see how other
-workloads are affected by our kernel changes.
+-- 
+SUSE Labs, Novell Inc.
