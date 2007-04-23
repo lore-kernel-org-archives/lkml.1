@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751602AbXDWTzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751652AbXDWUCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751602AbXDWTzt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 15:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbXDWTzt
+	id S1751652AbXDWUCd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 16:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751682AbXDWUCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 15:55:49 -0400
-Received: from dialup.esmr.ru ([85.94.3.83]:42653 "EHLO localhost.localdomain"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751570AbXDWTzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 15:55:49 -0400
-Date: Mon, 23 Apr 2007 23:55:02 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-       lkml <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
-Message-ID: <20070423235502.734e6e67@localhost.localdomain>
-In-Reply-To: <20070423075957.GA22811@infradead.org>
-References: <20070422232658.5f427fd3@localhost.localdomain>
-	<200704222349.42368.arnd@arndb.de>
-	<20070423101427.3a1d4983@localhost.localdomain>
-	<20070423075957.GA22811@infradead.org>
-X-Mailer: Claws Mail 2.8.1cvs91 (GTK+ 2.10.9; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Apr 2007 16:02:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34419 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751649AbXDWUCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 16:02:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ego@in.ibm.com
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Date: Mon, 23 Apr 2007 20:49:58 +0200
+User-Agent: KMail/1.9.5
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <a781481a0704222109t5c92e4d6t280c21b256945ac8@mail.gmail.com> <20070423141908.GA6842@in.ibm.com>
+In-Reply-To: <20070423141908.GA6842@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704232050.00020.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007 08:59:57 +0100
-Christoph Hellwig wrote:
-
-> On Mon, Apr 23, 2007 at 10:14:27AM +0400, Vitaly Bordug wrote:
-> > On Sun, 22 Apr 2007 23:49:41 +0200
-> > Arnd Bergmann wrote:
+On Monday, 23 April 2007 16:19, Gautham R Shenoy wrote:
+> Hi Satyam, 
+> On Mon, Apr 23, 2007 at 09:39:30AM +0530, Satyam Sharma wrote:
+> > Hi Rafael,
 > > 
-> > > On Sunday 22 April 2007, Vitaly Bordug wrote:
-> > > > This utilizes PCMCIA on mpc885ads and mpc866ads from
-> > > > arch/powerpc. In the new approach, direct IMMR accesses from
-> > > > within drivers/ were totally eliminated, that requires
-> > > > hardware_enable, hardware_disable, voltage_set board-specific
-> > > > functions to be moved over to BSP code section
-> > > > (arch/powerpc/platforms/8xx in 885 case). There is just no way
-> > > > to have both arch/ppc and arch/powerpc approaches to work
-> > > > simultaneously because of that.  
-> > > 
-> > > Maybe I'm missing a key issue here, but what's the point of adding
-> > > more platform_devices for stuff that is already in the device
-> > > tree? Shouldn't this be made an of_platform_driver instead so you
-> > > can use the existing of_device directly?
-> > > 
-> > Was thinking of it but platform_device is better for migration
-> > purposes. Hence, assuming somebody would want to have pcmcia
-> > working not bothering to add whole arch/powerpc support, it can be
-> > accomplished quickly.
+> > >+/*
+> > >+ *     Per task flags used by the freezer
+> > >+ *
+> > >+ *     They should not be referred to directly outside of this file.
+> > >+ */
+> > >+#define TFF_NOFREEZE   0       /* task should not be frozen */
+> > >+#define TFF_FREEZE     8       /* task should go to the refrigerator ASAP 
+> > >*/
+> > >+#define TFF_SKIP       9       /* do not count this task as freezable */
+> > >+#define TFF_FROZEN     10      /* task is frozen */
+> > 
+> > Aren't NOFREEZE and SKIP doing the same thing? One of them appears
+> > superfluous. I'm looking at 21-rc6-mm1 and vfork(2) seems to be its
+> > only user. Seeing how vfork(2) used it, can't the call to
+> > freezer_do_not_count() be replaced with a call to freezer_exempt()?
+> > Similarly, the freezer_count() after the wait_for_completion might
+> > just as well be a clear of the NOFREEZE bit followed by a
+> > try_to_freeze(). Could you please explain the rationale behind the
+> > SKIP flag?
 > 
-> That's a horrible argument.  Please do it properly, and let arch/ppc
-> die as it should.  We shouldn't be adding anything to it anymore
-> anyway.
+> The difference between the NOFREEZE and the SKIP flag is a subtle one.
 > 
-I understand your point, but we shouldn't trash existing bits either. Things are a bit different with embedded
-stuff, and especially in case of 8xx, there are targets without OF-powered uboot. Bootwrapper thing might be helpful in resolving it, but not a holy tablet after all.
+> When a task (say p) sets it's NOFREEZE flag, it tells the freezer not to
+> consider it for freezing. Which means freezeable(p) will return 0.
+> So the freezer will not even mark it for freezing. 
+> 
+> However, when a task sets it SKIP flag, it tells the freezer - "I might
+> block at a safe place. So when you are counting the processes which
+> have been marked as freezeable, but have not frozen yet, please don't
+> count me in. IOW, please skip me."  
+> Thus such a task can still be marked for freezing.
+> 
+> The typical usage is 
+> freezer_do_not_count(current);
+> /* currents goes to an uninterruptible sleep, like wait_for_completion. */
+> freezer_count(current);
+> 
+> Once the task wakes up from it's uninterruptible sleep, it will 
+> call freezer_count which in turn calls try_to_freeze.
+> If the task was marked for freezing, it will be frozen now.
+> 
+> You may want to check the thread http://lkml.org/lkml/2007/2/18/47 
+> on how it came into existance.
 
-The main point is: current 8xx pcmcia code is a holy mess of ifdefs, direct immr accesses (assuming it is io_block_mapped 1:1) etc. And limiting pcmcia to 885ads only (the only 8xx that supports OF so far) is not good.
-We have to admit, that many 8xx boards will remain in ppc/ for a while, and instead of just dropping BSP bits
-I'm going to let them be refactored via pdevs (with announcement in feature removal reference) as it would take couple of hrs only. If nobody will care, then the whole 8xx pcmcia driver will be cleaned up and switched 
-to of_device.
+Very well explained.  Thanks!
 
-Does that make sense?
-
--- 
-Sincerely, Vitaly
+Greetings,
+Rafael
 
