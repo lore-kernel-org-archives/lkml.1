@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbXDWW6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbXDWXCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbXDWW6X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 18:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWW6W
+	id S1754468AbXDWXCK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754470AbXDWXCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 18:58:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:16543 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754463AbXDWW6V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 18:58:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kMQlYa0qmxLScG2Qpp9XKtIvgX9+XsS3Ayr6UuyXwRkE6ipn46X3CdH/MUoMJXzeT+GHTvPF31d8F/SC91T1EBIR+jFOV2twVoNDSvMC3/WtuuF6F8WFYFA5GJd85/bdtoHg7fxW0T0Z/DeUiUByJcyIfgJf1nIrcYvdEhNHwOI=
-Message-ID: <62eb359a0704231558we55f553u44a77183ed3e5340@mail.gmail.com>
-Date: Mon, 23 Apr 2007 17:58:21 -0500
-From: "Marcos Pinto" <markybob@gmail.com>
-To: "Jan Beulich" <jbeulich@novell.com>
-Subject: Re: 2.6.20.7 locking up hard on boot
-Cc: "Adrian Bunk" <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Alan Cox" <alan@redhat.com>, "Greg KH" <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <462C8525.76E4.0078.0@novell.com>
+	Mon, 23 Apr 2007 19:02:10 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46185 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754468AbXDWXCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 19:02:08 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 04/25] xen: Add XEN config options
+Date: Tue, 24 Apr 2007 01:00:30 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <20070423215638.563901986@goop.org> <20070423215709.990824532@goop.org>
+In-Reply-To: <20070423215709.990824532@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
-	 <20070421013454.GB4016@stusta.de>
-	 <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com>
-	 <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
-	 <462C8525.76E4.0078.0@novell.com>
+Message-Id: <200704240100.31011.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm honestly not sure how to try what you suggested to try, since I'm
-nothing even remotely close to a kernel geek and it was over my head.
-However, I'd gladly test anything that you think would be worth
-testing, if you would please put it in way that I could understand,
-such as "change line 'foo' in probe.c into 'foolio'"
+On Monday 23 April 2007 23:56:42 Jeremy Fitzhardinge wrote:
+> The XEN config option enables the Xen paravirt_ops interface, which is
+> installed when the kernel finds itself running under Xen.
+> 
+> Xen is no longer a sub-architecture, so the X86_XEN subarch config
+> option has gone.
+> 
+> Xen is currently incompatible with PREEMPT, but this is fixed up later
+> in the series.
 
-Thanks again for all of your help,
-Marcos
+Shouldn't this be after the change that adds arch/i386/xen/Kconfig?
 
-On 4/23/07, Jan Beulich <jbeulich@novell.com> wrote:
-> Given that all of the reports are in cases when the adjustment is *not*
-> being done (and only a message is being printed), I can only assume that
-> the breakage results from the adding of PCI_BASE_ADDRESS_SPACE_IO
-> into the resource flags. I considered this unconditional setting of the flags
-> odd already in the original code, and added this extra flag only for
-> consistency reasons (because the settings reported by X indicated that
-> this was missing). Perhaps the adjustment (original and the added
-> extra flag) shouldn't be done if IORESOURCE_IO wasn't already set.
-> Perhaps one of those seeing the issue could try out returning from the
-> function right after that printk(), without any adjustment to the flags.
->
-> Jan
->
->
+Otherwise you break bisects
+
+-Andi
