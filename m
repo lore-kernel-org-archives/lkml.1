@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXDWFSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161187AbXDWFVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbXDWFSG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 01:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXDWFSG
+	id S1161187AbXDWFVN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 01:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161202AbXDWFVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 01:18:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44458 "EHLO
+	Mon, 23 Apr 2007 01:21:12 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44473 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbXDWFSE (ORCPT
+	with ESMTP id S1161187AbXDWFVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 01:18:04 -0400
+	Mon, 23 Apr 2007 01:21:11 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
 Cc: vgoyal@in.ibm.com, Jurriaan <thunder7@xs4all.nl>,
        Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
        Magnus Damm <magnus@valinux.co.jp>, Horms <horms@verge.net.au>,
-       thunder7@xs4all.nl, <fastboot@osdl.org>,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: [PATCH 1/2] x86_64: Reflect the relocatability of the kernel in the ELF header.
+       <fastboot@osdl.org>, Kexec Mailing List <kexec@lists.infradead.org>
+Subject: [PATCH 2/2] x86_64: Remove CONFIG_PHYSICAL_START and CONFIG_RELOCATABLE
 References: <20070331005303.354411f0.akpm@linux-foundation.org>
 	<20070401052932.GA9894@amd64.of.nowhere>
 	<m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
@@ -29,10 +28,11 @@ References: <20070331005303.354411f0.akpm@linux-foundation.org>
 	<20070403040152.GA5108@in.ibm.com>
 	<m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com>
 	<20070403100349.GA21759@in.ibm.com>
-Date: Sun, 22 Apr 2007 23:12:13 -0600
-In-Reply-To: <20070403100349.GA21759@in.ibm.com> (Vivek Goyal's message of
-	"Tue, 3 Apr 2007 15:33:49 +0530")
-Message-ID: <m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Sun, 22 Apr 2007 23:15:48 -0600
+In-Reply-To: <m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Sun, 22 Apr 2007 23:12:13 -0600")
+Message-ID: <m14pn7zn5n.fsf_-_@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -40,157 +40,219 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Currently because vmlinux does not reflect that the kernel is relocatable
-we still have to support CONFIG_PHYSICAL_START.  So this patch adds a small
-c program to do what we cannot do with a linker script, set the elf header
-type to ET_DYN.
+Now that the vmlinux is marked as relocatable there is no reason to
+retain the CONFIG_PHYSICAL_START option, as we can put the binary we
+have at any 2MB aligned address in memory.
 
-This should remove the last obstacle to removing CONFIG_PHYSICAL_START
-on x86_64.
+With CONFIG_PHYSICAL_START gone the handful of code lines that depend
+on CONFIG_RELOCATABLE no longer make sense to be conditional and can
+be removed.
+
+The big win of this patch (besides Kconfig simplicity) is that the
+nasty BUILD_BUG_ON test for people misaligning their kernel when using
+CONFIG_PHYSICAL_START can be removed as this case can only happen with
+CONFIG_PHYSICAL_START selected.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86_64/Kconfig  |    4 +++
- arch/x86_64/Makefile |   10 +++++++
- scripts/Makefile     |   11 ++++---
- scripts/mketrel.c    |   70 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 90 insertions(+), 5 deletions(-)
- create mode 100644 scripts/mketrel.c
+ arch/x86_64/Kconfig                |   55 +-----------------------------------
+ arch/x86_64/Makefile               |    2 -
+ arch/x86_64/boot/compressed/head.S |   13 +--------
+ arch/x86_64/boot/setup.S           |    4 --
+ arch/x86_64/defconfig              |    2 -
+ arch/x86_64/kernel/head64.c        |    7 ----
+ include/asm-x86_64/page.h          |    2 +-
+ 7 files changed, 3 insertions(+), 82 deletions(-)
 
 diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
-index 16d9bf3..773b487 100644
+index 773b487..713c1ad 100644
 --- a/arch/x86_64/Kconfig
 +++ b/arch/x86_64/Kconfig
-@@ -121,6 +121,10 @@ config ARCH_HAS_ILOG2_U64
- 	bool
- 	default n
+@@ -565,62 +565,9 @@ config CRASH_DUMP
+           which are loaded in the main kernel with kexec-tools into
+           a specially reserved region and then later executed after
+           a crash by kdump/kexec. The crash dump kernel must be compiled
+-	  to a memory address not used by the main kernel or BIOS using
+-	  PHYSICAL_START.
++	  to a memory address not used by the main kernel or BIOS
+           For more details see Documentation/kdump/kdump.txt
  
-+config ELF_RELOCATABLE
-+	bool
-+	default y
-+
- source "init/Kconfig"
- 
- 
+-config RELOCATABLE
+-	bool "Build a relocatable kernel(EXPERIMENTAL)"
+-	depends on EXPERIMENTAL
+-	help
+-	  Builds a relocatable kernel. This enables loading and running
+-	  a kernel binary from a different physical address than it has
+-	  been compiled for.
+-
+-	  One use is for the kexec on panic case where the recovery kernel
+-	  must live at a different physical address than the primary
+-	  kernel.
+-
+-	  Note: If CONFIG_RELOCATABLE=y, then kernel run from the address
+-	  it has been loaded at and compile time physical address
+-	  (CONFIG_PHYSICAL_START) is ignored.
+-
+-config PHYSICAL_START
+-	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
+-	default "0x200000"
+-	help
+-	  This gives the physical address where the kernel is loaded. It
+-	  should be aligned to 2MB boundary.
+-
+-	  If kernel is a not relocatable (CONFIG_RELOCATABLE=n) then
+-	  bzImage will decompress itself to above physical address and
+-	  run from there. Otherwise, bzImage will run from the address where
+-	  it has been loaded by the boot loader and will ignore above physical
+-	  address.
+-
+-	  In normal kdump cases one does not have to set/change this option
+-	  as now bzImage can be compiled as a completely relocatable image
+-	  (CONFIG_RELOCATABLE=y) and be used to load and run from a different
+-	  address. This option is mainly useful for the folks who don't want
+-	  to use a bzImage for capturing the crash dump and want to use a
+-	  vmlinux instead.
+-
+-	  So if you are using bzImage for capturing the crash dump, leave
+-	  the value here unchanged to 0x200000 and set CONFIG_RELOCATABLE=y.
+-	  Otherwise if you plan to use vmlinux for capturing the crash dump
+-	  change this value to start of the reserved region (Typically 16MB
+-	  0x1000000). In other words, it can be set based on the "X" value as
+-	  specified in the "crashkernel=YM@XM" command line boot parameter
+-	  passed to the panic-ed kernel. Typically this parameter is set as
+-	  crashkernel=64M@16M. Please take a look at
+-	  Documentation/kdump/kdump.txt for more details about crash dumps.
+-
+-	  Usage of bzImage for capturing the crash dump is advantageous as
+-	  one does not have to build two kernels. Same kernel can be used
+-	  as production kernel and capture kernel.
+-
+-	  Don't change this unless you know what you are doing.
+-
+ config SECCOMP
+ 	bool "Enable seccomp to safely compute untrusted bytecode"
+ 	depends on PROC_FS
 diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
-index 9dd91b2..5ae79ab 100644
+index 5ae79ab..5d96f4f 100644
 --- a/arch/x86_64/Makefile
 +++ b/arch/x86_64/Makefile
-@@ -124,6 +124,16 @@ define archhelp
+@@ -124,7 +124,6 @@ define archhelp
    echo  '  isoimage     - Create a boot CD-ROM image'
  endef
  
-+ifeq ($(CONFIG_RELOCATABLE),y)
-+define cmd_vmlinux__
-+      $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
-+      -T $(vmlinux-lds) $(vmlinux-init)		\
-+      --start-group $(vmlinux-main) --end-group	\
-+      $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) FORCE ,$^) \
-+      && scripts/mketrel $@
-+endef
-+endif
-+
+-ifeq ($(CONFIG_RELOCATABLE),y)
+ define cmd_vmlinux__
+       $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
+       -T $(vmlinux-lds) $(vmlinux-init)		\
+@@ -132,7 +131,6 @@ define cmd_vmlinux__
+       $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) FORCE ,$^) \
+       && scripts/mketrel $@
+ endef
+-endif
+ 
  CLEAN_FILES += arch/$(ARCH)/boot/fdimage \
  	       arch/$(ARCH)/boot/image.iso \
- 	       arch/$(ARCH)/boot/mtools.conf
-diff --git a/scripts/Makefile b/scripts/Makefile
-index 1c73c5a..ddba550 100644
---- a/scripts/Makefile
-+++ b/scripts/Makefile
-@@ -7,11 +7,12 @@
- # conmakehash:   Create chartable
- # conmakehash:	 Create arrays for initializing the kernel console tables
+diff --git a/arch/x86_64/boot/compressed/head.S b/arch/x86_64/boot/compressed/head.S
+index f9d5692..493723e 100644
+--- a/arch/x86_64/boot/compressed/head.S
++++ b/arch/x86_64/boot/compressed/head.S
+@@ -71,13 +71,9 @@ startup_32:
+  * for safe in-place decompression.
+  */
  
--hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
--hostprogs-$(CONFIG_LOGO)         += pnmtologo
--hostprogs-$(CONFIG_VT)           += conmakehash
--hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
--hostprogs-$(CONFIG_IKCONFIG)     += bin2c
-+hostprogs-$(CONFIG_KALLSYMS)        += kallsyms
-+hostprogs-$(CONFIG_LOGO)            += pnmtologo
-+hostprogs-$(CONFIG_VT)              += conmakehash
-+hostprogs-$(CONFIG_PROM_CONSOLE)    += conmakehash
-+hostprogs-$(CONFIG_IKCONFIG)        += bin2c
-+hostprogs-$(CONFIG_ELF_RELOCATABLE) += mketrel
+-#ifdef CONFIG_RELOCATABLE
+ 	movl	%ebp, %ebx
+ 	addl	$(LARGE_PAGE_SIZE -1), %ebx
+ 	andl	$LARGE_PAGE_MASK, %ebx
+-#else
+-	movl	$CONFIG_PHYSICAL_START, %ebx
+-#endif
  
- always		:= $(hostprogs-y) $(hostprogs-m)
+ 	/* Replace the compressed data size with the uncompressed size */
+ 	subl	input_len(%ebp), %ebx
+@@ -200,21 +196,14 @@ ENTRY(startup_64)
+ 	 * we were loaded at aligned to a 2M boundary. %rbp contains the
+ 	 * decompressed kernel start address.
+ 	 *
+-	 * If it is a relocatable kernel then decompress and run the kernel
+-	 * from load address aligned to 2MB addr, otherwise decompress and
+-	 * run the kernel from CONFIG_PHYSICAL_START
++	 * Decompress and run the kernel from load address aligned to 2MB addr
+ 	 */
  
-diff --git a/scripts/mketrel.c b/scripts/mketrel.c
-new file mode 100644
-index 0000000..effa312
---- /dev/null
-+++ b/scripts/mketrel.c
-@@ -0,0 +1,70 @@
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <unistd.h>
-+#include <elf.h>
-+#include <stdio.h>
-+#include <errno.h>
-+#include <string.h>
-+#include <stdarg.h>
-+#include <stdlib.h>
-+
-+static int fd;
-+unsigned char e_ident[EI_NIDENT];
-+
-+void die(const char * str, ...)
-+{
-+	va_list args;
-+	va_start(args, str);
-+	vfprintf(stderr, str, args);
-+	fputc('\n', stderr);
-+	exit(1);
-+}
-+
-+void file_open(const char *name)
-+{
-+	if ((fd = open(name, O_RDWR, 0)) < 0)
-+		die("Unable to open `%s': %m", name);
-+}
-+
-+static void mketrel(void)
-+{
-+	unsigned char e_type[2];
-+	if (read(fd, &e_ident, sizeof(e_ident)) != sizeof(e_ident))
-+		die("Cannot read ELF header: %s\n", strerror(errno));
-+
-+	if (memcmp(e_ident, ELFMAG, 4) != 0)
-+		die("No ELF magic\n");
-+
-+	if ((e_ident[EI_CLASS] != ELFCLASS64) &&
-+	    (e_ident[EI_CLASS] != ELFCLASS32))
-+		die("Unrecognized ELF class: %x\n", e_ident[EI_CLASS]);
-+	
-+	if ((e_ident[EI_DATA] != ELFDATA2LSB) &&
-+	    (e_ident[EI_DATA] != ELFDATA2MSB))
-+		die("Unrecognized ELF data encoding: %x\n", e_ident[EI_DATA]);
-+
-+	if (e_ident[EI_VERSION] != EV_CURRENT)
-+		die("Unknown ELF version: %d\n", e_ident[EI_VERSION]);
-+
-+	if (e_ident[EI_DATA] == ELFDATA2LSB) {
-+		e_type[0] = ET_REL & 0xff;
-+		e_type[1] = ET_REL >> 8;
-+	} else {
-+		e_type[1] = ET_REL & 0xff;
-+		e_type[0] = ET_REL >> 8;
-+	}
-+
-+	if (write(fd, &e_type, sizeof(e_type)) != sizeof(e_type))
-+		die("Cannot write ELF type: %s\n", strerror(errno));
-+}
-+
-+int main(int argc, char **argv)
-+{
-+	if (argc != 2)
-+		die("Usage: mketrel: vmlinux");
-+	file_open(argv[1]);
-+	mketrel();
-+	close(fd);
-+	return 0;
-+}
+ 	/* Start with the delta to where the kernel will run at. */
+-#ifdef CONFIG_RELOCATABLE
+ 	leaq	startup_32(%rip) /* - $startup_32 */, %rbp
+ 	addq	$(LARGE_PAGE_SIZE - 1), %rbp
+ 	andq	$LARGE_PAGE_MASK, %rbp
+ 	movq	%rbp, %rbx
+-#else
+-	movq	$CONFIG_PHYSICAL_START, %rbp
+-	movq	%rbp, %rbx
+-#endif
+ 
+ 	/* Replace the compressed data size with the uncompressed size */
+ 	movl	input_len(%rip), %eax
+diff --git a/arch/x86_64/boot/setup.S b/arch/x86_64/boot/setup.S
+index 4f88510..8a70c92 100644
+--- a/arch/x86_64/boot/setup.S
++++ b/arch/x86_64/boot/setup.S
+@@ -158,11 +158,7 @@ cmd_line_ptr:	.long 0			# (Header version 0x0202 or later)
+ ramdisk_max:	.long 0xffffffff
+ kernel_alignment:  .long 0x200000       # physical addr alignment required for
+ 					# protected mode relocatable kernel
+-#ifdef CONFIG_RELOCATABLE
+ relocatable_kernel:    .byte 1
+-#else
+-relocatable_kernel:    .byte 0
+-#endif
+ pad2:                  .byte 0
+ pad3:                  .word 0
+ 
+diff --git a/arch/x86_64/defconfig b/arch/x86_64/defconfig
+index 90c5a9d..d977bcb 100644
+--- a/arch/x86_64/defconfig
++++ b/arch/x86_64/defconfig
+@@ -174,8 +174,6 @@ CONFIG_X86_MCE_INTEL=y
+ CONFIG_X86_MCE_AMD=y
+ # CONFIG_KEXEC is not set
+ # CONFIG_CRASH_DUMP is not set
+-# CONFIG_RELOCATABLE is not set
+-CONFIG_PHYSICAL_START=0x200000
+ CONFIG_SECCOMP=y
+ # CONFIG_CC_STACKPROTECTOR is not set
+ # CONFIG_HZ_100 is not set
+diff --git a/arch/x86_64/kernel/head64.c b/arch/x86_64/kernel/head64.c
+index 213d90e..6c34bdd 100644
+--- a/arch/x86_64/kernel/head64.c
++++ b/arch/x86_64/kernel/head64.c
+@@ -62,13 +62,6 @@ void __init x86_64_start_kernel(char * real_mode_data)
+ {
+ 	int i;
+ 
+-	/*
+-	 * Make sure kernel is aligned to 2MB address. Catching it at compile
+-	 * time is better. Change your config file and compile the kernel
+-	 * for a 2MB aligned address (CONFIG_PHYSICAL_START)
+-	 */
+-	BUILD_BUG_ON(CONFIG_PHYSICAL_START & (__KERNEL_ALIGN - 1));
+-
+ 	/* clear bss before set_intr_gate with early_idt_handler */
+ 	clear_bss();
+ 
+diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
+index 7bb725f..20662ab 100644
+--- a/include/asm-x86_64/page.h
++++ b/include/asm-x86_64/page.h
+@@ -78,7 +78,7 @@ extern unsigned long phys_base;
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+-#define __PHYSICAL_START	CONFIG_PHYSICAL_START
++#define __PHYSICAL_START	0x200000
+ #define __KERNEL_ALIGN		0x200000
+ #define __START_KERNEL		(__START_KERNEL_map + __PHYSICAL_START)
+ #define __START_KERNEL_map	0xffffffff80000000
 -- 
 1.5.1.1.181.g2de0
 
