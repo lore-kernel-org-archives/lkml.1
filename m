@@ -1,54 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161498AbXDWTmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161506AbXDWTmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161498AbXDWTmI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 15:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161490AbXDWTmH
+	id S1161506AbXDWTmg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 15:42:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161510AbXDWTmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 15:42:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52985 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161498AbXDWTmG (ORCPT
+	Mon, 23 Apr 2007 15:42:36 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:56084 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161506AbXDWTmf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 15:42:06 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       virtualization@lists.osdl.org, Chuck Ebbert <cebbert@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
-References: <20070414204154.871250608@goop.org>
-	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
-	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
-	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
-	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>
-	<462CE1E0.9060007@zytor.com>
-	<m1zm4zvwfr.fsf@ebiederm.dsl.xmission.com>
-	<462CF5B8.4070708@xensource.com>
-	<m1y7kivs3s.fsf@ebiederm.dsl.xmission.com> <462D04B2.6080008@goop.org>
-	<462D05A0.1020100@zytor.com> <462D072F.6030809@goop.org>
-Date: Mon, 23 Apr 2007 13:39:41 -0600
-In-Reply-To: <462D072F.6030809@goop.org> (Jeremy Fitzhardinge's message of
-	"Mon, 23 Apr 2007 12:21:19 -0700")
-Message-ID: <m1r6qavq0y.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 23 Apr 2007 15:42:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=o9USRimX/HPGnKPdPWJgUdFZ7M7fZeYw5bDA+iDkDFxFyLozusfZX/m4XzCaXV2l9
+	mKhjtmbMHV24Up3IYdHTg==
+Date: Mon, 23 Apr 2007 12:41:51 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, linux-kernel@vger.kernel.org
+Subject: [patch -mm] cpusets: allow TIF_MEMDIE threads to allocate anywhere
+Message-ID: <Pine.LNX.4.64.0704231235280.18240@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+OOM killed tasks have access to memory reserves as specified by the
+TIF_MEMDIE flag in the hopes that it will quickly exit.  If such a task
+has memory allocations constrained by cpusets, we may encounter a
+deadlock if a blocking task cannot exit because it cannot allocate the
+necessary memory.
 
-> H. Peter Anvin wrote:
->> It would be *trivial* to make a certain number of page table slots
->> available at the end of the head.S-generated map. 
->
-> Or you could use a fixmap.
+We allow tasks that have the TIF_MEMDIE flag to allocate memory anywhere,
+including outside its cpuset restriction, so that it can quickly die
+regardless of whether it is __GFP_HARDWALL.
 
-That certain number of page table slots should be the fixmap slots.
-If you do that bt_ioremap works, we remove a boatload of special cases
-and the code becomes simpler.
+Cc: Andi Kleen <ak@suse.de>
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ kernel/cpuset.c |   22 ++++++++++++++++++++--
+ 1 files changed, 20 insertions(+), 2 deletions(-)
 
-Eric
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -2351,6 +2351,8 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
+  * z's node is in our tasks mems_allowed, yes.  If it's not a
+  * __GFP_HARDWALL request and this zone's nodes is in the nearest
+  * mem_exclusive cpuset ancestor to this tasks cpuset, yes.
++ * If the task has been OOM killed and has access to memory reserves
++ * as specified by the TIF_MEMDIE flag, yes.
+  * Otherwise, no.
+  *
+  * If __GFP_HARDWALL is set, cpuset_zone_allowed_softwall()
+@@ -2368,7 +2370,8 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
+  * calls get to this routine, we should just shut up and say 'yes'.
+  *
+  * GFP_USER allocations are marked with the __GFP_HARDWALL bit,
+- * and do not allow allocations outside the current tasks cpuset.
++ * and do not allow allocations outside the current tasks cpuset
++ * unless the task has been OOM killed as is marked TIF_MEMDIE.
+  * GFP_KERNEL allocations are not so marked, so can escape to the
+  * nearest enclosing mem_exclusive ancestor cpuset.
+  *
+@@ -2392,6 +2395,7 @@ static const struct cpuset *nearest_exclusive_ancestor(const struct cpuset *cs)
+  * affect that:
+  *	in_interrupt - any node ok (current task context irrelevant)
+  *	GFP_ATOMIC   - any node ok
++ *	TIF_MEMDIE   - any node ok
+  *	GFP_KERNEL   - any node in enclosing mem_exclusive cpuset ok
+  *	GFP_USER     - only nodes in current tasks mems allowed ok.
+  *
+@@ -2413,6 +2417,12 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
+ 	might_sleep_if(!(gfp_mask & __GFP_HARDWALL));
+ 	if (node_isset(node, current->mems_allowed))
+ 		return 1;
++	/*
++	 * Allow tasks that have access to memory reserves because they have
++	 * been OOM killed to get memory anywhere.
++	 */
++	if (unlikely(test_tsk_thread_flag(current, TIF_MEMDIE)))
++		return 1;
+ 	if (gfp_mask & __GFP_HARDWALL)	/* If hardwall request, stop here */
+ 		return 0;
+ 
+@@ -2438,7 +2448,9 @@ int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask)
+  *
+  * If we're in interrupt, yes, we can always allocate.
+  * If __GFP_THISNODE is set, yes, we can always allocate.  If zone
+- * z's node is in our tasks mems_allowed, yes.   Otherwise, no.
++ * z's node is in our tasks mems_allowed, yes.   If the task has been
++ * OOM killed and has access to memory reserves as specified by the
++ * TIF_MEMDIE flag, yes.  Otherwise, no.
+  *
+  * The __GFP_THISNODE placement logic is really handled elsewhere,
+  * by forcibly using a zonelist starting at a specified node, and by
+@@ -2462,6 +2474,12 @@ int __cpuset_zone_allowed_hardwall(struct zone *z, gfp_t gfp_mask)
+ 	node = zone_to_nid(z);
+ 	if (node_isset(node, current->mems_allowed))
+ 		return 1;
++        /*
++         * Allow tasks that have access to memory reserves because they have
++         * been OOM killed to get memory anywhere.
++         */
++        if (unlikely(test_tsk_thread_flag(current, TIF_MEMDIE)))
++                return 1;
+ 	return 0;
+ }
+ 
