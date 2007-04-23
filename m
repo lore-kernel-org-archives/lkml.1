@@ -1,129 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbXDWJTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXDWJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbXDWJTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXDWJTa
+	id S1754077AbXDWJVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbXDWJVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:19:30 -0400
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:3490 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754072AbXDWJT3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:19:29 -0400
-Date: Mon, 23 Apr 2007 11:19:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH][RFC] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070423111950.129856eb@hyperion.delvare>
-In-Reply-To: <20070422152937.7332fc31@localhost.localdomain>
-References: <20070420082714.4f10f186@localhost.localdomain>
-	<20070421095707.6b42a312@hyperion.delvare>
-	<20070422152937.7332fc31@localhost.localdomain>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 05:21:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36645 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754077AbXDWJVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:21:20 -0400
+Message-ID: <462C7A6F.9030905@redhat.com>
+Date: Mon, 23 Apr 2007 05:20:47 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
+       jakub@redhat.com, drepper@redhat.com
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com>
+In-Reply-To: <462C2F33.8090508@redhat.com>
+Content-Type: multipart/mixed;
+ boundary="------------030208000505050407080100"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vitaly,
+This is a multi-part message in MIME format.
+--------------030208000505050407080100
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Sun, 22 Apr 2007 15:29:37 +0400, Vitaly Bordug wrote:
-> On Sat, 21 Apr 2007 09:57:07 +0200 Jean Delvare wrote:
-> > I wonder what's the point of having a separate i2c algorithm driver.
-> > We don't expect any other driver than i2c-rpx to ever use it, do we?
-> > In that case, all the code should be added to i2c-rpx directly, this
-> > will makes things more simple and more efficient.
->
-> That is how it was back in 2.4 - if you see combine is a good move,
-> I'm OK with it. But what shouldn't be rpc then - basically rpx(lite) is
-> 8xx-based target, so let's call it all mpc8xx then.
+Use TLB batching for MADV_FREE.  Adds another 10-15% extra performance
+to the MySQL sysbench results on my quad core system.
 
-Sure, I'm fine with a name change. If it makes more sense to name that
-driver i2c-mpc8xx, that's OK with me.
+Signed-off-by: Rik van Riel <riel@redhat.com>
+---
+Rik van Riel wrote:
 
-> > > +		tmo = jiffies + 1 * HZ;
-> > > +		while (!(in_8(&i2c->i2c_i2cer) & 0x11 || time_after(jiffies, tmo))) ;/* Busy wait, with a timeout */
-> > 
-> > This could result in a one-second busy loop, not very friendly for
-> > other drivers. It should sleep while waiting. Line too long, please
-> > fold.
->
-> Can you please elaborate a little here (or just point to the
-> similar code)? I assume we should not block here, handling timeout
-> in a waitqueue...
+>> I've added a 5th column, with just your mmap_sem patch and
+>> without my madv_free patch.  It is run with the glibc patch,
+>> which should make it fall back to MADV_DONTNEED after the
+>> first MADV_FREE call fails.
 
-Blocking is not a problem. The problem is that you are keeping the CPU
-for yourself while waiting, for up to one full second. That's not
-acceptable. You should at least call schedule() or cond_resced() (I
-don't know the difference, I admit) and/or cpu_relax() as is done in
-i2c-mpc, i2c-ibm_iic and scx200_acb, or even sleep, as is done in
-i2c-omap. Search for "time_after" in these 4 drivers for examples. I
-believe that sleeping is more friendly.
+With the attached patch to make MADV_FREE use tlb batching, not
+only do we gain an additional 10-15% performance but Nick's
+mmap_sem patch also shows the performance increase that we
+expected to see.
 
-> > You do not appear to handle repeated start. I can tell because the
-> > code handles all messages the exact same way, be they the first,
-> > second or last message of a group. This means that you don't really
-> > implement the I2C protocol, but an approximation of it. It might be
-> > sufficient for some I2C chips, but others will break. Look in the
-> > specifications of your device for how this could be fixed.
->
-> I doubt 8xx has a full-fledged i2c protocol stuff onboard, and basic
-> code that were residing in 2.4 repo suite my needs quite well (afaict
-> many others just don't care :)).
-> I just think it is silly to drop the code already implemented and working
-> even if it requires some efforts to bring it up to shape.
+It looks like the tlb flushes (and IPIs) from zap_pte_range()
+could have been the problem.  They're gone now.
 
-Well as far as I can see, only the repeated start is missing, so it's
-not that far from a complete implementation. If the hardware can do it,
-you simply have to add it to the driver. If the hardware really doesn't
-do it (which would surprise me, but you never know), of course you
-cannot implement it in the driver and we'll have to live with (well,
-without) it. But that's definitely an issue to keep in mind if I2C chip
-drivers start failing when used together with this bus driver.
+The second column from the right has Nick's patch and my own
+two patches.  Performance with 16 threads is almost triple what
+it used to be...
 
-> > > +static struct i2c_adapter rpx_ops = {
-> > 
-> > Could be const?
-> > 
-> prolly yes.
-> > > +	.owner		= THIS_MODULE,
-> > > +	.name		= "m8xx",
-> > 
-> > Find a better name (e.g. "i2c-rpx").
-> > 
-> What about mpc8xx?
+vanilla   glibc  glibc      glibc        glibc      glibc      glibc
+                  madv_free  madv_free               madv_free 
+madv_free
+                             mmap_sem     mmap_sem   mmap_sem
+                                                     tlb batch  tlb_batch
+threads
 
-i2c-mpc8xx then, OK.
+  1     610     609     596         545         534     547     537
+  2    1032    1136    1196        1200        1180    1293    1194
+  4    1070    1128    2014        2024        2027    2248    2040
+  8    1000    1088    1665        2087        2089    2314    1869
+  16    779    1073    1310        1999        2012    2214    1557
 
-> > > +/* Structure for a device driver */
-> > > +static struct device_driver i2c_rpx_driver = {
-> > > +	.name = "fsl-i2c-cpm",
-> > > +	.bus = &platform_bus_type,
-> > > +	.probe = i2c_rpx_probe,
-> > > +	.remove = i2c_rpx_remove,
-> > > +};
-> > 
-> > Why don't you declare it as a struct platform_driver, register it with
-> > platform_driver_register() and unregister it with
-> > platform_driver_unregister()?
->
-> Well. This stuff belongs to CPM1, of the mpc8xx family, but the
-> target boards are different, and they may/should provide board
-> specific inits and filling of platform data. With
-> platform_driver_register we may end up with ifdef stuff here
-> (which is evil).
 
-I don't follow you here, sorry. Platform devices are declared by
-board-specific code which can include all the needed initialization.
-And device-specific data can be carried to the platform driver for
-further use. The platform device/driver infrastructure is meant to
-handle that kind of situation, so there really is no excuse that I can
-see not to use it. i2c-omap and i2c-mpc use it. As a matter of fact you
-_are_ declaring a platform driver (.bus = &platform_bus_type), just not
-using the standard way.
+> Now that I think about it - this is all with the rawhide kernel
+> configuration, which has an ungodly number of debug config
+> options enabled.
+> 
+> I should try this with a more normal kernel, on various different
+> systems.
+
+This is for another day. :)
+
+First some ebizzy runs...
 
 -- 
-Jean Delvare
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
+
+--------------030208000505050407080100
+Content-Type: text/x-patch;
+ name="linux-2.6-madv_free-lazytlb.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="linux-2.6-madv_free-lazytlb.patch"
+
+--- linux-2.6.20.x86_64/mm/memory.c.orig	2007-04-23 02:48:36.000000000 -0400
++++ linux-2.6.20.x86_64/mm/memory.c	2007-04-23 02:54:42.000000000 -0400
+@@ -677,11 +677,15 @@ static unsigned long zap_pte_range(struc
+ 						remove_exclusive_swap_page(page);
+ 						unlock_page(page);
+ 					}
+-					ptep_clear_flush_dirty(vma, addr, pte);
+-					ptep_clear_flush_young(vma, addr, pte);
+ 					SetPageLazyFree(page);
+ 					if (PageActive(page))
+ 						deactivate_tail_page(page);
++					ptent = *pte;
++					set_pte_at(mm, addr, pte,
++						pte_mkclean(pte_mkold(ptent)));
++					/* tlb_remove_page frees it again */
++					get_page(page);
++					tlb_remove_page(tlb, page);
+ 					continue;
+ 				}
+ 			}
+
+--------------030208000505050407080100--
