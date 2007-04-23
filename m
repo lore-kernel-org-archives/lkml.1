@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXDWK1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXDWKcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXDWK1m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXDWK1m
+	id S1753967AbXDWKcA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbXDWKcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:27:42 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:50995 "EHLO e5.ny.us.ibm.com"
+	Mon, 23 Apr 2007 06:32:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60799 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753865AbXDWK1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:27:41 -0400
-Date: Mon, 23 Apr 2007 15:56:18 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>, akpm@linux-foundation.org
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
-Message-ID: <20070423102618.GA25144@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com> <200704192339.30783.rjw@sisk.pl> <20070420180208.GA721@tv-sign.ru>
+	id S1753967AbXDWKb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 06:31:59 -0400
+Message-ID: <462C8B0A.8060801@redhat.com>
+Date: Mon, 23 Apr 2007 06:31:38 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420180208.GA721@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
+       jakub@redhat.com, drepper@redhat.com
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com> <462C88B1.8080906@yahoo.com.au>
+In-Reply-To: <462C88B1.8080906@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 10:02:08PM +0400, Oleg Nesterov wrote:
-> On 04/19, Rafael J. Wysocki wrote:
-> > 
-> > On Thursday, 19 April 2007 14:02, Gautham R Shenoy wrote:
-> > > This patch fixes the race pointed out by Oleg Nesterov.
-> > > 
-> > > * Freezer marks a thread as freezeable. 
-> > > * The thread now marks itself PF_NOFREEZE causing it to
-> > >   freeze on calling try_to_freeze(). Thus the task is frozen, even though
-> > >   it doesn't want to.
-> > > * Subsequent thaw_processes() will also fail to thaw the task since it is 
-> > >   marked PF_NOFREEZE.
-> > > 
-> > > Avoid this problem by checking the current task's PF_NOFREEZE status in the 
-> > > refrigerator before marking current as frozen.
-> > > 
-> > > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> > 
-> > Looks good, although I'm not sure if we don't need to call recalc_sigpending()
-> > for tasks that turn out to be PF_NOFREEZE.
+Nick Piggin wrote:
+
+>> It looks like the tlb flushes (and IPIs) from zap_pte_range()
+>> could have been the problem.  They're gone now.
 > 
-> I agree, we should clear TIF_SIGPENDING. It is not so critical for user-space
-> tasks, but for the kernel thread it may remain pending forever, causing subtle
-> failures.
-> 
-> Gautham, isn't it possible to make a more simpler patch ? Just add PF_NOFREEZE
-> check to frozen_process,
-> 
-> 	static inline void frozen_process(struct task_struct *p)
-> 	{
-> 		if (!unlikely(current->flags & PF_NOFREEZE)) {
-> 			p->flags |= PF_FROZEN;
-> 			wmb();
-> 		}
-> 		clear_tsk_thread_flag(p, TIF_FREEZE);
-> 	}
-> 
-> No?
+> I guess it is a good idea to batch these things. But can you
+> do that on all architectures? What happens if your tlb flush
+> happens after another thread already accesses it again, or
+> after it subsequently gets removed from the address space via
+> another CPU?
 
-Actually yes. The idea anyway was to check one last time before declaring
-ourselves as frozen. So I thought the best place was inside refrigerator since
-we are already holding the task_lock there.
-I wasn't too sure about calling recalc_sigpending(), but now that you
-mention it, I agree, this would be a nicer way to do it.
+I have thought about this a lot tonight, and have come to the conclusion
+that they are ok.
 
-Btw, since frozen_process is currently being called only from
-refrigerator, I am wondering if we still need the struct task_struct *p
-parameter there. It's very unlikely that some other task would mark a
-particular task as frozen. No?
+The reason is simple:
 
-Anyways, Andrew, Could you please replace the earlier sent patch titled
-"fix_pf_nofreeze_and_freezeable_race.patch" with the following one?
+1) we do the TLB flush before we return from the
+    madvise(MADV_FREE) syscall.
 
-Thanks and Regards
-gautham.
+2) anything that accessess the pages between the start
+    and end of the MADV_FREE procedure does not know in
+    which order we go through the pages, so it could hit
+    a page either before or after we get to processing
+    it
 
--->
-This patch fixes the race pointed out by Oleg Nesterov.
+3) because of this, we can treat any such accesses as
+    happening simultaneously with the MADV_FREE and
+    as illegal, aka undefined behaviour territory and
+    we do not need to worry about them
 
-* Freezer marks a thread as freezeable.
-* The thread now marks itself PF_NOFREEZE causing it to
-  freeze on calling try_to_freeze(). Thus the task is frozen, even though
-  it doesn't want to.
-* Subsequent thaw_processes() will also fail to thaw the task since it is
-  marked PF_NOFREEZE.
+4) because we flush the tlb before releasing the page
+    table lock, other CPUs cannot remove this page from
+    the address space - they will block on the page
+    table lock before looking at this pte
 
-Avoid this problem by checking the task's PF_NOFREEZE status in 
-frozen_processes() before marking the task as frozen.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
- include/linux/freezer.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21-rc6/include/linux/freezer.h
-===================================================================
---- linux-2.6.21-rc6.orig/include/linux/freezer.h
-+++ linux-2.6.21-rc6/include/linux/freezer.h
-@@ -57,8 +57,10 @@ static inline int thaw_process(struct ta
-  */
- static inline void frozen_process(struct task_struct *p)
- {
--	p->flags |= PF_FROZEN;
--	wmb();
-+	if (!unlikely(p->flags & PF_NOFREEZE)) {
-+		p->flags |= PF_FROZEN;
-+		wmb();
-+	}
- 	clear_tsk_thread_flag(p, TIF_FREEZE);
- }
- 
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
