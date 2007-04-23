@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161255AbXDWSkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161485AbXDWS5M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161255AbXDWSkL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 14:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161371AbXDWSkK
+	id S1161485AbXDWS5M (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 14:57:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161488AbXDWS5M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 14:40:10 -0400
-Received: from mail.screens.ru ([213.234.233.54]:51086 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161218AbXDWSkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 14:40:09 -0400
-Date: Mon, 23 Apr 2007 22:39:56 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH(experimental) 2/2] Fix freezer-kthread_stop race
-Message-ID: <20070423183956.GA265@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <20070419120419.GB17069@in.ibm.com> <20070420211209.GA820@tv-sign.ru> <20070423103833.GB25144@in.ibm.com>
-Mime-Version: 1.0
+	Mon, 23 Apr 2007 14:57:12 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54140 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161485AbXDWS5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 14:57:11 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
+References: <20070414204154.871250608@goop.org>
+	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
+	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
+	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
+	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>
+	<462CE1E0.9060007@zytor.com>
+	<m1zm4zvwfr.fsf@ebiederm.dsl.xmission.com>
+	<462CF5B8.4070708@xensource.com>
+Date: Mon, 23 Apr 2007 12:54:47 -0600
+In-Reply-To: <462CF5B8.4070708@xensource.com> (Jeremy Fitzhardinge's message
+	of "Mon, 23 Apr 2007 11:06:48 -0700")
+Message-ID: <m1y7kivs3s.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423103833.GB25144@in.ibm.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/23, Gautham R Shenoy wrote:
+Jeremy Fitzhardinge <jeremy@xensource.com> writes:
+
+> Eric W. Biederman wrote:
+>> Consider a memory hole of size 8M immediately after our bootmem bitmap.
+>> head.S which knows nothing of holes will map the pages of the hole
+>> into the initial page tables assuming that is where the page tables
+>> will live.
+>>   
 >
-> On Sat, Apr 21, 2007 at 01:12:09AM +0400, Oleg Nesterov wrote:
-> > On 04/19, Gautham R Shenoy wrote:
-> > >
-> > > @@ -63,12 +74,16 @@ void refrigerator(void)
-> > >  	recalc_sigpending(); /* We sent fake signal, clean it up */
-> > >  	spin_unlock_irq(&current->sighand->siglock);
-> > >  
-> > > +	task_lock(current);
-> > >  	for (;;) {
-> > >  		set_current_state(TASK_UNINTERRUPTIBLE);
-> > >  		if (!frozen(current))
-> > >  			break;
-> > > +		task_unlock(current);
-> > >  		schedule();
-> > > +		task_lock(current);
-> > >  	}
-> > > +	task_unlock(current);
-> > >  	pr_debug("%s left refrigerator\n", current->comm);
-> > >  	current->state = save;
-> > 
-> > Just curious, why this change?
+> Sure, but considering we're only talking about mapping an additional *2*
+> pages, the chances are that it will affect a kernel as much as the early
+> head.S mapping.  It's well within the variability of fairly similar
+> kernel configs.
+
+If (cpu_has_pse) it may only be an additional two pages.
+INIT_MAP_BEYOND is currently mapping a lot more then that.
+
+>> As for how to fix this, we need to call boot_ioremap or better
+>> bt_ioremap on the address returned from alloc_bootmem_pages_low to
+>> force the allocated page into the page table.  After we have setup
+>> the page table page we can call unmap the page to free up the scarce
+>> early mapping resource.
+>>   
 >
-> This can race with hold_freezer_for_task() calling thaw_process. Earlier
-> thaw_process(p) was called only after the process 'p' was frozen.
-> Now with hold_freezer_for_task(), we can as well call thaw_process(p)
-> when 'p' is in the freezing stage. Hence the task_lock.
+> Would that be necessary?  Is there any need to remap it?  Couldn't you
+> just do the straightforward phys->virt mapping and use the page where it
+> lies?
 
-hold_freezer_for_task()->thaw_process(p) will wake up the task. Or the
-caller of refrigerator will notice "!frozen()". Note that refrigerator()
-sets PF_FROZEN under task_lock().
+Catch-22.  If the page is not mapped yet you can't use it where it lies.
 
-In fact we have the same issue when thaw_tasks()->thaw_process(p) happens
-when the freezing fails. In that case 'p' may be not frozen.
-
-> > Also, you are planning to add different freezing states (FE_HOTPLUG_CPU,
-> > FE_SUSPEND, etc). In that case each of them needs a separate .count, because
-> > it should be negative when try_to_freeze_tasks() returns. Now consider
-> > the case when we are doing freeze_processes(FE_A | FE_B) ...
-> 
-> So can't we in that case find out the weight of the freeze_event variable and
-> subtract that weight from the count (if the count is <=0 ) ?
-
-Probably yes... but if we are speaking about kthrad_stop() only, this could
-be afaics solved in more simple way, as Rafael suggests.
-
-Oleg.
-
+Eric
