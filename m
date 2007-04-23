@@ -1,150 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030799AbXDWFLZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbXDWFSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030799AbXDWFLZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 01:11:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXDWFLZ
+	id S1753381AbXDWFSG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 01:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXDWFSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 01:11:25 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:32808 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753381AbXDWFLY (ORCPT
+	Mon, 23 Apr 2007 01:18:06 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:44458 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753381AbXDWFSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 01:11:24 -0400
-Date: Mon, 23 Apr 2007 14:11:19 +0900 (JST)
-Message-Id: <20070423.141119.130123635.yoshfuji@linux-ipv6.org>
-To: akpm@linux-foundation.org
-Cc: ak@suse.de, linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH] x86: Fix potential overflow in perfctr reservation
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <20070422010917.6427e7a2.akpm@linux-foundation.org>
-References: <200704172359.l3HNxAMV024586@hera.kernel.org>
-	<20070422010917.6427e7a2.akpm@linux-foundation.org>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 01:18:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Cc: vgoyal@in.ibm.com, Jurriaan <thunder7@xs4all.nl>,
+       Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org,
+       Magnus Damm <magnus@valinux.co.jp>, Horms <horms@verge.net.au>,
+       thunder7@xs4all.nl, <fastboot@osdl.org>,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: [PATCH 1/2] x86_64: Reflect the relocatability of the kernel in the ELF header.
+References: <20070331005303.354411f0.akpm@linux-foundation.org>
+	<20070401052932.GA9894@amd64.of.nowhere>
+	<m1ircghb6w.fsf@ebiederm.dsl.xmission.com>
+	<20070331232957.e1c93f19.akpm@linux-foundation.org>
+	<20070402074159.GA13704@in.ibm.com>
+	<m1abxrf9o3.fsf@ebiederm.dsl.xmission.com>
+	<20070402094520.GC13704@in.ibm.com>
+	<m1648eg01d.fsf@ebiederm.dsl.xmission.com>
+	<20070403040152.GA5108@in.ibm.com>
+	<m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com>
+	<20070403100349.GA21759@in.ibm.com>
+Date: Sun, 22 Apr 2007 23:12:13 -0600
+In-Reply-To: <20070403100349.GA21759@in.ibm.com> (Vivek Goyal's message of
+	"Tue, 3 Apr 2007 15:33:49 +0530")
+Message-ID: <m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-In article <20070422010917.6427e7a2.akpm@linux-foundation.org> (at Sun, 22 Apr 2007 01:09:17 -0700), Andrew Morton <akpm@linux-foundation.org> says:
+Currently because vmlinux does not reflect that the kernel is relocatable
+we still have to support CONFIG_PHYSICAL_START.  So this patch adds a small
+c program to do what we cannot do with a linker script, set the elf header
+type to ET_DYN.
 
-> >     [PATCH] x86: Fix potential overflow in perfctr reservation
-:
-> The created a warning storm:
-> 
-> 
-> arch/i386/kernel/nmi.c: In function 'avail_to_resrv_perfctr_nmi_bit':
-> arch/i386/kernel/nmi.c:129: warning: passing argument 2 of 'constant_test_bit' from incompatible pointer type
-> arch/i386/kernel/nmi.c:129: warning: passing argument 2 of 'variable_test_bit' from incompatible pointer type
-:
-> diff -puN arch/i386/kernel/nmi.c~fix-x86-fix-potential-overflow-in-perfctr-reservation arch/i386/kernel/nmi.c
-> --- a/arch/i386/kernel/nmi.c~fix-x86-fix-potential-overflow-in-perfctr-reservation
-> +++ a/arch/i386/kernel/nmi.c
-> @@ -126,7 +126,7 @@ int avail_to_resrv_perfctr_nmi_bit(unsig
->  	int cpu;
->  	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
->  	for_each_possible_cpu (cpu) {
-> -		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
-> +		if (test_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
->  			return 0;
->  	}
->  	return 1;
-:
-> 
-> I worry rather a lot about how well runtime tested this very late change
-> was, and whether it works correctly even with this fix applied.  Perhaps
-> we should jsut revert?
+This should remove the last obstacle to removing CONFIG_PHYSICAL_START
+on x86_64.
 
-Is DEFINE_PER_CPU(type, var[num]) is really valid?
-I guess it should be DEFINE_PER_CPU(type[num], var), no?
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ arch/x86_64/Kconfig  |    4 +++
+ arch/x86_64/Makefile |   10 +++++++
+ scripts/Makefile     |   11 ++++---
+ scripts/mketrel.c    |   70 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 90 insertions(+), 5 deletions(-)
+ create mode 100644 scripts/mketrel.c
 
-----
-[I386] NMI: Fix per_cpu() usage.
-
-Per-cpu array should be declared as DEFINE_PER_CPU(type[size], name),
-not as DEFINE_PER_CPU(type, name[size]).
-
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-
-diff --git a/arch/i386/kernel/nmi.c b/arch/i386/kernel/nmi.c
-index 9f1e8c1..eddb4f7 100644
---- a/arch/i386/kernel/nmi.c
-+++ b/arch/i386/kernel/nmi.c
-@@ -48,8 +48,8 @@ int nmi_watchdog_enabled;
- #define NMI_MAX_COUNTER_BITS 66
- #define NMI_MAX_COUNTER_LONGS BITS_TO_LONGS(NMI_MAX_COUNTER_BITS)
+diff --git a/arch/x86_64/Kconfig b/arch/x86_64/Kconfig
+index 16d9bf3..773b487 100644
+--- a/arch/x86_64/Kconfig
++++ b/arch/x86_64/Kconfig
+@@ -121,6 +121,10 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default n
  
--static DEFINE_PER_CPU(unsigned long, perfctr_nmi_owner[NMI_MAX_COUNTER_LONGS]);
--static DEFINE_PER_CPU(unsigned long, evntsel_nmi_owner[NMI_MAX_COUNTER_LONGS]);
-+static DEFINE_PER_CPU(unsigned long [NMI_MAX_COUNTER_LONGS], perfctr_nmi_owner);
-+static DEFINE_PER_CPU(unsigned long [NMI_MAX_COUNTER_LONGS], evntsel_nmi_owner);
++config ELF_RELOCATABLE
++	bool
++	default y
++
+ source "init/Kconfig"
  
- static cpumask_t backtrace_mask = CPU_MASK_NONE;
- /* nmi_active:
-@@ -126,7 +126,7 @@ int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
- 	int cpu;
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
- 	for_each_possible_cpu (cpu) {
--		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
-+		if (test_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
- 			return 0;
- 	}
- 	return 1;
-@@ -142,7 +142,7 @@ int avail_to_resrv_perfctr_nmi(unsigned int msr)
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
  
- 	for_each_possible_cpu (cpu) {
--		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
-+		if (test_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
- 			return 0;
- 	}
- 	return 1;
-@@ -157,7 +157,7 @@ static int __reserve_perfctr_nmi(int cpu, unsigned int msr)
- 	counter = nmi_perfctr_msr_to_bit(msr);
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+diff --git a/arch/x86_64/Makefile b/arch/x86_64/Makefile
+index 9dd91b2..5ae79ab 100644
+--- a/arch/x86_64/Makefile
++++ b/arch/x86_64/Makefile
+@@ -124,6 +124,16 @@ define archhelp
+   echo  '  isoimage     - Create a boot CD-ROM image'
+ endef
  
--	if (!test_and_set_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)))
-+	if (!test_and_set_bit(counter, per_cpu(perfctr_nmi_owner, cpu)))
- 		return 1;
- 	return 0;
- }
-@@ -171,7 +171,7 @@ static void __release_perfctr_nmi(int cpu, unsigned int msr)
- 	counter = nmi_perfctr_msr_to_bit(msr);
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++ifeq ($(CONFIG_RELOCATABLE),y)
++define cmd_vmlinux__
++      $(LD) $(LDFLAGS) $(LDFLAGS_vmlinux) -o $@ \
++      -T $(vmlinux-lds) $(vmlinux-init)		\
++      --start-group $(vmlinux-main) --end-group	\
++      $(filter-out $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) FORCE ,$^) \
++      && scripts/mketrel $@
++endef
++endif
++
+ CLEAN_FILES += arch/$(ARCH)/boot/fdimage \
+ 	       arch/$(ARCH)/boot/image.iso \
+ 	       arch/$(ARCH)/boot/mtools.conf
+diff --git a/scripts/Makefile b/scripts/Makefile
+index 1c73c5a..ddba550 100644
+--- a/scripts/Makefile
++++ b/scripts/Makefile
+@@ -7,11 +7,12 @@
+ # conmakehash:   Create chartable
+ # conmakehash:	 Create arrays for initializing the kernel console tables
  
--	clear_bit(counter, &per_cpu(perfctr_nmi_owner, cpu));
-+	clear_bit(counter, per_cpu(perfctr_nmi_owner, cpu));
- }
+-hostprogs-$(CONFIG_KALLSYMS)     += kallsyms
+-hostprogs-$(CONFIG_LOGO)         += pnmtologo
+-hostprogs-$(CONFIG_VT)           += conmakehash
+-hostprogs-$(CONFIG_PROM_CONSOLE) += conmakehash
+-hostprogs-$(CONFIG_IKCONFIG)     += bin2c
++hostprogs-$(CONFIG_KALLSYMS)        += kallsyms
++hostprogs-$(CONFIG_LOGO)            += pnmtologo
++hostprogs-$(CONFIG_VT)              += conmakehash
++hostprogs-$(CONFIG_PROM_CONSOLE)    += conmakehash
++hostprogs-$(CONFIG_IKCONFIG)        += bin2c
++hostprogs-$(CONFIG_ELF_RELOCATABLE) += mketrel
  
- int reserve_perfctr_nmi(unsigned int msr)
-@@ -207,7 +207,7 @@ int __reserve_evntsel_nmi(int cpu, unsigned int msr)
- 	counter = nmi_evntsel_msr_to_bit(msr);
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+ always		:= $(hostprogs-y) $(hostprogs-m)
  
--	if (!test_and_set_bit(counter, &per_cpu(evntsel_nmi_owner, cpu)[0]))
-+	if (!test_and_set_bit(counter, per_cpu(evntsel_nmi_owner, cpu)))
- 		return 1;
- 	return 0;
- }
-@@ -221,7 +221,7 @@ static void __release_evntsel_nmi(int cpu, unsigned int msr)
- 	counter = nmi_evntsel_msr_to_bit(msr);
- 	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
- 
--	clear_bit(counter, &per_cpu(evntsel_nmi_owner, cpu)[0]);
-+	clear_bit(counter, per_cpu(evntsel_nmi_owner, cpu));
- }
- 
- int reserve_evntsel_nmi(unsigned int msr)
-
+diff --git a/scripts/mketrel.c b/scripts/mketrel.c
+new file mode 100644
+index 0000000..effa312
+--- /dev/null
++++ b/scripts/mketrel.c
+@@ -0,0 +1,70 @@
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <elf.h>
++#include <stdio.h>
++#include <errno.h>
++#include <string.h>
++#include <stdarg.h>
++#include <stdlib.h>
++
++static int fd;
++unsigned char e_ident[EI_NIDENT];
++
++void die(const char * str, ...)
++{
++	va_list args;
++	va_start(args, str);
++	vfprintf(stderr, str, args);
++	fputc('\n', stderr);
++	exit(1);
++}
++
++void file_open(const char *name)
++{
++	if ((fd = open(name, O_RDWR, 0)) < 0)
++		die("Unable to open `%s': %m", name);
++}
++
++static void mketrel(void)
++{
++	unsigned char e_type[2];
++	if (read(fd, &e_ident, sizeof(e_ident)) != sizeof(e_ident))
++		die("Cannot read ELF header: %s\n", strerror(errno));
++
++	if (memcmp(e_ident, ELFMAG, 4) != 0)
++		die("No ELF magic\n");
++
++	if ((e_ident[EI_CLASS] != ELFCLASS64) &&
++	    (e_ident[EI_CLASS] != ELFCLASS32))
++		die("Unrecognized ELF class: %x\n", e_ident[EI_CLASS]);
++	
++	if ((e_ident[EI_DATA] != ELFDATA2LSB) &&
++	    (e_ident[EI_DATA] != ELFDATA2MSB))
++		die("Unrecognized ELF data encoding: %x\n", e_ident[EI_DATA]);
++
++	if (e_ident[EI_VERSION] != EV_CURRENT)
++		die("Unknown ELF version: %d\n", e_ident[EI_VERSION]);
++
++	if (e_ident[EI_DATA] == ELFDATA2LSB) {
++		e_type[0] = ET_REL & 0xff;
++		e_type[1] = ET_REL >> 8;
++	} else {
++		e_type[1] = ET_REL & 0xff;
++		e_type[0] = ET_REL >> 8;
++	}
++
++	if (write(fd, &e_type, sizeof(e_type)) != sizeof(e_type))
++		die("Cannot write ELF type: %s\n", strerror(errno));
++}
++
++int main(int argc, char **argv)
++{
++	if (argc != 2)
++		die("Usage: mketrel: vmlinux");
++	file_open(argv[1]);
++	mketrel();
++	close(fd);
++	return 0;
++}
 -- 
-YOSHIFUJI Hideaki @ USAGI Project  <yoshfuji@linux-ipv6.org>
-GPG-FP  : 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
+1.5.1.1.181.g2de0
+
