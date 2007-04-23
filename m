@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161071AbXDWRts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXDWRyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161071AbXDWRts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 13:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161113AbXDWRts
+	id S1161162AbXDWRyr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 13:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161179AbXDWRyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 13:49:48 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36437 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161071AbXDWRtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 13:49:47 -0400
-Date: Mon, 23 Apr 2007 21:49:34 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: akpm@linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC PATCH 1/2] Fix PF_NOFREEZE and freezeable race
-Message-ID: <20070423174934.GA229@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <20070419120234.GA17069@in.ibm.com> <200704192339.30783.rjw@sisk.pl> <20070420180208.GA721@tv-sign.ru> <20070423102618.GA25144@in.ibm.com>
-Mime-Version: 1.0
+	Mon, 23 Apr 2007 13:54:47 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49796 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161162AbXDWRyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 13:54:46 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
+References: <20070414204154.871250608@goop.org>
+	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
+	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
+	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
+	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>
+	<462CE1E0.9060007@zytor.com> <462CE69E.8040207@goop.org>
+	<m1vefnvvyb.fsf@ebiederm.dsl.xmission.com>
+	<462CF0C5.2040200@zytor.com>
+Date: Mon, 23 Apr 2007 11:52:54 -0600
+In-Reply-To: <462CF0C5.2040200@zytor.com> (H. Peter Anvin's message of "Mon,
+	23 Apr 2007 10:45:41 -0700")
+Message-ID: <m1ejmbvuyx.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423102618.GA25144@in.ibm.com>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/23, Gautham R Shenoy wrote:
+"H. Peter Anvin" <hpa@zytor.com> writes:
+
+> Eric W. Biederman wrote:
+>>
+>> - I know of one system that had BIOS tables at 16MB I believe (and
+>>   thus had a fairly low hole).
+>>
 >
-> On Fri, Apr 20, 2007 at 10:02:08PM +0400, Oleg Nesterov wrote:
-> > 
-> > Gautham, isn't it possible to make a more simpler patch ? Just add PF_NOFREEZE
-> > check to frozen_process,
-> > 
-> > 	static inline void frozen_process(struct task_struct *p)
-> > 	{
-> > 		if (!unlikely(current->flags & PF_NOFREEZE)) {
-> > 			p->flags |= PF_FROZEN;
-> > 			wmb();
-> > 		}
-> > 		clear_tsk_thread_flag(p, TIF_FREEZE);
-> > 	}
-> > 
-> 
-> Btw, since frozen_process is currently being called only from
-> refrigerator, I am wondering if we still need the struct task_struct *p
-> parameter there. It's very unlikely that some other task would mark a
-> particular task as frozen. No?
+> Please name names, otherwise this is just rumouring.  Seriously.  We have enough
+> cargo-cult programming as it is.
 
-I agree. Only "current" can set PF_FROZEN anyway. I also think it is better
-to move this function into kernel/power/process.c, no need to export it in
-freezer.h. It is special, should be called from refrigerator() with task_lock()
-held.
+The unisys systems.  I don't remember exactly where they put there ACPI
+tables but it was low enough that the default address for the kdump kernels
+conflicted with it.  So this is likely 16MB or 32MB
 
-> Anyways, Andrew, Could you please replace the earlier sent patch titled
-> "fix_pf_nofreeze_and_freezeable_race.patch" with the following one?
->
-> ...
->
-> --- linux-2.6.21-rc6.orig/include/linux/freezer.h
-> +++ linux-2.6.21-rc6/include/linux/freezer.h
-> @@ -57,8 +57,10 @@ static inline int thaw_process(struct ta
->   */
->  static inline void frozen_process(struct task_struct *p)
->  {
-> -	p->flags |= PF_FROZEN;
-> -	wmb();
-> +	if (!unlikely(p->flags & PF_NOFREEZE)) {
-> +		p->flags |= PF_FROZEN;
-> +		wmb();
-> +	}
->  	clear_tsk_thread_flag(p, TIF_FREEZE);
->  }
+> A lot of old ISA systems had an option to put a memory hole at 15-16 MB to
+> support ISA video cards with linear frame buffer.  It very rarely got used,
+> since VLB took over around the same time.
 
-On the second thought, this patch doesn't help if the thread never
-calls try_to_freeze() exactly because it marks itself PF_NOFREEZE.
+No this was a much larger and more modern system.
 
-Perhaps it is better to cancel freezing in soon-to-be-introduced
-freezer_exempt().
-
-In any case I agree, this one is better than current
-	fix_pf_nofreeze_and_freezeable_race.patch
-
-Oleg.
-
+Eric
