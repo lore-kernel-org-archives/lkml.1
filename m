@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751892AbXDWOUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbXDWOVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751892AbXDWOUh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 10:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDWOUh
+	id S1752784AbXDWOVY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXDWOVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 10:20:37 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33673 "EHLO e4.ny.us.ibm.com"
+	Mon, 23 Apr 2007 10:21:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53095 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751892AbXDWOUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 10:20:36 -0400
-Date: Mon, 23 Apr 2007 19:49:08 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
-Message-ID: <20070423141908.GA6842@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <20070420183118.GA695@elte.hu> <200704222128.49419.rjw@sisk.pl> <200704222139.27128.rjw@sisk.pl> <a781481a0704222109t5c92e4d6t280c21b256945ac8@mail.gmail.com>
-MIME-Version: 1.0
+	id S1752784AbXDWOVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 10:21:23 -0400
+Date: Mon, 23 Apr 2007 10:21:14 -0400
+From: Dave Jones <davej@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Nvidia AGP: Use refcount aware PCI interfaces
+Message-ID: <20070423142114.GA19674@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <20070423145027.47f1ba38@the-village.bc.nu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a781481a0704222109t5c92e4d6t280c21b256945ac8@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070423145027.47f1ba38@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam, 
-On Mon, Apr 23, 2007 at 09:39:30AM +0530, Satyam Sharma wrote:
-> Hi Rafael,
-> 
-> >+/*
-> >+ *     Per task flags used by the freezer
-> >+ *
-> >+ *     They should not be referred to directly outside of this file.
-> >+ */
-> >+#define TFF_NOFREEZE   0       /* task should not be frozen */
-> >+#define TFF_FREEZE     8       /* task should go to the refrigerator ASAP 
-> >*/
-> >+#define TFF_SKIP       9       /* do not count this task as freezable */
-> >+#define TFF_FROZEN     10      /* task is frozen */
-> 
-> Aren't NOFREEZE and SKIP doing the same thing? One of them appears
-> superfluous. I'm looking at 21-rc6-mm1 and vfork(2) seems to be its
-> only user. Seeing how vfork(2) used it, can't the call to
-> freezer_do_not_count() be replaced with a call to freezer_exempt()?
-> Similarly, the freezer_count() after the wait_for_completion might
-> just as well be a clear of the NOFREEZE bit followed by a
-> try_to_freeze(). Could you please explain the rationale behind the
-> SKIP flag?
+On Mon, Apr 23, 2007 at 02:50:27PM +0100, Alan Cox wrote:
+ > Signed-off-by: Alan Cox <alan@redhat.com>
 
-The difference between the NOFREEZE and the SKIP flag is a subtle one.
+This is lacking a changelog.  What's the purpose of changing this?
+Is pci_find_slot() obsolete and going away? (If so, it should be
+marked as such).  These devices aren't hotpluggable, so I'm not
+sure why they need to be reference counted.
 
-When a task (say p) sets it's NOFREEZE flag, it tells the freezer not to
-consider it for freezing. Which means freezeable(p) will return 0.
-So the freezer will not even mark it for freezing. 
+Inquisitive minds would like to know more.
 
-However, when a task sets it SKIP flag, it tells the freezer - "I might
-block at a safe place. So when you are counting the processes which
-have been marked as freezeable, but have not frozen yet, please don't
-count me in. IOW, please skip me."  
-Thus such a task can still be marked for freezing.
+	Dave
 
-The typical usage is 
-freezer_do_not_count(current);
-/* currents goes to an uninterruptible sleep, like wait_for_completion. */
-freezer_count(current);
-
-Once the task wakes up from it's uninterruptible sleep, it will 
-call freezer_count which in turn calls try_to_freeze.
-If the task was marked for freezing, it will be frozen now.
-
-You may want to check the thread http://lkml.org/lkml/2007/2/18/47 
-on how it came into existance.
-
-> 
-> Cheers,
-> Satyam
-
-Regards
-gautham.
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+http://www.codemonkey.org.uk
