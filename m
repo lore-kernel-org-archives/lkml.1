@@ -1,38 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXDWGsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXDWGwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751366AbXDWGsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXDWGsU
+	id S1753091AbXDWGwS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:52:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753186AbXDWGwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:48:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42304 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751366AbXDWGsT (ORCPT
+	Mon, 23 Apr 2007 02:52:18 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:44390
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753091AbXDWGwR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:48:19 -0400
-Date: Sun, 22 Apr 2007 23:48:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Neil Brown <neilb@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
-In-Reply-To: <17964.21972.961812.744601@notabene.brown>
-Message-ID: <Pine.LNX.4.64.0704222345500.5442@schroedinger.engr.sgi.com>
-References: <17960.16739.870487.497750@notabene.brown>
- <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
- <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
- <17964.21972.961812.744601@notabene.brown>
+	Mon, 23 Apr 2007 02:52:17 -0400
+Date: Mon, 23 Apr 2007 08:55:20 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: chas@cmf.nrl.navy.mil, ecd@atecom.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use spinlock instead of binary mutex in idt77252 driver
+Message-ID: <20070423065520.GR5013@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Kyle Moffett <mrmacman_g4@mac.com>, chas@cmf.nrl.navy.mil,
+	ecd@atecom.com, linux-kernel@vger.kernel.org
+References: <20070422213959.GP5013@traven> <45C4C5F0-4F09-416D-A237-82FC28DF1883@mac.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <45C4C5F0-4F09-416D-A237-82FC28DF1883@mac.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Neil Brown wrote:
+El Sun, Apr 22, 2007 at 07:50:36PM -0400 Kyle Moffett ha dit:
 
-> Another option might be to name each cache actually created with a
-> unique name, and then create a symlink for each cache that was asked
-> for (whether it was created or whether a pre-existing cache was used).
-> Then being lazy about deletion shouldn't be a problem.
+> On Apr 22, 2007, at 17:39:59, Matthias Kaehlcke wrote:
+> >use spinlock instead of binary mutex in idt77252 driver
+> 
+> I think you really meant: "Use mutex instead of binary semaphore in  
+> idt77252 driver", since this is a binary semaphore (not a mutex,  
+> which are always binary):
+> >-	struct semaphore	mutex;
+> 
+> and this is a mutex, not a spinlock:
+> >+	struct mutex		mutex;
+> 
+> Everything else looks good though
 
-You may be right.
+you're totally right. like in another patch i sent at the same time i
+messed up the description. as you point out it should read "Use mutex
+instead of binary semaphore in idt77252 driver". in the last days i
+reported some spinlock related bugs, i suppose that made me write
+spinlock instead of mutex ...
 
+thanks for your comments
+
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+                If you don't know where you are going,
+               you will probably end up somewhere else
+                         (Laurence J. Peter)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
