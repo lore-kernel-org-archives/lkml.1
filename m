@@ -1,119 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXDWJVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751564AbXDWJ0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbXDWJVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbXDWJVW
+	id S1751564AbXDWJ0W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXDWJ0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:21:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36645 "EHLO mx1.redhat.com"
+	Mon, 23 Apr 2007 05:26:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47619 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbXDWJVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:21:20 -0400
-Message-ID: <462C7A6F.9030905@redhat.com>
-Date: Mon, 23 Apr 2007 05:20:47 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+	id S1750998AbXDWJ0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:26:21 -0400
+Date: Mon, 23 Apr 2007 11:25:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com>
-In-Reply-To: <462C2F33.8090508@redhat.com>
-Content-Type: multipart/mixed;
- boundary="------------030208000505050407080100"
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch] CFS scheduler, -v5
+Message-ID: <20070423092502.GA7972@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423012509.GA25162@wotan.suse.de> <20070423025553.GA10407@elte.hu> <20070423032215.GC25162@wotan.suse.de> <20070423034310.GA19845@elte.hu> <20070423040600.GD25162@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423040600.GD25162@wotan.suse.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030208000505050407080100
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Use TLB batching for MADV_FREE.  Adds another 10-15% extra performance
-to the MySQL sysbench results on my quad core system.
+* Nick Piggin <npiggin@suse.de> wrote:
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
-Rik van Riel wrote:
-
->> I've added a 5th column, with just your mmap_sem patch and
->> without my madv_free patch.  It is run with the glibc patch,
->> which should make it fall back to MADV_DONTNEED after the
->> first MADV_FREE call fails.
-
-With the attached patch to make MADV_FREE use tlb batching, not
-only do we gain an additional 10-15% performance but Nick's
-mmap_sem patch also shows the performance increase that we
-expected to see.
-
-It looks like the tlb flushes (and IPIs) from zap_pte_range()
-could have been the problem.  They're gone now.
-
-The second column from the right has Nick's patch and my own
-two patches.  Performance with 16 threads is almost triple what
-it used to be...
-
-vanilla   glibc  glibc      glibc        glibc      glibc      glibc
-                  madv_free  madv_free               madv_free 
-madv_free
-                             mmap_sem     mmap_sem   mmap_sem
-                                                     tlb batch  tlb_batch
-threads
-
-  1     610     609     596         545         534     547     537
-  2    1032    1136    1196        1200        1180    1293    1194
-  4    1070    1128    2014        2024        2027    2248    2040
-  8    1000    1088    1665        2087        2089    2314    1869
-  16    779    1073    1310        1999        2012    2214    1557
-
-
-> Now that I think about it - this is all with the rawhide kernel
-> configuration, which has an ungodly number of debug config
-> options enabled.
+> > yeah - but they'll all be quad core, so the SMP timeslice 
+> > multiplicator should do the trick. Most of the CFS testers use 
+> > single-CPU systems.
 > 
-> I should try this with a more normal kernel, on various different
-> systems.
+> But desktop users could have have quad thread and even 8 thread CPUs 
+> soon, [...]
 
-This is for another day. :)
+SMT is indeed an issue, so i think what should be used to scale 
+timeslices isnt num_online_cpus(), but the sum of all CPU's ->cpu_power 
+value (scaled down by SCHED_LOAD_SCALE). That way if the thread is not a 
+'full CPU', then the scaling will be proportionally smaller. Can you see 
+any hole in that?
 
-First some ebizzy runs...
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
-
---------------030208000505050407080100
-Content-Type: text/x-patch;
- name="linux-2.6-madv_free-lazytlb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-madv_free-lazytlb.patch"
-
---- linux-2.6.20.x86_64/mm/memory.c.orig	2007-04-23 02:48:36.000000000 -0400
-+++ linux-2.6.20.x86_64/mm/memory.c	2007-04-23 02:54:42.000000000 -0400
-@@ -677,11 +677,15 @@ static unsigned long zap_pte_range(struc
- 						remove_exclusive_swap_page(page);
- 						unlock_page(page);
- 					}
--					ptep_clear_flush_dirty(vma, addr, pte);
--					ptep_clear_flush_young(vma, addr, pte);
- 					SetPageLazyFree(page);
- 					if (PageActive(page))
- 						deactivate_tail_page(page);
-+					ptent = *pte;
-+					set_pte_at(mm, addr, pte,
-+						pte_mkclean(pte_mkold(ptent)));
-+					/* tlb_remove_page frees it again */
-+					get_page(page);
-+					tlb_remove_page(tlb, page);
- 					continue;
- 				}
- 			}
-
---------------030208000505050407080100--
+	Ingo
