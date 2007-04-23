@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbXDWGNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbXDWGOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751110AbXDWGNq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161199AbXDWGNq
+	id S1753520AbXDWGOH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbXDWGOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:13:46 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:46438 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750925AbXDWGNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:13:45 -0400
-Message-ID: <462C4F94.7090107@sw.ru>
-Date: Mon, 23 Apr 2007 10:17:56 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Mon, 23 Apr 2007 02:14:07 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:34670 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753532AbXDWGOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:14:05 -0400
+Date: Mon, 23 Apr 2007 06:14:04 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Rik van Riel <riel@redhat.com>
+cc: Eric Hopper <hopper@omnifarious.org>, linux-kernel@vger.kernel.org
+Subject: Re: Question about Reiser4
+In-Reply-To: <462C4D32.4000909@redhat.com>
+Message-ID: <Pine.LNX.4.64.0704230611430.25153@server.thyself>
+References: <20070423020046.GA28477@omnifarious.org> <462C2E5B.1080008@redhat.com>
+ <Pine.LNX.4.64.0704230353000.25153@server.thyself> <462C4858.3050006@redhat.com>
+ <Pine.LNX.4.64.0704230555020.25153@server.thyself> <462C4D32.4000909@redhat.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: sct@redhat.com, linux-ext4@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: Re: [PATCH] Check for error returned by kthread_create on creating
- journal thread
-References: <4623289A.1000101@sw.ru> <20070420153809.8ce9a662.akpm@linux-foundation.org>
-In-Reply-To: <20070420153809.8ce9a662.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 16 Apr 2007 11:41:14 +0400
-> Pavel Emelianov <xemul@sw.ru> wrote:
-> 
->> If the thread failed to create the subsequent wait_event
->> will hang forever.
->>
->> This is likely to happen if kernel hits max_threads limit.
->>
->> Will be critical for virtualization systems that limit the
->> number of tasks and kernel memory usage within the container.
->>
->>
->> [diff-jbd-check-start-journal-thread-return-value  text/plain (1.7KB)]
->> --- ./fs/jbd/journal.c.jbdthreads	2007-04-16 11:17:36.000000000 +0400
->> +++ ./fs/jbd/journal.c	2007-04-16 11:30:09.000000000 +0400
->> @@ -211,10 +211,16 @@ end_loop:
->>  	return 0;
->>  }
->>  
->> -static void journal_start_thread(journal_t *journal)
->> +static int journal_start_thread(journal_t *journal)
->>  {
->> -	kthread_run(kjournald, journal, "kjournald");
->> +	struct task_struct *t;
->> +
->> +	t = kthread_run(kjournald, journal, "kjournald");
->> +	if (IS_ERR(t))
->> +		return PTR_ERR(t);
->> +
->>  	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
->> +	return 0;
->>  }
-> 
-> Thanks.   Please don't forget those Signed-off-by:s
+On Mon, 23 Apr 2007, Rik van Riel wrote:
+> William Heimbigner wrote:
+>
+>>  However, is the code really in such a shape that the community doesn't
+>>  want to maintain it? Obviously there's a significant number of people
+>>  interested in reiser4 - if there weren't, questions like this wouldn't
+>>  keep getting asked.
+>
+> There are people interested in using it, yes.
+>
+> However, nobody appears to have stepped up to maintain the code.
+> If somebody really wanted to maintain the code, there would be a
+> new maintainer already.
 
-I will :)
+On that note, what exactly is wanted for (assuming there was a maintainer) 
+reiser4 to be suitable for inclusion in the kernel? To my knowledge (and 
+I'll admit, I haven't looked in to it very far) the primary reason for 
+rejection was that it broke coding standards.
 
-> I assume that you runtime tested this and that the mount failed in
-> an appropriate fashion?
-> 
+If there was 1) a maintainer and 2) code that didn't break "coding 
+standards", would it be included in the kernel?
 
-Yes. This was easy to test as we can force kthread_run() to fail
-at the moment we want with the help of the beancounters ;)
-
-Moreover this patch lives in our tree for a year or so in both
-stable and development branches.
+William Heimbigner
+icxcnika@mar.tar.cc
