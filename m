@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXDWKJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965701AbXDWKKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965695AbXDWKJE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 06:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965701AbXDWKJE
+	id S965701AbXDWKKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 06:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXDWKKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 06:09:04 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:34230 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S965695AbXDWKJD (ORCPT
+	Mon, 23 Apr 2007 06:10:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:18710 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965701AbXDWKKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 06:09:03 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=wJR0r+C7q708GO5HUlue39e+ueCP/zKnj7iLzgK3KUGg4gQuctfIOto68DyxdJSsFAbW3heL1m0pTG4Fi1/NHYBkVwI6AnIseqhPqFzBRvdVO1CmyFxtNnxlydLiu5ZT5m1cTxPNxS+OUBStgVMojGQhlU0k9l7nAh/OrjtcTrs=  ;
-X-YMail-OSG: OQ7WT4AVM1koB8PNEraGOHMhtV_eGdKT3EXYWjdpSVxbtYQvg4uyscCqOhw1SoH8Thujdu6Svw--
-Message-ID: <462C8560.7060703@yahoo.com.au>
-Date: Mon, 23 Apr 2007 20:07:28 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 23 Apr 2007 06:10:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Zv6rJi0m/w2InQC+N1V8WV+dAxqwEi26FjDby786ra2ahDhj8kdF7ji+jgusoL72wjJ8M+WaPRG7jYx8dGvh3v24x/3B1izAV8M8Dg5aZ2fSM/i9RnLYwHmu9eNdWYwI+Xwt0C4GWqiyY4hHpjqSxcPLBMXX4k9sv8lrv9YjhQY=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix chapter reference in CodingStyle
+Date: Mon, 23 Apr 2007 12:10:22 +0200
+User-Agent: KMail/1.9.6
+Cc: Randy Dunlap <rdunlap@xenotime.net>, trivial@kernel.org,
+       jesper.juhl@gmail.com
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Rik van Riel <riel@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2EDE.4090805@yahoo.com.au>
-In-Reply-To: <462C2EDE.4090805@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704231210.23105.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> Rik van Riel wrote:
-> 
->> I've added a 5th column, with just your mmap_sem patch and
->> without my madv_free patch.  It is run with the glibc patch,
->> which should make it fall back to MADV_DONTNEED after the
->> first MADV_FREE call fails.
-> 
-> 
-> Thanks! (I edited slightly so it doesn't wrap)
-> 
-> 
->>   vanilla   new glibc   madv_free    mmap_sem        both
->> threads
->>
->> 1     610         609         596         534         545
->> 2    1032        1136        1196        1180        1200
->> 4    1070        1128        2014        2027        2024
->> 8    1000        1088        1665        2089        2087
->> 16    779        1073        1310        2012        1999
->>
->>
->> Not doing the mprotect calls is the big one I guess, especially
->> the fact that we don't need to take the mmap_sem for writing.
-> 
-> 
-> Yes.
-> 
-> 
->> With both our patches, single and two thread performance with
->> MySQL sysbench is somewhat better than with just your patch,
->> 4 and 8 thread performance are basically the same and just
->> your patch gives a slight benefit with 16 threads.
->>
->> I guess I should benchmark up to 64 or 128 threads tomorrow,
->> to see if this is just luck or if the cache benefit of doing
->> the page faults and reusing hot pages is faster than not
->> having page faults at all.
->>
->> I should run some benchmarks on other systems, too.  Some of
->> these results could be an artifact of my quad core CPU.  The
->> results could be very different on other systems...
-> 
-> 
-> I'm getting the 16 core box out of retirement as we speak :)
-> 
+Greetings,
 
-OK, 10 runs at 1 client, 2.6.21-rc6, MySQL version 5.33, and new
-Jakub's glibc gives a 99.9% confidence of:
+commit 226a6b84aaaf1fac7a5d41cf4e7387fd9ba895d5 renumbered Chapter 11 in 
+Documentation/CodingStyle to Chapter 12, but it didn't update the reference 
+to that chapter further down in the file. This patch corrects the chapter 
+reference.
 
-vanilla:  467.2 +/- 7.9 (tps)
-mmap_sem: 470.5 +/- 9.3 (tps)
 
-However, it seems those means jump around a bit from boot to boot,
-so there could be some some memory placement luck for cache and/or
-NUMA goodness involved.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+--- 
 
-So I think it is safe to say that the mmap_sem patch doesn't hurt
-single threaded performance (from looking at the numbers and the
-patch). And that's the most important thing for that patch.
+ Documentation/CodingStyle |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I'll post some scalability results tomorrow. From my first round
-of tests, after new glibc and the mmap_sem patch, it doesn't seem
-like rwsem improvements, private futexes, or avoiding zero_page
-make any significant differences.
-
-I haven't tested your MADV_FREE patch yet.
-
--- 
-SUSE Labs, Novell Inc.
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index 9069189..899777f 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -625,7 +625,7 @@ language.
+ 
+ There appears to be a common misperception that gcc has a magic "make me
+ faster" speedup option called "inline". While the use of inlines can be
+-appropriate (for example as a means of replacing macros, see Chapter 11), it
++appropriate (for example as a means of replacing macros, see Chapter 12), it
+ very often is not. Abundant use of the inline keyword leads to a much bigger
+ kernel, which in turn slows the system as a whole down, due to a bigger
+ icache footprint for the CPU and simply because there is less memory
