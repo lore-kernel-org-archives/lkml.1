@@ -1,38 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbXDWViW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbXDWVjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754275AbXDWViW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 17:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXDWViW
+	id S1752892AbXDWVjK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 17:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXDWVjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 17:38:22 -0400
-Received: from web88101.mail.re2.yahoo.com ([206.190.37.202]:25993 "HELO
-	web88101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754274AbXDWViW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 17:38:22 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 17:38:21 EDT
-X-YMail-OSG: eP9e2FQVM1nzq2is2Du2aUf3xYBggucL8Xe.xI8ecyS5lCO5IBhcRmNTO2UD7NSAGy7ShvLUwikFPZH3Qat2OsE03w--
-X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.10
-Date: Mon, 23 Apr 2007 14:31:39 -0700 (PDT)
-From: Matt Ranon <mranon@javadevices.com>
-Subject: [ANNOUNCE][PATCH] Kcli - Kernel command line interface.
-To: linux maillist <linux-kernel@vger.kernel.org>
+	Mon, 23 Apr 2007 17:39:09 -0400
+Received: from amhost.net ([216.32.88.10]:45838 "EHLO ldic83.amhost.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752892AbXDWVjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 17:39:08 -0400
+X-Greylist: delayed 1502 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 17:39:08 EDT
+Message-ID: <462D2177.1060609@amhost.net>
+Date: Tue, 24 Apr 2007 00:13:27 +0300
+From: voron <voron@amhost.net>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070413)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Message-ID: <875184.9239.qm@web88101.mail.re2.yahoo.com>
+To: linux-kernel@vger.kernel.org
+Subject: sendfile to nonblocking socket
+Content-Type: multipart/mixed;
+ boundary="------------090100040303030108060004"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Jem team is pleased to announce the release of Kcli, an in-kernel command line interface. Kcli is intended for a special class of embedded Linux applications. The Linux kernel has become the defacto standard OS for embedded applications. This means that Linux is getting bent in some ways that may appear strange to some. One of these ways, is embedded applications that do not use user space. User space consists of a statically linked, one line program, that simply sleeps forever, transforming Linux into a classical embedded RTOS. VxWorks developers will understand what we are talking about, and they may recall how much they depend on the VxWorks shell. Kcli attempts to meet the need for a shell for this class of embedded Linux applications. 
- 
-Kcli provides a command line environment that runs in the kernel, and that can be extended with custom commands registered by other kernel modules. We have found Kcli invaluable for our development, and we are releasing the patch, in case others find it useful.
- 
-Kcli is directly derived from libcli written by David Parrish and Brendan O'Dea, and the regular expression support is directly derived from diet libc written by Felix von Leitner.
- 
-The Jem team fully understands that this kind of patch may not be appropriate for inclusion in the mainline kernel code. We have no expectation that it will be, and we leave that decision fully in the hands of those responsible. Nonetheless, we feel that others may find it useful, and we will also appreciate any appropriate feedback from the community.
- 
-Kcli is standalone, and modifies no kernel files, except for the Kconfig and Makefile modifications required to wire it into the configuration and build.
- 
-The Kcli patch is available at ftp://www.javadevices.com/kcli/kcli-v1_0_0.patch.
- 
-MRanon
+This is a multi-part message in MIME format.
+--------------090100040303030108060004
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Hello
+
+I'm testing a web server nginx for films sharing in my LAN. And I've got 
+some interesting results. When I tried to download film or another big 
+file via gigabit link, I've got sendfile block with nonblocking 
+socket.   Strace log in attach. Some commens
+
+#enabling nonblock on fd 3
+20:51:20 ioctl(3, FIONBIO, [1])         = 0
+#normal nonblocking sendfile, asked 2147480274 bytes, sent  236164 
+bytes, so nonblocking works
+20:51:20 sendfile(3, 8, [847150], 2147480274) = 236164
+#sendfile 390 M, 6 seconds
+20:51:22 sendfile(3, 8, [102578266], 2147481510) = 390115144
+#sendfile 1000 M, 15 seconds
+20:51:40 sendfile(3, 8, [1303409692], 2147482596) = 1008100764
+#sendfile ~2G, 30 seconds
+20:51:55 sendfile(3, 8, [2312288408], 1982678888) = 1982678888
+
+As I see, nonblocking mode is enabled - sendfile sends less than asked.  
+But 2G via single 30 seconds sendfile call - this is blocking call. How 
+can I  avoid that?  I prefer sendfile as fastest way to send file 
+content to network socket. The problem with sendfile block on 
+nonblocking socket has place only when I'm using network connection, 
+that is faster than my hard disk, for example  gigabit NIC or localhost. 
+When I use 100Mbit NIC, which is slower, than my hard disk,  I got small 
+and fast sendfile calls without blocking.
+
+My kernel is  Linux 2.6.20.3-grsec x86_64. I verified that also on 
+2.6.18 - same results. Please advise.
+
+ps: I've did same tests with lighttpd's sendfile and got same results - 
+block on nonblocking socket, when network is faster than disk.
+
+Thank you,
+Alex
+
+--------------090100040303030108060004
+Content-Type: text/plain;
+ name="strace.log"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="strace.log"
+
+c3RyYWNlIC10cCAxMDMwNQpQcm9jZXNzIDEwMzA1IGF0dGFjaGVkIC0gaW50ZXJydXB0IHRv
+IHF1aXQKMjA6NTE6MTcgd3JpdGUoMTMsICIyMDA3LzA0LzIzIDIwOjUxOjE3IFtpbmZvXSAx
+MDMwNSIuLi4sIDg1KSA9IDg1CjIwOjUxOjE3IGVwb2xsX3dhaXQoNywge3tFUE9MTElOLCB7
+dTMyPTEwNTQxNDI0ODAsIHU2ND01MDQ3MTIxNDgzNzc3Nn19fSwgNTEyLCA0Mjk0OTY3Mjk1
+KSA9IDEKMjA6NTE6MjAgYWNjZXB0KDEwLCB7c2FfZmFtaWx5PUFGX0lORVQsIHNpbl9wb3J0
+PWh0b25zKDU1NDQ2KSwgc2luX2FkZHI9aW5ldF9hZGRyKCIxOTIuMTY4Ljc4LjEiKX0sIFs1
+MDU2NzI5MDUyMTcwMTU4MDk2XSkgPSAzCjIwOjUxOjIwIGlvY3RsKDMsIEZJT05CSU8sIFsx
+XSkgICAgICAgICA9IDAKMjA6NTE6MjAgZXBvbGxfY3RsKDcsIEVQT0xMX0NUTF9BREQsIDMs
+IHtFUE9MTElOfEVQT0xMRVQsIHt1MzI9MTA1NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgw
+fX0pID0gMAoyMDo1MToyMCBlcG9sbF93YWl0KDcsIHt7RVBPTExJTiwge3UzMj0xMDU0MTQy
+Nzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6MjAg
+cmVjdmZyb20oMywgIkdFVCAvMy50bXAgSFRUUC8xLjBcclxuVXNlci1BZ2VudDoiLi4uLCAx
+MDI0LCAwLCBOVUxMLCBOVUxMKSA9IDE0NwoyMDo1MToyMCBvcGVuKCIvdmFyL3d3dy9jYWN0
+aS9odGRvY3MvMy50bXAiLCBPX1JET05MWSkgPSA4CjIwOjUxOjIwIGZzdGF0KDgsIHtzdF9t
+b2RlPVNfSUZSRUd8MDY0NCwgc3Rfc2l6ZT00Mjk0OTY3Mjk2LCAuLi59KSA9IDAKMjA6NTE6
+MjAgc2V0c29ja29wdCgzLCBTT0xfVENQLCBUQ1BfQ09SSywgWzFdLCA0KSA9IDAKMjA6NTE6
+MjAgd3JpdGV2KDMsIFt7IkhUVFAvMS4xIDIwMCBPS1xyXG5TZXJ2ZXI6IG5naW54LzAiLi4u
+LCAyNjJ9XSwgMSkgPSAyNjIKMjA6NTE6MjAgc2VuZGZpbGUoMywgOCwgWzBdLCAyMTQ3NDc5
+NTUyKSA9IDIwNTc2CjIwOjUxOjIwIGVwb2xsX2N0bCg3LCBFUE9MTF9DVExfTU9ELCAzLCB7
+RVBPTExJTnxFUE9MTE9VVHxFUE9MTEVULCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIx
+NDgzODA4MH19KSA9IDAKMjA6NTE6MjAgZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VULCB7dTMy
+PTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIxNDgzODA4MH19fSwgNTEyLCA2MDAwMDApID0gMQoy
+MDo1MToyMCBzZW5kZmlsZSgzLCA4LCBbMjA1NzZdLCAyMTQ3NDgzNTUyKSA9IDU1NTY4CjIw
+OjUxOjIwIGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1NjQ9
+NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNTk5OTgxKSA9IDEKMjA6NTE6MjAgc2VuZGZpbGUo
+MywgOCwgWzc2MTQ0XSwgMjE0NzQ4MTIzMikgPSAyNzc4NAoyMDo1MToyMCBlcG9sbF93YWl0
+KDcsIHt7RVBPTExPVVQsIHt1MzI9MTA1NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgwfX19
+LCA1MTIsIDU5OTk3OSkgPSAxCjIwOjUxOjIwIHNlbmRmaWxlKDMsIDgsIFsxMDM5MjhdLCAy
+MTQ3NDgyMTIwKSA9IDkwMjk4CjIwOjUxOjIwIGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwg
+e3UzMj0xMDU0MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNTk5OTc5KSA9
+IDEKMjA6NTE6MjAgc2VuZGZpbGUoMywgOCwgWzE5NDIyNl0sIDIxNDc0ODE5MzQpID0gNjUy
+OTI0CjIwOjUxOjIwIGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0
+LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNTk5OTc4KSA9IDEKMjA6NTE6MjAgc2Vu
+ZGZpbGUoMywgOCwgWzg0NzE1MF0sIDIxNDc0ODAyNzQpID0gMjM2MTY0CjIwOjUxOjIwIGVw
+b2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4
+MzgwODB9fX0sIDUxMiwgNTk5OTcwKSA9IDEKMjA6NTE6MjEgc2VuZGZpbGUoMywgOCwgWzEw
+ODMzMTRdLCAyMTQ3NDgxNjc4KSA9IDQ1NDk2MzAKMjA6NTE6MjEgZXBvbGxfd2FpdCg3LCB7
+e0VQT0xMT1VULCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIxNDgzODA4MH19fSwgNTEy
+LCA1OTk5NjApID0gMQoyMDo1MToyMSBzZW5kZmlsZSgzLCA4LCBbNTYzMjk0NF0sIDIxNDc0
+ODI3MDQpID0gMzg1Mjk0NjIKMjA6NTE6MjEgZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VULCB7
+dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIxNDgzODA4MH19fSwgNTEyLCA1OTk4OTQpID0g
+MQoyMDo1MToyMSBzZW5kZmlsZSgzLCA4LCBbNDQxNjI0MDZdLCAyMTQ3NDgwMjE4KSA9IDMz
+NDUxOTM2CjIwOjUxOjIyIGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQy
+Nzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6MjIg
+c2VuZGZpbGUoMywgOCwgWzc3NjE0MzQyXSwgMjE0NzQ4MDMxNCkgPSAyMDM5MzQ1NgoyMDo1
+MToyMiBlcG9sbF93YWl0KDcsIHt7RVBPTExPVVQsIHt1MzI9MTA1NDE0Mjc4NCwgdTY0PTUw
+NDcxMjE0ODM4MDgwfX19LCA1MTIsIDYwMDAwMCkgPSAxCjIwOjUxOjIyIHNlbmRmaWxlKDMs
+IDgsIFs5ODAwNzc5OF0sIDIxNDc0ODA4NDIpID0gNTgzNDY0CjIwOjUxOjIyIGVwb2xsX3dh
+aXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9
+fX0sIDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6MjIgc2VuZGZpbGUoMywgOCwgWzk4NTkxMjYy
+XSwgMjE0NzQ4MzEwNikgPSA2ODc2NTQKMjA6NTE6MjIgZXBvbGxfd2FpdCg3LCB7e0VQT0xM
+T1VULCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIxNDgzODA4MH19fSwgNTEyLCA1OTk5
+NTkpID0gMQoyMDo1MToyMiBzZW5kZmlsZSgzLCA4LCBbOTkyNzg5MTZdLCAyMTQ3NDgzNTgw
+KSA9IDc5ODc5MAoyMDo1MToyMiBlcG9sbF93YWl0KDcsIHt7RVBPTExPVVQsIHt1MzI9MTA1
+NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgwfX19LCA1MTIsIDU5OTk0NSkgPSAxCjIwOjUx
+OjIyIHNlbmRmaWxlKDMsIDgsIFsxMDAwNzc3MDZdLCAyMTQ3NDgzNTEwKSA9IDI1MDA1NjAK
+MjA6NTE6MjIgZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VULCB7dTMyPTEwNTQxNDI3ODQsIHU2
+ND01MDQ3MTIxNDgzODA4MH19fSwgNTEyLCA1OTk5MzEpID0gMQoyMDo1MToyMiBzZW5kZmls
+ZSgzLCA4LCBbMTAyNTc4MjY2XSwgMjE0NzQ4MTUxMCkgPSAzOTAxMTUxNDQKMjA6NTE6Mjgg
+ZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VULCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIx
+NDgzODA4MH19fSwgNTEyLCA1OTk5MTApID0gMQoyMDo1MToyOCBzZW5kZmlsZSgzLCA4LCBb
+NDkyNjkzNDEwXSwgMjE0NzQ4MTY5NCkgPSAxMDA3MTcwCjIwOjUxOjI4IGVwb2xsX3dhaXQo
+Nywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0s
+IDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6Mjggc2VuZGZpbGUoMywgOCwgWzQ5MzcwMDU4MF0s
+IDIxNDc0ODIxNDApID0gMTAyODAwOAoyMDo1MToyOCBlcG9sbF93YWl0KDcsIHt7RVBPTExP
+VVQsIHt1MzI9MTA1NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgwfX19LCA1MTIsIDU5OTk4
+NCkgPSAxCjIwOjUxOjI4IHNlbmRmaWxlKDMsIDgsIFs0OTQ3Mjg1ODhdLCAyMTQ3NDgyMjI4
+KSA9IDgwNDQzMDE1MgoyMDo1MTo0MCBlcG9sbF93YWl0KDcsIHt7RVBPTExPVVQsIHt1MzI9
+MTA1NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgwfX19LCA1MTIsIDU5OTk3MSkgPSAxCjIw
+OjUxOjQwIHNlbmRmaWxlKDMsIDgsIFsxMjk5MTU4NzQwXSwgMjE0NzQ4MTkwMCkgPSAxMDY5
+Njg0CjIwOjUxOjQwIGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0
+LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6NDAgc2Vu
+ZGZpbGUoMywgOCwgWzEzMDAyMjg0MjRdLCAyMTQ3NDgxMjcyKSA9IDEwNjI3MzgKMjA6NTE6
+NDAgZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VULCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3
+MTIxNDgzODA4MH19fSwgNTEyLCA1OTk5NzYpID0gMQoyMDo1MTo0MCBzZW5kZmlsZSgzLCA4
+LCBbMTMwMTI5MTE2Ml0sIDIxNDc0ODM0OTQpID0gMTAwNzE3MAoyMDo1MTo0MCBlcG9sbF93
+YWl0KDcsIHt7RVBPTExPVVQsIHt1MzI9MTA1NDE0Mjc4NCwgdTY0PTUwNDcxMjE0ODM4MDgw
+fX19LCA1MTIsIDU5OTk1NCkgPSAxCjIwOjUxOjQwIHNlbmRmaWxlKDMsIDgsIFsxMzAyMjk4
+MzMyXSwgMjE0NzQ3OTg0NCkgPSAxMTExMzYwCjIwOjUxOjQwIGVwb2xsX3dhaXQoNywge3tF
+UE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwg
+NTk5OTMxKSA9IDEKMjA6NTE6NDAgc2VuZGZpbGUoMywgOCwgWzEzMDM0MDk2OTJdLCAyMTQ3
+NDgyNTk2KSA9IDEwMDgxMDA3NjQKMjA6NTE6NTUgZXBvbGxfd2FpdCg3LCB7e0VQT0xMT1VU
+LCB7dTMyPTEwNTQxNDI3ODQsIHU2ND01MDQ3MTIxNDgzODA4MH19fSwgNTEyLCA1OTk5MDUp
+ID0gMQoyMDo1MTo1NSBzZW5kZmlsZSgzLCA4LCBbMjMxMTUxMDQ1Nl0sIDE5ODM0NTY4NDAp
+ID0gNzc3OTUyCjIwOjUxOjU1IGVwb2xsX3dhaXQoNywge3tFUE9MTE9VVCwge3UzMj0xMDU0
+MTQyNzg0LCB1NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNjAwMDAwKSA9IDEKMjA6NTE6
+NTUgc2VuZGZpbGUoMywgOCwgWzIzMTIyODg0MDhdLCAxOTgyNjc4ODg4KSA9IDE5ODI2Nzg4
+ODgKMjA6NTI6MjUgd3JpdGUoMTYsICIxOTIuMTY4Ljc4LjEgLSB2b3JvbiBbMjMvQXByLzIw
+MCIuLi4sIDExNCkgPSAxMTQKMjA6NTI6MjUgY2xvc2UoOCkgICAgICAgICAgICAgICAgICAg
+ICAgID0gMAoyMDo1MjoyNSBzZXRzb2Nrb3B0KDMsIFNPTF9UQ1AsIFRDUF9DT1JLLCBbMF0s
+IDQpID0gMAoyMDo1MjoyNSByZWN2ZnJvbSgzLCAweDU3ZDg4MCwgMTAyNCwgMCwgMCwgMCkg
+PSAtMSBFQUdBSU4gKFJlc291cmNlIHRlbXBvcmFyaWx5IHVuYXZhaWxhYmxlKQoyMDo1Mjoy
+NSBlcG9sbF93YWl0KDcsIHt7RVBPTExJTnxFUE9MTE9VVCwge3UzMj0xMDU0MTQyNzg0LCB1
+NjQ9NTA0NzEyMTQ4MzgwODB9fX0sIDUxMiwgNzUwMDApID0gMQoyMDo1MjoyNSByZWN2ZnJv
+bSgzLCAiIiwgMTAyNCwgMCwgTlVMTCwgTlVMTCkgPSAwCjIwOjUyOjI1IGNsb3NlKDMpICA=
+--------------090100040303030108060004--
