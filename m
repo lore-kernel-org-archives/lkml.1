@@ -1,57 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbXDWXTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbXDWXaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbXDWXTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754466AbXDWXTe
+	id S1752030AbXDWXaG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752960AbXDWXaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:19:34 -0400
-Received: from mail.screens.ru ([213.234.233.54]:33127 "EHLO mail.screens.ru"
+	Mon, 23 Apr 2007 19:30:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34207 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbXDWXTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:19:33 -0400
-Date: Tue, 24 Apr 2007 03:19:26 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       ego@in.ibm.com, linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
-       paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
-Message-ID: <20070423231926.GA684@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <200704240040.18312.rjw@sisk.pl> <20070423225535.GB659@tv-sign.ru> <200704240110.35770.rjw@sisk.pl>
-Mime-Version: 1.0
+	id S1752030AbXDWXaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 19:30:04 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704240110.35770.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH 03/25] xen: Add nosegneg capability to the vsyscall page notes
+In-Reply-To: Jeremy Fitzhardinge's message of  Monday, 23 April 2007 14:56:41 -0700 <20070423215709.802499615@goop.org>
+X-Windows: power tools for power fools.
+Message-Id: <20070423232941.476FB1801A4@magilla.sf.frob.com>
+Date: Mon, 23 Apr 2007 16:29:41 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/24, Rafael J. Wysocki wrote:
->
-> On Tuesday, 24 April 2007 00:55, Oleg Nesterov wrote:
-> > On 04/24, Rafael J. Wysocki wrote:
-> > >
-> > > Should I clear it in dup_task_struct() or is there a better place?
-> > 
-> > I personally think we should do this in dup_task_struct(). In fact, I believe
-> > it is better to replace the
-> > 
-> > 	*tsk = *orig;
-> > 
-> > with some helper (like setup_thread_stack() below), and that helper clears
-> > ->freezer_flags. Say, copy_task_struct().
-> 
-> Hmm, wouldn't that be overkill?  copy_task_struct() would have to do
-> *tsk = *orig anyway, and we only need to clear one field apart from this.
-> 
-> Some other fields are cleared towards the end of dup_task_struct(), so perhaps
-> we could clear freezer_flags in there too?
+> + * It should contain:
+> + *	hwcap 0 nosegneg
+> + * to match the mapping of bit to name that we give here.
 
-Yes. And I strongly believe it is bad we don't have the helper which does some
-random stuf like "p->did_exec = 0".
+This needs to be "hwcap 0 nosegneg" to match:
 
-The same for thread_info. Could you answer quickly where do we clear TIF_FREEZE
-currently? We don't.
+> +NOTE_KERNELCAP_BEGIN(1, 2)
+> +NOTE_KERNELCAP(1, "nosegneg")
+> +NOTE_KERNELCAP_END
 
-Oleg.
+The actual bits you are using should be fine.  (You're intentionally
+skipping bit 0 to work around hold glibc bugs, which you might want to add
+to the comments.  Also a comment or perhaps using 1<<1 syntax would make it
+more clear that "2" is the bit mask containing bit 1 and that's why it has
+to be 2, and not because of some other magical property of 2.)  But if
+kernel packagers don't write the matching bit number in their ld.so.conf.d
+files, then ld.so.cache lookups won't work right.
 
+
+Thanks,
+Roland
