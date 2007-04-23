@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030666AbXDWRLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXDWRMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030666AbXDWRLy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 13:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030657AbXDWRLy
+	id S1030657AbXDWRMN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 13:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030735AbXDWRMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 13:11:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52035 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030370AbXDWRLx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 13:11:53 -0400
-Message-ID: <462CE8D5.8040300@sgi.com>
-Date: Mon, 23 Apr 2007 19:11:49 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       Jes Sorensen <jes@sgi.com>, Tony Luck <tony.luck@intel.com>,
-       rja@sgi.com, holt@sgi.com, dcn@sgi.com, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] ia64 sn xpc: Convert to use kthread API.
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969574439-git-send-email-ebiederm@xmission.com> <20070422203647.GC23015@infradead.org>
-In-Reply-To: <20070422203647.GC23015@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 13:12:13 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46243 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030576AbXDWRMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 13:12:10 -0400
+Date: Mon, 23 Apr 2007 21:11:57 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream
+Message-ID: <20070423171157.GA205@tv-sign.ru>
+References: <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1355.1177317176@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Thu, Apr 19, 2007 at 01:58:44AM -0600, Eric W. Biederman wrote:
->> From: Eric W. Biederman <ebiederm@xmission.com>
->>
->> This patch starts the xpc kernel threads using kthread_run
->> not a combination of kernel_thread and daemonize.  Resuling
->> in slightly simpler and more maintainable code.
+On 04/23, David Howells wrote:
 > 
-> This driver is a really twisted maze.  It has a lot of threads,
-> some of them running through the whole lifetime of the driver,
-> some short-lived and some in a sort of a pool.
+> > We only care when del_timer() returns true. In that case, if the timer
+> > function still runs (possible for single-threaded wqs), it has already
+> > passed __queue_work().
 > 
-> The patch below fixes up the long-lived thread as well as fixing
-> gazillions of leaks in the init routine by switching to proper
-> goto-based unwinding.
-> 
-> Note that thread pools are something we have in a few places,
-> and might be worth handling in the core kthread infrastructure,
-> as tearing down pools will get a bit complicated using the
-> kthread APIs.
+> Why do you assume that?
 
-Like with the previous patch from Eric, I'm CC'ing the correct people
-for this patch (forwarded it in a seperate email). CC'ing irrelevant
-lists such as containers@ and not linux-ia64@ makes it somewhat
-difficult to get proper reviews of these things.
+If del_timer() returns true, the timer was pending. This means it was started
+by work->func() (note that __run_timers() clears timer_pending() before calling
+timer->function). This in turn means that delayed_work_timer_fn() has already
+called __queue_work(dwork), otherwise work->func() has no chance to run.
 
-Russ/Dean/Robin - could one of you provide some feedback to this one
-please.
+When del_timer() returns true and delayed_work_timer_fn() doesn't run we are
+safe, this doesn't differ from del_timer_sync().
 
-Thanks,
-Jes
+Oleg.
+
