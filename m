@@ -1,133 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030307AbXDWX4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030792AbXDXACS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030307AbXDWX4Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030342AbXDWX4Q
+	id S1030792AbXDXACS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 20:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030829AbXDXACR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:56:16 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:44881 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030307AbXDWX4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:56:15 -0400
-X-Sasl-enc: jM4gQ9pAiZrJJWiOxGmcbhPhVjQ/oMqKvbnRVVLLjy2J 1177372574
-Message-ID: <462D483D.7080503@imap.cc>
-Date: Tue, 24 Apr 2007 01:58:53 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Satyam Sharma <satyam.sharma@gmail.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       kkeil@suse.de, i4ldeveloper@listserv.isdn4linux.de,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] Remove "obsolete" label from ISDN4Linux (v3)
-References: <20070115172912.GA3323@pingi.kke.suse.de>	<462A0CA7.2090908@imap.cc>	<20070421215844.542d3aab@the-village.bc.nu>	<20070421.151052.78709111.davem@davemloft.net>	<462B54A0.9000203@imap.cc>	<20070422135835.037e323c@the-village.bc.nu>	<462B712D.7070504@imap.cc>	<20070422161708.54253ab7@the-village.bc.nu>	<a781481a0704220848t16cc8ed2l3cb5ee52d9b405e1@mail.gmail.com> <20070422172017.52f21a90@the-village.bc.nu>
-In-Reply-To: <20070422172017.52f21a90@the-village.bc.nu>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigC74C44F5898A3D2EAFDF230C"
+	Mon, 23 Apr 2007 20:02:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:18023 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030767AbXDXACP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 20:02:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,443,1170662400"; 
+   d="scan'208"; a="218359022:sNHT19141178"
+Date: Mon, 23 Apr 2007 16:59:43 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: jeff@garzik.org
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: [patch 1/7] libata: check for AN support
+Message-Id: <20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
+In-Reply-To: <20070424074856.005152262@intel.com>
+References: <20070424074856.005152262@intel.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigC74C44F5898A3D2EAFDF230C
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Check to see if an ATAPI device supports Asynchronous Notification.
+If so, enable it.
 
-Am 22.04.2007 17:17 schrieb Alan Cox:
-> Well once it ends up && BROKEN perhaps patches will appear, or before
-> that. If not well the pain factor will resolve the problem.
->
->>> No risk of deadlock. It'll progress to && BROKEN which will either ca=
-use
->>> sufficient pain for someone to get off their arse and fix it, for eno=
-ugh
->>> of a vendors users to get the vendor to do the work or for someone wh=
-o
->>> cares to pay a third party to do the work.
->>
->> Do I sense some hidden agenda there?
->=20
-> No I'm speaking from experience - if a subsystem maintainer is too
-> busy/working on other projects and the subsystem stops working it
-> produces a rapid and sudden supply of new maintainers, unless nobody
-> cares in which case it can go in the bitbucket.
->=20
->> > The isdn4linux subsystem will not "progress" to BROKEN unless
->> > somebody pushes it there.=20
->=20
-> It has drivers using functions that will soon be deleted. That isn't so=
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-> much as pushing more like getting fed up of pulling someone elses cart
-> along.
+Index: 2.6-git/drivers/ata/libata-core.c
+===================================================================
+--- 2.6-git.orig/drivers/ata/libata-core.c
++++ 2.6-git/drivers/ata/libata-core.c
+@@ -70,6 +70,7 @@ const unsigned long sata_deb_timing_long
+ static unsigned int ata_dev_init_params(struct ata_device *dev,
+ 					u16 heads, u16 sectors);
+ static unsigned int ata_dev_set_xfermode(struct ata_device *dev);
++static unsigned int ata_dev_set_AN(struct ata_device *dev);
+ static void ata_dev_xfermask(struct ata_device *dev);
+ 
+ static unsigned int ata_print_id = 1;
+@@ -1744,6 +1745,23 @@ int ata_dev_configure(struct ata_device 
+ 		}
+ 		dev->cdb_len = (unsigned int) rc;
+ 
++		/*
++		 * check to see if this ATAPI device supports
++		 * Asynchronous Notification
++		 */
++		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id))
++		{
++			/* issue SET feature command to turn this on */
++			rc = ata_dev_set_AN(dev);
++			if (rc) {
++				ata_dev_printk(dev, KERN_ERR,
++						"unable to set AN\n");
++				rc = -EINVAL;
++				goto err_out_nosup;
++			}
++			dev->flags |= ATA_DFLAG_AN;
++		}
++
+ 		if (ata_id_cdb_intr(dev->id)) {
+ 			dev->flags |= ATA_DFLAG_CDB_INTR;
+ 			cdb_intr_string = ", CDB intr";
+@@ -3525,6 +3543,42 @@ static unsigned int ata_dev_set_xfermode
+ }
+ 
+ /**
++ *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
++ *                       with sector count set to indicate
++ *                       Asynchronous Notification feature
++ *	@dev: Device to which command will be sent
++ *
++ *	Issue SET FEATURES - SATA FEATURES command to device @dev
++ *	on port @ap.
++ *
++ *	LOCKING:
++ *	PCI/etc. bus probe sem.
++ *
++ *	RETURNS:
++ *	0 on success, AC_ERR_* mask otherwise.
++ */
++static unsigned int ata_dev_set_AN(struct ata_device *dev)
++{
++	struct ata_taskfile tf;
++	unsigned int err_mask;
++
++	/* set up set-features taskfile */
++	DPRINTK("set features - SATA features\n");
++
++	ata_tf_init(dev, &tf);
++	tf.command = ATA_CMD_SET_FEATURES;
++	tf.feature = SETFEATURES_SATA_ENABLE;
++	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
++	tf.protocol = ATA_PROT_NODATA;
++	tf.nsect = SATA_AN;
++
++	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++
++	DPRINTK("EXIT, err_mask=%x\n", err_mask);
++	return err_mask;
++}
++
++/**
+  *	ata_dev_init_params - Issue INIT DEV PARAMS command
+  *	@dev: Device to which command will be sent
+  *	@heads: Number of heads (taskfile parameter)
+Index: 2.6-git/include/linux/ata.h
+===================================================================
+--- 2.6-git.orig/include/linux/ata.h
++++ 2.6-git/include/linux/ata.h
+@@ -194,6 +194,12 @@ enum {
+ 	SETFEATURES_WC_ON	= 0x02, /* Enable write cache */
+ 	SETFEATURES_WC_OFF	= 0x82, /* Disable write cache */
+ 
++	SETFEATURES_SATA_ENABLE = 0x10, /* Enable use of SATA feature */
++	SETFEATURES_SATA_DISABLE = 0x90, /* Disable use of SATA feature */
++
++	/* SETFEATURE Sector counts for SATA features */
++	SATA_AN			= 0x05,  /* Asynchronous Notification */
++
+ 	/* ATAPI stuff */
+ 	ATAPI_PKT_DMA		= (1 << 0),
+ 	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
+@@ -299,6 +305,8 @@ struct ata_taskfile {
+ #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
+ #define ata_id_removeable(id)	((id)[0] & (1 << 7))
+ #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
++#define ata_id_has_AN(id)	\
++	((id[76] && (~id[76])) & ((id)[78] & (1 << 5)))
+ #define ata_id_iordy_disable(id) ((id)[49] & (1 << 10))
+ #define ata_id_has_iordy(id) ((id)[49] & (1 << 9))
+ #define ata_id_u32(id,n)	\
+Index: 2.6-git/include/linux/libata.h
+===================================================================
+--- 2.6-git.orig/include/linux/libata.h
++++ 2.6-git/include/linux/libata.h
+@@ -136,6 +136,7 @@ enum {
+ 	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
+ 	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
+ 	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
++	ATA_DFLAG_AN		= (1 << 5), /* device supports Async notification */
+ 	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
+ 
+ 	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
+@@ -174,6 +175,7 @@ enum {
+ 	ATA_FLAG_SETXFER_POLLING= (1 << 14), /* use polling for SETXFER */
+ 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
+ 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
++	ATA_FLAG_AN		= (1 << 17), /* controller supports AN */
+ 
+ 	/* The following flag belongs to ap->pflags but is kept in
+ 	 * ap->flags because it's referenced in many LLDs and will be
 
-Do I understand you correctly? You deliberately want to move it
-to BROKEN to cause pain in the hope of forcing somebody other than
-"the person who did the kernel change in the first place" (quote
-stable_api_nonsense.txt) to do the fixing up?
-
-Am 22.04.2007 18:20 schrieb Alan Cox:
->> Why, or
->> rather how, were the writers of newer APIs _allowed_ to push *their*
->> stuff into the kernel _without_ even bothering to convert the
->> *existing* users of the older APIs in the kernel? This goes against
->=20
-> Because to convert the existing ISDN4Linux heap into the new APIs would=
-
-> require someone with all the cards involved and a lot of time (as the
-> card drivers need a *lot* of work by now to bring them up to todays wor=
-k)
-
-Not true. None of the past kernel API changes were done by someone
-who had all the hardware for the affected drivers. I have personally
-acked changes to the driver I maintain from people who don't have
-the hardware, and the changes were fine. The one inventing a new
-kernel API to replace an old one is in the best position for actually
-replacing it in the existing users of the old API, and that's also
-what stable_api_nonsense.txt stipulates.
-
-> "Precedent", that implies it is a new behaviour - which it isn't. We
-> regularly break old driver code when it is neccessary in order to make
-> general progress. Grep for "BROKEN" in the kernel tree.
-
-I did grep for "BROKEN" in the 2.6.21-rc7 sources and couldn't find
-an instance of a driver that was still in active use being broken in
-order to make general progress. OTOH I remember several cases of
-drivers being kept alive even though they were in the way of
-progress, because there were still users relying on them.
-
-> You, and anyone else who wants to, are free to work on I4L and fix it,
-> improve it and make it better.=20
-
-You are turning the situation on its head. I4L works. Somebody wants
-to push through a kernel API change that would break it. In every
-other case I know, it was the responsibility of those doing the
-kernel API change to fix the in-tree users of that API. As long as
-they didn't finish that job, the old API would stay. Nobody advocates
-moving reiserfs to BROKEN for still using lock_kernel(), to cite a
-recent issue. So why isdn4linux?
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- Undetected errors are handled as if no error occurred. (IBM) -
-
-
---------------enigC74C44F5898A3D2EAFDF230C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGLUg9MdB4Whm86/kRAuHIAJ0fGhC6ymA7G1EApjU4FY1PYED+ogCfaYvi
-v4sLoBEDc+f20eDhtaQgVIg=
-=sdwT
------END PGP SIGNATURE-----
-
---------------enigC74C44F5898A3D2EAFDF230C--
+-- 
