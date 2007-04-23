@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbXDWJcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965685AbXDWJfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbXDWJcj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 05:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXDWJcj
+	id S965685AbXDWJfX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 05:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXDWJfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 05:32:39 -0400
-Received: from mail.suse.de ([195.135.220.2]:48517 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753885AbXDWJci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 05:32:38 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Joachim Deguara" <joachim.deguara@amd.com>
-Subject: Re: [PATCH] x86_64: make GART PTEs uncacheable
-Date: Mon, 23 Apr 2007 11:32:30 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, "Langsdorf, Mark" <mark.langsdorf@amd.com>
-References: <200704231114.10327.joachim.deguara@amd.com>
-In-Reply-To: <200704231114.10327.joachim.deguara@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Apr 2007 05:35:23 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:36828 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965685AbXDWJfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 05:35:22 -0400
+Date: Mon, 23 Apr 2007 11:41:07 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] workqueue: cancel_rearming_delayed_work/workqueue usage warning
+Message-ID: <20070423094107.GD1684@ff.dom.local>
+References: <20070419065404.GB1782@ff.dom.local> <20070419144618.GG32602149@melbourne.sgi.com> <20070420081325.GB1695@ff.dom.local> <20070420085354.GP32602149@melbourne.sgi.com> <20070420102157.GD1695@ff.dom.local> <20070420110119.GS32602149@melbourne.sgi.com> <20070420121255.GA4042@ff.dom.local> <20070420172348.GC470@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704231132.30736.ak@suse.de>
+In-Reply-To: <20070420172348.GC470@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 April 2007 11:14:10 Joachim Deguara wrote:
-> This patches fixes the silent data corruption problems being seen using the 
-> GART iommu where 4kB of data where incorrect (seen mostly on Nvidia CK804 
-> systems).
+On Fri, Apr 20, 2007 at 09:23:48PM +0400, Oleg Nesterov wrote:
+> On 04/20, Jarek Poplawski wrote:
+> > 
+> > Here is my proposal to make things clearer:
+> > (this time on 2.6.21-rc7)
+> > 
+> > CC: David Chinner <dgc@sgi.com>
+> > CC: Oleg Nesterov <oleg@tv-sign.ru>
+> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> > 
+> > ---
+> > 
+> > diff -Nurp 2.6.21-rc7-/kernel/workqueue.c 2.6.21-rc7/kernel/workqueue.c
+> > --- 2.6.21-rc7-/kernel/workqueue.c	2007-04-18 10:14:16.000000000 +0200
+> > +++ 2.6.21-rc7/kernel/workqueue.c	2007-04-20 13:56:51.000000000 +0200
+> > @@ -662,6 +662,8 @@ EXPORT_SYMBOL(flush_scheduled_work);
+> >   * cancel_rearming_delayed_workqueue - reliably kill off a delayed work whose handler rearms the delayed work.
+> >   * @wq:   the controlling workqueue structure
+> >   * @dwork: the delayed work struct
+> > + *
+> > + * WARNING: use only with handlers, which rearm unconditionally with delay > 0
+> >   */
+> 
+> Nit: it is ok if the work re-arms itself with delay == 0 "sometimes". What we
+> need is that the handler use delay > 0 eventually.
 
-Performance numbers? How much slower does this make this? Is it still faster
-than swiotlb?
+Probably it would be shorter to write it yourself, because I'm not sure
+of your intentions: so, you think we can call this function with such
+a work?
 
-Also this will always split up the direct memory mapping of the kernel,
-so you'll lose more TLB entries even for other data. 
+> 
+> I'd suggest to re-diff against -mm tree. I don't think this patch can find its
+> way to the soon to be released 2.6.21.
 
-> This fix, to mark the memory regin the GART PTEs reside on as  
-> uncacheable, also brings the code in line with the AGP specification.
+The current thread seems to confirm my initial fear, this function
+is not explained enough, so it should help to remove errors as soon
+as possible from the current code. And I hope this functions will
+work other way soon...
 
-Where in the AGP specification? I can't find any such requirement
-in AGPv3
-
--Andi
- 
+Jarek P.
