@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161480AbXDWTUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161469AbXDWTVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161480AbXDWTUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 15:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161482AbXDWTUV
+	id S1161469AbXDWTVQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 15:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161482AbXDWTVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 15:20:21 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:1730 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161480AbXDWTUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 15:20:19 -0400
-X-IronPort-AV: i="4.14,443,1170662400"; 
-   d="scan'208"; a="480790662:sNHT46763398"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>
-Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
-X-Message-Flag: Warning: May contain useful information
-References: <200704231823.48723.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 23 Apr 2007 12:20:14 -0700
-In-Reply-To: <200704231823.48723.fenkes@de.ibm.com> (Joachim Fenkes's message of "Mon, 23 Apr 2007 18:23:48 +0200")
-Message-ID: <ada3b2q7v9t.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 23 Apr 2007 15:21:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:40746 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161469AbXDWTVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 15:21:14 -0400
+Message-ID: <462D072F.6030809@goop.org>
+Date: Mon, 23 Apr 2007 12:21:19 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Apr 2007 19:20:14.0487 (UTC) FILETIME=[6B6BBA70:01C785DC]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       virtualization@lists.osdl.org, Chuck Ebbert <cebbert@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
+ mappings
+References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>	<462CE1E0.9060007@zytor.com>	<m1zm4zvwfr.fsf@ebiederm.dsl.xmission.com>	<462CF5B8.4070708@xensource.com> <m1y7kivs3s.fsf@ebiederm.dsl.xmission.com> <462D04B2.6080008@goop.org> <462D05A0.1020100@zytor.com>
+In-Reply-To: <462D05A0.1020100@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > +	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
- > +		ehca_err(&shca->ib_device, "Can't query port properties");
- > +		ret = -EINVAL;
- > +		goto modify_port1;
- > +	}
- > +
- > +	cap = (rblock->capability_mask | props->set_port_cap_mask)
- > +		& ~props->clr_port_cap_mask;
- > +
- > +	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
- > +				  cap, props->init_type, port_modify_mask);
+H. Peter Anvin wrote:
+> It would be *trivial* to make a certain number of page table slots
+> available at the end of the head.S-generated map. 
 
-Is this thread-safe?  What if two different bits are set at the same
-time from two different threads?  It seems that both calls could get
-the same result from hipz_h_query_port(), and then the second call to
-hipz_h_modify_port() would overwrite the first call.
+Or you could use a fixmap.
 
-You could look at the implementation in mthca to see the locking I
-used there.
-
- - R.
+    J
