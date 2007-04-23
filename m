@@ -1,47 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbXDWOM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXDWOMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932309AbXDWOM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 10:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXDWOM2
+	id S932409AbXDWOMh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXDWOMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 10:12:28 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:63678 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932409AbXDWOM1 (ORCPT
+	Mon, 23 Apr 2007 10:12:37 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:36140 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbXDWOMe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 10:12:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hun7HG47L42wjRbXU3y+Vflw2kxZRNgLG8NSV4mCtmz4xq3v3/th31oqshh7gSXlGH6wWvPozsdgrvjMUJXfCnnO3Dr0IQQCvDzzYxXQJ5hn2Bnvic4FyQpI/a8cg3+uphTng/GLnhlQLhlRZmoJT33ii9aixkXIMnHTmNyx2UU=
-Message-ID: <5a04609e0704230712i1d4aeeb8ke9d8649e167eebe9@mail.gmail.com>
-Date: Mon, 23 Apr 2007 17:12:23 +0300
-From: "Sergey Yanovich" <ynvich@gmail.com>
-To: "Alex Dubov" <oakad@yahoo.com>
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-Cc: linux-kernel@vger.kernel.org, "Matthew Garrett" <mjg59@srcf.ucam.org>
-In-Reply-To: <90215.57597.qm@web36713.mail.mud.yahoo.com>
+	Mon, 23 Apr 2007 10:12:34 -0400
+Date: Mon, 23 Apr 2007 16:12:51 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: akpm@linux-foundation.org, mb@bu3sch.de, linville@tuxdriver.com,
+       arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
+Subject: [PATCH 3/9] Kconfig: unwanted menus for s390.
+Message-ID: <20070423141251.GD21174@skybase>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5a04609e0704230029x56f08654v9d9d3fb1fef414ee@mail.gmail.com>
-	 <90215.57597.qm@web36713.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> SUBSYSTEM=="tifm", ACTION=="add", TIFM_CARD_TYPE=="SD", RUN+="/sbin/modprobe tifm_sd"
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Thanks.
+Disable some more menus in the configuration files that are of no
+interest to a s390 machine.
 
-> As a side note: I have some very good reasons for the current driver architecture. You may want to
-> look them up in the mail archive (I outlined them during the initial driver submission).
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-I am not in any way argue that your driver architecture is wrong or that you
-should change anything. My point was simple. [tifm_sd] can only work with
-[tifm_7xx1]. If you add support for let's say [tifm_8xx2] in the future, which
-would have port offsets different that [tifm_7xx1], you would also need a
-completely new modules for slots (sd, ms, etc).
+ drivers/dma/Kconfig     |    1 +
+ drivers/input/Kconfig   |    1 +
+ drivers/isdn/Kconfig    |    1 +
+ drivers/net/phy/Kconfig |    1 +
+ drivers/rtc/Kconfig     |    1 +
+ net/ax25/Kconfig        |    2 +-
+ net/bluetooth/Kconfig   |    2 +-
+ net/irda/Kconfig        |    2 +-
+ 8 files changed, 8 insertions(+), 3 deletions(-)
 
---
-Sergey Yanovich
+diff -urpN linux-2.6/drivers/dma/Kconfig linux-2.6-patched/drivers/dma/Kconfig
+--- linux-2.6/drivers/dma/Kconfig	2007-04-23 15:51:31.000000000 +0200
++++ linux-2.6-patched/drivers/dma/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "DMA Engine support"
++	depends on !S390
+ 
+ config DMA_ENGINE
+ 	bool "Support for DMA engines"
+diff -urpN linux-2.6/drivers/input/Kconfig linux-2.6-patched/drivers/input/Kconfig
+--- linux-2.6/drivers/input/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/input/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "Input device support"
++	depends on !S390
+ 
+ config INPUT
+ 	tristate "Generic input layer (needed for keyboard, mouse, ...)" if EMBEDDED
+diff -urpN linux-2.6/drivers/isdn/Kconfig linux-2.6-patched/drivers/isdn/Kconfig
+--- linux-2.6/drivers/isdn/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/isdn/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "ISDN subsystem"
++	depends on !S390
+ 
+ config ISDN
+ 	tristate "ISDN support"
+diff -urpN linux-2.6/drivers/net/phy/Kconfig linux-2.6-patched/drivers/net/phy/Kconfig
+--- linux-2.6/drivers/net/phy/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/drivers/net/phy/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "PHY device support"
++	depends on !S390
+ 
+ config PHYLIB
+ 	tristate "PHY Device support and infrastructure"
+diff -urpN linux-2.6/drivers/rtc/Kconfig linux-2.6-patched/drivers/rtc/Kconfig
+--- linux-2.6/drivers/rtc/Kconfig	2007-04-23 15:51:51.000000000 +0200
++++ linux-2.6-patched/drivers/rtc/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "Real Time Clock"
++	depends on !S390
+ 
+ config RTC_LIB
+ 	tristate
+diff -urpN linux-2.6/net/ax25/Kconfig linux-2.6-patched/net/ax25/Kconfig
+--- linux-2.6/net/ax25/Kconfig	2007-04-23 15:50:54.000000000 +0200
++++ linux-2.6-patched/net/ax25/Kconfig	2007-04-23 15:53:07.000000000 +0200
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig HAMRADIO
+-	depends on NET
++	depends on NET && !S390
+ 	bool "Amateur Radio support"
+ 	help
+ 	  If you want to connect your Linux box to an amateur radio, answer Y
+diff -urpN linux-2.6/net/bluetooth/Kconfig linux-2.6-patched/net/bluetooth/Kconfig
+--- linux-2.6/net/bluetooth/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/net/bluetooth/Kconfig	2007-04-23 15:53:08.000000000 +0200
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig BT
+-	depends on NET
++	depends on NET && !S390
+ 	tristate "Bluetooth subsystem support"
+ 	help
+ 	  Bluetooth is low-cost, low-power, short-range wireless technology.
+diff -urpN linux-2.6/net/irda/Kconfig linux-2.6-patched/net/irda/Kconfig
+--- linux-2.6/net/irda/Kconfig	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6-patched/net/irda/Kconfig	2007-04-23 15:53:08.000000000 +0200
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig IRDA
+-	depends on NET
++	depends on NET && !S390
+ 	tristate "IrDA (infrared) subsystem support"
+ 	select CRC_CCITT
+ 	---help---
