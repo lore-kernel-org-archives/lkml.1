@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXDWHMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXDWHNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXDWHMi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 03:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbXDWHMi
+	id S1753559AbXDWHNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 03:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbXDWHNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 03:12:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54332 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753395AbXDWHMg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 03:12:36 -0400
-Date: Mon, 23 Apr 2007 09:10:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch] CFS scheduler, -v5
-Message-ID: <20070423071050.GD4518@elte.hu>
-References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423012509.GA25162@wotan.suse.de> <20070423025553.GA10407@elte.hu> <20070423032215.GC25162@wotan.suse.de> <20070423034310.GA19845@elte.hu> <20070423040600.GD25162@wotan.suse.de>
+	Mon, 23 Apr 2007 03:13:18 -0400
+Received: from cdma-61-61.msk.skylink.ru ([83.217.61.61]:59572 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753624AbXDWHMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 03:12:54 -0400
+X-Greylist: delayed 3431 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 03:12:52 EDT
+Date: Mon, 23 Apr 2007 10:14:27 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
+Message-ID: <20070423101427.3a1d4983@localhost.localdomain>
+In-Reply-To: <200704222349.42368.arnd@arndb.de>
+References: <20070422232658.5f427fd3@localhost.localdomain>
+	<200704222349.42368.arnd@arndb.de>
+X-Mailer: Claws Mail 2.8.1cvs91 (GTK+ 2.10.9; i686-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423040600.GD25162@wotan.suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 22 Apr 2007 23:49:41 +0200
+Arnd Bergmann wrote:
 
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> > yeah - but they'll all be quad core, so the SMP timeslice 
-> > multiplicator should do the trick. Most of the CFS testers use 
-> > single-CPU systems.
+> On Sunday 22 April 2007, Vitaly Bordug wrote:
+> > This utilizes PCMCIA on mpc885ads and mpc866ads from arch/powerpc.
+> > In the new approach, direct IMMR accesses from within drivers/ were
+> > totally eliminated, that requires hardware_enable,
+> > hardware_disable, voltage_set board-specific functions to be moved
+> > over to BSP code section (arch/powerpc/platforms/8xx in 885 case).
+> > There is just no way to have both arch/ppc and arch/powerpc
+> > approaches to work simultaneously because of that.  
 > 
-> But desktop users could have have quad thread and even 8 thread CPUs 
-> soon, so if the number doesn't work for both then you're in trouble. 
-> It just smells like a hack to scale with CPU numbers.
-
-hm, i still like Con's approach in this case because it makes 
-independent sense: in essence we calculate the "human visible" effective 
-latency of a physical resource: more CPUs/threads means more parallelism 
-and less visible choppiness of whatever basic chunking of workloads 
-there might be, hence larger size chunking can be done.
-
-> > it doesnt in any test i do, but again, i'm erring on the side of it 
-> > being more interactive.
+> Maybe I'm missing a key issue here, but what's the point of adding
+> more platform_devices for stuff that is already in the device tree?
+> Shouldn't this be made an of_platform_driver instead so you can
+> use the existing of_device directly?
 > 
-> I'd start by erring on the side of trying to ensure no obvious 
-> performance regressions like this because that's the easy part. 
-> Suppose everybody finds your scheduler wonderfully interactive, but 
-> you can't make it so with a larger timeslice?
+Was thinking of it but platform_device is better for migration purposes. Hence,
+assuming somebody would want to have pcmcia working not bothering to add whole arch/powerpc support,
+it can be accomplished quickly. OTOH, further change from pd to of_device is not hard as well. So far, most ppc stuff (if not all) still existing both in ppc/ and powerpc/ paths, and to keep consistency platform_devices are used here and there. So, with pd approach arch/ppc/ boards are encouraged to get source device/driver bus ready, hereby simplifying transition to of_device later.
 
-look at CFS's design and you'll see that it can easily take larger 
-timeslices :) I really dont need any reinforcement on that part. But i 
-do need reinforcement and test results on the basic part: _can_ this 
-design be interactive enough on the desktop? So far the feedback has 
-been affirmative, but more testing is needed.
+With current bootwrapper activities it may happen sooner, but there are many places in kernel nobody want to move for almost zero value..
 
-server scheduling, while obviously of prime importance to us, is really 
-'easy' in comparison technically, because it has alot less human factors 
-and is thus a much more deterministic task.
 
-> For _real_ desktop systems, sure, erring on the side of being more 
-> interactive is fine. For RFC patches for testing, I really think you 
-> could be taking advantage of the fact that people will give you 
-> feedback on the issue.
 
-90% of the testers are using CFS on desktops. 80% of the scheduler 
-complaints come regarding the human (latency/behavior/consistency) 
-aspect of the upstream scheduler. (Sure, we dont want to turn that 
-around into '80% of the complaints come due to performance' - so i 
-increased the granularity based on your kbuild feedback to that near of 
-SD's, to show that mini-timeslices are not a necessity in CFS, but i 
-really think that server scheduling is the easier part.)
+-- 
+Sincerely, Vitaly
 
-	Ingo
