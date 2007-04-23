@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161526AbXDWMiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXDWMm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161526AbXDWMiI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 08:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161527AbXDWMiI
+	id S1030634AbXDWMm5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030678AbXDWMm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 08:38:08 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:33070 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161526AbXDWMiG (ORCPT
+	Mon, 23 Apr 2007 08:42:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:57797 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030634AbXDWMm4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 08:38:06 -0400
-Date: Mon, 23 Apr 2007 18:05:58 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       vatsa@in.ibm.com, paulmck@us.ibm.com, pavel@ucw.cz
-Subject: Re: [RFC][PATCH -mm 3/3] freezer: Fix problem with kthread_stop
-Message-ID: <20070423123558.GC25144@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070419120131.GB13435@in.ibm.com> <20070420183118.GA695@elte.hu> <200704222128.49419.rjw@sisk.pl> <200704222141.00680.rjw@sisk.pl>
+	Mon, 23 Apr 2007 08:42:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DPePgwfZp3VjR5J1SQvW8GXCgoUXZT7LeH5C/him3rKgfXTbdSGBZG+oTHi4gzmS0AMjONAyIhCijCeBPldQQdj0jZ8IfJqGxBaAGR8cMoMVvydFvfXa5EbF4fzB7HJR4KfK+IZJi/W1aQTT+Oq1g0qY4JoMe4FNesf7iucfz9E=
+Message-ID: <462CA9CB.7050006@gmail.com>
+Date: Mon, 23 Apr 2007 14:42:51 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704222141.00680.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: pwarudkar@aol.com
+CC: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       dsk6@pitt.edu, linux-kernel@vger.kernel.org
+Subject: Re: Sleep during spinlock in TPM driver
+References: <alpine.DEB.0.82.0704221505370.14039@paragw-desktop> <Pine.LNX.4.64.0704230941390.20657@twin.jikos.cz> <alpine.DEB.0.82.0704230801230.6240@paragw-desktop>
+In-Reply-To: <alpine.DEB.0.82.0704230801230.6240@paragw-desktop>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 22, 2007 at 09:40:59PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+Parag Warudkar napsal(a):
+> On Mon, 23 Apr 2007, Jiri Kosina wrote:
 > 
-> Fix the problem with kthread_stop() that causes the freezer to fail if a
-> freezable thread is attempting to stop a frozen one and that may cause the
-> freezer to fail if the thread being stopped is freezable and
-> try_to_freeze_tasks() is running concurrently with kthread_stop().
+>> On Sun, 22 Apr 2007, Parag Warudkar wrote:
+>>
+>>> @@ -1097,8 +1097,13 @@
+>>>
+>>>       /* Driver specific per-device data */
+>>>       chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+>>> - if (chip == NULL)
+>>> + devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
+>>> + +   if (chip == NULL || devname == NULL) {
+>>
+>> Hi,
+>>
+>> this line looks bogus to me.
+>>
 > 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/kthread.c |    9 +++++++++
->  1 file changed, 9 insertions(+)
+> Hi - Yep, thanks for catching. Really not sure how that extra + got in
+> there - I diffed the exact same file this morning and it isn't there -
+> new diff attached.
+[...]
+> @@ -1097,8 +1097,13 @@
 > 
-> Index: linux-2.6.21-rc6-mm1/kernel/kthread.c
-> ===================================================================
-> --- linux-2.6.21-rc6-mm1.orig/kernel/kthread.c	2007-04-09 15:23:48.000000000 +0200
-> +++ linux-2.6.21-rc6-mm1/kernel/kthread.c	2007-04-22 19:05:29.000000000 +0200
-> @@ -13,6 +13,7 @@
->  #include <linux/file.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> +#include <linux/freezer.h>
->  #include <asm/semaphore.h>
-> 
->  /*
-> @@ -232,6 +233,14 @@ int kthread_stop(struct task_struct *k)
-> 
->  	/* Now set kthread_should_stop() to true, and wake it up. */
->  	kthread_stop_info.k = k;
-> +	if (!freezer_should_exempt(current)) {
-> +		/* We are freezable, so we must make sure that the thread being
-> +		 * stopped is not frozen and will not be frozen until it dies
-> +		 */
-> +		freezer_exempt(k);
-> +		if (frozen(k))
-> +			clear_frozen_flag(k);
-> +	}
+>      /* Driver specific per-device data */
+>      chip = kzalloc(sizeof(*chip), GFP_KERNEL);
+> -    if (chip == NULL)
+> +    devname = kmalloc(DEVNAME_SIZE, GFP_KERNEL);
+> + +    if (chip == NULL || devname == NULL) {
 
-I'm trying hard to convince myself that this will work. May be I am
-missing something here, but I find a potential race window (very small though) 
-when k is entering the refrigerator.
+I see this here too, but there is no extra '+' here:
+http://lkml.org/lkml/2007/4/22/172 and here
+http://lkml.org/lkml/2007/4/23/125
+not even in the source of this message, weird... (using thunderbird 2.0rc1)
 
-Here's how.
-
-kthread_stop(k)					k->refrigerator()
----------------------------------------------------------------------
-						task_lock(k);
-						1) check_if_exempted();
-						/* not exempted. So 
-						 * we will freeze
-						 * ourself.
-						 */
-2) freezer_exempt(k);
-
-3) if(frozen(k))
-/* No, we're not yet frozen. So we
- * don't clear_frozen_flag(k) here
- */
-						4) frozen_process(k);
-						   task_unlock(k);
-						
-						5) for(;;) {
-						 set_current_state(UNINTERRUPTIBLE);
-						  if(!frozen_process(k))
-						  /* k is frozen. We
-						   * don't break :( 
-						   */
-						 
-						  	schedule();
-						}
-						
->  	wake_up_process(k);
->  	put_task_struct(k);
-> 
-
-Thus the freezer can still fail, no?
-IMO, we need the to take the task_lock for k here. Something like
-
-> +	if (!freezer_should_exempt(current)) {
-		task_lock(k);
-> +		/* We are freezable, so we must make sure that the thread being
-> +		 * stopped is not frozen and will not be frozen until it dies
-> +		 */
-> +		freezer_exempt(k);
-> +		if (frozen(k))
-> +			clear_frozen_flag(k);
-		task_unlock(k);
-> +	}
-
-
-Thanks and Regards
-gautham.
+regards,
 -- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
