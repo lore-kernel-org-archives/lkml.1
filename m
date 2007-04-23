@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161161AbXDWF3O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXDWFaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161161AbXDWF3O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 01:29:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161194AbXDWF3O
+	id S1161204AbXDWFaH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 01:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161221AbXDWFaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 01:29:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55466 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161161AbXDWF3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 01:29:13 -0400
-Message-ID: <462C441F.1070506@garzik.org>
-Date: Mon, 23 Apr 2007 01:29:03 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 23 Apr 2007 01:30:07 -0400
+Received: from smtp-out-46.synserver.de ([217.119.50.46]:1131 "HELO
+	smtp-out-46.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1161204AbXDWFaF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 01:30:05 -0400
+X-Greylist: delayed 512 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 01:30:04 EDT
+X-SynServer-TrustedSrc: 1
+X-SynServer-ViaOpenRelay-IP: 212.202.34.50
+X-SynServer-RBL-IP: 212.202.34.50
+X-SynServer-RBL-ReportedBy: dynablock.njabl.org dnsbl.sorbs.net
+X-SynServer-RBL-ReportedByCount: **
+X-SynServer-RBL-Weights: 100 50
+X-SynServer-RBL-WeightSum: 150
+X-SynServer-RBL-WeightStr: ***************
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-RemoteDnsName: port-212-202-34-50.dynamic.qsc.de
+Date: Mon, 23 Apr 2007 07:27:28 +0200
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch] CFS scheduler, -v5
+Message-ID: <20070423052728.GB3929@gentoox2.trippelsdorf.de>
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423051659.GA3929@gentoox2.trippelsdorf.de>
 MIME-Version: 1.0
-To: alex=lists-linux-kernel@yuriev.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SATA errors/messages after upgrade to 2.6.20.7
-References: <20070423035622.GB10106@s2.yuriev.com>
-In-Reply-To: <20070423035622.GB10106@s2.yuriev.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423051659.GA3929@gentoox2.trippelsdorf.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alex=lists-linux-kernel@yuriev.com wrote:
+On Mon, Apr 23, 2007 at 07:16:59AM +0200, Markus Trippelsdorf wrote:
+> On Mon, Apr 23, 2007 at 03:12:29AM +0200, Ingo Molnar wrote:
+> > 
+> > i'm pleased to announce release -v5 of the CFS scheduler patchset. The 
+> > patch against v2.6.21-rc7 and v2.6.20.7 can be downloaded from:
+> ...
+> >  - feature: add initial sys_sched_yield_to() implementation. Not hooked 
+> >    into the futex code yet, but testers are encouraged to give the 
+> >    syscalls a try, on i686 the new syscall is __NR_yield_to==320, on 
+> >    x86_64 it's __NR_yield_to==280. The prototype is 
+> >    sys_sched_yield_to(pid_t), as suggested by Ulrich Drepper.
 > 
-> It is a Samsung HD501LJ SATA drive connected to 631xESB/632xESB controller.
-> Reading and writing every block of the drive does not generate any other
-> errors/failures. This is observed in 2.6.20.7 like a clockwork on any
-> badblocks -v run or rebuild of a MD raid1 array onto the disk. 
+> The new version does not link here (amd64,smp):
 > 
-> It, however, was not observed on 2.6.18 in 182 badblocks -v runs followed by
-> rebuild of MD raid1 array.
-> 
-> Any idea what it might be?
-> 
-> Apr 23 14:45:34 stdsrv-x86-64bit kernel: ata4.00: exception Emask 0x0 SAct 0x1 SErr 0x0 action 0x0
-> Apr 23 14:45:34 stdsrv-x86-64bit kernel: ata4.00: (irq_stat 0x40000008)
-> Apr 23 14:45:34 stdsrv-x86-64bit kernel: ata4.00: cmd 60/80:00:14:16:c4/00:00:05:00:00/40 tag 0 cdb 0x0 data 65536 in
-> Apr 23 14:45:34 stdsrv-x86-64bit kernel:          res 51/40:00:40:16:c4/6f:00:05:00:00/40 Emask 0x9 (media error)
+>   LD      .tmp_vmlinux1
+>   arch/x86_64/kernel/built-in.o:(.rodata+0x1dd8): undefined reference to
+>   `sys_yield_to'
 
-Does 'smartctl -d ata -t long /dev/XXXXX' return errors?
-
-Media error is typically just that...
-
-	Jeff
-
-
-
+Changing  sys_yield_to to sys_sched_yield_to in include/asm-x86_64/unistd.h
+fixes the problem.
+-- 
+Markus
