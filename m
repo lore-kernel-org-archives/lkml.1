@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161373AbXDWLQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161379AbXDWLRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161373AbXDWLQi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 07:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161403AbXDWLQh
+	id S1161379AbXDWLRT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 07:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161427AbXDWLRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 07:16:37 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:43909 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161373AbXDWLQg (ORCPT
+	Mon, 23 Apr 2007 07:17:19 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:4071 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161425AbXDWLRS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 07:16:36 -0400
-Subject: Re: [PATCH 7/8] Kconfig: silicon backplane dependency.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, akpm@linux-foundation.org,
-       linville@tuxdriver.com
-In-Reply-To: <200704221146.11439.mb@bu3sch.de>
-References: <20070420113505.GH3738@skybase>
-	 <200704220119.32729.arnd@arndb.de> <1177228423.8046.5.camel@localhost>
-	 <200704221146.11439.mb@bu3sch.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Organization: IBM Corporation
-Date: Mon, 23 Apr 2007 13:16:51 +0200
-Message-Id: <1177327011.5984.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Mon, 23 Apr 2007 07:17:18 -0400
+X-AuditID: d80ac287-a5e9bbb000005f82-0b-462c95bd1a4d 
+Date: Mon, 23 Apr 2007 12:16:31 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
+In-Reply-To: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
+Message-ID: <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
+References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 23 Apr 2007 11:16:38.0842 (UTC) FILETIME=[DCBFA9A0:01C78598]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-22 at 11:46 +0200, Michael Buesch wrote:
-> > > No, this doesn't look right. There are other devices that come with
-> > > SiliconBackplane but are not PCI or PCMCIA style devices.
-> > 
-> > Yes, Michael already told me about that. The current solution is to use
-> > !S390, could we use HAS_IOMEM instead ?
+On Mon, 23 Apr 2007, Hisashi Hifumi wrote:
 > 
-> I'd think either should be fine.
+> PageLRU flag operation is protected by zone->lru_lock, so
+> SetPageLRU/ClearPageLRU
+> can be replaced to __SetPageLRU/__ClearPageLRU non-atomic bit operation.
 
-I will use HAS_IOMEM then. The oddity with the select statement still
-exists though. I have to add the "depends on HAS_IOMEM" to SSB and B44.
-If I just add it to SSB then the config option for B44 exists for s390
-and you can enable it. The select statement will then enable SSB as well
-(.config contains CONFIG_SSB=y for allyesconfig). This is in
-contradiction to the depends statement since HAS_IOMEM=n on s390.
+No.  The PG_lru flag bit is just one bit amongst many others:
+what of concurrent operations changing other bits in that same
+unsigned long e.g. trying to lock the page by setting PG_locked?
+There are some places where such micro-optimizations can be made
+(typically while first allocating the page); but in general, no.
 
-The current Kconfig code does not check all select statements if they
-can be enabled before allowing the config option that does the select.
-So the rule for using select statements is that the depends line of the
-config option that selects another config option needs to be at least as
-restrictive as the depends line of the selected option. Hence I'll add
-the HAS_IOMEM depends to B44 as well. Okay ?
-
--- 
-blue skies,              IBM Deutschland Entwicklung GmbH
-   Martin                Vorsitzender des Aufsichtsrats: Johann Weihen
-                         Geschäftsführung: Herbert Kircher
-Martin Schwidefsky       Sitz der Gesellschaft: Böblingen
-Linux on zSeries         Registergericht: Amtsgericht Stuttgart,
-   Development           HRB 243294
-
-"Reality continues to ruin my life." - Calvin.
-
-
+Hugh
