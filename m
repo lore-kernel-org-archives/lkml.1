@@ -1,52 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbXDWVhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754275AbXDWViW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbXDWVhH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 17:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXDWVhH
+	id S1754275AbXDWViW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 17:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbXDWViW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 17:37:07 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38554 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754272AbXDWVhG (ORCPT
+	Mon, 23 Apr 2007 17:38:22 -0400
+Received: from web88101.mail.re2.yahoo.com ([206.190.37.202]:25993 "HELO
+	web88101.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754274AbXDWViW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 17:37:06 -0400
-Date: Mon, 23 Apr 2007 14:37:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org, pj@sgi.com,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070423142919.5809e03f.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704231436070.832@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
+	Mon, 23 Apr 2007 17:38:22 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 17:38:21 EDT
+X-YMail-OSG: eP9e2FQVM1nzq2is2Du2aUf3xYBggucL8Xe.xI8ecyS5lCO5IBhcRmNTO2UD7NSAGy7ShvLUwikFPZH3Qat2OsE03w--
+X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.10
+Date: Mon, 23 Apr 2007 14:31:39 -0700 (PDT)
+From: Matt Ranon <mranon@javadevices.com>
+Subject: [ANNOUNCE][PATCH] Kcli - Kernel command line interface.
+To: linux maillist <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ascii
+Message-ID: <875184.9239.qm@web88101.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Andrew Morton wrote:
-
-> > +static inline struct page *page_cache_alloc_mask(struct address_space *x,
-> > +			gfp_t gfp)
-> > +{
-> > +	return __page_cache_alloc(mapping_gfp_mask(x) | gfp);
-> > +}
-> 
-> Usually we use the term "mask" to imply an AND function, not an OR
-> function.
-
-Well but you pass an allocation mask.... Maybe call this 
-page_cache_alloc_gfp?
-
-> There are few calls to page_cache_alloc().  Would it not be simpler to just
-> add the additional argument to page_cache_alloc() (called "extra_gfp",
-> please) and to update all callers?  And to remove page_cache_alloc_cold()
-> and replace all it callers with page_cache_alloc(mapping, __GFP_COLD)?
-> 
-> The way we actually get rid of an API call instead of adding another one.
-
-Ok. Give me an hour or so.
+The Jem team is pleased to announce the release of Kcli, an in-kernel command line interface. Kcli is intended for a special class of embedded Linux applications. The Linux kernel has become the defacto standard OS for embedded applications. This means that Linux is getting bent in some ways that may appear strange to some. One of these ways, is embedded applications that do not use user space. User space consists of a statically linked, one line program, that simply sleeps forever, transforming Linux into a classical embedded RTOS. VxWorks developers will understand what we are talking about, and they may recall how much they depend on the VxWorks shell. Kcli attempts to meet the need for a shell for this class of embedded Linux applications. 
  
+Kcli provides a command line environment that runs in the kernel, and that can be extended with custom commands registered by other kernel modules. We have found Kcli invaluable for our development, and we are releasing the patch, in case others find it useful.
+ 
+Kcli is directly derived from libcli written by David Parrish and Brendan O'Dea, and the regular expression support is directly derived from diet libc written by Felix von Leitner.
+ 
+The Jem team fully understands that this kind of patch may not be appropriate for inclusion in the mainline kernel code. We have no expectation that it will be, and we leave that decision fully in the hands of those responsible. Nonetheless, we feel that others may find it useful, and we will also appreciate any appropriate feedback from the community.
+ 
+Kcli is standalone, and modifies no kernel files, except for the Kconfig and Makefile modifications required to wire it into the configuration and build.
+ 
+The Kcli patch is available at ftp://www.javadevices.com/kcli/kcli-v1_0_0.patch.
+ 
+MRanon
