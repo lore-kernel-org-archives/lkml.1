@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161512AbXDWMOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbXDWMUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161512AbXDWMOl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 08:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161515AbXDWMOk
+	id S1754124AbXDWMUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXDWMUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 08:14:40 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:54066 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161467AbXDWMOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 08:14:39 -0400
-X-Greylist: delayed 1799 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Apr 2007 08:14:38 EDT
-Message-ID: <462C9C17.3070402@rfo.atmel.com>
-Date: Mon, 23 Apr 2007 13:44:23 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Mon, 23 Apr 2007 08:20:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.242]:42981 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754124AbXDWMUG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 08:20:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=GD0xFiUi9CvfYCaEEM1cdwy/8WlEZRQEYrUGftNfO9d4bhBnqHyk5r3JxN4H5e19GUTU94rO8cwODMYYWPD5/5deZMGvTqNxRVh23F9UNia29oIp0N7f2U4v7000NxtjDrJuIg3VgEuaCVZT9xEZtzOAwYlbVlwQo+HnrD9r/ek=
+Message-ID: <3d8471ca0704230520w5f395747v2bfb121f7f891f32@mail.gmail.com>
+Date: Mon, 23 Apr 2007 14:20:05 +0200
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v5
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070423011229.GA20367@elte.hu>
 MIME-Version: 1.0
-To: linux@bohmer.net
-CC: Andrew Victor <andrew@sanpeople.com>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: gtod/clocksource/clockevents documentation
-References: <3efb10970704211414q7c66c154m79cc06db61eb76be@mail.gmail.com>
-In-Reply-To: <3efb10970704211414q7c66c154m79cc06db61eb76be@mail.gmail.com>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: Clean
+Content-Disposition: inline
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu>
+X-Google-Sender-Auth: 997ce4fe3b33960a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remy Bohmer :
-> Hello All,
-> 
-> I need to implement a gtod/clocksource/clockevents implementation for
-> the Atmel ARM AT91SAM9261 CPU, and I am looking for some kernel
-> (interface) documentation about these mechanisms.
+2007/4/23, Ingo Molnar <mingo@elte.hu>:
 
-[..]
+Index: linux/kernel/sched.c
+===================================================================
+--- linux.orig/kernel/sched.c
++++ linux/kernel/sched.c
++#include "sched_stats.h"
++#include "sched_rt.c"
++#include "sched_fair.c"
++#include "sched_debug.c"
 
-> I hacked something which now makes the RT kernel to boot, but the
-> time-of-day warps several minutes per second, back and forward in
-> time... ;-)
+Index: linux/kernel/sched_stats.h
+===================================================================
+--- /dev/null
++++ linux/kernel/sched_stats.h
 
-I recall there is a patch by Michel Benoit that solves some issues on 
-gettimeoffset()/gettimeofday(). It is in the ARM patch queue here :
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=4149/1
-and will be included in the upcoming kernel.
+These look unnatural if it were to be included in mainline.
 
-Hope that it addresses this problem and that it will help you.
+WBR.
 
-Regards,
 -- 
-Nicolas Ferre
-
-
+Guillaume
