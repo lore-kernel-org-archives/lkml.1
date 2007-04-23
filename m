@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbXDWPs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbXDWPwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbXDWPs1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 11:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753868AbXDWPs1
+	id S1753878AbXDWPwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 11:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbXDWPwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 11:48:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42896 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753863AbXDWPs0 (ORCPT
+	Mon, 23 Apr 2007 11:52:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49542 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753878AbXDWPwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 11:48:26 -0400
-Date: Mon, 23 Apr 2007 08:48:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-In-Reply-To: <1177157708.2934.100.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0704230847400.10624@schroedinger.engr.sgi.com>
-References: <20070420155154.898600123@chello.nl>  <20070420155503.608300342@chello.nl>
-  <20070421025532.916b1e2e.akpm@linux-foundation.org>  <1177156902.2934.96.camel@lappy>
- <1177157708.2934.100.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Apr 2007 11:52:16 -0400
+Date: Mon, 23 Apr 2007 16:55:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Antonino Daplas <adaplas@pol.net>
+Subject: Re: Prevent softlockup triggering in nvidiafb
+Message-ID: <20070423165505.4aecd186@the-village.bc.nu>
+In-Reply-To: <20070423151053.GA5653@redhat.com>
+References: <20070423151053.GA5653@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Apr 2007, Peter Zijlstra wrote:
+On Mon, 23 Apr 2007 11:36:30 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-> > > This is enormously wrong for CONFIG_NR_CPUS=1024 on a 2-way.
-> 
-> Right, I knew about that but, uhm.
-> 
-> I wanted to make that num_online_cpus(), and install a hotplug notifier
-> to fold the percpu delta back into the total on cpu offline.
+> If the chip locks up, we get into a long polling loop,
+> where the softlockup detector kicks in.
+> See https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=151878
+> for an example.
 
-Use nr_cpu_ids instead. Contains the maximum possible cpus on this 
-hardware and allows to handle the hotplug case easily.
+Surely in this situation the softlockup report and trap out is precisely
+what should be occurring.
 
