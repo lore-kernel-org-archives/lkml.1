@@ -1,65 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161206AbXDWGZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161257AbXDWGbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161206AbXDWGZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161242AbXDWGZt
+	id S1161257AbXDWGbq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161291AbXDWGbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:25:49 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51683 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161206AbXDWGZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:25:48 -0400
-Date: Mon, 23 Apr 2007 11:55:34 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Jurriaan <thunder7@xs4all.nl>, Helge Hafting <helgehaf@aitel.hist.no>,
-       linux-kernel@vger.kernel.org, Magnus Damm <magnus@valinux.co.jp>,
-       Horms <horms@verge.net.au>, fastboot@osdl.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH 2/2] x86_64: Remove CONFIG_PHYSICAL_START and CONFIG_RELOCATABLE
-Message-ID: <20070423062534.GB14664@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <m1abxrf9o3.fsf@ebiederm.dsl.xmission.com> <20070402094520.GC13704@in.ibm.com> <m1648eg01d.fsf@ebiederm.dsl.xmission.com> <20070403040152.GA5108@in.ibm.com> <m1zm5qc9q2.fsf@ebiederm.dsl.xmission.com> <20070403100349.GA21759@in.ibm.com> <m18xcjznbm.fsf_-_@ebiederm.dsl.xmission.com> <m14pn7zn5n.fsf_-_@ebiederm.dsl.xmission.com> <20070423060739.GA14664@in.ibm.com> <m1slary5ql.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1slary5ql.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Mon, 23 Apr 2007 02:31:46 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:37529 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161257AbXDWGbq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 02:31:46 -0400
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-reply-to: <1177308889.26937.1.camel@twins> (message from Peter Zijlstra on
+	Mon, 23 Apr 2007 08:14:49 +0200)
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.608300342@chello.nl>
+	 <20070421025532.916b1e2e.akpm@linux-foundation.org>
+	 <E1HfCzN-0002dZ-00@dorka.pomaz.szeredi.hu>
+	 <20070421035444.f7a42fad.akpm@linux-foundation.org>
+	 <E1HfM9K-0003OA-00@dorka.pomaz.szeredi.hu> <1177308889.26937.1.camel@twins>
+Message-Id: <E1Hfs3j-0005sN-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 23 Apr 2007 08:29:59 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 12:17:22AM -0600, Eric W. Biederman wrote:
-> Vivek Goyal <vgoyal@in.ibm.com> writes:
+> > > > The other deadlock, in throttle_vm_writeout() is still to be solved.
+> > > 
+> > > Let's go back to the original changelog:
+> > > 
+> > > Author: marcelo.tosatti <marcelo.tosatti>
+> > > Date:   Tue Mar 8 17:25:19 2005 +0000
+> > > 
+> > >     [PATCH] vm: pageout throttling
+> > >     
+> > >     With silly pageout testcases it is possible to place huge amounts of memory
+> > >     under I/O.  With a large request queue (CFQ uses 8192 requests) it is
+> > >     possible to place _all_ memory under I/O at the same time.
+> > >     
+> > >     This means that all memory is pinned and unreclaimable and the VM gets
+> > >     upset and goes oom.
+> > >     
+> > >     The patch limits the amount of memory which is under pageout writeout to be
+> > >     a little more than the amount of memory at which balance_dirty_pages()
+> > >     callers will synchronously throttle.
+> > >     
+> > >     This means that heavy pageout activity can starve heavy writeback activity
+> > >     completely, but heavy writeback activity will not cause starvation of
+> > >     pageout.  Because we don't want a simple `dd' to be causing excessive
+> > >     latencies in page reclaim.
+> > >     
+> > >     Signed-off-by: Andrew Morton <akpm@osdl.org>
+> > >     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> > > 
+> > > (A good one!  I wrote it ;))
+> > > 
+> > > 
+> > > I believe that the combination of dirty-page-tracking and its calls to
+> > > balance_dirty_pages() mean that we can now never get more than dirty_ratio
+> > > of memory into the dirty-or-writeback condition.
+> > > 
+> > > The vm scanner can convert dirty pages into clean, under-writeback pages,
+> > > but it cannot increase the total of dirty+writeback.
+> > 
+> > What about swapout?  That can increase the number of writeback pages,
+> > without decreasing the number of dirty pages, no?
 > 
-> > On Sun, Apr 22, 2007 at 11:15:48PM -0600, Eric W. Biederman wrote:
-> >> +++ b/arch/x86_64/Kconfig
-> >> @@ -565,62 +565,9 @@ config CRASH_DUMP
-> >>            which are loaded in the main kernel with kexec-tools into
-> >>            a specially reserved region and then later executed after
-> >>            a crash by kdump/kexec. The crash dump kernel must be compiled
-> >> -	  to a memory address not used by the main kernel or BIOS using
-> >> -	  PHYSICAL_START.
-> >> +	  to a memory address not used by the main kernel or BIOS
-> >>            For more details see Documentation/kdump/kdump.txt
-> >
-> > Hi Eric,
-> >
-> > I think "must be compiled" should be replaced with "must be loaded" now.
-> 
-> Yes, that sounds right.  Ugh.  I didn't look at enough context to read
-> the whole sentence.  I just killed the part about PHYSICAL_START.
-> 
-> > Otherwise both the patches look fine.  I am planning to test these.
-> >
-> > This change will also require modifications to Documentation/kdump/kdump.txt
-> > file.
-> 
-> Do you think you can generate the patch fix up the CONFIG_CRASH_DUMP
-> and kdump.txt documentation.
-> 
+> Could we not solve that by enabling cap_account_writeback on
+> swapper_space, and thereby account swap writeback pages. Then the VM
+> knows it has outstanding IO and need not panic.
 
-Ok. I will send one.
+Hmm, I'm not sure that would be right, because then those writeback
+pages would be accounted twice: once for swapper_space, and once for
+the real device.
 
-Thanks
-Vivek
+So there's a condition, when lots of anonymous pages are turned into
+swap-cache writeback pages, and we should somehow throttle this, because
+
+>>>     This means that all memory is pinned and unreclaimable and the VM gets
+>>>     upset and goes oom.
+
+although, it's not quite clear in my mind, how the VM gets upset about
+this.
+
+One way to throttle just the swapout activity, is to do the per-bdi
+accounting on swapper_space, and limit the number of writeback pages
+to e.g. the global threshold + 10%, which is basically what
+throttle_vm_writeout() currently does, only now it does it
+indiscriminately, and not just on swap writeback pages.
+
+Does this make any sense?
+
+Miklos
