@@ -1,59 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753014AbXDWC1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030433AbXDWCb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753014AbXDWC1l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Apr 2007 22:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXDWC1l
+	id S1030433AbXDWCb5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Apr 2007 22:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030959AbXDWCb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Apr 2007 22:27:41 -0400
-Received: from mail.parknet.jp ([210.171.160.80]:4078 "EHLO parknet.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbXDWC1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Apr 2007 22:27:40 -0400
-X-AuthUser: hirofumi@parknet.jp
-To: DervishD <lkml@dervishd.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Juergen Beisert <juergen127@kreuzholzen.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Wrong free clusters count on FAT32
-References: <20070419085750.GA2833@DervishD>
-	<200704191352.06456.juergen127@kreuzholzen.de>
-	<20070419141942.GF8287@DervishD> <87d51xtkmp.fsf@duaron.myhome.or.jp>
-	<20070421201841.85717088.akpm@linux-foundation.org>
-	<87wt05vxu7.fsf@duaron.myhome.or.jp> <20070422112658.GB5786@DervishD>
-	<87mz10tyi1.fsf@duaron.myhome.or.jp> <20070422200839.GC12748@DervishD>
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Date: Mon, 23 Apr 2007 11:27:35 +0900
-In-Reply-To: <20070422200839.GC12748@DervishD> (DervishD's message of "Sun\, 22 Apr 2007 22\:08\:39 +0200")
-Message-ID: <87ps5vq0yw.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
+	Sun, 22 Apr 2007 22:31:57 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:43740 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030433AbXDWCb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Apr 2007 22:31:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NA2fdUaPqEmSvytngioFZVaCb3IlyVONmyKrKmRAKQxxBzgWVanFr7p7d0NQdtXJVorZF6ZQh4VisSkvulHA7kTpMSgpyrNPZz7seOpWKeT1qYhABjgY9ooWYe2VZx5Vi4OP1jF6vNW7XNwkf084iaL1rDnAojw58iIjzrPhkqc=
+Message-ID: <75b66ecd0704221931p44ba647bxb76c849b35b77c6b@mail.gmail.com>
+Date: Sun, 22 Apr 2007 22:31:55 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Eric Hopper" <hopper@omnifarious.org>
+Subject: Re: Question about Reiser4
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070423020046.GA28477@omnifarious.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070423020046.GA28477@omnifarious.org>
+X-Google-Sender-Auth: fda218b974304700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DervishD <lkml@dervishd.net> writes:
-
->> It would add the limitation to following simple usage,
->> 
->> 	# mount -t vfat /dev/sda1 /mnt
->>         # cp -a * /mnt
->>         # umount
->> 
->> if /dev/sda1 was the large and slow device, "mount" will need several
->> minutes to counts free clusters. I think the user will be hard to
->> accept the several minutes at "mount".
+On 4/22/07, Eric Hopper <hopper@omnifarious.org> wrote:
+> I'm not an LKML subscriber.
 >
->     I can carry some tests, but if Windows does that tasks lightning
-> fast, Linux surely does it faster ;) I don't think, anyway, that having
-> a huge USB disk is a common practice when using "modest" machines.
->
->     If you want, I can perform a couple of tests. I have a 80GB disk
-> that I can connect using an USB adapter and my machine is AMD Athlon XP
-> 1900+ with 1GB of RAM, which looks pretty slow nowadays O:)
 
-Yes, I think it's not common practice too. But I don't see why do you
-want to scanning at the mount.
+Did you try searching LKML archives?
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Lee
