@@ -1,106 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXDWQVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965095AbXDWQXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965148AbXDWQVw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 12:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965095AbXDWQVv
+	id S965095AbXDWQXv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 12:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965158AbXDWQXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 12:21:51 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47137 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754038AbXDWQVt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 12:21:49 -0400
-Date: Mon, 23 Apr 2007 21:58:49 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: Amit Gud <gud@cis.ksu.edu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       val_henson@linux.intel.com, riel@surriel.com, zab@zabbo.net,
-       arjan@infradead.org, brandon@ifup.org, karunasagark@gmail.com,
-       gud@ksu.edu
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070423162849.GB14113@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 23 Apr 2007 12:23:51 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:40859 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965095AbXDWQXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 12:23:50 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH] eHCA: Add "Modify Port" verb
+Date: Mon, 23 Apr 2007 18:23:48 +0200
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
-User-Agent: Mutt/1.5.11
+X-Length: 6092
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704231823.48723.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 06:21:34AM -0500, Amit Gud wrote:
-> 
-> This is an initial implementation of ChunkFS technique, briefly discussed
-> at: http://lwn.net/Articles/190222 and 
-> http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
-> 
-> This implementation is done within ext2 driver. Every chunk is an 
-> independent ext2 file system. The knowledge about chunks is kept within 
-> ext2 and 'continuation inodes', which are used to allow files and 
-> directories span across multiple chunks, are managed within ext2.
-> 
-> At mount time, super blocks for all the chunks are created and linked with 
-> the global super_blocks list maintained by VFS. This allows independent 
-> behavior or individual chunks and also helps writebacks to happen 
-> seamlessly.
-> 
-> Apart from this, chunkfs code in ext2 effectively only provides knowledge 
-> of:
-> 
-> - what inode's which block number to look for, for a given file's logical 
-> block number
-> - in which chunk to allocate next inode / block
-> - number of inodes to scan when a directory is being read
-> 
-> To maintain the ext2's inode number uniqueness property, 8 msb bits of 
-> inode number are used to indicate the chunk number in which it resides.
-> 
-> As said, this is a preliminary implementation and lots of changes are 
-> expected before this code is even sanely usable. Some known issues and 
-> obvious optimizations are listed in the TODO file in the chunkfs patch.
-> 
-> http://cis.ksu.edu/~gud/patches/chunkfs-v0.0.8.patch
-> - one big patch
-> - applies to 2.6.18
+Add "Modify Port" verb support to eHCA driver.
+ib_cm needs this to initialize properly.
 
 
-Could you send this out as a patch to ext2 codebase, so we can just look
-at the changes for chunkfs ? That might also make it small enough
-to inline your patch in email for review. 
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-What kind of results are you planning to gather to evaluate/optimize this ?
+ ehca_hca.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++--
+ hcp_if.c   |   24 ++++++++++++++++++++++++
+ hcp_if.h   |    4 ++++
+ 3 files changed, 74 insertions(+), 2 deletions(-)
 
-Regards
-Suparna
-
-> 
-> Attached - ext2-chunkfs-diff.patch.gz
-> - since the code is a spin-off of ext2, this patch explains better what
->   has changed from the ext2.
-> 
-> git://cislinux.cis.ksu.edu/chunkfs-tools
-> - mkfs, and fsck for chunkfs.
-> 
-> http://cis.ksu.edu/~gud/patches/config-chunkfs-2.6.18-uml
-> - config file used; tested mostly on UML with loopback file systems.
-> 
-> NOTE: No xattrs and xips yet, CONFIG_EXT2_FS_XATTR and CONFIG_EXT2_FS_XIP 
-> should be "no" for clean compile.
-> 
-> 
-> Please comment, suggest, criticize. Patches most welcome.
-> 
-> 
-> Best,
-> AG
-> --
-> May the source be with you.
-> http://www.cis.ksu.edu/~gud
-
-
-
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+diff -urp a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
+--- a/drivers/infiniband/hw/ehca/ehca_hca.c	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/ehca_hca.c	2007-04-23 18:09:38.000000000 +0200
+@@ -147,6 +147,7 @@ int ehca_query_port(struct ib_device *ib
+ 		break;
+ 	}
+ 
++	props->port_cap_flags  = rblock->capability_mask;
+ 	props->gid_tbl_len     = rblock->gid_tbl_len;
+ 	props->max_msg_sz      = rblock->max_msg_sz;
+ 	props->bad_pkey_cntr   = rblock->bad_pkey_cntr;
+@@ -233,10 +234,53 @@ query_gid1:
+ 	return ret;
+ }
+ 
++const u32 allowed_port_caps = (
++	IB_PORT_SM | IB_PORT_LED_INFO_SUP | IB_PORT_CM_SUP |
++	IB_PORT_SNMP_TUNNEL_SUP | IB_PORT_DEVICE_MGMT_SUP |
++	IB_PORT_VENDOR_CLASS_SUP);
++
+ int ehca_modify_port(struct ib_device *ibdev,
+ 		     u8 port, int port_modify_mask,
+ 		     struct ib_port_modify *props)
+ {
+-	/* Not implemented yet */
+-	return -EFAULT;
++	int ret = 0;
++	struct ehca_shca *shca = container_of(ibdev, struct ehca_shca, ib_device);
++	struct hipz_query_port *rblock;
++	u32 cap;
++	u64 hret;
++
++	if ((props->set_port_cap_mask | props->clr_port_cap_mask)
++	    & ~allowed_port_caps) {
++		ehca_err(&shca->ib_device, "Non-changeable bits set in masks  "
++			 "set=%x  clr=%x  allowed=%x", props->set_port_cap_mask,
++			 props->clr_port_cap_mask, allowed_port_caps);
++		return -EINVAL;
++	}
++
++	rblock = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
++	if (!rblock) {
++		ehca_err(&shca->ib_device,  "Can't allocate rblock memory.");
++		return -ENOMEM;
++	}
++
++	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
++		ehca_err(&shca->ib_device, "Can't query port properties");
++		ret = -EINVAL;
++		goto modify_port1;
++	}
++
++	cap = (rblock->capability_mask | props->set_port_cap_mask)
++		& ~props->clr_port_cap_mask;
++
++	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
++				  cap, props->init_type, port_modify_mask);
++	if (hret != H_SUCCESS) {
++		ehca_err(&shca->ib_device, "Modify port failed  hret=%lx", hret);
++		ret = -EINVAL;
++	}
++
++modify_port1:
++	ehca_free_fw_ctrlblock(rblock);
++
++	return ret;
+ }
+diff -urp a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+--- a/drivers/infiniband/hw/ehca/hcp_if.c	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/hcp_if.c	2007-04-23 18:06:09.000000000 +0200
+@@ -70,6 +70,10 @@
+ #define H_ALL_RES_QP_SQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(0, 31)
+ #define H_ALL_RES_QP_RQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(32, 63)
+ 
++#define H_MP_INIT_TYPE                  EHCA_BMASK_IBM(44, 47)
++#define H_MP_SHUTDOWN                   EHCA_BMASK_IBM(48, 48)
++#define H_MP_RESET_QKEY_CTR             EHCA_BMASK_IBM(49, 49)
++
+ /* direct access qp controls */
+ #define DAQP_CTRL_ENABLE    0x01
+ #define DAQP_CTRL_SEND_COMP 0x20
+@@ -364,6 +368,26 @@ u64 hipz_h_query_port(const struct ipz_a
+ 	return ret;
+ }
+ 
++u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
++		       const u8 port_id, const u32 port_cap,
++		       const u8 init_type, const int modify_mask)
++{
++	u64 port_attributes = port_cap;
++
++	if (modify_mask & IB_PORT_SHUTDOWN)
++		port_attributes |= EHCA_BMASK_SET(H_MP_SHUTDOWN, 1);
++	if (modify_mask & IB_PORT_INIT_TYPE)
++		port_attributes |= EHCA_BMASK_SET(H_MP_INIT_TYPE, init_type);
++	if (modify_mask & IB_PORT_RESET_QKEY_CNTR)
++		port_attributes |= EHCA_BMASK_SET(H_MP_RESET_QKEY_CTR, 1);
++
++	return ehca_plpar_hcall_norets(H_MODIFY_PORT,
++				       adapter_handle.handle, /* r4 */
++				       port_id,               /* r5 */
++				       port_attributes,       /* r6 */
++				       0, 0, 0, 0);
++}
++
+ u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+ 		     struct hipz_query_hca *query_hca_rblock)
+ {
+diff -urp a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+--- a/drivers/infiniband/hw/ehca/hcp_if.h	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/hcp_if.h	2007-04-23 18:06:09.000000000 +0200
+@@ -85,6 +85,10 @@ u64 hipz_h_query_port(const struct ipz_a
+ 		      const u8 port_id,
+ 		      struct hipz_query_port *query_port_response_block);
+ 
++u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
++		       const u8 port_id, const u32 port_cap,
++		       const u8 init_type, const int modify_mask);
++
+ u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+ 		     struct hipz_query_hca *query_hca_rblock);
+ 
 
