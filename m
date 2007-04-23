@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbXDWN7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbXDWODJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbXDWN7t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 09:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbXDWN7t
+	id S1754084AbXDWODJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 10:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbXDWODI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 09:59:49 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58432 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753689AbXDWN7s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 09:59:48 -0400
-Date: Mon, 23 Apr 2007 15:03:19 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] plan-b: Switch to refcounting PCI API
-Message-ID: <20070423150319.5b685e7e@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Apr 2007 10:03:08 -0400
+Received: from h155.mvista.com ([63.81.120.155]:63148 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754058AbXDWODH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 10:03:07 -0400
+Message-ID: <462CBCD2.3080302@ru.mvista.com>
+Date: Mon, 23 Apr 2007 18:04:02 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] sl82c105: Switch to ref counting API
+References: <20070423145445.45f5dc6a@the-village.bc.nu>
+In-Reply-To: <20070423145445.45f5dc6a@the-village.bc.nu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Hello.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/media/video/planb.c linux-2.6.21-rc6-mm1/drivers/media/video/planb.c
---- linux.vanilla-2.6.21-rc6-mm1/drivers/media/video/planb.c	2007-04-12 13:40:33.000000000 +0100
-+++ linux-2.6.21-rc6-mm1/drivers/media/video/planb.c	2007-04-23 12:00:54.286385088 +0100
-@@ -2207,7 +2207,7 @@
- 		"membase 0x%x (base reg. 0x%x)\n",
- 		bus, PCI_SLOT(dev_fn), PCI_FUNC(dev_fn), old_base, confreg);
- 
--	pdev = pci_find_slot (bus, dev_fn);
-+	pdev = pci_get_bus_and_slot(bus, dev_fn);
- 	if (!pdev) {
- 		printk(KERN_ERR "planb: cannot find slot\n");
- 		goto err_out;
-@@ -2237,6 +2237,7 @@
- 	pb->planb_base = planb_regs;
- 	pb->planb_base_phys = (struct planb_registers *)new_base;
- 	pb->irq	= irq;
-+	pb->dev = pdev;
- 
- 	return planb_num;
- 
-@@ -2244,6 +2245,7 @@
- 	pci_disable_device(pdev);
- err_out:
- 	/* FIXME handle error */   /* comment moved from pci_find_slot, above */
-+	pci_dev_put(pdev);
- 	return 0;
- }
- 
-@@ -2270,6 +2272,8 @@
- 
- 		printk(KERN_INFO "PlanB: unregistering with v4l\n");
- 		video_unregister_device(&pb->video_dev);
-+		
-+		pci_dev_put(pb->dev);
- 
- 		/* note that iounmap() does nothing on the PPC right now */
- 		iounmap ((void *)pb->planb_base);
+Alan Cox wrote:
+
+> Not sure how this one got missed in the great purge some time ago but it
+> did. 
+
+> Signed-off-by: Alan Cox <alan@redhat.com>
+> 
+> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/ide/pci/sl82c105.c linux-2.6.21-rc6-mm1/drivers/ide/pci/sl82c105.c
+> --- linux.vanilla-2.6.21-rc6-mm1/drivers/ide/pci/sl82c105.c	2007-04-12 14:15:04.000000000 +0100
+> +++ linux-2.6.21-rc6-mm1/drivers/ide/pci/sl82c105.c	2007-04-23 11:58:55.016516864 +0100
+> @@ -349,7 +349,7 @@
+>  	/*
+>  	 * The bridge should be part of the same device, but function 0.
+>  	 */
+> -	bridge = pci_find_slot(dev->bus->number,
+> +	bridge = pci_get_bus_and_slot(dev->bus->number,
+>  			       PCI_DEVFN(PCI_SLOT(dev->devfn), 0));
+
+   Isn't it better to use pci_get_slot()?
+
+WBR, Sergei
