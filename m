@@ -1,177 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbXDWXNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbXDWXNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbXDWXNg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 19:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXDWXHi
+	id S1754471AbXDWXNh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 19:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbXDWXNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 19:07:38 -0400
-Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38852 "EHLO
+	Mon, 23 Apr 2007 19:13:36 -0400
+Received: from 61.sub-75-208-107.myvzw.com ([75.208.107.61]:38872 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754490AbXDWXHM (ORCPT
+	with ESMTP id S932837AbXDWXHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 19:07:12 -0400
-Message-Id: <20070423215713.768656419@goop.org>
+	Mon, 23 Apr 2007 19:07:44 -0400
+Message-Id: <20070423215712.510683511@goop.org>
 References: <20070423215638.563901986@goop.org>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 14:57:01 -0700
+Date: Mon, 23 Apr 2007 14:56:55 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: [PATCH 23/25] xen: Lockdep fixes for xen-netfront
-Content-Disposition: inline; filename=xen-netfront-lockdep-fix.patch
+       lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 17/25] xen: Add early printk support via hvc console
+Content-Disposition: inline; filename=xen-hvc-earlyprintk.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-netfront contains two locking problems found by lockdep:
+Add early printk support via hvc console, enable using
+"earlyprintk=xen" on the kernel command line.
 
-1. rx_lock is a normal spinlock, and tx_lock is an irq spinlock.  This
-   means that in normal use, tx_lock may be taken by an interrupt routine
-   while rx_lock is held.  However, netif_disconnect_backend takes them
-   in the order tx_lock->rx_lock, which could lead to a deadlock.  Reverse
-   them
-2. rx_lock can also be taken in softirq context, so it should be taken/released
-   with spin_(un)lock_bh.
-
+From: Gerd Hoffmann <kraxel@suse.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
 ---
- drivers/net/xen-netfront.c |   30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ arch/x86_64/kernel/early_printk.c |    5 +++++
+ drivers/xen/hvc-console.c         |   25 +++++++++++++++++++++++++
+ include/xen/hvc-console.h         |    6 ++++++
+ 3 files changed, 36 insertions(+)
 
 ===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -515,14 +515,14 @@ static int network_open(struct net_devic
+--- a/arch/x86_64/kernel/early_printk.c
++++ b/arch/x86_64/kernel/early_printk.c
+@@ -6,6 +6,7 @@
+ #include <asm/io.h>
+ #include <asm/processor.h>
+ #include <asm/fcntl.h>
++#include <xen/hvc-console.h>
  
- 	memset(&np->stats, 0, sizeof(np->stats));
+ /* Simple VGA output */
  
--	spin_lock(&np->rx_lock);
-+	spin_lock_bh(&np->rx_lock);
- 	if (netfront_carrier_ok(np)) {
- 		network_alloc_rx_buffers(dev);
- 		np->rx.sring->rsp_event = np->rx.rsp_cons + 1;
- 		if (RING_HAS_UNCONSUMED_RESPONSES(&np->rx))
- 			netif_rx_schedule(dev);
+@@ -243,6 +244,10 @@ static int __init setup_early_printk(cha
+  		simnow_init(buf + 6);
+  		early_console = &simnow_console;
+  		keep_early = 1;
++#ifdef CONFIG_XEN
++	} else if (!strncmp(buf, "xen", 3)) {
++ 		early_console = &xenboot_console;
++#endif
  	}
--	spin_unlock(&np->rx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- 
- 	network_maybe_wake_tx(dev);
- 
-@@ -1212,10 +1212,10 @@ static int netif_poll(struct net_device 
- 	int pages_flipped = 0;
- 	int err;
- 
--	spin_lock(&np->rx_lock);
-+	spin_lock_bh(&np->rx_lock);
- 
- 	if (unlikely(!netfront_carrier_ok(np))) {
--		spin_unlock(&np->rx_lock);
-+		spin_unlock_bh(&np->rx_lock);
- 		return 0;
- 	}
- 
-@@ -1356,7 +1356,7 @@ err:
- 		local_irq_restore(flags);
- 	}
- 
--	spin_unlock(&np->rx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- 
- 	return more_to_do;
- }
-@@ -1399,7 +1399,7 @@ static void netif_release_rx_bufs(struct
- 
- 	skb_queue_head_init(&free_list);
- 
--	spin_lock(&np->rx_lock);
-+	spin_lock_bh(&np->rx_lock);
- 
- 	for (id = 0; id < NET_RX_RING_SIZE; id++) {
- 		if ((ref = np->grant_rx_ref[id]) == GRANT_INVALID_REF) {
-@@ -1469,7 +1469,7 @@ static void netif_release_rx_bufs(struct
- 	while ((skb = __skb_dequeue(&free_list)) != NULL)
- 		dev_kfree_skb(skb);
- 
--	spin_unlock(&np->rx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- }
- 
- static int network_close(struct net_device *dev)
-@@ -1579,8 +1579,8 @@ static int network_connect(struct net_de
- 	dev_info(&dev->dev, "has %sing receive path.\n",
- 		 np->copying_receiver ? "copy" : "flipp");
- 
-+	spin_lock_bh(&np->rx_lock);
- 	spin_lock_irq(&np->tx_lock);
--	spin_lock(&np->rx_lock);
- 
- 	/*
- 	 * Recovery procedure:
-@@ -1632,8 +1632,8 @@ static int network_connect(struct net_de
- 	network_tx_buf_gc(dev);
- 	network_alloc_rx_buffers(dev);
- 
--	spin_unlock(&np->rx_lock);
- 	spin_unlock_irq(&np->tx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- 
+ 	register_console(early_console);
  	return 0;
- }
-@@ -1689,7 +1689,7 @@ static ssize_t store_rxbuf_min(struct de
- 	if (target > RX_MAX_TARGET)
- 		target = RX_MAX_TARGET;
+===================================================================
+--- a/drivers/xen/hvc-console.c
++++ b/drivers/xen/hvc-console.c
+@@ -28,6 +28,7 @@
+ #include <xen/page.h>
+ #include <xen/events.h>
+ #include <xen/interface/io/console.h>
++#include <xen/hvc-console.h>
  
--	spin_lock(&np->rx_lock);
-+	spin_lock_bh(&np->rx_lock);
- 	if (target > np->rx_max_target)
- 		np->rx_max_target = target;
- 	np->rx_min_target = target;
-@@ -1698,7 +1698,7 @@ static ssize_t store_rxbuf_min(struct de
+ #include "../char/hvc_console.h"
  
- 	network_alloc_rx_buffers(netdev);
- 
--	spin_unlock(&np->rx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- 	return len;
- }
- 
-@@ -1732,7 +1732,7 @@ static ssize_t store_rxbuf_max(struct de
- 	if (target > RX_MAX_TARGET)
- 		target = RX_MAX_TARGET;
- 
--	spin_lock(&np->rx_lock);
-+	spin_lock_bh(&np->rx_lock);
- 	if (target < np->rx_min_target)
- 		np->rx_min_target = target;
- 	np->rx_max_target = target;
-@@ -1741,7 +1741,7 @@ static ssize_t store_rxbuf_max(struct de
- 
- 	network_alloc_rx_buffers(netdev);
- 
--	spin_unlock(&np->rx_lock);
-+	spin_unlock_bh(&np->rx_lock);
- 	return len;
- }
- 
-@@ -1885,11 +1885,11 @@ static void netif_disconnect_backend(str
- static void netif_disconnect_backend(struct netfront_info *info)
- {
- 	/* Stop old i/f to prevent errors whilst we rebuild the state. */
-+	spin_lock_bh(&info->rx_lock);
- 	spin_lock_irq(&info->tx_lock);
--	spin_lock(&info->rx_lock);
- 	netfront_carrier_off(info);
--	spin_unlock(&info->rx_lock);
- 	spin_unlock_irq(&info->tx_lock);
-+	spin_unlock_bh(&info->rx_lock);
- 
- 	if (info->irq)
- 		unbind_from_irqhandler(info->irq, info->netdev);
+@@ -132,3 +133,27 @@ module_init(xen_init);
+ module_init(xen_init);
+ module_exit(xen_fini);
+ console_initcall(xen_cons_init);
++
++static void xenboot_write_console(struct console *console, const char *string,
++				  unsigned len)
++{
++	unsigned int linelen, off = 0;
++	const char *pos;
++
++	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
++		linelen = pos-string+off;
++		if (off + linelen > len)
++			break;
++		write_console(0, string+off, linelen);
++		write_console(0, "\r\n", 2);
++		off += linelen + 1;
++	}
++	if (off < len)
++		write_console(0, string+off, len-off);
++}
++
++struct console xenboot_console = {
++	.name		= "xenboot",
++	.write		= xenboot_write_console,
++	.flags		= CON_PRINTBUFFER | CON_BOOT,
++};
+===================================================================
+--- /dev/null
++++ b/include/xen/hvc-console.h
+@@ -0,0 +1,6 @@
++#ifndef XEN_HVC_CONSOLE_H
++#define XEN_HVC_CONSOLE_H
++
++extern struct console xenboot_console;
++
++#endif	/* XEN_HVC_CONSOLE_H */
 
 -- 
 
