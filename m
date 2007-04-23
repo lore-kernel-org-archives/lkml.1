@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030970AbXDWFjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030973AbXDWFqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030970AbXDWFjN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 01:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030980AbXDWFjN
+	id S1030973AbXDWFqz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 01:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030989AbXDWFqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 01:39:13 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:41996
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030970AbXDWFjN (ORCPT
+	Mon, 23 Apr 2007 01:46:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35071 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030973AbXDWFqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 01:39:13 -0400
-Date: Mon, 23 Apr 2007 07:42:14 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: emoenke@gwdg.de, minyard@wf-rch.cirr.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] use spinlock instead of binary mutex in CDU-31A driver
-Message-ID: <20070423054213.GQ5013@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Andi Kleen <andi@firstfloor.org>, emoenke@gwdg.de,
-	minyard@wf-rch.cirr.com, linux-kernel@vger.kernel.org
-References: <20070422213531.GO5013@traven> <p737is43sah.fsf@bingen.suse.de>
+	Mon, 23 Apr 2007 01:46:55 -0400
+Date: Sun, 22 Apr 2007 22:47:17 -0700
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
+Subject: Re: regression with gammu on 2.6.21-rc7
+Message-ID: <20070423054717.GB17997@kroah.com>
+References: <20070420085853.GA5594@erig.dyndns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p737is43sah.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070420085853.GA5594@erig.dyndns.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, Apr 23, 2007 at 01:25:58AM +0200 Andi Kleen ha dit:
-
-> Matthias Kaehlcke <matthias.kaehlcke@gmail.com> writes:
+On Fri, Apr 20, 2007 at 10:58:53AM +0200, Wolfgang Erig wrote:
+> Hello,
 > 
-> > -static DECLARE_MUTEX(sony_sem);		/* Semaphore for drive hardware access */
-> > +static DEFINE_MUTEX(sony_mtx);		/* Mutex for drive hardware access */
+> I have a regression with 2.6.21-rc7-g80d74d51.
+> The utility "gammu" to talk to my mobile does not work anymore.
+> With 2.6.20 gammu runs fine.
 > 
-> That's not a spinlock.  Also normally some rationale is added to the
-> description for a change?
+> Distribution is the latest Debian/testing
+> 
+> Wolfgang
+> 
+> $ gammu --backup backup
+> Press Ctrl+C to break...
+> I/O possible
+> $ uname -a
+> Linux max 2.6.21-rc7-g80d74d51 #9 SMP Wed Apr 18 21:41:41 CEST 2007 i686 GNU/Linux
+> $ tail messages 
+> Apr 20 08:04:36 max kernel: ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 16 (level, low) -> IRQ 16
+> Apr 20 08:04:36 max kernel: extern: link up, 100Mbps, full-duplex, lpa 0x45E1
+> Apr 20 08:04:36 max kernel: intern:  setting half-duplex.
+> Apr 20 08:09:02 max kernel: usb 2-2: USB disconnect, address 3
+> Apr 20 08:09:02 max kernel: pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+> Apr 20 08:09:02 max kernel: pl2303 2-2:1.0: device disconnected
+> Apr 20 08:10:24 max kernel: usb 2-2: new full speed USB device using uhci_hcd and address 4
+> Apr 20 08:10:25 max kernel: usb 2-2: configuration #1 chosen from 1 choice
+> Apr 20 08:10:25 max kernel: pl2303 2-2:1.0: pl2303 converter detected
+> Apr 20 08:10:25 max kernel: usb 2-2: pl2303 converter now attached to ttyUSB0
 
-sorry i messed up the description of the change, i meant mutex instead
-of spinlock (in the last days i reported some spinlock related bugs
-...). 
+That looks ok, I'm guessing you yanked it out and then back in?
 
-the rationale is that according to http://lwn.net/Articles/167034/
-binary semaphores that aren't given in interrupt context or
-locked and unlocked by different processes should be replaced by
-mutexes
+Or is the problem that the device was removed?
 
-thanks for your comments
+thanks,
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-              La posibilidad de realizar un suenyo es lo
-                 que hace que la vida sea interesante
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+greg k-h
