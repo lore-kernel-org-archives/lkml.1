@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753258AbXDWGxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753100AbXDWG7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753258AbXDWGxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 02:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDWGw7
+	id S1753100AbXDWG7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 02:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXDWG7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 02:52:59 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54272 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbXDWGw6 (ORCPT
+	Mon, 23 Apr 2007 02:59:47 -0400
+Received: from 65-117-135-114.dia.static.qwest.net ([65.117.135.114]:52819
+	"EHLO postfix.timesys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbXDWG7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 02:52:58 -0400
-Date: Sun, 22 Apr 2007 23:53:09 -0700
-From: Greg KH <greg@kroah.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
-Message-ID: <20070423065309.GA20149@kroah.com>
-References: <d120d5000704180941pe2ab181xb5eab63b7cc1b297@mail.gmail.com> <20070419145133.2f7ed45a@gondolin.boeblingen.de.ibm.com> <d120d5000704190613h178ad644h53ad817db2950426@mail.gmail.com> <20070419154849.2e722762@gondolin.boeblingen.de.ibm.com> <d120d5000704190721u16be1110ufe04880eded7d54e@mail.gmail.com> <462856B9.9010307@gmail.com> <d120d5000704200935r2fb1e614m6da149eee0aec5b6@mail.gmail.com> <4628EFB2.9070709@gmail.com> <d120d5000704201059o750cc95am349707d353f79f10@mail.gmail.com> <462C54D5.6000101@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462C54D5.6000101@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Mon, 23 Apr 2007 02:59:46 -0400
+Subject: Re: PREEMPT_RT: 2.6.20-rt8 patch tweaked for 2.6.20.7
+From: Thomas Gleixner <tglx@timesys.com>
+Reply-To: tglx@timesys.com
+To: John Sigler <linux.kernel@free.fr>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+In-Reply-To: <4628BD0E.3040206@free.fr>
+References: <4628BD0E.3040206@free.fr>
+Content-Type: text/plain
+Date: Mon, 23 Apr 2007 09:01:17 +0200
+Message-Id: <1177311677.30986.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 03:40:21PM +0900, Tejun Heo wrote:
-> Hello, Dmitry.
+John,
+
+On Fri, 2007-04-20 at 15:15 +0200, John Sigler wrote:
+> I've tweaked patch-2.6.20-rt8(*) so that it applies to 2.6.20.7
+> (*) http://rt.wiki.kernel.org/index.php/Main_Page
 > 
-> Dmitry Torokhov wrote:
-> > Isn't think a good thing? By decoupling the 2 layers we insulate them
-> > from changes in each other. This allows bug subsystems to concentrate
-> > on topics that important to them instead of worying about refcounting
-> > objects that are not directly interesting for the subsystem in
-> > question.
+> The original patch can be found here:
+> http://people.redhat.com/mingo/realtime-preempt/older/patch-2.6.20-rt8
+> http://linux.kernel.free.fr/patch-2.6.20-rt8
 > 
-> I think the best thing would be make struct device's lifetime rules
-> simple enough such that it doesn't really matter to driver subsystems
-> and drivers can just do what they wanna do.
-
-I agree.
-
-> Also, separate struct device from the actual implementation has problem
-> in that struct device is widely used to refer to the device by many
-> layers drivers register devices to.  Basically, you'll have to implement
-> immediate-disconnect between struct device and the actual
-> implementation.  So, it just shifts the problem from struct device to
-> the place between struct device and actual implementation and I think
-> struct device itself is better place to deal with that than somewhere
-> inbetween it and driver private data.
-
-I also agree.
-
-> > Now for smaller subsystems it may make sense to embed stuct devices
-> > into subsystem objects and manage it all together. In fact input
-> > system does this but I think it is much simlpier than SCSI or IDE.
+> diff to the original patch to show what was tweaked:
+> http://linux.kernel.free.fr/patch-2.6.20-rt8.diff
 > 
-> Well, both SCSI and IDE heavily depend on struct device acting as 'base
-> class'.  It's all over the place and almost a basic assumption about the
-> driver model.
+> New patch that applies cleanly to 2.6.20.7:
+> http://linux.kernel.free.fr/patch-2.6.20.7-rt8
+> 
+> As always, if someone spots something I've done wrong,
+> I'd be happy to fix it in a hurry :-)
+> 
+> Ingo, Thomas, are there any fixes that were included in the 2.6.21-rt 
+> branch only that need to be back-ported to the 2.6.20-rt branch?
 
-And that's how it should be.
+I've been busy with mainline merge of highres timers lately, so I have
+no good overview of the -rt state at the moment, but I will check on
+this later that week.
 
-And your sysfs patches now make it a lot easier than before, and I can't
-thank you enough for doing that work.
+Can you create an entry in the rt-wiki, so people can find your
+patches ?
 
-thanks,
+	tglx
 
-greg k-h
+
