@@ -1,342 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbXDWMNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754125AbXDWMOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbXDWMNY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 08:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbXDWMNX
+	id S1754125AbXDWMOO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 08:14:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbXDWMOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 08:13:23 -0400
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:34337 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754137AbXDWMNW (ORCPT
+	Mon, 23 Apr 2007 08:14:14 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:22937 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754125AbXDWMON (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 08:13:22 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH/RESEND] ehea: fix for dlpar and sysfs entries
-Date: Mon, 23 Apr 2007 13:58:53 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
+	Mon, 23 Apr 2007 08:14:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type:sender;
+        b=H/+acgbtwuG42skVmS8gMcq34zut9p+BkyehCvbmKYYzdVZZ3SK+AchVaRtU8nYdFoMbEyOJ8n9hgxgFuIuup4dZ97lPqoq5Rnt0SXHpQ4Z9nLFWtQkFST6ZQGz7LxxbUTPHCWlxwxB8ps3x9+2uC+O44B4uZCPzhB55IS4N4zA=
+Date: Mon, 23 Apr 2007 08:14:03 -0400 (EDT)
+From: Parag Warudkar <pwarudkar@aol.com>
+X-X-Sender: paragw@paragw-desktop
+Reply-To: pwarudkar@aol.com
+To: pwarudkar@aol.com
+cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       dsk6@pitt.edu, linux-kernel@vger.kernel.org
+Subject: Re: Sleep during spinlock in TPM driver
+In-Reply-To: <alpine.DEB.0.82.0704230801230.6240@paragw-desktop>
+Message-ID: <Pine.LNX.4.64.0704230809080.6722@paragw-desktop>
+References: <alpine.DEB.0.82.0704221505370.14039@paragw-desktop>
+ <Pine.LNX.4.64.0704230941390.20657@twin.jikos.cz>
+ <alpine.DEB.0.82.0704230801230.6240@paragw-desktop>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200704231358.53479.ossthema@de.ibm.com>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-1461978870-1177330443=:6722"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch includes:
-- dlpar fix: 
-	certain resources may only be allocated when first
-	logical port is available, and must be removed when
-	last logical port has been removed
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-- sysfs entries:
-	create symbolic link from each logical port to ehea driver
-
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
----
+--8323329-1461978870-1177330443=:6722
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
 
-This patch applies on top of the netdev upstream branch for 2.6.22
+Grrrr.. My email client was at it again. Sorry it messed up with the 
+additonal + again.
 
+Do not use Alpine - This is the first email client (alphas and betas 
+included) which is buggy enough to change what you write!
 
+Not taking chances this time - patch attached.
 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 1405d0b..173994d 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0055"
-+#define DRV_VERSION	"EHEA_0056"
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index a36a023..f9f3133 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -78,6 +78,28 @@ MODULE_PARM_DESC(sq_entries, " Number of
- 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
- MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
- 
-+static int port_name_cnt = 0;
-+
-+static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
-+                                        const struct of_device_id *id);
-+
-+static int __devexit ehea_remove(struct ibmebus_dev *dev);
-+
-+static struct of_device_id ehea_device_table[] = {
-+	{
-+		.name = "lhea",
-+		.compatible = "IBM,lhea",
-+	},
-+	{},
-+};
-+
-+static struct ibmebus_driver ehea_driver = {
-+	.name = "ehea",
-+	.id_table = ehea_device_table,
-+	.probe = ehea_probe_adapter,
-+	.remove = ehea_remove,
-+};
-+
- void ehea_dump(void *adr, int len, char *msg) {
- 	int x;
- 	unsigned char *deb = adr;
-@@ -2108,6 +2130,28 @@ static int ehea_clean_all_portres(struct
- 	return ret;
- }
- 
-+static void ehea_remove_adapter_mr (struct ehea_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i=0; i < EHEA_MAX_PORTS; i++)
-+		if (adapter->port[i])
-+			return;
-+
-+	ehea_rem_mr(&adapter->mr);
-+}
-+
-+static int ehea_add_adapter_mr (struct ehea_adapter *adapter)
-+{
-+	int i;
-+
-+	for (i=0; i < EHEA_MAX_PORTS; i++)
-+		if (adapter->port[i])
-+			return 0;
-+
-+	return ehea_reg_kernel_mr(adapter, &adapter->mr);
-+}
-+
- static int ehea_up(struct net_device *dev)
- {
- 	int ret, i;
-@@ -2361,6 +2405,34 @@ static void __devinit logical_port_relea
- 	of_node_put(port->ofdev.node);
- }
- 
-+static int ehea_driver_sysfs_add(struct device *dev,
-+                                 struct device_driver *driver)
-+{
-+	int ret;
-+
-+	ret = sysfs_create_link(&driver->kobj, &dev->kobj,
-+				kobject_name(&dev->kobj));
-+	if (ret == 0) {
-+		ret = sysfs_create_link(&dev->kobj, &driver->kobj,
-+					"driver");
-+		if (ret)
-+			sysfs_remove_link(&driver->kobj,
-+					  kobject_name(&dev->kobj));
-+	}
-+	return ret;
-+}
-+
-+static void ehea_driver_sysfs_remove(struct device *dev,
-+                                     struct device_driver *driver)
-+{
-+	struct device_driver *drv = driver;
-+
-+	if (drv) {
-+		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
-+		sysfs_remove_link(&dev->kobj, "driver");
-+	}
-+}
-+
- static struct device *ehea_register_port(struct ehea_port *port,
- 					 struct device_node *dn)
- {
-@@ -2368,8 +2440,9 @@ static struct device *ehea_register_port
- 
- 	port->ofdev.node = of_node_get(dn);
- 	port->ofdev.dev.parent = &port->adapter->ebus_dev->ofdev.dev;
-+	port->ofdev.dev.bus = &ibmebus_bus_type;
- 
--	sprintf(port->ofdev.dev.bus_id, "port%d", port->logical_port_id);
-+	sprintf(port->ofdev.dev.bus_id, "port%d", port_name_cnt++);
- 	port->ofdev.dev.release = logical_port_release;
- 
- 	ret = of_device_register(&port->ofdev);
-@@ -2384,8 +2457,16 @@ static struct device *ehea_register_port
- 		goto out_unreg_of_dev;
- 	}
- 
-+	ret = ehea_driver_sysfs_add(&port->ofdev.dev, &ehea_driver.driver);
-+	if (ret) {
-+		ehea_error("failed to register sysfs driver link");
-+		goto out_rem_dev_file;
-+	}
-+
- 	return &port->ofdev.dev;
- 
-+out_rem_dev_file:
-+	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- out_unreg_of_dev:
- 	of_device_unregister(&port->ofdev);
- out:
-@@ -2394,6 +2475,7 @@ out:
- 
- static void ehea_unregister_port(struct ehea_port *port)
- {
-+	ehea_driver_sysfs_remove(&port->ofdev.dev, &ehea_driver.driver);
- 	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
- 	of_device_unregister(&port->ofdev);
- }
-@@ -2520,7 +2602,6 @@ static int ehea_setup_ports(struct ehea_
- 	struct device_node *eth_dn = NULL;
- 
- 	u32 *dn_log_port_id;
--	int port_setup_ok = 0;
- 	int i = 0;
- 
- 	lhea_dn = adapter->ebus_dev->ofdev.node;
-@@ -2534,6 +2615,12 @@ static int ehea_setup_ports(struct ehea_
- 			continue;
- 		}
- 
-+		if (ehea_add_adapter_mr(adapter)) {
-+			ehea_error("creating MR failed");
-+			of_node_put(eth_dn);
-+			return -EIO;
-+		}
-+
- 		adapter->port[i] = ehea_setup_single_port(adapter,
- 							  *dn_log_port_id,
- 							  eth_dn);
-@@ -2541,18 +2628,13 @@ static int ehea_setup_ports(struct ehea_
- 			ehea_info("%s -> logical port id #%d",
- 				  adapter->port[i]->netdev->name,
- 				  *dn_log_port_id);
-+		else
-+			ehea_remove_adapter_mr(adapter);
-+
- 		i++;
- 	};
- 
--	/* Check for succesfully set up ports */
--	for (i = 0; i < EHEA_MAX_PORTS; i++)
--		if (adapter->port[i])
--			port_setup_ok++;
--
--	if (port_setup_ok)
--		return 0;	/* At least some ports are setup correctly */
--
--	return -EINVAL;
-+	return 0;
- }
- 
- static struct device_node *ehea_get_eth_dn(struct ehea_adapter *adapter,
-@@ -2604,6 +2686,11 @@ static ssize_t ehea_probe_port(struct de
- 		return -EINVAL;
- 	}
- 
-+	if (ehea_add_adapter_mr(adapter)) {
-+		ehea_error("creating MR failed");
-+		return -EIO;
-+	}
-+
- 	port = ehea_setup_single_port(adapter, logical_port_id, eth_dn);
- 
- 	of_node_put(eth_dn);
-@@ -2617,8 +2704,10 @@ static ssize_t ehea_probe_port(struct de
- 
- 		ehea_info("added %s (logical port id=%d)", port->netdev->name,
- 			  logical_port_id);
--	} else
-+	} else {
-+		ehea_remove_adapter_mr(adapter);
- 		return -EIO;
-+	}
- 
- 	return (ssize_t) count;
- }
-@@ -2653,6 +2742,8 @@ static ssize_t ehea_remove_port(struct d
- 		return -EINVAL;
- 	}
- 
-+	ehea_remove_adapter_mr(adapter);
-+
- 	return (ssize_t) count;
- }
- 
-@@ -2713,18 +2804,13 @@ static int __devinit ehea_probe_adapter(
- 
- 	dev->ofdev.dev.driver_data = adapter;
- 
--	ret = ehea_reg_kernel_mr(adapter, &adapter->mr);
--	if (ret) {
--		dev_err(&dev->ofdev.dev, "reg_mr_adapter failed\n");
--		goto out_free_ad;
--	}
- 
- 	/* initialize adapter and ports */
- 	/* get adapter properties */
- 	ret = ehea_sense_adapter_attr(adapter);
- 	if (ret) {
- 		dev_err(&dev->ofdev.dev, "sense_adapter_attr failed: %d", ret);
--		goto out_free_res;
-+		goto out_free_ad;
- 	}
- 
- 	adapter->neq = ehea_create_eq(adapter,
-@@ -2732,7 +2818,7 @@ static int __devinit ehea_probe_adapter(
- 	if (!adapter->neq) {
- 		ret = -EIO;
- 		dev_err(&dev->ofdev.dev, "NEQ creation failed");
--		goto out_free_res;
-+		goto out_free_ad;
- 	}
- 
- 	tasklet_init(&adapter->neq_tasklet, ehea_neq_tasklet,
-@@ -2777,9 +2863,6 @@ out_free_irq:
- out_kill_eq:
- 	ehea_destroy_eq(adapter->neq);
- 
--out_free_res:
--	ehea_rem_mr(&adapter->mr);
--
- out_free_ad:
- 	kfree(adapter);
- out:
-@@ -2805,7 +2888,7 @@ static int __devexit ehea_remove(struct 
- 	tasklet_kill(&adapter->neq_tasklet);
- 
- 	ehea_destroy_eq(adapter->neq);
--	ehea_rem_mr(&adapter->mr);
-+	ehea_remove_adapter_mr(adapter);
- 	kfree(adapter);
- 	return 0;
- }
-@@ -2838,21 +2921,6 @@ static int check_module_parm(void)
- 	return ret;
- }
- 
--static struct of_device_id ehea_device_table[] = {
--	{
--		.name = "lhea",
--		.compatible = "IBM,lhea",
--	},
--	{},
--};
--
--static struct ibmebus_driver ehea_driver = {
--	.name = "ehea",
--	.id_table = ehea_device_table,
--	.probe = ehea_probe_adapter,
--	.remove = ehea_remove,
--};
--
- int __init ehea_module_init(void)
- {
- 	int ret;
+Parag
+
+--8323329-1461978870-1177330443=:6722
+Content-Type: TEXT/x-diff; charset=US-ASCII; name=tpm.c.patch
+Content-Transfer-Encoding: BASE64
+Content-ID: <Pine.LNX.4.64.0704230814030.6722@paragw-desktop>
+Content-Description: 
+Content-Disposition: attachment; filename=tpm.c.patch
+
+LS0tIGxpbnV4LTIuNi11cy9kcml2ZXJzL2NoYXIvdHBtL3RwbS5jCTIwMDct
+MDQtMjEgMTQ6NTU6MDMuMTM0OTc1MzYwIC0wNDAwDQorKysgbGludXgtMi42
+LXdrL2RyaXZlcnMvY2hhci90cG0vdHBtLmMJMjAwNy0wNC0yMiAxNDo1ODo1
+MS45NTc5OTk5NjMgLTA0MDANCkBAIC05NDIsMTIgKzk0MiwxMiBAQA0KIHsN
+CiAJc3RydWN0IHRwbV9jaGlwICpjaGlwID0gZmlsZS0+cHJpdmF0ZV9kYXRh
+Ow0KIA0KKwlmbHVzaF9zY2hlZHVsZWRfd29yaygpOw0KIAlzcGluX2xvY2so
+JmRyaXZlcl9sb2NrKTsNCiAJZmlsZS0+cHJpdmF0ZV9kYXRhID0gTlVMTDsN
+Ci0JY2hpcC0+bnVtX29wZW5zLS07DQogCWRlbF9zaW5nbGVzaG90X3RpbWVy
+X3N5bmMoJmNoaXAtPnVzZXJfcmVhZF90aW1lcik7DQotCWZsdXNoX3NjaGVk
+dWxlZF93b3JrKCk7DQogCWF0b21pY19zZXQoJmNoaXAtPmRhdGFfcGVuZGlu
+ZywgMCk7DQorCWNoaXAtPm51bV9vcGVucy0tOw0KIAlwdXRfZGV2aWNlKGNo
+aXAtPmRldik7DQogCWtmcmVlKGNoaXAtPmRhdGFfYnVmZmVyKTsNCiAJc3Bp
+bl91bmxvY2soJmRyaXZlcl9sb2NrKTsNCkBAIC0xMDk3LDggKzEwOTcsMTMg
+QEANCiANCiAJLyogRHJpdmVyIHNwZWNpZmljIHBlci1kZXZpY2UgZGF0YSAq
+Lw0KIAljaGlwID0ga3phbGxvYyhzaXplb2YoKmNoaXApLCBHRlBfS0VSTkVM
+KTsNCi0JaWYgKGNoaXAgPT0gTlVMTCkNCisJZGV2bmFtZSA9IGttYWxsb2Mo
+REVWTkFNRV9TSVpFLCBHRlBfS0VSTkVMKTsNCisJDQorCWlmIChjaGlwID09
+IE5VTEwgfHwgZGV2bmFtZSA9PSBOVUxMKSB7DQorCQlrZnJlZShjaGlwKTsN
+CisJCWtmcmVlKGRldm5hbWUpOw0KIAkJcmV0dXJuIE5VTEw7DQorCX0NCiAN
+CiAJaW5pdF9NVVRFWCgmY2hpcC0+YnVmZmVyX211dGV4KTsNCiAJaW5pdF9N
+VVRFWCgmY2hpcC0+dHBtX211dGV4KTsNCkBAIC0xMTI0LDcgKzExMjksNiBA
+QA0KIA0KIAlzZXRfYml0KGNoaXAtPmRldl9udW0sIGRldl9tYXNrKTsNCiAN
+Ci0JZGV2bmFtZSA9IGttYWxsb2MoREVWTkFNRV9TSVpFLCBHRlBfS0VSTkVM
+KTsNCiAJc2NucHJpbnRmKGRldm5hbWUsIERFVk5BTUVfU0laRSwgIiVzJWQi
+LCAidHBtIiwgY2hpcC0+ZGV2X251bSk7DQogCWNoaXAtPnZlbmRvci5taXNj
+ZGV2Lm5hbWUgPSBkZXZuYW1lOw0KIA0K
+
+--8323329-1461978870-1177330443=:6722--
