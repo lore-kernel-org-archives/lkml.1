@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161158AbXDWSBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161175AbXDWSCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161158AbXDWSBK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 14:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXDWSBK
+	id S1161175AbXDWSCn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 14:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161205AbXDWSCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 14:01:10 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:11703 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161158AbXDWSBJ (ORCPT
+	Mon, 23 Apr 2007 14:02:43 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:52354 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161175AbXDWSCm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 14:01:09 -0400
-Message-ID: <462CF462.10907@interia.pl>
-Date: Mon, 23 Apr 2007 20:01:06 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+	Mon, 23 Apr 2007 14:02:42 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
+References: <20070414204154.871250608@goop.org>
+	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
+	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
+	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
+	<m1d51vxxm4.fsf@ebiederm.dsl.xmission.com> <462CE027.4030302@goop.org>
+	<462CE1E0.9060007@zytor.com> <462CE69E.8040207@goop.org>
+	<462CEB55.9070508@zytor.com>
+Date: Mon, 23 Apr 2007 12:00:51 -0600
+In-Reply-To: <462CEB55.9070508@zytor.com> (H. Peter Anvin's message of "Mon,
+	23 Apr 2007 10:22:29 -0700")
+Message-ID: <m17is3vulo.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Issue with rdmsr_on_cpu
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-EMID: 3757aacc
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Some time ago I have written hwmon driver for Centaur C7 
-processors. Nobody was interested in testing it, so it 
-spend long time on my harddisk. Recently one person wanted 
-to test it with 2.6.21-rc7. Unfortunatly compile fails. 
-I don't understand why. I'm not using rdmsr_on_cpu 
-functions. Code is assuming that only one CPU is present 
-and using rdmsr function direcly. Is this no longer 
-possible? Do I have to #include something? Build log attached. 
-I'm not attaching code because error isn't reported in my 
-source file, but in Linux includes. My compiler is GCC 4.1.2 
-and kernel isn't SMP.
+> Agreed.  However, saying that your patch shouldn't go into the mainline kernel
+> until that has been fixed is spurious and wrong.  It fixes a real problem with
+> minimal risk.
 
-Please CC me.
+For a stable and frozen kernel it is probably the best we can do.
 
-Thanks
-Rafał
+However the code is based on confusion of what should be happening and
+it increases the complexity of the code and pushes us towards the edge of
+code that is so crufty it is impossible to maintain.
 
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CC [M]  drivers/hwmon/c7temp.o
-In file included from drivers/hwmon/c7temp.c:19:
-include/asm/msr.h:90: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h:90: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h:90: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h: In function 'rdmsr_on_cpu':
-include/asm/msr.h:92: error: 'l' undeclared (first use in this function)
-include/asm/msr.h:92: error: (Each undeclared identifier is reported only once
-include/asm/msr.h:92: error: for each function it appears in.)
-include/asm/msr.h:92: error: 'h' undeclared (first use in this function)
-include/asm/msr.h:92: error: 'msr_no' undeclared (first use in this function)
-include/asm/msr.h:92: error: invalid lvalue in asm output 0
-include/asm/msr.h:92: error: invalid lvalue in asm output 1
-include/asm/msr.h: At top level:
-include/asm/msr.h:94: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h:94: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h:94: error: expected declaration specifiers or '...' before 'u32'
-include/asm/msr.h: In function 'wrmsr_on_cpu':
-include/asm/msr.h:96: error: 'msr_no' undeclared (first use in this function)
-include/asm/msr.h:96: error: 'l' undeclared (first use in this function)
-include/asm/msr.h:96: error: 'h' undeclared (first use in this function)
-[...]
-make[2]: *** [drivers/hwmon/c7temp.o] Błąd 1
-make[1]: *** [drivers/hwmon] Błąd 2
-make: *** [drivers] Błąd 2
+We need to simplify this mess not make it more convoluted.
 
+Did anyone else notice that if we don't have PAE we continue to use
+the initial page tables 4K page mappings of the kernel?
 
+This probably explains why experiments to 4MB align the i386 kernel
+to improve performance failed.
 
-----------------------------------------------------------------------
-Kasia Cichopek eksponuje biust  
->>> http://link.interia.pl/f1a6f
-
+Eric
