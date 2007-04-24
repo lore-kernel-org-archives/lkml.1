@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161769AbXDXNf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXDXNhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161769AbXDXNf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 09:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161770AbXDXNf6
+	id S1422665AbXDXNhj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 09:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422654AbXDXNhj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 09:35:58 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:43088 "EHLO mailer.gwdg.de"
+	Tue, 24 Apr 2007 09:37:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45032 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161769AbXDXNf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 09:35:57 -0400
-Date: Tue, 24 Apr 2007 15:30:53 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Neil Brown <neilb@suse.de>, Theodore Tso <tytso@mit.edu>,
-       Eric Hopper <hopper@omnifarious.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Question about Reiser4
-In-Reply-To: <462D4D6E.50809@zytor.com>
-Message-ID: <Pine.LNX.4.61.0704241530360.2490@yvahk01.tjqt.qr>
-References: <462C2E5B.1080008@redhat.com> <Pine.LNX.4.64.0704230353000.25153@server.thyself>
- <462C4858.3050006@redhat.com> <Pine.LNX.4.64.0704230555020.25153@server.thyself>
- <462C4D32.4000909@redhat.com> <Pine.LNX.4.64.0704230611430.25153@server.thyself>
- <462C5034.9090403@redhat.com> <Pine.LNX.4.64.0704230640540.25153@server.thyself>
- <20070423010445.454eda63.akpm@linux-foundation.org> <20070423135216.GA2744@omnifarious.org>
- <20070423225640.GA1663@thunk.org> <462D46DF.4090802@zytor.com>
- <17965.19438.292138.959036@notabene.brown> <462D4D6E.50809@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1422651AbXDXNhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 09:37:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070423171157.GA205@tv-sign.ru> 
+References: <20070423171157.GA205@tv-sign.ru>  <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> 
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 24 Apr 2007 14:37:04 +0100
+Message-ID: <9767.1177421824@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-On Apr 23 2007 17:21, H. Peter Anvin wrote:
-> Neil Brown wrote:
->> 
->> Our you could think outside the circle:
->> Store all your "small files" as symlinks, then use "symlink" to create
->> them and "readlink" to read them. (You would probably end up use
->> symlinkat and readlinkat).
->> Only one system call instead of three.
->> I guess you don't get meaningful permission bits then... I wonder if
->> that really matters.
->
-> For some applications, oh yes it does.
+> > > We only care when del_timer() returns true. In that case, if the timer
+> > > function still runs (possible for single-threaded wqs), it has already
+> > > passed __queue_work().
+> > 
+> > Why do you assume that?
 
-Put them in a protected directory.
+Sorry, I should have been more clear.  I meant the assumption that we only
+care about a true return from del_timer().
 
+> If del_timer() returns true, the timer was pending. This means it was
+> started by work->func() (note that __run_timers() clears timer_pending()
+> before calling timer->function). This in turn means that
+> delayed_work_timer_fn() has already called __queue_work(dwork), otherwise
+> work->func() has no chance to run.
 
-Jan
--- 
+But if del_timer() returns 0, then there may be a problem.  We can't tell the
+difference between the following two cases:
+
+ (1) The timer hadn't been started.
+
+ (2) The timer had been started, has expired and is no longer pending, but
+     another CPU is running its handler routine.
+
+try_to_del_timer_sync() _does_, however, distinguish between these cases: the
+first is the 0 return, the second is the -1 return, and the case where it
+dequeued the timer is the 1 return.
+
+BTW, can a timer handler be preempted?  I assume not...  But it can be delayed
+by interrupt processing.
+
+David
