@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXDXLM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXDXLPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXDXLM3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbXDXLM3
+	id S1030185AbXDXLPU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030188AbXDXLPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:12:29 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42205 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932840AbXDXLM1 (ORCPT
+	Tue, 24 Apr 2007 07:15:20 -0400
+Received: from wr-out-0506.google.com ([64.233.184.224]:33652 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030185AbXDXLPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:12:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       <linux-arch@vger.kernel.org>
-Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
-References: <20070413130236.GA173@tv-sign.ru>
-	<m1zm5bmywm.fsf@ebiederm.dsl.xmission.com>
-	<20070424030924.be44ebfa.akpm@linux-foundation.org>
-	<m1r6qat681.fsf@ebiederm.dsl.xmission.com>
-	<20070424034220.ca8d5d96.akpm@linux-foundation.org>
-Date: Tue, 24 Apr 2007 05:11:06 -0600
-In-Reply-To: <20070424034220.ca8d5d96.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Tue, 24 Apr 2007 03:42:20 -0700")
-Message-ID: <m1mz0yt4c5.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 24 Apr 2007 07:15:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mve4glj3ZcoOazqwHn5wQJf8/GqO4rTJWt+ppIYjqrP+v5LVO/lIGtgpya/mTxFmQv0RnsHLEpFuymiBs23zcShWl9sjm1Nw+oSzfVexh6XdPNEK5Huza6Q0CAnlzYLxEXDve3pSI51hd+j4UYHV+ndNtZAEcSsTpwWzppQ/Vjg=
+Message-ID: <1158166a0704240415i4cb2e29ep1a556d3aa379476c@mail.gmail.com>
+Date: Tue, 24 Apr 2007 13:15:17 +0200
+From: "Denis Vlasenko" <vda.linux@googlemail.com>
+To: "Theodore Tso" <tytso@mit.edu>, "Eric Hopper" <hopper@omnifarious.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about Reiser4
+In-Reply-To: <20070424011753.GD1663@thunk.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <462C4D32.4000909@redhat.com> <462C5034.9090403@redhat.com>
+	 <Pine.LNX.4.64.0704230640540.25153@server.thyself>
+	 <20070423010445.454eda63.akpm@linux-foundation.org>
+	 <20070423135216.GA2744@omnifarious.org>
+	 <20070423225640.GA1663@thunk.org> <462D46DF.4090802@zytor.com>
+	 <20070424001934.GC1663@thunk.org> <462D4FE1.5040406@zytor.com>
+	 <20070424011753.GD1663@thunk.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
-
+> Theodore Tso wrote:
+> >
+> > One of the big problems of using a filesystem as a DB is the system
+> > call overheads.  If you use huge numbers of tiny files, then each
+> > attempt read an atom of information from the DB takes three system
+> > calls --- an open(), read(), and close(), with all of the overheads in
+> > terms of dentry and inode cache.
+> >
 >
-> Yes, it was fairly early in boot.  I didn't check what we're oopsing on.
+> Now, to be fair, there are probably a number of cases where
+> open/lseek/readv/close and open/lseek/writev/close would be worth doing
+> as a single system call.  The big problem as far as I can see involves
+> EINTR handling; such a system call has serious restartability implications.
+>
+> Of course, there are Ingo's syslets...
 
-Thanks.
+I definitely would like open/readv/close syscall a lot.
+Actually, a set of four syscalls
 
-It was definitely vfork_done == NULL from what I can read of the Oops and
-the code.
+open/readv/close
+open/pread/close
+open/writev/close
+open/pwrite/close
 
-> That was on a Fedora Core 3 machine.  One of those older distros I keep
-> around to trip people up.
-
-That could be something there.  Hopefully this is independent of compiler.
-Otherwise it will suck to track down.
-
-Eric
-
-
-
+will allow to reduce syscall overhead for a number of cases.
+--
+vda
