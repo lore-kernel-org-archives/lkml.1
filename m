@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161527AbXDXIv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750881AbXDXJCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161527AbXDXIv3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161531AbXDXIv3
+	id S1750881AbXDXJCc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 05:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXDXJCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:51:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53883 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Apr 2007 05:02:32 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:30634 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161527AbXDXIv1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:51:27 -0400
-Date: Tue, 24 Apr 2007 10:51:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Gerdau <mgd@technosis.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPORT] cfs-v5 vs sd-0.46
-Message-ID: <20070424085105.GA12329@elte.hu>
-References: <200704240938.07482.mgd@technosis.de> <200704241017.10610.mgd@technosis.de> <20070424082305.GA6332@elte.hu> <200704241041.53762.mgd@technosis.de>
+	id S1750844AbXDXJCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 05:02:32 -0400
+Date: Tue, 24 Apr 2007 13:10:23 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: roland@redhat.com, akpm@osdl.org
+Cc: magnus_vesterlund@hotmail.com, linux-kernel@vger.kernel.org,
+       devel@openvz.org
+Subject: [PATCH -mm] utrace: fix double free re __rcu_process_callbacks()
+Message-ID: <20070424091023.GA10539@localhost.sw.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200704241041.53762.mgd@technosis.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following patch fixes double free manifesting itself as crash in
+__rcu_process_callbasks():
+http://marc.info/?l=linux-kernel&m=117518764517017&w=2
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=229112
 
-* Michael Gerdau <mgd@technosis.de> wrote:
+The problem is with check_dead_utrace() conditionally scheduling
+"struct utrace" for freeing but not cleaning struct task_struct::utrace
+pointer leaving it reachable:
 
-> > Here i'm assuming that the vmstats are directly comparable: that 
-> > your number-crunchers behave the same during the full runtime - is 
-> > that correct?
-> 
-> Yes, basically it does (disregarding small fluctuations)
+	tsk->utrace_flags = flags;
+	if (flags)
+		spin_unlock(&utrace->lock);
+	else
+		rcu_utrace_free(utrace);
 
-ok, good.
+OTOH, utrace_release_task() first clears ->utrace pointer, then frees
+struct utrace itself:
 
-> I'll see whether I can produce some type of absolute performance 
-> measure as well. Thinking about it I guess this should be fairly 
-> simple to implement.
+Roland inserted some debugging into 2.6.21-rc6-mm1 so that aforementined
+double free couldn't be reproduced without seeing
+BUG at kernel/utrace.c:176 first. It triggers if one struct utrace were
+passed to rcu_utrace_free() second time.
 
-oh, you are writing the number-cruncher? In general the 'best' 
-performance metrics for scheduler validation are the ones where you have 
-immediate feedback: i.e. some ops/sec (or ops per minute) value in some 
-readily accessible place, or some "milliseconds-per-100,000 ops" type of 
-metric - whichever lends itself better to the workload at hand. If you 
-measure time then the best is to use long long and nanoseconds and the 
-monotonic clocksource:
+With patch applied I no longer see¹ BUG message and double frees on
+2-way P3, 8-way ia64, Core 2 Duo boxes. Testcase is at the first link.
 
- unsigned long long rdclock(void)
- {
-	struct timespec ts;
+I _think_ it adds leak if utrace_reap() takes branch without freeing
+but, well, I hope Roland will give me some clue on how to fix it too.
 
-	clock_gettime(CLOCK_MONOTONIC, &ts);
+Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+---
 
-        return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
- }
+ kernel/utrace.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-(link to librt via -lrt to pick up clock_gettime())
+¹ But I see whole can of other bugs! I think they were already lurking
+  but weren't easily reproducable without hitting double-free first.
+  FWIW, it's
+  	BUG_ON(!list_empty(&tsk->ptracees));
+	oops at the beginning of remove_engine()
+	NULL ->report_quiesce call which is absent in ptrace utrace ops
+	BUG_ON(tracehook_check_released(p));
 
-The cost of a clock_gettime() (or of a gettimeofday()) can be a couple 
-of microseconds on some systems, so it shouldnt be done too frequently.
+--- a/kernel/utrace.c
++++ b/kernel/utrace.c
+@@ -205,7 +205,6 @@ utrace_clear_tsk(struct task_struct *tsk
+ 	if (utrace->u.live.signal == NULL) {
+ 		task_lock(tsk);
+ 		if (likely(tsk->utrace != NULL)) {
+-			rcu_assign_pointer(tsk->utrace, NULL);
+ 			tsk->utrace_flags &= UTRACE_ACTION_NOREAP;
+ 		}
+ 		task_unlock(tsk);
+@@ -305,10 +304,7 @@ check_dead_utrace(struct task_struct *ts
+ 	}
+ 
+ 	tsk->utrace_flags = flags;
+-	if (flags)
+-		spin_unlock(&utrace->lock);
+-	else
+-		rcu_utrace_free(utrace);
++	spin_unlock(&utrace->lock);
+ 
+ 	/*
+ 	 * Now we're finished updating the utrace state.
 
-Plus an absolute metric of "the whole workload took X.Y seconds" is 
-useful too.
-
-	Ingo
