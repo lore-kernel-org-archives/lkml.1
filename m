@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbXDXEzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXDXFCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754581AbXDXEzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 00:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXDXEzT
+	id S1754575AbXDXFCE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161554AbXDXFCD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 00:55:19 -0400
-Received: from amhost.net ([216.32.88.10]:46934 "EHLO ldic83.amhost.net"
+	Tue, 24 Apr 2007 01:02:03 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38596 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754581AbXDXEzR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 00:55:17 -0400
-Message-ID: <462D8D92.9050301@amhost.net>
-Date: Tue, 24 Apr 2007 07:54:42 +0300
-From: Alex Vorona <voron@amhost.net>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070413)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: sendfile to nonblocking socket
-References: <MDEHLPKNGKAHNMBLJOLKGEAJDEAC.davids@webmaster.com>
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKGEAJDEAC.davids@webmaster.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S1754573AbXDXFCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 01:02:01 -0400
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Linas Vepstas <linas@austin.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, "<Andrew Morton" <akpm@osdl.org>,
+       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	 <11769695763104-git-send-email-ebiederm@xmission.com>
+	 <20070422123155.GF20763@infradead.org>
+	 <20070423205020.GR31947@austin.ibm.com>
+	 <1177378733.14873.52.camel@localhost.localdomain>
+	 <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+	 <1177382544.14873.57.camel@localhost.localdomain>
+	 <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 15:00:42 +1000
+Message-Id: <1177390842.14873.94.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Schwartz пишет:
-> You have a misunderstanding about the semantics of 'sendfile'. The 'sendfile' function is just a more efficient version of a read followed by a write. If you did a read followed by a write, it would block as well (in the read).
->
-> DS
->   
-sendfile function is not just a more efficient version of a read 
-followed by a write.  It reads from one fd and write to another at tha 
-same time. Please try to read 2G, and then write 2G - and how much 
-memory you will be need and how much time you will loose while reading 
-2G from disk, but not writing them to socket.  If you know more 
-efficient method to transfer file from disk to network - please advise. 
-Now all I want is really non-blocking sendfile. Currently sendfile is 
-non-blocking on network, but not on disk i/o. And when I have network 
-faster than disk - I get block.
 
-Thank you,
-Alex
+> Further in general it doesn't make sense to grab a module reference
+> and call that sufficient because we would like to request that the
+> module exits.
+
+Which is, btw, I think a total misdesign of our module stuff, but heh, I
+remember that lead to some flamewars back then...
+
+Like anything else, modules should have separated the entrypoints for
+
+ - Initiating a removal request
+ - Releasing the module
+
+The former is use did "rmmod", can unregister things from subsystems,
+etc... (and can file if the driver decides to refuse removal requests
+when it's busy doing things or whatever policy that module wants to
+implement).
+
+The later is called when all references to the modules have been
+dropped, it's a bit like the kref "release" (and could be implemented as
+one).
+
+If we had done that (simple) thing back then, module refcounting would
+have been much less of a problem... I remember some reasons why that was
+veto'ed but I didn't and still don't agree.
+
+Ben.
 
 
