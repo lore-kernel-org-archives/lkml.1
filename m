@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbXDXXrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbXDXXtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbXDXXrm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 19:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbXDXXrm
+	id S1754658AbXDXXtf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 19:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXDXXte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 19:47:42 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:24799 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbXDXXrl (ORCPT
+	Tue, 24 Apr 2007 19:49:34 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:35853 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754658AbXDXXte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 19:47:41 -0400
-Date: Tue, 24 Apr 2007 17:47:33 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: old ISA DMA bug in 2.6.12?
-In-reply-to: <fa.7m5DEEaYclDeS/YSPViAnSljQHI@ifi.uio.no>
-To: Bob Tracy <rct@gherkin.frus.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <462E9715.60304@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.7m5DEEaYclDeS/YSPViAnSljQHI@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 24 Apr 2007 19:49:34 -0400
+Date: Tue, 24 Apr 2007 19:49:30 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Mark Hull-Richter <mhullrich@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Kernel traces coming back with trash/clutter
+In-Reply-To: <f4e013870704241640q5a723664l2fda780a24f9b40e@mail.gmail.com>
+Message-ID: <alpine.DEB.0.98.0704241944270.26721@sigma.j-a-k-j.com>
+References: <f4e013870704241640q5a723664l2fda780a24f9b40e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bob Tracy wrote:
-> I was enjoying yet another session of beating my head against the wall
-> trying to do useful things with old hardware :-), and managed to cause a
-> kernel panic by simply trying to mount a cdrom in the context of a DSL-N
-> installation.
+> I am experimenting with the kernel (CentOSv4.4 x86_64, 2.6.9-42.0.10)
+> and I have added a number of traces in some relatively sensitive code
+> in the page cache and some i/o functions.
 > 
-> The SCSI host adapter is an Adaptec AHA-1542B, and when I try to mount a
-> cdrom, I manage to run afoul of the BAD_DMA() check in aha1542.c: the
-> buffer returned is not in the lower 16 MB of memory.
+> I am getting this odd content in the trace log (dmesg), and I cannot
+> figure out what it is or why it is there.
 > 
-> The same 2.6.12 kernel + hardware combination works fine as long as I
-> confine my I/O to the hard disk that's also attached to the AHA-1542B.
+> 4296757675 pdflush(80): do_writepages: map>ops>wrtpgs ffffffffa0195ff5
+> 4296757675 pdflush(80): mpage_writepages w/b index 49728 pages 256000
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7>__bio_add_page: 2x ph 88>=128 || hw 88>=88 || 360448>max
+> ffffffff802525d8 generic_make_request(bio 000001017c745300) 50729472, 704
+> __make_request(q 00000101b9293870, bio 000001017c745300: sdc; 50729600, 704)
+> ll_new_hw_segment: 70 + 29 > 88
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
+> <7><7><7><7>__bio_add_page: 2x ph 88>=128 || hw 88>=88 || 360448>max
+> ffffffff802525d8 generic_make_request(bio 000001017c745a80) 50730176, 704
+> __make_request(q 00000101b9293870, bio 000001017c745a80: sdc; 50730304, 704)
+> 4296757684 swapper(0): dl_mv2dsp: sdc start 50710368 secs 1408
+> 
+> (The lines with the <7>s in them are long - I wrapped them for ease of
+> reading and to keep the width down somewhat.)
+> 
+> Any feedback that might illuminate this would be welcome.  Please CC
+> me personally as I am not yet able to subscribe to this list
+> (apologies).
 
-Looks like the aha1542 driver doesn't set the DMA mask, so the kernel 
-will default to thinking it can do 32-bit DMA when it should be 24-bit.
+"<7>" is KERN_DEBUG in <include/linux/kernel.h>, used with printk. Are you 
+using printk in the following forms?
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+printk(KERN_DEBUG "A debug message.\n");
 
+...or...
+
+const char msg_debug[] = KERN_DEBUG "A debug message.\n";
+printk(msg_debug);
+
+Perhaps you have something looping that's outputting KERN_DEBUG with a 
+null message? Or one of your diagnostic printk statements includes 
+KERN_DEBUG with no actual message?
+
+Remember, if you have a string in a variable without a KERN_* 
+prependation, you can do this.
+
+printk(KERN_DEBUG "%s\n", debug_message);
