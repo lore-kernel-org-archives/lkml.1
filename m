@@ -1,83 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161490AbXDXWFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423160AbXDXWL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161490AbXDXWFj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161772AbXDXWFj
+	id S1423160AbXDXWL3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423159AbXDXWL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:05:39 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:31497 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161490AbXDXWFh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 18:05:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=N//NcetrW2OHsdasx9xB4AAMfbtgrGbPou1EBlek2AGCqyRug/H65mlbPAjrWjZOH+kFsyJ33s8V2XnSwz+xXXJJh63oSE1ehXTP7Iq0kHtm/lFHAO1uJzYE9C6Tf7hApwdLOzWGH0sTn8ppg77CUb46N9tMeBf64V9zKWkC/Z0=
-Message-ID: <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
-Date: Tue, 24 Apr 2007 15:05:36 -0700
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Dave Jones" <davej@redhat.com>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
-In-Reply-To: <20070424211253.GG23598@redhat.com>
+	Tue, 24 Apr 2007 18:11:28 -0400
+Received: from mtl.rackplans.net ([69.90.0.18]:33988 "EHLO mtl.rackplans.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423146AbXDXWL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 18:11:27 -0400
+Date: Tue, 24 Apr 2007 18:11:26 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: Roberto De Ioris <roberto@unbit.it>, linux-security-module@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE] UidBind LSM 0.2
+In-Reply-To: <36153.9499.qm@web36603.mail.mud.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0704241809400.21879@mtl.rackplans.net>
+References: <36153.9499.qm@web36603.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
-	 <20070424211253.GG23598@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/07, Dave Jones <davej@redhat.com> wrote:
-> On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
->  > The following patches should allow selection of conservative, powersave, and
->  > ondemand in the kernel configuration.
->
-> This has been rejected several times already.
-> Ondemand and conservative isn't a viable governor for all cpufreq
-> implementations (ie, ones with high switching latencies).
+On Tue, 24 Apr 2007, Casey Schaufler wrote:
 
-This piques my curiosity -- some governors don't work with some
-cpufreq implementations. Are those implementations in the kernel or in
-userspace? If in the kernel, then perhaps there should be some
-dependency expressed there in Kconfig between cpufreq implementation
-and the available governors (not just whether the governor can be the
-default or not). If that is already expressed, then the available
-*default*s should also have their dependency so expressed.
+> --- Gerhard Mack <gmack@innerfire.net> wrote:
+> 
+> > On Tue, 24 Apr 2007, Roberto De Ioris wrote:
+> > 
+> > > Hi all,
+> > > 
+> > > this is the second release for UidBind LSM:
+> > > 
+> > > http://projects.unbit.it/uidbind/
+> > > 
+> > > UidBind allows call to bind() function only to the uid defined in a
+> > > configfs tree.
+> > > 
+> > > It is now possible to specify different uid (for the same port) on
+> > > different ipv4 addresses:
+> > > 
+> > > mkdir uidbind/8081
+> > > mkdir uidbind/8081/192.168.1.17
+> > > mkdir uidbind/8081/192.168.1.26
+> > > echo 1017 > uidbind/8081/192.168.1.17/uid
+> > > echo 1026 > uidbind/8081/192.168.1.26/uid
+> > > 
+> > > This version even fix some leek in version 0.1
+> > > 
+> > > Patch attached is still for vanilla 2.6.20.7
+> > 
+> > Is it possible to specify ranges as allowing everyone?  Is it possible to 
+> > allow multiple users acess to the same port?  Can ports be allowed by 
+> > group?
+> 
+> If you're going to go beyond the simple owner access model it
+> probably makes sense to go all out, swipe the file system ACL
+> code and provide the whole nine yards of users, groups, and modes.
+> The only system that I know of that had socket ACLs was the 4.X
+> version of Trusted Irix, and socket ACLs were dropped in 5.0 because
+> they were unpopular.
+> 
+> If you're daring you could propose that low number ports be treated
+> the same way as other ports, with the default ownership being root and
+> the default ACL allowing only root.
 
-I guess I don't see the point of *not* allowing users to select a
-different governor as default at compile-time, if they can change it
-at run-time?
+ACL may be more complicated than needed when a simple GID addition would 
+make this right about perfect.
 
-The distros would simply not change the DEFAULT selection, but users
-that build their own kernels could change it as they wanted.
+> > I really like the idea of this patch.  It has the potential to solve a lot 
+> > of my current administrative headachs.
+> 
+> Putting access control on ports rather than sockets is a novel
+> approach. It is a lot simpler underneath and more consistant with
+> the way other object name spaces are treated.
 
-I guess the issue is, if by allowing a different DEFAULT selection
-(albeit one that wouldn't change for existing .configs, I assume), are
-we going to break existing setups. It doesn't seem like we would,
-*unless* the user goes and changes the default. And they went and
-changed it to a default that doesn't work, but that they could easily
-have checked doesn't work with their cpufreq implementation by
-changing it at run-time in their current kernel. And they are root...
+Indeed I'm fond of it's rather simple and very scriptable interface.
 
-> Also, see the
-> comment in the Kconfig a few lines above where you are adding this.
+	Gerhard
 
-Are these governors unfixable? If
+--
+Gerhard Mack
 
-"it is not currently possible to set the other governors (such as
-ondemand) as the default, since if they fail to initialise, cpufreq
-will be left in an undefined state."
+gmack@innerfire.net
 
-is true, presumably "userspace" and "performance" are so written so as
-to not leave cpufreq in an undefined state? Could the same be done for
-ondemand and powersave?
-
-Just looking for more info -- feel free to just point me at the archives.
-
-Thanks,
-Nish
+<>< As a computer I find your faith in technology amusing.
