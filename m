@@ -1,168 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031015AbXDXBGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbXDXBMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031015AbXDXBGP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 21:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031013AbXDXBGP
+	id S1754130AbXDXBMV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754139AbXDXBMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 21:06:15 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54586 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031015AbXDXBGO (ORCPT
+	Mon, 23 Apr 2007 21:12:21 -0400
+Received: from web88104.mail.re2.yahoo.com ([206.190.37.205]:36833 "HELO
+	web88104.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754130AbXDXBMU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 21:06:14 -0400
-Date: Mon, 23 Apr 2007 18:06:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Neil Brown <neilb@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
-In-Reply-To: <17965.21585.915947.810173@notabene.brown>
-Message-ID: <Pine.LNX.4.64.0704231805260.3852@schroedinger.engr.sgi.com>
-References: <17960.16739.870487.497750@notabene.brown>
- <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
- <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
- <17964.21972.961812.744601@notabene.brown> <Pine.LNX.4.64.0704231340180.512@schroedinger.engr.sgi.com>
- <17965.20631.736307.24491@notabene.brown> <Pine.LNX.4.64.0704231742310.1916@schroedinger.engr.sgi.com>
- <17965.21585.915947.810173@notabene.brown>
+	Mon, 23 Apr 2007 21:12:20 -0400
+X-YMail-OSG: 7wmeCMsVM1mPMSxGjOJtALK8KW2cqvZlUHVD9XRfKw1b1O9U_aCuBMig2z0Y_8gGn0R3DrfDLdoQ3kh_UyDDe6gz5fgi6QvvJC8kJ2B_rdPfnqZqVUNNBA--
+X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.10
+Date: Mon, 23 Apr 2007 18:12:19 -0700 (PDT)
+From: Matt Ranon <mranon@javadevices.com>
+Subject: Re: [ANNOUNCE][PATCH] Kcli - Kernel command line interface.
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux maillist <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ascii
+Message-ID: <617125.34935.qm@web88104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Neil Brown wrote:
+> (text reformatted to less than 80 cols.  Please, we'll get along a lot
+> better if you don't send 1000-column emails)
 
-> kobject_set_name actually takes a format and arbitrary args and uses
-> vsnprintf, so it has to make it's own copy.
+Sorry. I am afraid we are from a different background, and so very
+poorly versed in these things. My email client does not seem
+to have an option to tell it to format in 80 cols. So, hopefully,
+using CR, I am achieving the same effect. Let me know if
+it doesn't work, and I will have to switch to a different email
+client for conversing with the lkml.
 
-Ok then this should be fine...
 
-SLAB: Fix sysfs directory handling
+> The obvious question is: what's _wrong_ with doing all this in some
+> cut-down userspace environment like busybox?  Why is this stuff better?
+> 
+> Obviously some embedded developers have considered that option and
+> have rejected it.  But we do need to be told, at length, why that
+> decision was made.
 
-This fixes the problem that SLUB does not track the names of aliased
-slabs by changing the way that SLUB manages the files in /sys/slab.
+There is nothing _wrong_ with doing it all in a cut-down userspace. It
+is a matter of personal preference, culture, and the application. That
+is what makes Linux so great, it is all about choice.
 
-If the slab that is being operated on is not mergeable (usually the
-case if we are debugging) then do not create any aliases. If an alias
-exists that we conflict with then remove it before creating the
-directory for the unmergeable slab. If there is a true slab cache there
-and not an alias then we fail since there is a true duplication of
-slab cache names. So debugging allows the detection of slab name
-duplication as usual.
+We are developing devices that don't have a user space, and we don't
+see the point in including one just for debug purposes. We will not be 
+offended if Kcli is not included into the kernel mainline, nor if Kcli compels
+people to call us stupid (as it already has) just because we are different 
+and some people don't understand us. We are firm believers that the 
+world, including the Linux kernel world,  would be a nasty place if there 
+was only _one_ way to do any given task. Additionally, we  are almost 
+certain that there will be others who think like we do, so we are reaching 
+out to them. We also feel compelled to give _something_ back to the 
+community that has given so much to us, and, for now, this is all we have.
 
-If the slab is mergeable then we create a directory with a unique name
-created from the slab size, slab options and the pointer to the kmem_cache
-structure (disambiguation). All names referring to the slabs will
-then be created as symlinks to that unique name. These symlinks are
-not going to be removed on kmem_cache_destroy() since we only carry
-a counter for the number of aliases. If a new symlink is created
-then it may just replace an existing one. This means that one can create
-a gazillion slabs with the same name (if they all refer to mergeable
-caches). It will only increase the alias count. So we have the potential
-of not detecting duplicate slab names (there is actually no harm
-done by doing that....). We will detect the duplications as
-as soon as debugging is enabled because we will then no longer
-generate symlinks and special unique names.
+However, our reasons for Kcli are:
+1) Our devices ship with no user space, and we want the development
+environment to be as close as possible to the final product.
+2) Getting debug information with user space calls require context 
+switches and data copies, which changes the real time profile and can mask
+bugs. 
+3) To use user space, we would need cross compiled libc's, special
+builds of gcc, root file systems, flash storage to store it all, and all 
+sorts of things which make life a lot more complicated than it needs 
+to be for us. We are quite capable of producing all these things, but,
+we just don't see the point in it. Our way, we just have a gcc capable 
+of cross compiling the kernel and it is so simple.
+4) For us, it is the opposite argument. We would need to be convinced
+that having user space is worth all the overhead. Not just CPU
+overhead, but all the overheads.
+5) We like it in the kernel, we find it to be warm and fuzzy. Whereas,
+user space is a cold, dark, and rainy place, and we just don't want to
+go there. :)
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+We do not claim to have come up with a _better_ way. We have just
+created something that we feel would be useful to others.
 
-Index: linux-2.6.21-rc6/mm/slub.c
-===================================================================
---- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-23 13:08:41.000000000 -0700
-+++ linux-2.6.21-rc6/mm/slub.c	2007-04-23 18:05:16.000000000 -0700
-@@ -3307,16 +3307,68 @@ static struct kset_uevent_ops slab_ueven
- 
- decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
- 
-+#define ID_STR_LENGTH 64
-+
-+/* Create a unique string id for a slab cache:
-+ * format
-+ * :[flags-]size:[memory address of kmemcache]
-+ */
-+static char *create_unique_id(struct kmem_cache *s)
-+{
-+	char *name = kmalloc(ID_STR_LENGTH, GFP_KERNEL);
-+	char *p = name;
-+
-+	BUG_ON(!name);
-+
-+	*p++ = ':';
-+	/*
-+	 * First flags affecting slabcache operations */
-+	if (s->flags & SLAB_CACHE_DMA)
-+		*p++ = 'd';
-+	if (s->flags & SLAB_RECLAIM_ACCOUNT)
-+		*p++ = 'a';
-+	if (s->flags & SLAB_DESTROY_BY_RCU)
-+		*p++ = 'r';\
-+	/* Debug flags */
-+	if (s->flags & SLAB_RED_ZONE)
-+		*p++ = 'Z';
-+	if (s->flags & SLAB_POISON)
-+		*p++ = 'P';
-+	if (s->flags & SLAB_STORE_USER)
-+		*p++ = 'U';
-+	if (p != name + 1)
-+		*p++ = '-';
-+	p += sprintf(p,"%07d:0x%p" ,s->size, s);
-+	BUG_ON(p > name + ID_STR_LENGTH - 1);
-+	return name;
-+}
-+
- static int sysfs_slab_add(struct kmem_cache *s)
- {
- 	int err;
-+	const char *name;
- 
- 	if (slab_state < SYSFS)
- 		/* Defer until later */
- 		return 0;
- 
-+	if (s->flags & SLUB_NEVER_MERGE) {
-+		/*
-+		 * Slabcache can never be merged so we can use the name proper.
-+		 * This is typically the case for debug situations. In that
-+		 * case we can catch duplicate names easily.
-+		 */
-+		sysfs_remove_link(&slab_subsys.kset.kobj, s->name);
-+		name = s->name;
-+	} else
-+		/*
-+		 * Create a unique name for the slab as a target
-+		 * for the symlinks.
-+		 */
-+		name = create_unique_id(s);
-+
- 	kobj_set_kset_s(s, slab_subsys);
--	kobject_set_name(&s->kobj, s->name);
-+	kobject_set_name(&s->kobj, name);
- 	kobject_init(&s->kobj);
- 	err = kobject_add(&s->kobj);
- 	if (err)
-@@ -3326,6 +3378,10 @@ static int sysfs_slab_add(struct kmem_ca
- 	if (err)
- 		return err;
- 	kobject_uevent(&s->kobj, KOBJ_ADD);
-+	if (!(s->flags & SLUB_NEVER_MERGE)) {
-+		sysfs_slab_alias(s, s->name);
-+		kfree(name);
-+	}
- 	return 0;
- }
- 
-@@ -3351,9 +3407,14 @@ static int sysfs_slab_alias(struct kmem_
- {
- 	struct saved_alias *al;
- 
--	if (slab_state == SYSFS)
-+	if (slab_state == SYSFS) {
-+		/*
-+		 * If we have a leftover link then remove it.
-+		 */
-+		sysfs_remove_link(&slab_subsys.kset.kobj, name);
- 		return sysfs_create_link(&slab_subsys.kset.kobj,
- 						&s->kobj, name);
-+	}
- 
- 	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
- 	if (!al)
+MRanon.
