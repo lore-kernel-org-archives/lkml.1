@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbXDXUPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbXDXUQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752670AbXDXUPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXDXUPo
+	id S1753832AbXDXUQF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDXUQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:15:44 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:49219 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750897AbXDXUPn (ORCPT
+	Tue, 24 Apr 2007 16:16:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:21602 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbXDXUQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:15:43 -0400
-Date: Tue, 24 Apr 2007 13:14:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-Message-Id: <20070424131427.940d461e.akpm@linux-foundation.org>
-In-Reply-To: <462E61F1.7060403@goop.org>
-References: <20070327214919.800272641@goop.org>
-	<20070327215827.871954359@goop.org>
-	<20070423234910.50149faf.akpm@linux-foundation.org>
-	<462E43A7.1050001@goop.org>
-	<20070424105738.e0ce36a9.akpm@linux-foundation.org>
-	<462E4969.6070802@goop.org>
-	<20070424113222.ed2e1314.akpm@linux-foundation.org>
-	<462E61F1.7060403@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 16:16:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=g/bTSwkEJF3C0GRf4SDDYwWHOlOeaR/oL+pAeJHW5nDzqykWbBVebcgk69CIpy8zRjdhgqLUln4yI+ET/cV2m+IWSb6/SvUndmn/HV/RbZSulF65JEp1hY8EmsS+KN+jUzPayXSgXe9QxPJu19kPnxSHWEfauBVQEn7ginixRAo=
+Date: Wed, 25 Apr 2007 05:15:55 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vincent Vanackere <vincent.vanackere@gmail.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [OOPS 2.6.21-rc7-mm1] kernel BUG at fs/sysfs/inode.c:272 (sysfs_drop_dentry)
+Message-ID: <20070424201555.GC17130@htj.dyndns.org>
+References: <65258a580704240820lbee4944t1adef1aeb92394ce@mail.gmail.com> <462E3177.4000901@gmail.com> <20070424103358.3be9efcd.akpm@linux-foundation.org> <462E43AF.2040305@gmail.com> <20070424105844.da798b07.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070424105844.da798b07.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 13:00:49 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Andrew Morton wrote:
-> > Well, it _is_ mysterious.
-> >
-> > Did you try to locate the code which failed?  I got lost in macros and
-> > include files, and gave up very very easily.  Stop hiding, Ingo.
-> >   
+On Tue, Apr 24, 2007 at 10:58:44AM -0700, Andrew Morton wrote:
+> On Wed, 25 Apr 2007 02:51:43 +0900 Tejun Heo <htejun@gmail.com> wrote:
 > 
-> OK, I've managed to reproduce it.  Removing the local_irq_save/restore
-> from sched_clock() makes it go away, as I'd expect (otherwise it would
-> really be magic).
+> > Andrew Morton wrote:
+> > > On Wed, 25 Apr 2007 01:33:59 +0900 Tejun Heo <htejun@gmail.com> wrote:
+> > > 
+> > >> Vincent Vanackere wrote:
+> > >>> Hi,
+> > >>>
+> > >>> I'm getting the following oops at boot with the latest -mm kernel :
+> > >>> ---------------------------------------------------------------
+> > >>> kernel BUG at fs/sysfs/inode.c:272
+> > >> Known problem.  Working on it.  Thanks.
+> > >>
+> > > 
+> > > If it had been known by me I wouldn't have released known-buggy code to
+> > > people who need to be able to test other people's code too. (argh)
+> > > 
+> > 
+> > It's the problem Cornelia reported in the thread the patch was posted.
+> 
+> Is there a workaround?  What might happen if we just delete that BUG_ON()?
 
-erm, why do you expect that?  A local_irq_save()/local_irq_restore() pair
-shouldn't be affecting anything?
+Okay, here's the workaround.  It leaks dentries and inodes if parent
+is deleted first but other than that it should be okay.
 
->  But given that it never seems to touch the softlockup
-> during testing, I have no idea what difference it makes...
-
-To what softlockup are you referring, and what does that have to do with
-anything?
-
-<feels dumb>
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index eea50a5..b466671 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -212,8 +212,11 @@ static struct dentry *sysfs_lookup_sd(struct sysfs_dirent *sd)
+ 	depth = sysfs_path_depth(sd);
+ 
+ 	while (depth--) {
+-		/* negative intermediate node is a BUG */
+-		BUG_ON(!dentry->d_inode);
++		/* XXX */ /* negative intermediate node is a BUG */
++		/* XXX */ /* BUG_ON(!dentry->d_inode); */
++		if (!dentry->d_inode)
++			return NULL;
++		/* XXX */
+ 
+ 		for (cur = sd, i = 0; i < depth; i++)
+ 			cur = cur->s_parent;
+@@ -269,7 +272,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
+ 	}
+ 
+ 	if (isdir) {
+-		BUG_ON(!simple_empty(dentry));
++		/* XXX */ /* BUG_ON(!simple_empty(dentry)); */
+ 		drop_nlink(dir);
+ 		/* unpin if directory */
+ 		dput(dentry);
