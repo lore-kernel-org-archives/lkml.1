@@ -1,150 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161713AbXDXLri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161721AbXDXLux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161713AbXDXLri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161716AbXDXLri
+	id S1161721AbXDXLux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161723AbXDXLux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:47:38 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:46779 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161713AbXDXLrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:47:37 -0400
-Date: Tue, 24 Apr 2007 13:53:23 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070424115322.GA2423@ff.dom.local>
-References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru>
+	Tue, 24 Apr 2007 07:50:53 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:40365 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161721AbXDXLux (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 07:50:53 -0400
+Date: Tue, 24 Apr 2007 12:50:50 +0100
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, tony.luck@intel.com,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
+Message-ID: <20070424115050.GA9372@skynet.ie>
+References: <20070423183246.GA11841@skynet.ie> <20070423183637.GA11982@skynet.ie> <20070424183847.FD98.Y-GOTO@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070423163312.GA129@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070424183847.FD98.Y-GOTO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 08:33:12PM +0400, Oleg Nesterov wrote:
-> On 04/23, Jarek Poplawski wrote:
-> >
-> > On Fri, Apr 20, 2007 at 09:08:36PM +0400, Oleg Nesterov wrote:
-> > > 
-> > > First, this flag should be cleared after return from cancel_rearming_delayed_work().
-> > 
-> > I think this flag, if at all, probably should be cleared only
-> > consciously by the owner of a work, maybe as a schedule_xxx_work
-> > parameter, (but shouldn't be used from work handlers for rearming).
-> > Mostly it should mean: we are closing (and have no time to chase
-> > our work)...
+On (24/04/07 18:58), Yasunori Goto didst pronounce:
 > 
-> This will change the API. Currently it is possible to do:
 > 
-> 	cancel_delayed_work(dwork);
-> 	schedule_delayed_work(dwork, delay);
+> > Subject: Check zone boundaries when freeing bootmem
+> > Zone boundaries do not have to be aligned to MAX_ORDER_NR_PAGES. 
 > 
-> and we have such a code. With the change you propose this can't work.
+> Hmm. I don't understand here yet... Could you explain more? 
+> 
+> This issue occurs only when ZONE_MOVABLE is specified.
+> If its boundary is aligned to MAX_ORDER automatically,
+> I guess user will not mind it.
+> 
+> From memory hotplug view, I prefer section size alignment to make
+> simple code. :-P
+ 
+How does this look to you?
 
-Not necessarily: this all was only a concept and schedule_xxx_work
-could be also a new function, if needed.
 
-> 
-> > > Also, we should add a lot of nasty checks to workqueue.c
-> > 
-> > Checking a flag isn't nasty - it's clear. IMHO current way of checking,
-> > whether cancel succeeded, is nasty.
-> > 
-> > > 
-> > > I _think_ we can re-use WORK_STRUCT_PENDING to improve this interface.
-> > > Note that if we set WORK_STRUCT_PENDING, the work can't be queued, and
-> > > dwork->timer can't be started. The only problem is that it is not so
-> > > trivial to avoid races.
-> > 
-> > If there were no place, it would be better, then current way.
-> > But WORK_STRUCT_PENDING couldn't be used for some error checking,
-> > as it's now.
-> 
-> Look,
-> 
-> 	void cancel_rearming_delayed_work(struct delayed_work *dwork)
-> 	{
-> 		struct work_struct *work = &dwork->work;
-> 		struct cpu_workqueue_struct *cwq = get_wq_data(work);
-> 		struct workqueue_struct *wq;
-> 		const cpumask_t *cpu_map;
-> 		int retry;
-> 		int cpu;
-> 
-> 		if (!cwq)
-> 			return;
-> 
-> 	retry:
-> 		spin_lock_irq(&cwq->lock);
-> 		list_del_init(&work->entry);
-> 		__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
-> 		retry = try_to_del_timer_sync(&dwork->timer) < 0;
-> 		spin_unlock_irq(&cwq->lock);
-> 
-> 		if (unlikely(retry))
-> 			goto retry;
-> 
-> 		// the work can't be re-queued and the timer can't
-> 		// be re-started due to WORK_STRUCT_PENDING
-> 
-> 		wq = cwq->wq;
-> 		cpu_map = wq_cpu_map(wq);
-> 
-> 		for_each_cpu_mask(cpu, *cpu_map)
-> 			wait_on_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-> 
-> 		work_clear_pending(work);
-> 	}
-> 
-> I think this almost works, except:
-> 
-> 	- we should change run_workqueue() to call work_clear_pending()
-> 	  under cwq->lock. I'd like to avoid this.
-> 
-> 	- this is racy wrt cpu-hotplug. We should re-check get_wq_data()
-> 	  when we take the lock. This is easy.
-> 
-> 	- we should factor out the common code with cancel_work_sync().
-> 
-> I may be wrong, still had no time to concentrate on this with a "clear head".
-> May be tomorrow.
+======
+The two potential users of ZONE_MOVABLE would prefer if the zone was aligned
+to a boundary. This patch aligns the zone to a MAX_ORDER_NR_PAGES boundary.
 
-This looks fine. Of course, it requires to remove some debugging
-currently done with _PENDING flag and it's hard to estimate this
-all before you do more, but it should be more foreseeable than
-current way. But the races with _PENDING could be really "funny"
-without locking it everywhere. BTW - are a few locks more a real
-problem, while serving a "sleeping" path? And I don't think there
-is any reason to hurry... 
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-> 
-> > > > - for a work function: to stop execution as soon as possible,
-> > > > even without completing the usual job, at first possible check.
-> > > 
-> > > I doubt we need this "in general". It is easy to add some flag to the
-> > > work_struct's container and check it in work->func() when needed.
-> > 
-> > Yes, but currently you cannot to behave like this e.g. with
-> > "rearming" work.
-> 
-> Why?
-
-OK, it's not impossible, but needs some bothering: if I simply
-set some flag and my work function exits before rearming -
-cancel_rearming_delayed_work can loop.
-
-> 
-> >                   And maybe a common api could save some work.
-> 
-> May be you are right, but still I don't think we should introduce
-> the new flag to implement this imho not-so-useful feature.
-
-Maybe you are right. Probably some code should be analysed,
-to check how often such activities are needed.
-
-Cheers,
-Jarek P.
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc6-mm1-002_commonparse/mm/page_alloc.c linux-2.6.21-rc6-mm1-003_alignmovable/mm/page_alloc.c
+--- linux-2.6.21-rc6-mm1-002_commonparse/mm/page_alloc.c	2007-04-24 09:38:30.000000000 +0100
++++ linux-2.6.21-rc6-mm1-003_alignmovable/mm/page_alloc.c	2007-04-24 11:15:40.000000000 +0100
+@@ -3642,6 +3642,11 @@ restart:
+ 	usable_nodes--;
+ 	if (usable_nodes && required_kernelcore > usable_nodes)
+ 		goto restart;
++	
++	/* Align start of ZONE_MOVABLE on all nids to MAX_ORDER_NR_PAGES */
++	for (nid = 0; nid < MAX_NUMNODES; nid++)
++		zone_movable_pfn[nid] =
++			roundup(zone_movable_pfn[nid], MAX_ORDER_NR_PAGES);
+ }
+ 
+ /**
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
