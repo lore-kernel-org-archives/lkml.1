@@ -1,95 +1,569 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161795AbXDXPMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161802AbXDXPNp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161795AbXDXPMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161770AbXDXPLz
+	id S1161802AbXDXPNp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422696AbXDXPLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:11:55 -0400
+	Tue, 24 Apr 2007 11:11:51 -0400
 Received: from mga02.intel.com ([134.134.136.20]:6950 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161813AbXDXPI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:08:28 -0400
+	id S1161797AbXDXPI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:08:29 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="233076265:sNHT56230839"
-Message-Id: <20070424061037.821838000@intel.com>
+   d="scan'208"; a="233076262:sNHT28975996"
+Message-Id: <20070424061037.361212000@intel.com>
 References: <20070424060259.426374000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 23:03:03 -0700
+Date: Mon, 23 Apr 2007 23:03:00 -0700
 From: Ashok Raj <ashok.raj@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com
-Subject: [Intel IOMMU][patch 4/8] Supporting Zero Length Reads in Intel IOMMU.
-Content-Disposition: inline; filename=rw-workaround.patch
+Subject: [Intel IOMMU][patch 1/8] ACPI support for Intel Virtualization Technology for Directed I/O
+Content-Disposition: inline; filename=iommu-acpi-mods.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI specs permit zero length reads (ZLR) even if the mapping for that region 
-is write only. Support for this feature is indicated by the presence of a bit 
-in the DMAR capability. If a particular DMAR does not support this capability
-we map write-only regions as read-write.
-
-This option can also provides a workaround for some drivers that request
-a write-only mapping when they really should request a read-write.
-(We ran into one such case in eepro100.c in handling rx_ring_dma)
+This patch contains basic ACPI parsing and enumeration support.
 
 Signed-off-by: Ashok Raj <ashok.raj@intel.com>
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-----------------------------------
- drivers/pci/intel-iommu.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-Index: 2.6.21-rc6/drivers/pci/intel-iommu.c
+Index: linux-2.6.21-rc5/arch/x86_64/Kconfig
 ===================================================================
---- 2.6.21-rc6.orig/drivers/pci/intel-iommu.c	2007-04-18 09:04:56.000000000 +0800
-+++ 2.6.21-rc6/drivers/pci/intel-iommu.c	2007-04-18 09:04:59.000000000 +0800
-@@ -84,7 +84,7 @@ struct iommu {
- 	struct sys_device sysdev;
+--- linux-2.6.21-rc5.orig/arch/x86_64/Kconfig	2007-04-23 07:11:49.000000000 -0700
++++ linux-2.6.21-rc5/arch/x86_64/Kconfig	2007-04-23 07:11:51.000000000 -0700
+@@ -687,6 +687,14 @@
+ 	bool "Support mmconfig PCI config space access"
+ 	depends on PCI && ACPI
+ 
++config DMAR
++	bool "Support for DMA Remapping Devices (EXPERIMENTAL)"
++	depends on PCI_MSI && ACPI && EXPERIMENTAL
++	help
++	  Support DMA Remapping Devices. The devices are reported via
++	  ACPI tables and includes pci device scope under each DMA
++	  remapping device.
++
+ source "drivers/pci/pcie/Kconfig"
+ 
+ source "drivers/pci/Kconfig"
+Index: linux-2.6.21-rc5/drivers/pci/Makefile
+===================================================================
+--- linux-2.6.21-rc5.orig/drivers/pci/Makefile	2007-04-23 07:11:49.000000000 -0700
++++ linux-2.6.21-rc5/drivers/pci/Makefile	2007-04-23 07:11:51.000000000 -0700
+@@ -38,6 +38,7 @@
+ #
+ obj-$(CONFIG_ACPI)    += pci-acpi.o
+ 
++obj-$(CONFIG_DMAR)		+= dmar.o
+ # Cardbus & CompactPCI use setup-bus
+ obj-$(CONFIG_HOTPLUG) += setup-bus.o
+ 
+Index: linux-2.6.21-rc5/drivers/pci/dmar.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5/drivers/pci/dmar.c	2007-04-23 07:12:00.000000000 -0700
+@@ -0,0 +1,350 @@
++/*
++ * Copyright (c) 2006, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * Copyright (C) Ashok Raj <ashok.raj@intel.com>
++ * Copyright (C) Shaohua Li <shaohua.li@intel.com>
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/pci.h>
++
++#include "dmar.h"
++
++#undef PREFIX
++#define PREFIX "DMAR:"
++
++#define MIN_SCOPE_LEN (sizeof(struct acpi_dmar_pci_path) + \
++	sizeof(struct acpi_dmar_device_scope))
++
++LIST_HEAD(dmar_drhd_units);
++LIST_HEAD(dmar_rmrr_units);
++u8 dmar_host_address_width;
++
++static struct acpi_table_header *dmar_tbl;
++
++static int __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
++{
++	/*
++	 * add INCLUDE_ALL at the tail, so scan the list will find it at
++	 * the very end.
++	 */
++	if (drhd->include_all)
++		list_add_tail(&drhd->list, &dmar_drhd_units);
++	else
++		list_add(&drhd->list, &dmar_drhd_units);
++	return 0;
++}
++
++static int __init dmar_register_rmrr_unit(struct dmar_rmrr_unit *rmrr)
++{
++	list_add(&rmrr->list, &dmar_rmrr_units);
++	return 0;
++}
++
++static int dmar_pci_device_match(struct pci_dev *devices[], int cnt,
++			     struct pci_dev *dev)
++{
++	int index;
++
++	while (dev) {
++		for (index = 0; index < cnt; index ++)
++			if (dev == devices[index])
++				return 1;
++
++		/* Check our parent */
++		dev = dev->bus->self;
++	}
++
++	return 0;
++}
++
++struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev)
++{
++	struct dmar_drhd_unit *drhd = NULL;
++
++	list_for_each_entry(drhd, &dmar_drhd_units, list) {
++		if (drhd->include_all || dmar_pci_device_match(drhd->devices,
++						drhd->devices_cnt, dev))
++			break;
++	}
++
++	return drhd;
++}
++
++struct dmar_rmrr_unit * dmar_find_matched_rmrr_unit(struct pci_dev *dev)
++{
++	struct dmar_rmrr_unit *rmrr;
++
++	list_for_each_entry(rmrr, &dmar_rmrr_units, list) {
++		if (dmar_pci_device_match(rmrr->devices,
++						rmrr->devices_cnt, dev))
++			goto out;
++	}
++	rmrr = NULL;
++out:
++	return rmrr;
++}
++
++static int __init dmar_parse_one_dev_scope(struct acpi_dmar_device_scope *scope,
++					   struct pci_dev **dev, u16 segment)
++{
++	struct pci_bus *bus;
++	struct pci_dev *pdev = NULL;
++	struct acpi_dmar_pci_path *path;
++	int count;
++
++	bus = pci_find_bus(segment, scope->bus);
++	path = (struct acpi_dmar_pci_path *)(scope + 1);
++	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
++		/sizeof(struct acpi_dmar_pci_path);
++
++	while (count) {
++		if (pdev)
++			pci_dev_put(pdev);
++		/*
++		 * Some BIOSes list non-exist devices in DMAR table, just
++		 * ignore it
++		 */
++		if (!bus) {
++			printk(KERN_WARNING
++			PREFIX "Device scope bus [%d] not found\n",
++			scope->bus);
++			break;
++		}
++		pdev = pci_get_slot(bus, PCI_DEVFN(path->dev, path->fn));
++		if (!pdev) {
++			printk(KERN_WARNING PREFIX
++			"Device scope device [%04x:%02x:%02x.%02x] not found\n",
++				segment, bus->number, path->dev, path->fn);
++			break;
++		}
++		path ++;
++		count --;
++		bus = pdev->subordinate;
++	}
++	if (!pdev) {
++		printk(KERN_WARNING PREFIX
++		"Device scope device [%04x:%02x:%02x.%02x] not found\n",
++		segment, scope->bus, path->dev, path->fn);
++		*dev = NULL;
++		return 0;
++	}
++	if ((scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT && pdev->subordinate)
++	   || (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE && !pdev->subordinate)) {
++		pci_dev_put(pdev);
++		printk(KERN_WARNING PREFIX "Device scope type does not match for %s\n", pci_name(pdev));
++		return -EINVAL;
++	}
++	*dev = pdev;
++	return 0;
++}
++
++static int __init dmar_parse_dev_scope(void *start, void *end, int *cnt,
++				       struct pci_dev ***devices, u16 segment)
++{
++	struct acpi_dmar_device_scope *scope;
++	void * tmp = start;
++	int index;
++	int ret;
++
++	*cnt = 0;
++	while (start < end) {
++		scope = start;
++		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
++		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE)
++			(*cnt)++;
++		else
++			printk(KERN_WARNING PREFIX "Unsupported device scope\n");
++		start += scope->length;
++	}
++	if (*cnt == 0)
++		return 0;
++
++	*devices = kcalloc(*cnt, sizeof(struct pci_dev *), GFP_KERNEL);
++	if (!*devices)
++		return -ENOMEM;
++
++	start = tmp;
++	index = 0;
++	while (start < end) {
++		scope = start;
++		if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_ENDPOINT ||
++		    scope->entry_type == ACPI_DMAR_SCOPE_TYPE_BRIDGE) {
++			ret = dmar_parse_one_dev_scope(scope,
++				&(*devices)[index], segment);
++			if (ret) {
++				kfree(*devices);
++				return ret;
++			}
++			index ++;
++		}
++		start += scope->length;
++	}
++
++	return 0;
++}
++
++static int __init
++dmar_parse_one_drhd(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_hardware_unit * drhd = (struct acpi_dmar_hardware_unit *)header;
++	struct dmar_drhd_unit *dmaru;
++	int ret = 0;
++	static int include_all;
++
++	dmaru = kzalloc(sizeof(*dmaru), GFP_KERNEL);
++	if (!dmaru)
++		return -ENOMEM;
++
++	dmaru->address = drhd->address;
++	dmaru->include_all = drhd->flags & 1; /* BIT0: INCLUDE_ALL */
++
++	if (!dmaru->include_all)
++		ret = dmar_parse_dev_scope((void *)(drhd + 1),
++				((void *)drhd) + header->length,
++				&dmaru->devices_cnt, &dmaru->devices,
++				drhd->segment);
++	else {
++		/* Only allow one INCLUDE_ALL */
++		if (include_all) {
++			printk(KERN_WARNING PREFIX "Only one INCLUDE_ALL "
++				"device scope is allowed\n");
++			ret = -EINVAL;
++		}
++		include_all = 1;
++	}
++
++	if (ret || (dmaru->devices_cnt == 0 && !dmaru->include_all))
++		kfree(dmaru);
++	else
++		dmar_register_drhd_unit(dmaru);
++	return ret;
++}
++
++static int __init
++dmar_parse_one_rmrr(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_reserved_memory *rmrr = (struct acpi_dmar_reserved_memory *)header;
++	struct dmar_rmrr_unit *rmrru;
++	int ret = 0;
++
++	rmrru = kzalloc(sizeof(*rmrru), GFP_KERNEL);
++	if (!rmrru)
++		return -ENOMEM;
++
++	rmrru->base_address = rmrr->base_address;
++	rmrru->end_address = rmrr->end_address;
++	ret = dmar_parse_dev_scope((void *)(rmrr + 1),
++		((void*)rmrr) + header->length,
++		&rmrru->devices_cnt, &rmrru->devices, rmrr->segment);
++
++	if (ret || (rmrru->devices_cnt == 0))
++		kfree(rmrru);
++	else
++		dmar_register_rmrr_unit(rmrru);
++	return ret;
++}
++
++static void __init
++dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
++{
++	struct acpi_dmar_hardware_unit *drhd;
++	struct acpi_dmar_reserved_memory *rmrr;
++
++	switch (header->type) {
++	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
++		drhd = (struct acpi_dmar_hardware_unit *)header;
++		printk (KERN_INFO PREFIX
++			"DRHD (flags: 0x%08x)base: 0x%016Lx\n",
++			drhd->flags, drhd->address);
++		break;
++	case ACPI_DMAR_TYPE_RESERVED_MEMORY:
++		rmrr = (struct acpi_dmar_reserved_memory *)header;
++
++		printk (KERN_INFO PREFIX
++			"RMRR base: 0x%016Lx end: 0x%016Lx\n",
++			rmrr->base_address, rmrr->end_address);
++		break;
++	}
++}
++
++static int __init
++parse_dmar(struct acpi_table_header *table)
++{
++	struct acpi_table_dmar *dmar;
++	struct acpi_dmar_header *entry_header;
++	int ret = 0;
++
++	dmar = (struct acpi_table_dmar *)table;
++	if (!dmar) {
++		printk (KERN_WARNING PREFIX "Unable to map DMAR\n");
++		return -ENODEV;
++	}
++
++	if (!dmar->width) {
++		printk (KERN_WARNING PREFIX "Zero: Invalid DMAR haw\n");
++		return -EINVAL;
++	}
++
++	dmar_host_address_width = dmar->width + 1;
++	printk (KERN_INFO PREFIX "Host address width %d\n",
++		dmar_host_address_width);
++
++	entry_header = (struct acpi_dmar_header *)(dmar + 1);
++	while (((unsigned long)entry_header) < (((unsigned long)dmar) + table->length)) {
++		dmar_table_print_dmar_entry(entry_header);
++
++		switch (entry_header->type) {
++		case ACPI_DMAR_TYPE_HARDWARE_UNIT:
++			ret = dmar_parse_one_drhd(entry_header);
++			break;
++		case ACPI_DMAR_TYPE_RESERVED_MEMORY:
++			ret = dmar_parse_one_rmrr(entry_header);
++			break;
++		default:
++			printk(KERN_WARNING PREFIX "Unknown DMAR structure type\n");
++			ret = 0; /* for forward compatibility */
++			break;
++		}
++		if (ret)
++			break;
++
++		entry_header = ((void *)entry_header + entry_header->length);
++	}
++	return ret;
++}
++
++int __init early_dmar_detect(void)
++{
++	acpi_status status = AE_OK;
++
++	/* if we could find DMAR table, then there are DMAR devices */
++	status = acpi_get_table(ACPI_SIG_DMAR, 0,
++				(struct acpi_table_header **)&dmar_tbl);
++	return (ACPI_SUCCESS(status) ? 1 : 0);
++}
++
++int __init dmar_table_init(void)
++{
++
++	parse_dmar(dmar_tbl);
++	if (list_empty(&dmar_drhd_units)) {
++		printk(KERN_ERR PREFIX "No DMAR devices found\n");
++		return -ENODEV;
++	}
++	return 0;
++}
+Index: linux-2.6.21-rc5/drivers/pci/dmar.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5/drivers/pci/dmar.h	2007-04-23 07:11:51.000000000 -0700
+@@ -0,0 +1,65 @@
++/*
++ * Copyright (c) 2006, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ * Place - Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * Copyright (C) Ashok Raj <ashok.raj@intel.com>
++ * Copyright (C) Shaohua Li <shaohua.li@intel.com>
++ */
++
++#ifndef __DMAR_H__
++#define __DMAR_H__
++#include <linux/acpi.h>
++extern u8 dmar_host_address_width;
++extern struct list_head dmar_drhd_units;
++extern struct list_head dmar_rmrr_units;
++
++#define no_drhd_detected()	(list_empty(&dmar_drhd_units))
++
++struct iommu;
++struct dmar_drhd_unit {
++	struct list_head list;
++	u64	address; /* register base address of the unit */
++	struct	pci_dev **devices; /* target devices */
++	int	devices_cnt;
++	u8	include_all:1;
++	struct iommu *iommu;
++};
++
++struct dmar_rmrr_unit {
++	struct list_head list;
++	u64	base_address;
++	u64	end_address;
++	struct pci_dev **devices; /* target devices */
++	int	devices_cnt;
++};
++
++#define for_each_drhd_unit(drhd) \
++	list_for_each_entry(drhd, &dmar_drhd_units, list)
++#define for_each_rmrr_device(rmrr, pdev) \
++	list_for_each_entry(rmrr, &dmar_rmrr_units, list) { \
++		int _i; \
++		for (_i = 0; _i < rmrr->devices_cnt; _i++) { \
++			pdev = rmrr->devices[_i]; \
++			/* some BIOS lists non-exist devices in DMAR table */\
++			if (!pdev) \
++				continue;
++#define end_for_each_rmrr_device(rmrr, pdev) \
++		} \
++	}
++
++struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
++struct dmar_rmrr_unit * dmar_find_matched_rmrr_unit(struct pci_dev *dev);
++int dmar_table_init(void);
++#endif /* __DMAR_H__ */
+Index: linux-2.6.21-rc5/include/acpi/actbl1.h
+===================================================================
+--- linux-2.6.21-rc5.orig/include/acpi/actbl1.h	2007-04-23 07:11:49.000000000 -0700
++++ linux-2.6.21-rc5/include/acpi/actbl1.h	2007-04-23 07:11:51.000000000 -0700
+@@ -257,7 +257,8 @@
+ struct acpi_table_dmar {
+ 	struct acpi_table_header header;	/* Common ACPI table header */
+ 	u8 width;		/* Host Address Width */
+-	u8 reserved[11];
++	u8 flags;
++	u8 reserved[10];
  };
  
--static int dmar_disabled;
-+static int dmar_disabled, dmar_force_rw;
+ /* DMAR subtable header */
+@@ -265,8 +266,6 @@
+ struct acpi_dmar_header {
+ 	u16 type;
+ 	u16 length;
+-	u8 flags;
+-	u8 reserved[3];
+ };
  
- static char *get_fault_reason(u8 fault_reason)
- {
-@@ -102,6 +102,9 @@ static int __init intel_iommu_setup(char
- 		if (!strncmp(str, "off", 3)) {
- 			dmar_disabled = 1;
- 			printk(KERN_INFO"Intel-IOMMU: disabled\n");
-+		} else if (!strncmp(str, "forcerw", 7)) {
-+			dmar_force_rw = 1;
-+			printk(KERN_INFO"Intel-IOMMU: force R/W for W/O mapping\n");
- 		}
- 		str += strcspn(str, ",");
- 		while (*str == ',')
-@@ -1720,7 +1723,12 @@ static dma_addr_t __intel_map_single(str
- 			goto error;
- 	}
+ /* Values for subtable type in struct acpi_dmar_header */
+@@ -274,13 +273,15 @@
+ enum acpi_dmar_type {
+ 	ACPI_DMAR_TYPE_HARDWARE_UNIT = 0,
+ 	ACPI_DMAR_TYPE_RESERVED_MEMORY = 1,
+-	ACPI_DMAR_TYPE_RESERVED = 2	/* 2 and greater are reserved */
++	ACPI_DMAR_TYPE_ATSR = 2,
++	ACPI_DMAR_TYPE_RESERVED = 3	/* 3 and greater are reserved */
+ };
  
--	if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL)
-+	/*
-+	 * Check if DMAR supports zero-length reads on write only
-+	 * mappings..
-+	 */
-+	if (dir == DMA_TO_DEVICE || dir == DMA_BIDIRECTIONAL || \
-+			!cap_zlr(domain->iommu->cap) || dmar_force_rw)
- 		prot |= DMA_PTE_READ;
- 	if (dir == DMA_FROM_DEVICE || dir == DMA_BIDIRECTIONAL)
- 		prot |= DMA_PTE_WRITE;
-Index: 2.6.21-rc6/include/linux/intel-iommu.h
-===================================================================
---- 2.6.21-rc6.orig/include/linux/intel-iommu.h	2007-04-18 09:04:56.000000000 +0800
-+++ 2.6.21-rc6/include/linux/intel-iommu.h	2007-04-18 09:04:59.000000000 +0800
-@@ -79,6 +79,7 @@
- #define cap_max_fault_reg_offset(c) \
- 	(cap_fault_reg_offset(c) + cap_num_fault_regs(c) * 16)
+ struct acpi_dmar_device_scope {
+ 	u8 entry_type;
+ 	u8 length;
+-	u8 segment;
++	u16 reserved;
++	u8 enumeration_id;
+ 	u8 bus;
+ };
  
-+#define cap_zlr(c)		(((c) >> 22) & 1)
- #define cap_isoch(c)		(((c) >> 23) & 1)
- #define cap_mgaw(c)		((((c) >> 16) & 0x3f) + 1)
- #define cap_sagaw(c)		(((c) >> 8) & 0x1f)
+@@ -290,7 +291,14 @@
+ 	ACPI_DMAR_SCOPE_TYPE_NOT_USED = 0,
+ 	ACPI_DMAR_SCOPE_TYPE_ENDPOINT = 1,
+ 	ACPI_DMAR_SCOPE_TYPE_BRIDGE = 2,
+-	ACPI_DMAR_SCOPE_TYPE_RESERVED = 3	/* 3 and greater are reserved */
++	ACPI_DMAR_SCOPE_TYPE_IOAPIC = 3,
++	ACPI_DMAR_SCOPE_TYPE_HPET = 4,
++	ACPI_DMAR_SCOPE_TYPE_RESERVED = 5	/* 5 and greater are reserved */
++};
++
++struct acpi_dmar_pci_path {
++	u8 dev;
++	u8 fn;
+ };
+ 
+ /*
+@@ -301,6 +309,9 @@
+ 
+ struct acpi_dmar_hardware_unit {
+ 	struct acpi_dmar_header header;
++	u8 flags;
++	u8 reserved;
++	u16 segment;
+ 	u64 address;		/* Register Base Address */
+ };
+ 
+@@ -312,7 +323,9 @@
+ 
+ struct acpi_dmar_reserved_memory {
+ 	struct acpi_dmar_header header;
+-	u64 address;		/* 4_k aligned base address */
++	u16 reserved;
++	u16 segment;
++	u64 base_address;		/* 4_k aligned base address */
+ 	u64 end_address;	/* 4_k aligned limit address */
+ };
+ 
 
 -- 
