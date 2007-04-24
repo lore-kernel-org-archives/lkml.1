@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXDXU6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423112AbXDXVA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423110AbXDXU6h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423112AbXDXU6h
+	id S1423112AbXDXVA3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXDXVA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:58:37 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49146 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423111AbXDXU6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:58:36 -0400
-Date: Tue, 24 Apr 2007 13:58:35 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070424135348.4e69ac23.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704241354470.13382@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
- <20070424101116.1cb7512e.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
- <20070424134206.95bd6c92.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
- <20070424135348.4e69ac23.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Apr 2007 17:00:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53531 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423112AbXDXVA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:00:28 -0400
+Date: Tue, 24 Apr 2007 22:59:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Prarit Bhargava <prarit@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, virtualization@lists.osdl.org,
+       Chris Lalancette <clalance@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
+Message-ID: <20070424205918.GA25383@elte.hu>
+References: <20070327214919.800272641@goop.org> <20070327215827.871954359@goop.org> <20070423234910.50149faf.akpm@linux-foundation.org> <462E43A7.1050001@goop.org> <20070424105738.e0ce36a9.akpm@linux-foundation.org> <462E4969.6070802@goop.org> <20070424113222.ed2e1314.akpm@linux-foundation.org> <462E61F1.7060403@goop.org> <462E6778.7070305@goop.org> <1177447948.12796.66.camel@imap.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177447948.12796.66.camel@imap.mvista.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Andrew Morton wrote:
 
-> > Then I think we should disable page migration for allocations that do not 
-> > allow access to the policy zone. That would fix it.
+* Daniel Walker <dwalker@mvista.com> wrote:
+
+> On Tue, 2007-04-24 at 13:24 -0700, Jeremy Fitzhardinge wrote:
 > 
-> Can't we use mapping_gfp_mask() when allocating the destination page?
-
-There is no point in migrating something if you cannot reach the 
-destination. If the policy zone is not allowed by an allocation then the 
-page cannot be migrated because (on 32 bit NUMA) there is only a single 
-ZONE_NORMAL on the system. A different node requires a HIGHMEM allocation!
- 
-> It would be better to do so, really.  Who knows, mapping_gfp_mask() might
-> be extented in the future to say "I want GFP_NOIO" or something.  Or a
-> filesystem might specify GFP_KERNEL for regular pagecache pages or
-> whatever.
-
-Hmmm..... How about a VM_DONTMIGRATE flag instead? That would be easy to 
-check and could be set by a device that must have all pages of the address
-space conforming to the gfp mask.
-
-Or more general
-
-VM_STRICT_ALLOC?
-
-> Generally, the interface is "address_space tells core kernel how to
-> allocate its pages", and to be nice we should honour that in all places
-> where we allocate a page for an address_space.
+> > And sched_clock's use of local_irq_save/restore appears to be absolutely
+> > correct, so I think it must be triggering a bug in either the self-tests
+> > or lockdep itself.
 > 
-> If we'd had any brains we would have implemented this function as an
-> address_space_operations callback, but we don't so we didn't.
+> Why does sched_clock need to disable interrupts?
 
-We have enough flags I think.
+i concur. To me it appears not "absolutely correct" that someone 
+apparently added local_irq_save/restore to sched_clock(), but "absolute 
+madness". sched_clock() is _very_ performance-sensitive for the 
+scheduler, do not mess with it.
+
+	Ingo
