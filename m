@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423145AbXDXVi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423142AbXDXVk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423145AbXDXVi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVi4
+	id S1423142AbXDXVk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423143AbXDXVk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:38:56 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31311 "EHLO mga03.intel.com"
+	Tue, 24 Apr 2007 17:40:29 -0400
+Received: from mga03.intel.com ([143.182.124.21]:43844 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423130AbXDXViy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:38:54 -0400
+	id S1423142AbXDXVk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:40:28 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="218927519:sNHT19123867"
-Date: Tue, 24 Apr 2007 14:36:21 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-Message-Id: <20070424143621.82c5c815.kristen.c.accardi@intel.com>
-In-Reply-To: <462DBDB3.9010102@gmail.com>
-References: <20070424074856.005152262@intel.com>
-	<20070423170010.5514072e.kristen.c.accardi@intel.com>
-	<462DBDB3.9010102@gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+   d="scan'208"; a="218928516:sNHT42408485"
+Date: Tue, 24 Apr 2007 14:38:35 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: ak@suse.de, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
+Message-ID: <20070424213835.GB31920@linux-os.sc.intel.com>
+References: <200704242133.16219.ak@suse.de> <20070424203304.GB27911@linux-os.sc.intel.com> <200704242312.54738.ak@suse.de> <20070424.142351.62664098.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070424.142351.62664098.davem@davemloft.net>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Send an uevent to user space to indicate that a media change event has occurred.
+On Tue, Apr 24, 2007 at 02:23:51PM -0700, David Miller wrote:
+> From: Andi Kleen <ak@suse.de>
+> Date: Tue, 24 Apr 2007 23:12:54 +0200
+> 
+> > We already have a couple of other IOMMU architectures who essentially have the same
+> > problem. Have you checked how they solve this?
+> 
+> Sparc64, for one, only uses 32-bit IOMMU addresses.  And we simply
+> don't try to handle the funny devices at all, in fact we can't
+> handle the ones that want mappings only in the low 16MB for
+> example since the hardware IOMMU window usually starts in the
+> middle of the 32-bit PCI address space.
+> 
+> We do it both because that's faster due to Single Address Cycles, as
+> mentioned, and also because that's simply is where the hardware's
+> IOMMU window is.  You can't use 64-bit IOMMU addresses even if you
+> wanted to on sparc64.
+> 
+> My suggestion would be to allocate top-down in the 32-bit IOMMU space.
+> 
+> That might work, but my gut feeling is that this won't be sufficient
+> and we'll need some kind of device driver initiated reservation
+> mechanism for the <16MB et al. weird stuff.
 
-Changes from last version:
-* use get/put_device to increment reference count on the device struct
+Its not clear if we have a very generic device breakage.. most devices
+on these platforms are going to be more recent, (except maybe some
+legacy fd)... 
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Maybe we should wait to fix unless we are certain if there are more of them
+that breaks in these platforms.
 
-Index: 2.6-git/block/genhd.c
-===================================================================
---- 2.6-git.orig/block/genhd.c
-+++ 2.6-git/block/genhd.c
-@@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
- 	.show	= diskstats_show
- };
- 
-+static void media_change_notify_thread(struct work_struct *work)
-+{
-+	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-+	char event[] = "MEDIA_CHANGE=1";
-+	char *envp[] = { event, NULL };
-+
-+	/*
-+	 * set enviroment vars to indicate which event this is for
-+	 * so that user space will know to go check the media status.
-+	 */
-+	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-+	put_device(gd->driverfs_dev);
-+}
-+
-+void genhd_media_change_notify(struct gendisk *disk)
-+{
-+	get_device(disk->driverfs_dev);
-+	schedule_work(&disk->async_notify);
-+}
-+EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-+
- struct gendisk *alloc_disk(int minors)
- {
- 	return alloc_disk_node(minors, -1);
-@@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
- 		kobj_set_kset_s(disk,block_subsys);
- 		kobject_init(&disk->kobj);
- 		rand_initialize_disk(disk);
-+		INIT_WORK(&disk->async_notify,
-+			media_change_notify_thread);
- 	}
- 	return disk;
- }
-Index: 2.6-git/include/linux/genhd.h
-===================================================================
---- 2.6-git.orig/include/linux/genhd.h
-+++ 2.6-git/include/linux/genhd.h
-@@ -66,6 +66,7 @@ struct partition {
- #include <linux/smp.h>
- #include <linux/string.h>
- #include <linux/fs.h>
-+#include <linux/workqueue.h>
- 
- struct partition {
- 	unsigned char boot_ind;		/* 0x80 - active */
-@@ -139,6 +140,7 @@ struct gendisk {
- #else
- 	struct disk_stats dkstats;
- #endif
-+	struct work_struct async_notify;
- };
- 
- /* Structure for sysfs attributes on block devices */
-@@ -419,7 +421,7 @@ extern struct gendisk *alloc_disk_node(i
- extern struct gendisk *alloc_disk(int minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
--
-+extern void genhd_media_change_notify(struct gendisk *disk);
- extern void blk_register_region(dev_t dev, unsigned long range,
- 			struct module *module,
- 			struct kobject *(*probe)(dev_t, int *, void *),
+We could choose to use the generic 1-1 for those weird cases, since the 
+driver does ensure today that physical mem is low 16M, then we could
+just turn on 1-1 domain for such devices without breaking any.
