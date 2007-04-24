@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423162AbXDXWSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423181AbXDXWXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423162AbXDXWSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423161AbXDXWSI
+	id S1423181AbXDXWXI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423177AbXDXWXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:18:08 -0400
-Received: from quechua.inka.de ([193.197.184.2]:50979 "EHLO mail.inka.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423162AbXDXWSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 18:18:07 -0400
-From: Bernd Eckenfels <ecki@lina.inka.de>
+	Tue, 24 Apr 2007 18:23:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56778 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423157AbXDXWXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 18:23:06 -0400
+Message-Id: <20070424222304.884706862@sgi.com>
+References: <20070424222105.883597089@sgi.com>
+User-Agent: quilt/0.45-1
+Date: Tue, 24 Apr 2007 15:21:07 -0700
+From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Organization: Private Site running Debian GNU/Linux
-In-Reply-To: <20070424212717.GR31925@holomorphy.com>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
-Message-Id: <E1HgTKk-0008IK-00@calista.eckenfels.net>
-Date: Wed, 25 Apr 2007 00:18:02 +0200
+Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: [02/17] Fix page allocation flags in grow_dev_page()
+Content-Disposition: inline; filename=fix_buffer_alloc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <20070424212717.GR31925@holomorphy.com> you wrote:
-> Could you explain for the audience the technical definition of fairness
-> and what sorts of error metrics are commonly used? There seems to be
-> some disagreement, and you're neutral enough of an observer that your
-> statement would help.
+Grow dev page simply passes GFP_NOFS to find_or_create_page. This means the
+allocation of radix tree nodes is done with GFP_NOFS and the allocation
+of a new page is done using GFP_NOFS.
 
-And while we are at it, why it is a good thing. I could understand that fair
-means no missbehaving (intentionally or unintentionally) application can
-harm the rest of the system. However a responsive desktop might not
-necesarily be very fair to compute jobs.
+The mapping has a flags field that contains the necessary allocation flags for
+the page cache allocation. These need to be consulted in order to get DMA
+and HIGHMEM allocations etc right.
 
-Even a simple thing as "who gets accounted" can be quite different in
-different workloads. (larger multi user systems tend to be fair based on the
-user, on servers you more balance by thread or job and single user systems
-should be as unfair as the user wants them as long as no process can "run
-away")
+So fix grow_dev_page to do the same as __page_symlink calls. Retrieve the
+mask from the mapping and then remove __GFP_FS.
 
-Gruss
-Bernd
+[mm has other changes to this code. Will post a different patch when diffing against mm]
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ fs/buffer.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.21-rc7/fs/buffer.c
+===================================================================
+--- linux-2.6.21-rc7.orig/fs/buffer.c	2007-04-23 15:29:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/buffer.c	2007-04-23 15:29:43.000000000 -0700
+@@ -988,7 +988,8 @@ grow_dev_page(struct block_device *bdev,
+ 	struct page *page;
+ 	struct buffer_head *bh;
+ 
+-	page = find_or_create_page(inode->i_mapping, index, GFP_NOFS);
++	page = find_or_create_page(inode->i_mapping, index,
++		mapping_gfp_mask(inode->i_mapping) & ~__GFP_FS);
+ 	if (!page)
+ 		return NULL;
+ 
+
+--
