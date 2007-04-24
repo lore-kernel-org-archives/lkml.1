@@ -1,62 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161717AbXDXLox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161713AbXDXLri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161717AbXDXLox (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161714AbXDXLox
+	id S1161713AbXDXLri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161716AbXDXLri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:44:53 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:46170 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161697AbXDXLow (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:44:52 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
-MIME-Version: 1.0
+	Tue, 24 Apr 2007 07:47:38 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:46779 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161713AbXDXLrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 07:47:37 -0400
+Date: Tue, 24 Apr 2007 13:53:23 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070424115322.GA2423@ff.dom.local>
+References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17965.60841.900376.524639@gargle.gargle.HOWL>
-Date: Tue, 24 Apr 2007 15:44:41 +0400
-To: Amit Gud <gud@cis.ksu.edu>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       val_henson@linux.intel.com, riel@surriel.com, zab@zabbo.net,
-       arjan@infradead.org, suparna@in.ibm.com, brandon@ifup.org,
-       karunasagark@gmail.com, gud@ksu.edu
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Newsgroups: gmane.linux.file-systems,gmane.linux.kernel
-In-Reply-To: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+Content-Disposition: inline
+In-Reply-To: <20070423163312.GA129@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit Gud writes:
+On Mon, Apr 23, 2007 at 08:33:12PM +0400, Oleg Nesterov wrote:
+> On 04/23, Jarek Poplawski wrote:
+> >
+> > On Fri, Apr 20, 2007 at 09:08:36PM +0400, Oleg Nesterov wrote:
+> > > 
+> > > First, this flag should be cleared after return from cancel_rearming_delayed_work().
+> > 
+> > I think this flag, if at all, probably should be cleared only
+> > consciously by the owner of a work, maybe as a schedule_xxx_work
+> > parameter, (but shouldn't be used from work handlers for rearming).
+> > Mostly it should mean: we are closing (and have no time to chase
+> > our work)...
+> 
+> This will change the API. Currently it is possible to do:
+> 
+> 	cancel_delayed_work(dwork);
+> 	schedule_delayed_work(dwork, delay);
+> 
+> and we have such a code. With the change you propose this can't work.
 
-Hello,
+Not necessarily: this all was only a concept and schedule_xxx_work
+could be also a new function, if needed.
 
- > 
- > This is an initial implementation of ChunkFS technique, briefly discussed
- > at: http://lwn.net/Articles/190222 and 
- > http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
+> 
+> > > Also, we should add a lot of nasty checks to workqueue.c
+> > 
+> > Checking a flag isn't nasty - it's clear. IMHO current way of checking,
+> > whether cancel succeeded, is nasty.
+> > 
+> > > 
+> > > I _think_ we can re-use WORK_STRUCT_PENDING to improve this interface.
+> > > Note that if we set WORK_STRUCT_PENDING, the work can't be queued, and
+> > > dwork->timer can't be started. The only problem is that it is not so
+> > > trivial to avoid races.
+> > 
+> > If there were no place, it would be better, then current way.
+> > But WORK_STRUCT_PENDING couldn't be used for some error checking,
+> > as it's now.
+> 
+> Look,
+> 
+> 	void cancel_rearming_delayed_work(struct delayed_work *dwork)
+> 	{
+> 		struct work_struct *work = &dwork->work;
+> 		struct cpu_workqueue_struct *cwq = get_wq_data(work);
+> 		struct workqueue_struct *wq;
+> 		const cpumask_t *cpu_map;
+> 		int retry;
+> 		int cpu;
+> 
+> 		if (!cwq)
+> 			return;
+> 
+> 	retry:
+> 		spin_lock_irq(&cwq->lock);
+> 		list_del_init(&work->entry);
+> 		__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> 		retry = try_to_del_timer_sync(&dwork->timer) < 0;
+> 		spin_unlock_irq(&cwq->lock);
+> 
+> 		if (unlikely(retry))
+> 			goto retry;
+> 
+> 		// the work can't be re-queued and the timer can't
+> 		// be re-started due to WORK_STRUCT_PENDING
+> 
+> 		wq = cwq->wq;
+> 		cpu_map = wq_cpu_map(wq);
+> 
+> 		for_each_cpu_mask(cpu, *cpu_map)
+> 			wait_on_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
+> 
+> 		work_clear_pending(work);
+> 	}
+> 
+> I think this almost works, except:
+> 
+> 	- we should change run_workqueue() to call work_clear_pending()
+> 	  under cwq->lock. I'd like to avoid this.
+> 
+> 	- this is racy wrt cpu-hotplug. We should re-check get_wq_data()
+> 	  when we take the lock. This is easy.
+> 
+> 	- we should factor out the common code with cancel_work_sync().
+> 
+> I may be wrong, still had no time to concentrate on this with a "clear head".
+> May be tomorrow.
 
-I have a couple of questions about chunkfs repair process. 
+This looks fine. Of course, it requires to remove some debugging
+currently done with _PENDING flag and it's hard to estimate this
+all before you do more, but it should be more foreseeable than
+current way. But the races with _PENDING could be really "funny"
+without locking it everywhere. BTW - are a few locks more a real
+problem, while serving a "sleeping" path? And I don't think there
+is any reason to hurry... 
 
-First, as I understand it, each continuation inode is a sparse file,
-mapping some subset of logical file blocks into block numbers. Then it
-seems, that during "final phase" fsck has to check that these partial
-mappings are consistent, for example, that no two different continuation
-inodes for a given file contain a block number for the same offset. This
-check requires scan of all chunks (rather than of only "active during
-crash"), which seems to return us back to the scalability problem
-chunkfs tries to address.
+> 
+> > > > - for a work function: to stop execution as soon as possible,
+> > > > even without completing the usual job, at first possible check.
+> > > 
+> > > I doubt we need this "in general". It is easy to add some flag to the
+> > > work_struct's container and check it in work->func() when needed.
+> > 
+> > Yes, but currently you cannot to behave like this e.g. with
+> > "rearming" work.
+> 
+> Why?
 
-Second, it is not clear how, under assumption of bugs in the file system
-code (which paper makes at the very beginning), fsck can limit itself
-only to the chunks that were active at the moment of crash.
+OK, it's not impossible, but needs some bothering: if I simply
+set some flag and my work function exits before rearming -
+cancel_rearming_delayed_work can loop.
 
-[...]
+> 
+> >                   And maybe a common api could save some work.
+> 
+> May be you are right, but still I don't think we should introduce
+> the new flag to implement this imho not-so-useful feature.
 
- > 
- > Best,
- > AG
+Maybe you are right. Probably some code should be analysed,
+to check how often such activities are needed.
 
-Nikita.
+Cheers,
+Jarek P.
