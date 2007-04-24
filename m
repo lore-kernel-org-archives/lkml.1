@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbXDXGBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161653AbXDXGBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753255AbXDXGBL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 02:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbXDXGBL
+	id S1161653AbXDXGBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 02:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbXDXGBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 02:01:11 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:51120 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbXDXGBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 02:01:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:46260 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753907AbXDXGBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Apr 2007 02:01:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=mLR3QX/c7aHCzW9jbn/uHDZT4Fn/ZQE71DIIo4fluLvnxWMXijx4L74l4CXBrGVNs
-	ivRaZEGZ574DUKbUr/T7g==
-Date: Mon, 23 Apr 2007 23:00:10 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] oom: kill all threads that share mm with killed task
-In-Reply-To: <Pine.LNX.4.64.0704232242580.5109@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0704232258150.14417@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0704232134430.11399@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0704232242580.5109@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17965.39866.351929.349735@cargo.ozlabs.ibm.com>
+Date: Tue, 24 Apr 2007 15:55:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+In-Reply-To: <20070422123155.GF20763@infradead.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Christoph Lameter wrote:
+Christoph Hellwig writes:
 
-> Obvious fix. It was broken by
->  
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=f2a2a7108aa0039ba7a5fe7a0d2ecef2219a7584
-> Dec 7. So its in 2.6.20 and later. Candiate for stable?
-> 
+> The first question is obviously, is this really something we want?
+> spawning kernel thread on demand without reaping them properly seems
+> quite dangerous.
 
-I agree it's obvious enough that it should be included in stable.  
-Otherwise the entire iteration becomes a big no-op and it won't alleviate 
-the OOM condition in one call to out_of_memory() because there may be 
-outstanding tasks with the shared ->mm.
+What specifically has to be done to reap a kernel thread?  Are you
+concerned about the number of threads, or about having zombies hanging
+around?
 
-		David
+Paul.
