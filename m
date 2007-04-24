@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423032AbXDXUNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752670AbXDXUPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423032AbXDXUNg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423018AbXDXUNg
+	id S1752670AbXDXUPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:15:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbXDXUPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:13:36 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:52817 "EHLO mtl.rackplans.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423032AbXDXUNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:13:35 -0400
-Date: Tue, 24 Apr 2007 16:13:34 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Roberto De Ioris <roberto@unbit.it>
-cc: linux-security-module@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] UidBind LSM 0.2
-In-Reply-To: <1177425262.6547.24.camel@hagrid>
-Message-ID: <Pine.LNX.4.64.0704241610120.21879@mtl.rackplans.net>
-References: <1177425262.6547.24.camel@hagrid>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Apr 2007 16:15:44 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49219 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750897AbXDXUPn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:15:43 -0400
+Date: Tue, 24 Apr 2007 13:14:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
+Message-Id: <20070424131427.940d461e.akpm@linux-foundation.org>
+In-Reply-To: <462E61F1.7060403@goop.org>
+References: <20070327214919.800272641@goop.org>
+	<20070327215827.871954359@goop.org>
+	<20070423234910.50149faf.akpm@linux-foundation.org>
+	<462E43A7.1050001@goop.org>
+	<20070424105738.e0ce36a9.akpm@linux-foundation.org>
+	<462E4969.6070802@goop.org>
+	<20070424113222.ed2e1314.akpm@linux-foundation.org>
+	<462E61F1.7060403@goop.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Roberto De Ioris wrote:
+On Tue, 24 Apr 2007 13:00:49 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Hi all,
+> Andrew Morton wrote:
+> > Well, it _is_ mysterious.
+> >
+> > Did you try to locate the code which failed?  I got lost in macros and
+> > include files, and gave up very very easily.  Stop hiding, Ingo.
+> >   
 > 
-> this is the second release for UidBind LSM:
-> 
-> http://projects.unbit.it/uidbind/
-> 
-> UidBind allows call to bind() function only to the uid defined in a
-> configfs tree.
-> 
-> It is now possible to specify different uid (for the same port) on
-> different ipv4 addresses:
-> 
-> mkdir uidbind/8081
-> mkdir uidbind/8081/192.168.1.17
-> mkdir uidbind/8081/192.168.1.26
-> echo 1017 > uidbind/8081/192.168.1.17/uid
-> echo 1026 > uidbind/8081/192.168.1.26/uid
-> 
-> This version even fix some leek in version 0.1
-> 
-> Patch attached is still for vanilla 2.6.20.7
+> OK, I've managed to reproduce it.  Removing the local_irq_save/restore
+> from sched_clock() makes it go away, as I'd expect (otherwise it would
+> really be magic).
 
-Is it possible to specify ranges as allowing everyone?  Is it possible to 
-allow multiple users acess to the same port?  Can ports be allowed by 
-group?
+erm, why do you expect that?  A local_irq_save()/local_irq_restore() pair
+shouldn't be affecting anything?
 
-I really like the idea of this patch.  It has the potential to solve a lot 
-of my current administrative headachs.
+>  But given that it never seems to touch the softlockup
+> during testing, I have no idea what difference it makes...
 
-	Gerhard
+To what softlockup are you referring, and what does that have to do with
+anything?
 
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
+<feels dumb>
