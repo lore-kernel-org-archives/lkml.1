@@ -1,95 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbXDXJGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbXDXJQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122AbXDXJGs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 05:06:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbXDXJGs
+	id S1754605AbXDXJQN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 05:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXDXJQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 05:06:48 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:42884 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751861AbXDXJGr (ORCPT
+	Tue, 24 Apr 2007 05:16:13 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:35024 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605AbXDXJQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 05:06:47 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [REPORT] cfs-v5 vs sd-0.46
-Date: Tue, 24 Apr 2007 11:06:29 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200704240938.07482.mgd@technosis.de> <200704241041.53762.mgd@technosis.de> <20070424085105.GA12329@elte.hu>
-In-Reply-To: <20070424085105.GA12329@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1395167.vdoqPGDQBM";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704241106.41912.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177405606;267aaf53;
+	Tue, 24 Apr 2007 05:16:12 -0400
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, neilb@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-reply-to: <1177403494.26937.59.camel@twins> (message from Peter Zijlstra on
+	Tue, 24 Apr 2007 10:31:33 +0200)
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.608300342@chello.nl>
+	 <17965.29252.950216.971096@notabene.brown>
+	 <1177398589.26937.40.camel@twins>
+	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu> <1177403494.26937.59.camel@twins>
+Message-Id: <E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 24 Apr 2007 11:14:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1395167.vdoqPGDQBM
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> > > > This is probably a
+> > > >  reasonable thing to do but it doesn't feel like the right place.  I
+> > > >  think get_dirty_limits should return the raw threshold, and
+> > > >  balance_dirty_pages should do both tests - the bdi-local test and the
+> > > >  system-wide test.
+> > > 
+> > > Ok, that makes sense I guess.
+> > 
+> > Well, my narrow minded world view says it's not such a good idea,
+> > because it would again introduce the deadlock scenario, we're trying
+> > to avoid.
+> 
+> I was only referring to the placement of the clipping; and exactly where
+> that happens does not affect the deadlock.
 
-> oh, you are writing the number-cruncher?
+OK.
 
-Yep.
+> > In a sense allowing a queue to go over the global limit just a little
+> > bit is a good thing.  Actually the very original code does that: if
+> > writeback was started for "write_chunk" number of pages, then we allow
+> > "ratelimit" (8) _new_ pages to be dirtied, effectively ignoring the
+> > global limit.
+> 
+> It might be time to get rid of that rate-limiting.
+> balance_dirty_pages()'s fast path is not nearly as heavy as it used to
+> be. All these fancy counter systems have removed quite a bit of
+> iteration from there.
 
-> In general the 'best' =20
-> performance metrics for scheduler validation are the ones where you have=
-=20
-> immediate feedback: i.e. some ops/sec (or ops per minute) value in some=20
-> readily accessible place, or some "milliseconds-per-100,000 ops" type of=
-=20
-> metric - whichever lends itself better to the workload at hand.
+Hmm.  The rate limiting probably makes lots of sense for
+dirty_exceeded==0, when ratelimit can be a nice large value.
 
-I'll have to see whether that works out. I don't have an easily
-available ops/sec but I guess I could create something similar.
+For dirty_exceeded==1 it may make sense to disable ratelimiting, OTOH
+having a granularity of 8 pages probably doesn't matter, because of
+the granularity of the percpu counter is usually larger (except on UP).
 
-> If you =20
-> measure time then the best is to use long long and nanoseconds and the=20
-> monotonic clocksource:
+> > That's why I've been saying, that the current code is so unfair: if
+> > there are lots of dirty pages to be written back to a particular
+> > device, then balance_dirty_pages() allows the dirty producer to make
+> > even more pages dirty, but if there are _no_ dirty pages for a device,
+> > and we are over the limit, then that dirty producer is allowed
+> > absolutely no new dirty pages until the global counts subside.
+> 
+> Well, that got fixed on a per device basis with this patch, it is still
+> true for multiple tasks writing to the same device.
 
-[snip]
-Thanks, I will implement that, for Linux anyway.
+Yes, this is the part of this patchset I'm personally interested in ;)
 
-> Plus an absolute metric of "the whole workload took X.Y seconds" is=20
-> useful too.
+> > I'm still not quite sure what purpose the above "soft" limiting
+> > serves.  It seems to just give advantage to writers, which managed to
+> > accumulate lots of dirty pages, and then can convert that into even
+> > more dirtyings.
+> 
+> The queues only limit the actual in-flight writeback pages,
+> balance_dirty_pages() considers all pages that might become writeback as
+> well as those that are.
+> 
+> > Would it make sense to remove this behavior, and ensure that
+> > balance_dirty_pages() doesn't return until the per-queue limits have
+> > been complied with?
+> 
+> I don't think that will help, balance_dirty_pages drives the queues.
+> That is, it converts pages from mere dirty to writeback.
 
-That's the easiest to come by and is already available.
+Yes.  But current logic says, that if you convert "write_chunk" dirty
+to writeback, you are allowed to dirty "ratelimit" more. 
 
-Best,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+D: number of dirty pages
+W: number of writeback pages
+L: global limit
+C: write_chunk = ratelimit_pages * 1.5
+R: ratelimit
 
---nextPart1395167.vdoqPGDQBM
-Content-Type: application/pgp-signature
+If D+W >= L, then R = 8
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+Let's assume, that D == L and W == 0.  And that all of the dirty pages
+belong to a single device.  Also for simplicity, lets assume an
+infinite length queue, and a slow device.
 
-iD8DBQBGLcihUYYhyuxDQc4RAj5sAJ4/ngT7J3JWcsQwUb4y/2Pc2ISMlACfToj1
-dLzQc7NLwIXxrKg/4V3WX6Q=
-=yL3g
------END PGP SIGNATURE-----
+Then while converting the dirty pages to writeback, D / C * R new
+dirty pages can be created.  So when all existing dirty have been
+converted:
 
---nextPart1395167.vdoqPGDQBM--
+  D = L / C * R
+  W = L
+
+  D + W = L * (1 + R / C)
+
+So we see, that we're now even more above the limit than before the
+conversion.  This means, that we starve writers to other devices,
+which don't have as many dirty pages, because until the slow device
+doesn't finish these writes they will not get to do anything.
+
+Your patch helps this in that if the other writers have an empty queue
+and no dirty, they will be allowed to slowly start writing.  But they
+will not gain their full share until the slow dirty-hog goes below the
+global limit, which may take some time.
+
+So I think the logical thing to do, is if the dirty-hog is over it's
+queue limit, don't let it dirty any more until it's dirty+writeback go
+below the limit.  That allowes other devices to more quickly gain
+their share of dirty pages.
+
+Miklos
