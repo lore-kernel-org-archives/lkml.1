@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422803AbXDXSPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422969AbXDXSQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422803AbXDXSPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 14:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422783AbXDXSPv
+	id S1422969AbXDXSQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 14:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422974AbXDXSQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 14:15:51 -0400
-Received: from gw.goop.org ([64.81.55.164]:43560 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422803AbXDXSPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 14:15:50 -0400
-Message-ID: <462E4969.6070802@goop.org>
-Date: Tue, 24 Apr 2007 11:16:09 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 24 Apr 2007 14:16:52 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:51783
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422969AbXDXSQv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 14:16:51 -0400
+Date: Tue, 24 Apr 2007 20:19:49 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Oliver Neukum <oneukum@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver
+Message-ID: <20070424181949.GD6798@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Oliver Neukum <oneukum@suse.de>, linux-kernel@vger.kernel.org
+References: <20070424174953.GB6798@traven> <200704241953.04336.oneukum@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-References: <20070327214919.800272641@goop.org>	<20070327215827.871954359@goop.org>	<20070423234910.50149faf.akpm@linux-foundation.org>	<462E43A7.1050001@goop.org> <20070424105738.e0ce36a9.akpm@linux-foundation.org>
-In-Reply-To: <20070424105738.e0ce36a9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704241953.04336.oneukum@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I said that because the damn thing went away when I was hunting it down
-> because I lost the config and was unable to remember the right combination
-> of debug settings.  Fortunately it later came back so I took care to
-> preserve the config.
->   
+El Tue, Apr 24, 2007 at 07:53:04PM +0200 Oliver Neukum ha dit:
 
-sched_clock doesn't *do* anything except flap interrupts. Oh, wait, have
-you got Andi's bugfixed version of the sched_clock patch?  The first
-version did a local_save_flags rather than a local_irq_save.
+> Am Dienstag, 24. April 2007 19:49 schrieb Matthias Kaehlcke:
+> > @@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
+> >         if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+> >                 return 0;
+> >  
+> > -       down_interruptible(&info->write_sem);
+> > +       mutex_lock_interruptible(&info->write_mtx);
+> 
+> This is a bug. It is also present in the current code, but nevertheless
+> it is a bug. If you use an interruptible lock, you must be ready to deal
+> with interrupts, which are ignored by this code.
 
->> Hm, is it caused by using sched_clock() to generate the printk
->> timestamps while generating the lock test output?
->>     
->
-> Conceivably.  What does that locking API test do?
->   
+i fear i don't have the experience/knowledge to fix this bug, thanks
+for your remark. 
 
-Didn't make a difference here.  Building your config now.
+i'm a bit confused now about the interruptible locks, i thought using
+them means that the process will be waked up when receiving a
+signal. what role are playing interrupts when using interruptible locks?
 
-> I was using printk timestamps and netconsole at the time.
->   
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-Ah, great, now you're going to make me setup netconsole...
-
-    J
-
+     La libertad es como la mañana. Hay quienes esperan dormidos a que
+   llegue, pero hay quienes desvelan y caminan la noche para alcanzarla
+                        (Subcomandante Marcos)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
