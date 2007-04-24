@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030573AbXDXMsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXDXMuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030573AbXDXMsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 08:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031071AbXDXMsg
+	id S1030357AbXDXMuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 08:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031072AbXDXMuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 08:48:36 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:55900 "EHLO pfx2.jmh.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030573AbXDXMsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 08:48:35 -0400
-Date: Tue, 24 Apr 2007 14:48:27 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Alex Vorona <voron@amhost.net>
+	Tue, 24 Apr 2007 08:50:40 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:40930 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030357AbXDXMuj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 08:50:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mBJQRU37x2Ck8eh9HtFBpk0MAVCDGqSfHhEu3Y0bSszNlE/j3lc8DESq0VotdM6mIHknCyoOhRuDa/vyurmcQYzTstxL4s6xwPT1bN8L9Ot5ffpElUUZXSfiZnj72SzpDI9/jJT/RJb7yPL6Jro9YcCEQ9Ygq0GSR73kbv7k+pg=
+Message-ID: <6bffcb0e0704240550x2c47cd1ap8101a9b0db5c6c7d@mail.gmail.com>
+Date: Tue, 24 Apr 2007 14:50:38 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "William Heimbigner" <icxcnika@mar.tar.cc>
+Subject: Re: cpufreq default governor
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Re[2]: sendfile to nonblocking socket
-Message-Id: <20070424144827.fdac3bb4.dada1@cosmosbay.com>
-In-Reply-To: <1211570752.20070424143348@amhost.net>
-References: <462D8D92.9050301@amhost.net>
-	<MDEHLPKNGKAHNMBLJOLKIEDFDEAC.davids@webmaster.com>
-	<1211570752.20070424143348@amhost.net>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <Pine.LNX.4.64.0704241235560.25153@server.thyself>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0704240755230.25153@server.thyself>
+	 <6bffcb0e0704240134w45007473p5694718a0aae08fc@mail.gmail.com>
+	 <Pine.LNX.4.64.0704241235560.25153@server.thyself>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 14:33:48 +0400
-Alex Vorona <voron@amhost.net> wrote:
+On 24/04/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
+> On Tue, 24 Apr 2007, Michal Piotrowski wrote:
+>
+> > Hi William,
+> >
+> > On 24/04/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
+> >>  Question: is there some reason that kconfig does not allow for default
+> >>  governors of conservative/ondemand/powersave?
+> >
+> > Performance?
+> >
+> >>  I'm not aware of any reason why one of those governors could not be used
+> >>  as default.
+> >
+> > My hardware doesn't work properly with ondemand governor. I hear
+> > strange noises when frequency is changed.
+> >
+>
+> That doesn't mean it isn't working, though.
 
-> Hello David,
-> 
-> Tuesday, April 24, 2007, 1:19:49 PM, you wrote:
-> 
-> >> sendfile function is not just a more efficient version of a read 
-> >> followed by a write.  It reads from one fd and write to another at tha
-> >> same time. Please try to read 2G, and then write 2G - and how much 
-> >> memory you will be need and how much time you will loose while reading
-> >> 2G from disk, but not writing them to socket.
-> 
-> DS> You are correct. What I meant to say was that it's just a
-> DS> more efficient version of 'mmap'ing a file and then 'write'ing
-> DS> from the 'mmap'. The 'write' to a non-blocking socket can still
-> DS> 'block' on disk I/O.
-> 
-> How can I avoid that blocking? Or maybe another question - how can I
-> deliver data from disk to network with minimal copy operations, etc.
-> 
+I didn't say that cpufreq ondemand is broken. It's a hardware problem.
 
-I believe the modern way would be to use splice() system call :
+> I here weird noises if the cpu
+> is clocked anywhere from 333MHz to 1GHz (sounds like an RD-D2 beeping
+> noises in ultra high pitch?)
 
-loop
- splice(from disk , to pipe) with SPLICE_F_NONBLOCK
- wait_event_from_epoll (pipe ready for reading)
- splice(from pipe, to socket)
- wait_event_from_epoll (socket ready for writing)
+Yes, something like that.
 
-But :
+>
+>   William Heimbigner
+> icxcnika@mar.tar.cc
+>
 
-1) I am not sure epoll can get an event when page(s) is/are ready in pipe (ie disk delivered the page(s) to cache)
-2) I am not sure splice() to socket is actually implemented with 0-copy
-3) I am not sure pipe capacity (16 pages) would be enough to get a good readahead.
+Regards,
+Michal
 
-Eric
-
-
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
