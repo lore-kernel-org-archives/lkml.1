@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030760AbXDXMHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161714AbXDXMIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030760AbXDXMHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 08:07:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030357AbXDXMHI
+	id S1161714AbXDXMIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 08:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161728AbXDXMIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 08:07:08 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:38027 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030760AbXDXMHG (ORCPT
+	Tue, 24 Apr 2007 08:08:52 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:47715 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161714AbXDXMIv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 08:07:06 -0400
-In-Reply-To: <ada7is27vdv.fsf@cisco.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "OF-General" <general@lists.openfabrics.org>,
-       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       Roland Dreier <rolandd@cisco.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH] ib_core: Add missing device link to class device
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
-Date: Tue, 24 Apr 2007 14:06:59 +0200
-X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
- 24/04/2007 14:07:01,
-	Serialize complete at 24/04/2007 14:07:01
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 24 Apr 2007 08:08:51 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, neilb@suse.de,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-reply-to: <20070424045027.f21a79ae.akpm@linux-foundation.org> (message from
+	Andrew Morton on Tue, 24 Apr 2007 04:50:27 -0700)
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+	<17965.29252.950216.971096@notabene.brown>
+	<1177398589.26937.40.camel@twins>
+	<E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+	<1177403494.26937.59.camel@twins>
+	<E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
+	<1177406817.26937.65.camel@twins>
+	<E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
+	<20070424030021.a091018d.akpm@linux-foundation.org>
+	<1177409538.26937.75.camel@twins>
+	<20070424034024.f953f93f.akpm@linux-foundation.org>
+	<E1HgJ5u-0000aD-00@dorka.pomaz.szeredi.hu> <20070424045027.f21a79ae.akpm@linux-foundation.org>
+Message-Id: <E1HgJnl-0000gD-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 24 Apr 2007 14:07:21 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> wrote on 23.04.2007 21:17:48:
-
-> Hmm, I have links like this on my system already:
+> > No, we _start_ writeback for 1.5*ratelimit_pages pages, but do not
+> > wait for those writebacks to finish.
+> > 
+> > So for a slow device and a fast writer, dirty+writeback can indeed
+> > increase beyond the dirty threshold.
+> > 
 > 
-> the patch actually looks sane but I don't understand why it's needed.
-> Could you explain?
+> Nope, try it.
+> 
+> If a process dirties 1000 pages it'll then go into balance_dirty_pages()
+> and start writeback against 1,500 pages.  When we hit dirty_ratio that
+> process will be required to write back 1,500 pages for each eight pages
+> which it dirtied.  We'll quickly reach the stage where there are no longer
+> 1,500 pages to be written back and the process will block in
+> balance_dirty_pages() until the dirty+writeback level subsides.
 
-I had a look at the kernel code -- currently, all device drivers except
-ehca do this by themselves:
+OK.  I was confused by this:
 
-cxgb3:
-1110         dev->ibdev.dma_device = &(dev->rdev.rnic_info.pdev->dev);
-1111         dev->ibdev.class_dev.dev = &(dev->rdev.rnic_info.pdev->dev);
+static long ratelimit_pages = 32;
 
-amso1100:
-798         dev->ibdev.dma_device = &dev->pcidev->dev;
-799         dev->ibdev.class_dev.dev = &dev->pcidev->dev;
+and didn't realize, that that 32 is totally irrelevant.
 
-ipath:
-1559         dev->dma_device = &dd->pcidev->dev;
-1560         dev->class_dev.dev = dev->dma_device;
+So I'm still right, that for N dirty pages, the writer is allowed to
+dirty N/1500*8 more dirty pages, but I agree, that this isn't really
+an issue.
 
-mthca:
-1295         dev->ib_dev.dma_device           = &dev->pdev->dev;
-1296         dev->ib_dev.class_dev.dev        = &dev->pdev->dev;
-
-So I think it makes a lot of sense to put the class_dev.dev assignment
-into generic ib_core code instead of repeating it in all the drivers.
-The respective lines could move out of the drivers in the future but
-won't hurt anyone until then.
-
-What's your take on this?
-
-Cheers,
-  Joachim
-
----
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+Miklos
