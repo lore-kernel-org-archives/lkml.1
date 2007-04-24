@@ -1,121 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423186AbXDXW1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423176AbXDXW2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423186AbXDXW1t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423170AbXDXW1W
+	id S1423176AbXDXW2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423183AbXDXW1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:27:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56818 "EHLO
+	Tue, 24 Apr 2007 18:27:20 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56820 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423182AbXDXWXI (ORCPT
+	with ESMTP id S1423177AbXDXWXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Apr 2007 18:23:08 -0400
-Message-Id: <20070424222307.468624462@sgi.com>
+Message-Id: <20070424222307.720364206@sgi.com>
 References: <20070424222105.883597089@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Apr 2007 15:21:18 -0700
+Date: Tue, 24 Apr 2007 15:21:19 -0700
 From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
        David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [13/17] set_blocksize: Allow to set a larger block size than PAGE_SIZE
-Content-Disposition: inline; filename=var_pc_buffer_head
+Subject: [14/17] Add VM_BUG_ONs to check for correct page order
+Content-Disposition: inline; filename=var_pc_guards
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-set_blocksize is changed to allow to specify a blocksize larger than a
-page. If that occurs then we switch the device to use compound pages.
+Before we start changing the page order we better get some debugging
+in there that trips us up whenever a wrong order page shows up in a
+mapping. This will be helpful for converting new filesystems to
+utilize higher orders.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/block_dev.c |   22 +++++++++++++++-------
- fs/buffer.c    |    2 +-
- fs/inode.c     |    5 +++++
- 3 files changed, 21 insertions(+), 8 deletions(-)
+ mm/filemap.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.21-rc7/fs/block_dev.c
+Index: linux-2.6.21-rc7/mm/filemap.c
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/block_dev.c	2007-04-23 23:13:16.000000000 -0700
-+++ linux-2.6.21-rc7/fs/block_dev.c	2007-04-23 23:13:19.000000000 -0700
-@@ -60,12 +60,12 @@ static void kill_bdev(struct block_devic
+--- linux-2.6.21-rc7.orig/mm/filemap.c	2007-04-24 11:45:26.000000000 -0700
++++ linux-2.6.21-rc7/mm/filemap.c	2007-04-24 11:46:04.000000000 -0700
+@@ -127,6 +127,7 @@ void remove_from_page_cache(struct page 
+ 	struct address_space *mapping = page->mapping;
+ 
+ 	BUG_ON(!PageLocked(page));
++	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 
+ 	write_lock_irq(&mapping->tree_lock);
+ 	__remove_from_page_cache(page);
+@@ -268,6 +269,7 @@ int wait_on_page_writeback_range(struct 
+ 			if (page->index > end)
+ 				continue;
+ 
++			VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 			wait_on_page_writeback(page);
+ 			if (PageError(page))
+ 				ret = -EIO;
+@@ -439,6 +441,7 @@ int add_to_page_cache(struct page *page,
  {
- 	invalidate_bdev(bdev, 1);
- 	truncate_inode_pages(bdev->bd_inode->i_mapping, 0);
--}	
-+}
+ 	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
  
- int set_blocksize(struct block_device *bdev, int size)
- {
--	/* Size must be a power of two, and between 512 and PAGE_SIZE */
--	if (size > PAGE_SIZE || size < 512 || (size & (size-1)))
-+	/* Size must be a power of two, and greater than 512 */
-+	if (size < 512 || (size & (size-1)))
- 		return -EINVAL;
++	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 	if (error == 0) {
+ 		write_lock_irq(&mapping->tree_lock);
+ 		error = radix_tree_insert(&mapping->page_tree, offset, page);
+@@ -598,8 +601,10 @@ struct page * find_get_page(struct addre
  
- 	/* Size cannot be smaller than the size supported by the device */
-@@ -74,10 +74,16 @@ int set_blocksize(struct block_device *b
- 
- 	/* Don't change the size if it is same as current */
- 	if (bdev->bd_block_size != size) {
-+		int bits = blksize_bits(size);
-+		struct address_space *mapping =
-+			bdev->bd_inode->i_mapping;
-+
- 		sync_blockdev(bdev);
--		bdev->bd_block_size = size;
--		bdev->bd_inode->i_blkbits = blksize_bits(size);
- 		kill_bdev(bdev);
-+		bdev->bd_block_size = size;
-+		bdev->bd_inode->i_blkbits = bits;
-+		set_mapping_order(mapping,
-+			bits < PAGE_SHIFT ? 0 : bits - PAGE_SHIFT);
- 	}
- 	return 0;
+ 	read_lock_irq(&mapping->tree_lock);
+ 	page = radix_tree_lookup(&mapping->page_tree, offset);
+-	if (page)
++	if (page) {
++		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 		page_cache_get(page);
++	}
+ 	read_unlock_irq(&mapping->tree_lock);
+ 	return page;
  }
-@@ -88,8 +94,10 @@ int sb_set_blocksize(struct super_block 
- {
- 	if (set_blocksize(sb->s_bdev, size))
+@@ -624,6 +629,7 @@ struct page *find_lock_page(struct addre
+ repeat:
+ 	page = radix_tree_lookup(&mapping->page_tree, offset);
+ 	if (page) {
++		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 		page_cache_get(page);
+ 		if (TestSetPageLocked(page)) {
+ 			read_unlock_irq(&mapping->tree_lock);
+@@ -685,6 +691,7 @@ repeat:
+ 		} else if (err == -EEXIST)
+ 			goto repeat;
+ 	}
++	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 	if (cached_page)
+ 		page_cache_release(cached_page);
+ 	return page;
+@@ -716,8 +723,10 @@ unsigned find_get_pages(struct address_s
+ 	read_lock_irq(&mapping->tree_lock);
+ 	ret = radix_tree_gang_lookup(&mapping->page_tree,
+ 				(void **)pages, start, nr_pages);
+-	for (i = 0; i < ret; i++)
++	for (i = 0; i < ret; i++) {
++		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
+ 		page_cache_get(pages[i]);
++	}
+ 	read_unlock_irq(&mapping->tree_lock);
+ 	return ret;
+ }
+@@ -747,6 +756,7 @@ unsigned find_get_pages_contig(struct ad
+ 		if (pages[i]->mapping == NULL || pages[i]->index != index)
+ 			break;
+ 
++		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
+ 		page_cache_get(pages[i]);
+ 		index++;
+ 	}
+@@ -774,8 +784,10 @@ unsigned find_get_pages_tag(struct addre
+ 	read_lock_irq(&mapping->tree_lock);
+ 	ret = radix_tree_gang_lookup_tag(&mapping->page_tree,
+ 				(void **)pages, *index, nr_pages, tag);
+-	for (i = 0; i < ret; i++)
++	for (i = 0; i < ret; i++) {
++		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
+ 		page_cache_get(pages[i]);
++	}
+ 	if (ret)
+ 		*index = pages[ret - 1]->index + 1;
+ 	read_unlock_irq(&mapping->tree_lock);
+@@ -2457,6 +2469,7 @@ int try_to_release_page(struct page *pag
+ 	struct address_space * const mapping = page->mapping;
+ 
+ 	BUG_ON(!PageLocked(page));
++	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
+ 	if (PageWriteback(page))
  		return 0;
--	/* If we get here, we know size is power of two
--	 * and it's value is between 512 and PAGE_SIZE */
-+	/*
-+	 * If we get here, we know size is power of two
-+	 * and it's value is larger than 512
-+	 */
- 	sb->s_blocksize = size;
- 	sb->s_blocksize_bits = blksize_bits(size);
- 	return sb->s_blocksize;
-Index: linux-2.6.21-rc7/fs/buffer.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/buffer.c	2007-04-23 23:13:16.000000000 -0700
-+++ linux-2.6.21-rc7/fs/buffer.c	2007-04-23 23:13:19.000000000 -0700
-@@ -1084,7 +1084,7 @@ __getblk_slow(struct block_device *bdev,
- {
- 	/* Size must be multiple of hard sectorsize */
- 	if (unlikely(size & (bdev_hardsect_size(bdev)-1) ||
--			(size < 512 || size > PAGE_SIZE))) {
-+			size < 512)) {
- 		printk(KERN_ERR "getblk(): invalid block size %d requested\n",
- 					size);
- 		printk(KERN_ERR "hardsect size: %d\n",
-Index: linux-2.6.21-rc7/fs/inode.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/inode.c	2007-04-23 23:14:36.000000000 -0700
-+++ linux-2.6.21-rc7/fs/inode.c	2007-04-23 23:17:26.000000000 -0700
-@@ -146,6 +146,11 @@ static struct inode *alloc_inode(struct 
-  		mapping->host = inode;
- 		mapping->flags = 0;
- 		mapping_set_gfp_mask(mapping, GFP_HIGHUSER);
-+		if (inode->i_blkbits > PAGE_SHIFT)
-+			set_mapping_order(mapping,
-+				inode->i_blkbits - PAGE_SHIFT);
-+		else
-+			set_mapping_order(mapping, 0);
- 		mapping->assoc_mapping = NULL;
- 		mapping->backing_dev_info = &default_backing_dev_info;
  
 
 --
