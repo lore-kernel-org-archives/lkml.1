@@ -1,90 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXDXKYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbXDXK3G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXDXKYw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXDXKYw
+	id S1754612AbXDXK3G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:29:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbXDXK3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:24:52 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:28368 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753899AbXDXKYv (ORCPT
+	Tue, 24 Apr 2007 06:29:06 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36097 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754612AbXDXK3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:24:51 -0400
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, neilb@suse.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-Reply-To: <E1HgI6w-0000Qm-00@dorka.pomaz.szeredi.hu>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.608300342@chello.nl>
-	 <17965.29252.950216.971096@notabene.brown>
-	 <1177398589.26937.40.camel@twins>
-	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-	 <1177403494.26937.59.camel@twins>
-	 <E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
-	 <1177406817.26937.65.camel@twins>
-	 <E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
-	 <20070424030021.a091018d.akpm@linux-foundation.org>
-	 <1177409538.26937.75.camel@twins>
-	 <E1HgI6w-0000Qm-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 12:24:43 +0200
-Message-Id: <1177410283.26937.78.camel@twins>
+	Tue, 24 Apr 2007 06:29:05 -0400
+Date: Tue, 24 Apr 2007 03:28:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH -mm 3/3] PM: Introduce suspend notifiers (rev. 2)
+Message-Id: <20070424032835.5b102d1a.akpm@linux-foundation.org>
+In-Reply-To: <200704222048.08911.rjw@sisk.pl>
+References: <200704222010.21999.rjw@sisk.pl>
+	<200704222048.08911.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 12:19 +0200, Miklos Szeredi wrote:
-> > > > > Ahh, now I see; I had totally blocked out these few lines:
-> > > > > 
-> > > > > 			pages_written += write_chunk - wbc.nr_to_write;
-> > > > > 			if (pages_written >= write_chunk)
-> > > > > 				break;		/* We've done our duty */
-> > > > > 
-> > > > > yeah, those look dubious indeed... And reading back Neil's comments, I
-> > > > > think he agrees.
-> > > > > 
-> > > > > Shall we just kill those?
-> > > > 
-> > > > I think we should.
-> > > > 
-> > > > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
-> > > > stupid git, and that those lines are in fact vitally important ;)
-> > > > 
-> > > 
-> > > It depends what they're replaced with.
-> > > 
-> > > That code is there, iirc, to prevent a process from getting stuck in
-> > > balance_dirty_pages() forever due to the dirtying activity of other
-> > > processes.
-> > > 
-> > > hm, we ask the process to write write_chunk pages each go around the loop.
-> > > So if it wrote write-chunk/2 pages on the first pass it might end up writing
-> > > write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
-> > > if it does happen - the upper bound is write_chunk*2-1, I think.
-> > 
-> > Right, but I think the problem is that its dirty -> writeback, not dirty
-> > -> writeback completed.
-> > 
-> > Ie. they don't guarantee progress, it could be that the total
-> > nr_reclaimable + nr_writeback will steadily increase due to this break.
-> > 
-> > How about ensuring that vm_writeout_total increases least
-> > 2*sync_writeback_pages() during our stay in balance_dirty_pages(). That
-> > way we have the guarantee that more pages get written out than can be
-> > dirtied.
-> 
-> No, because that's a global counter, which many writers could be
-> looking at.
-> 
-> We'd need a per-task writeout counter, but when finishing the write we
-> don't know anymore which task it was performed for.
+On Sun, 22 Apr 2007 20:48:08 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Yeah, just reached that conclusion myself too - again, I ran into that
-when trying to figure out how to do the per task balancing right.
+> Make it possible to register suspend notifiers so that subsystems can perform
+> suspend-related operations that should not be carried out by device drivers'
+> .suspend() and .resume() routines.
 
+x86_64 allnoconfig:
+
+arch/x86_64/kernel/e820.c: In function 'e820_mark_nosave_regions':
+arch/x86_64/kernel/e820.c:279: warning: implicit declaration of function 'register_nosave_region'
+arch/x86_64/kernel/built-in.o: In function `e820_mark_nosave_regions':
+: undefined reference to `register_nosave_region'
+arch/x86_64/kernel/built-in.o: In function `e820_mark_nosave_regions':
+: undefined reference to `register_nosave_region'
