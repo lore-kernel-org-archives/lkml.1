@@ -1,47 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXDXVNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXDXVNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030780AbXDXVNk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXDXVNj
+	id S965280AbXDXVNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXDXVNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:13:39 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53113 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965280AbXDXVNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:13:09 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 04/25] xen: Add XEN config options
-Date: Tue, 24 Apr 2007 21:45:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Chris Wright <chrisw@sous-sol.org>
-References: <20070423215638.563901986@goop.org> <200704240100.31011.ak@suse.de> <462D3D31.1090702@goop.org>
-In-Reply-To: <462D3D31.1090702@goop.org>
+	Tue, 24 Apr 2007 17:13:41 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55415 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965336AbXDXVNP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:13:15 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Tue, 24 Apr 2007 17:13:25 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: William Heimbigner <icxcnika@mar.tar.cc>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       davej@codemonkey.org.uk
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+In-Reply-To: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+Message-ID: <Pine.LNX.4.64.0704241712160.19442@localhost.localdomain>
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704242145.06915.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 24 Apr 2007, William Heimbigner wrote:
 
-> > Shouldn't this be after the change that adds arch/i386/xen/Kconfig?
-> >
-> > Otherwise you break bisects
-> >   
-> 
-> It should be OK.  The series should build and run at each patch (though
-> I have to admit I haven't tested this).  In general I've been adding
-> config options for each feature as the feature itself is added.
+> The following patches should allow selection of conservative, powersave, and
+> ondemand in the kernel configuration.
+>
+> William Heimbigner
+> icxcnika@mar.tar.cc
+>
+> diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff
+> linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig
+> linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig
+> --- linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig	2007-04-25
+> 13:03:41.000000000 -0500
+> +++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig	2007-04-25
+> 13:08:13.000000000 -0500
+> @@ -75,6 +75,24 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
+>  	  program shall be able to set the CPU dynamically without having
+>  	  to enable the userspace governor manually.
+>
+> +config CPU_FREQ_DEFAULT_GOV_POWERSAVE
+> +	bool "powersave"
+> +	select CPU_FREQ_GOV_POWERSAVE
+> +	help
+> +	  Use the CPUFreq governor 'powersave' as default.
+                                                ^^^ the (for consistency)
+> +
+> +config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+> +	bool "conservative"
+> +	select CPU_FREQ_GOV_CONSERVATIVE
+> +	help
+> +	  Use the CPUFreq governor 'conservative' as the default.
+> +
+> +config CPU_FREQ_DEFAULT_GOV_ONDEMAND
+> +	bool "ondemand"
+> +	select CPU_FREQ_GOV_ONDEMAND
+> +	help
+> +	  Use the CPUFreq governor 'ondemand' as the default.
+> +
+>  endchoice
 
-But i don't see anything that creates arch/i386/xen before this?
-
--Andi
-
+rday
