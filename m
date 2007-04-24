@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161799AbXDXPUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161804AbXDXPVy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161799AbXDXPUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161803AbXDXPUw
+	id S1161804AbXDXPVy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:21:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161803AbXDXPVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:20:52 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:29606 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161799AbXDXPUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:20:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=ntNNRaL7Wk6Icmq+m8LwkOodALLv7/mJMq/SpP/0sutbKM+4wkl+h6+J73LQ9JV+vAOJTq85li+VymqsqPtGiCnhmjDuYvDULqO/VisFhrYXMwTXMPFvrnui9ykwARdkZ5x0A8ymuj4u7uNBmh/Av7X9a94W7qIEeRp9sSiMS3k=
-Message-ID: <65258a580704240820lbee4944t1adef1aeb92394ce@mail.gmail.com>
-Date: Tue, 24 Apr 2007 17:20:49 +0200
-From: "Vincent Vanackere" <vincent.vanackere@gmail.com>
-To: "linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Greg KH" <gregkh@suse.de>, "Tejun Heo" <htejun@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [OOPS 2.6.21-rc7-mm1] kernel BUG at fs/sysfs/inode.c:272 (sysfs_drop_dentry)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Apr 2007 11:21:53 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:52661 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161804AbXDXPVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:21:52 -0400
+Date: Tue, 24 Apr 2007 08:21:17 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
+Message-ID: <20070424082117.354341d3@oldman>
+In-Reply-To: <20070424012902.1089bc02.akpm@linux-foundation.org>
+References: <462605DC.2080804@bx.jp.nec.com>
+	<462609D1.50300@bx.jp.nec.com>
+	<20070419210813.a599c54f.akpm@linux-foundation.org>
+	<46288D11.4000801@bx.jp.nec.com>
+	<20070420111526.01ad7f4c.akpm@linux-foundation.org>
+	<462DBC64.9070102@bx.jp.nec.com>
+	<20070424012902.1089bc02.akpm@linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 24 Apr 2007 01:29:02 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I'm getting the following oops at boot with the latest -mm kernel :
----------------------------------------------------------------
-kernel BUG at fs/sysfs/inode.c:272
-...
-EIP is at sysfs_drop_dentry+0x139/0x165
+> On Tue, 24 Apr 2007 17:14:28 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> 
+> > > On Fri, 20 Apr 2007 18:51:13 +0900
+> > > Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> > > 
+> > >>> I started to do some cleanups and fixups here, but abandoned it when it was
+> > >>> all getting a bit large.
+> > >>>
+> > >>> Here are some fixes against this patch:
+> > >> I'm going to fix my patches by following your reviews and send new patches 
+> > >> on the LKML and the netdev ML in a few days.
+> > >>
+> > > 
+> > > Well..  before you can finish this work we need to decide upon what the
+> > > interface to userspace will be.
+> > > 
+> > > - The miscdev isn't appropriate
+> > > 
+> > 
+> > Why isn't miscdev appropriate? 
+> > We just shouldn't use miscdev for networking conventionally?
+> > 
+> 
+> Yes it's rather odd, especially for networking.
+> 
+> What does the miscdev _do_ anyway?  Is it purely a target for the ioctls?
 
-Call trace :
-remove_dir
-__sysfs_remove_dir
-dput
-kobject_del
-device_del
-...
-------------------------------------------------------------------
+Some other speculations:
+1. Would it be possible to add ioctl's to /dev/console? This would be more in
+    keeping with older Unix style model.
 
-A screenshot of the oops is available at request...
+2. Using sysfs makes sense if there is a device object that exists to
+   add the sysfs attributes to.
 
-Best regards,
+3. Procfs is handy for summary type tables.
+
+4. Netlink does feel like overkill for this. Although newer generic netlink
+   makes it easier.
