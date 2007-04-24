@@ -1,103 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbXDXEJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbXDXE2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbXDXEJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 00:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753540AbXDXEJU
+	id S1754568AbXDXE2M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 00:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXDXE2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 00:09:20 -0400
-Received: from [70.254.190.220] ([70.254.190.220]:33314 "EHLO server.willdawg"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753528AbXDXEJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 00:09:19 -0400
-Date: Tue, 24 Apr 2007 04:09:18 +0000 (GMT)
-From: William Heimbigner <icxcnika@mar.tar.cc>
-X-X-Sender: icxcnika@server.thyself
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>
-Subject: Re: BUG: Null pointer dereference in fs/open.c
-In-Reply-To: <Pine.LNX.4.64.0704231633210.25153@server.thyself>
-Message-ID: <Pine.LNX.4.64.0704240347470.25153@server.thyself>
-References: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
- <20070423010032.c89e8d32.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231356480.25153@server.thyself>
- <Pine.LNX.4.64.0704231633210.25153@server.thyself>
+	Tue, 24 Apr 2007 00:28:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45908 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754568AbXDXE2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 00:28:10 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH 03/25] xen: Add nosegneg capability to the vsyscall page
+ notes
+In-Reply-To: Jeremy Fitzhardinge's message of  Monday, 23 April 2007 18:24:12 -0700 <462D5C3C.4000406@goop.org>
+X-Windows: sometimes you fill a vacuum and it still sucks.
+Message-Id: <20070424042653.37F421801A4@magilla.sf.frob.com>
+Date: Mon, 23 Apr 2007 21:26:53 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This bug occurs in linux-2.6.20 and 2.6.21-rc7-git5, and does not occur in 
-linux-2.6.19-git22.
+> I have to admit I still don't really understand all this.  Is it
+> documented somewhere?
 
-After running "pktsetup 0 /dev/hdd", I get (timestamps removed):
+I have explained it in public more than once, but I don't know off hand
+anywhere that was helpfully recorded.
 
-pktcdvd: pkt_get_last_written failed
-BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000e
-printing eip:
-c0173f69
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT
-Modules linked in: snd_ca0106 snd_ac97_codec ac97_bus 8139cp 8139too iTCO_wdt
-CPU:    0
-EIP:    0060:[<c0173f69>]    Not tainted VLI
-EFLAGS: 00010203   (2.6.21-rc7-git5 #22)
-EIP is at do_sys_open+0x59/0xd0
-eax: 00000002   ebx: 40000020   ecx: 00000001   edx: 00000002
-esi: df1e3000   edi: 00000003   ebp: de17bfa4   esp: de17bf84
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process vol_id (pid: 4273, ti=de17b000 task=df4143f0 task.ti=de17b000)
-Stack: 00000000 c013d2a5 ffffff9c 00000002 c059cea3 bfb6bf64 00008000 b7f60ff4
-        de17bfb0 c017401c 00000000 de17b000 c01041c6 bfb6bf64 00008000 00000000
-        00008000 b7f60ff4 bfb6a798 00000005 0000007b 0000007b 00000000 00000005
-Call Trace:
-  [<c010521a>] show_trace_log_lvl+0x1a/0x30
-  [<c01052d9>] show_stack_log_lvl+0xa9/0xd0
-  [<c010551c>] show_registers+0x21c/0x3a0
-  [<c01057a4>] die+0x104/0x260
-  [<c04c5947>] do_page_fault+0x277/0x610
-  [<c04c408c>] error_code+0x74/0x7c
-  [<c017401c>] sys_open+0x1c/0x20
-  [<c01041c6>] sysenter_past_esp+0x5f/0x99
-  =======================
-Code: ff 85 c0 89 c7 78 77 8b 45 08 89 d9 89 f2 89 04 24 8b 45 e8 e8 69 ff 
-ff ff 3d 00 f0 ff ff 89 45 ec 77 71 8b 55 ec bb 20 00 00 40 <8b> 42 0c 8b 
-48 30 89 4d f0 0f b7 51 66 81 e2 00 f0 00 00 81 fa
-EIP: [<c0173f69>] do_sys_open+0x59/0xd0 SS:ESP 0068:de17bf84
+> What does "hwcap 0 nosegneg" actually mean?  What does the "0" mean here?
+
+ldconfig is usually run at library install time.  It reads ld.so.conf (and
+its include files, usually found in /etc/ld.so.conf.d/*.conf).  ldconfig
+finds libraries on the disk and stores their names in ld.so.cache.  For
+libraries in "hwcap directories", it records in ld.so.cache a bitmask of
+hwcap bits for each library, based on which hwcap names appeared in the
+library file name.  The hard-wired hwcap names are things such as "mmx" and
+"sse2", a chosen subset of the AT_HWCAP bits the kernel provides.  
+
+When the dynamic linker is finding a library at runtime, it uses a match
+from ld.so.cache unless none was found or LD_LIBRARY_PATH was set.  When
+there is no cache hit, it searches a directory path for the library's name.
+The subset of hwcap names whose AT_HWCAP bits are set yields a list of
+subdirectories to try under each directory in the path.  To see the list:
+
+$ LD_LIBRARY_PATH=/lib:/usr/lib LD_DEBUG=libs /bin/true
+     21491:     find library=libc.so.6 [0]; searching
+     21491:      search path=/lib/tls/i686/sse2:/lib/tls/i686:/lib/tls/sse2:/lib/tls:/lib/i686/sse2:/lib/i686:/lib/sse2:/lib:/usr/lib/tls/i686/sse2:/usr/lib/tls/i686:/usr/lib/tls/sse2:/usr/lib/tls:/usr/lib/i686/sse2:/usr/lib/i686:/usr/lib/sse2:/usr/lib            (system search path)
+
+(Here you can notice that "tls" is used as a pseudo-hwcap; it is in fact
+hard-wired into the list if the dynamic linker supports ELF TLS, which all
+recent ones do.  Also you'll notice "i686" is not a hwcap bit, but is the
+AT_PLATFORM string, which is treated similarly.)
+
+The hwcap bitmasks in ld.so.cache are intended to make the single cache
+file equivalent to this varying search path depending on runtime hwcap bits
+set.  A cache entry whose bitmask has bits not set at runtime is ignored.
+Running "ldconfig -p | grep hwcap" (read-only, need not be root) will show
+you any entries in your ld.so.cache that have an hwcap bitmask set.
+
+The "hwcap" directive in ld.so.conf tells ldconfig to understand a new
+hwcap name that is not in the hard-wired set.  There is some number of
+extra bits available; "hwcap 0" assigns the first extra bit, "hwcap 1" the
+second, and so on.  The name is what to use as a subdirectory name,
+analogous to "sse2" et al.
+
+On my system with an ld.so.conf.d file installed doing "hwcap 0 nosegneg":
+
+$ ldconfig -p | grep libc.so.6
+        libc.so.6 (libc6, hwcap: 0x0018000000000000, OS ABI: Linux 2.6.9) => /lib/i686/nosegneg/libc.so.6
+        libc.so.6 (libc6, OS ABI: Linux 2.6.9) => /lib/libc.so.6
+
+(There are two bits set because the "tls" pseudo-bit is also set.)
+
+With this in ld.so.cache, the libc.so.6 lookup will find
+/lib/i686/nosegneg/libc.so.6 first, but only if the hwcap bit set.
+
+> In the ELF note, what does the "nosegneg" string mean?  How is it used? 
+> Is it compared to the "nosegneg" in ld.so.conf?  How does this relate to
+> the bitfields?
+
+Each bit + string element in the note (there's just the one in what we
+have) establishes for the dynamic linker at runtime the association between
+the "extra" pseudo-hwcap bit number and the name.  If that pseudo-hwcap is
+enabled, then that string will figure into the directory search path as
+"sse2" does in the example above.  This string is never consulted when
+looking in ld.so.cache.
+
+The mask field in NOTE_KERNELCAP_BEGIN says which "extra" bits are enabled.
+If the corresponding bit is not set here, then it's just like a hard-wired
+hwcap bit like "sse2" when that bit was not set in AT_HWCAP.  That is, a
+cache lookup will ignore entries with that hwcap bit in their bitmask, and
+that hwcap name will not be used in constructing the directory search path.
+I put this bitmask in so that the kernel has the option of using a single
+vDSO image for multiple different runtime configurations.  It can simply
+modify the bitmask in the image at setup time to disable some entries.
+
+For example, a Xen-enabled kernel can use a single vDSO image (or a single
+pair of int80/sysenter images), containing the "nosegneg" hwcap note.  When
+there is no need for it (native or hvm or 64-bit hv or whatever), it just
+clears the mask word.  If you actually do this, you'll want to modify the
+NOTE_KERNELCAP_BEGIN macro to define a global label you can use with VDSO_SYM.
 
 
-from fs/open.c, comments added:
-// do_sys_open is consistently called with dfd=0xffffff9c,
-// filename="/dev/.tmp-254-0", flags=0x8000, mode=0)
-long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
-{
-         char *tmp = getname(filename);
-         int fd = PTR_ERR(tmp);
 
-         if (!IS_ERR(tmp)) {
-                 fd = get_unused_fd();
-                 if (fd >= 0) {
-// do_filp_open consistently returns 2, in this case
-                         struct file *f = do_filp_open(dfd, tmp, flags, mode);
-// IS_ERR always returns 0 for this command
-                         if (IS_ERR(f)) {
-                                 put_unused_fd(fd);
-                                 fd = PTR_ERR(f);
-                         } else {
-// null pointer dereference occurs here
-                                 fsnotify_open(f->f_path.dentry);
-                                 fd_install(fd, f);
-                         }
-                 }
-                 putname(tmp);
-         }
-         return fd;
-}
-
-I was able to workaround this, by testing if do_filp_open was returning 
-2 or not, but obviously this is a very temporal solution to a very 
-specific circumstance.
-
-If there is any more information I can provide, let me know.
-William Heimbigner
-icxcnika@mar.tar.cc
+Thanks,
+Roland
