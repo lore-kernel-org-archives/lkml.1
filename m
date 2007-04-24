@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161718AbXDXMQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161729AbXDXMZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161718AbXDXMQg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 08:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161729AbXDXMQg
+	id S1161729AbXDXMZi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 08:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161730AbXDXMZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 08:16:36 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38964 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161718AbXDXMQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 08:16:35 -0400
-Date: Tue, 24 Apr 2007 17:46:33 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Jakub Jelinek <jakub@redhat.com>
-Cc: Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com, suparna@in.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org
-Subject: Re: Interface for the new fallocate() system call
-Message-ID: <20070424121632.GA10136@amitarora.in.ibm.com>
-References: <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070420145918.GY355@devserv.devel.redhat.com>
-User-Agent: Mutt/1.4.1i
+	Tue, 24 Apr 2007 08:25:38 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:38863 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161729AbXDXMZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 08:25:37 -0400
+In-Reply-To: <ada3b2q7v9t.fsf@cisco.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: "OF-General" <general@lists.openfabrics.org>,
+       Hoang-Nam Nguyen <hnguyen@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+       Roland Dreier <rolandd@cisco.com>
+MIME-Version: 1.0
+Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+From: Joachim Fenkes <FENKES@de.ibm.com>
+Message-ID: <OF9075E217.B145AD0F-ONC12572C7.0042D705-C12572C7.00443EC9@de.ibm.com>
+Date: Tue, 24 Apr 2007 14:25:34 +0200
+X-MIMETrack: Serialize by Router on D12ML064/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 24/04/2007 14:25:35,
+	Serialize complete at 24/04/2007 14:25:35
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 10:59:18AM -0400, Jakub Jelinek wrote:
-> On Fri, Apr 20, 2007 at 07:21:46PM +0530, Amit K. Arora wrote:
-> > Ok.
-> > In this case we may have to consider following things:
-> > 
-> > 1) Obviously, for this glibc will have to call fallocate() syscall with
-> > different arguments on s390, than other archs. I think this should be
-> > doable and should not be an issue with glibc folks (right?).
-> 
-> glibc can cope with this easily, will just add
-> sysdeps/unix/sysv/linux/s390/fallocate.c or something similar to override
-> the generic Linux implementation.
-> 
-> > 2) we also need to see how strace behaves in this case. With little
-> > knowledge that I have of strace, I don't think it should depend on
-> > argument ordering of a system call on different archs (since it uses
-> > ptrace internally and that should take care of it). But, it will be
-> > nice if someone can confirm this.
-> 
-> strace would solve this with #ifdef mess, it already does that in many
-> places so guess another few lines don't make it significantly worse.
+Roland Dreier <rdreier@cisco.com> wrote on 23.04.2007 21:20:14:
 
-I will work on the revised fallocate patchset and will post it soon.
+>  > +   if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != 
+H_SUCCESS) {
+>  > +      ehca_err(&shca->ib_device, "Can't query port properties");
+>  > +      ret = -EINVAL;
+>  > +      goto modify_port1;
+>  > +   }
+>  > +
+>  > +   cap = (rblock->capability_mask | props->set_port_cap_mask)
+>  > +      & ~props->clr_port_cap_mask;
+>  > +
+>  > +   hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
+>  > +              cap, props->init_type, port_modify_mask);
+> 
+> Is this thread-safe?  What if two different bits are set at the same
+> time from two different threads?  It seems that both calls could get
+> the same result from hipz_h_query_port(), and then the second call to
+> hipz_h_modify_port() would overwrite the first call.
 
-Thanks!
---
-Regards,
-Amit Arora
+Yes, you're so right.
+ 
+> You could look at the implementation in mthca to see the locking I
+> used there.
+
+I'll do that, thanks for the hint!
+
+Joachim
+
+---
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
