@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422861AbXDXRpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422863AbXDXRpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422861AbXDXRpE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422863AbXDXRpD
+	id S1422863AbXDXRpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422881AbXDXRpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:45:03 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37289 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422881AbXDXRpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:45:00 -0400
-Date: Tue, 24 Apr 2007 10:45:00 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0704241042550.8418@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+	Tue, 24 Apr 2007 13:45:12 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:52399 "EHLO smtp1-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422863AbXDXRpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:45:10 -0400
+Message-ID: <462E4223.1050109@trango-systems.com>
+Date: Tue, 24 Apr 2007 19:45:07 +0200
+From: LAPLACE Cyprien <cyprien.laplace@trango-systems.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: virtualization@lists.linux-foundation.org
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: SMP lockup in virtualized environment
+X-Enigmail-Version: 0.94.1.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Hugh Dickins wrote:
+In a previous mail, Jeremy Fitzhardinge wrote:
+> The softlockup watchdog is currently a nuisance in a virtual machine,
+> since the whole system could have the CPU stolen from it for a long
+> period of time.  While it would be unlikely for a guest domain to be
+> denied timer interrupts for over 10s, it could happen and any
+> softlockup message would be completely spurious.
 
-> I've not yet looked at the patch under discussion, but this remark
-> prompts me...  a couple of days ago I got very worried by the various
-> hard-wired GFP_HIGHUSER allocations in mm/migrate.c and mm/mempolicy.c,
-> and wondered how those would work out if someone has a blockdev mmap'ed.
+I wonder how the guest domain can be denied timer interrupts for such a
+long time ? The only reason I see is that the guest domain is not
+scheduled at all (host domain or another higher priority guest running).
 
-I hope you are not confused by the fact that memory policies are only
-ever applied to one zone on a node. This is either HIGHMEM or NORMAL. 
-There is no memory policy support for other than the highest zone.
+Now in SMP host and guest, what happens if a guest CPU is not scheduled
+for a while ?
+
+An example: in kernel/pid.c:alloc_pid(), if one of the guest CPUs is
+descheduled when holding the pidmap_lock, what happens to the other
+guest CPUs who want to alloc/free pids ? Are they blocked too ?
+
+
+-- 
+Cyprien Laplace
 
