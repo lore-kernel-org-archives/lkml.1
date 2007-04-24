@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161696AbXDXHqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161690AbXDXHtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161696AbXDXHqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 03:46:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161699AbXDXHqO
+	id S1161690AbXDXHtM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 03:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161699AbXDXHtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 03:46:14 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:22031 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161696AbXDXHqN (ORCPT
+	Tue, 24 Apr 2007 03:49:12 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:26332 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161690AbXDXHtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 03:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FTMT293XVUonZXzh9RRTXNy40VtyDJgW8BZwLN7Zkz8f1zHO8bp5FbWdmSs6zNa60QRZyPQB6lWJ/CDXWhk1ZzYZ2cu5XlzxDfI+xw8ggdeHoAjbVQ34e5himrpcihTFyBD+DAh9JfY101wZHPp7YOC3Wy5ho0G/wuT7RTZno/s=
-Message-ID: <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
-Date: Tue, 24 Apr 2007 09:46:12 +0200
-From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
-To: "William Heimbigner" <icxcnika@mar.tar.cc>
-Subject: Re: NonExecutable Bit in 32Bit
-Cc: "Cestonaro, Thilo (external)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0704240640470.25153@server.thyself>
+	Tue, 24 Apr 2007 03:49:11 -0400
+In-Reply-To: <1177347358.28021.24294.camel@hal.voltaire.com>
+Subject: Re: [ofa-general] [PATCH] eHCA: Add "Modify Port" verb
+To: Hal Rosenstock <halr@voltaire.com>
+Cc: OF-General <general@lists.openfabrics.org>,
+       general-bounces@lists.openfabrics.org,
+       Joachim Fenkes <fenkes@de.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       LinuxPPC-Dev <linuxppc-dev@ozlabs.org>
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFD6A63EF5.4BF41EFD-ONC12572C7.002ACA29-C12572C7.002AF268@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Tue, 24 Apr 2007 23:48:48 +0200
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2HF71 | November 3, 2006) at
+ 24/04/2007 09:49:05
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net>
-	 <Pine.LNX.4.64.0704240640470.25153@server.thyself>
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
-> On Tue, 24 Apr 2007, Cestonaro, Thilo (external) wrote:
+
+Hi Hal,
+you are correct,
+with the current firmware version it will fail later.
+
+Christoph R.
+
+general-bounces@lists.openfabrics.org wrote on 23.04.2007 18:55:59:
+
+> Hi Joachim,
 >
-> > Hey,
-> >
-> > is it right, that the NX Bit is not used under i386-Arch but
-> > under x86_64-Arch?
-> > When yes, is there a special argument for it not to be used?
-> >
-> > Ciao Thilo
-> I don't think so - some i386 cpus definitely have support for
-> the NX bit.
+> On Mon, 2007-04-23 at 12:23, Joachim Fenkes wrote:
+> > Add "Modify Port" verb support to eHCA driver.
+> > ib_cm needs this to initialize properly.
 >
+> I didn't think IB_PORT_SM was allowed (as QP0 is not exposed) or does
+> this just fail later when it is attempted to be actually set ?
+>
+> -- Hal
 
-In detail:
-1) if your CPU has NX support (some 32bit Xeons do)
-2) it is not disabled in the BIOS
-3) you see 'nx' in the 'flags' line in /proc/cpuinfo
-4) and you have a kernel with the following config options
-CONFIG_HIGHMEM64G=y
-CONFIG_HIGHMEM=y
-CONFIG_X86_PAE=y
-
-NX should just work.
-
-[snip]
