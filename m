@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbXDXI3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031039AbXDXIbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754590AbXDXI3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXDXI3X
+	id S1031039AbXDXIbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031059AbXDXIbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:29:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51991 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754590AbXDXI3V (ORCPT
+	Tue, 24 Apr 2007 04:31:39 -0400
+Received: from amsfep15-int.chello.nl ([62.179.120.10]:61510 "EHLO
+	amsfep15-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031039AbXDXIbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:29:21 -0400
-Date: Tue, 24 Apr 2007 01:29:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: mpm@selenic.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
-Message-Id: <20070424012902.1089bc02.akpm@linux-foundation.org>
-In-Reply-To: <462DBC64.9070102@bx.jp.nec.com>
-References: <462605DC.2080804@bx.jp.nec.com>
-	<462609D1.50300@bx.jp.nec.com>
-	<20070419210813.a599c54f.akpm@linux-foundation.org>
-	<46288D11.4000801@bx.jp.nec.com>
-	<20070420111526.01ad7f4c.akpm@linux-foundation.org>
-	<462DBC64.9070102@bx.jp.nec.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 24 Apr 2007 04:31:37 -0400
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: neilb@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+In-Reply-To: <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.608300342@chello.nl>
+	 <17965.29252.950216.971096@notabene.brown>
+	 <1177398589.26937.40.camel@twins>
+	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 10:31:33 +0200
+Message-Id: <1177403494.26937.59.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 17:14:28 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
-
-> > On Fri, 20 Apr 2007 18:51:13 +0900
-> > Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+On Tue, 2007-04-24 at 10:19 +0200, Miklos Szeredi wrote:
+> > > This is probably a
+> > >  reasonable thing to do but it doesn't feel like the right place.  I
+> > >  think get_dirty_limits should return the raw threshold, and
+> > >  balance_dirty_pages should do both tests - the bdi-local test and the
+> > >  system-wide test.
 > > 
-> >>> I started to do some cleanups and fixups here, but abandoned it when it was
-> >>> all getting a bit large.
-> >>>
-> >>> Here are some fixes against this patch:
-> >> I'm going to fix my patches by following your reviews and send new patches 
-> >> on the LKML and the netdev ML in a few days.
-> >>
-> > 
-> > Well..  before you can finish this work we need to decide upon what the
-> > interface to userspace will be.
-> > 
-> > - The miscdev isn't appropriate
-> > 
+> > Ok, that makes sense I guess.
 > 
-> Why isn't miscdev appropriate? 
-> We just shouldn't use miscdev for networking conventionally?
-> 
+> Well, my narrow minded world view says it's not such a good idea,
+> because it would again introduce the deadlock scenario, we're trying
+> to avoid.
 
-Yes it's rather odd, especially for networking.
+I was only referring to the placement of the clipping; and exactly where
+that happens does not affect the deadlock.
 
-What does the miscdev _do_ anyway?  Is it purely a target for the ioctls?
+> In a sense allowing a queue to go over the global limit just a little
+> bit is a good thing.  Actually the very original code does that: if
+> writeback was started for "write_chunk" number of pages, then we allow
+> "ratelimit" (8) _new_ pages to be dirtied, effectively ignoring the
+> global limit.
+
+It might be time to get rid of that rate-limiting.
+balance_dirty_pages()'s fast path is not nearly as heavy as it used to
+be. All these fancy counter systems have removed quite a bit of
+iteration from there.
+
+> That's why I've been saying, that the current code is so unfair: if
+> there are lots of dirty pages to be written back to a particular
+> device, then balance_dirty_pages() allows the dirty producer to make
+> even more pages dirty, but if there are _no_ dirty pages for a device,
+> and we are over the limit, then that dirty producer is allowed
+> absolutely no new dirty pages until the global counts subside.
+
+Well, that got fixed on a per device basis with this patch, it is still
+true for multiple tasks writing to the same device.
+
+> I'm still not quite sure what purpose the above "soft" limiting
+> serves.  It seems to just give advantage to writers, which managed to
+> accumulate lots of dirty pages, and then can convert that into even
+> more dirtyings.
+
+The queues only limit the actual in-flight writeback pages,
+balance_dirty_pages() considers all pages that might become writeback as
+well as those that are.
+
+> Would it make sense to remove this behavior, and ensure that
+> balance_dirty_pages() doesn't return until the per-queue limits have
+> been complied with?
+
+I don't think that will help, balance_dirty_pages drives the queues.
+That is, it converts pages from mere dirty to writeback.
+
