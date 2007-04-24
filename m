@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031039AbXDXIbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbXDXIe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031039AbXDXIbj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031059AbXDXIbj
+	id S1754502AbXDXIe7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXDXIe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:31:39 -0400
-Received: from amsfep15-int.chello.nl ([62.179.120.10]:61510 "EHLO
-	amsfep15-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031039AbXDXIbh (ORCPT
+	Tue, 24 Apr 2007 04:34:59 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:28837 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754502AbXDXIe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:31:37 -0400
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: neilb@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-Reply-To: <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.608300342@chello.nl>
-	 <17965.29252.950216.971096@notabene.brown>
-	 <1177398589.26937.40.camel@twins>
-	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 10:31:33 +0200
-Message-Id: <1177403494.26937.59.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 24 Apr 2007 04:34:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NLKFOHgqqW/hfmMV9hvljFzS5wZO3MrarYuA3wbY4UkYLDqiDRvynqVUDBz0gHjtiFecQJYhiyAYAtbdEhn4n5Q9IFPkdrP8BnGgTD92Gx8nCSUPj8w3m7uMzh5p6njR5pinNCOb1woJuvOh8HHJh0sQHYednsBvTpFFOI88LUM=
+Message-ID: <6bffcb0e0704240134w45007473p5694718a0aae08fc@mail.gmail.com>
+Date: Tue, 24 Apr 2007 10:34:56 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "William Heimbigner" <icxcnika@mar.tar.cc>
+Subject: Re: cpufreq default governor
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704240755230.25153@server.thyself>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0704240755230.25153@server.thyself>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 10:19 +0200, Miklos Szeredi wrote:
-> > > This is probably a
-> > >  reasonable thing to do but it doesn't feel like the right place.  I
-> > >  think get_dirty_limits should return the raw threshold, and
-> > >  balance_dirty_pages should do both tests - the bdi-local test and the
-> > >  system-wide test.
-> > 
-> > Ok, that makes sense I guess.
-> 
-> Well, my narrow minded world view says it's not such a good idea,
-> because it would again introduce the deadlock scenario, we're trying
-> to avoid.
+Hi William,
 
-I was only referring to the placement of the clipping; and exactly where
-that happens does not affect the deadlock.
+On 24/04/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
+> Question: is there some reason that kconfig does not allow for default
+> governors of conservative/ondemand/powersave?
 
-> In a sense allowing a queue to go over the global limit just a little
-> bit is a good thing.  Actually the very original code does that: if
-> writeback was started for "write_chunk" number of pages, then we allow
-> "ratelimit" (8) _new_ pages to be dirtied, effectively ignoring the
-> global limit.
+Performance?
 
-It might be time to get rid of that rate-limiting.
-balance_dirty_pages()'s fast path is not nearly as heavy as it used to
-be. All these fancy counter systems have removed quite a bit of
-iteration from there.
+> I'm not aware of any reason why one of those governors could not be used
+> as default.
 
-> That's why I've been saying, that the current code is so unfair: if
-> there are lots of dirty pages to be written back to a particular
-> device, then balance_dirty_pages() allows the dirty producer to make
-> even more pages dirty, but if there are _no_ dirty pages for a device,
-> and we are over the limit, then that dirty producer is allowed
-> absolutely no new dirty pages until the global counts subside.
+My hardware doesn't work properly with ondemand governor. I hear
+strange noises when frequency is changed.
 
-Well, that got fixed on a per device basis with this patch, it is still
-true for multiple tasks writing to the same device.
+>
+> William Heimbigner
+> icxcnika@mar.tar.cc
 
-> I'm still not quite sure what purpose the above "soft" limiting
-> serves.  It seems to just give advantage to writers, which managed to
-> accumulate lots of dirty pages, and then can convert that into even
-> more dirtyings.
+Regards,
+Michal
 
-The queues only limit the actual in-flight writeback pages,
-balance_dirty_pages() considers all pages that might become writeback as
-well as those that are.
-
-> Would it make sense to remove this behavior, and ensure that
-> balance_dirty_pages() doesn't return until the per-queue limits have
-> been complied with?
-
-I don't think that will help, balance_dirty_pages drives the queues.
-That is, it converts pages from mere dirty to writeback.
-
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
