@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422710AbXDXPLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161770AbXDXPMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422710AbXDXPLv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161810AbXDXPIX
+	id S1161770AbXDXPMh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422654AbXDXPLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:08:23 -0400
-Received: from mga02.intel.com ([134.134.136.20]:27388 "EHLO mga02.intel.com"
+	Tue, 24 Apr 2007 11:11:53 -0400
+Received: from mga09.intel.com ([134.134.136.24]:25821 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161797AbXDXPIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:08:16 -0400
+	id S1161814AbXDXPI2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:08:28 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="233076151:sNHT16413817"
-Message-Id: <20070423163837.447443000@linux.intel.com>
+   d="scan'208"; a="78354526:sNHT20439459"
+Message-Id: <20070424060259.426374000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 09:38:37 -0700
+Date: Mon, 23 Apr 2007 23:02:59 -0700
 From: Ashok Raj <ashok.raj@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com
 Cc: asit.k.mallick@intel.com, suresh.b.siddha@intel.com
 Cc: anil.s.keshavamurthy@intel.com, arjan@linux.intel.com
-Cc: ashok.raj@intel.com, shaohua.li@intel.com
-Subject: [Intel IOMMU][patch 0/8] Intel IOMMU Support
+Cc: ashok.raj@intel.com
+Subject: [Intel IOMMU][patch 0/8] Intel IOMMU Support.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -35,13 +35,19 @@ This is a resend of the patches after addressing some feedback we received.
 1. As len requested, we moved most of the acpi parts to drivers/pci instead
    of leaving them in drivers/acpi, including some renaming of functions,
    using just acpi_get_table() only.
-
 2. Made the guard page support configurable.
-3. Added new option to allocate consecutive address instead of re-using 
+3. Added new CONFIG option to allocate consecutive address instead of re-using 
    free addresses as an experimental option, Not validated extensively.
    Its expected to improve in certain cases...
 4. Fixed a couple minor bugs that got exposed in testing.
 
+Other feedback: 
+
+- Some suggested depend on ACPI, but thats not doable for several reasons.
+- Graphics 1-1 maps exist only for compatibility until graphics drivers
+  start calling pci map functions, including user space X that might be
+  using /dev/mem.
+ 
 
 Some more interesting possibilities. -- enhancements to work on.
 
