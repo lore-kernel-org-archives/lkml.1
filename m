@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422948AbXDXR4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422924AbXDXR6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422948AbXDXR4f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422931AbXDXR4f
+	id S1422924AbXDXR6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422952AbXDXR6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:56:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51579 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422948AbXDXR4e (ORCPT
+	Tue, 24 Apr 2007 13:58:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60261 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422924AbXDXR6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:56:34 -0400
-Date: Tue, 24 Apr 2007 10:56:33 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070424105147.be823d3b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704241056040.8592@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704241036020.8341@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0704241841190.19956@blonde.wat.veritas.com>
- <20070424105147.be823d3b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Apr 2007 13:58:50 -0400
+Date: Tue, 24 Apr 2007 10:58:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Vincent Vanackere <vincent.vanackere@gmail.com>,
+       linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [OOPS 2.6.21-rc7-mm1] kernel BUG at fs/sysfs/inode.c:272
+ (sysfs_drop_dentry)
+Message-Id: <20070424105844.da798b07.akpm@linux-foundation.org>
+In-Reply-To: <462E43AF.2040305@gmail.com>
+References: <65258a580704240820lbee4944t1adef1aeb92394ce@mail.gmail.com>
+	<462E3177.4000901@gmail.com>
+	<20070424103358.3be9efcd.akpm@linux-foundation.org>
+	<462E43AF.2040305@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Andrew Morton wrote:
+On Wed, 25 Apr 2007 02:51:43 +0900 Tejun Heo <htejun@gmail.com> wrote:
 
-> > I think that much is also true, but not where the problem lies.
-> > Isn't the problem that filesystems using these block devices
-> > expect their metadata to be accessible without kmap calls?
+> Andrew Morton wrote:
+> > On Wed, 25 Apr 2007 01:33:59 +0900 Tejun Heo <htejun@gmail.com> wrote:
+> > 
+> >> Vincent Vanackere wrote:
+> >>> Hi,
+> >>>
+> >>> I'm getting the following oops at boot with the latest -mm kernel :
+> >>> ---------------------------------------------------------------
+> >>> kernel BUG at fs/sysfs/inode.c:272
+> >> Known problem.  Working on it.  Thanks.
+> >>
+> > 
+> > If it had been known by me I wouldn't have released known-buggy code to
+> > people who need to be able to test other people's code too. (argh)
 > > 
 > 
-> yup.  wherever we dereference buffer_head.b_data we're touching
-> page_address(buffer_head.b_page) without kmapping.
+> It's the problem Cornelia reported in the thread the patch was posted.
 
-Yes but before we get there we will bounce pagecache pages into an area 
-where we do not need kmap.
-
+Is there a workaround?  What might happen if we just delete that BUG_ON()?
