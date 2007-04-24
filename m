@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161659AbXDXLcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161715AbXDXLkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161659AbXDXLcn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161707AbXDXLcn
+	id S1161715AbXDXLkJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161697AbXDXLkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:32:43 -0400
-Received: from amhost.net ([216.32.88.10]:41396 "EHLO ldic83.amhost.net"
+	Tue, 24 Apr 2007 07:40:09 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:13464 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161659AbXDXLcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:32:42 -0400
-Date: Tue, 24 Apr 2007 14:33:48 +0400
-From: Alex Vorona <voron@amhost.net>
-Reply-To: Alex Vorona <voron@amhost.net>
-Organization: amhost.net
-X-Priority: 3 (Normal)
-Message-ID: <1211570752.20070424143348@amhost.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re[2]: sendfile to nonblocking socket
-In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEDFDEAC.davids@webmaster.com>
-References: <462D8D92.9050301@amhost.net>
- <MDEHLPKNGKAHNMBLJOLKIEDFDEAC.davids@webmaster.com>
+	id S1161715AbXDXLkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 07:40:07 -0400
+Message-ID: <462DEC02.7080605@sw.ru>
+Date: Tue, 24 Apr 2007 15:37:38 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: balbir@linux.vnet.ibm.com
+CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       devel@openvz.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
+       Cedric Le Goater <clg@fr.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 8/8] Per-container pages reclamation
+References: <461A3010.90403@sw.ru> <461A397A.8080609@sw.ru> <462DD22D.3030401@linux.vnet.ibm.com> <462DDD1E.8080306@sw.ru> <462DE373.2060707@linux.vnet.ibm.com>
+In-Reply-To: <462DE373.2060707@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello David,
+Balbir Singh wrote:
+> Pavel Emelianov wrote:
+>> Balbir Singh wrote:
+>>> Pavel Emelianov wrote:
+>>>> Implement try_to_free_pages_in_container() to free the
+>>>> pages in container that has run out of memory.
+>>>>
+>>>> The scan_control->isolate_pages() function isolates the
+>>>> container pages only.
+>>>>
+>>> Pavel,
+>>>
+>>> I've just started playing around with these patches, I preferred
+>>> the approach of v1. Please see below
+>>>
+>>>> +static unsigned long isolate_container_pages(unsigned long nr_to_scan,
+>>>> +        struct list_head *src, struct list_head *dst,
+>>>> +        unsigned long *scanned, struct zone *zone)
+>>>> +{
+>>>> +    unsigned long nr_taken = 0;
+>>>> +    struct page *page;
+>>>> +    struct page_container *pc;
+>>>> +    unsigned long scan;
+>>>> +    LIST_HEAD(pc_list);
+>>>> +
+>>>> +    for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+>>>> +        pc = list_entry(src->prev, struct page_container, list);
+>>>> +        page = pc->page;
+>>>> +        if (page_zone(page) != zone)
+>>>> +            continue;
+>>> shrink_zone() will walk all pages looking for pages belonging to this
+>>
+>> No. shrink_zone() will walk container pages looking for pages in the
+>> desired zone.
+>> Scann through the full zone is done on global memory shortage.
+>>
+> 
+> Yes, I see that now. But for each zone in the system, we walk through the
+> containers list - right?
 
-Tuesday, April 24, 2007, 1:19:49 PM, you wrote:
+Right.
 
->> sendfile function is not just a more efficient version of a read 
->> followed by a write.  It reads from one fd and write to another at tha
->> same time. Please try to read 2G, and then write 2G - and how much 
->> memory you will be need and how much time you will loose while reading
->> 2G from disk, but not writing them to socket.
+> I have some more fixes, improvements that I want to send across.
+> I'll start sending them out to you as I test and verify them.
 
-DS> You are correct. What I meant to say was that it's just a
-DS> more efficient version of 'mmap'ing a file and then 'write'ing
-DS> from the 'mmap'. The 'write' to a non-blocking socket can still
-DS> 'block' on disk I/O.
+That's great! :) Thanks for participation.
 
-How can I avoid that blocking? Or maybe another question - how can I
-deliver data from disk to network with minimal copy operations, etc.
-
->> If you know more 
->> efficient method to transfer file from disk to network - please advise.
->> Now all I want is really non-blocking sendfile. Currently sendfile is
->> non-blocking on network, but not on disk i/o. And when I have network
->> faster than disk - I get block.
-
-DS> There are many different techniques and which is correct
-DS> depends on what direction you want to go.
-_very_ fast frontend web-server :) using as much kernel features as possible
-DS> POSIX asynchronous I/O is one possibility.
-aio does not support direct transfer file->socket. Using some hints,
-like aio reading into shared memory and then sendfile from shared
-memory, like lighttpd does, is not what I want. My tests showing
-that aio-sendfile realization in lighttpd is slower than sendfile.
-I think, sendfile uses less copy operations(maybe even zerocopy), than current aio
-realizations in kernel.
-DS> Threads plus epoll is another.
-20k threads and maybe more is too much :). Look at http://nginx.net/
-senction "Architecture and scalability" for example.
-DS> It really depends upon how much performance you need
-all, that hardware can take and hold :)
-
--- 
-Best regards,
- Alex                            mailto:voron@amhost.net
+> 
+>>> container and this slows down the reclaim quite a bit. Although we've
+>>> reused code, we've ended up walking the entire list of the zone to
+>>> find pages belonging to a particular container, this was the same
+>>> problem I had with my RSS controller patches.
+>>>
+>>>> +
+>>>> +        list_move(&pc->list, &pc_list);
+>>>> +
+>>>
+>>
+> 
+> 
 
