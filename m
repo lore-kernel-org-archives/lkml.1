@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161383AbXDXOBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161473AbXDXOFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161383AbXDXOBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161473AbXDXOBp
+	id S1161473AbXDXOFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXDXOFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:01:45 -0400
-Received: from [80.68.207.6] ([80.68.207.6]:57006 "EHLO smtp.unbit.it"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161383AbXDXOBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:01:44 -0400
-Subject: Re: [ANNOUNCE] UidBind LSM 0.1
-From: Roberto De Ioris <roberto@unbit.it>
-Reply-To: roberto@unbit.it
-To: casey@schaufler-ca.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <316971.67258.qm@web36607.mail.mud.yahoo.com>
-References: <316971.67258.qm@web36607.mail.mud.yahoo.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NcNmnrKXoNH3iGlUDt2A"
-Organization: UnBit
-Date: Tue, 24 Apr 2007 16:01:35 +0200
-Message-Id: <1177423295.6547.11.camel@hagrid>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 24 Apr 2007 10:05:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54223 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161473AbXDXOFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 10:05:17 -0400
+Message-ID: <462E0E60.5080907@redhat.com>
+Date: Tue, 24 Apr 2007 16:04:16 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
+References: <20070315154638.944768000@suse.de> <20070423234240.29427438.akpm@linux-foundation.org>
+In-Reply-To: <20070423234240.29427438.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I get this, across netconsole:
+> 
+> [17179569.184000] console handover: boot [earlyvga_f_0] -> real [tty0]
+> 
+> wanna take a look at why there's cruft in bootconsole->name please?
 
---=-NcNmnrKXoNH3iGlUDt2A
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+-EFULL ;)
 
-Il giorno mar, 24/04/2007 alle 06.51 -0700, Casey Schaufler ha scritto:
-> --- Roberto De Ioris <roberto@unbit.it> wrote:
->=20
-> > Hi all,
-> > this is a very simple module that allows bind() to tcp/udp port (>=3D10=
-24)
-> > only for the uids defined in a configfs tree.
->=20
-> Would you be so kind as to cross post to linux-security-module?
-> Methinks that you might get additional valuable feedback there.
+"earlyvga" is 8 chars.  struct console->name is char[8].  No space left 
+for the trailing ´\0´, the cruft comes from the next field (write 
+function pointer).  Obviously nobody ever printed the early console 
+names before.
 
+Hmm.  We can make the names shorter.  We can make the name field longer 
+(probably 16, it ends up taking that much anyway due to aligments at 
+least on 64bit).  This looks best to me.  We could also use 
+printk("%.8s",name) to make printk stop after 8 chars, but I somehow 
+don't like hardcoding the length like this ...
 
-Surely, in the next hour i will release a new version with tcp/udp
-support and the possibility to specify ipv4 addresses.
-I will post in linux-security-module too
+cheers,
+   Gerd
 
->=20
-> > It is a first version, it only works for PF_INET sockets and makes no
-> > difference between tcp and udp (i am working on this)
-> >=20
-> > For (little) more info see=20
-> >=20
-> > http://projects.unbit.it/uidbind/
-> >=20
-> > Patch attached is for vanilla 2.6.20.7
->=20
-> It would be correct to return -EACCES rather than -EPERM in the
-> access denial case. EACCES indicates that an access control decision
-> failed, while EPERM indicates that use of a privileged operation
-> was attempted while not possessing appropriate privilege.
-
-Done, thanks :)
-
-
---=20
-Roberto De Ioris
-http://unbit.it
-JID: roberto@jabber.unbit.it
-Wii: 2999 4476 3509 0964
-
---=-NcNmnrKXoNH3iGlUDt2A
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Questa =?ISO-8859-1?Q?=E8?= una parte del messaggio
-	firmata digitalmente
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGLg2/l5tD0kpw00gRAgZYAJ4ig64z5WgY4xnhMVTshnnB4SNFEQCfYLg5
-MPjTV810NuuYFll+7q1oYog=
-=iSz0
------END PGP SIGNATURE-----
-
---=-NcNmnrKXoNH3iGlUDt2A--
 
