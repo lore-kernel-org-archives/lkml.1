@@ -1,78 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423144AbXDXVul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423147AbXDXVy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423144AbXDXVul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423147AbXDXVul
+	id S1423147AbXDXVy3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423139AbXDXVy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:50:41 -0400
-Received: from mail.screens.ru ([213.234.233.54]:38163 "EHLO mail.screens.ru"
+	Tue, 24 Apr 2007 17:54:28 -0400
+Received: from smtp3.cc.ksu.edu ([129.130.7.17]:51055 "EHLO smtp3.cc.ksu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423144AbXDXVuk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:50:40 -0400
-Date: Wed, 25 Apr 2007 01:50:34 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, Jarek Poplawski <jarkao2@o2.pl>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync()
-Message-ID: <20070424215034.GA5985@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1754645AbXDXVy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:54:27 -0400
+Message-ID: <462E7C47.8080604@ksu.edu>
+Date: Tue, 24 Apr 2007 16:53:11 -0500
+From: Amit Gud <gud@ksu.edu>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Nikita Danilov <nikita@clusterfs.com>
+CC: David Lang <david.lang@digitalinsight.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, val_henson@linux.intel.com,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>	<17965.60841.900376.524639@gargle.gargle.HOWL>	<Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL>
+In-Reply-To: <17966.23512.363955.141489@gargle.gargle.HOWL>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-del_timer_sync() buys nothing for cancel_delayed_work(), but it is less
-efficient since it locks the timer unconditionally, and may wait for the
-completion of the delayed_work_timer_fn().
+Nikita Danilov wrote:
+> Maybe I failed to describe the problem presicely.
+> 
+> Suppose that all chunks have been checked. After that, for every inode
+> I0 having continuations I1, I2, ... In, one has to check that every
+> logical block is presented in at most one of these inodes. For this one
+> has to read I0, with all its indirect (double-indirect, triple-indirect)
+> blocks, then read I1 with all its indirect blocks, etc. And to repeat
+> this for every inode with continuations.
+> 
+> In the worst case (every inode has a continuation in every chunk) this
+> obviously is as bad as un-chunked fsck. But even in the average case,
+> total amount of io necessary for this operation is proportional to the
+> _total_ file system size, rather than to the chunk size.
+> 
 
-cancel_delayed_work() == 0 means:
+Perhaps, I should talk about how continuation inodes are managed / 
+located on disk. (This is how it is in my current implementation)
 
-	before this patch:
-		work->func may still be running or queued
+Right now, there is no distinction between an inode and continuation 
+inode (also referred to as 'cnode' below), except for the 
+EXT2_IS_CONT_FL flag. Every inode holds a list of static number of 
+inodes, currently limited to 4.
 
-	after this patch:
-		work->func may still be running or queued, or
-		delayed_work_timer_fn->__queue_work() in progress.
+The structure looks like this:
 
-		The latter doesn't differ from the caller's POV,
-		delayed_work_timer_fn() is called with _PENDING
-		bit set.
+  ----------		----------
+| cnode 0  |---------->| cnode 0  |----------> to another cnode or NULL
+  ----------		----------
+| cnode 1  |-----      | cnode 1  |-----
+  ----------	|	----------	|
+| cnode 2  |--	|      | cnode 2  |--   |
+  ----------  |	|	----------  |   |
+| cnode 3  | |	|      | cnode 3  | |   |
+  ----------  |	|	----------  |   |
+	  |  |  |		 |  |   |
 
-cancel_delayed_work() == 1 with this patch adds a new possibility:
+	   inodes		inodes or NULL
 
-	delayed_work->work was cancelled, but delayed_work_timer_fn
-	is still running (this is only possible for the re-arming
-	works on single-threaded workqueue).
+I.e. only first cnode in the list carries forward the chain if all the 
+slots are occupied.
 
-	In this case the timer was re-started by work->func(), nobody
-	else can do this. This in turn means that delayed_work_timer_fn
-	has already passed __queue_work() (and wont't touch delayed_work)
-	because nobody else can queue delayed_work->work.
+Every cnode# field contains
+{
+	ino_t cnode;
+	__u32 start;	/* starting logical block number */
+	__u32 end;	/* ending logical block number */
+}
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+(current implementation has just one field: cnode)
 
---- OLD/include/linux/workqueue.h~2_CDW	2007-04-05 12:20:35.000000000 +0400
-+++ OLD/include/linux/workqueue.h	2007-04-25 01:48:24.000000000 +0400
-@@ -152,14 +152,15 @@ extern void cancel_work_sync(struct work
- 
- /*
-  * Kill off a pending schedule_delayed_work().  Note that the work callback
-- * function may still be running on return from cancel_delayed_work().  Run
-- * flush_workqueue() or cancel_work_sync() to wait on it.
-+ * function may still be running on return from cancel_delayed_work(), unless
-+ * it returns 1 and the work doesn't re-arm itself. Run flush_workqueue() or
-+ * cancel_work_sync() to wait on it.
-  */
- static inline int cancel_delayed_work(struct delayed_work *work)
- {
- 	int ret;
- 
--	ret = del_timer_sync(&work->timer);
-+	ret = del_timer(&work->timer);
- 	if (ret)
- 		work_clear_pending(&work->work);
- 	return ret;
+I thought of this structure to avoid recursion and / or use of any data 
+structure while traversing the continuation inodes.
+
+Additional flag, EXT2_SPARSE_CONT_FL would indicate whether the inode 
+has any sparse portions. 'start' and 'end' fields are used to speed-up 
+finding a cnode given a logical block number without the need of 
+actually reading the inode - this can be done away with, perhaps more 
+conveniently by, pinning the cnodes in memory as and when read.
+
+Now going back to the Nikita's question, all the cnodes for an inode 
+need to be scanned iff 'start' field or number of blocks or flag 
+EXT2_SPARSE_CONT_FL in any of its cnodes is altered.
+
+And yes, the whole attempt is to reduce the number of continuation inodes.
+
+Comments, suggestions welcome.
+
+
+AG
+-- 
+May the source be with you.
+http://www.cis.ksu.edu/~gud
 
