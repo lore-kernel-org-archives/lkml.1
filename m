@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161482AbXDXOjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbXDXOmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161482AbXDXOjt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161488AbXDXOjs
+	id S1754054AbXDXOmR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbXDXOmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:39:48 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:63064 "EHLO
+	Tue, 24 Apr 2007 10:42:16 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:64529 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161482AbXDXOjr (ORCPT
+	with ESMTP id S1751052AbXDXOmP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:39:47 -0400
+	Tue, 24 Apr 2007 10:42:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=mWf7rwopGGdk3lxszkupT1pdY1Fbegvywh8+ggrONaeI4WBByyhO5isLeakJNF9b67s/lUDWMy6bBljhqBUufMd+gttZalXr68j5jfGHjZ89pNjJDLXY+qLOimmSe/QmsRt/Coot6g6CtDu91m6Jyh9ydcMGXeMNj5bZhvbgeXo=
+        b=GrNucBMy5mnIDkPhHzolo5hW7kfNIYIHYVBLrXDdktgkmrz09iBOIrE4MFMPIKfeb82+BZpWTxsiSV2aOlR1yAs79pj33odTa14the+/V7rGdPC5kjiOJw4WcIx2DpnRDUR1NEpK7HBdEIStfGnFIvO35kVrc2dfk8xiBXcNMlM=
 From: Gene Heskett <gene.heskett@gmail.com>
 Organization: Organization? very little
 To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Date: Tue, 24 Apr 2007 10:39:43 -0400
+Date: Tue, 24 Apr 2007 10:42:11 -0400
 User-Agent: KMail/1.9.6
 Cc: Peter Williams <pwil3058@bigpond.net.au>,
        Arjan van de Ven <arjan@infradead.org>,
@@ -37,7 +37,7 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704241039.44103.gene.heskett@gmail.com>
+Message-Id: <200704241042.11743.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -52,13 +52,11 @@ On Tuesday 24 April 2007, Ingo Molnar wrote:
 >
 >	Ingo
 
-Memory could be hazy Ingo, but I think X was at 0 when that occurred.
-
+Memory could be fuzzy Ingo, but I think it was at 0 at the time.
 
 -- 
 Cheers, Gene
 "There are four boxes to be used in defense of liberty:
  soap, ballot, jury, and ammo. Please use in that order."
 -Ed Howdershelt (Author)
-I use technology in order to hate it more properly.
-		-- Nam June Paik
+I know it all.  I just can't remember it all at once.
