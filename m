@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161780AbXDXOii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161482AbXDXOjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161780AbXDXOii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161783AbXDXOii
+	id S1161482AbXDXOjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161488AbXDXOjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:38:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:62144 "EHLO
+	Tue, 24 Apr 2007 10:39:48 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:63064 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161780AbXDXOih (ORCPT
+	with ESMTP id S1161482AbXDXOjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:38:37 -0400
+	Tue, 24 Apr 2007 10:39:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=hBAAw5ldPFbI1eTPeBPh5iMJ0rgK6PeaA3tcq1MK1vU+LzAfhvMNMRMtySPqmbEe+jMCP20yBjzkk7WIFp6zFmf4Lj2wBx1tKrCEnU6t+LpHdtNPZ7ffcFW4BCGwfIu/YyMyqYaFDTuEeNnCNlzTP5O5ev0IvsvAz3lYBn6tA8c=
+        b=mWf7rwopGGdk3lxszkupT1pdY1Fbegvywh8+ggrONaeI4WBByyhO5isLeakJNF9b67s/lUDWMy6bBljhqBUufMd+gttZalXr68j5jfGHjZ89pNjJDLXY+qLOimmSe/QmsRt/Coot6g6CtDu91m6Jyh9ydcMGXeMNj5bZhvbgeXo=
 From: Gene Heskett <gene.heskett@gmail.com>
 Organization: Organization? very little
 To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Date: Tue, 24 Apr 2007 10:38:32 -0400
+Date: Tue, 24 Apr 2007 10:39:43 -0400
 User-Agent: KMail/1.9.6
-Cc: David Lang <david.lang@digitalinsight.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
+Cc: Peter Williams <pwil3058@bigpond.net.au>,
        Arjan van de Ven <arjan@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
@@ -31,38 +30,30 @@ Cc: David Lang <david.lang@digitalinsight.com>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
        caglar@pardus.org.tr
-References: <200704220959.34978.kernel@kolivas.org> <Pine.LNX.4.63.0704232342440.7121@qynat.qvtvafvgr.pbz> <20070424072408.GA27769@elte.hu>
-In-Reply-To: <20070424072408.GA27769@elte.hu>
+References: <200704220959.34978.kernel@kolivas.org> <20070424070800.GA23463@elte.hu> <20070424072520.GA28387@elte.hu>
+In-Reply-To: <20070424072520.GA28387@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704241038.32766.gene.heskett@gmail.com>
+Message-Id: <200704241039.44103.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 24 April 2007, Ingo Molnar wrote:
->* David Lang <david.lang@digitalinsight.com> wrote:
->> > (Btw., to protect against such mishaps in the future i have changed
->> > the SysRq-N [SysRq-Nice] implementation in my tree to not only
->> > change real-time tasks to SCHED_OTHER, but to also renice negative
->> > nice levels back to 0 - this will show up in -v6. That way you'd
->> > only have had to hit SysRq-N to get the system out of the wedge.)
->>
->> if you are trying to unwedge a system it may be a good idea to renice
->> all tasks to 0, it could be that a task at +19 is holding a lock that
->> something else is waiting for.
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>> yeah, i guess this has little to do with X. I think in your scenario
+>> it might have been smarter to either stop, or to renice the workloads
+>> that took away CPU power from others to _positive_ nice levels.
+>> Negative nice levels can indeed be dangerous.
 >
->Yeah, that's possible too, but +19 tasks are getting a small but
->guaranteed share of the CPU so eventually it ought to release it. It's
->still a possibility, but i think i'll wait for a specific incident to
->happen first, and then react to that incident :-)
+>btw., was X itself at nice 0 or nice -10 when the lockup happened?
 >
 >	Ingo
 
-In the instance I created, even the SysRq+b was ignored, and ISTR thats 
-supposed to initiate a reboot is it not?  So it was well and truly wedged.
+Memory could be hazy Ingo, but I think X was at 0 when that occurred.
+
 
 -- 
 Cheers, Gene
