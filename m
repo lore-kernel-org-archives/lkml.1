@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbXDXJ7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXDXKAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbXDXJ7k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 05:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161532AbXDXJ7k
+	id S932290AbXDXKAQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbXDXKAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 05:59:40 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50190 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932286AbXDXJ7k convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 05:59:40 -0400
-Date: Tue, 24 Apr 2007 18:58:57 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: mel@skynet.ie (Mel Gorman)
-Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
-Cc: Andrew Morton <akpm@linux-foundation.org>, tony.luck@intel.com,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070423183637.GA11982@skynet.ie>
-References: <20070423183246.GA11841@skynet.ie> <20070423183637.GA11982@skynet.ie>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070424183847.FD98.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Becky! ver. 2.27 [ja]
+	Tue, 24 Apr 2007 06:00:16 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:47853 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932382AbXDXKAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 06:00:14 -0400
+Date: Tue, 24 Apr 2007 13:59:55 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Matt Reimer <mreimer@vpop.net>, linux-kernel@vger.kernel.org
+Subject: [1/2] w1: allow bus master to have reset and byte ops.
+Message-ID: <20070424095954.GA16473@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 24 Apr 2007 14:00:00 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Matt Reimer <mreimer@vpop.net>
+Signed-off-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 
+---
+ drivers/w1/w1_int.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> Subject: Check zone boundaries when freeing bootmem
-> Zone boundaries do not have to be aligned to MAX_ORDER_NR_PAGES. 
-
-Hmm. I don't understand here yet... Could you explain more? 
-
-This issue occurs only when ZONE_MOVABLE is specified.
-If its boundary is aligned to MAX_ORDER automatically,
-I guess user will not mind it.
-
->From memory hotplug view, I prefer section size alignment to make
-simple code. :-P
-
-
-> However,
-> during boot, there is an implicit assumption that they are aligned to a
-> BITS_PER_LONG boundary when freeing pages as quickly as possible. This
-> patch checks the zone boundaries when freeing pages from the bootmem allocator.
-
-Anyway, the patch works well.
-
-Bye.
+diff --git a/drivers/w1/w1_int.c b/drivers/w1/w1_int.c
+index 357a2e0..258defd 100644
+--- a/drivers/w1/w1_int.c
++++ b/drivers/w1/w1_int.c
+@@ -100,7 +100,8 @@ int w1_add_master_device(struct w1_bus_master *master)
+ 
+         /* validate minimum functionality */
+         if (!(master->touch_bit && master->reset_bus) &&
+-            !(master->write_bit && master->read_bit)) {
++            !(master->write_bit && master->read_bit) &&
++	    !(master->write_byte && master->read_byte && master->reset_bus)) {
+ 		printk(KERN_ERR "w1_add_master_device: invalid function set\n");
+ 		return(-EINVAL);
+         }
 
 -- 
-Yasunori Goto 
-
-
+	Evgeniy Polyakov
