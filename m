@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbXDXK3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbXDXKcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbXDXK3G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbXDXK3G
+	id S1754622AbXDXKcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbXDXKcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:29:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36097 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754612AbXDXK3F (ORCPT
+	Tue, 24 Apr 2007 06:32:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33799 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbXDXKcO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:29:05 -0400
-Date: Tue, 24 Apr 2007 03:28:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 3/3] PM: Introduce suspend notifiers (rev. 2)
-Message-Id: <20070424032835.5b102d1a.akpm@linux-foundation.org>
-In-Reply-To: <200704222048.08911.rjw@sisk.pl>
-References: <200704222010.21999.rjw@sisk.pl>
-	<200704222048.08911.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 06:32:14 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Davide Libenzi <davidel@xmailserver.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       <linux-arch@vger.kernel.org>
+Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
+References: <20070413130236.GA173@tv-sign.ru>
+	<m1zm5bmywm.fsf@ebiederm.dsl.xmission.com>
+	<20070424030924.be44ebfa.akpm@linux-foundation.org>
+Date: Tue, 24 Apr 2007 04:30:22 -0600
+In-Reply-To: <20070424030924.be44ebfa.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 24 Apr 2007 03:09:24 -0700")
+Message-ID: <m1r6qat681.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007 20:48:08 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-> Make it possible to register suspend notifiers so that subsystems can perform
-> suspend-related operations that should not be carried out by device drivers'
-> .suspend() and .resume() routines.
+> On Fri, 13 Apr 2007 21:13:13 -0600 ebiederm@xmission.com (Eric W. Biederman)
+> wrote:
+>
+>> This patch reworks kthread_stop so it is more flexible and it causes
+>> the target kthread to abort interruptible sleeps.  Allowing a larger
+>> class of kernel threads to use to the kthread API.
+>> 
+>> The changes start by defining TIF_KTHREAD_STOP on all architectures.
+>> TIF_KTHREAD_STOP is a per process flag that I can set from another
+>> process to indicate that a kernel thread should stop.
+>> 
+>> wake_up_process in kthread_stop has been replaced by signal_wake_up
+>> ensuring that the kernel thread if sleeping is woken up in a timely
+>> manner and with TIF_SIGNAL_PENDING set, which causes us to break out
+>> of interruptible sleeps.
+>> 
+>> recalc_signal_pending was modified to keep TIF_SIGNAL_PENDING set for
+>> as long as TIF_KTHREAD_STOP is set.
+>> 
+>> Arbitrary paths to do_exit are now allowed.  I have placed a
+>> completion on the thread stack and pointed vfork_done at it, when the
+>> mm_release is called from do_exit the completion will be called.
+>> Since the completion is stored on the stack it is important that
+>> kthread() now calls do_exit ensuring the stack frame that holds the
+>> completion is never released, and so that our exit_code is certain to
+>> make it unchanged all the way to do_exit.
+>> 
+>> To allow kthread_stop to read the process exit code when exit_mm wakes
+>> it up  I have moved the setting of exit_code to the beginning of
+>> do_exit. 
+>
+> This patch causes this oops: http://userweb.kernel.org/~akpm/s5000508.jpg
+> with this config: http://userweb.kernel.org/~akpm/config-x.txt
 
-x86_64 allnoconfig:
+Thanks.  If I am reading the oops properly this happened during bootup and
+vfork_done was set to NULL?
 
-arch/x86_64/kernel/e820.c: In function 'e820_mark_nosave_regions':
-arch/x86_64/kernel/e820.c:279: warning: implicit declaration of function 'register_nosave_region'
-arch/x86_64/kernel/built-in.o: In function `e820_mark_nosave_regions':
-: undefined reference to `register_nosave_region'
-arch/x86_64/kernel/built-in.o: In function `e820_mark_nosave_regions':
-: undefined reference to `register_nosave_region'
+The NULL vfork_done is really weird as exec is the only thing that sets
+vfork_done to NULL.
+
+Either I've got a stupid bug in there somewhere or we have just found
+the weirdest memory stomp.  I will take a look and see if I can reproduce
+this shortly.
+
+Eric
