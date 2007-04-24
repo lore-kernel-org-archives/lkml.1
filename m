@@ -1,61 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422797AbXDXR2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbXDXRdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422797AbXDXR2P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbXDXR2P
+	id S1754338AbXDXRdu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbXDXRdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:28:15 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:33177 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422797AbXDXR2O convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:28:14 -0400
-Date: Tue, 24 Apr 2007 10:27:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
-Message-Id: <20070424102700.c58f8a6d.akpm@linux-foundation.org>
-In-Reply-To: <462E0E60.5080907@redhat.com>
-References: <20070315154638.944768000@suse.de>
-	<20070423234240.29427438.akpm@linux-foundation.org>
-	<462E0E60.5080907@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 24 Apr 2007 13:33:50 -0400
+Received: from mail.screens.ru ([213.234.233.54]:44235 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754338AbXDXRdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:33:49 -0400
+Date: Tue, 24 Apr 2007 21:33:29 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream
+Message-ID: <20070424173329.GA364@tv-sign.ru>
+References: <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> <16575.1177433907@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16575.1177433907@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 16:04:16 +0200 Gerd Hoffmann <kraxel@redhat.com> wrote:
+On 04/24, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > Great. I'll send the s/del_timer_sync/del_timer/ patch.
+> 
+> I didn't say I necessarily agreed that this was a good idea.  I just meant that
+> I agree that it will waste CPU.  You must still audit all uses of
+> cancel_delayed_work().
 
-> > I get this, across netconsole:
+Sure, I'll grep for cancel_delayed_work(). But unless I missed something,
+this change should be completely transparent for all users. Otherwise, it
+is buggy.
+
+> > Aha, now I see what you mean. However. Why the code above is better then
 > > 
-> > [17179569.184000] console handover: boot [earlyvga_f_0] -> real [tty0]
+> > 	cancel_delayed_work(&afs_server_reaper);
+> > 	schedule_delayed_work(&afs_server_reaper, 0);
 > > 
-> > wanna take a look at why there's cruft in bootconsole->name please?
+> > ? (I assume we already changed cancel_delayed_work() to use del_timer).
 > 
-> -EFULL ;)
+> Because calling schedule_delayed_work() is a waste of CPU if the timer expiry
+> handler is currently running at this time as *that* is going to also schedule
+> the delayed work item.
+
+Yes. But otoh, try_to_del_timer_sync() is a waste of CPU compared to del_timer(),
+when the timer is not pending.
+
+> > 	1: lock_timer_base(), return -1, skip schedule_delayed_work().
+> >
+> > 	2: check timer_pending(), return 0, call schedule_delayed_work(),
+> > 	   return immediately because test_and_set_bit(WORK_STRUCT_PENDING)
+> > 	   fails.
 > 
-> "earlyvga" is 8 chars.  struct console->name is char[8].  No space left 
-> for the trailing ´\0´, the cruft comes from the next field (write 
-> function pointer).  Obviously nobody ever printed the early console 
-> names before.
+> I don't see what you're illustrating here.  Are these meant to be two steps in
+> a single process?  Or are they two alternate steps?
 
-doh.
+two alternate steps.
 
-> Hmm.  We can make the names shorter.  We can make the name field longer 
-> (probably 16, it ends up taking that much anyway due to aligments at 
-> least on 64bit).  This looks best to me.  We could also use 
-> printk("%.8s",name) to make printk stop after 8 chars, but I somehow 
-> don't like hardcoding the length like this ...
+1 means
+	if (try_to_cancel_delayed_work())
+		schedule_delayed_work();
+
+2 means
+	cancel_delayed_work();
+	schedule_delayed_work();
+
+> > So I still don't think try_to_del_timer_sync() can help in this particular
+> > case.
 > 
+> It permits us to avoid the test_and_set_bit() under some circumstances.
 
-yup, making it 16 sounds simplest.  I'll do the patch, thanks.
+Yes. But lock_timer_base() is more costly.
+
+> > To some extent, try_to_cancel_delayed_work is
+> > 
+> > 	int try_to_cancel_delayed_work(dwork)
+> > 	{
+> > 		ret = cancel_delayed_work(dwork);
+> > 		if (!ret && work_pending(&dwork->work))
+> > 			ret = -1;
+> > 		return ret;
+> > 	}
+> > 
+> > iow, work_pending() looks like a more "precise" indication that work->func()
+> > is going to run soon.
+> 
+> Ah, but the timer routine may try to set the work item pending flag *after* the
+> work_pending() check you have here.
+
+No, delayed_work_timer_fn() doesn't set the _PENDING flag.
+
+>                                      Furthermore, it would be better to avoid
+> the work_pending() check entirely because that check involves interacting with
+> atomic ops done on other CPUs.
+
+Sure, the implementation of try_to_cancel_delayed_work() above is just for
+illustration. I don't think we need try_to_cancel_delayed_work() at all.
+
+>                                try_to_del_timer_sync() returning -1 tells us
+> without a shadow of a doubt that the work item is either scheduled now or will
+> be scheduled very shortly, thus allowing us to avoid having to do it ourself.
+
+First, this is very unlikely event, delayed_work_timer_fn() is very fast unless
+interrupted.
+
+_PENDING flag won't be cleared until this work is executed by run_workqueue().
+In generak, work_pending() after del_timer() is imho better way to avoid the
+unneeded schedule_delayed_work().
+
+But again, I can't undertand the win for that particular case.
+
+Oleg.
+
