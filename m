@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXDXUoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbXDXUox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbXDXUoI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXDXUoH
+	id S1754641AbXDXUox (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbXDXUox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:44:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:10151 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754642AbXDXUoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:44:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="78534032:sNHT20621682"
-Date: Tue, 24 Apr 2007 13:42:08 -0700
-From: Ashok Raj <ashok.raj@intel.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-Subject: Re: [Intel IOMMU][patch 4/8] Supporting Zero Length Reads in Intel IOMMU.
-Message-ID: <20070424204208.GD27911@linux-os.sc.intel.com>
-References: <20070424060259.426374000@intel.com> <20070424061037.821838000@intel.com> <200704242128.12057.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704242128.12057.ak@suse.de>
-User-Agent: Mutt/1.4.1i
+	Tue, 24 Apr 2007 16:44:53 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33418 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754644AbXDXUov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:44:51 -0400
+Date: Tue, 24 Apr 2007 13:44:50 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <20070424134206.95bd6c92.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <20070424101116.1cb7512e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
+ <20070424134206.95bd6c92.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 09:28:11PM +0200, Andi Kleen wrote:
-> On Tuesday 24 April 2007 08:03:03 Ashok Raj wrote:
-> > PCI specs permit zero length reads (ZLR) even if the mapping for that region 
-> > is write only. Support for this feature is indicated by the presence of a bit 
-> > in the DMAR capability. If a particular DMAR does not support this capability
-> > we map write-only regions as read-write.
-> > 
-> > This option can also provides a workaround for some drivers that request
-> > a write-only mapping when they really should request a read-write.
-> > (We ran into one such case in eepro100.c in handling rx_ring_dma)
+On Tue, 24 Apr 2007, Andrew Morton wrote:
+
+> > I would say that the filesystem is broke if it has such expectations 
+> > regardless of page migration.
 > 
-> Better just fix the drivers instead of adding such hacks
+> Others disagree ;)
+> 
+> The filesystem has *told* the core kernel what its allocation constraints
+> are by setting up mapping_gfp_mask().  If the core kernel stops honouring
+> that request then it is core kernel which is broken.
 
-Some of the early DMAR's dont handle zero-length-reads as required. hardware
-that supports it correctly will advertise via its capabilities.
+Then I think we should disable page migration for allocations that do not 
+allow access to the policy zone. That would fix it.
 
-We could remove the cmdline option since it should not be really required.
