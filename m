@@ -1,98 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161755AbXDXNJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161746AbXDXNLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161755AbXDXNJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 09:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161753AbXDXNJs
+	id S1161746AbXDXNLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 09:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161753AbXDXNLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 09:09:48 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44730 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161746AbXDXNJq (ORCPT
+	Tue, 24 Apr 2007 09:11:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53282 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161746AbXDXNLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 09:09:46 -0400
-X-AuditID: d80ac287-a7a9cbb00000590d-02-462e01990607 
-Date: Tue, 24 Apr 2007 14:09:33 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070423154224.15ebf8f7.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+	Tue, 24 Apr 2007 09:11:32 -0400
+Date: Tue, 24 Apr 2007 15:07:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+Cc: Thiemo.Nagel@ph.tum.de, linuxkernel Org <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070424130720.GM3744@kernel.dk>
+References: <79880979-51BB-4D28-A3E8-3AE0F56F5B0A@e18.physik.tu-muenchen.de> <20070424091807.GA3744@kernel.dk> <6A6800B3-F9C8-4046-9E1C-A8CEA81B2CE0@e18.physik.tu-muenchen.de> <20070424093904.GB3744@kernel.dk> <20070424094003.GC3744@kernel.dk> <5A404D4C-BB61-45AB-9A7A-B380FE222137@e18.physik.tu-muenchen.de> <20070424123200.GK3744@kernel.dk> <ACEFEB0C-704B-49C8-96A7-14C0C54EF067@e18.physik.tu-muenchen.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 24 Apr 2007 13:09:45.0506 (UTC) FILETIME=[D4542820:01C78671]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ACEFEB0C-704B-49C8-96A7-14C0C54EF067@e18.physik.tu-muenchen.de>
+X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007, Andrew Morton wrote:
+On Tue, Apr 24 2007, Roland Kuhn wrote:
+> Hi Jens!
 > 
-> OK.  I hope.  the mapping_gfp_mask() here will have come from bdget()'s
-> mapping_set_gfp_mask(&inode->i_data, GFP_USER);  If anyone is accidentally
-> setting __GFP_HIGHMEM on a blockdev address_space we'll cause ghastly
-> explosions.  Albeit ones which were well-deserved.
+> On 24 Apr 2007, at 14:32, Jens Axboe wrote:
+> 
+> >On Tue, Apr 24 2007, Roland Kuhn wrote:
+> >>Hi Jens!
+> >>
+> >>[I made a typo in the Cc: list so that lkml is only included as of
+> >>now. Actually I copied the typo from you ;-) ]
+> >
+> >Well no, you started the typo, I merely propagated it and forgot to  
+> >fix
+> >it up :-)
+> >
+> Actually, I copied it from your printk() ;-) (thinking helps...)
 
-I've not yet looked at the patch under discussion, but this remark
-prompts me...  a couple of days ago I got very worried by the various
-hard-wired GFP_HIGHUSER allocations in mm/migrate.c and mm/mempolicy.c,
-and wondered how those would work out if someone has a blockdev mmap'ed.
+Ahhh! Yeah that one indeed has a typo, tsk tsk.
 
-I tried to test it out before sending a patch, but found no problem at
-all: maybe I was too timid (fearing to corrupt my whole system), maybe 
-I've forgotten how that stuff works and wasn't doing the right thing
-to reproduce it (I was mmap'ing /dev/sdb1 readonly, at the same time
-as having it mounted as ext2 - when I forced migration to random pages,
-then cp'ed /dev/zero to reuse the old pages, I was expecting ext2 to
-get very upset with its metadata; mmap'ing while mounted isn't very
-realistic, but my earlier sequence hadn't shown any problem either,
-so I thought the cache got invalidated in between).
+> >>>>>Sure. You might want to include NFS file access into your tests,
+> >>>>>since we've not triggered this with locally accessing the disks.
+> >>>>>BTW:
+> >>>>
+> >>>>How are you exporting the directory (what exports options) - how
+> >>>>is it
+> >>>>mounted by the client(s)? What chunksize is your raid6 using?
+> >>>
+> >>>And what are the nature of the files on the raid (huge, small, ?)  
+> >>>and
+> >>>what are the client(s) doing? Just approximately, I know these  
+> >>>things
+> >>>can be hard/difficult/impossible to specify.
+> >>>
+> >>The files are 100-400MB in size and the client is merging them into a
+> >>new file in the same directory using the ROOT library, which does in
+> >>essence alternating sequences of
+> >>
+> >>_llseek(somewhere)
+> >>read(n bytes)
+> >>_llseek(somewhere+n)
+> >>read(m bytes)
+> >>...
+> >>
+> >>and then
+> >>
+> >>_llseek(somewhere)
+> >>rt_sigaction(ignore INT)
+> >>write(n bytes)
+> >>rt_sigaction(INT->DFL)
+> >>time()
+> >>_llseek(somewhere+n)
+> >>...
+> >>
+> >>where n is of the the order of 30kB. The input files are treated
+> >>sequentially, not randomly.
+> >
+> >Ok, I'll see if I can reproduce it. No luck so far, I'm afraid.
+> >
+> Too bad.
+> 
+> >>BTW: the machine just stopped dead, no sign whatsoever on console or
+> >>netconsole, so I rebooted with elevator=deadline
+> >>(need to get some work done besides ;-) )
+> >
+> >Unfortunately expected, if we can race and lose an update to - 
+> >>next_rq,
+> >we can race and corrupt some of the internal data structures as  
+> >well. If
+> >you have the time and inclination, it would be interesting to see  
+> >if you
+> >can reproduce with some debugging options enabled:
+> >
+> >- Enable all preempt, spinlock and lockdep debugging measures
+> >- Possibly slab poisoning, although that may slow you down somewhat
+> >
+> Kernel compilation under way, will report back.
 
-Here's the patch I'd suggest adding if you believe there really is
-a problem there: it's far from ideal (I can imagine mapping_gfp_mask
-being used to enforce other restrictions, but the __GFP_HIGHMEM issue
-seems to be the only one in practice; and it would be a shame to
-restrict all the architectures which have no concept of HIGHMEM).
-If there's no such problem, sorry for wasting your time.
+Thanks!
 
-(If vma->vm_file is non-NULL, we can be sure vma->vm_file->f_mapping
-is non-NULL, can't we?  Some common code assumes that, some does not:
-I've avoided cargo-cult safety below, but don't let me make it unsafe.)
+> >Are you using 4kb stacks?
+> >
+> No idea, 'grep -i stack .config' gives no indication, but ISTR that  
+> 4k was made the default some time back?
 
+You are on x86-64, my mistake.
 
-Is there a problem with page migration to HIGHMEM, if pages were
-mapped from a GFP_USER block device?  I failed to demonstrate any
-problem, but here's a quick fix if needed.
+-- 
+Jens Axboe
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-
---- 2.6.21-rc7/include/linux/migrate.h	2007-03-07 13:08:59.000000000 +0000
-+++ linux/include/linux/migrate.h	2007-04-24 13:18:31.000000000 +0100
-@@ -2,6 +2,7 @@
- #define _LINUX_MIGRATE_H
- 
- #include <linux/mm.h>
-+#include <linux/pagemap.h>
- 
- typedef struct page *new_page_t(struct page *, unsigned long private, int **);
- 
-@@ -10,6 +11,13 @@ static inline int vma_migratable(struct 
- {
- 	if (vma->vm_flags & (VM_IO|VM_HUGETLB|VM_PFNMAP|VM_RESERVED))
- 		return 0;
-+#ifdef CONFIG_HIGHMEM
-+	if (vma->vm_file) {
-+		struct address_space *mapping = vma->vm_file->f_mapping;
-+		if (!(mapping_gfp_mask(mapping) & __GFP_HIGHMEM))
-+			return 0;
-+	}
-+#endif
- 	return 1;
- }
- 
