@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423131AbXDXVcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423119AbXDXVf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423131AbXDXVcy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVcy
+	id S1423119AbXDXVf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423127AbXDXVf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:32:54 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:21315 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423131AbXDXVcw (ORCPT
+	Tue, 24 Apr 2007 17:35:26 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:13105 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423119AbXDXVfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:32:52 -0400
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="770580007:sNHT46574924"
-To: David Miller <davem@davemloft.net>
-Cc: ak@suse.de, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
-X-Message-Flag: Warning: May contain useful information
-References: <200704242133.16219.ak@suse.de>
-	<20070424203304.GB27911@linux-os.sc.intel.com>
-	<200704242312.54738.ak@suse.de>
-	<20070424.142351.62664098.davem@davemloft.net>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 24 Apr 2007 14:32:42 -0700
-In-Reply-To: <20070424.142351.62664098.davem@davemloft.net> (David Miller's message of "Tue, 24 Apr 2007 14:23:51 -0700 (PDT)")
-Message-ID: <adaabwx1mrp.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Apr 2007 21:32:43.0073 (UTC) FILETIME=[178F7310:01C786B8]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	Tue, 24 Apr 2007 17:35:25 -0400
+Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
+From: Daniel Walker <dwalker@mvista.com>
+To: Andi Kleen <ak@suse.de>
+Cc: virtualization@lists.linux-foundation.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Prarit Bhargava <prarit@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, virtualization@lists.osdl.org,
+       Chris Lalancette <clalance@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200704242320.06470.ak@suse.de>
+References: <20070327214919.800272641@goop.org> <462E6778.7070305@goop.org>
+	 <1177447948.12796.66.camel@imap.mvista.com> <200704242320.06470.ak@suse.de>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 14:33:58 -0700
+Message-Id: <1177450439.12796.79.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > My suggestion would be to allocate top-down in the 32-bit IOMMU space.
+On Tue, 2007-04-24 at 23:20 +0200, Andi Kleen wrote:
+> On Tuesday 24 April 2007 22:52:27 Daniel Walker wrote:
+> > On Tue, 2007-04-24 at 13:24 -0700, Jeremy Fitzhardinge wrote:
+> > 
+> > > And sched_clock's use of local_irq_save/restore appears to be absolutely
+> > > correct, so I think it must be triggering a bug in either the self-tests
+> > > or lockdep itself.
+> > 
+> > Why does sched_clock need to disable interrupts?
+> 
+> It's only used in the instable path which is kind of "i already threw up
+> my hands" anyways
+> 
+> I use it because when you transition from stable (TSC) to instable (jiffies)
+> the only way to avoid the clock jumping backwards is to remember and update the 
+> last value. To avoid races with parallel cpufreq handlers or timer
+> interrupts this small section needs to run with interrupts disabled.
 
-I think that's good for normal things, but it's not unreasonable to
-want to map > 4 GB of memory at once for an Infiniband device.
+Preemption is already disabled with the get_cpu_var() , so it seems like
+the timer interrupt is the only worry? I find it confusing that the
+access of jiffies_64 isn't protected from interrupts, it's only the
+per_cpu data which should already be protected by the
+get_cpu_var()/put_cpu_var ..
 
-So maybe we would want some heuristics about the size of the mapping
-being requested or the amount of 32-bit space left to decide whether a
-mapping should be below 4 GB.
+Daniel
 
- - R.
