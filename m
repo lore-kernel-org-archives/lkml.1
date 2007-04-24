@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754640AbXDXUnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXDXUoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754640AbXDXUnn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbXDXUnm
+	id S1754643AbXDXUoI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXDXUoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:43:42 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:65100 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754642AbXDXUnl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:43:41 -0400
-Message-ID: <462E6A75.9040800@indt.org.br>
-Date: Tue, 24 Apr 2007 16:37:09 -0400
-From: Carlos Aguiar <carlos.aguiar@indt.org.br>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       "Anderson F. Briglia" <anderson.briglia@indt.org.br>
-Subject: [PATCH 1/3] MMC: OMAP: Add missing =?ISO-8859-1?Q?=B4=5Cn=B4?=
-X-Enigmail-Version: 0.94.0.0
-Content-Type: multipart/mixed;
- boundary="------------030709090407020301080404"
-X-OriginalArrivalTime: 24 Apr 2007 20:43:26.0126 (UTC) FILETIME=[351524E0:01C786B1]
-X-Nokia-AV: Clean
+	Tue, 24 Apr 2007 16:44:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:10151 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754642AbXDXUoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:44:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="78534032:sNHT20621682"
+Date: Tue, 24 Apr 2007 13:42:08 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 4/8] Supporting Zero Length Reads in Intel IOMMU.
+Message-ID: <20070424204208.GD27911@linux-os.sc.intel.com>
+References: <20070424060259.426374000@intel.com> <20070424061037.821838000@intel.com> <200704242128.12057.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704242128.12057.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030709090407020301080404
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Tue, Apr 24, 2007 at 09:28:11PM +0200, Andi Kleen wrote:
+> On Tuesday 24 April 2007 08:03:03 Ashok Raj wrote:
+> > PCI specs permit zero length reads (ZLR) even if the mapping for that region 
+> > is write only. Support for this feature is indicated by the presence of a bit 
+> > in the DMAR capability. If a particular DMAR does not support this capability
+> > we map write-only regions as read-write.
+> > 
+> > This option can also provides a workaround for some drivers that request
+> > a write-only mapping when they really should request a read-write.
+> > (We ran into one such case in eepro100.c in handling rx_ring_dma)
+> 
+> Better just fix the drivers instead of adding such hacks
 
+Some of the early DMAR's dont handle zero-length-reads as required. hardware
+that supports it correctly will advertise via its capabilities.
 
-
---------------030709090407020301080404
-Content-Type: text/plain;
- name*0*=ISO-8859-1''%30%30%31%2D%4D%4D%43%2D%4F%4D%41%50%2D%61%64%64%2D%6D;
- name*1*=%69%73%73%69%6E%67%2D%B4%6E%B4%2E%64%69%66%66
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0*=ISO-8859-1''%30%30%31%2D%4D%4D%43%2D%4F%4D%41%50%2D%61%64%64;
- filename*1*=%2D%6D%69%73%73%69%6E%67%2D%B4%6E%B4%2E%64%69%66%66
-
-This patch add a missing '\n' at the end of the 'cover is open' string
-in mmc_omap_switch_handler().
-
-Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-Index: linux-2.6.20/drivers/mmc/omap.c
-===================================================================
---- linux-2.6.20.orig/drivers/mmc/omap.c	2007-04-24 15:21:55.000000000 -0400
-+++ linux-2.6.20/drivers/mmc/omap.c	2007-04-24 15:21:58.000000000 -0400
-@@ -605,7 +605,7 @@ static void mmc_omap_switch_handler(stru
- 	}
- 	if (mmc_omap_cover_is_open(host)) {
- 		if (!complained) {
--			dev_info(mmc_dev(host->mmc), "cover is open");
-+			dev_info(mmc_dev(host->mmc), "cover is open\n");
- 			complained = 1;
- 		}
- 		if (mmc_omap_enable_poll)
-
---------------030709090407020301080404--
+We could remove the cmdline option since it should not be really required.
