@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbXDXXtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXDXXy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbXDXXtf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 19:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXDXXte
+	id S1754659AbXDXXy2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 19:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXDXXy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 19:49:34 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:35853 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbXDXXte (ORCPT
+	Tue, 24 Apr 2007 19:54:28 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52912 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754659AbXDXXy1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 19:49:34 -0400
-Date: Tue, 24 Apr 2007 19:49:30 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Mark Hull-Richter <mhullrich@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel traces coming back with trash/clutter
-In-Reply-To: <f4e013870704241640q5a723664l2fda780a24f9b40e@mail.gmail.com>
-Message-ID: <alpine.DEB.0.98.0704241944270.26721@sigma.j-a-k-j.com>
-References: <f4e013870704241640q5a723664l2fda780a24f9b40e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 24 Apr 2007 19:54:27 -0400
+Date: Tue, 24 Apr 2007 17:53:41 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver
+In-reply-to: <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Oliver Neukum <oneukum@suse.de>, linux-kernel@vger.kernel.org
+Message-id: <462E9885.1010605@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.CH+7gvaumSAVtl/1QOSoYPsXewg@ifi.uio.no>
+ <fa.NPDKv3GAx73J43g63faobz7IZVo@ifi.uio.no>
+ <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I am experimenting with the kernel (CentOSv4.4 x86_64, 2.6.9-42.0.10)
-> and I have added a number of traces in some relatively sensitive code
-> in the page cache and some i/o functions.
+Matthias Kaehlcke wrote:
+> El Tue, Apr 24, 2007 at 07:53:04PM +0200 Oliver Neukum ha dit:
 > 
-> I am getting this odd content in the trace log (dmesg), and I cannot
-> figure out what it is or why it is there.
+>> Am Dienstag, 24. April 2007 19:49 schrieb Matthias Kaehlcke:
+>>> @@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
+>>>         if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+>>>                 return 0;
+>>>  
+>>> -       down_interruptible(&info->write_sem);
+>>> +       mutex_lock_interruptible(&info->write_mtx);
+>> This is a bug. It is also present in the current code, but nevertheless
+>> it is a bug. If you use an interruptible lock, you must be ready to deal
+>> with interrupts, which are ignored by this code.
 > 
-> 4296757675 pdflush(80): do_writepages: map>ops>wrtpgs ffffffffa0195ff5
-> 4296757675 pdflush(80): mpage_writepages w/b index 49728 pages 256000
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7>__bio_add_page: 2x ph 88>=128 || hw 88>=88 || 360448>max
-> ffffffff802525d8 generic_make_request(bio 000001017c745300) 50729472, 704
-> __make_request(q 00000101b9293870, bio 000001017c745300: sdc; 50729600, 704)
-> ll_new_hw_segment: 70 + 29 > 88
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> <7><7><7><7>__bio_add_page: 2x ph 88>=128 || hw 88>=88 || 360448>max
-> ffffffff802525d8 generic_make_request(bio 000001017c745a80) 50730176, 704
-> __make_request(q 00000101b9293870, bio 000001017c745a80: sdc; 50730304, 704)
-> 4296757684 swapper(0): dl_mv2dsp: sdc start 50710368 secs 1408
+> i fear i don't have the experience/knowledge to fix this bug, thanks
+> for your remark. 
 > 
-> (The lines with the <7>s in them are long - I wrapped them for ease of
-> reading and to keep the width down somewhat.)
-> 
-> Any feedback that might illuminate this would be welcome.  Please CC
-> me personally as I am not yet able to subscribe to this list
-> (apologies).
+> i'm a bit confused now about the interruptible locks, i thought using
+> them means that the process will be waked up when receiving a
+> signal. what role are playing interrupts when using interruptible locks?
 
-"<7>" is KERN_DEBUG in <include/linux/kernel.h>, used with printk. Are you 
-using printk in the following forms?
+You are correct, interrupts aren't involved. However if the wait is 
+interrupted by a signal, mutex_lock_interruptible will return a nonzero 
+return code which needs to be checked for (and likely -ERESTARTSYS or 
+-EINTR returned), otherwise the code will blindly continue as though it 
+has locked the mutex even though it has not.
 
-printk(KERN_DEBUG "A debug message.\n");
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-...or...
-
-const char msg_debug[] = KERN_DEBUG "A debug message.\n";
-printk(msg_debug);
-
-Perhaps you have something looping that's outputting KERN_DEBUG with a 
-null message? Or one of your diagnostic printk statements includes 
-KERN_DEBUG with no actual message?
-
-Remember, if you have a string in a variable without a KERN_* 
-prependation, you can do this.
-
-printk(KERN_DEBUG "%s\n", debug_message);
