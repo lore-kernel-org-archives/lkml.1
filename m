@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030767AbXDXVUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXDXVVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030767AbXDXVUT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030882AbXDXVUT
+	id S1030342AbXDXVVh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030859AbXDXVVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:20:19 -0400
-Received: from mail.suse.de ([195.135.220.2]:40908 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030767AbXDXVUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:20:18 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: virtualization@lists.linux-foundation.org
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-Date: Tue, 24 Apr 2007 23:20:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Daniel Walker <dwalker@mvista.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, virtualization@lists.osdl.org,
-       Chris Lalancette <clalance@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-References: <20070327214919.800272641@goop.org> <462E6778.7070305@goop.org> <1177447948.12796.66.camel@imap.mvista.com>
-In-Reply-To: <1177447948.12796.66.camel@imap.mvista.com>
+	Tue, 24 Apr 2007 17:21:37 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58120 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030342AbXDXVVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:21:36 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
+References: <20070413130236.GA173@tv-sign.ru>
+	<m1zm5bmywm.fsf@ebiederm.dsl.xmission.com>
+	<20070424030924.be44ebfa.akpm@linux-foundation.org>
+	<m1r6qat681.fsf@ebiederm.dsl.xmission.com>
+	<20070424150558.GA233@tv-sign.ru> <20070424155332.GA321@tv-sign.ru>
+	<m1irblu1wc.fsf@ebiederm.dsl.xmission.com>
+	<20070424202727.GB5042@tv-sign.ru>
+Date: Tue, 24 Apr 2007 15:19:50 -0600
+In-Reply-To: <20070424202727.GB5042@tv-sign.ru> (Oleg Nesterov's message of
+	"Wed, 25 Apr 2007 00:27:27 +0400")
+Message-ID: <m1ejm9tqq1.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704242320.06470.ak@suse.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 April 2007 22:52:27 Daniel Walker wrote:
-> On Tue, 2007-04-24 at 13:24 -0700, Jeremy Fitzhardinge wrote:
-> 
-> > And sched_clock's use of local_irq_save/restore appears to be absolutely
-> > correct, so I think it must be triggering a bug in either the self-tests
-> > or lockdep itself.
-> 
-> Why does sched_clock need to disable interrupts?
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-It's only used in the instable path which is kind of "i already threw up
-my hands" anyways
+> On 04/24, Eric W. Biederman wrote:
+>> 
+>> I don't know if this is the problem but it certainly needs to be fixed.
+>
+> I guess you will re-submit these patches soon. May I suggest you to put
+> this
+>
+>> +	spin_lock_irq(&tsk->sighand->siglock);
+>> +	signal_wake_up(tsk, 1);
+>> +	spin_unlock_irq(&tsk->sighand->siglock);
+>
+> and this
+>
+>>  fastcall void recalc_sigpending_tsk(struct task_struct *t)
+>>  {
+>>  	if (t->signal->group_stop_count > 0 ||
+>> -	    (freezing(t)) ||
+>> +	    (freezing(t)) || __kthread_should_stop(t) ||
+>
+> into the separate patch?
+>
+> Perhaps I am too paranoid, and most probably this change is good, but
+> still I'm afraid this very subtle change may break things. In that case
+> it would be easy to revert that only part (for example for the testing
+> purposes).
 
-I use it because when you transition from stable (TSC) to instable (jiffies)
-the only way to avoid the clock jumping backwards is to remember and update the 
-last value. To avoid races with parallel cpufreq handlers or timer
-interrupts this small section needs to run with interrupts disabled.
+It makes sense.  I doubt we are going to run into issues when
+we are killing a thread but we certainly could.
 
-The alternative would be a seqlock, but people have complained about this
-earlier too so i judged irq disabling better.
+Making it easy to test for that scenario would certainly be
+a good idea.
 
--Andi
+> Consider,
+>
+> 	current->flags |= PF_NOFREEZE;
+>
+> 	while (!kthread_should_stop()) {
+>
+> 		begin_something();
+>
+> 		// I am a kernel thread, all signals are ignored.
+> 		// I don't want to contribute to loadavg, so I am
+> 		// waiting for the absoulutely critical event in
+> 		// TASK__INTERRUPTIBLE state.
+>
+> 		if (wait_event_interruptible(condition))
+> 			panic("Impossible!");
+>
+> 		commit_something();
+> 	}
+
+Of course if it's impossible it is most likely there won't be a check
+there so something more subtle will happen.
+
+Eric
