@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbXDXPvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754241AbXDXPyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbXDXPvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXDXPvl
+	id S1754241AbXDXPyG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXDXPyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:51:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38299 "EHLO mx1.redhat.com"
+	Tue, 24 Apr 2007 11:54:06 -0400
+Received: from mail.screens.ru ([213.234.233.54]:44392 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbXDXPvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:51:40 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070424142244.GA158@tv-sign.ru> 
-References: <20070424142244.GA158@tv-sign.ru>  <20070423171157.GA205@tv-sign.ru> <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
+	id S1754241AbXDXPyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:54:05 -0400
+Date: Tue, 24 Apr 2007 19:53:32 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
-       containers@lists.osdl.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 24 Apr 2007 16:51:07 +0100
-Message-ID: <15160.1177429867@redhat.com>
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
+Message-ID: <20070424155332.GA321@tv-sign.ru>
+References: <20070413130236.GA173@tv-sign.ru> <m1zm5bmywm.fsf@ebiederm.dsl.xmission.com> <20070424030924.be44ebfa.akpm@linux-foundation.org> <m1r6qat681.fsf@ebiederm.dsl.xmission.com> <20070424150558.GA233@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070424150558.GA233@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On 04/24, Oleg Nesterov wrote:
+>
+> Hm, mm_release() clears ->vfork_done before complete().
+> 
+> 	mm_release:
+> 
+> 		struct completion *vfork_done = tsk->vfork_done;
+> 
+> 		if (vfork_done) {
+> 			tsk->vfork_done = NULL;
+> 			complete(vfork_done);
+> 		}
+> 
+> 
+> 	kthread_stop:
+> 
+> 		set_tsk_thread_flag(tsk, TIF_KTHREAD_STOP);
+> 		signal_wake_up(tsk, 1);
+> 
+> 		// tsk exits, sets ->vfork_done == NULL
+> 
+> 		wait_for_completion(tsk->vfork_done);
 
-> Let's look at (2). cancel_delayed_work() (on top of del_timer()) returns 0,
-> and this is correct, we failed to cancel the timer, and we don't know whether
-> work->func() finished, or not.
+Since the task_struct should be pinned anyway, I think kthread_stop()
+should do:
 
-Yes.
+	vfork_done = tsk->vfork_done;
+	barrier();
+	if (vfork_done)
+		wait_for_completion(vfork_done);
 
-> The current code uses del_timer_sync(). It will also return 0. However, it
-> will spin waiting for timer->function() to complete. So we are just wasting
-> CPU.
+Oleg.
 
-That's my objection to using cancel_delayed_work() as it stands, although in
-most cases it's a relatively minor waste of time.  However, if the timer
-expiry routine gets interrupted then it may not be so minor...  So, yes, I'm
-in full agreement with you there.
-
-> I guess I misunderstood you. Perhaps, you propose a new helper which use
-> try_to_del_timer_sync(), yes? Unless I missed something, this doesn't help.
-> Because the return value == -1 should be treated as 0. We failed to stop
-> the timer, and we can't free dwork.
-
-Consider how I'm using try_to_cancel_delayed_work(): I use this when I want to
-queue a delayed work item with a particular timeout (usually for immediate
-processing), but the work item may already be pending.
-
-If try_to_cancel_delayed_work() returns 0 or 1 (not pending or pending but
-dequeued) then I can go ahead and just schedule the work item (I'll be holding
-a lock to prevent anyone else from interfering).
-
-However, if try_to_cancel_delayed_work() returns -1 then there's no usually no
-point attempting to schedule the work item because I know the timer expiry
-handler is doing that or going to do that.
-
-
-The code looks like this in pretty much all cases:
-
-	if (try_to_cancel_delayed_work(&afs_server_reaper) >= 0)
-		schedule_delayed_work(&afs_server_reaper, 0);
-
-And so could well be packaged into a convenience routine and placed in
-workqueue.[ch].  However, this would still concern Dave Miller as my patches
-would still be altering non-net stuff or depending on non-net patches he
-doesn't have in his GIT tree.
-
-Using cancel_delayer_work() instead would be acceptable, functionally, as that
-just waits till the -1 return case no longer holds true, and so always returns
-0 or 1.
-
-
-In RxRPC, this is only used to cancel a pair global delayed work items in the
-rmmod path, and so the inefficiency of cancel_delayed_work() is something I
-can live with, though it's something I'd want to reduce in the longer term.
-
-In AFS, this is not only used in object destruction paths, but is also used to
-cancel the callback timer and initiate synchronisation processing with
-immediate effect.
-
-David
