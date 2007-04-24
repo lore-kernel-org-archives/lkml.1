@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbXDXUQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754409AbXDXUS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379AbXDXUQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDXUQ6
+	id S1754409AbXDXUS7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbXDXUS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:16:58 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51360 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbXDXUQ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:16:57 -0400
-X-AuditID: d80ac287-ad0c9bb00000590d-0b-462e65b8ea2e 
-Date: Tue, 24 Apr 2007 21:16:43 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
- <20070424101116.1cb7512e.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 24 Apr 2007 20:16:55.0876 (UTC) FILETIME=[81384040:01C786AD]
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 24 Apr 2007 16:18:58 -0400
+Received: from mga02.intel.com ([134.134.136.20]:18346 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753826AbXDXUS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:18:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="233274171:sNHT25128523"
+Date: Tue, 24 Apr 2007 13:17:03 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 1/8] ACPI support for Intel Virtualization Technology for Directed I/O
+Message-ID: <20070424201703.GA27911@linux-os.sc.intel.com>
+References: <20070424060259.426374000@intel.com> <20070424061037.361212000@intel.com> <200704242050.49253.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704242050.49253.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Christoph Lameter wrote:
-> On Tue, 24 Apr 2007, Hugh Dickins wrote:
+On Tue, Apr 24, 2007 at 08:50:48PM +0200, Andi Kleen wrote:
 > 
-> > Or Christoph may prevail in persuading there's no such problem.
+> > +
+> > +LIST_HEAD(dmar_drhd_units);
+> > +LIST_HEAD(dmar_rmrr_units);
 > 
-> This is pointless. NUMA allocations can only be controlled for the highest 
-> zone. If we switch to a lower zone then we allocate on a different zone 
-> than the user requested.
+> Comment describing what lock protects those lists?
+> In fact there seems to be no locking. What about hotplug?
+> 
 
-Sorry, I'm not following you there.   Perhaps your comment is saying
-that second patch is pointless, because it forces allocations elsewhere
-than the policy requires?  Rather than commenting on the line you quote?
+There is no support to handle an IOMMU hotplug at this time. IOMMU hotplug
+requires additional support via ACPI that needs to be extended to handle this.
 
-(When I said I didn't know if the patch would have unwanted side-effects
-I was rather wondering what happens when you ask the allocator to do
-some impossible combination.)
-
-> If the system has both high memory and normal memory then only allocations 
-> to highmemory are subject to memory policies etc etc. The block device 
-> allocations would be in zone normal/dma and thus be exempt from NUMA 
-> placement.
-
-Please just point us to the line where sys_move_pages enforces this.
-
-Hugh
+These definitions are scanned at boot time from BIOS tables. They are
+pretty much static data that we process during boot. Hence no locking is 
+required. We pretty much tread this as read only, and the information never 
+gets changed after initial parsing.
