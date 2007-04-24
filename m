@@ -1,104 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030748AbXDXB6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031020AbXDXB7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030748AbXDXB6m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 21:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDXB6m
+	id S1031020AbXDXB7Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031023AbXDXB7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 21:58:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43723 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030748AbXDXB6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 21:58:41 -0400
-Message-ID: <462D643C.5020709@redhat.com>
-Date: Mon, 23 Apr 2007 21:58:20 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 23 Apr 2007 21:59:16 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:41677
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031020AbXDXB7P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 21:59:15 -0400
+Date: Mon, 23 Apr 2007 18:57:37 -0700
+To: "Li, Tong N" <tong.n.li@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070424015737.GA20413@gnuppy.monkey.org>
+References: <462D37D2.3060208@goop.org> <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com> <462C88B1.8080906@yahoo.com.au> <462C8B0A.8060801@redhat.com> <462C8BFF.2050405@yahoo.com.au> <462C8E1D.8000706@redhat.com> <462D5A2E.5060908@yahoo.com.au>
-In-Reply-To: <462D5A2E.5060908@yahoo.com.au>
-Content-Type: multipart/mixed;
- boundary="------------040707040500040700090600"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040707040500040700090600
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
+> I don't know if we've discussed this or not. Since both CFS and SD claim
+> to be fair, I'd like to hear more opinions on the fairness aspect of
+> these designs. In areas such as OS, networking, and real-time, fairness,
+> and its more general form, proportional fairness, are well-defined
+> terms. In fact, perfect fairness is not feasible since it requires all
+> runnable threads to be running simultaneously and scheduled with
+> infinitesimally small quanta (like a fluid system). So to evaluate if a
 
-This should fix the MADV_FREE code for PPC's hashed tlb.
+Unfortunately, fairness is rather non-formal in this context and probably
+isn't strictly desirable given how hack much of Linux userspace is. Until
+there's a method of doing directed yields, like what Will has prescribed
+a kind of allotment to thread doing work for another a completely strict
+mechanism, it is probably problematic with regards to corner cases.
 
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
+X for example is largely non-thread safe. Until they can get their xcb
+framework in place and addition thread infrastructure to do hand off
+properly, it's going to be difficult schedule for it. It's well known to
+be problematic.
 
-Nick Piggin wrote:
->> Nick Piggin wrote:
->>
->>>> 3) because of this, we can treat any such accesses as
->>>>    happening simultaneously with the MADV_FREE and
->>>>    as illegal, aka undefined behaviour territory and
->>>>    we do not need to worry about them
->>>
->>>
->>> Yes, but I'm wondering if it is legal in all architectures.
->>
->>
->> It's similar to trying to access memory during an munmap.
->>
->> You may be able to for a short time, but it'll come back to
->> haunt you.
-> 
-> The question is whether the architecture specific tlb
-> flushing code will break or not.
+You announced your scheduler without CCing any of the relevant people here
+(and risk being completely ignored in lkml traffic):
 
-I guess we'll need to call tlb_remove_tlb_entry() inside the
-MADV_FREE code to keep powerpc happy.
+	http://lkml.org/lkml/2007/4/20/286
 
-Thanks for pointing this one out.
+What is your opinion of both CFS and SDL ? How can you work be useful
+to either scheduler mentioned or to the Linux kernel on its own ?
 
->> Even then we do.  Each invocation of zap_pte_range() only touches
->> one page table page, and it flushes the TLB before releasing the
->> page table lock.
-> 
-> What kernel are you looking at? -rc7 and rc6-mm1 don't, AFAIKS.
+> I understand that via experiments we can show a design is reasonably
+> fair in the common case, but IMHO, to claim that a design is fair, there
+> needs to be some kind of formal analysis on the fairness bound, and this
+> bound should be proven to be constant. Even if the bound is not
+> constant, at least this analysis can help us better understand and
+> predict the degree of fairness that users would experience (e.g., would
+> the system be less fair if the number of threads increases? What happens
+> if a large number of threads dynamically join and leave the system?).
 
-Oh dear.  I see it now...
+Will has been thinking about this, but you have to also consider the
+practicalities of your approach versus Con's and Ingo's.
 
-The tlb end things inside zap_pte_range() are actually
-noops and the actual tlb flush only happens inside
-zap_page_range().
+I'm all for things like proportional scheduling and the extensions
+needed to do it properly. It would be highly relevant to some version
+of the -rt patch if not that patch directly.
 
-I guess the fact that munmap gets the mmap_sem for
-writing should save us, though...
+bill
 
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
-
---------------040707040500040700090600
-Content-Type: text/x-patch;
- name="linux-2.6-madv-ppcfix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="linux-2.6-madv-ppcfix.patch"
-
---- linux-2.6.20.x86_64/mm/memory.c.noppc	2007-04-23 21:50:09.000000000 -0400
-+++ linux-2.6.20.x86_64/mm/memory.c	2007-04-23 21:48:59.000000000 -0400
-@@ -679,6 +679,7 @@ static unsigned long zap_pte_range(struc
- 					}
- 					ptep_test_and_clear_dirty(vma, addr, pte);
- 					ptep_test_and_clear_young(vma, addr, pte);
-+					tlb_remove_tlb_entry(tlb, pte, addr);
- 					SetPageLazyFree(page);
- 					if (PageActive(page))
- 						deactivate_tail_page(page);
-
---------------040707040500040700090600--
