@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbXDXIe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031061AbXDXIh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbXDXIe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXDXIe7
+	id S1031061AbXDXIh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031037AbXDXIh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:34:59 -0400
-Received: from wr-out-0506.google.com ([64.233.184.237]:28837 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754502AbXDXIe6 (ORCPT
+	Tue, 24 Apr 2007 04:37:59 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58995 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031061AbXDXIh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:34:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NLKFOHgqqW/hfmMV9hvljFzS5wZO3MrarYuA3wbY4UkYLDqiDRvynqVUDBz0gHjtiFecQJYhiyAYAtbdEhn4n5Q9IFPkdrP8BnGgTD92Gx8nCSUPj8w3m7uMzh5p6njR5pinNCOb1woJuvOh8HHJh0sQHYednsBvTpFFOI88LUM=
-Message-ID: <6bffcb0e0704240134w45007473p5694718a0aae08fc@mail.gmail.com>
-Date: Tue, 24 Apr 2007 10:34:56 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "William Heimbigner" <icxcnika@mar.tar.cc>
-Subject: Re: cpufreq default governor
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0704240755230.25153@server.thyself>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 04:37:58 -0400
+Date: Tue, 24 Apr 2007 09:37:37 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+Message-ID: <20070424083737.GA26814@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+	linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <11769695763104-git-send-email-ebiederm@xmission.com> <20070422123155.GF20763@infradead.org> <17965.39866.351929.349735@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0704240755230.25153@server.thyself>
+In-Reply-To: <17965.39866.351929.349735@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi William,
+On Tue, Apr 24, 2007 at 03:55:06PM +1000, Paul Mackerras wrote:
+> Christoph Hellwig writes:
+> 
+> > The first question is obviously, is this really something we want?
+> > spawning kernel thread on demand without reaping them properly seems
+> > quite dangerous.
+> 
+> What specifically has to be done to reap a kernel thread?  Are you
+> concerned about the number of threads, or about having zombies hanging
+> around?
 
-On 24/04/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
-> Question: is there some reason that kconfig does not allow for default
-> governors of conservative/ondemand/powersave?
-
-Performance?
-
-> I'm not aware of any reason why one of those governors could not be used
-> as default.
-
-My hardware doesn't work properly with ondemand governor. I hear
-strange noises when frequency is changed.
-
->
-> William Heimbigner
-> icxcnika@mar.tar.cc
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+I'm mostly concerned about number of threads and possible leakage of
+threads.  Linas already explained it's not a problem in this case,
+so it's covered.
