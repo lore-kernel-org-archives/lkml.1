@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031027AbXDXCDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031031AbXDXCKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031027AbXDXCDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 22:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031024AbXDXCDR
+	id S1031031AbXDXCKp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 22:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031029AbXDXCKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 22:03:17 -0400
-Received: from tresys.irides.com ([216.250.243.126]:36999 "HELO
-	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1031006AbXDXCDQ (ORCPT
+	Mon, 23 Apr 2007 22:10:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50982 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031023AbXDXCKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 22:03:16 -0400
-Message-ID: <462D655E.2010302@tresys.com>
-Date: Mon, 23 Apr 2007 22:03:10 -0400
-From: Joshua Brindle <jbrindle@tresys.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Mon, 23 Apr 2007 22:10:44 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linas Vepstas <linas@austin.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>, "<Andrew Morton" <akpm@osdl.org>,
+       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
+	<1177378733.14873.52.camel@localhost.localdomain>
+Date: Mon, 23 Apr 2007 20:08:42 -0600
+In-Reply-To: <1177378733.14873.52.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Tue, 24 Apr 2007 11:38:53 +1000")
+Message-ID: <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Crispin Cowan <crispin@novell.com>
-CC: David Wagner <daw-usenet@taverner.cs.berkeley.edu>,
-       linux-kernel@vger.kernel.org,
-       LSM ML <linux-security-module@vger.kernel.org>
-Subject: Re: AppArmor FAQ
-References: <20070417181016.GA10903@one.firstfloor.org> <Line.LNX.4.64.0704181620130.27545@d.namei> <f085og$3hg$1@taverner.cs.berkeley.edu> <1177004348.27654.139.camel@moss-spartans.epoch.ncsc.mil> <f08kg5$c88$1@taverner.cs.berkeley.edu> <462D5644.2090103@novell.com>
-In-Reply-To: <462D5644.2090103@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Apr 2007 02:03:14.0940 (UTC) FILETIME=[B8180BC0:01C78614]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Crispin Cowan wrote:
-> David Wagner wrote:
->   
->> James Morris  wrote:
->>   
->>     
->>> [...] you can change the behavior of the application and then bypass 
->>> policy entirely by utilizing any mechanism other than direct filesystem 
->>> access: IPC, shared memory, Unix domain sockets, local IP networking, 
->>> remote networking etc.
->>>     
->>>       
->> [...]
->>   
->>     
->>> Just look at their code and their own description of AppArmor.
->>>     
->>>       
->> My gosh, you're right.  What the heck?  With all due respect to the
->> developers of AppArmor, I can't help thinking that that's pretty lame.
->> I think this raises substantial questions about the value of AppArmor.
->> What is the point of having a jail if it leaves gaping holes that
->> malicious code could use to escape?
->>
->> And why isn't this documented clearly, with the implications fully
->> explained?
->>
->> I would like to hear the AppArmor developers defend this design decision.
->>   
->>     
-> It was a simplicity trade off at the time, when AppArmor was mostly
-> aimed at servers, and there was no HAL or DBUS. Now it is definitely a
-> limitation that we are addressing. We are working on a mediation system
-> for what kind of IPC a confined process can do
-> http://forge.novell.com/pipermail/apparmor-dev/2007-April/000503.html
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+>> The only reason for using threads here is to get the error recovery
+>> out of an interrupt context (where errors may be detected), and then,
+>> an hour later, decrement a counter (which is how we limit these to 
+>> 6 per hour). Thread reaping is "trivial", the thread just exits
+>> after an hour.
 >
->   
-Except servers use IPC and need this access control as well. Without IPC 
-and network restrictions you can't protect database servers, ldap 
-servers, print servers, ssh agents, virus scanning servers, spam 
-scanning servers, etc from attackers with knowledge of how to abuse the IPC.
-> When our IPC mediation system is code instead of vapor, it will also
-> appear here for review. Meanwhile, AppArmor does not make IPC security
-> any worse, confined processes are still subject to the usual Linux IPC
-> restrictions. AppArmor actually makes the IPC situation somewhat more
-> secure than stock Linux, e.g. normal DBUS deployment can be controlled
-> through file access permissions. But we are not claiming AppArmor to be
-> an IPC security enhancement, yet.
->   
-Without a security interface in DBUS similar to SELinux' apparmor won't 
-be able to control who can talk to who across DBUS, only who can connect 
-to DBUS directly.
+> In addition, it should be a thread and not done from within keventd
+> because :
+>
+>  - It can take a long time (well, relatively but still too long for a
+> work queue)
+>
+>  - The driver callbacks might need to use keventd or do flush_workqueue
+> to synchronize with their own workqueues when doing an internal
+> recovery.
+>
+>> Since these are events rare, I've no particular concern about
+>> performance or resource consumption. The current code seems 
+>> to work just fine. :-)
+>
+> I think moving to kthread's is cleaner (just a wrapper around kernel
+> threads that simplify dealing with reaping them out mostly) and I agree
+> with Christoph that it would be nice to be able to "fire off" kthreads
+> from interrupt context.. in many cases, we abuse work queues for things
+> that should really done from kthreads instead (basically anything that
+> takes more than a couple hundred microsecs or so).
+
+On that note does anyone have a problem is we manage the irq spawning
+safe kthreads the same way that we manage the work queue entries.
+
+i.e. by a structure allocated by the caller?
+
+Eric
