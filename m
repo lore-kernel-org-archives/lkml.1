@@ -1,67 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423142AbXDXVk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423152AbXDXVlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423142AbXDXVk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423143AbXDXVk3
+	id S1423152AbXDXVlO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423147AbXDXVlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:40:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:43844 "EHLO mga03.intel.com"
+	Tue, 24 Apr 2007 17:41:13 -0400
+Received: from mga02.intel.com ([134.134.136.20]:30552 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423142AbXDXVk2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:40:28 -0400
+	id S1423143AbXDXVlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:41:11 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="218928516:sNHT42408485"
-Date: Tue, 24 Apr 2007 14:38:35 -0700
-From: Ashok Raj <ashok.raj@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: ak@suse.de, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
-       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
-Message-ID: <20070424213835.GB31920@linux-os.sc.intel.com>
-References: <200704242133.16219.ak@suse.de> <20070424203304.GB27911@linux-os.sc.intel.com> <200704242312.54738.ak@suse.de> <20070424.142351.62664098.davem@davemloft.net>
+   d="scan'208"; a="233318232:sNHT32567759"
+Date: Tue, 24 Apr 2007 14:38:27 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 7/7] libata: send event when AN received
+Message-Id: <20070424143827.4a2b672e.kristen.c.accardi@intel.com>
+In-Reply-To: <20070424090910.1d145c24@the-village.bc.nu>
+References: <20070424074856.005152262@intel.com>
+	<20070423170024.73b74a37.kristen.c.accardi@intel.com>
+	<20070424090910.1d145c24@the-village.bc.nu>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070424.142351.62664098.davem@davemloft.net>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 02:23:51PM -0700, David Miller wrote:
-> From: Andi Kleen <ak@suse.de>
-> Date: Tue, 24 Apr 2007 23:12:54 +0200
-> 
-> > We already have a couple of other IOMMU architectures who essentially have the same
-> > problem. Have you checked how they solve this?
-> 
-> Sparc64, for one, only uses 32-bit IOMMU addresses.  And we simply
-> don't try to handle the funny devices at all, in fact we can't
-> handle the ones that want mappings only in the low 16MB for
-> example since the hardware IOMMU window usually starts in the
-> middle of the 32-bit PCI address space.
-> 
-> We do it both because that's faster due to Single Address Cycles, as
-> mentioned, and also because that's simply is where the hardware's
-> IOMMU window is.  You can't use 64-bit IOMMU addresses even if you
-> wanted to on sparc64.
-> 
-> My suggestion would be to allocate top-down in the 32-bit IOMMU space.
-> 
-> That might work, but my gut feeling is that this won't be sufficient
-> and we'll need some kind of device driver initiated reservation
-> mechanism for the <16MB et al. weird stuff.
+When we get an SDB FIS with the 'N' bit set, we should send
+an event to user space to indicate that there has been a
+media change.  This will be done via the block device. 
 
-Its not clear if we have a very generic device breakage.. most devices
-on these platforms are going to be more recent, (except maybe some
-legacy fd)... 
+changed from last version:
+* Make sure that port_addr is within ATA_MAX_DEVICES
 
-Maybe we should wait to fix unless we are certain if there are more of them
-that breaks in these platforms.
-
-We could choose to use the generic 1-1 for those weird cases, since the 
-driver does ensure today that physical mem is low 16M, then we could
-just turn on 1-1 domain for such devices without breaking any.
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Index: 2.6-git/drivers/ata/ahci.c
+===================================================================
+--- 2.6-git.orig/drivers/ata/ahci.c
++++ 2.6-git/drivers/ata/ahci.c
+@@ -1147,6 +1147,28 @@ static void ahci_host_intr(struct ata_po
+ 		return;
+ 	}
+ 
++	if (status & PORT_IRQ_SDB_FIS) {
++		/*
++		 * if this is an ATAPI device with AN turned on,
++		 * then we should interrogate the device to
++		 * determine the cause of the interrupt
++		 *
++		 * for AN - this we should check the SDB FIS
++		 * and find the I and N bits set
++		 */
++		const u32 *f = pp->rx_fis + RX_FIS_SDB;
++
++		/* check the 'N' bit in word 0 of the FIS */
++		if (f[0] & (1 << 15)) {
++			int port_addr =  ((f[0] & 0x00000f00) >> 8);
++			struct ata_device *adev;
++			if (port_addr < ATA_MAX_DEVICES) {
++				adev = &ap->device[port_addr];
++				if (adev->flags & ATA_DFLAG_AN)
++					ata_scsi_media_change_notify(adev);
++			}
++		}
++	}
+ 	if (ap->sactive)
+ 		qc_active = readl(port_mmio + PORT_SCR_ACT);
+ 	else
+Index: 2.6-git/include/linux/libata.h
+===================================================================
+--- 2.6-git.orig/include/linux/libata.h
++++ 2.6-git/include/linux/libata.h
+@@ -737,6 +737,7 @@ extern void ata_host_init(struct ata_hos
+ extern int ata_scsi_detect(struct scsi_host_template *sht);
+ extern int ata_scsi_ioctl(struct scsi_device *dev, int cmd, void __user *arg);
+ extern int ata_scsi_queuecmd(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *));
++extern void ata_scsi_media_change_notify(struct ata_device *atadev);
+ extern void ata_sas_port_destroy(struct ata_port *);
+ extern struct ata_port *ata_sas_port_alloc(struct ata_host *,
+ 					   struct ata_port_info *, struct Scsi_Host *);
+Index: 2.6-git/drivers/ata/libata-scsi.c
+===================================================================
+--- 2.6-git.orig/drivers/ata/libata-scsi.c
++++ 2.6-git/drivers/ata/libata-scsi.c
+@@ -3057,6 +3057,22 @@ static void ata_scsi_remove_dev(struct a
+ }
+ 
+ /**
++ *	ata_scsi_media_change_notify - send media change event
++ *	@atadev: Pointer to the disk device with media change event
++ *
++ *	Tell the block layer to send a media change notification
++ *	event.
++ *
++ * 	LOCKING:
++ * 	interrupt context, may not sleep.
++ */
++void ata_scsi_media_change_notify(struct ata_device *atadev)
++{
++	genhd_media_change_notify(atadev->sdev->disk);
++}
++EXPORT_SYMBOL_GPL(ata_scsi_media_change_notify);
++
++/**
+  *	ata_scsi_hotplug - SCSI part of hotplug
+  *	@work: Pointer to ATA port to perform SCSI hotplug on
+  *
