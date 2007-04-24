@@ -1,65 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423173AbXDXWXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423174AbXDXWXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423173AbXDXWXk (ORCPT <rfc822;w@1wt.eu>);
+	id S1423174AbXDXWXk (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 24 Apr 2007 18:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423172AbXDXWXQ
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423173AbXDXWXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:23:16 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56795 "EHLO
+	Tue, 24 Apr 2007 18:23:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43911 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423173AbXDXWXG (ORCPT
+	with ESMTP id S1423174AbXDXWXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Apr 2007 18:23:06 -0400
-Message-Id: <20070424222305.818002892@sgi.com>
+Message-Id: <20070424222306.055902248@sgi.com>
 References: <20070424222105.883597089@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Apr 2007 15:21:11 -0700
+Date: Tue, 24 Apr 2007 15:21:12 -0700
 From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
        David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [06/17] Fix up handling of Compound head pages
-Content-Disposition: inline; filename=var_compound_release_pages
+Subject: [07/17] vmstat.c: Support accounting for compound pages
+Content-Disposition: inline; filename=var_pc_vmstat
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compound pages can be on the LRU. This means that the page pointer
-to the head page is on a pagevec. In that case we need full LRU processing
-for the page in release_pages().
+Compound pages must increment the counters in terms of base pages.
+If we detect a compound page then add the number of base pages that
+a compound page has to the counter.
 
-The check for compound pages in release_pages() was introduced by
-Nick Piggin to make sure that the page count in tail pages is not
-going negative. Well we can now explicitly check for the tail page.
+This will avoid numerous changes in the VM to fix up page accounting
+as we add more support for  compound pages.
 
-The head page should be processes like a regular page in order to
-support higher order page cache pages.
+Also fix up the accounting for active / inactive pages.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/swap.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ include/linux/mm_inline.h |   12 ++++++------
+ include/linux/vmstat.h    |    5 ++---
+ mm/vmstat.c               |    8 +++-----
+ 3 files changed, 11 insertions(+), 14 deletions(-)
 
-Index: linux-2.6.21-rc7/mm/swap.c
+Index: linux-2.6.21-rc7/mm/vmstat.c
 ===================================================================
---- linux-2.6.21-rc7.orig/mm/swap.c	2007-04-24 09:40:16.000000000 -0700
-+++ linux-2.6.21-rc7/mm/swap.c	2007-04-24 09:42:27.000000000 -0700
-@@ -263,7 +263,13 @@ void release_pages(struct page **pages, 
- 	for (i = 0; i < nr; i++) {
- 		struct page *page = pages[i];
+--- linux-2.6.21-rc7.orig/mm/vmstat.c	2007-04-23 20:31:54.000000000 -0700
++++ linux-2.6.21-rc7/mm/vmstat.c	2007-04-23 20:31:59.000000000 -0700
+@@ -223,7 +223,7 @@ void __inc_zone_state(struct zone *zone,
  
--		if (unlikely(PageCompound(page))) {
-+		/*
-+		 * If we have a tail page on the LRU then we need to
-+		 * decrement the page count of the head page. There
-+		 * is no further need to do anything since tail pages
-+		 * cannot be on the LRU.
-+		 */
-+		if (unlikely(PageTail(page))) {
- 			if (zone) {
- 				spin_unlock_irq(&zone->lru_lock);
- 				zone = NULL;
+ void __inc_zone_page_state(struct page *page, enum zone_stat_item item)
+ {
+-	__inc_zone_state(page_zone(page), item);
++	__mod_zone_page_state(page_zone(page), item, compound_pages(page));
+ }
+ EXPORT_SYMBOL(__inc_zone_page_state);
+ 
+@@ -244,7 +244,7 @@ void __dec_zone_state(struct zone *zone,
+ 
+ void __dec_zone_page_state(struct page *page, enum zone_stat_item item)
+ {
+-	__dec_zone_state(page_zone(page), item);
++	__mod_zone_page_state(page_zone(page), item, -compound_pages(page));
+ }
+ EXPORT_SYMBOL(__dec_zone_page_state);
+ 
+@@ -260,11 +260,9 @@ void inc_zone_state(struct zone *zone, e
+ void inc_zone_page_state(struct page *page, enum zone_stat_item item)
+ {
+ 	unsigned long flags;
+-	struct zone *zone;
+ 
+-	zone = page_zone(page);
+ 	local_irq_save(flags);
+-	__inc_zone_state(zone, item);
++	__inc_zone_page_state(page, item);
+ 	local_irq_restore(flags);
+ }
+ EXPORT_SYMBOL(inc_zone_page_state);
+Index: linux-2.6.21-rc7/include/linux/mm_inline.h
+===================================================================
+--- linux-2.6.21-rc7.orig/include/linux/mm_inline.h	2007-04-23 20:31:54.000000000 -0700
++++ linux-2.6.21-rc7/include/linux/mm_inline.h	2007-04-23 20:47:16.000000000 -0700
+@@ -2,28 +2,28 @@ static inline void
+ add_page_to_active_list(struct zone *zone, struct page *page)
+ {
+ 	list_add(&page->lru, &zone->active_list);
+-	__inc_zone_state(zone, NR_ACTIVE);
++	__inc_zone_page_state(page, NR_ACTIVE);
+ }
+ 
+ static inline void
+ add_page_to_inactive_list(struct zone *zone, struct page *page)
+ {
+ 	list_add(&page->lru, &zone->inactive_list);
+-	__inc_zone_state(zone, NR_INACTIVE);
++	__inc_zone_page_state(page, NR_INACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_active_list(struct zone *zone, struct page *page)
+ {
+ 	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_ACTIVE);
++	__dec_zone_page_state(page, NR_ACTIVE);
+ }
+ 
+ static inline void
+ del_page_from_inactive_list(struct zone *zone, struct page *page)
+ {
+ 	list_del(&page->lru);
+-	__dec_zone_state(zone, NR_INACTIVE);
++	__dec_zone_page_state(page, NR_INACTIVE);
+ }
+ 
+ static inline void
+@@ -32,9 +32,9 @@ del_page_from_lru(struct zone *zone, str
+ 	list_del(&page->lru);
+ 	if (PageActive(page)) {
+ 		__ClearPageActive(page);
+-		__dec_zone_state(zone, NR_ACTIVE);
++		__dec_zone_page_state(page, NR_ACTIVE);
+ 	} else {
+-		__dec_zone_state(zone, NR_INACTIVE);
++		__dec_zone_page_state(page, NR_INACTIVE);
+ 	}
+ }
+ 
+Index: linux-2.6.21-rc7/include/linux/vmstat.h
+===================================================================
+--- linux-2.6.21-rc7.orig/include/linux/vmstat.h	2007-04-23 20:33:02.000000000 -0700
++++ linux-2.6.21-rc7/include/linux/vmstat.h	2007-04-23 20:49:06.000000000 -0700
+@@ -235,7 +235,7 @@ static inline void __inc_zone_state(stru
+ static inline void __inc_zone_page_state(struct page *page,
+ 			enum zone_stat_item item)
+ {
+-	__inc_zone_state(page_zone(page), item);
++	__mod_zone_page_state(page_zone(page), item, compound_pages(page));
+ }
+ 
+ static inline void __dec_zone_state(struct zone *zone, enum zone_stat_item item)
+@@ -247,8 +247,7 @@ static inline void __dec_zone_state(stru
+ static inline void __dec_zone_page_state(struct page *page,
+ 			enum zone_stat_item item)
+ {
+-	atomic_long_dec(&page_zone(page)->vm_stat[item]);
+-	atomic_long_dec(&vm_stat[item]);
++	__mod_zone_page_state(page_zone(page), item, -compound_pages(page));
+ }
+ 
+ /*
 
 --
