@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXDXFCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbXDXFCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbXDXFCE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 01:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161554AbXDXFCD
+	id S1754578AbXDXFCI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXDXFCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 01:02:03 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38596 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754573AbXDXFCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 01:02:01 -0400
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linas Vepstas <linas@austin.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "<Andrew Morton" <akpm@osdl.org>,
-       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	 <11769695763104-git-send-email-ebiederm@xmission.com>
-	 <20070422123155.GF20763@infradead.org>
-	 <20070423205020.GR31947@austin.ibm.com>
-	 <1177378733.14873.52.camel@localhost.localdomain>
-	 <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	 <1177382544.14873.57.camel@localhost.localdomain>
-	 <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 15:00:42 +1000
-Message-Id: <1177390842.14873.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 01:02:08 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:17422 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754578AbXDXFCH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 01:02:07 -0400
+Date: Mon, 23 Apr 2007 23:02:01 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: BUG/CRASH help - 2.6.20 (fc5) - spinlock bad magic on CPU#0, kswapd
+In-reply-to: <fa.zMzheLQy67ZMGEuuN/3CmN/fQpQ@ifi.uio.no>
+To: Ian Kirk <intercede619@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <462D8F49.60103@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.zMzheLQy67ZMGEuuN/3CmN/fQpQ@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ian Kirk wrote:
+> Hi,
+> 
+> I just wondered if the below type of crash was a known thing, and if
+> there are any obvious things I can do to prevent/fix it ?
+> 
+> BUG: spinlock bad magic on CPU#0, kswapd0/242 (Not tainted)
+> lock: c06c9380, .magic: c06c9380, .owner:
+> [<c06eba2a>] _raw_spin_lock+0x1a/0xd9
+> [<c061e72f>] _spin_lock_irqsave+0x9/0xd
+> [<c041febf>] __wake_up+0x18/0x43
+> [<c04379ce>] __wake_up_bit+0x2e/0x33
+> [<c045a496>] shrink_inactive_list+0x483/0x6c9
 
-> Further in general it doesn't make sense to grab a module reference
-> and call that sufficient because we would like to request that the
-> module exits.
+RAM issues are a possibility for this sort of problem, tried running 
+Memtest86+?
 
-Which is, btw, I think a total misdesign of our module stuff, but heh, I
-remember that lead to some flamewars back then...
-
-Like anything else, modules should have separated the entrypoints for
-
- - Initiating a removal request
- - Releasing the module
-
-The former is use did "rmmod", can unregister things from subsystems,
-etc... (and can file if the driver decides to refuse removal requests
-when it's busy doing things or whatever policy that module wants to
-implement).
-
-The later is called when all references to the modules have been
-dropped, it's a bit like the kref "release" (and could be implemented as
-one).
-
-If we had done that (simple) thing back then, module refcounting would
-have been much less of a problem... I remember some reasons why that was
-veto'ed but I didn't and still don't agree.
-
-Ben.
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
