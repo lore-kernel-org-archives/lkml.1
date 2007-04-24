@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423112AbXDXVA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423102AbXDXVAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423112AbXDXVA3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXDXVA3
+	id S1423102AbXDXVAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423114AbXDXVAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:00:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53531 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423112AbXDXVA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:00:28 -0400
-Date: Tue, 24 Apr 2007 22:59:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>, john stultz <johnstul@us.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, virtualization@lists.osdl.org,
-       Chris Lalancette <clalance@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-Message-ID: <20070424205918.GA25383@elte.hu>
-References: <20070327214919.800272641@goop.org> <20070327215827.871954359@goop.org> <20070423234910.50149faf.akpm@linux-foundation.org> <462E43A7.1050001@goop.org> <20070424105738.e0ce36a9.akpm@linux-foundation.org> <462E4969.6070802@goop.org> <20070424113222.ed2e1314.akpm@linux-foundation.org> <462E61F1.7060403@goop.org> <462E6778.7070305@goop.org> <1177447948.12796.66.camel@imap.mvista.com>
+	Tue, 24 Apr 2007 17:00:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50019
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1423102AbXDXVAs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:00:48 -0400
+Date: Tue, 24 Apr 2007 14:00:55 -0700 (PDT)
+Message-Id: <20070424.140055.42775489.davem@davemloft.net>
+To: ak@suse.de
+Cc: ashok.raj@intel.com, linux-kernel@vger.kernel.org, akpm@osdl.org,
+       gregkh@suse.de, muli@il.ibm.com, asit.k.mallick@intel.com,
+       suresh.b.siddha@intel.com, anil.s.keshavamurthy@intel.com,
+       arjan@linux.intel.com, shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 4/8] Supporting Zero Length Reads in Intel
+ IOMMU.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200704242128.12057.ak@suse.de>
+References: <20070424060259.426374000@intel.com>
+	<20070424061037.821838000@intel.com>
+	<200704242128.12057.ak@suse.de>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177447948.12796.66.camel@imap.mvista.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Andi Kleen <ak@suse.de>
+Date: Tue, 24 Apr 2007 21:28:11 +0200
 
-* Daniel Walker <dwalker@mvista.com> wrote:
-
-> On Tue, 2007-04-24 at 13:24 -0700, Jeremy Fitzhardinge wrote:
+> On Tuesday 24 April 2007 08:03:03 Ashok Raj wrote:
+> > PCI specs permit zero length reads (ZLR) even if the mapping for that region 
+> > is write only. Support for this feature is indicated by the presence of a bit 
+> > in the DMAR capability. If a particular DMAR does not support this capability
+> > we map write-only regions as read-write.
+> > 
+> > This option can also provides a workaround for some drivers that request
+> > a write-only mapping when they really should request a read-write.
+> > (We ran into one such case in eepro100.c in handling rx_ring_dma)
 > 
-> > And sched_clock's use of local_irq_save/restore appears to be absolutely
-> > correct, so I think it must be triggering a bug in either the self-tests
-> > or lockdep itself.
-> 
-> Why does sched_clock need to disable interrupts?
+> Better just fix the drivers instead of adding such hacks
 
-i concur. To me it appears not "absolutely correct" that someone 
-apparently added local_irq_save/restore to sched_clock(), but "absolute 
-madness". sched_clock() is _very_ performance-sensitive for the 
-scheduler, do not mess with it.
+I totally agree.
 
-	Ingo
+It is a feature when we have a device which can enforce such
+permissions correctly and thus trap such bad uses.  If you
+paper around it, these things will never get fixed.
