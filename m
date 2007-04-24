@@ -1,117 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161542AbXDXC6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161535AbXDXDJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161542AbXDXC6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 22:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161546AbXDXC6q
+	id S1161535AbXDXDJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 23:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161548AbXDXDJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 22:58:46 -0400
-Received: from mx1.suse.de ([195.135.220.2]:55147 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161542AbXDXC6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 22:58:45 -0400
-From: Neil Brown <neilb@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue, 24 Apr 2007 12:58:12 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 23 Apr 2007 23:09:29 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50107 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161546AbXDXDJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 23:09:28 -0400
+Date: Mon, 23 Apr 2007 20:08:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
+       jakub@redhat.com, drepper@redhat.com
+Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
+Message-Id: <20070423200859.e2e9ab3d.akpm@linux-foundation.org>
+In-Reply-To: <462D713D.6050401@redhat.com>
+References: <46247427.6000902@redhat.com>
+	<20070420135715.f6e8e091.akpm@linux-foundation.org>
+	<462932BE.4020005@redhat.com>
+	<20070420150618.179d31a4.akpm@linux-foundation.org>
+	<4629524C.5040302@redhat.com>
+	<462ACA40.8070407@yahoo.com.au>
+	<462B0156.9020407@redhat.com>
+	<462BFAF3.4040509@yahoo.com.au>
+	<462C2DC7.5070709@redhat.com>
+	<462C2F33.8090508@redhat.com>
+	<462C7A6F.9030905@redhat.com>
+	<462C88B1.8080906@yahoo.com.au>
+	<462C8B0A.8060801@redhat.com>
+	<462C8BFF.2050405@yahoo.com.au>
+	<462D713D.6050401@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17965.29252.950216.971096@notabene.brown>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-In-Reply-To: message from Peter Zijlstra on Friday April 20
-References: <20070420155154.898600123@chello.nl>
-	<20070420155503.608300342@chello.nl>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday April 20, a.p.zijlstra@chello.nl wrote:
-> Scale writeback cache per backing device, proportional to its writeout speed.
+On Mon, 23 Apr 2007 22:53:49 -0400 Rik van Riel <riel@redhat.com> wrote:
 
-So it works like this:
+> I don't see why we need the attached, but in case you find
+> a good reason, here's my signed-off-by line for Andrew :)
 
- We account for writeout in full pages.
- When a page has the Writeback flag cleared, we account that as a
- successfully retired write for the relevant bdi.
- By using floating averages we keep track of how many writes each bdi
- has retired 'recently' where the unit of time in which we understand
- 'recently' is a single page written.
-
- We keep a floating average for each bdi, and a floating average for
- the total writeouts (that 'average' is, of course, 1.)
-
- Using these numbers we can calculate what faction of 'recently'
- retired writes were retired by each bdi (get_writeout_scale).
-
- Multiplying this fraction by the system-wide number of pages that are
- allowed to be dirty before write-throttling, we get the number of
- pages that the bdi can have dirty before write-throttling the bdi.
-
- I note that the same fraction is *not* applied to background_thresh.
- Should it be?  I guess not - there would be interesting starting
- transients, as a bdi which had done no writeout would not be allowed
- any dirty pages, so background writeout would start immediately,
- which isn't what you want... or is it?
-
- For each bdi we also track the number of (dirty, writeback, unstable)
- pages and do not allow this to exceed the limit set for this bdi.
-
- The calculations involving 'reserve' in get_dirty_limits are a little
- confusing.  It looks like you calculating how much total head-room
- there is for the bdi (pages that the system can still dirty - pages
- this bdi has dirty) and making sure the number returned in pbdi_dirty
- doesn't allow more than that to be used.  This is probably a
- reasonable thing to do but it doesn't feel like the right place.  I
- think get_dirty_limits should return the raw threshold, and
- balance_dirty_pages should do both tests - the bdi-local test and the
- system-wide test.
-
- Currently you have a rather odd situation where
-+			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-+				break;
- might included numbers obtained with bdi_stat_sum being compared with
- numbers obtained with bdi_stat.
-
-
- With these patches, the VM still (I think) assumes that each BDI has
- a reasonable queue limit, so that writeback_inodes will block on a
- full queue.  If a BDI has a very large queue, balance_dirty_pages
- will simply turn lots of DIRTY pages into WRITEBACK pages and then
- think "We've done our duty" without actually blocking at all.
-
- With the extra accounting that we now have, I would like to see
- balance_dirty_pages dirty pages wait until RECLAIMABLE+WRITEBACK is
- actually less than 'threshold'.  This would probably mean that we
- would need to support per-bdi background_writeout to smooth things
- out.  Maybe that it fodder for another patch-set.
-
- You set:
-+	vm_cycle_shift = 1 + ilog2(vm_total_pages);
-
- Can you explain that?  My experience is that scaling dirty limits
- with main memory isn't what we really want.  When you get machines
- with very large memory, the amount that you want to be dirty is more
- a function of the speed of your IO devices, rather than the amount
- of memory, otherwise you can sometimes see large filesystem lags
- ('sync' taking minutes?)
-
- I wonder if it makes sense to try to limit the dirty data for a bdi
- to the amount that it can write out in some period of time - maybe 3
- seconds.  Probably configurable.  You seem to have almost all the
- infrastructure in place to do that, and I think it could be a
- valuable feature.
-
- At least, I think vm_cycle_shift should be tied (loosely) to 
-   dirty_ratio * vm_total_pages
- ??
-
-On the whole, looks good!
-
-Thanks,
-NeilBrown
+Andew is in a defensive crouch trying to work his way through all the bugs
+he's been sent.  After I've managed to release 2.6.21-rc7-mm1 (say, December)
+I expect I'll drop the MADV_FREE stuff, give you a run at creating a new
+patch series.
