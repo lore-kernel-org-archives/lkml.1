@@ -1,75 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965280AbXDXVNm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965407AbXDXVON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965280AbXDXVNm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:13:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030812AbXDXVNl
+	id S965407AbXDXVON (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXDXVON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:13:41 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55415 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965336AbXDXVNP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:13:15 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Tue, 24 Apr 2007 17:13:25 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: William Heimbigner <icxcnika@mar.tar.cc>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       davej@codemonkey.org.uk
-Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
-In-Reply-To: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
-Message-ID: <Pine.LNX.4.64.0704241712160.19442@localhost.localdomain>
-References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+	Tue, 24 Apr 2007 17:14:13 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:57785 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965407AbXDXVN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:13:56 -0400
+Message-ID: <462E730F.3090401@simon.arlott.org.uk>
+Date: Tue, 24 Apr 2007 22:13:51 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Greg Kroah-Hartman <gregkh@suse.de>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] cxacru: Cleanup sysfs attribute code
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, William Heimbigner wrote:
+This changes the format of unknown status values to be less verbose and 
+uses an array instead of several different snprintf calls. Since only 
+enum values are assigned to it, poll_state is changed from int to enum. 
+Use abs() for dB values instead of two almost identical return lines.
 
-> The following patches should allow selection of conservative, powersave, and
-> ondemand in the kernel configuration.
->
-> William Heimbigner
-> icxcnika@mar.tar.cc
->
-> diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff
-> linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig
-> linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig
-> --- linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig	2007-04-25
-> 13:03:41.000000000 -0500
-> +++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig	2007-04-25
-> 13:08:13.000000000 -0500
-> @@ -75,6 +75,24 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
->  	  program shall be able to set the CPU dynamically without having
->  	  to enable the userspace governor manually.
->
-> +config CPU_FREQ_DEFAULT_GOV_POWERSAVE
-> +	bool "powersave"
-> +	select CPU_FREQ_GOV_POWERSAVE
-> +	help
-> +	  Use the CPUFreq governor 'powersave' as default.
-                                                ^^^ the (for consistency)
-> +
-> +config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-> +	bool "conservative"
-> +	select CPU_FREQ_GOV_CONSERVATIVE
-> +	help
-> +	  Use the CPUFreq governor 'conservative' as the default.
-> +
-> +config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-> +	bool "ondemand"
-> +	select CPU_FREQ_GOV_ONDEMAND
-> +	help
-> +	  Use the CPUFreq governor 'ondemand' as the default.
-> +
->  endchoice
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Duncan Sands <duncan.sands@math.u-psud.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+Patch depends on existing cxacru patches in -rc7-mm.
 
-rday
+On 27/02/07 20:26, Andrew Morton wrote:
+>> +static ssize_t cxacru_sysfs_showattr_MODU(u32 value, char *buf)
+>> +{
+>> +	switch (value) {
+>> +	case 0: return 0;
+>> +	case 1: return snprintf(buf, PAGE_SIZE, "ANSI T1.413\n");
+>> +	case 2: return snprintf(buf, PAGE_SIZE, "ITU-T G.992.1 (G.DMT)\n");
+>> +	case 3: return snprintf(buf, PAGE_SIZE, "ITU-T G.992.2 (G.LITE)\n");
+>> +	default: return snprintf(buf, PAGE_SIZE, "unknown (%u)\n", value);
+>> +	}
+>> +}
+>  
+> It is conventional to do
+> 
+> 	switch (a) {
+> 	case 0:
+> 		stuff();
+> 		break;
+> 	case 1:
+> 		stuff();
+> 	}
+> 
+> But all the above could be array-driven anyway.
+
+Is the code below close to what you meant?
+
+static char *str[] = { NULL, "not connected", "connected", "lost" };
+if (unlikely(value >= ARRAY_SIZE(str) || str[value] == NULL))
+	return snprintf(buf, PAGE_SIZE, "%u\n", value);
+return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+
+On 21/04/07 18:56, Duncan Sands wrote:
+>> +named device points to the USB interface device's directory which contains
+>> +several sysfs attribute files for retriving device statistics:
+> retrieving
+
+Thanks.
+
+ drivers/usb/atm/cxacru.c |   73 +++++++++++++++++++--------------------------
+ 1 files changed, 31 insertions(+), 42 deletions(-)
+
+diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
+index 0c47755..1c5d6de 100644
+--- a/drivers/usb/atm/cxacru.c
++++ b/drivers/usb/atm/cxacru.c
+@@ -171,7 +171,7 @@ struct cxacru_data {
+ 	struct delayed_work poll_work;
+ 	u32 card_info[CXINF_MAX];
+ 	struct mutex poll_state_serialize;
+-	int poll_state;
++	enum cxacru_poll_state poll_state;
+ 
+ 	/* contol handles */
+ 	struct mutex cm_serialize;
+@@ -226,58 +226,48 @@ static ssize_t cxacru_sysfs_showattr_s8(s8 value, char *buf)
+ 
+ static ssize_t cxacru_sysfs_showattr_dB(s16 value, char *buf)
+ {
+-	if (unlikely(value < 0)) {
+-		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
+-						value / 100, -value % 100);
+-	} else {
+-		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
+-						value / 100, value % 100);
+-	}
++	return snprintf(buf, PAGE_SIZE, "%u.%02u\n",
++					value / 100, abs(value) % 100);
+ }
+ 
+ static ssize_t cxacru_sysfs_showattr_bool(u32 value, char *buf)
+ {
+-	switch (value) {
+-	case 0: return snprintf(buf, PAGE_SIZE, "no\n");
+-	case 1: return snprintf(buf, PAGE_SIZE, "yes\n");
+-	default: return 0;
+-	}
++	static char *str[] = { "no", "yes" };
++	if (unlikely(value >= ARRAY_SIZE(str)))
++		return snprintf(buf, PAGE_SIZE, "%u\n", value);
++	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+ }
+ 
+ static ssize_t cxacru_sysfs_showattr_LINK(u32 value, char *buf)
+ {
+-	switch (value) {
+-	case 1: return snprintf(buf, PAGE_SIZE, "not connected\n");
+-	case 2: return snprintf(buf, PAGE_SIZE, "connected\n");
+-	case 3: return snprintf(buf, PAGE_SIZE, "lost\n");
+-	default: return snprintf(buf, PAGE_SIZE, "unknown (%u)\n", value);
+-	}
++	static char *str[] = { NULL, "not connected", "connected", "lost" };
++	if (unlikely(value >= ARRAY_SIZE(str) || str[value] == NULL))
++		return snprintf(buf, PAGE_SIZE, "%u\n", value);
++	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+ }
+ 
+ static ssize_t cxacru_sysfs_showattr_LINE(u32 value, char *buf)
+ {
+-	switch (value) {
+-	case 0: return snprintf(buf, PAGE_SIZE, "down\n");
+-	case 1: return snprintf(buf, PAGE_SIZE, "attempting to activate\n");
+-	case 2: return snprintf(buf, PAGE_SIZE, "training\n");
+-	case 3: return snprintf(buf, PAGE_SIZE, "channel analysis\n");
+-	case 4: return snprintf(buf, PAGE_SIZE, "exchange\n");
+-	case 5: return snprintf(buf, PAGE_SIZE, "up\n");
+-	case 6: return snprintf(buf, PAGE_SIZE, "waiting\n");
+-	case 7: return snprintf(buf, PAGE_SIZE, "initialising\n");
+-	default: return snprintf(buf, PAGE_SIZE, "unknown (%u)\n", value);
+-	}
++	static char *str[] = { "down", "attempting to activate",
++		"training", "channel analysis", "exchange", "up",
++		"waiting", "initialising"
++	};
++	if (unlikely(value >= ARRAY_SIZE(str)))
++		return snprintf(buf, PAGE_SIZE, "%u\n", value);
++	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+ }
+ 
+ static ssize_t cxacru_sysfs_showattr_MODU(u32 value, char *buf)
+ {
+-	switch (value) {
+-	case 0: return 0;
+-	case 1: return snprintf(buf, PAGE_SIZE, "ANSI T1.413\n");
+-	case 2: return snprintf(buf, PAGE_SIZE, "ITU-T G.992.1 (G.DMT)\n");
+-	case 3: return snprintf(buf, PAGE_SIZE, "ITU-T G.992.2 (G.LITE)\n");
+-	default: return snprintf(buf, PAGE_SIZE, "unknown (%u)\n", value);
+-	}
++	static char *str[] = {
++			NULL,
++			"ANSI T1.413",
++			"ITU-T G.992.1 (G.DMT)",
++			"ITU-T G.992.2 (G.LITE)"
++	};
++	if (unlikely(value >= ARRAY_SIZE(str) || str[value] == NULL))
++		return snprintf(buf, PAGE_SIZE, "%u\n", value);
++	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+ }
+ 
+ /*
+@@ -308,11 +298,10 @@ static ssize_t cxacru_sysfs_show_adsl_state(struct device *dev,
+ 	struct cxacru_data *instance = usbatm_instance->driver_data;
+ 	u32 value = instance->card_info[CXINF_LINE_STARTABLE];
+ 
+-	switch (value) {
+-	case 0: return snprintf(buf, PAGE_SIZE, "running\n");
+-	case 1: return snprintf(buf, PAGE_SIZE, "stopped\n");
+-	default: return snprintf(buf, PAGE_SIZE, "unknown (%u)\n", value);
+-	}
++	static char *str[] = { "running", "stopped" };
++	if (unlikely(value >= ARRAY_SIZE(str)))
++		return snprintf(buf, PAGE_SIZE, "%u\n", value);
++	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+ }
+ 
+ static ssize_t cxacru_sysfs_store_adsl_state(struct device *dev,
+-- 
+1.5.0.1
+
+-- 
+Simon Arlott
