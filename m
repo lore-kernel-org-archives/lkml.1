@@ -1,71 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161721AbXDXLux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161726AbXDXLvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161721AbXDXLux (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161723AbXDXLux
+	id S1161726AbXDXLvz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161728AbXDXLvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:50:53 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:40365 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161721AbXDXLux (ORCPT
+	Tue, 24 Apr 2007 07:51:55 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49335 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161726AbXDXLvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:50:53 -0400
-Date: Tue, 24 Apr 2007 12:50:50 +0100
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, tony.luck@intel.com,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]Fix parsing kernelcore boot option for ia64
-Message-ID: <20070424115050.GA9372@skynet.ie>
-References: <20070423183246.GA11841@skynet.ie> <20070423183637.GA11982@skynet.ie> <20070424183847.FD98.Y-GOTO@jp.fujitsu.com>
+	Tue, 24 Apr 2007 07:51:54 -0400
+Date: Tue, 24 Apr 2007 04:50:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: a.p.zijlstra@chello.nl, neilb@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+Message-Id: <20070424045027.f21a79ae.akpm@linux-foundation.org>
+In-Reply-To: <E1HgJ5u-0000aD-00@dorka.pomaz.szeredi.hu>
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+	<17965.29252.950216.971096@notabene.brown>
+	<1177398589.26937.40.camel@twins>
+	<E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+	<1177403494.26937.59.camel@twins>
+	<E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
+	<1177406817.26937.65.camel@twins>
+	<E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
+	<20070424030021.a091018d.akpm@linux-foundation.org>
+	<1177409538.26937.75.camel@twins>
+	<20070424034024.f953f93f.akpm@linux-foundation.org>
+	<E1HgJ5u-0000aD-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070424183847.FD98.Y-GOTO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (24/04/07 18:58), Yasunori Goto didst pronounce:
+On Tue, 24 Apr 2007 13:22:02 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> > On Tue, 24 Apr 2007 12:12:18 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Tue, 2007-04-24 at 03:00 -0700, Andrew Morton wrote:
+> > > > On Tue, 24 Apr 2007 11:47:20 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > > > 
+> > > > > > Ahh, now I see; I had totally blocked out these few lines:
+> > > > > > 
+> > > > > > 			pages_written += write_chunk - wbc.nr_to_write;
+> > > > > > 			if (pages_written >= write_chunk)
+> > > > > > 				break;		/* We've done our duty */
+> > > > > > 
+> > > > > > yeah, those look dubious indeed... And reading back Neil's comments, I
+> > > > > > think he agrees.
+> > > > > > 
+> > > > > > Shall we just kill those?
+> > > > > 
+> > > > > I think we should.
+> > > > > 
+> > > > > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
+> > > > > stupid git, and that those lines are in fact vitally important ;)
+> > > > > 
+> > > > 
+> > > > It depends what they're replaced with.
+> > > > 
+> > > > That code is there, iirc, to prevent a process from getting stuck in
+> > > > balance_dirty_pages() forever due to the dirtying activity of other
+> > > > processes.
+> > > > 
+> > > > hm, we ask the process to write write_chunk pages each go around the loop.
+> > > > So if it wrote write-chunk/2 pages on the first pass it might end up writing
+> > > > write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
+> > > > if it does happen - the upper bound is write_chunk*2-1, I think.
+> > > 
+> > > Right, but I think the problem is that its dirty -> writeback, not dirty
+> > > -> writeback completed.
+> > > 
+> > > Ie. they don't guarantee progress, it could be that the total
+> > > nr_reclaimable + nr_writeback will steadily increase due to this break.
+> > 
+> > Don't think so.  We call balance_dirty_pages() once per ratelimit_pages
+> > dirtyings and when we get there, we write 1.5*ratelimit_pages pages.
 > 
+> No, we _start_ writeback for 1.5*ratelimit_pages pages, but do not
+> wait for those writebacks to finish.
 > 
-> > Subject: Check zone boundaries when freeing bootmem
-> > Zone boundaries do not have to be aligned to MAX_ORDER_NR_PAGES. 
+> So for a slow device and a fast writer, dirty+writeback can indeed
+> increase beyond the dirty threshold.
 > 
-> Hmm. I don't understand here yet... Could you explain more? 
-> 
-> This issue occurs only when ZONE_MOVABLE is specified.
-> If its boundary is aligned to MAX_ORDER automatically,
-> I guess user will not mind it.
-> 
-> From memory hotplug view, I prefer section size alignment to make
-> simple code. :-P
- 
-How does this look to you?
+
+Nope, try it.
+
+If a process dirties 1000 pages it'll then go into balance_dirty_pages()
+and start writeback against 1,500 pages.  When we hit dirty_ratio that
+process will be required to write back 1,500 pages for each eight pages
+which it dirtied.  We'll quickly reach the stage where there are no longer
+1,500 pages to be written back and the process will block in
+balance_dirty_pages() until the dirty+writeback level subsides.
 
 
-======
-The two potential users of ZONE_MOVABLE would prefer if the zone was aligned
-to a boundary. This patch aligns the zone to a MAX_ORDER_NR_PAGES boundary.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-rc6-mm1-002_commonparse/mm/page_alloc.c linux-2.6.21-rc6-mm1-003_alignmovable/mm/page_alloc.c
---- linux-2.6.21-rc6-mm1-002_commonparse/mm/page_alloc.c	2007-04-24 09:38:30.000000000 +0100
-+++ linux-2.6.21-rc6-mm1-003_alignmovable/mm/page_alloc.c	2007-04-24 11:15:40.000000000 +0100
-@@ -3642,6 +3642,11 @@ restart:
- 	usable_nodes--;
- 	if (usable_nodes && required_kernelcore > usable_nodes)
- 		goto restart;
-+	
-+	/* Align start of ZONE_MOVABLE on all nids to MAX_ORDER_NR_PAGES */
-+	for (nid = 0; nid < MAX_NUMNODES; nid++)
-+		zone_movable_pfn[nid] =
-+			roundup(zone_movable_pfn[nid], MAX_ORDER_NR_PAGES);
- }
- 
- /**
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
