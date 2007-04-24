@@ -1,69 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031010AbXDXA7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031015AbXDXBGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031010AbXDXA7N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 20:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDXA7N
+	id S1031015AbXDXBGP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031013AbXDXBGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 20:59:13 -0400
-Received: from mga02.intel.com ([134.134.136.20]:6850 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031010AbXDXA7L convert rfc822-to-8bit (ORCPT
+	Mon, 23 Apr 2007 21:06:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54586 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031015AbXDXBGO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 20:59:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,444,1170662400"; 
-   d="scan'208"; a="232749811:sNHT21182084"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 23 Apr 2007 21:06:14 -0400
+Date: Mon, 23 Apr 2007 18:06:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Neil Brown <neilb@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
+In-Reply-To: <17965.21585.915947.810173@notabene.brown>
+Message-ID: <Pine.LNX.4.64.0704231805260.3852@schroedinger.engr.sgi.com>
+References: <17960.16739.870487.497750@notabene.brown>
+ <Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
+ <17960.20796.761309.771912@notabene.brown> <Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
+ <17964.21972.961812.744601@notabene.brown> <Pine.LNX.4.64.0704231340180.512@schroedinger.engr.sgi.com>
+ <17965.20631.736307.24491@notabene.brown> <Pine.LNX.4.64.0704231742310.1916@schroedinger.engr.sgi.com>
+ <17965.21585.915947.810173@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [REPORT] cfs-v4 vs sd-0.44
-Date: Mon, 23 Apr 2007 17:59:06 -0700
-Message-ID: <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <462D37D2.3060208@goop.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [REPORT] cfs-v4 vs sd-0.44
-Thread-Index: AceF/42qK2+NWlpkQoyN7dyhJHJXKwABD2Ag
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
-       "Juliusz Chroboczek" <jch@pps.jussieu.fr>,
-       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
-       "Bill Davidsen" <davidsen@tmr.com>, "Willy Tarreau" <w@1wt.eu>,
-       "William Lee Irwin III" <wli@holomorphy.com>,
-       <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>, <caglar@pardus.org.tr>,
-       "Gene Heskett" <gene.heskett@gmail.com>
-X-OriginalArrivalTime: 24 Apr 2007 00:59:08.0071 (UTC) FILETIME=[C32E6B70:01C7860B]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't know if we've discussed this or not. Since both CFS and SD claim
-to be fair, I'd like to hear more opinions on the fairness aspect of
-these designs. In areas such as OS, networking, and real-time, fairness,
-and its more general form, proportional fairness, are well-defined
-terms. In fact, perfect fairness is not feasible since it requires all
-runnable threads to be running simultaneously and scheduled with
-infinitesimally small quanta (like a fluid system). So to evaluate if a
-new scheduling algorithm is fair, the common approach is to take the
-ideal fair algorithm (often referred to as Generalized Processor
-Scheduling or GPS) as a reference model and analyze if the new algorithm
-can achieve a constant error bound (different error metrics also exist).
-I understand that via experiments we can show a design is reasonably
-fair in the common case, but IMHO, to claim that a design is fair, there
-needs to be some kind of formal analysis on the fairness bound, and this
-bound should be proven to be constant. Even if the bound is not
-constant, at least this analysis can help us better understand and
-predict the degree of fairness that users would experience (e.g., would
-the system be less fair if the number of threads increases? What happens
-if a large number of threads dynamically join and leave the system?).
+On Tue, 24 Apr 2007, Neil Brown wrote:
 
-  tong
+> kobject_set_name actually takes a format and arbitrary args and uses
+> vsnprintf, so it has to make it's own copy.
+
+Ok then this should be fine...
+
+SLAB: Fix sysfs directory handling
+
+This fixes the problem that SLUB does not track the names of aliased
+slabs by changing the way that SLUB manages the files in /sys/slab.
+
+If the slab that is being operated on is not mergeable (usually the
+case if we are debugging) then do not create any aliases. If an alias
+exists that we conflict with then remove it before creating the
+directory for the unmergeable slab. If there is a true slab cache there
+and not an alias then we fail since there is a true duplication of
+slab cache names. So debugging allows the detection of slab name
+duplication as usual.
+
+If the slab is mergeable then we create a directory with a unique name
+created from the slab size, slab options and the pointer to the kmem_cache
+structure (disambiguation). All names referring to the slabs will
+then be created as symlinks to that unique name. These symlinks are
+not going to be removed on kmem_cache_destroy() since we only carry
+a counter for the number of aliases. If a new symlink is created
+then it may just replace an existing one. This means that one can create
+a gazillion slabs with the same name (if they all refer to mergeable
+caches). It will only increase the alias count. So we have the potential
+of not detecting duplicate slab names (there is actually no harm
+done by doing that....). We will detect the duplications as
+as soon as debugging is enabled because we will then no longer
+generate symlinks and special unique names.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+Index: linux-2.6.21-rc6/mm/slub.c
+===================================================================
+--- linux-2.6.21-rc6.orig/mm/slub.c	2007-04-23 13:08:41.000000000 -0700
++++ linux-2.6.21-rc6/mm/slub.c	2007-04-23 18:05:16.000000000 -0700
+@@ -3307,16 +3307,68 @@ static struct kset_uevent_ops slab_ueven
+ 
+ decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
+ 
++#define ID_STR_LENGTH 64
++
++/* Create a unique string id for a slab cache:
++ * format
++ * :[flags-]size:[memory address of kmemcache]
++ */
++static char *create_unique_id(struct kmem_cache *s)
++{
++	char *name = kmalloc(ID_STR_LENGTH, GFP_KERNEL);
++	char *p = name;
++
++	BUG_ON(!name);
++
++	*p++ = ':';
++	/*
++	 * First flags affecting slabcache operations */
++	if (s->flags & SLAB_CACHE_DMA)
++		*p++ = 'd';
++	if (s->flags & SLAB_RECLAIM_ACCOUNT)
++		*p++ = 'a';
++	if (s->flags & SLAB_DESTROY_BY_RCU)
++		*p++ = 'r';\
++	/* Debug flags */
++	if (s->flags & SLAB_RED_ZONE)
++		*p++ = 'Z';
++	if (s->flags & SLAB_POISON)
++		*p++ = 'P';
++	if (s->flags & SLAB_STORE_USER)
++		*p++ = 'U';
++	if (p != name + 1)
++		*p++ = '-';
++	p += sprintf(p,"%07d:0x%p" ,s->size, s);
++	BUG_ON(p > name + ID_STR_LENGTH - 1);
++	return name;
++}
++
+ static int sysfs_slab_add(struct kmem_cache *s)
+ {
+ 	int err;
++	const char *name;
+ 
+ 	if (slab_state < SYSFS)
+ 		/* Defer until later */
+ 		return 0;
+ 
++	if (s->flags & SLUB_NEVER_MERGE) {
++		/*
++		 * Slabcache can never be merged so we can use the name proper.
++		 * This is typically the case for debug situations. In that
++		 * case we can catch duplicate names easily.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, s->name);
++		name = s->name;
++	} else
++		/*
++		 * Create a unique name for the slab as a target
++		 * for the symlinks.
++		 */
++		name = create_unique_id(s);
++
+ 	kobj_set_kset_s(s, slab_subsys);
+-	kobject_set_name(&s->kobj, s->name);
++	kobject_set_name(&s->kobj, name);
+ 	kobject_init(&s->kobj);
+ 	err = kobject_add(&s->kobj);
+ 	if (err)
+@@ -3326,6 +3378,10 @@ static int sysfs_slab_add(struct kmem_ca
+ 	if (err)
+ 		return err;
+ 	kobject_uevent(&s->kobj, KOBJ_ADD);
++	if (!(s->flags & SLUB_NEVER_MERGE)) {
++		sysfs_slab_alias(s, s->name);
++		kfree(name);
++	}
+ 	return 0;
+ }
+ 
+@@ -3351,9 +3407,14 @@ static int sysfs_slab_alias(struct kmem_
+ {
+ 	struct saved_alias *al;
+ 
+-	if (slab_state == SYSFS)
++	if (slab_state == SYSFS) {
++		/*
++		 * If we have a leftover link then remove it.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, name);
+ 		return sysfs_create_link(&slab_subsys.kset.kobj,
+ 						&s->kobj, name);
++	}
+ 
+ 	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
+ 	if (!al)
