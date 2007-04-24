@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbXDXKfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbXDXKk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbXDXKfM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXDXKfM
+	id S1754633AbXDXKk3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbXDXKk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:35:12 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:18051 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754625AbXDXKfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:35:10 -0400
-Message-ID: <462DDD1E.8080306@sw.ru>
-Date: Tue, 24 Apr 2007 14:34:06 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
-MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-References: <461A3010.90403@sw.ru> <461A397A.8080609@sw.ru> <462DD22D.3030401@linux.vnet.ibm.com>
-In-Reply-To: <462DD22D.3030401@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 06:40:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54252 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754630AbXDXKk2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 06:40:28 -0400
+Date: Tue, 24 Apr 2007 12:40:24 +0200
+From: Jan Kara <jack@suse.cz>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: BUG: Dentry still in use during umount in 2.6.21-rc5-git6
+Message-ID: <20070424104024.GF1330@atrey.karlin.mff.cuni.cz>
+References: <200704202348.39357.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704202348.39357.ak@suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Pavel Emelianov wrote:
->> Implement try_to_free_pages_in_container() to free the
->> pages in container that has run out of memory.
->>
->> The scan_control->isolate_pages() function isolates the
->> container pages only.
->>
-> 
-> Pavel,
-> 
-> I've just started playing around with these patches, I preferred
-> the approach of v1. Please see below
-> 
->> +static unsigned long isolate_container_pages(unsigned long nr_to_scan,
->> +        struct list_head *src, struct list_head *dst,
->> +        unsigned long *scanned, struct zone *zone)
->> +{
->> +    unsigned long nr_taken = 0;
->> +    struct page *page;
->> +    struct page_container *pc;
->> +    unsigned long scan;
->> +    LIST_HEAD(pc_list);
->> +
->> +    for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
->> +        pc = list_entry(src->prev, struct page_container, list);
->> +        page = pc->page;
->> +        if (page_zone(page) != zone)
->> +            continue;
-> 
-> shrink_zone() will walk all pages looking for pages belonging to this
+> One of my autoboot test clients gave me this during shutdown. It used
+> reiserfs and autofs and NFS heavily.
+  Jeff has a fix for this bug so it should go away soon... Thanks for
+report anyway :).
 
-No. shrink_zone() will walk container pages looking for pages in the desired zone.
-Scann through the full zone is done on global memory shortage.
+									Honza
 
-> container and this slows down the reclaim quite a bit. Although we've
-> reused code, we've ended up walking the entire list of the zone to
-> find pages belonging to a particular container, this was the same
-> problem I had with my RSS controller patches.
+> Unmounting file systems
+> BUG: Dentry ffff8100f3693a40{i=2352220,n=xattrs} still in use (1) [unmount of reiserfs sda9]
+> ------------[ cut here ]------------
+> kernel BUG at /mnt/dm-2/newautoboot/autoboot/lsrc/mainline/linux/fs/dcache.c:623!
+> invalid opcode: 0000 [1] SMP 
+> CPU 1 
+> Modules linked in:
+> Pid: 15791, comm: umount Not tainted 2.6.21-rc5-git6 #44
+> RIP: 0010:[<ffffffff80287454>]  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
+> RSP: 0018:ffff8100f5f67e18  EFLAGS: 00010292
+> RAX: 0000000000000060 RBX: ffff8100f3693a40 RCX: 0000000000005207
+> RDX: 00000000ffffffff RSI: 0000000000000046 RDI: 0000000000014661
+> RBP: ffff8100f6dc9cc0 R08: 00000000000000a0 R09: 00000005ffffffff
+> R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100f3693aa0
+> R13: 0000000000014661 R14: 000000000050ea70 R15: 000000000050ead0
+> FS:  00002adc863a86d0(0000) GS:ffff8100f7fdc1c0(0000) knlGS:00000000b7be38d0
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 00002adc8626a688 CR3: 00000000f628b000 CR4: 00000000000006e0
+> Process umount (pid: 15791, threadinfo ffff8100f5f66000, task ffff8100f7a08100)
+> Stack:  ffff810004dab218 ffff810004dab000 ffffffff80558860 ffff810004dab000
+>  0000000000000000 ffffffff8028815b ffff810004dab000 ffffffff8027a1a5
+>  0000000000000000 ffff8100f6c50980 ffffffff806c1600 ffffffff8027a2a4
+> Call Trace:
+>  [<ffffffff8028815b>] shrink_dcache_for_umount+0x2f/0x3d
+>  [<ffffffff8027a1a5>] generic_shutdown_super+0x19/0xf2
+>  [<ffffffff8027a2a4>] kill_block_super+0x26/0x3b
+>  [<ffffffff8027a350>] deactivate_super+0x47/0x60
+>  [<ffffffff8028bf94>] sys_umount+0x1f7/0x22a
+>  [<ffffffff8027b64d>] sys_newstat+0x19/0x31
+>  [<ffffffff8020932e>] system_call+0x7e/0x83
 > 
->> +
->> +        list_move(&pc->list, &pc_list);
->> +
+> 
+> Code: 0f 0b eb fe 48 8b 6b 28 48 39 dd 75 04 31 ed eb 04 f0 ff 4d 
+> RIP  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
+>  RSP <ffff8100f5f67e18>
+> /etc/init.d/boot.d/K14boot.localfs: line 93: 15791 Segmentation fault      umount -avt noproc,nonfs,nonfs4,nosmbfs,nocifs,notmpfs
 > 
 > 
-
+> 
+> -Andi
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
