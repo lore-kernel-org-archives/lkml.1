@@ -1,73 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423129AbXDXVb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423137AbXDXVcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423129AbXDXVb6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423128AbXDXVb6
+	id S1423137AbXDXVcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:31:58 -0400
-Received: from holomorphy.com ([66.93.40.71]:45262 "EHLO holomorphy.com"
+	Tue, 24 Apr 2007 17:32:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29843 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423127AbXDXVb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:31:56 -0400
-Date: Tue, 24 Apr 2007 14:27:17 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: "Li, Tong N" <tong.n.li@intel.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070424212717.GR31925@holomorphy.com>
-References: <462D37D2.3060208@goop.org> <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1423128AbXDXVcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:32:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="78556757:sNHT27158796"
+Date: Tue, 24 Apr 2007 14:30:10 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 2/7] genhd: expose AN to user space
+Message-Id: <20070424143010.f37333f7.kristen.c.accardi@intel.com>
+In-Reply-To: <462DBA33.9060207@gmail.com>
+References: <20070424074856.005152262@intel.com>
+	<20070423165950.7d64bd8e.kristen.c.accardi@intel.com>
+	<462DBA33.9060207@gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
-> I don't know if we've discussed this or not. Since both CFS and SD claim
-> to be fair, I'd like to hear more opinions on the fairness aspect of
-> these designs. In areas such as OS, networking, and real-time, fairness,
-> and its more general form, proportional fairness, are well-defined
-> terms. In fact, perfect fairness is not feasible since it requires all
-> runnable threads to be running simultaneously and scheduled with
-> infinitesimally small quanta (like a fluid system). So to evaluate if a
-> new scheduling algorithm is fair, the common approach is to take the
-> ideal fair algorithm (often referred to as Generalized Processor
-> Scheduling or GPS) as a reference model and analyze if the new algorithm
-> can achieve a constant error bound (different error metrics also exist).
+Allow user space to determine if a disk supports Asynchronous Notification
+of media changes.  This is done by adding a new sysfs file "capability_flags",
+which is documented in (insert file name).  This sysfs file will export all
+disk capabilities flags to user space.  We also define a new flag to define
+the media change notification capability.
 
-Could you explain for the audience the technical definition of fairness
-and what sorts of error metrics are commonly used? There seems to be
-some disagreement, and you're neutral enough of an observer that your
-statement would help.
+Changed from last version:
+* changed sysfs filename to "capability" from "capability_flags"
 
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
-> I understand that via experiments we can show a design is reasonably
-> fair in the common case, but IMHO, to claim that a design is fair, there
-> needs to be some kind of formal analysis on the fairness bound, and this
-> bound should be proven to be constant. Even if the bound is not
-> constant, at least this analysis can help us better understand and
-> predict the degree of fairness that users would experience (e.g., would
-> the system be less fair if the number of threads increases? What happens
-> if a large number of threads dynamically join and leave the system?).
-
-Carrying out this sort of analysis on various policies would help, but
-I'd expect most of them to be difficult to analyze. cfs' current
-->fair_key computation should be simple enough to analyze, at least
-ignoring nice numbers, though I've done nothing rigorous in this area.
-
-
--- wli
+Index: 2.6-git/block/genhd.c
+===================================================================
+--- 2.6-git.orig/block/genhd.c
++++ 2.6-git/block/genhd.c
+@@ -370,7 +370,10 @@ static ssize_t disk_size_read(struct gen
+ {
+ 	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
+ }
+-
++static ssize_t disk_capability_read(struct gendisk *disk, char *page)
++{
++	return sprintf(page, "%x\n", disk->flags);
++}
+ static ssize_t disk_stats_read(struct gendisk * disk, char *page)
+ {
+ 	preempt_disable();
+@@ -413,6 +416,10 @@ static struct disk_attribute disk_attr_s
+ 	.attr = {.name = "size", .mode = S_IRUGO },
+ 	.show	= disk_size_read
+ };
++static struct disk_attribute disk_attr_capability = {
++	.attr = {.name = "capability", .mode = S_IRUGO },
++	.show	= disk_capability_read
++};
+ static struct disk_attribute disk_attr_stat = {
+ 	.attr = {.name = "stat", .mode = S_IRUGO },
+ 	.show	= disk_stats_read
+@@ -453,6 +460,7 @@ static struct attribute * default_attrs[
+ 	&disk_attr_removable.attr,
+ 	&disk_attr_size.attr,
+ 	&disk_attr_stat.attr,
++	&disk_attr_capability.attr,
+ #ifdef CONFIG_FAIL_MAKE_REQUEST
+ 	&disk_attr_fail.attr,
+ #endif
+Index: 2.6-git/include/linux/genhd.h
+===================================================================
+--- 2.6-git.orig/include/linux/genhd.h
++++ 2.6-git/include/linux/genhd.h
+@@ -94,6 +94,7 @@ struct hd_struct {
+ 
+ #define GENHD_FL_REMOVABLE			1
+ #define GENHD_FL_DRIVERFS			2
++#define GENHD_FL_MEDIA_CHANGE_NOTIFY		4
+ #define GENHD_FL_CD				8
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+Index: 2.6-git/Documentation/block/capability.txt
+===================================================================
+--- /dev/null
++++ 2.6-git/Documentation/block/capability.txt
+@@ -0,0 +1,15 @@
++Generic Block Device Capability
++===============================================================================
++This file documents the sysfs file block/<disk>/capability
++
++capability is a hex word indicating which capabilities a specific disk
++supports.  For more information on bits not listed here, see
++include/linux/genhd.h
++
++Capability				Value
++-------------------------------------------------------------------------------
++GENHD_FL_MEDIA_CHANGE_NOTIFY		4
++	When this bit is set, the disk supports Asynchronous Notification
++	of media change events.  These events will be broadcast to user
++	space via kernel uevent.
++
