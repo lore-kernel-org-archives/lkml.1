@@ -1,48 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423050AbXDXTdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423069AbXDXTea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423050AbXDXTdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 15:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423063AbXDXTdW
+	id S1423069AbXDXTea (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 15:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423066AbXDXTea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 15:33:22 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47952 "EHLO mx2.suse.de"
+	Tue, 24 Apr 2007 15:34:30 -0400
+Received: from mail.screens.ru ([213.234.233.54]:59600 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423050AbXDXTdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 15:33:21 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ashok Raj <ashok.raj@intel.com>
-Subject: Re: [Intel IOMMU][patch 7/8] Support for legacy ISA devices
-Date: Tue, 24 Apr 2007 21:31:09 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-References: <20070424060259.426374000@intel.com> <20070424061038.252959000@intel.com>
-In-Reply-To: <20070424061038.252959000@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1423056AbXDXTe2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 15:34:28 -0400
+Date: Tue, 24 Apr 2007 23:34:04 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream
+Message-ID: <20070424193404.GA5042@tv-sign.ru>
+References: <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> <16575.1177433907@redhat.com> <17966.1177438970@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704242131.10139.ak@suse.de>
+In-Reply-To: <17966.1177438970@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 April 2007 08:03:06 Ashok Raj wrote:
-> Floppy disk drivers dont work well with DMA remapping.
-
-What is the problem? You can't allocate mappings <16MB?
-
-> Its possible to  
-> extend the current use for x86_64, but the gain is very little. If someone
-> feels compelled to clean this up, its up for grabs. Since these use 16M, we 
-> just provide a unity map for the ISA bridge device.
+On 04/24, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
 > 
+> > Sure, I'll grep for cancel_delayed_work(). But unless I missed something,
+> > this change should be completely transparent for all users. Otherwise, it
+> > is buggy.
+> 
+> I guess you will have to make sure that cancel_delayed_work() is always
+> followed by a flush of the workqueue, otherwise you might get this situation:
+> 
+> 	CPU 0				CPU 1
+> 	===============================	=======================
+> 					<timer expires>
+> 	cancel_delayed_work(x) == 0	-->delayed_work_timer_fn(x)
+> 	kfree(x);			-->do_IRQ()
+> 	y = kmalloc(); // reuses x
+> 					<--do_IRQ()
+> 					__queue_work(x)
+> 	--- OOPS ---
+> 
+> That's my main concern.  If you are certain that can't happen, then fair
+> enough.
 
-While it's probably not worth for the floppy there are other devices
-with similar weird addressing limitations. Some generic handling of it
-would be nice.
+Yes sure. Note that this is documented:
 
--Andi
+	/*
+	 * Kill off a pending schedule_delayed_work().  Note that the work callback
+	 * function may still be running on return from cancel_delayed_work().  Run
+	 * flush_workqueue() or cancel_work_sync() to wait on it.
+	 */
+
+This comment is not very precise though. If the work doesn't re-arm itself,
+we need cancel_work_sync() only if cancel_delayed_work() returns 0.
+
+So there is no difference with the proposed change. Except, return value == 0
+means:
+
+	currently (del_timer_sync): callback may still be running or scheduled
+
+	with del_timer: may still be running, or scheduled, or will be scheduled
+	right now.
+
+However, this is the same from the caller POV.
+
+> Can you show me a patch illustrating exactly how you want to change
+> cancel_delayed_work()?  I can't remember whether you've done so already, but
+> if you have, I can't find it.  Is it basically this?:
+> 
+>  static inline int cancel_delayed_work(struct delayed_work *work)
+>  {
+>  	int ret;
+> 
+> -	ret = del_timer_sync(&work->timer);
+> +	ret = del_timer(&work->timer);
+>  	if (ret)
+>  		work_release(&work->work);
+>  	return ret;
+>  }
+
+Yes, exactly. The patch is trivial, but I need some time to write the
+understandable changelog...
+
+> I was thinking this situation might be a problem:
+> 
+> 	CPU 0				CPU 1
+> 	===============================	=======================
+> 					<timer expires>
+> 	cancel_delayed_work(x) == 0	-->delayed_work_timer_fn(x)
+> 	schedule_delayed_work(x,0)	-->do_IRQ()
+> 	<keventd scheduled>
+> 	x->work()
+> 					<--do_IRQ()
+> 					__queue_work(x)
+> 
+> But it won't, will it?
+
+Yes, I think this should be OK. schedule_delayed_work() will notice
+_PENDING and abort, so the last "x->work()" doesn't happen.
+
+What can happen is
+
+					<timer expires>
+	cancel_delayed_work(x) == 0
+					-->delayed_work_timer_fn(x)
+					__queue_work(x)
+					<keventd scheduled>
+					x->work()
+	schedule_delayed_work(x,0)
+	<the work is scheduled again>
+
+, so we can have an "unneeded schedule", but this is very unlikely.
+
+Oleg.
+
