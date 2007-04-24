@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXDXNhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161753AbXDXNlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422665AbXDXNhj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 09:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422654AbXDXNhj
+	id S1161753AbXDXNlF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 09:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161767AbXDXNlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 09:37:39 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45032 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422651AbXDXNhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 09:37:38 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070423171157.GA205@tv-sign.ru> 
-References: <20070423171157.GA205@tv-sign.ru>  <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
-       containers@lists.osdl.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 24 Apr 2007 14:37:04 +0100
-Message-ID: <9767.1177421824@redhat.com>
+	Tue, 24 Apr 2007 09:41:05 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:54346 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161753AbXDXNlC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 09:41:02 -0400
+X-AuditID: d80ac287-ad0c9bb00000590d-12-462e08ee6156 
+Date: Tue, 24 Apr 2007 14:40:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+cc: Andi Kleen <ak@suse.de>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
+In-Reply-To: <6.0.0.20.2.20070424100507.049670d0@172.19.0.2>
+Message-ID: <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
+References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
+ <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
+ <6.0.0.20.2.20070423210926.045668d0@172.19.0.2>
+ <Pine.LNX.4.64.0704231438280.3516@blonde.wat.veritas.com>
+ <6.0.0.20.2.20070424100507.049670d0@172.19.0.2>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Apr 2007 13:40:58.0841 (UTC) FILETIME=[30EC6490:01C78676]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Tue, 24 Apr 2007, Hisashi Hifumi wrote:
+> At 22:42 07/04/23, Hugh Dickins wrote:
+> >On Mon, 23 Apr 2007, Hisashi Hifumi wrote:
+> > > >No.  The PG_lru flag bit is just one bit amongst many others:
+> > > >what of concurrent operations changing other bits in that same
+> > > >unsigned long e.g. trying to lock the page by setting PG_locked?
+> > > >There are some places where such micro-optimizations can be made
+> > > >(typically while first allocating the page); but in general, no.
+> > >
+> > > In i386 and x86_64, btsl is used to change page flag. In this case,
+> > > if btsl without lock prefix
+> > > set PG_locked and PG_lru flag concurrently, does only one operation
+> > > succeed ?
+> >
+> >That's right: on an SMP machine, without the lock prefix, the operation
+> >is no longer atomic: what's stored back may be missing the result of
+> >one or the other of the racing operations.
+> 
+> In the case that changing the same bit concurrently, lock prefix or other
+> spinlock is needed.
 
-> > > We only care when del_timer() returns true. In that case, if the timer
-> > > function still runs (possible for single-threaded wqs), it has already
-> > > passed __queue_work().
-> > 
-> > Why do you assume that?
+Why would you need any kind of lock when just changing a single bit,
+if it didn't affect other bits of the same word?  Just as you don't
+need a lock when simply assigning a word, setting a bit to 0 or 1
+is simple in itself (it doesn't matter if it was 0 or 1 before).
 
-Sorry, I should have been more clear.  I meant the assumption that we only
-care about a true return from del_timer().
+> But, I think that concurrent bit operation on different bits
+> is just like OR operation , so lock prefix is not needed.
 
-> If del_timer() returns true, the timer was pending. This means it was
-> started by work->func() (note that __run_timers() clears timer_pending()
-> before calling timer->function). This in turn means that
-> delayed_work_timer_fn() has already called __queue_work(dwork), otherwise
-> work->func() has no chance to run.
+I firmly believe that it is; but I'm not a processor expert.
 
-But if del_timer() returns 0, then there may be a problem.  We can't tell the
-difference between the following two cases:
+> AMD instruction manual says about bts that ,
+> 
+> "Copies a bit, specified by bit index in a register or 8-bit immediate value
+> (second operand), from a bit
+> string (first operand), also called the bit base, to the carry flag (CF) of
+> the rFLAGS register, and then
+> sets the bit in the bit string to 1."
+> 
+> BTS instruction is read-modify-write instruction on bit unit. So concurrent
+> bit operation on different bits may be possible.
 
- (1) The timer hadn't been started.
+read-modify-write indeed.  That's exactly what the "lock" prefix is
+needed for, isn't it?  To lock together the read-modify-write cycles
+to make the entire operation atomic on SMP.  Without which you may
+lose the changes made concurrently to the same word by another cpu,
+or it lose yours.
 
- (2) The timer had been started, has expired and is no longer pending, but
-     another CPU is running its handler routine.
+(If another cpu is merely changing the same bit as you are, no problem:
+either you're both changing it to the same value, or you're racing to
+set it to opposite values, and one of you wins - fair enough, however
+much locking you add, you're still left with the situation that two
+are racing and one wins in the end.)
 
-try_to_del_timer_sync() _does_, however, distinguish between these cases: the
-first is the 0 return, the second is the -1 return, and the case where it
-dequeued the timer is the 1 return.
+You now seem to be arguing, never mind your original PageLRU case,
+that include/asm-i386/bitops.h and include/asm-x86_64/bitops.h
+don't need the LOCK_PREFIX before the "btsl" in set_bit().
 
-BTW, can a timer handler be preempted?  I assume not...  But it can be delayed
-by interrupt processing.
+I disagree with you; but let someone more authoritative speak up.
+Mabye Andi can explain it a lot better than I can?
 
-David
+Hugh
