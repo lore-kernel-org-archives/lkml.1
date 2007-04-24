@@ -1,85 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423065AbXDXTez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423071AbXDXTe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423065AbXDXTez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 15:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423072AbXDXTey
+	id S1423071AbXDXTe5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 15:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423067AbXDXTe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 15:34:54 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:55237 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423065AbXDXTew (ORCPT
+	Tue, 24 Apr 2007 15:34:56 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44400 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423071AbXDXTex (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 15:34:52 -0400
-From: Nikita Danilov <nikita@clusterfs.com>
+	Tue, 24 Apr 2007 15:34:53 -0400
+Date: Tue, 24 Apr 2007 12:34:53 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <Pine.LNX.4.64.0704241941421.28487@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0704241234341.12753@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241042550.8418@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0704241941421.28487@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17966.23512.363955.141489@gargle.gargle.HOWL>
-Date: Tue, 24 Apr 2007 23:34:48 +0400
-To: David Lang <david.lang@digitalinsight.com>
-Cc: Amit Gud <gud@cis.ksu.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, val_henson@linux.intel.com,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
-       gud@ksu.edu
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-In-Reply-To: <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
-	<17965.60841.900376.524639@gargle.gargle.HOWL>
-	<Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz>
-X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Lang writes:
- > On Tue, 24 Apr 2007, Nikita Danilov wrote:
- > 
- > > Amit Gud writes:
- > >
- > > Hello,
- > >
- > > >
- > > > This is an initial implementation of ChunkFS technique, briefly discussed
- > > > at: http://lwn.net/Articles/190222 and
- > > > http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
- > >
- > > I have a couple of questions about chunkfs repair process.
- > >
- > > First, as I understand it, each continuation inode is a sparse file,
- > > mapping some subset of logical file blocks into block numbers. Then it
- > > seems, that during "final phase" fsck has to check that these partial
- > > mappings are consistent, for example, that no two different continuation
- > > inodes for a given file contain a block number for the same offset. This
- > > check requires scan of all chunks (rather than of only "active during
- > > crash"), which seems to return us back to the scalability problem
- > > chunkfs tries to address.
- > 
- > not quite.
- > 
- > this checking is a O(n^2) or worse problem, and it can eat a lot of memory in 
- > the process. with chunkfs you divide the problem by a large constant (100 or 
- > more) for the checks of individual chunks. after those are done then the final 
- > pass checking the cross-chunk links doesn't have to keep track of everything, it 
- > only needs to check those links and what they point to
+On Tue, 24 Apr 2007, Hugh Dickins wrote:
 
-Maybe I failed to describe the problem presicely.
+> I was certainly ignorant of that; but I'm not convinced it eliminates
+> the potential issue.  For a start, sys_move_pages seems not to involve
+> mempolicies at all - I don't see what prevents it migrating blockdev
+> pages away from the only node which has NORMAL memory.
 
-Suppose that all chunks have been checked. After that, for every inode
-I0 having continuations I1, I2, ... In, one has to check that every
-logical block is presented in at most one of these inodes. For this one
-has to read I0, with all its indirect (double-indirect, triple-indirect)
-blocks, then read I1 with all its indirect blocks, etc. And to repeat
-this for every inode with continuations.
+There is no need to. If the user does something stupid (and 32bit NUMA 
+system are so stupid by default) as you say then this means that the 
+pages would have to use bounce buffers to be written back.
 
-In the worst case (every inode has a continuation in every chunk) this
-obviously is as bad as un-chunked fsck. But even in the average case,
-total amount of io necessary for this operation is proportional to the
-_total_ file system size, rather than to the chunk size.
+> > Metadata is not movable nor subject to memory policies.
+> > It will never be mapped into a process space.
+> 
+> Not as metadata, no.  But someone (let's hope only root, though I may
+> be wrong on that) can map any part of the block device into userspace.
 
- > 
- > any ability to mark a filesystem as 'clean' and then not have to check it on 
- > reboot is a bonus on top of this.
- > 
- > David Lang
+Concurrent access to a block device by a filesystem and the user? That 
+cannot go over well. If one just reads then I would expect that a copy
+of the metadata becomes available to the user. Also you cannot migrate 
+pages that have multiple references (which is the case here if the 
+filesystem uses the page cache for the metadata) unless the user has 
+special priviledges and uses special command options.
 
-Nikita.
+A page that has references that cannot be accounted for by page migration 
+is never migrated. I would assume that the filesystem at minimum takes a 
+refcount on the page used for metadata.
+
+If the filesystem would not take a refcount then it would already be in 
+trouble because the page may then be evicted at any time.
+
+> > Yes but before we get there we will bounce pagecache pages into an area 
+> > where we do not need kmap.
+> 
+> Again, I'm not convinced: bouncing gets done for the I/O,
+> but where is it done to meet the filesystem's expectations?
+
+Bouncing gets done for the block device and the block device determines 
+the zones from which it can do I/O. Thus the block device determines the 
+allocation restrictions.
+
+> On the other hand, as I said, I've seen no problem myself in practice.
+> However, if there is no problem, why do block devices demand GFP_USER?
+
+GFP_USER requires allocation in non highmem areas. These are typically 
+reachable by device DMA. I think there is no problem if one would open a 
+block device with GFP_HIGHMEM. The pages may be allocated in highmem 
+which would require bounce buffers but otherwise we will be fine. A 
+ramdisk device may just work fine with highmem.
+
+If the system has both high memory and normal memory then only allocations 
+to highmemory are subject to memory policies etc etc. The block device 
+allocations would be in zone normal/dma and thus be exempt from NUMA 
+placement.
