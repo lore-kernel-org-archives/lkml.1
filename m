@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161782AbXDXOgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161780AbXDXOii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161782AbXDXOgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161780AbXDXOgW
+	id S1161780AbXDXOii (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161783AbXDXOii
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:36:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:60340 "EHLO
+	Tue, 24 Apr 2007 10:38:38 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:62144 "EHLO
 	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161782AbXDXOgV (ORCPT
+	with ESMTP id S1161780AbXDXOih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:36:21 -0400
+	Tue, 24 Apr 2007 10:38:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=naYVCshF4vk8BM/rZYYfNQPGI8BK62t4g0eINOVA7KcKh+MBka6vCHRzupwaw2Az8S943qAxfCDkun+NTwv9fh6wUHKLR7xuQ7Ws7X33aaczQw/wlh1zrHYJdd46jIZ1ROFo+jnHdsJmy3BE267+9pFFiguyBr6sS8ux+/pxD1Y=
+        b=hBAAw5ldPFbI1eTPeBPh5iMJ0rgK6PeaA3tcq1MK1vU+LzAfhvMNMRMtySPqmbEe+jMCP20yBjzkk7WIFp6zFmf4Lj2wBx1tKrCEnU6t+LpHdtNPZ7ffcFW4BCGwfIu/YyMyqYaFDTuEeNnCNlzTP5O5ev0IvsvAz3lYBn6tA8c=
 From: Gene Heskett <gene.heskett@gmail.com>
 Organization: Organization? very little
 To: Ingo Molnar <mingo@elte.hu>
 Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Date: Tue, 24 Apr 2007 10:36:15 -0400
+Date: Tue, 24 Apr 2007 10:38:32 -0400
 User-Agent: KMail/1.9.6
-Cc: Peter Williams <pwil3058@bigpond.net.au>,
+Cc: David Lang <david.lang@digitalinsight.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
        Arjan van de Ven <arjan@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
@@ -30,36 +31,43 @@ Cc: Peter Williams <pwil3058@bigpond.net.au>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
        caglar@pardus.org.tr
-References: <200704220959.34978.kernel@kolivas.org> <200704240312.25015.gene.heskett@gmail.com> <20070424071423.GB25322@elte.hu>
-In-Reply-To: <20070424071423.GB25322@elte.hu>
+References: <200704220959.34978.kernel@kolivas.org> <Pine.LNX.4.63.0704232342440.7121@qynat.qvtvafvgr.pbz> <20070424072408.GA27769@elte.hu>
+In-Reply-To: <20070424072408.GA27769@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704241036.16145.gene.heskett@gmail.com>
+Message-Id: <200704241038.32766.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Tuesday 24 April 2007, Ingo Molnar wrote:
->* Gene Heskett <gene.heskett@gmail.com> wrote:
+>* David Lang <david.lang@digitalinsight.com> wrote:
 >> > (Btw., to protect against such mishaps in the future i have changed
 >> > the SysRq-N [SysRq-Nice] implementation in my tree to not only
 >> > change real-time tasks to SCHED_OTHER, but to also renice negative
 >> > nice levels back to 0 - this will show up in -v6. That way you'd
 >> > only have had to hit SysRq-N to get the system out of the wedge.)
 >>
->> That sounds handy, particularly with idiots like me at the wheel...
+>> if you are trying to unwedge a system it may be a good idea to renice
+>> all tasks to 0, it could be that a task at +19 is holding a lock that
+>> something else is waiting for.
 >
->by that standard i guess we tinkerers are all idiots ;)
+>Yeah, that's possible too, but +19 tasks are getting a small but
+>guaranteed share of the CPU so eventually it ought to release it. It's
+>still a possibility, but i think i'll wait for a specific incident to
+>happen first, and then react to that incident :-)
 >
 >	Ingo
 
-Eiyyyup!
+In the instance I created, even the SysRq+b was ignored, and ISTR thats 
+supposed to initiate a reboot is it not?  So it was well and truly wedged.
 
 -- 
 Cheers, Gene
 "There are four boxes to be used in defense of liberty:
  soap, ballot, jury, and ammo. Please use in that order."
 -Ed Howdershelt (Author)
-Man's horizons are bounded by his vision.
+I use technology in order to hate it more properly.
+		-- Nam June Paik
