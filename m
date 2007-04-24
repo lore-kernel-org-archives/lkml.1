@@ -1,37 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422908AbXDXRwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422927AbXDXRw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422908AbXDXRwh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422927AbXDXRwh
+	id S1422927AbXDXRw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422909AbXDXRw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:52:37 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:23181 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422919AbXDXRwU (ORCPT
+	Tue, 24 Apr 2007 13:52:59 -0400
+Received: from inetc.connecttech.com ([64.7.140.42]:3525 "EHLO
+	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422919AbXDXRwo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:52:20 -0400
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="140050565:sNHT40708737"
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Cc: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>
-Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
-X-Message-Flag: Warning: May contain useful information
-References: <200704241744.31691.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 24 Apr 2007 10:52:18 -0700
-In-Reply-To: <200704241744.31691.fenkes@de.ibm.com> (Joachim Fenkes's message of "Tue, 24 Apr 2007 17:44:31 +0200")
-Message-ID: <adaabwx4q3x.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Tue, 24 Apr 2007 13:52:44 -0400
+From: "Stuart MacDonald" <stuartm@connecttech.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: Support for Zilog or Infineon hardware?
+Date: Tue, 24 Apr 2007 13:54:33 -0400
+Organization: Connect Tech Inc.
+Message-ID: <000001c78699$9d92cb70$294b82ce@stuartm>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 24 Apr 2007 17:52:18.0523 (UTC) FILETIME=[4D1D42B0:01C78699]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+Importance: Normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks good, applied for 2.6.22.
+We have been investigating Linux support for the following chips:
+
+Zilog		Z16C30 (also known as the "USC" or just 16C30)
+Zilog		Z16C32 (also known as the "IUSC" or just 16C32)
+http://www.zilog.com/products/family.asp?fam=200
+
+Infineon	"SEROCCO" family
+		SAB/SAF-20532 ("Serial Optimized Communications Controller")
+		SAB/SAF-20542 ("Serial Optimized Communications Controller with DMA")
+http://www.infineon.com/cgi-bin/ifx/portal/ep/channelView.do?channelId=-65034&channelPage=%2Fep%2Fchannel%2FleafNote.jsp&pageTypeId=
+17099
+
+I grepped 6.20 and 4.34 extensively, and found
+drivers/char/synclink*.c which appear to use the 16C32. Google turned
+up http://www.evolware.org/chri/serocco/index.html for the Infineon
+chips, but it's an out-of-tree driver.
+
+Is anyone aware of any other Linux drivers for those chips?
+
+..Stu
+
