@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754440AbXDXU1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbXDXUaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754440AbXDXU1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbXDXU1y
+	id S1754428AbXDXUaf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXDXUaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:27:54 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44973 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754372AbXDXU1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:27:53 -0400
-Date: Wed, 25 Apr 2007 00:27:27 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Roland McGrath <roland@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: [PATCH] kthread: Enhance kthread_stop to abort interruptible sleeps
-Message-ID: <20070424202727.GB5042@tv-sign.ru>
-References: <20070413130236.GA173@tv-sign.ru> <m1zm5bmywm.fsf@ebiederm.dsl.xmission.com> <20070424030924.be44ebfa.akpm@linux-foundation.org> <m1r6qat681.fsf@ebiederm.dsl.xmission.com> <20070424150558.GA233@tv-sign.ru> <20070424155332.GA321@tv-sign.ru> <m1irblu1wc.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1irblu1wc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.11
+	Tue, 24 Apr 2007 16:30:35 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60762 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754418AbXDXUae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:30:34 -0400
+Date: Tue, 24 Apr 2007 13:30:33 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <20070424101116.1cb7512e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/24, Eric W. Biederman wrote:
+On Tue, 24 Apr 2007, Hugh Dickins wrote:
+
+> On Tue, 24 Apr 2007, Christoph Lameter wrote:
+> > On Tue, 24 Apr 2007, Hugh Dickins wrote:
+> > 
+> > > Or Christoph may prevail in persuading there's no such problem.
+> > 
+> > This is pointless. NUMA allocations can only be controlled for the highest 
+> > zone. If we switch to a lower zone then we allocate on a different zone 
+> > than the user requested.
 > 
-> I don't know if this is the problem but it certainly needs to be fixed.
+> Sorry, I'm not following you there.   Perhaps your comment is saying
+> that second patch is pointless, because it forces allocations elsewhere
+> than the policy requires?  Rather than commenting on the line you quote?
 
-I guess you will re-submit these patches soon. May I suggest you to put
-this
+NUMA allocation can only be controlled for the highest zone. If you switch 
+to another zone then no control of the node is possible anymore.
 
-> +	spin_lock_irq(&tsk->sighand->siglock);
-> +	signal_wake_up(tsk, 1);
-> +	spin_unlock_irq(&tsk->sighand->siglock);
+> (When I said I didn't know if the patch would have unwanted side-effects
+> I was rather wondering what happens when you ask the allocator to do
+> some impossible combination.)
 
-and this
+It falls back from HIGHMEM to NORMAL (on 32 bit numa that means node 0. 
+The result of your patch is that someone requiring an alloc on node 4 will
+get memory on node 0).
 
->  fastcall void recalc_sigpending_tsk(struct task_struct *t)
->  {
->  	if (t->signal->group_stop_count > 0 ||
-> -	    (freezing(t)) ||
-> +	    (freezing(t)) || __kthread_should_stop(t) ||
+> > If the system has both high memory and normal memory then only allocations 
+> > to highmemory are subject to memory policies etc etc. The block device 
+> > allocations would be in zone normal/dma and thus be exempt from NUMA 
+> > placement.
+> 
+> Please just point us to the line where sys_move_pages enforces this.
 
-into the separate patch?
+It does not. It will happily move the pages into highmem. The filesystem 
+cannot expect the page to remain in the same zone without holding a 
+reference count. Swap may also move pages between zones. There is nothing 
+special in what page migration does here.
 
-Perhaps I am too paranoid, and most probably this change is good, but
-still I'm afraid this very subtle change may break things. In that case
-it would be easy to revert that only part (for example for the testing
-purposes).
+I would say that the filesystem is broke if it has such expectations 
+regardless of page migration.
 
-Consider,
 
-	current->flags |= PF_NOFREEZE;
-
-	while (!kthread_should_stop()) {
-
-		begin_something();
-
-		// I am a kernel thread, all signals are ignored.
-		// I don't want to contribute to loadavg, so I am
-		// waiting for the absoulutely critical event in
-		// TASK__INTERRUPTIBLE state.
-
-		if (wait_event_interruptible(condition))
-			panic("Impossible!");
-
-		commit_something();
-	}
-
-Oleg.
 
