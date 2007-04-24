@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161804AbXDXPVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXDXPd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161804AbXDXPVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:21:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161803AbXDXPVx
+	id S1753589AbXDXPd0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbXDXPd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:21:53 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52661 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161804AbXDXPVw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:21:52 -0400
-Date: Tue, 24 Apr 2007 08:21:17 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
-Message-ID: <20070424082117.354341d3@oldman>
-In-Reply-To: <20070424012902.1089bc02.akpm@linux-foundation.org>
-References: <462605DC.2080804@bx.jp.nec.com>
-	<462609D1.50300@bx.jp.nec.com>
-	<20070419210813.a599c54f.akpm@linux-foundation.org>
-	<46288D11.4000801@bx.jp.nec.com>
-	<20070420111526.01ad7f4c.akpm@linux-foundation.org>
-	<462DBC64.9070102@bx.jp.nec.com>
-	<20070424012902.1089bc02.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Tue, 24 Apr 2007 11:33:26 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1331 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753296AbXDXPdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:33:25 -0400
+Date: Tue, 24 Apr 2007 15:33:13 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Marcus Better <marcus@better.se>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.osdl.org, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [3/3] 2.6.21-rc6: known regressions
+Message-ID: <20070424153312.GB6055@ucw.cz>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704160823.39074.marcus@better.se> <1176705924.5129.1.camel@daplas> <200704171017.07012.marcus@better.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704171017.07012.marcus@better.se>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 01:29:02 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi!
 
-> On Tue, 24 Apr 2007 17:14:28 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> > Have you tried other combinations?
+> >
+> > s2ram -m -p -f
+> > s2ram -s -p -f
 > 
-> > > On Fri, 20 Apr 2007 18:51:13 +0900
-> > > Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
-> > > 
-> > >>> I started to do some cleanups and fixups here, but abandoned it when it was
-> > >>> all getting a bit large.
-> > >>>
-> > >>> Here are some fixes against this patch:
-> > >> I'm going to fix my patches by following your reviews and send new patches 
-> > >> on the LKML and the netdev ML in a few days.
-> > >>
-> > > 
-> > > Well..  before you can finish this work we need to decide upon what the
-> > > interface to userspace will be.
-> > > 
-> > > - The miscdev isn't appropriate
-> > > 
-> > 
-> > Why isn't miscdev appropriate? 
-> > We just shouldn't use miscdev for networking conventionally?
-> > 
+> Yes, I tried these slightly different combinations:
 > 
-> Yes it's rather odd, especially for networking.
-> 
-> What does the miscdev _do_ anyway?  Is it purely a target for the ioctls?
+> s2ram -f -a3 -s: Works! The screen becomes green but is restored quickly. It 
+> prints the following messages:
 
-Some other speculations:
-1. Would it be possible to add ioctl's to /dev/console? This would be more in
-    keeping with older Unix style model.
+Uhuh. This is second report of this strangeness. On thinkpad r60, -a3
+used to work, and now it needs more options. Can you locate patch
+causing this?
+							Pavel
 
-2. Using sysfs makes sense if there is a device object that exists to
-   add the sysfs attributes to.
-
-3. Procfs is handy for summary type tables.
-
-4. Netlink does feel like overkill for this. Although newer generic netlink
-   makes it easier.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
