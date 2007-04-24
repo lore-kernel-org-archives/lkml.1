@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422916AbXDXSE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422977AbXDXSF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422916AbXDXSE4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422940AbXDXSEz
+	id S1422977AbXDXSF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 14:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422968AbXDXSF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 14:04:55 -0400
-Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:27299 "EHLO
-	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422916AbXDXSEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 14:04:55 -0400
-Message-ID: <462E469F.6060502@xensource.com>
-Date: Tue, 24 Apr 2007 11:04:15 -0700
-From: Jeremy Fitzhardinge <jeremy@xensource.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: LAPLACE Cyprien <cyprien.laplace@trango-systems.com>
-CC: virtualization@lists.linux-foundation.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: SMP lockup in virtualized environment
-References: <462E4223.1050109@trango-systems.com>
-In-Reply-To: <462E4223.1050109@trango-systems.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Apr 2007 18:04:54.0284 (UTC) FILETIME=[0F953CC0:01C7869B]
+	Tue, 24 Apr 2007 14:05:56 -0400
+Received: from dspnet.fr.eu.org ([213.186.44.138]:4300 "EHLO dspnet.fr.eu.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422973AbXDXSFy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 14:05:54 -0400
+Date: Tue, 24 Apr 2007 20:05:52 +0200
+From: Olivier Galibert <galibert@pobox.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 1/7] libata: check for AN support
+Message-ID: <20070424180552.GA17319@dspnet.fr.eu.org>
+Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-ide@vger.kernel.org, htejun@gmail.com
+References: <20070424074856.005152262@intel.com> <20070423165943.0cc67bc5.kristen.c.accardi@intel.com> <20070424090713.65657495@the-village.bc.nu> <20070424102304.GA58841@dspnet.fr.eu.org> <20070424084904.61932994.kristen.c.accardi@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070424084904.61932994.kristen.c.accardi@intel.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-LAPLACE Cyprien wrote:
-> I wonder how the guest domain can be denied timer interrupts for such a
-> long time ? The only reason I see is that the guest domain is not
-> scheduled at all (host domain or another higher priority guest running).
->
-> Now in SMP host and guest, what happens if a guest CPU is not scheduled
-> for a while ?
->   
+On Tue, Apr 24, 2007 at 08:49:04AM -0700, Kristen Carlson Accardi wrote:
+> On Tue, 24 Apr 2007 12:23:04 +0200
+> Olivier Galibert <galibert@pobox.com> wrote:
+> 
+> > Sorry for replying to Alan's reply, I missed the original mail.
+> > 
+> > > > +#define ata_id_has_AN(id)	\
+> > > > +	((id[76] && (~id[76])) & ((id)[78] & (1 << 5)))
+> > 
+> > (a && ~a) & (b & 32)
+> > 
+> > I don't think that does what you think it does, because at that point
+> > it's a funny way to write 0 ((0 or 1) binary-and (0 or 32)).
+> > 
+> > I'm not even sure what it is you want.  If for the first part you
+> > wanted (id[76] != 0x00 && id[76] != 0xff), please write just that,
+> > thanks :-)
+> > 
+> >   OG.
+> > 
+> 
+> >From the serial ata spec, we have:
+> 
+> 13.2.1.18        Word 78: Serial ATA features supported
+> If Word 76 is not 0000h or FFFFh, Word 78 reports the optional features 
+> supported by the device.  Support for this word is optional and if not 
+> supported the word shall be zero indicating the device has no support for new 
+> Serial ATA capabilities.
+> 
+> so, basically yes, I'm really testing to make sure that word 76 isn't 0 or all
+> one then using that value & with value of bit in work 78 to determine AN
+> support - if you think this is really obfuscated, I've got no problem changing 
+> it - there's obviously many ways to mess around with bits.
 
-I think this mostly happens when you're doing an inherently
-time-stealing thing, like pausing vcpus or suspend/resume.  But I guess
-it could happen with a low-prio domain/vcpu on a busy system.
+& is not &&, so right now it's really incorrect.  1 & 32 is 0.
 
-> An example: in kernel/pid.c:alloc_pid(), if one of the guest CPUs is
-> descheduled when holding the pidmap_lock, what happens to the other
-> guest CPUs who want to alloc/free pids ? Are they blocked too ?
->   
+((id)[76] != 0x0000 && (id)[76] != 0xffff && ((id)[78] & (1 << 5)))
 
-Yep; its a problem.  If a vcpu holding locks and not running, then
-everyone else will be prevented from taking those locks.  If you have a
-very busy system, then presumably all the vcpus will be similarly loaded
-and the fact that it takes a long time to get locks just means you're
-trying to run too many vcpus for your hardware's capacity.
+The implicit typing of id looks dangerous to me, but you're not the
+one who has started it.
 
-The other problem is if you've got two vcpus sharing one real cpu, and
-vcpu A spins while waiting for vcpu B to release a lock, and vcpu B is
-waiting for A to get off the physical CPU.  I don't know how often this
-is a real problem in practice.
-
-    J
-
+  OG.
