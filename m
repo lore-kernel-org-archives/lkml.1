@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161714AbXDXMIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161718AbXDXMQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161714AbXDXMIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 08:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161728AbXDXMIw
+	id S1161718AbXDXMQg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 08:16:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161729AbXDXMQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 08:08:52 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:47715 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161714AbXDXMIv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 08:08:51 -0400
-To: akpm@linux-foundation.org
-CC: miklos@szeredi.hu, a.p.zijlstra@chello.nl, neilb@suse.de,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-reply-to: <20070424045027.f21a79ae.akpm@linux-foundation.org> (message from
-	Andrew Morton on Tue, 24 Apr 2007 04:50:27 -0700)
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-References: <20070420155154.898600123@chello.nl>
-	<20070420155503.608300342@chello.nl>
-	<17965.29252.950216.971096@notabene.brown>
-	<1177398589.26937.40.camel@twins>
-	<E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-	<1177403494.26937.59.camel@twins>
-	<E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
-	<1177406817.26937.65.camel@twins>
-	<E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
-	<20070424030021.a091018d.akpm@linux-foundation.org>
-	<1177409538.26937.75.camel@twins>
-	<20070424034024.f953f93f.akpm@linux-foundation.org>
-	<E1HgJ5u-0000aD-00@dorka.pomaz.szeredi.hu> <20070424045027.f21a79ae.akpm@linux-foundation.org>
-Message-Id: <E1HgJnl-0000gD-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Apr 2007 14:07:21 +0200
+	Tue, 24 Apr 2007 08:16:36 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38964 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161718AbXDXMQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 08:16:35 -0400
+Date: Tue, 24 Apr 2007 17:46:33 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Jakub Jelinek <jakub@redhat.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, cmm@us.ibm.com, suparna@in.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: Re: Interface for the new fallocate() system call
+Message-ID: <20070424121632.GA10136@amitarora.in.ibm.com>
+References: <20070316161704.GE8525@osiris.boeblingen.de.ibm.com> <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070420145918.GY355@devserv.devel.redhat.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > No, we _start_ writeback for 1.5*ratelimit_pages pages, but do not
-> > wait for those writebacks to finish.
+On Fri, Apr 20, 2007 at 10:59:18AM -0400, Jakub Jelinek wrote:
+> On Fri, Apr 20, 2007 at 07:21:46PM +0530, Amit K. Arora wrote:
+> > Ok.
+> > In this case we may have to consider following things:
 > > 
-> > So for a slow device and a fast writer, dirty+writeback can indeed
-> > increase beyond the dirty threshold.
-> > 
+> > 1) Obviously, for this glibc will have to call fallocate() syscall with
+> > different arguments on s390, than other archs. I think this should be
+> > doable and should not be an issue with glibc folks (right?).
 > 
-> Nope, try it.
+> glibc can cope with this easily, will just add
+> sysdeps/unix/sysv/linux/s390/fallocate.c or something similar to override
+> the generic Linux implementation.
 > 
-> If a process dirties 1000 pages it'll then go into balance_dirty_pages()
-> and start writeback against 1,500 pages.  When we hit dirty_ratio that
-> process will be required to write back 1,500 pages for each eight pages
-> which it dirtied.  We'll quickly reach the stage where there are no longer
-> 1,500 pages to be written back and the process will block in
-> balance_dirty_pages() until the dirty+writeback level subsides.
+> > 2) we also need to see how strace behaves in this case. With little
+> > knowledge that I have of strace, I don't think it should depend on
+> > argument ordering of a system call on different archs (since it uses
+> > ptrace internally and that should take care of it). But, it will be
+> > nice if someone can confirm this.
+> 
+> strace would solve this with #ifdef mess, it already does that in many
+> places so guess another few lines don't make it significantly worse.
 
-OK.  I was confused by this:
+I will work on the revised fallocate patchset and will post it soon.
 
-static long ratelimit_pages = 32;
-
-and didn't realize, that that 32 is totally irrelevant.
-
-So I'm still right, that for N dirty pages, the writer is allowed to
-dirty N/1500*8 more dirty pages, but I agree, that this isn't really
-an issue.
-
-Miklos
+Thanks!
+--
+Regards,
+Amit Arora
