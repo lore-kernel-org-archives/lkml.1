@@ -1,120 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161817AbXDXPIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161822AbXDXPJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161817AbXDXPIz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161822AbXDXPIz
+	id S1161822AbXDXPJk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161801AbXDXPJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:08:55 -0400
-Received: from mga09.intel.com ([134.134.136.24]:47761 "EHLO mga09.intel.com"
+	Tue, 24 Apr 2007 11:09:09 -0400
+Received: from mga09.intel.com ([134.134.136.24]:8942 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161820AbXDXPIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:08:34 -0400
+	id S1161818AbXDXPId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:08:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="78354551:sNHT77881779"
-Message-Id: <20070424061038.252959000@intel.com>
+   d="scan'208"; a="78354544:sNHT84049101"
+Message-Id: <20070424061038.108070000@intel.com>
 References: <20070424060259.426374000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 23:03:06 -0700
+Date: Mon, 23 Apr 2007 23:03:05 -0700
 From: Ashok Raj <ashok.raj@intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
        asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
        anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
        ashok.raj@intel.com, shaohua.li@intel.com
-Subject: [Intel IOMMU][patch 7/8] Support for legacy ISA devices
-Content-Disposition: inline; filename=fd0-workaround.patch
+Subject: [Intel IOMMU][patch 6/8] Doc updates for Intel Virtualization Technology for Directed I/O.
+Content-Disposition: inline; filename=iommu-doc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Floppy disk drivers dont work well with DMA remapping. Its possible to 
-extend the current use for x86_64, but the gain is very little. If someone
-feels compelled to clean this up, its up for grabs. Since these use 16M, we 
-just provide a unity map for the ISA bridge device.
+Document Intel IOMMU driver boot option.
 
 Signed-off-by: Ashok Raj <ashok.raj@intel.com>
 Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-------------------------------------
+Index: linux-2.6.21-rc5/Documentation/Intel-IOMMU.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.21-rc5/Documentation/Intel-IOMMU.txt	2007-04-17 05:41:56.000000000 -0700
+@@ -0,0 +1,119 @@
++Linux IOMMU Support
++===================
++
++The architecture spec can be obtained from the below location.
++
++http://www.intel.com/technology/virtualization/
++
++This guide gives a quick cheat sheet for some basic understanding.
++
++Some Keywords
++
++DMAR - DMA remapping
++DRHD - DMA Engine Reporting Structure
++RMRR - Reserved memory Region Reporting Structure
++ZLR  - Zero length reads from PCI devices
++IOVA - IO Virtual address.
++
++Basic stuff
++-----------
++
++ACPI enumerates and lists the different DMA engines in the platform, and
++device scope relationships between PCI devices and which DMA engine  controls
++them.
++
++What is RMRR?
++-------------
++
++There are some devices the BIOS controls, for e.g USB devices to perform
++PS2 emulation. The regions of memory used for these devices are marked
++reserved in the e820 map. When we turn on DMA translation, DMA to those
++regions will fail. Hence BIOS uses RMRR to specify these regions along with
++devices that need to access these regions. OS is expected to setup
++unity mappings for these regions for these devices to access these regions.
++
++How is IOVA generated?
++---------------------
++
++Well behaved drivers call pci_map_*() calls before sending command to device
++that needs to perform DMA. Once DMA is completed and mapping is no longer
++required, device performs a pci_unmap_*() calls to unmap the region.
++
++The Intel IOMMU driver allocates a virtual address per domain. Each PCIE
++device has its own domain (hence protection). Devices under p2p bridges
++share the virtual address with all devices under the p2p bridge due to
++transaction id aliasing for p2p bridges.
++
++IOVA generation is pretty generic. We used the same technique as vmalloc()
++but these are not global address spaces, but separate for each domain.
++Different DMA engines may support different number of domains.
++
++We also allocate gaurd pages with each mapping, so we can attempt to catch
++any overflow that might happen.
++
++
++Graphics Problems?
++------------------
++If you encounter issues with graphics devices, you can try adding
++option intel_iommu=igfx_off to turn off the integrated graphics engine.
++
++If it happens to be a PCI device included in the INCLUDE_ALL Engine,
++then try the intel_iommu=gfx_workaround to setup a 1-1 map. We hear
++graphics drivers may be in process of using DMA api's in the near
++future....
++
++Some exceptions to IOVA
++-----------------------
++Interrupt ranges are not address translated, (0xfee00000 - 0xfeefffff).
++The same is true for peer to peer transactions. Hence we reserve the
++address from PCI MMIO ranges so they are not allocated for IOVA addresses.
++
++
++Fault reporting
++---------------
++When errors are reported, the DMA engine signals via an interrupt. The fault
++reason and device that caused it with fault reason is printed on console.
++
++See below for sample.
++
++
++Boot Message Sample
++-------------------
++
++Something like this gets printed indicating presence of DMAR tables
++in ACPI.
++
++ACPI: DMAR (v001 A M I  OEMDMAR  0x00000001 MSFT 0x00000097) @ 0x000000007f5b5ef0
++
++When DMAR is being processed and initialized by ACPI, prints DMAR locations
++and any RMRR's processed.
++
++ACPI DMAR:Host address width 36
++ACPI DMAR:DRHD (flags: 0x00000000)base: 0x00000000fed90000
++ACPI DMAR:DRHD (flags: 0x00000000)base: 0x00000000fed91000
++ACPI DMAR:DRHD (flags: 0x00000001)base: 0x00000000fed93000
++ACPI DMAR:RMRR base: 0x00000000000ed000 end: 0x00000000000effff
++ACPI DMAR:RMRR base: 0x000000007f600000 end: 0x000000007fffffff
++
++When DMAR is enabled for use, you will notice..
++
++PCI-DMA: Using DMAR IOMMU
++
++Fault reporting
++---------------
++
++DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
++DMAR:[fault reason 05] PTE Write access is not set
++DMAR:[DMA Write] Request device [00:02.0] fault addr 6df084000
++DMAR:[fault reason 05] PTE Write access is not set
++
++TBD
++----
++
++- No Performance tuning / analysis yet.
++- sysfs needs useful data to be populated.
++  DMAR info, device scope, stats could be exposed to some extent.
++- Add support to Firmware Developer Kit to test ACPI tables for DMAR.
++- For compatibility testing, could use unity map domain for all devices, just
++  provide a 1-1 for all useful memory under a single domain for all devices.
++- API for paravirt ops for abstracting functionlity for VMM folks.
 Index: linux-2.6.21-rc5/Documentation/kernel-parameters.txt
 ===================================================================
---- linux-2.6.21-rc5.orig/Documentation/kernel-parameters.txt	2007-04-17 05:41:56.000000000 -0700
-+++ linux-2.6.21-rc5/Documentation/kernel-parameters.txt	2007-04-17 05:41:59.000000000 -0700
-@@ -730,6 +730,11 @@
- 			the IOMMU driver to set a unity map for all OS
- 			visible memory. Hence the driver can continue to use
- 			physical addresses for DMA.
-+		noisamap
-+			This option is required to setup identify map for
-+			first 16M. The floppy disk could be modified to use
-+			the DMA api's but thats a lot of pain for very small
-+			gain. This option is turned on by default.
+--- linux-2.6.21-rc5.orig/Documentation/kernel-parameters.txt	2007-04-17 04:59:42.000000000 -0700
++++ linux-2.6.21-rc5/Documentation/kernel-parameters.txt	2007-04-17 05:41:56.000000000 -0700
+@@ -710,6 +710,26 @@
+ 
+ 	inttest=	[IA64]
+ 
++	intel_iommu=	[DMAR] Intel IOMMU driver (DMAR) option
++		off
++			Disable intel iommu driver.
++		forcerw
++			Some drivers might incorrectly map DMA buffers as
++			write-only even when the device, requires read/write
++			mapping.  This option works around the issue in IOMMU
++			driver by making all write-only map as read/write.
++			Default is off.
++		igfx_off [Default Off]
++			By default, gfx is mapped as normal device. If a gfx
++			device has a dedicated DMAR unit, the DMAR unit is
++			bypassed with this option. In this case, gfx device
++			will use physical address for DMA.
++		gfx_workaround [Default Off]
++			gfx devices tend to use physical address for DMA and
++			avoid using DMA api's. Setting this option permits
++			the IOMMU driver to set a unity map for all OS
++			visible memory. Hence the driver can continue to use
++			physical addresses for DMA.
  	io7=		[HW] IO7 for Marvel based alpha systems
  			See comment before marvel_specify_io7 in
  			arch/alpha/kernel/core_marvel.c.
-Index: linux-2.6.21-rc5/drivers/pci/intel-iommu.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/pci/intel-iommu.c	2007-04-17 05:41:53.000000000 -0700
-+++ linux-2.6.21-rc5/drivers/pci/intel-iommu.c	2007-04-17 05:41:59.000000000 -0700
-@@ -37,6 +37,8 @@
- #include "pci.h"
- 
- #define IS_GFX_DEVICE(pdev) ((pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY)
-+#define IS_ISA_DEVICE(pdev) ((pdev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
-+
- #define IOAPIC_RANGE_START	(0xfee00000)
- #define IOAPIC_RANGE_END	(0xfeefffff)
- #define IOAPIC_RANGE_SIZE	(IOAPIC_RANGE_END - IOAPIC_RANGE_START + 1)
-@@ -87,6 +89,7 @@
- 
- static int dmar_disabled, dmar_force_rw;
- static int dmar_map_gfx = 1, dmar_no_gfx_identity_map = 1;
-+static int dmar_fix_isa = 1;
- 
- static char *get_fault_reason(u8 fault_reason)
- {
-@@ -113,6 +116,9 @@
- 		} else if (!strncmp(str, "gfx_workaround", 14)) {
- 			dmar_no_gfx_identity_map = 0;
- 			printk(KERN_INFO"Intel-IOMMU: do 1-1 mapping whole physical memory for GFX device\n");
-+		} else if (!strncmp(str, "noisamap", 8)) {
-+			dmar_fix_isa = 0;
-+			printk (KERN_INFO"Intel-IOMMU: Turning off 16M unity map for LPC\n");
- 		}
- 
- 		str += strcspn(str, ",");
-@@ -1582,6 +1588,25 @@
- 	}
- }
- 
-+static void iommu_prepare_isa(void)
-+{
-+	struct pci_dev *pdev = NULL;
-+	int ret;
-+
-+	if (!dmar_fix_isa)
-+		return;
-+
-+	pdev = pci_get_class (PCI_CLASS_BRIDGE_ISA << 8, NULL);
-+	if (!pdev)
-+		return;
-+
-+	printk (KERN_INFO "IOMMU: Prepare 0-16M unity mapping for LPC\n");
-+	ret = iommu_prepare_identity_map(pdev, 0, 16*1024*1024);
-+
-+	if (ret)
-+		printk ("IOMMU: Failed to create 0-64M identity map, Floppy might not work\n");
-+
-+}
- int __init init_dmars(void)
- {
- 	struct dmar_drhd_unit *drhd;
-@@ -1638,6 +1663,7 @@
- 	end_for_each_rmrr_device(rmrr, pdev)
- 
- 	iommu_prepare_gfx_mapping();
-+	iommu_prepare_isa();
- 
- 	/*
- 	 * for each drhd
 
 -- 
