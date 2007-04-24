@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754607AbXDXIWK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031058AbXDXIX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754607AbXDXIWK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:22:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXDXIWC
+	id S1031058AbXDXIX5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:23:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbXDXIU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:22:02 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:42233 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754607AbXDXIV0 (ORCPT
+	Tue, 24 Apr 2007 04:20:26 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24153 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754598AbXDXIQl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:21:26 -0400
-To: a.p.zijlstra@chello.nl
-CC: neilb@suse.de, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       miklos@szeredi.hu, akpm@linux-foundation.org, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-reply-to: <1177398589.26937.40.camel@twins> (message from Peter Zijlstra on
-	Tue, 24 Apr 2007 09:09:49 +0200)
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.608300342@chello.nl>
-	 <17965.29252.950216.971096@notabene.brown> <1177398589.26937.40.camel@twins>
-Message-Id: <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Apr 2007 10:19:18 +0200
+	Tue, 24 Apr 2007 04:16:41 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 13/15] cfq-iosched: never allow an async queue idling
+Date: Tue, 24 Apr 2007 10:15:41 +0200
+Message-Id: <1177402543846-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.1.1.190.g74474
+In-Reply-To: <11774025432481-git-send-email-jens.axboe@oracle.com>
+References: <11774025432481-git-send-email-jens.axboe@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > This is probably a
-> >  reasonable thing to do but it doesn't feel like the right place.  I
-> >  think get_dirty_limits should return the raw threshold, and
-> >  balance_dirty_pages should do both tests - the bdi-local test and the
-> >  system-wide test.
-> 
-> Ok, that makes sense I guess.
+We don't enable it by default, don't let it get enabled during
+runtime.
 
-Well, my narrow minded world view says it's not such a good idea,
-because it would again introduce the deadlock scenario, we're trying
-to avoid.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/cfq-iosched.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
 
-In a sense allowing a queue to go over the global limit just a little
-bit is a good thing.  Actually the very original code does that: if
-writeback was started for "write_chunk" number of pages, then we allow
-"ratelimit" (8) _new_ pages to be dirtied, effectively ignoring the
-global limit.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 8f76aed..f920527 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1597,7 +1597,12 @@ static void
+ cfq_update_idle_window(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		       struct cfq_io_context *cic)
+ {
+-	int enable_idle = cfq_cfqq_idle_window(cfqq);
++	int enable_idle;
++
++	if (!cfq_cfqq_sync(cfqq))
++		return;
++
++	enable_idle = cfq_cfqq_idle_window(cfqq);
+ 
+ 	if (!cic->ioc->task || !cfqd->cfq_slice_idle ||
+ 	    (cfqd->hw_tag && CIC_SEEKY(cic)))
+-- 
+1.5.1.1.190.g74474
 
-That's why I've been saying, that the current code is so unfair: if
-there are lots of dirty pages to be written back to a particular
-device, then balance_dirty_pages() allows the dirty producer to make
-even more pages dirty, but if there are _no_ dirty pages for a device,
-and we are over the limit, then that dirty producer is allowed
-absolutely no new dirty pages until the global counts subside.
-
-I'm still not quite sure what purpose the above "soft" limiting
-serves.  It seems to just give advantage to writers, which managed to
-accumulate lots of dirty pages, and then can convert that into even
-more dirtyings.
-
-Would it make sense to remove this behavior, and ensure that
-balance_dirty_pages() doesn't return until the per-queue limits have
-been complied with?
-
-Miklos
