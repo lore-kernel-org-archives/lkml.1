@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423119AbXDXVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423145AbXDXVi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423119AbXDXVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423127AbXDXVf0
+	id S1423145AbXDXVi4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:35:26 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:13105 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423119AbXDXVfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:35:25 -0400
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-From: Daniel Walker <dwalker@mvista.com>
-To: Andi Kleen <ak@suse.de>
-Cc: virtualization@lists.linux-foundation.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, virtualization@lists.osdl.org,
-       Chris Lalancette <clalance@redhat.com>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200704242320.06470.ak@suse.de>
-References: <20070327214919.800272641@goop.org> <462E6778.7070305@goop.org>
-	 <1177447948.12796.66.camel@imap.mvista.com> <200704242320.06470.ak@suse.de>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 14:33:58 -0700
-Message-Id: <1177450439.12796.79.camel@imap.mvista.com>
+	Tue, 24 Apr 2007 17:38:56 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31311 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423130AbXDXViy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:38:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="218927519:sNHT19123867"
+Date: Tue, 24 Apr 2007 14:36:21 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+Message-Id: <20070424143621.82c5c815.kristen.c.accardi@intel.com>
+In-Reply-To: <462DBDB3.9010102@gmail.com>
+References: <20070424074856.005152262@intel.com>
+	<20070423170010.5514072e.kristen.c.accardi@intel.com>
+	<462DBDB3.9010102@gmail.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 23:20 +0200, Andi Kleen wrote:
-> On Tuesday 24 April 2007 22:52:27 Daniel Walker wrote:
-> > On Tue, 2007-04-24 at 13:24 -0700, Jeremy Fitzhardinge wrote:
-> > 
-> > > And sched_clock's use of local_irq_save/restore appears to be absolutely
-> > > correct, so I think it must be triggering a bug in either the self-tests
-> > > or lockdep itself.
-> > 
-> > Why does sched_clock need to disable interrupts?
-> 
-> It's only used in the instable path which is kind of "i already threw up
-> my hands" anyways
-> 
-> I use it because when you transition from stable (TSC) to instable (jiffies)
-> the only way to avoid the clock jumping backwards is to remember and update the 
-> last value. To avoid races with parallel cpufreq handlers or timer
-> interrupts this small section needs to run with interrupts disabled.
+Send an uevent to user space to indicate that a media change event has occurred.
 
-Preemption is already disabled with the get_cpu_var() , so it seems like
-the timer interrupt is the only worry? I find it confusing that the
-access of jiffies_64 isn't protected from interrupts, it's only the
-per_cpu data which should already be protected by the
-get_cpu_var()/put_cpu_var ..
+Changes from last version:
+* use get/put_device to increment reference count on the device struct
 
-Daniel
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
+Index: 2.6-git/block/genhd.c
+===================================================================
+--- 2.6-git.orig/block/genhd.c
++++ 2.6-git/block/genhd.c
+@@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+ 	.show	= diskstats_show
+ };
+ 
++static void media_change_notify_thread(struct work_struct *work)
++{
++	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
++	char event[] = "MEDIA_CHANGE=1";
++	char *envp[] = { event, NULL };
++
++	/*
++	 * set enviroment vars to indicate which event this is for
++	 * so that user space will know to go check the media status.
++	 */
++	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
++	put_device(gd->driverfs_dev);
++}
++
++void genhd_media_change_notify(struct gendisk *disk)
++{
++	get_device(disk->driverfs_dev);
++	schedule_work(&disk->async_notify);
++}
++EXPORT_SYMBOL_GPL(genhd_media_change_notify);
++
+ struct gendisk *alloc_disk(int minors)
+ {
+ 	return alloc_disk_node(minors, -1);
+@@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+ 		kobj_set_kset_s(disk,block_subsys);
+ 		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
++		INIT_WORK(&disk->async_notify,
++			media_change_notify_thread);
+ 	}
+ 	return disk;
+ }
+Index: 2.6-git/include/linux/genhd.h
+===================================================================
+--- 2.6-git.orig/include/linux/genhd.h
++++ 2.6-git/include/linux/genhd.h
+@@ -66,6 +66,7 @@ struct partition {
+ #include <linux/smp.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
++#include <linux/workqueue.h>
+ 
+ struct partition {
+ 	unsigned char boot_ind;		/* 0x80 - active */
+@@ -139,6 +140,7 @@ struct gendisk {
+ #else
+ 	struct disk_stats dkstats;
+ #endif
++	struct work_struct async_notify;
+ };
+ 
+ /* Structure for sysfs attributes on block devices */
+@@ -419,7 +421,7 @@ extern struct gendisk *alloc_disk_node(i
+ extern struct gendisk *alloc_disk(int minors);
+ extern struct kobject *get_disk(struct gendisk *disk);
+ extern void put_disk(struct gendisk *disk);
+-
++extern void genhd_media_change_notify(struct gendisk *disk);
+ extern void blk_register_region(dev_t dev, unsigned long range,
+ 			struct module *module,
+ 			struct kobject *(*probe)(dev_t, int *, void *),
