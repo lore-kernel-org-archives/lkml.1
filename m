@@ -1,71 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031057AbXDXIYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031065AbXDXIZL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031057AbXDXIYG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031047AbXDXIX6
+	id S1031065AbXDXIZL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:25:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXDXIUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:23:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39164 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031038AbXDXIX3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:23:29 -0400
-Date: Tue, 24 Apr 2007 10:23:06 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Gerdau <mgd@technosis.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPORT] cfs-v5 vs sd-0.46
-Message-ID: <20070424082305.GA6332@elte.hu>
-References: <200704240938.07482.mgd@technosis.de> <20070424075319.GA30909@elte.hu> <200704241017.10610.mgd@technosis.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704241017.10610.mgd@technosis.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 24 Apr 2007 04:20:18 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41274 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031038AbXDXIQn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 04:16:43 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 11/15] cfq-iosched: don't pass unused preemption variable around
+Date: Tue, 24 Apr 2007 10:15:39 +0200
+Message-Id: <11774025432031-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.5.1.1.190.g74474
+In-Reply-To: <11774025432481-git-send-email-jens.axboe@oracle.com>
+References: <11774025432481-git-send-email-jens.axboe@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We don't use it anymore in the slice expiry handling.
 
-* Michael Gerdau <mgd@technosis.de> wrote:
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/cfq-iosched.c |   28 +++++++++++++---------------
+ 1 files changed, 13 insertions(+), 15 deletions(-)
 
-> > so to be totally 'fair' and get the same rescheduling 'granularity' 
-> > you should probably lower CFS's sched_granularity_ns to 2 msecs.
-> 
-> I'll change default nice in cfs to -10.
-> 
-> I'm also happy to adjust /proc/sys/kernel/sched_granularity_ns to 
-> 2msec. However checking /proc/sys/kernel/rr_interval reveals it is 16 
-> (msec) on my system.
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 2d0e9c5..b680002 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -746,7 +746,7 @@ __cfq_set_active_queue(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+  */
+ static void
+ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+-		    int preempted, int timed_out)
++		    int timed_out)
+ {
+ 	if (cfq_cfqq_wait_request(cfqq))
+ 		del_timer(&cfqd->idle_slice_timer);
+@@ -755,8 +755,7 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	cfq_clear_cfqq_wait_request(cfqq);
+ 
+ 	/*
+-	 * store what was left of this slice, if the queue idled out
+-	 * or was preempted
++	 * store what was left of this slice, if the queue idled/timed out
+ 	 */
+ 	if (timed_out && !cfq_cfqq_slice_new(cfqq))
+ 		cfqq->slice_resid = cfqq->slice_end - jiffies;
+@@ -774,13 +773,12 @@ __cfq_slice_expired(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	cfqd->dispatch_slice = 0;
+ }
+ 
+-static inline void cfq_slice_expired(struct cfq_data *cfqd, int preempted,
+-				     int timed_out)
++static inline void cfq_slice_expired(struct cfq_data *cfqd, int timed_out)
+ {
+ 	struct cfq_queue *cfqq = cfqd->active_queue;
+ 
+ 	if (cfqq)
+-		__cfq_slice_expired(cfqd, cfqq, preempted, timed_out);
++		__cfq_slice_expired(cfqd, cfqq, timed_out);
+ }
+ 
+ /*
+@@ -989,7 +987,7 @@ static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
+ 	}
+ 
+ expire:
+-	cfq_slice_expired(cfqd, 0, 0);
++	cfq_slice_expired(cfqd, 0);
+ new_queue:
+ 	cfqq = cfq_set_active_queue(cfqd);
+ keep_queue:
+@@ -1043,7 +1041,7 @@ __cfq_dispatch_requests(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 	    cfqd->dispatch_slice >= cfq_prio_to_maxrq(cfqd, cfqq)) ||
+ 	    cfq_class_idle(cfqq))) {
+ 		cfqq->slice_end = jiffies + 1;
+-		cfq_slice_expired(cfqd, 0, 0);
++		cfq_slice_expired(cfqd, 0);
+ 	}
+ 
+ 	return dispatched;
+@@ -1077,7 +1075,7 @@ static int cfq_forced_dispatch(struct cfq_data *cfqd)
+ 		dispatched += __cfq_forced_dispatch_cfqq(cfqq);
+ 	}
+ 
+-	cfq_slice_expired(cfqd, 0, 0);
++	cfq_slice_expired(cfqd, 0);
+ 
+ 	BUG_ON(cfqd->busy_queues);
+ 
+@@ -1147,7 +1145,7 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
+ 	BUG_ON(cfq_cfqq_on_rr(cfqq));
+ 
+ 	if (unlikely(cfqd->active_queue == cfqq)) {
+-		__cfq_slice_expired(cfqd, cfqq, 0, 0);
++		__cfq_slice_expired(cfqd, cfqq, 0);
+ 		cfq_schedule_dispatch(cfqd);
+ 	}
+ 
+@@ -1204,7 +1202,7 @@ static void cfq_free_io_context(struct io_context *ioc)
+ static void cfq_exit_cfqq(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+ 	if (unlikely(cfqq == cfqd->active_queue)) {
+-		__cfq_slice_expired(cfqd, cfqq, 0, 0);
++		__cfq_slice_expired(cfqd, cfqq, 0);
+ 		cfq_schedule_dispatch(cfqd);
+ 	}
+ 
+@@ -1677,7 +1675,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+  */
+ static void cfq_preempt_queue(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+-	cfq_slice_expired(cfqd, 1, 1);
++	cfq_slice_expired(cfqd, 1);
+ 
+ 	/*
+ 	 * Put the new queue at the front of the of the current list,
+@@ -1784,7 +1782,7 @@ static void cfq_completed_request(request_queue_t *q, struct request *rq)
+ 			cfq_clear_cfqq_slice_new(cfqq);
+ 		}
+ 		if (cfq_slice_used(cfqq))
+-			cfq_slice_expired(cfqd, 0, 1);
++			cfq_slice_expired(cfqd, 1);
+ 		else if (sync && RB_EMPTY_ROOT(&cfqq->sort_list))
+ 			cfq_arm_slice_timer(cfqd);
+ 	}
+@@ -1979,7 +1977,7 @@ static void cfq_idle_slice_timer(unsigned long data)
+ 		}
+ 	}
+ expire:
+-	cfq_slice_expired(cfqd, 0, timed_out);
++	cfq_slice_expired(cfqd, timed_out);
+ out_kick:
+ 	cfq_schedule_dispatch(cfqd);
+ out_cont:
+@@ -2025,7 +2023,7 @@ static void cfq_exit_queue(elevator_t *e)
+ 	spin_lock_irq(q->queue_lock);
+ 
+ 	if (cfqd->active_queue)
+-		__cfq_slice_expired(cfqd, cfqd->active_queue, 0, 0);
++		__cfq_slice_expired(cfqd, cfqd->active_queue, 0);
+ 
+ 	while (!list_empty(&cfqd->cic_list)) {
+ 		struct cfq_io_context *cic = list_entry(cfqd->cic_list.next,
+-- 
+1.5.1.1.190.g74474
 
-ah, yeah - there due to the SMP rule in SD:
-
-       rr_interval *= 1 + ilog2(num_online_cpus());
-
-and you have a 2-CPU system, so you get 8msec*2 == 16 msecs default 
-interval. I find this a neat solution and i have talked to Con about 
-this already and i'll adopt Con's idea in CFS too. Nevertheless, despite 
-the settings, SD seems to be rescheduling every 6-7 msecs, while CFS 
-reschedules only every 13 msecs.
-
-Here i'm assuming that the vmstats are directly comparable: that your 
-number-crunchers behave the same during the full runtime - is that 
-correct? (If not then the vmstat result should be run at roughly the 
-same type of "stage" of the workload, on all the schedulers.)
-
-	Ingo
