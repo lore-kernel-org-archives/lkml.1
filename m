@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbXDXBSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754443AbXDXBTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754445AbXDXBSj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 21:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXDXBSj
+	id S1754443AbXDXBTY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbXDXBTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 21:18:39 -0400
-Received: from THUNK.ORG ([69.25.196.29]:52455 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754445AbXDXBSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 21:18:38 -0400
-Date: Mon, 23 Apr 2007 21:17:53 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Eric Hopper <hopper@omnifarious.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Question about Reiser4
-Message-ID: <20070424011753.GD1663@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Eric Hopper <hopper@omnifarious.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <462C4D32.4000909@redhat.com> <Pine.LNX.4.64.0704230611430.25153@server.thyself> <462C5034.9090403@redhat.com> <Pine.LNX.4.64.0704230640540.25153@server.thyself> <20070423010445.454eda63.akpm@linux-foundation.org> <20070423135216.GA2744@omnifarious.org> <20070423225640.GA1663@thunk.org> <462D46DF.4090802@zytor.com> <20070424001934.GC1663@thunk.org> <462D4FE1.5040406@zytor.com>
+	Mon, 23 Apr 2007 21:19:24 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:43515 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754443AbXDXBTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 21:19:23 -0400
+Date: Mon, 23 Apr 2007 21:19:21 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Roland McGrath <roland@redhat.com>
+cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH try #2] Return access error not ECHILD on security_task_wait
+ failure
+In-Reply-To: <20070424002641.5FB061801A4@magilla.sf.frob.com>
+Message-ID: <Line.LNX.4.64.0704232117310.8557@d.namei>
+References: <20070424002641.5FB061801A4@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462D4FE1.5040406@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 05:31:29PM -0700, H. Peter Anvin wrote:
-> Heh.  sys_read_tree() -- walk a directory tree and return it as a data 
-> structure in memory :)
+From: Roland McGrath <roland@redhat.com>
 
-But maybe you don't want every single file in the directory, but some
-subset of the files in the directory tree.  So before you know it:
+wait* syscalls return -ECHILD even when an individual PID of a live child
+was requested explicitly, when security_task_wait denies the operation.
+This means that something like a broken SELinux policy can produce an
+unexpected failure that looks just like a bug with wait or ptrace or
+something.
 
-sys_fs_sql("SELECT port,userid,daemon FROM /etc/inetd.conf.d "
-	"WHERE protocol=='tcp'", buf, sizeof(buf));
+This patch makes do_wait return -EACCES (or other appropriate
+error returned from security_task_wait() instead of -ECHILD if some
+children were ruled out solely because security_task_wait failed.
 
-The question is where do you stop on the slippery slope, and is it
-really all that harder than simply parsing a /etc/gitconfig or
-/etc/e2fsck.conf file.  There are plenty of parsers or database
-libraries already written, and many of them are quite efficient.  And
-personally, I'd much rather edit a single /etc/gitconfig or
-/etc/e2fsck.conf file using emacs than have to cd through 3 or 4
-levels of directories to edit each 2-3 byte file one at a time.  But
-to each their own....
+Signed-off-by: James Morris <jmorris@namei.org>
+---
 
-					- Ted
+Updated version, returns value from security_task_wait().
+
+
+ kernel/exit.c |   17 +++++++++++++++--
+ 1 files changed, 15 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/exit.c b/kernel/exit.c
+index b55ed4c..9236924 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -1033,6 +1033,8 @@ asmlinkage void sys_exit_group(int error_code)
+ 
+ static int eligible_child(pid_t pid, int options, struct task_struct *p)
+ {
++	int err;
++
+ 	if (pid > 0) {
+ 		if (p->pid != pid)
+ 			return 0;
+@@ -1066,8 +1068,9 @@ static int eligible_child(pid_t pid, int options, struct task_struct *p)
+ 	if (delay_group_leader(p))
+ 		return 2;
+ 
+-	if (security_task_wait(p))
+-		return 0;
++	err = security_task_wait(p);
++	if (err)
++		return err;
+ 
+ 	return 1;
+ }
+@@ -1449,6 +1452,7 @@ static long do_wait(pid_t pid, int options, struct siginfo __user *infop,
+ 	DECLARE_WAITQUEUE(wait, current);
+ 	struct task_struct *tsk;
+ 	int flag, retval;
++	int allowed, denied;
+ 
+ 	add_wait_queue(&current->signal->wait_chldexit,&wait);
+ repeat:
+@@ -1457,6 +1461,7 @@ repeat:
+ 	 * match our criteria, even if we are not able to reap it yet.
+ 	 */
+ 	flag = 0;
++	allowed = denied = 0;
+ 	current->state = TASK_INTERRUPTIBLE;
+ 	read_lock(&tasklist_lock);
+ 	tsk = current;
+@@ -1472,6 +1477,12 @@ repeat:
+ 			if (!ret)
+ 				continue;
+ 
++			if (unlikely(ret < 0)) {
++				denied = ret;
++				continue;
++			}
++			allowed = 1;
++
+ 			switch (p->state) {
+ 			case TASK_TRACED:
+ 				/*
+@@ -1570,6 +1581,8 @@ check_continued:
+ 		goto repeat;
+ 	}
+ 	retval = -ECHILD;
++	if (unlikely(denied) && !allowed)
++		retval = denied;
+ end:
+ 	current->state = TASK_RUNNING;
+ 	remove_wait_queue(&current->signal->wait_chldexit,&wait);
+-- 
+1.5.0.6
+
