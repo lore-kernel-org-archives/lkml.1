@@ -1,38 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423116AbXDXV0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423100AbXDXV01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423116AbXDXV0E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423117AbXDXV0D
+	id S1423100AbXDXV01 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423118AbXDXV01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:26:03 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40659 "EHLO mx1.redhat.com"
+	Tue, 24 Apr 2007 17:26:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:12896 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423116AbXDXV0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:26:01 -0400
-Message-ID: <462E75E6.5030800@redhat.com>
-Date: Tue, 24 Apr 2007 17:25:58 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>
-CC: William Heimbigner <icxcnika@mar.tar.cc>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
-References: <Pine.LNX.4.64.0704242057430.25153@server.thyself> <20070424211253.GG23598@redhat.com>
-In-Reply-To: <20070424211253.GG23598@redhat.com>
+	id S1423100AbXDXV0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:26:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="218920984:sNHT21552762"
+Date: Tue, 24 Apr 2007 14:24:33 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Ashok Raj <ashok.raj@intel.com>, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 6/8] Doc updates for Intel Virtualization Technology for Directed I/O.
+Message-ID: <20070424212433.GA31920@linux-os.sc.intel.com>
+References: <20070423163837.447443000@linux.intel.com> <20070423164957.376691000@linux.intel.com> <d9def9db0704241417i2e52aad6p35c5f484c0599550@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <d9def9db0704241417i2e52aad6p35c5f484c0599550@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
->  > The following patches should allow selection of conservative, powersave, and 
->  > ondemand in the kernel configuration.
+On Tue, Apr 24, 2007 at 11:17:55PM +0200, Markus Rechberger wrote:
+> >+We also allocate gaurd pages with each mapping, so we can attempt to catch
+> >+any overflow that might happen.
+> >+
 > 
-> This has been rejected several times already.
-> Ondemand and conservative isn't a viable governor for all cpufreq implementations
-> (ie, ones with high switching latencies).  Also, see the comment in the Kconfig
-> a few lines above where you are adding this.
+> guess you probably mean guard tables here...
+> 
 
-It would be nice to have powersave available as the default.
+So there is a good chance i can be "The Governor of California" :-)
