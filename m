@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422782AbXDXR06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422797AbXDXR2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422782AbXDXR06 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422778AbXDXR05
+	id S1422797AbXDXR2P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbXDXR2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:26:57 -0400
-Received: from attic.omnifarious.org ([216.254.16.17]:48099 "EHLO
-	attic.omnifarious.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422782AbXDXR05 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:26:57 -0400
-Subject: Re: SOME STUFF ABOUT REISER4
-From: "Eric M. Hopper" <hopper@omnifarious.org>
-To: lkml777@123mail.org
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1177395453.29737.1186216313@webmail.messagingengine.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	 <11769695763104-git-send-email-ebiederm@xmission.com>
-	 <20070422123155.GF20763@infradead.org>
-	 <20070423205020.GR31947@austin.ibm.com>
-	 <1177378733.14873.52.camel@localhost.localdomain>
-	 <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	 <1177382544.14873.57.camel@localhost.localdomain>
-	 <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-	 <1177390842.14873.94.camel@localhost.localdomain>
-	 <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-	 <1177395453.29737.1186216313@webmail.messagingengine.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-azbVGdDEc9fl9aH9cteZ"
-Organization: Omnifarious Software
-Date: Tue, 24 Apr 2007 10:26:55 -0700
-Message-Id: <1177435615.3315.5.camel@bats.omnifarious.org>
+	Tue, 24 Apr 2007 13:28:15 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33177 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422797AbXDXR2O convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:28:14 -0400
+Date: Tue, 24 Apr 2007 10:27:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
+       Ralf Baechle <ralf@linux-mips.org>, Andi Kleen <ak@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
+Message-Id: <20070424102700.c58f8a6d.akpm@linux-foundation.org>
+In-Reply-To: <462E0E60.5080907@redhat.com>
+References: <20070315154638.944768000@suse.de>
+	<20070423234240.29427438.akpm@linux-foundation.org>
+	<462E0E60.5080907@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 24 Apr 2007 16:04:16 +0200 Gerd Hoffmann <kraxel@redhat.com> wrote:
 
---=-azbVGdDEc9fl9aH9cteZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > I get this, across netconsole:
+> > 
+> > [17179569.184000] console handover: boot [earlyvga_f_0] -> real [tty0]
+> > 
+> > wanna take a look at why there's cruft in bootconsole->name please?
+> 
+> -EFULL ;)
+> 
+> "earlyvga" is 8 chars.  struct console->name is char[8].  No space left 
+> for the trailing ´\0´, the cruft comes from the next field (write 
+> function pointer).  Obviously nobody ever printed the early console 
+> names before.
 
-On Mon, 2007-04-23 at 23:17 -0700, lkml777@123mail.org wrote:
-> On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> <hopper@omnifarious.org> said:
->=20
-> > I know that this whole effort has been put in disarray by the
-> > prosecution of Hans Reiser, but I'm curious as to its status. Is
-> > Reiser4 going to be going into the Linus kernel anytime soon? Is there
-> > somewhere I should be looking to find this out without wasting bandwidt=
-h
-> > here?
->=20
-> There was a thread the other day, that talked about Reiser4.
->=20
-> It took a while but I have found it (actually two)
->=20
-> http://lkml.org/lkml/2007/4/5/360
-> http://lkml.org/lkml/2007/4/9/4
->=20
-> You may want to check them out.
+doh.
 
-I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-benchmark showing that compressing long strings of 0s results in things
-taking up very little space and being very fast.
+> Hmm.  We can make the names shorter.  We can make the name field longer 
+> (probably 16, it ends up taking that much anyway due to aligments at 
+> least on 64bit).  This looks best to me.  We could also use 
+> printk("%.8s",name) to make printk stop after 8 chars, but I somehow 
+> don't like hardcoding the length like this ...
+> 
 
-Such things will produce lots of flames and no useful information
-whatsoever as is evinced by the half conspiracy theory, half truth the
-thread degenerated into in the second message you linked to.
-
-*sigh*,
---=20
-Eric Hopper (http://www.omnifarious.org/~hopper/)
-
---=-azbVGdDEc9fl9aH9cteZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP MESSAGE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGLj3XjtsvlOwvazYRAmviAJ48LYJZd3Ld97yf0PMG3vxisC3JqgCfdJ6o
-ztRadtWk+6XX47WalYMCuu8=
-=e61U
------END PGP MESSAGE-----
-
---=-azbVGdDEc9fl9aH9cteZ--
+yup, making it 16 sounds simplest.  I'll do the patch, thanks.
