@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbXDXXNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbXDXXTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbXDXXNy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 19:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbXDXXNy
+	id S1754546AbXDXXTS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 19:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbXDXXTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 19:13:54 -0400
-Received: from waste.org ([66.93.16.53]:54386 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754545AbXDXXNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 19:13:53 -0400
-Date: Tue, 24 Apr 2007 18:00:46 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Mel Gorman <mel@skynet.ie>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
-Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher order pages
-Message-ID: <20070424230046.GH11166@waste.org>
-References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com> <20070420110516.GC12075@skynet.ie> <1177095021.10848.18.camel@kleikamp.austin.ibm.com> <Pine.LNX.4.64.0704201207120.21342@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704201207120.21342@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 24 Apr 2007 19:19:17 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:32864 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754546AbXDXXTR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 19:19:17 -0400
+Date: Wed, 25 Apr 2007 00:22:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: ashok.raj@intel.com, ak@suse.de, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when
+ devices cannot address entire range.
+Message-ID: <20070425002208.732d4bda@the-village.bc.nu>
+In-Reply-To: <20070424.145026.128110905.davem@davemloft.net>
+References: <200704242312.54738.ak@suse.de>
+	<20070424.142351.62664098.davem@davemloft.net>
+	<20070424213835.GB31920@linux-os.sc.intel.com>
+	<20070424.145026.128110905.davem@davemloft.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 20, 2007 at 12:10:43PM -0700, Christoph Lameter wrote:
-> On Fri, 20 Apr 2007, Dave Kleikamp wrote:
-> 
-> > On Fri, 2007-04-20 at 12:05 +0100, Mel Gorman wrote:
-> > 
-> > > comments about missing page_cache_size() covered elsewhere. However, I
-> > > note that Dave Kleikamp might be interested in this changing of
-> > > page_cache_size() from the perspective of page cache tails. I've added
-> > > him to the cc so he can take a quick look.
-> > 
-> > Yeah.  I'm working on patches for storing file tails in buffers
-> > allocated from the slab cache, and the tail will be represented by a
-> > fake struct page.  (This is primarily for kernels with a larger page
-> > size).  So my version of page_cache_size(page) may return a different
-> > size for different pages belonging to the same mapping.  I'm in the
-> > midst of cleaning up the patches and plan to post them to linux-mm by
-> > Monday.
-> 
-> I am not sure what the point of that patchset would be in this context 
-> given that this is about support for arbitrary page sizes. If the 
-> filesystem wants it then it can reduce the page size for small files.
+On Tue, 24 Apr 2007 14:50:26 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-Shaggy's suggestion is to emulate pages with _negative_ orders.
+> From: Ashok Raj <ashok.raj@intel.com>
+> Date: Tue, 24 Apr 2007 14:38:35 -0700
+> 
+> > Its not clear if we have a very generic device breakage.. most devices
+> > on these platforms are going to be more recent, (except maybe some
+> > legacy fd)... 
+> 
+> I'm not so sure, there are some "modern" sound cards that have
+> a 31-bit DMA addressing limitation because they use the 31st
+> bit as a status bit in their DMA descriptors :-)
 
--- 
-Mathematics is the supreme nostalgia of our time.
+The sound stuff is going away bit by bit thankfully, but the 30bit DMA
+limit is present on some more demented wireless chips still.
+
+Alan
