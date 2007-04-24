@@ -1,72 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXDXQ62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422709AbXDXQ7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbXDXQ62 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 12:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbXDXQ62
+	id S1422709AbXDXQ7I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 12:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbXDXQ7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 12:58:28 -0400
-Received: from lugor.de ([212.112.242.222]:37654 "EHLO solar.vpn.lugor.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753631AbXDXQ61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 12:58:27 -0400
-From: Christian Hesse <mail@earthworm.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v5
-Date: Tue, 24 Apr 2007 18:54:43 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
-References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu>
-In-Reply-To: <20070423011229.GA20367@elte.hu>
-X-Face: 1\p'dhO'VZk,x0lx6U}!Y*9UjU4n2@4c<"a*K%3Eiu'VwM|-OYs;S-PH>4EdJMfGyycC)=?utf-8?q?k=0A=09=3Anv*xqk4C?=@1b8tdr||mALWpN[2|~h#Iv;)M"O$$#P9Kg+S8+O#%EJx0TBH7b&Q<m)=?utf-8?q?n=23Q=2Eo=0A=09kE=7E=26T=5D0cQX6=5D?=<q!HEE,F}O'Jd#lx/+){Gr@W~J`h7sTS(M+oe5<=?utf-8?q?3O7GY9y=5Fi!qG=26Vv=5CD8/=0A=09=254?=@&~$Z@UwV'NQ$Ph&3fZc(qbDO?{LN'nk>+kRh4`C3[KN`-1uT-TD_m
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3469380.Aci1EtfbKl";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704241854.47269.mail@earthworm.de>
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-2.0 (solar.vpn.lugor.de [10.5.1.1]); Tue, 24 Apr 2007 18:54:56 +0200 (CEST)
-X-Spam-Flag: NO
+	Tue, 24 Apr 2007 12:59:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34022 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754273AbXDXQ7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 12:59:05 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070424164001.GA328@tv-sign.ru> 
+References: <20070424164001.GA328@tv-sign.ru>  <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> 
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 24 Apr 2007 17:58:27 +0100
+Message-ID: <16575.1177433907@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3469380.Aci1EtfbKl
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-On Monday 23 April 2007, Ingo Molnar wrote:
-> i'm pleased to announce release -v5 of the CFS scheduler patchset.
+> > > The current code uses del_timer_sync(). It will also return 0. However,
+> > > it will spin waiting for timer->function() to complete. So we are just
+> > > wasting CPU.
+> > 
+> > That's my objection to using cancel_delayed_work() as it stands, although in
+> > most cases it's a relatively minor waste of time.  However, if the timer
+> > expiry routine gets interrupted then it may not be so minor...  So, yes, I'm
+> > in full agreement with you there.
+> 
+> Great. I'll send the s/del_timer_sync/del_timer/ patch.
 
-Hi Ingo,
+I didn't say I necessarily agreed that this was a good idea.  I just meant that
+I agree that it will waste CPU.  You must still audit all uses of
+cancel_delayed_work().
 
-I just noticed that with cfs all processes (except some kernel threads) run=
- on=20
-cpu 0. I don't think this is expected cpu affinity for an smp system? I=20
-remember about half of the processes running on each core with mainline.
-=2D-=20
-Regards,
-Chris
+> Aha, now I see what you mean. However. Why the code above is better then
+> 
+> 	cancel_delayed_work(&afs_server_reaper);
+> 	schedule_delayed_work(&afs_server_reaper, 0);
+> 
+> ? (I assume we already changed cancel_delayed_work() to use del_timer).
 
---nextPart3469380.Aci1EtfbKl
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Because calling schedule_delayed_work() is a waste of CPU if the timer expiry
+handler is currently running at this time as *that* is going to also schedule
+the delayed work item.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> If delayed_work_timer_fn() is not running - both variants (let's denote them
+> as 1 and 2) do the same.
 
-iD8DBQBGLjZXlZfG2c8gdSURAvd0AJkBM07uyK0OFfQcZn/TVVagwl2D3gCgnhEu
-nrX+qeEdpb/13zDMbdV76nQ=
-=uh6U
------END PGP SIGNATURE-----
+Yes, but that's not the point.
 
---nextPart3469380.Aci1EtfbKl--
+> Now suppose that delayed_work_timer_fn() is running.
+> 
+> 	1: lock_timer_base(), return -1, skip schedule_delayed_work().
+>
+> 	2: check timer_pending(), return 0, call schedule_delayed_work(),
+> 	   return immediately because test_and_set_bit(WORK_STRUCT_PENDING)
+> 	   fails.
+
+I don't see what you're illustrating here.  Are these meant to be two steps in
+a single process?  Or are they two alternate steps?
+
+> So I still don't think try_to_del_timer_sync() can help in this particular
+> case.
+
+It permits us to avoid the test_and_set_bit() under some circumstances.
+
+> To some extent, try_to_cancel_delayed_work is
+> 
+> 	int try_to_cancel_delayed_work(dwork)
+> 	{
+> 		ret = cancel_delayed_work(dwork);
+> 		if (!ret && work_pending(&dwork->work))
+> 			ret = -1;
+> 		return ret;
+> 	}
+> 
+> iow, work_pending() looks like a more "precise" indication that work->func()
+> is going to run soon.
+
+Ah, but the timer routine may try to set the work item pending flag *after* the
+work_pending() check you have here.  Furthermore, it would be better to avoid
+the work_pending() check entirely because that check involves interacting with
+atomic ops done on other CPUs.  try_to_del_timer_sync() returning -1 tells us
+without a shadow of a doubt that the work item is either scheduled now or will
+be scheduled very shortly, thus allowing us to avoid having to do it ourself.
+
+David
