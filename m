@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965271AbXDXVNH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXDXVNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965271AbXDXVNH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:13:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965336AbXDXVNH
+	id S1030780AbXDXVNk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030241AbXDXVNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:13:07 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53103 "EHLO mx2.suse.de"
+	Tue, 24 Apr 2007 17:13:39 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53113 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965271AbXDXVNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:13:04 -0400
+	id S965280AbXDXVNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:13:09 -0400
 From: Andi Kleen <ak@suse.de>
 Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ashok Raj <ashok.raj@intel.com>
-Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
-Date: Tue, 24 Apr 2007 23:12:54 +0200
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 04/25] xen: Add XEN config options
+Date: Tue, 24 Apr 2007 21:45:06 +0200
 User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, gregkh@suse.de,
-       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       shaohua.li@intel.com
-References: <20070424060259.426374000@intel.com> <200704242133.16219.ak@suse.de> <20070424203304.GB27911@linux-os.sc.intel.com>
-In-Reply-To: <20070424203304.GB27911@linux-os.sc.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>
+References: <20070423215638.563901986@goop.org> <200704240100.31011.ak@suse.de> <462D3D31.1090702@goop.org>
+In-Reply-To: <462D3D31.1090702@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704242312.54738.ak@suse.de>
+Message-Id: <200704242145.06915.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 April 2007 22:33:04 Ashok Raj wrote:
 
-> With PCIE there is some benefit to keep dma addr low for performance reasons, 
-> since it will use 	32bit Transaction level packets instead of 64bit.
+> > Shouldn't this be after the change that adds arch/i386/xen/Kconfig?
+> >
+> > Otherwise you break bisects
+> >   
 > 
-> This reservation is only required if we have some legacy device under a p2p 
-> where its required to share its addr space with other devices. We could 
-> implement a default when one is not specified to keep things simple.
+> It should be OK.  The series should build and run at each patch (though
+> I have to admit I haven't tested this).  In general I've been adding
+> config options for each feature as the feature itself is added.
 
-We already have a couple of other IOMMU architectures who essentially have the same
-problem. Have you checked how they solve this?
+But i don't see anything that creates arch/i386/xen before this?
 
 -Andi
-
-
 
