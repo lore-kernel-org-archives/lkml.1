@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161630AbXDXFe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161635AbXDXFe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161630AbXDXFe1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 01:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161633AbXDXFdl
+	id S1161635AbXDXFe6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161580AbXDXFei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 01:33:41 -0400
-Received: from ozlabs.org ([203.10.76.45]:35018 "EHLO ozlabs.org"
+	Tue, 24 Apr 2007 01:34:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:35023 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161580AbXDXFdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 01:33:38 -0400
+	id S1161635AbXDXFdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 01:33:42 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: <linux-kernel@vger.kernel.org>,
        Linux Memory Management <linux-mm@kvack.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Apr 2007 15:33:35 +1000
-Subject: [PATCH 3/12] get_unmapped_area handles MAP_FIXED on arm
+Date: Tue, 24 Apr 2007 15:33:39 +1000
+Subject: [PATCH 11/12] get_unmapped_area handles MAP_FIXED in generic code
 In-Reply-To: <1177392813.924664.32930750763.qpush@grosgo>
-Message-Id: <20070424053337.C5FEBDDF09@ozlabs.org>
+Message-Id: <20070424053341.E11BBDDF06@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ARM already had a case for MAP_FIXED in arch_get_unmapped_area() though
-it was not called before. Fix the comment to reflect that it will now
-be called.
+generic arch_get_unmapped_area() now handles MAP_FIXED. Now that
+all implementations have been fixed, change the toplevel
+get_unmapped_area() to call into arch or drivers for the MAP_FIXED
+case.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/arm/mm/mmap.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ mm/mmap.c |   25 +++++++++++++++----------
+ 1 file changed, 15 insertions(+), 10 deletions(-)
 
-Index: linux-cell/arch/arm/mm/mmap.c
+Index: linux-cell/mm/mmap.c
 ===================================================================
---- linux-cell.orig/arch/arm/mm/mmap.c	2007-03-22 14:59:51.000000000 +1100
-+++ linux-cell/arch/arm/mm/mmap.c	2007-03-22 15:00:01.000000000 +1100
-@@ -49,8 +49,7 @@ arch_get_unmapped_area(struct file *filp
- #endif
+--- linux-cell.orig/mm/mmap.c	2007-03-22 16:29:22.000000000 +1100
++++ linux-cell/mm/mmap.c	2007-03-22 16:30:06.000000000 +1100
+@@ -1199,6 +1199,9 @@ arch_get_unmapped_area(struct file *filp
+ 	if (len > TASK_SIZE)
+ 		return -ENOMEM;
  
- 	/*
--	 * We should enforce the MAP_FIXED case.  However, currently
--	 * the generic kernel code doesn't allow us to handle this.
-+	 * We enforce the MAP_FIXED case.
- 	 */
- 	if (flags & MAP_FIXED) {
- 		if (aliasing && flags & MAP_SHARED && addr & (SHMLBA - 1))
++	if (flags & MAP_FIXED)
++		return addr;
++
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+ 		vma = find_vma(mm, addr);
+@@ -1272,6 +1275,9 @@ arch_get_unmapped_area_topdown(struct fi
+ 	if (len > TASK_SIZE)
+ 		return -ENOMEM;
+ 
++	if (flags & MAP_FIXED)
++		return addr;
++
+ 	/* requesting a specific address */
+ 	if (addr) {
+ 		addr = PAGE_ALIGN(addr);
+@@ -1360,22 +1366,21 @@ get_unmapped_area(struct file *file, uns
+ 		unsigned long pgoff, unsigned long flags)
+ {
+ 	unsigned long ret;
++	unsigned long (*get_area)(struct file *, unsigned long,
++				  unsigned long, unsigned long, unsigned long);
+ 
+-	if (!(flags & MAP_FIXED)) {
+-		unsigned long (*get_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
+-
+-		get_area = current->mm->get_unmapped_area;
+-		if (file && file->f_op && file->f_op->get_unmapped_area)
+-			get_area = file->f_op->get_unmapped_area;
+-		addr = get_area(file, addr, len, pgoff, flags);
+-		if (IS_ERR_VALUE(addr))
+-			return addr;
+-	}
++	get_area = current->mm->get_unmapped_area;
++	if (file && file->f_op && file->f_op->get_unmapped_area)
++		get_area = file->f_op->get_unmapped_area;
++	addr = get_area(file, addr, len, pgoff, flags);
++	if (IS_ERR_VALUE(addr))
++		return addr;
+ 
+ 	if (addr > TASK_SIZE - len)
+ 		return -ENOMEM;
+ 	if (addr & ~PAGE_MASK)
+ 		return -EINVAL;
++
+ 	if (file && is_file_hugepages(file))  {
+ 		/*
+ 		 * Check if the given range is hugepage aligned, and
