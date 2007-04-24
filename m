@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161441AbXDXHGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161676AbXDXHJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161441AbXDXHGA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 03:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161674AbXDXHGA
+	id S1161676AbXDXHJM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 03:09:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161674AbXDXHJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 03:06:00 -0400
-Received: from sumo.dreamhost.com ([66.33.216.29]:34485 "EHLO
-	sumo.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161441AbXDXHF7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 03:05:59 -0400
-Message-ID: <462DAC06.9040309@dawes.za.net>
-Date: Tue, 24 Apr 2007 09:04:38 +0200
-From: Rogan Dawes <lists@dawes.za.net>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Peter Williams <pwil3058@bigpond.net.au>,
-       ck list <ck@vds.kolivas.org>, Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 24 Apr 2007 03:09:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44712 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161676AbXDXHJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 03:09:11 -0400
+Date: Tue, 24 Apr 2007 09:08:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
        Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       caglar@pardus.org.tr
 Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-References: <20070420140457.GA14017@elte.hu>	<200704220155.20856.kernel@kolivas.org>	<20070421160008.GA28783@elte.hu>	<200704220959.34978.kernel@kolivas.org>	<87647oblx5.fsf@pps.jussieu.fr>	<alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org>	<20070423013429.GB25162@wotan.suse.de>	<alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org>	<20070423191143.GA16849@elte.hu>	<alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <20070423203317.GA26668@elte.hu>
-In-Reply-To: <20070423203317.GA26668@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070424070800.GA23463@elte.hu>
+References: <200704220959.34978.kernel@kolivas.org> <462DA1E8.9080201@bigpond.net.au> <20070424063633.GA17257@elte.hu> <200704240300.07689.gene.heskett@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704240300.07689.gene.heskett@gmail.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
 
-> static void
-> yield_task_fair(struct rq *rq, struct task_struct *p, struct task_struct *p_to)
-> {
->         struct rb_node *curr, *next, *first;
->         struct task_struct *p_next;
+* Gene Heskett <gene.heskett@gmail.com> wrote:
+
+> > Gene has done some testing under CFS with X reniced to +10 and the 
+> > desktop still worked smoothly for him.
 > 
->         /*
->          * yield-to support: if we are on the same runqueue then
->          * give half of our wait_runtime (if it's positive) to the other task:
->          */
->         if (p_to && p->wait_runtime > 0) {
->                 p->wait_runtime >>= 1;
->                 p_to->wait_runtime += p->wait_runtime;
->         }
-> 
-> the above is the basic expression of: "charge a positive bank balance". 
-> 
+> As a data point here, and probably nothing to do with X, but I did 
+> manage to lock it up, solid, reset button time tonight, by wanting 
+> 'smart' to get done with an update session after amanda had started.  
+> I took both smart processes I could see in htop all the way to -19, 
+> but when it was about done about 3 minutes later, everything came to 
+> an instant, frozen, reset button required lockup.  I should have 
+> stopped at -17 I guess. :(
 
-[..]
+yeah, i guess this has little to do with X. I think in your scenario it 
+might have been smarter to either stop, or to renice the workloads that 
+took away CPU power from others to _positive_ nice levels. Negative nice 
+levels can indeed be dangerous.
 
-> [note, due to the nanoseconds unit there's no rounding loss to worry 
-> about.]
+(Btw., to protect against such mishaps in the future i have changed the 
+SysRq-N [SysRq-Nice] implementation in my tree to not only change 
+real-time tasks to SCHED_OTHER, but to also renice negative nice levels 
+back to 0 - this will show up in -v6. That way you'd only have had to 
+hit SysRq-N to get the system out of the wedge.)
 
-Surely if you divide 5 nanoseconds by 2, you'll get a rounding loss?
-
-> 	Ingo
-
-Rogan
+	Ingo
