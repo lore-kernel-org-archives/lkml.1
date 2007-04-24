@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXDXC3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbXDXCfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbXDXC3a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 22:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbXDXC33
+	id S1754561AbXDXCfV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 22:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXDXCfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 22:29:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46362 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754559AbXDXC33 (ORCPT
+	Mon, 23 Apr 2007 22:35:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:5729 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754561AbXDXCfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 22:29:29 -0400
-Date: Tue, 24 Apr 2007 11:29:53 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: hugh@veritas.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
-Message-Id: <20070424112953.efa44e50.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <6.0.0.20.2.20070424100507.049670d0@172.19.0.2>
-References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
-	<Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com>
-	<6.0.0.20.2.20070423210926.045668d0@172.19.0.2>
-	<Pine.LNX.4.64.0704231438280.3516@blonde.wat.veritas.com>
-	<6.0.0.20.2.20070424100507.049670d0@172.19.0.2>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Apr 2007 22:35:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iln22vK0lGdFHaZAudL0IdvLksFCrs+BZGWh0j1KHOzUKKKdbOEB2RrHFyaZUSRC+cwfmNyqw+UHxvCB7+Y0THvVNmO+js5Is9xU5I8Y96QDK01cOgMSZ3fgQiNwas2hYUPlDekrMSNVMaojLHA01uhPJzJS2PmlVP5qo9u5MYA=
+Message-ID: <a781481a0704231935o5d878692p2311b834f5c6d47e@mail.gmail.com>
+Date: Tue, 24 Apr 2007 08:05:18 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Matt Ranon" <mranon@javadevices.com>
+Subject: Re: [ANNOUNCE][PATCH] Kcli - Kernel command line interface.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux maillist" <linux-kernel@vger.kernel.org>
+In-Reply-To: <617125.34935.qm@web88104.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <617125.34935.qm@web88104.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 10:54:27 +0900
-Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
-> In the case that changing the same bit concurrently, lock prefix or other
-> spinlock is needed. But, I think that concurrent bit operation on different 
-> bits
-> is just like OR operation , so lock prefix is not needed.
-> 
-> AMD instruction manual says about bts that ,
-> 
-> "Copies a bit, specified by bit index in a register or 8-bit immediate 
-> value (second operand), from a bit
-> string (first operand), also called the bit base, to the carry flag (CF) of 
-> the rFLAGS register, and then
-> sets the bit in the bit string to 1."
-> 
-> BTS instruction is read-modify-write instruction on bit unit. So concurrent 
-> bit operation on different
-> bits may be possible.
-> 
-This is ia64's __set_bit() hehe..
-==
-static __inline__ void
-__set_bit (int nr, volatile void *addr)
-{
-        *((__u32 *) addr + (nr >> 5)) |= (1 << (nr & 31));
-}
-==
+Hi Matt,
 
-Bye.
--Kame
+On 4/24/07, Matt Ranon <mranon@javadevices.com> wrote:
+> > The obvious question is: what's _wrong_ with doing all this in some
+> > cut-down userspace environment like busybox?  Why is this stuff better?
+> >
+> > Obviously some embedded developers have considered that option and
+> > have rejected it.  But we do need to be told, at length, why that
+> > decision was made.
+>
+> There is nothing _wrong_ with doing it all in a cut-down userspace. It
+> is a matter of personal preference, culture, and the application. That
+> is what makes Linux so great, it is all about choice.
+>
+> We are developing devices that don't have a user space, and we don't
+> see the point in including one just for debug purposes. We will not be
+> offended if Kcli is not included into the kernel mainline, nor if Kcli compels
+> people to call us stupid (as it already has) just because we are different
+> and some people don't understand us. We are firm believers that the
+> world, including the Linux kernel world,  would be a nasty place if there
+> was only _one_ way to do any given task. Additionally, we  are almost
+> certain that there will be others who think like we do, so we are reaching
+> out to them. We also feel compelled to give _something_ back to the
+> community that has given so much to us, and, for now, this is all we have.
 
+I'm afraid you might've misunderstood the (rather caustic, sometimes)
+general nature of comments on lkml :-) But I guess you only have
+everything to gain if you use features that have been developed (and
+are being *maintained* in the current kernel) that already do the kind
+of stuff you want done.
+
+You might have your reasons for being so anxious to avoid any
+userspace at all, but quoting famous words, continuing to maintain
+Kcli out-of-tree could soon turn out to be an act for
+self-flagellation for you :-)
