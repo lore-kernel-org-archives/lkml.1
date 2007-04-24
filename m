@@ -1,89 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423160AbXDXWL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423162AbXDXWSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423160AbXDXWL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423159AbXDXWL2
+	id S1423162AbXDXWSJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423161AbXDXWSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:11:28 -0400
-Received: from mtl.rackplans.net ([69.90.0.18]:33988 "EHLO mtl.rackplans.net"
+	Tue, 24 Apr 2007 18:18:08 -0400
+Received: from quechua.inka.de ([193.197.184.2]:50979 "EHLO mail.inka.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423146AbXDXWL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 18:11:27 -0400
-Date: Tue, 24 Apr 2007 18:11:26 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: Casey Schaufler <casey@schaufler-ca.com>
-cc: Roberto De Ioris <roberto@unbit.it>, linux-security-module@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE] UidBind LSM 0.2
-In-Reply-To: <36153.9499.qm@web36603.mail.mud.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0704241809400.21879@mtl.rackplans.net>
-References: <36153.9499.qm@web36603.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1423162AbXDXWSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 18:18:07 -0400
+From: Bernd Eckenfels <ecki@lina.inka.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Organization: Private Site running Debian GNU/Linux
+In-Reply-To: <20070424212717.GR31925@holomorphy.com>
+X-Newsgroups: ka.lists.linux.kernel
+User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
+Message-Id: <E1HgTKk-0008IK-00@calista.eckenfels.net>
+Date: Wed, 25 Apr 2007 00:18:02 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Casey Schaufler wrote:
+In article <20070424212717.GR31925@holomorphy.com> you wrote:
+> Could you explain for the audience the technical definition of fairness
+> and what sorts of error metrics are commonly used? There seems to be
+> some disagreement, and you're neutral enough of an observer that your
+> statement would help.
 
-> --- Gerhard Mack <gmack@innerfire.net> wrote:
-> 
-> > On Tue, 24 Apr 2007, Roberto De Ioris wrote:
-> > 
-> > > Hi all,
-> > > 
-> > > this is the second release for UidBind LSM:
-> > > 
-> > > http://projects.unbit.it/uidbind/
-> > > 
-> > > UidBind allows call to bind() function only to the uid defined in a
-> > > configfs tree.
-> > > 
-> > > It is now possible to specify different uid (for the same port) on
-> > > different ipv4 addresses:
-> > > 
-> > > mkdir uidbind/8081
-> > > mkdir uidbind/8081/192.168.1.17
-> > > mkdir uidbind/8081/192.168.1.26
-> > > echo 1017 > uidbind/8081/192.168.1.17/uid
-> > > echo 1026 > uidbind/8081/192.168.1.26/uid
-> > > 
-> > > This version even fix some leek in version 0.1
-> > > 
-> > > Patch attached is still for vanilla 2.6.20.7
-> > 
-> > Is it possible to specify ranges as allowing everyone?  Is it possible to 
-> > allow multiple users acess to the same port?  Can ports be allowed by 
-> > group?
-> 
-> If you're going to go beyond the simple owner access model it
-> probably makes sense to go all out, swipe the file system ACL
-> code and provide the whole nine yards of users, groups, and modes.
-> The only system that I know of that had socket ACLs was the 4.X
-> version of Trusted Irix, and socket ACLs were dropped in 5.0 because
-> they were unpopular.
-> 
-> If you're daring you could propose that low number ports be treated
-> the same way as other ports, with the default ownership being root and
-> the default ACL allowing only root.
+And while we are at it, why it is a good thing. I could understand that fair
+means no missbehaving (intentionally or unintentionally) application can
+harm the rest of the system. However a responsive desktop might not
+necesarily be very fair to compute jobs.
 
-ACL may be more complicated than needed when a simple GID addition would 
-make this right about perfect.
+Even a simple thing as "who gets accounted" can be quite different in
+different workloads. (larger multi user systems tend to be fair based on the
+user, on servers you more balance by thread or job and single user systems
+should be as unfair as the user wants them as long as no process can "run
+away")
 
-> > I really like the idea of this patch.  It has the potential to solve a lot 
-> > of my current administrative headachs.
-> 
-> Putting access control on ports rather than sockets is a novel
-> approach. It is a lot simpler underneath and more consistant with
-> the way other object name spaces are treated.
-
-Indeed I'm fond of it's rather simple and very scriptable interface.
-
-	Gerhard
-
---
-Gerhard Mack
-
-gmack@innerfire.net
-
-<>< As a computer I find your faith in technology amusing.
+Gruss
+Bernd
