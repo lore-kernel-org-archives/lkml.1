@@ -1,71 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423090AbXDXVZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423097AbXDXVZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423090AbXDXVZZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423097AbXDXVZZ
+	id S1423097AbXDXVZf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423116AbXDXVZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:25:25 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34507 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423090AbXDXVZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:25:24 -0400
-Date: Tue, 24 Apr 2007 23:24:08 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070424212408.GD16457@elf.ucw.cz>
-References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	Tue, 24 Apr 2007 17:25:35 -0400
+Received: from ns.suse.de ([195.135.220.2]:41272 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423097AbXDXVZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:25:34 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 06/25] xen: Core Xen implementation
+Date: Tue, 24 Apr 2007 23:25:23 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Adrian Bunk <bunk@stusta.de>
+References: <20070423215638.563901986@goop.org> <20070423215710.355105690@goop.org>
+In-Reply-To: <20070423215710.355105690@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200704242325.23447.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Well, current uswsusp code can do most of stuff suspend2 can do, with
-> > 20% (or so) of kernel code. 
+On Monday 23 April 2007 23:56:44 Jeremy Fitzhardinge wrote:
+> Core Xen Implementation
 > 
-> Btw, this is a totally inane argument.
-> 
-> If the code just moved somewhere else, it's not "less code".
+> This patch is a rollup of all the core pieces of the Xen
+> implementation, including booting, memory management, interrupts, time
+> and so on.
 
-It is not "just moved". It is in userspace, where we can use liblzf /
-gcrypt / ( and vbetool for s2ram/s2both) as libraries. We have about
-7000 LoC of userland code (that is not libraries).
+The patch is definitely too big.
 
-> You compare complete subsystems against complete subsystems, OR YOU DON'T 
-> COMPARE THEM AT ALL!
+> +#ifdef CONFIG_XEN
+> +/* Xen only supports sysenter/sysexit in ring0 guests,
+> +   and only if it the guest asks for it.  So for now,
+> +   this should never be used. */
+> +ENTRY(xen_sti_sysexit)
+> +	CFI_STARTPROC
+> +	ud2
+> +	CFI_ENDPROC
+> +ENDPROC(xen_sti_sysexit)
 
-Ok, I do not know how big suspend2 user code is, but kernel uswsusp
-(4 kLoC) + userland support (7 kLoC) is still smaller than suspend2
-kernel code (+ ? kLoC suspend2 userland support).
+Put that elsewhere? It doesn't need to be here.
 
-> This whole notion that "kernel lines of code" is somehow different is a 
-> stupid and idiotic _disease_ that is spread by microkernel people and 
-> people who have been brainwashed by them.
 
-Yep, sorry about that.
+> +++ b/arch/i386/xen/enlighten.c
+> @@ -0,0 +1,727 @@
 
-> Separation of code often makes things *harder* to understand and debug. A 
-> few prime examples of this f*cking idiotic stupid disease of discounting 
-> user level code because it somehow "doesn't matter" is:
+Comments describing what all the files do? 
 
-I believe uswsusp user/kernel separation is clean enough. Kernel
-provides "snapshot image" and "resume image". (Thanks go to Rafael for
-very clean interface).
+> +	unsigned maskedx = ~0;
+> +	if (*eax == 1)
+> +		maskedx = ~((1 << X86_FEATURE_APIC) |
+> +			    (1 << X86_FEATURE_ACPI) |
+> +			    (1 << X86_FEATURE_ACC));
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Why ACC? 
+
+And why doesn't Xen mask those by itself?
+
+And you got apic functions later which would be never called?
+Why are the hooks needed then? 
+
+> +
+> +static unsigned long xen_save_fl(void)
+> +{
+> +	struct vcpu_info *vcpu;
+> +	unsigned long flags;
+> +
+> +	preempt_disable();
+> +	vcpu = x86_read_percpu(xen_vcpu);
+> +	/* flag has opposite sense of mask */
+> +	flags = !vcpu->evtchn_upcall_mask;
+> +	preempt_enable();
+
+If you use get_cpu/put_cpu it will be optimized away on PREEMPT && !SMP
+(more occurrences)
+
+> +static void xen_restore_fl(unsigned long flags)
+> +{
+> +	struct vcpu_info *vcpu;
+> +
+> +	preempt_disable();
+> +
+> +	/* convert from IF type flag */
+> +	flags = !(flags & X86_EFLAGS_IF);
+> +	vcpu = x86_read_percpu(xen_vcpu);
+> +	vcpu->evtchn_upcall_mask = flags;
+> +	if (flags == 0) {
+> +		barrier(); /* unmask then check (avoid races) */
+
+Don't you need a rmb() here then? The CPU could speculate reads
+(more occurrences) 
+
+> +		if (unlikely(vcpu->evtchn_upcall_pending))
+> +			force_evtchn_callback();
+> +		preempt_enable();
+> +	} else
+> +		preempt_enable_no_resched();
+> +}
+> +
+> +static void xen_irq_disable(void)
+> +{
+> +	struct vcpu_info *vcpu;
+> +	preempt_disable();
+> +	vcpu = x86_read_percpu(xen_vcpu);
+> +	vcpu->evtchn_upcall_mask = 1;
+> +	preempt_enable_no_resched();
+
+First with the new per cpu the preempt disable shouldn't be needed
+anymore because the thing is atomic. In the worst case you do 
+the change on the previous CPU, but that can happen anyways after
+preempt_enable
+
+And then when you have enabled who transfers the irq off state to the
+new CPU? 
+
+
+> +static void xen_halt(void)
+> +{
+> +#if 0
+> +	if (irqs_disabled())
+> +		HYPERVISOR_vcpu_op(VCPUOP_down, smp_processor_id(), NULL);
+> +#endif
+> +}
+
+Who halts then?
+
+> +static void xen_load_gdt(const struct Xgt_desc_struct *dtr)
+> +{
+> +	unsigned long *frames;
+> +	unsigned long va = dtr->address;
+> +	unsigned int size = dtr->size + 1;
+> +	int f;
+> +	struct multicall_space mcs;
+> +
+> +	BUG_ON(size > 16*PAGE_SIZE);
+
+Why 16?
+
+> +	count = desc->size / 8;
+> +	BUG_ON(count > 256);
+
+should be >= ?
+
+
+> +static void xen_set_iopl_mask(unsigned mask)
+> +{
+> +#if 0
+> +	struct physdev_set_iopl set_iopl;
+> +
+> +	/* Force the change at ring 0. */
+> +	set_iopl.iopl = (mask == 0) ? 1 : (mask >> 12) & 3;
+> +	HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl);
+> +#endif
+
+And who does iopl then?
+
+
+> + * Page-directory addresses above 4GB do not fit into architectural %cr3.
+> + * When accessing %cr3, or equivalent field in vcpu_guest_context, guests
+> + * must use the following accessor macros to pack/unpack valid MFNs.
+> + */
+> +#define xen_pfn_to_cr3(pfn) (((unsigned)(pfn) << 12) | ((unsigned)(pfn) >> 20))
+> +#define xen_cr3_to_pfn(cr3) (((unsigned)(cr3) >> 12) | ((unsigned)(cr3) << 20))
+
+Don't you lose bits >4GB here due to the casts before shift?
+
+> +	BUG_ON(memcmp(xen_start_info->magic, "xen-3.0", 7) != 0);
+
+Hopefully Xen 4.0 can handle this then.
+
+> +
+> +	/* Poke various useful things into boot_params */
+> +	LOADER_TYPE = (9 << 4) | 0;
+
+| 0 ? Probably should be something symbolic
+
+> +unsigned long xen_pmd_val(pmd_t pmd)
+> +{
+> +	BUG();
+> +	return 0;
+> +}
+
+Why do we have pmd_val hooks then?
+
+> +pmd_t xen_make_pmd(unsigned long pmd)
+> +{
+> +	BUG();
+> +	return __pmd(0);
+> +}
+
+and make_pmd hooks?
+
+> --- /dev/null
+> +++ b/arch/i386/xen/time.c
+
+... will review the rest later.
+
+Can you please split it up a bit?
+
+-Andi
+
