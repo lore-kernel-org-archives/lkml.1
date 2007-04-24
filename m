@@ -1,122 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161560AbXDXDqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXDXEDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161560AbXDXDqi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 23:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161569AbXDXDqi
+	id S1753413AbXDXEDF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 00:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbXDXEDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 23:46:38 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:63302 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161560AbXDXDqh (ORCPT
+	Tue, 24 Apr 2007 00:03:05 -0400
+Received: from mse2fe1.mse2.exchange.ms ([69.25.50.163]:16276 "EHLO
+	mse2fe1.mse2.exchange.ms" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbXDXEDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 23:46:37 -0400
-Message-ID: <462D7D8F.7000401@bigpond.net.au>
-Date: Tue, 24 Apr 2007 13:46:23 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-References: <20070420140457.GA14017@elte.hu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta07ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 24 Apr 2007 03:46:29 +0000
+	Tue, 24 Apr 2007 00:03:04 -0400
+Subject: Re: Permanent Kgdb integration into the kernel - lets get with it.
+	(Dave: How do FreeBSD folks maintain the KGDB stub?)
+From: Piet Delaney <pdelaney@bluelane.com>
+Reply-To: pdelaney@bluelane.com
+To: Andi Kleen <ak@suse.de>, "David O'Brien" <obrien@freebsd.org>
+Cc: pdelaney@bluelane.com, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Jason Wessel <jason.wessel@windriver.com>,
+       Piet Delaney <piet@bluelane.com>, Tom Rini <trini@kernel.crashing.org>,
+       Dave Jiang <djiang@mvista.com>, linux-kernel@vger.kernel.org,
+       George Anzinger <george@wildturkeyranch.net>,
+       "David O'Brien" <obrien@freebsd.org>
+In-Reply-To: <200704211148.09525.ak@suse.de>
+References: <20070307204516.GA24095@blade.az.mvista.com>
+	 <1177109495.9479.81.camel@piet2.bluelane.com>
+	 <20070420163450.d8c8b3b7.akpm@linux-foundation.org>
+	 <200704211148.09525.ak@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8BlH+x+YL2MxSmlcly29"
+Organization: Blue Lane Technologies
+Date: Mon, 23 Apr 2007 21:02:56 -0700
+Message-Id: <1177387377.9479.175.camel@piet2.bluelane.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4-3mdk 
+X-OriginalArrivalTime: 24 Apr 2007 04:03:01.0773 (UTC) FILETIME=[73C7BBD0:01C78625]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 23 Apr 2007, Ingo Molnar wrote:
->> The "give scheduler money" transaction can be both an "implicit 
->> transaction" (for example when writing to UNIX domain sockets or 
->> blocking on a pipe, etc.), or it could be an "explicit transaction": 
->> sched_yield_to(). This latter i've already implemented for CFS, but it's 
->> much less useful than the really significant implicit ones, the ones 
->> which will help X.
-> 
-> Yes. It would be wonderful to get it working automatically, so please say 
-> something about the implementation..
-> 
-> The "perfect" situation would be that when somebody goes to sleep, any 
-> extra points it had could be given to whoever it woke up last. Note that 
-> for something like X, it means that the points are 100% ephemeral: it gets 
-> points when a client sends it a request, but it would *lose* the points 
-> again when it sends the reply!
-> 
-> So it would only accumulate "scheduling points" while multiuple clients 
-> are actively waiting for it, which actually sounds like exactly the right 
-> thing. However, I don't really see how to do it well, especially since the 
-> kernel cannot actually match up the client that gave some scheduling 
-> points to the reply that X sends back.
-> 
-> There are subtle semantics with these kinds of things: especially if the 
-> scheduling points are only awarded when a process goes to sleep, if X is 
-> busy and continues to use the CPU (for another client), it wouldn't give 
-> any scheduling points back to clients and they really do accumulate with 
-> the server. Which again sounds like it would be exactly the right thing 
-> (both in the sense that the server that runs more gets more points, but 
-> also in the sense that we *only* give points at actual scheduling events).
-> 
-> But how do you actually *give/track* points? A simple "last woken up by 
-> this process" thing that triggers when it goes to sleep? It might work, 
-> but on the other hand, especially with more complex things (and networking 
-> tends to be pretty complex) the actual wakeup may be done by a software 
-> irq. Do we just say "it ran within the context of X, so we assume X was 
-> the one that caused it?" It probably would work, but we've generally tried 
-> very hard to avoid accessing "current" from interrupt context, including 
-> bh's.
 
-Within reason, it's not the number of clients that X has that causes its 
-CPU bandwidth use to sky rocket and cause problems.  It's more to to 
-with what type of clients they are.  Most GUIs (even ones that are 
-constantly updating visual data (e.g. gkrellm -- I can open quite a 
-large number of these without increasing X's CPU usage very much)) cause 
-very little load on the X server.  The exceptions to this are the 
-various terminal emulators (e.g. xterm, gnome-terminal, etc.) when being 
-used to run output intensive command line programs e.g. try "ls -lR /" 
-in an xterm.  The other way (that I've noticed) X's CPU usage bandwidth 
-sky rocket is when you grab a large window and wiggle it about a lot and 
-hopefully this doesn't happen a lot so the problem that needs to be 
-addressed is the one caused by text output on xterm and its ilk.
+--=-8BlH+x+YL2MxSmlcly29
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-So I think that an elaborate scheme for distributing "points" between X 
-and its clients would be overkill.  A good scheduler will make sure 
-other tasks such as audio streamers get CPU when they need it with good 
-responsiveness even when X takes off by giving them higher priority 
-because their CPU bandwidth use is low.
+On Sat, 2007-04-21 at 11:48 +0200, Andi Kleen wrote:
+> > Lots of people want kgdb.  One person is famously less keen on it, but
+> > we'll be able to talk him around, as long as the patches aren't daft.
+>=20
+> The big question is if the kgdb developers seriously want mainline.
+> At least in the past this definitely wasn't the case.
 
-The one problem that might still be apparent in these cases is the mouse 
-becoming jerky while X is working like crazy to spew out text too fast 
-for anyone to read.  But the only way to fix that is to give X more 
-bandwidth but if it's already running at about 95% of a CPU that's 
-unlikely to help.  To fix this you would probably need to modify X so 
-that it knows re-rendering the cursor is more important than rendering 
-text in an xterm.
+I haven't seen any email from kgdb developers saying they didn't want
+kgdb to be part of mainline.=20
 
-In normal circumstances, the re-rendering of the mouse happens quickly 
-enough for the user to experience good responsiveness because X's normal 
-CPU use is low enough for it to be given high priority.
+Happen to have any e-mail demonstrating that?=20
 
-Just because the O(1) tried this model and failed doesn't mean that the 
-model is bad.  O(1) was a flawed implementation of a good model.
+It's appears to me that:
 
-Peter
-PS Doing a kernel build in an xterm isn't an example of high enough 
-output to cause a problem as (on my system) it only raises X's 
-consumption from 0 to 2% to 2 to 5%.  The type of output that causes the 
-problem is usually flying past too fast to read.
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+	1. Jason Wessel is putting a lot of effort at that right now.
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+        2. Tom Rini worked hard at this just a few months ago.
+
+        3. George Anzinger was working hard at this a year or two
+           with the mm series and as likely disappointed when it wasn't
+           put into the mainline. As I recall the reason Linus gave
+           was that there were two competing patches and he wanted that
+           be resolved before integrating it into the mainline. So
+           George worked with Amit at SourceForge over that past year
+           or two and it's now integrated.
+
+>=20
+> If they're not open to change requests from mainline reviewers we don't
+> even need to bother to start the whole exercise.
+
+What issue are there of have been that your referring to?
+
+Once KGDB is part of KORG can't it's maintenance and support be
+a kernel wide responsibility. If someone breaks kgdb shouldn't
+that be backed out until the KORG developers fixes the problem?
+Centralizing the responsibility for KGDB seems like mistake. I=20
+doubt the FreeBSD folks rip out the KGDB support of a kernel hacker
+breaks KGDB and then leaves a group of KGDB developers to sort out
+the problem. Seems it should be cough as a mm patch with Andrew tossing
+out the patch if it breaks KGDB. Kgdb developers could try to give
+Andrew a heads up if this occurs and he didn't notice it.
+
+Once KGDB is integrated the maintenance should be minimal and changes
+that break KGDB are likely best addressed by the developer that just
+broke it. At least that what I'd think is an optimal approach. Perhaps
+Dave O'Brien could tell us how the FreeBSD folks take care for KGDB.
+
+>=20
+> Just putting their stuff onto korg isn't enough.
+
+Yep, and once it's integrated into korg it should finally become
+a permanent part of the kernel and I suspect maintained by all
+kernel developers. New KGDB features could be developed at SourceForge
+but maintaining kernel coherence seems like a global responsibility.
+Like running fault injection on your code before checking it in.
+
+Maybe I'm totally out to lunch on this; perhaps Dave O'Brien
+can straighten me our if I'm wrong or the Linux kernel core
+responsibility paradigm are incompatible with this.
+
+I'd prefer Linux being just as good as NetBSD with Debugging support;=20
+current presentations like:
+
+	http://foss.in/2005/slides/netbsd-linux.pdf
+
+show our current support as being much worse. Let's fix it.
+
+You developed a kgdb proxy for Keith Owens kdb and I suspect you
+would like to have KGDB being part of the kernel mainline as
+long as it's done well. I doubt anyone would argue with that.
+=20
+Perhaps it's possible to eventually setup KGDB so it can be=20
+debugged with kdb. Once KGDB is mainline that are plenty of
+issues that can be addressed; for example taking a kernel
+core dump after dropping into kgdb and having the registers
+show up correctly in Dave Anderson's crash utility.
+
+-piet
+
+>=20
+> -Andi
+--=20
+Piet Delaney                                    Phone: (408) 200-5256
+Blue Lane Technologies                          Fax:   (408) 200-5299
+10450 Bubb Rd.
+Cupertino, Ca. 95014                            Email: piet@bluelane.com
+
+--=-8BlH+x+YL2MxSmlcly29
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBGLYFwJICwm/rv3hoRAp+WAJ9Rk6E/nX2LhzTNegg6igMvIoLieQCfTGHz
+TDmHlug7bh16ShrCV3JLmTs=
+=o+yI
+-----END PGP SIGNATURE-----
+
+--=-8BlH+x+YL2MxSmlcly29--
+
