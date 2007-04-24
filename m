@@ -1,116 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422963AbXDXSBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422916AbXDXSE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422963AbXDXSBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 14:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422967AbXDXSBw
+	id S1422916AbXDXSE4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 14:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422940AbXDXSEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 14:01:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:15876 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422941AbXDXSBs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 14:01:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="233193257:sNHT22236928"
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: Bill Huey <billh@gnuppy.monkey.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-In-Reply-To: <20070424015737.GA20413@gnuppy.monkey.org>
-References: <462D37D2.3060208@goop.org>
-	 <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
-	 <20070424015737.GA20413@gnuppy.monkey.org>
-Content-Type: text/plain
+	Tue, 24 Apr 2007 14:04:55 -0400
+Received: from 207.47.60.147.static.nextweb.net ([207.47.60.147]:27299 "EHLO
+	rpc.xensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422916AbXDXSEz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 14:04:55 -0400
+Message-ID: <462E469F.6060502@xensource.com>
+Date: Tue, 24 Apr 2007 11:04:15 -0700
+From: Jeremy Fitzhardinge <jeremy@xensource.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: LAPLACE Cyprien <cyprien.laplace@trango-systems.com>
+CC: virtualization@lists.linux-foundation.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: SMP lockup in virtualized environment
+References: <462E4223.1050109@trango-systems.com>
+In-Reply-To: <462E4223.1050109@trango-systems.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Tue, 24 Apr 2007 11:01:39 -0700
-Message-Id: <1177437699.3168.65.camel@tongli.jf.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 24 Apr 2007 18:01:40.0742 (UTC) FILETIME=[9C391260:01C7869A]
+X-OriginalArrivalTime: 24 Apr 2007 18:04:54.0284 (UTC) FILETIME=[0F953CC0:01C7869B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-23 at 18:57 -0700, Bill Huey wrote: 
-> On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
-> > I don't know if we've discussed this or not. Since both CFS and SD claim
-> > to be fair, I'd like to hear more opinions on the fairness aspect of
-> > these designs. In areas such as OS, networking, and real-time, fairness,
-> > and its more general form, proportional fairness, are well-defined
-> > terms. In fact, perfect fairness is not feasible since it requires all
-> > runnable threads to be running simultaneously and scheduled with
-> > infinitesimally small quanta (like a fluid system). So to evaluate if a
-> 
-> Unfortunately, fairness is rather non-formal in this context and probably
-> isn't strictly desirable given how hack much of Linux userspace is. Until
-> there's a method of doing directed yields, like what Will has prescribed
-> a kind of allotment to thread doing work for another a completely strict
-> mechanism, it is probably problematic with regards to corner cases.
-> 
-> X for example is largely non-thread safe. Until they can get their xcb
-> framework in place and addition thread infrastructure to do hand off
-> properly, it's going to be difficult schedule for it. It's well known to
-> be problematic.
+LAPLACE Cyprien wrote:
+> I wonder how the guest domain can be denied timer interrupts for such a
+> long time ? The only reason I see is that the guest domain is not
+> scheduled at all (host domain or another higher priority guest running).
+>
+> Now in SMP host and guest, what happens if a guest CPU is not scheduled
+> for a while ?
+>   
 
-I agree. I just think calling the designs "perfectly" or "completely"
-fair is too strong. It might cause unnecessary confusion that
-overshadows the actual merits of these designs. If we were to evaluate
-specifically the fairness aspect of a design, then I'd suggest defining
-it more formally.
+I think this mostly happens when you're doing an inherently
+time-stealing thing, like pausing vcpus or suspend/resume.  But I guess
+it could happen with a low-prio domain/vcpu on a busy system.
 
-> You announced your scheduler without CCing any of the relevant people here
-> (and risk being completely ignored in lkml traffic):
-> 
-> 	http://lkml.org/lkml/2007/4/20/286
-> 
-> What is your opinion of both CFS and SDL ? How can you work be useful
-> to either scheduler mentioned or to the Linux kernel on its own ?
+> An example: in kernel/pid.c:alloc_pid(), if one of the guest CPUs is
+> descheduled when holding the pidmap_lock, what happens to the other
+> guest CPUs who want to alloc/free pids ? Are they blocked too ?
+>   
 
-I like SD for its simplicity. My concern with CFS is the RB tree
-structure. Log(n) seems high to me given the fact that we had an O(1)
-scheduler. Many algorithms achieve strong fairness guarantees at the
-cost of log(n) time. Thus, I tend to think, if log(n) is acceptable, we
-might want also to look at other algorithms (e.g., start-time first)
-with better fairness properties and see if they could be extended to be
-general purpose.
+Yep; its a problem.  If a vcpu holding locks and not running, then
+everyone else will be prevented from taking those locks.  If you have a
+very busy system, then presumably all the vcpus will be similarly loaded
+and the fact that it takes a long time to get locks just means you're
+trying to run too many vcpus for your hardware's capacity.
 
-> > I understand that via experiments we can show a design is reasonably
-> > fair in the common case, but IMHO, to claim that a design is fair, there
-> > needs to be some kind of formal analysis on the fairness bound, and this
-> > bound should be proven to be constant. Even if the bound is not
-> > constant, at least this analysis can help us better understand and
-> > predict the degree of fairness that users would experience (e.g., would
-> > the system be less fair if the number of threads increases? What happens
-> > if a large number of threads dynamically join and leave the system?).
-> 
-> Will has been thinking about this, but you have to also consider the
-> practicalities of your approach versus Con's and Ingo's.
+The other problem is if you've got two vcpus sharing one real cpu, and
+vcpu A spins while waiting for vcpu B to release a lock, and vcpu B is
+waiting for A to get off the physical CPU.  I don't know how often this
+is a real problem in practice.
 
-I consider my work an approach to extend an existing scheduler to
-support proportional fairness. I see many proportional-share designs are
-lacking things such as good interactive support that Linux does well.
-This is why I designed it on top of the existing scheduler so that it
-can leverage things such as dynamic priorities. Regardless of the
-underlying scheduler, SD or CFS, I think the algorithm I used would
-still apply and thus we can extend the scheduler similarly.
+    J
 
-> I'm all for things like proportional scheduling and the extensions
-> needed to do it properly. It would be highly relevant to some version
-> of the -rt patch if not that patch directly.
-
-I'd love it to be considered for part of the -rt patch. I'm new to 
-this, so would you please let me know what to do?
-
-Thanks,
-
-  tong
