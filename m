@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423199AbXDXXBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbXDXXNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423199AbXDXXBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 19:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423204AbXDXXBP
+	id S1754545AbXDXXNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 19:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbXDXXNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 19:01:15 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:34332 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423199AbXDXXBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 19:01:15 -0400
-Message-ID: <462E8C1E.6070204@cosmosbay.com>
-Date: Wed, 25 Apr 2007 01:00:46 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 24 Apr 2007 19:13:54 -0400
+Received: from waste.org ([66.93.16.53]:54386 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754545AbXDXXNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 19:13:53 -0400
+Date: Tue, 24 Apr 2007 18:00:46 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Mel Gorman <mel@skynet.ie>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Dave Chinner <dgc@sgi.com>
+Subject: Re: [RFC 4/8] Enhance fallback functions in libs to support higher order pages
+Message-ID: <20070424230046.GH11166@waste.org>
+References: <20070419163504.11948.58487.sendpatchset@schroedinger.engr.sgi.com> <20070419163525.11948.3482.sendpatchset@schroedinger.engr.sgi.com> <20070420110516.GC12075@skynet.ie> <1177095021.10848.18.camel@kleikamp.austin.ibm.com> <Pine.LNX.4.64.0704201207120.21342@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: clameter@sgi.com
-CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [08/17] Define functions for page cache handling
-References: <20070424222105.883597089@sgi.com> <20070424222306.289124159@sgi.com>
-In-Reply-To: <20070424222306.289124159@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Wed, 25 Apr 2007 01:00:56 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704201207120.21342@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clameter@sgi.com a écrit :
+On Fri, Apr 20, 2007 at 12:10:43PM -0700, Christoph Lameter wrote:
+> On Fri, 20 Apr 2007, Dave Kleikamp wrote:
+> 
+> > On Fri, 2007-04-20 at 12:05 +0100, Mel Gorman wrote:
+> > 
+> > > comments about missing page_cache_size() covered elsewhere. However, I
+> > > note that Dave Kleikamp might be interested in this changing of
+> > > page_cache_size() from the perspective of page cache tails. I've added
+> > > him to the cc so he can take a quick look.
+> > 
+> > Yeah.  I'm working on patches for storing file tails in buffers
+> > allocated from the slab cache, and the tail will be represented by a
+> > fake struct page.  (This is primarily for kernels with a larger page
+> > size).  So my version of page_cache_size(page) may return a different
+> > size for different pages belonging to the same mapping.  I'm in the
+> > midst of cleaning up the patches and plan to post them to linux-mm by
+> > Monday.
+> 
+> I am not sure what the point of that patchset would be in this context 
+> given that this is about support for arbitrary page sizes. If the 
+> filesystem wants it then it can reduce the page size for small files.
 
-> --- linux-2.6.21-rc7.orig/include/linux/fs.h	2007-04-24 11:31:49.000000000 -0700
-> +++ linux-2.6.21-rc7/include/linux/fs.h	2007-04-24 11:37:21.000000000 -0700
-> @@ -435,6 +435,11 @@ struct address_space {
->  	struct inode		*host;		/* owner: inode, block_device */
->  	struct radix_tree_root	page_tree;	/* radix tree of all pages */
->  	rwlock_t		tree_lock;	/* and rwlock protecting it */
-> +#ifdef CONFIG_LARGE_BLOCKSIZE
-> +	unsigned int		order;		/* Page order of the pages in here */
-> +	unsigned int		shift;		/* Shift of index */
-> +	loff_t			offset_mask;	/* Mask to get to offset bits */
-> +#endif
->  	unsigned int		i_mmap_writable;/* count VM_SHARED mappings */
->  	struct prio_tree_root	i_mmap;		/* tree of private and shared mappings */
->  	struct list_head	i_mmap_nonlinear;/*list VM_NONLINEAR mappings */
+Shaggy's suggestion is to emulate pages with _negative_ orders.
 
-Some comments about this :
-
-1) not optimal placement on 64bits arches (it creates one hole before 
-i_mmap_writeable)
-
-2) sizeof(struct address_space) is an issue, given it is included in every 
-inode, even sockets or pipes.
-
--> 2.1) Do we really need 32 bits for 'order' and 'shift'
--> 2.2) Do we really need a 64bits offset_mask since it's a trivial arithmetic 
-from 'shift' (or 'order') ?
-
-BTW, I presume splice() is not yet supported ? If yes, each pipe could hold 16 
-  'big pages' so we probably can hit some DOS condition sooner...
-
-
+-- 
+Mathematics is the supreme nostalgia of our time.
