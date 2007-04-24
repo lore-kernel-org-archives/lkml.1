@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161654AbXDXGRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161657AbXDXGSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161654AbXDXGRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 02:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161657AbXDXGRg
+	id S1161657AbXDXGSj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 02:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161661AbXDXGSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 02:17:36 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:37000 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161654AbXDXGRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 02:17:34 -0400
-Message-Id: <1177395453.29737.1186216313@webmail.messagingengine.com>
-X-Sasl-Enc: rqnk2S/T0nTCzp6Vz48b3hSZ/MVdCoV0b8ticj89TJ1T 1177395453
-From: lkml777@123mail.org
-To: "Eric Hopper" <hopper@omnifarious.org>
-Cc: "Linas Vepstas" <linas@austin.ibm.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       "Oleg Nesterov" <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-       "Paul Mackerras" <paulus@samba.org>, linux-s390@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 24 Apr 2007 02:18:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:59660 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161657AbXDXGSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 02:18:38 -0400
+Message-ID: <462DA159.2030600@goop.org>
+Date: Mon, 23 Apr 2007 23:19:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-   <11769695763104-git-send-email-ebiederm@xmission.com>
-   <20070422123155.GF20763@infradead.org>
-   <20070423205020.GR31947@austin.ibm.com>
-   <1177378733.14873.52.camel@localhost.localdomain>
-   <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-   <1177382544.14873.57.camel@localhost.localdomain>
-   <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-   <1177390842.14873.94.camel@localhost.localdomain>
-   <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-Subject: SOME STUFF ABOUT REISER4
-In-Reply-To: <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 23 Apr 2007 23:17:33 -0700
+To: Roland McGrath <roland@redhat.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [PATCH 03/25] xen: Add nosegneg capability to the vsyscall page
+ notes
+References: <20070424042653.37F421801A4@magilla.sf.frob.com>
+In-Reply-To: <20070424042653.37F421801A4@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-<hopper@omnifarious.org> said:
+Roland McGrath wrote:
+>> I have to admit I still don't really understand all this.  Is it
+>> documented somewhere?
+>>     
+>
+> I have explained it in public more than once, but I don't know off hand
+> anywhere that was helpfully recorded.
+>   
 
-> I know that this whole effort has been put in disarray by the
-> prosecution of Hans Reiser, but I'm curious as to its status. Is
-> Reiser4 going to be going into the Linus kernel anytime soon? Is there
-> somewhere I should be looking to find this out without wasting bandwidth
-> here?
+Thanks very much.  I'd been poking about, but the closest I came to an
+actual description was various patches fixing bugs, so it was a little
+incomplete.
 
-There was a thread the other day, that talked about Reiser4.
+> For example, a Xen-enabled kernel can use a single vDSO image (or a single
+> pair of int80/sysenter images), containing the "nosegneg" hwcap note.  When
+> there is no need for it (native or hvm or 64-bit hv or whatever), it just
+> clears the mask word.  If you actually do this, you'll want to modify the
+> NOTE_KERNELCAP_BEGIN macro to define a global label you can use with VDSO_SYM.
+>   
 
-It took a while but I have found it (actually two)
+Thanks for the pointer.  I'd been getting a bit of heat for enabling the
+nonegseg flag unconditionally.  If I can make Xen-specific then that
+will be one less source of complaints.
 
-http://lkml.org/lkml/2007/4/5/360
-http://lkml.org/lkml/2007/4/9/4
-
-You may want to check them out.
--- 
-  
-  lkml777@123mail.org
-
--- 
-http://www.fastmail.fm - Access your email from home and the web
-
+    J
