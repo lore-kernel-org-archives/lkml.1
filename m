@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423080AbXDXUBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423081AbXDXUL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423080AbXDXUBP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423086AbXDXUBP
+	id S1423081AbXDXUL0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423090AbXDXUL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:01:15 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:45390 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1423085AbXDXUBN (ORCPT
+	Tue, 24 Apr 2007 16:11:26 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50068 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423081AbXDXULZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:01:13 -0400
-Date: Tue, 24 Apr 2007 12:26:32 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Nikita Danilov <nikita@clusterfs.com>
-cc: Amit Gud <gud@cis.ksu.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, val_henson@linux.intel.com,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
-       gud@ksu.edu
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-In-Reply-To: <17966.23512.363955.141489@gargle.gargle.HOWL>
-Message-ID: <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu><17965.6084
- 1.900376.524639@gargle.gargle.HOWL><Pine.LNX.4.63.0704241123200.7701@qynat.
- qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 24 Apr 2007 16:11:25 -0400
+Date: Tue, 24 Apr 2007 13:10:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+Message-Id: <20070424131042.38c8cbff.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704241256470.12907@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+	<20070423142919.5809e03f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+	<20070423154224.15ebf8f7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0704241042550.8418@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0704241941421.28487@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0704241234341.12753@schroedinger.engr.sgi.com>
+	<20070424124922.d406aac1.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241256470.12907@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Nikita Danilov wrote:
+On Tue, 24 Apr 2007 12:59:17 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> David Lang writes:
-> > On Tue, 24 Apr 2007, Nikita Danilov wrote:
-> >
-> > > Amit Gud writes:
-> > >
-> > > Hello,
-> > >
-> > > >
-> > > > This is an initial implementation of ChunkFS technique, briefly discussed
-> > > > at: http://lwn.net/Articles/190222 and
-> > > > http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
-> > >
-> > > I have a couple of questions about chunkfs repair process.
-> > >
-> > > First, as I understand it, each continuation inode is a sparse file,
-> > > mapping some subset of logical file blocks into block numbers. Then it
-> > > seems, that during "final phase" fsck has to check that these partial
-> > > mappings are consistent, for example, that no two different continuation
-> > > inodes for a given file contain a block number for the same offset. This
-> > > check requires scan of all chunks (rather than of only "active during
-> > > crash"), which seems to return us back to the scalability problem
-> > > chunkfs tries to address.
-> >
-> > not quite.
-> >
-> > this checking is a O(n^2) or worse problem, and it can eat a lot of memory in
-> > the process. with chunkfs you divide the problem by a large constant (100 or
-> > more) for the checks of individual chunks. after those are done then the final
-> > pass checking the cross-chunk links doesn't have to keep track of everything, it
-> > only needs to check those links and what they point to
->
-> Maybe I failed to describe the problem presicely.
->
-> Suppose that all chunks have been checked. After that, for every inode
-> I0 having continuations I1, I2, ... In, one has to check that every
-> logical block is presented in at most one of these inodes. For this one
-> has to read I0, with all its indirect (double-indirect, triple-indirect)
-> blocks, then read I1 with all its indirect blocks, etc. And to repeat
-> this for every inode with continuations.
->
-> In the worst case (every inode has a continuation in every chunk) this
-> obviously is as bad as un-chunked fsck. But even in the average case,
-> total amount of io necessary for this operation is proportional to the
-> _total_ file system size, rather than to the chunk size.
+> On Tue, 24 Apr 2007, Andrew Morton wrote:
+> 
+> > No, think of the following scenario:
+> > 
+> > - file I/O causes a read of an ext2 file's bitmap.  The bitmap is
+> >   brought into /dev/hda1's pagecache using !__GFP_HIGHMEM
+> > 
+> > - references are released against that page and it's now just clean
+> >   reclaimable pagecache
+> > 
+> > - someone (say, an online filesystem checker or something) mmaps
+> >   /dev/hda1 and reads that page.
+> > 
+> > - migration comes alnog and migrates that page into highmem
+> > 
+> > - file I/O causes a read of that bitmap again.  We find it in
+> >   /dev/hda's pagecache.
+> 
+> Read of the bitmap? How would that work? Page cache lookup right?
 
-actually, it should be proportional to the number of continuation nodes. The 
-expectation (and design) is that they are rare.
+yup.
 
-If you get into the worst-case situation of all of them being continuation 
-nodes, then you are actually worse off then you were to start with (as you are 
-saying), but numbers from people's real filesystems (assuming a chunk size equal 
-to a block cluster size) indicates that we are more on the order of a fraction 
-of a percent of the nodes. and the expectation is that since the chunk sizes 
-will be substantially larger then the block cluster sizes this should get 
-reduced even more.
+	sb_bread
+	->__bread
+	  ->__getblk
+	    ->__find_get_block
+	      ->__find_get_block_slow
+	        ->find_get_page
 
-David Lang
+> >   Here's set_bh_page().
+> 
+> A highmem page can have buffers???
+
+yep.  Take a 4k page which is stored in four discontiguous 1k disk blocks. The
+data at page_buffers(page) is the sole way in which we track which parts of
+the page belong to which blocks of the disk.
+
