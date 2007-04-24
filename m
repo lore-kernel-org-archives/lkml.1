@@ -1,149 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423023AbXDXTJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423037AbXDXTLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423023AbXDXTJW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 15:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423026AbXDXTJW
+	id S1423037AbXDXTLG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 15:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423038AbXDXTLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 15:09:22 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:40991
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1423023AbXDXTJV (ORCPT
+	Tue, 24 Apr 2007 15:11:06 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:36249 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423037AbXDXTLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 15:09:21 -0400
-Date: Tue, 24 Apr 2007 21:12:20 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: kjhall@us.ibm.com, tpm@selhorst.net, tpmdd-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of semaphore in TPM driver
-Message-ID: <20070424191220.GG6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	kjhall@us.ibm.com, tpm@selhorst.net,
-	tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+	Tue, 24 Apr 2007 15:11:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=U9bFa4jvynMy2ng1RaI6xRf3Y8ZDZlDVwzR600BV2UqFP3dYGqRz7HfbTyRXP3/3xyfDdLWQwXcWpNCWm6SHoPS8/wTQnz53aC1NZUjrfLORvUEKokOLp13ivfindysomw/lWuUIWFVMHctdCLwCa6skU4AI9tunvUvG1IBq12k=
+Message-ID: <62eb359a0704241211i2effccc8r9a1d352281b6cbd7@mail.gmail.com>
+Date: Tue, 24 Apr 2007 14:11:01 -0500
+From: "Marcos Pinto" <markybob@gmail.com>
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: 2.6.20.7 locking up hard on boot
+Cc: "Adrian Bunk" <bunk@stusta.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Alan Cox" <alan@redhat.com>, "Greg KH" <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <62eb359a0704231558we55f553u44a77183ed3e5340@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <62eb359a0704201747ma376567kda671d6fa98b7409@mail.gmail.com>
+	 <20070421013454.GB4016@stusta.de>
+	 <62eb359a0704202130p39cf24efu89dccc8437c30d25@mail.gmail.com>
+	 <20070421053420.GA10974@suse.de> <20070421103632.GC4016@stusta.de>
+	 <462C8525.76E4.0078.0@novell.com>
+	 <62eb359a0704231558we55f553u44a77183ed3e5340@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the TPM driver uses two semaphores as mutexes. use the mutex API
-instead of the (binary) semaphores
+I can confirm that reverting commit
+7639e962234c76031d1ddf436def7fd9602be560 fixes the problem.  Also,
+there seem to be plenty of other people reporting the same boot
+locking:
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com> 
+http://groups.google.com/group/fa.linux.kernel/msg/cc0453677be44a9e
+http://bbs.archlinux.org/viewtopic.php?pid=245313
+http://bugs.archlinux.org/task/6845
+http://www.usenetlinux.com/archive/topic.php/t-757515.html
 
---
+Please consider reverting this patch in upstream.
+Thank you for your time,
+Marcos
 
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index e5a254a..0805d39 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -328,10 +328,10 @@ static void timeout_work(struct work_struct *work)
- {
- 	struct tpm_chip *chip = container_of(work, struct tpm_chip, work);
- 
--	down(&chip->buffer_mutex);
-+	mutex_lock(&chip->buffer_mutex);
- 	atomic_set(&chip->data_pending, 0);
- 	memset(chip->data_buffer, 0, TPM_BUFSIZE);
--	up(&chip->buffer_mutex);
-+	mutex_unlock(&chip->buffer_mutex);
- }
- 
- /*
-@@ -380,7 +380,7 @@ static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
- 		return -E2BIG;
- 	}
- 
--	down(&chip->tpm_mutex);
-+	mutex_lock(&chip->tpm_mutex);
- 
- 	if ((rc = chip->vendor.send(chip, (u8 *) buf, count)) < 0) {
- 		dev_err(chip->dev,
-@@ -419,7 +419,7 @@ out_recv:
- 		dev_err(chip->dev,
- 			"tpm_transmit: tpm_recv: error %zd\n", rc);
- out:
--	up(&chip->tpm_mutex);
-+	mutex_unlock(&chip->tpm_mutex);
- 	return rc;
- }
- 
-@@ -966,14 +966,14 @@ ssize_t tpm_write(struct file *file, const char __user *buf,
- 	while (atomic_read(&chip->data_pending) != 0)
- 		msleep(TPM_TIMEOUT);
- 
--	down(&chip->buffer_mutex);
-+	mutex_lock(&chip->buffer_mutex);
- 
- 	if (in_size > TPM_BUFSIZE)
- 		in_size = TPM_BUFSIZE;
- 
- 	if (copy_from_user
- 	    (chip->data_buffer, (void __user *) buf, in_size)) {
--		up(&chip->buffer_mutex);
-+		mutex_unlock(&chip->buffer_mutex);
- 		return -EFAULT;
- 	}
- 
-@@ -981,7 +981,7 @@ ssize_t tpm_write(struct file *file, const char __user *buf,
- 	out_size = tpm_transmit(chip, chip->data_buffer, TPM_BUFSIZE);
- 
- 	atomic_set(&chip->data_pending, out_size);
--	up(&chip->buffer_mutex);
-+	mutex_unlock(&chip->buffer_mutex);
- 
- 	/* Set a timeout by which the reader must come claim the result */
- 	mod_timer(&chip->user_read_timer, jiffies + (60 * HZ));
-@@ -1004,10 +1004,10 @@ ssize_t tpm_read(struct file *file, char __user *buf,
- 		if (size < ret_size)
- 			ret_size = size;
- 
--		down(&chip->buffer_mutex);
-+		mutex_lock(&chip->buffer_mutex);
- 		if (copy_to_user(buf, chip->data_buffer, ret_size))
- 			ret_size = -EFAULT;
--		up(&chip->buffer_mutex);
-+		mutex_unlock(&chip->buffer_mutex);
- 	}
- 
- 	return ret_size;
-@@ -1100,8 +1100,8 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
- 	if (chip == NULL)
- 		return NULL;
- 
--	init_MUTEX(&chip->buffer_mutex);
--	init_MUTEX(&chip->tpm_mutex);
-+	mutex_init(&chip->buffer_mutex);
-+	mutex_init(&chip->tpm_mutex);
- 	INIT_LIST_HEAD(&chip->list);
- 
- 	INIT_WORK(&chip->work, timeout_work);
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index bb9a43c..bf58aac 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -95,11 +95,11 @@ struct tpm_chip {
- 	/* Data passed to and from the tpm via the read/write calls */
- 	u8 *data_buffer;
- 	atomic_t data_pending;
--	struct semaphore buffer_mutex;
-+	struct mutex buffer_mutex;
- 
- 	struct timer_list user_read_timer;	/* user needs to claim result */
- 	struct work_struct work;
--	struct semaphore tpm_mutex;	/* tpm is processing */
-+	struct mutex tpm_mutex;	/* tpm is processing */
- 
- 	struct tpm_vendor_specific vendor;
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-          Dreams and reality are opposites. Action synthesizes them
-                             (Assata Shakur)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+On 4/23/07, Marcos Pinto <markybob@gmail.com> wrote:
+> On 4/23/07, Jan Beulich <jbeulich@novell.com> wrote:
+> > Given that all of the reports are in cases when the adjustment is *not*
+> > being done (and only a message is being printed), I can only assume that
+> > the breakage results from the adding of PCI_BASE_ADDRESS_SPACE_IO
+> > into the resource flags. I considered this unconditional setting of the flags
+> > odd already in the original code, and added this extra flag only for
+> > consistency reasons (because the settings reported by X indicated that
+> > this was missing). Perhaps the adjustment (original and the added
+> > extra flag) shouldn't be done if IORESOURCE_IO wasn't already set.
+> > Perhaps one of those seeing the issue could try out returning from the
+> > function right after that printk(), without any adjustment to the flags.
+> >
+> > Jan
+> >
+> >
+>
