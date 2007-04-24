@@ -1,48 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbXDXKXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXDXKYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754600AbXDXKXI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXDXKXI
+	id S1753899AbXDXKYw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXDXKYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:23:08 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:3201 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754600AbXDXKXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:23:07 -0400
-Date: Tue, 24 Apr 2007 12:23:04 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 1/7] libata: check for AN support
-Message-ID: <20070424102304.GA58841@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-	linux-ide@vger.kernel.org, htejun@gmail.com
-References: <20070424074856.005152262@intel.com> <20070423165943.0cc67bc5.kristen.c.accardi@intel.com> <20070424090713.65657495@the-village.bc.nu>
+	Tue, 24 Apr 2007 06:24:52 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:28368 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753899AbXDXKYv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 06:24:51 -0400
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, neilb@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-Reply-To: <E1HgI6w-0000Qm-00@dorka.pomaz.szeredi.hu>
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.608300342@chello.nl>
+	 <17965.29252.950216.971096@notabene.brown>
+	 <1177398589.26937.40.camel@twins>
+	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+	 <1177403494.26937.59.camel@twins>
+	 <E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
+	 <1177406817.26937.65.camel@twins>
+	 <E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
+	 <20070424030021.a091018d.akpm@linux-foundation.org>
+	 <1177409538.26937.75.camel@twins>
+	 <E1HgI6w-0000Qm-00@dorka.pomaz.szeredi.hu>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 12:24:43 +0200
+Message-Id: <1177410283.26937.78.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070424090713.65657495@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for replying to Alan's reply, I missed the original mail.
+On Tue, 2007-04-24 at 12:19 +0200, Miklos Szeredi wrote:
+> > > > > Ahh, now I see; I had totally blocked out these few lines:
+> > > > > 
+> > > > > 			pages_written += write_chunk - wbc.nr_to_write;
+> > > > > 			if (pages_written >= write_chunk)
+> > > > > 				break;		/* We've done our duty */
+> > > > > 
+> > > > > yeah, those look dubious indeed... And reading back Neil's comments, I
+> > > > > think he agrees.
+> > > > > 
+> > > > > Shall we just kill those?
+> > > > 
+> > > > I think we should.
+> > > > 
+> > > > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
+> > > > stupid git, and that those lines are in fact vitally important ;)
+> > > > 
+> > > 
+> > > It depends what they're replaced with.
+> > > 
+> > > That code is there, iirc, to prevent a process from getting stuck in
+> > > balance_dirty_pages() forever due to the dirtying activity of other
+> > > processes.
+> > > 
+> > > hm, we ask the process to write write_chunk pages each go around the loop.
+> > > So if it wrote write-chunk/2 pages on the first pass it might end up writing
+> > > write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
+> > > if it does happen - the upper bound is write_chunk*2-1, I think.
+> > 
+> > Right, but I think the problem is that its dirty -> writeback, not dirty
+> > -> writeback completed.
+> > 
+> > Ie. they don't guarantee progress, it could be that the total
+> > nr_reclaimable + nr_writeback will steadily increase due to this break.
+> > 
+> > How about ensuring that vm_writeout_total increases least
+> > 2*sync_writeback_pages() during our stay in balance_dirty_pages(). That
+> > way we have the guarantee that more pages get written out than can be
+> > dirtied.
+> 
+> No, because that's a global counter, which many writers could be
+> looking at.
+> 
+> We'd need a per-task writeout counter, but when finishing the write we
+> don't know anymore which task it was performed for.
 
-> > +#define ata_id_has_AN(id)	\
-> > +	((id[76] && (~id[76])) & ((id)[78] & (1 << 5)))
+Yeah, just reached that conclusion myself too - again, I ran into that
+when trying to figure out how to do the per task balancing right.
 
-(a && ~a) & (b & 32)
-
-I don't think that does what you think it does, because at that point
-it's a funny way to write 0 ((0 or 1) binary-and (0 or 32)).
-
-I'm not even sure what it is you want.  If for the first part you
-wanted (id[76] != 0x00 && id[76] != 0xff), please write just that,
-thanks :-)
-
-  OG.
