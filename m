@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbXDXKMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXDXKNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753504AbXDXKMX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXDXKMX
+	id S1753940AbXDXKNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbXDXKNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:12:23 -0400
-Received: from amsfep16-int.chello.nl ([62.179.120.11]:44501 "EHLO
-	amsfep16-int.chello.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbXDXKMW (ORCPT
+	Tue, 24 Apr 2007 06:13:34 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:33112 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753940AbXDXKNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:12:22 -0400
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, neilb@suse.de, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-Reply-To: <20070424030021.a091018d.akpm@linux-foundation.org>
-References: <20070420155154.898600123@chello.nl>
-	 <20070420155503.608300342@chello.nl>
-	 <17965.29252.950216.971096@notabene.brown>
-	 <1177398589.26937.40.camel@twins>
-	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-	 <1177403494.26937.59.camel@twins>
-	 <E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
-	 <1177406817.26937.65.camel@twins>
-	 <E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
-	 <20070424030021.a091018d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 12:12:18 +0200
-Message-Id: <1177409538.26937.75.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 24 Apr 2007 06:13:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=vZmHvAmiS0+/SY3ye1WyKsnLT60HMYCcn3TB6DvyO9YBqCkKP1msg0LJicG2oGIpAmBY2PN5SazXhqEUOhQVMjufMMiUJvMuW+GlbgQu7QA/yxue1lFrPKqNsgdeXoaRg2NNjOAgKiqJtNIZvHS+HQ2B4JvuUbAbLytrqLz/jPE=  ;
+X-YMail-OSG: 3OLVOzEVM1n3ZBUPUI.4DcYrEV3D85KsWIeKbFxge2cK59cHxYlkKD3tdFtNQwVkz3SVILHG0g--
+Message-ID: <462DD83B.40708@yahoo.com.au>
+Date: Tue, 24 Apr 2007 20:13:15 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+CC: Hugh Dickins <hugh@veritas.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
+References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2> <Pine.LNX.4.64.0704231202390.29015@blonde.wat.veritas.com> <6.0.0.20.2.20070423210926.045668d0@172.19.0.2> <Pine.LNX.4.64.0704231438280.3516@blonde.wat.veritas.com> <6.0.0.20.2.20070424100507.049670d0@172.19.0.2> <462D6FD3.2090805@yahoo.com.au> <6.0.0.20.2.20070424165007.04921fd8@172.19.0.2>
+In-Reply-To: <6.0.0.20.2.20070424165007.04921fd8@172.19.0.2>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 03:00 -0700, Andrew Morton wrote:
-> On Tue, 24 Apr 2007 11:47:20 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+Hisashi Hifumi wrote:
 > 
-> > > Ahh, now I see; I had totally blocked out these few lines:
-> > > 
-> > > 			pages_written += write_chunk - wbc.nr_to_write;
-> > > 			if (pages_written >= write_chunk)
-> > > 				break;		/* We've done our duty */
-> > > 
-> > > yeah, those look dubious indeed... And reading back Neil's comments, I
-> > > think he agrees.
-> > > 
-> > > Shall we just kill those?
-> > 
-> > I think we should.
-> > 
-> > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
-> > stupid git, and that those lines are in fact vitally important ;)
-> > 
+> At 11:47 07/04/24, Nick Piggin wrote:
 > 
-> It depends what they're replaced with.
+>  >As Hugh points out, we must have atomic ops here, so changing the generic
+>  >code to use the __ version is wrong. However if there is a faster way 
+> that
+>  >i386 can perform the atomic variant, then doing so will speed up the 
+> generic
+>  >code without breaking other architectures.
+>  >
 > 
-> That code is there, iirc, to prevent a process from getting stuck in
-> balance_dirty_pages() forever due to the dirtying activity of other
-> processes.
-> 
-> hm, we ask the process to write write_chunk pages each go around the loop.
-> So if it wrote write-chunk/2 pages on the first pass it might end up writing
-> write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
-> if it does happen - the upper bound is write_chunk*2-1, I think.
+> Do you mean writing page-flags.h specific for i386 so improving generic 
+> code
+> and without breaking other architectures ?
 
-Right, but I think the problem is that its dirty -> writeback, not dirty
--> writeback completed.
+I meant improving the i386 bitops specific code.
 
-Ie. they don't guarantee progress, it could be that the total
-nr_reclaimable + nr_writeback will steadily increase due to this break.
+However if there is some variant of operation that is not captured
+with the current bitop API, but could provide a useful speedup of
+common page flag manipulations, then you might consider extending
+the bitop API and making page-flags.h use that new operation.
 
-How about ensuring that vm_writeout_total increases least
-2*sync_writeback_pages() during our stay in balance_dirty_pages(). That
-way we have the guarantee that more pages get written out than can be
-dirtied.
-
+-- 
+SUSE Labs, Novell Inc.
