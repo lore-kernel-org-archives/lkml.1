@@ -1,110 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423137AbXDXVcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423131AbXDXVcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423137AbXDXVcr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVcr
+	id S1423131AbXDXVcy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:32:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423132AbXDXVcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:32:47 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29843 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423128AbXDXVcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:32:45 -0400
-X-ExtLoop1: 1
+	Tue, 24 Apr 2007 17:32:54 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:21315 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423131AbXDXVcw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:32:52 -0400
 X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="78556757:sNHT27158796"
-Date: Tue, 24 Apr 2007 14:30:10 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [patch 2/7] genhd: expose AN to user space
-Message-Id: <20070424143010.f37333f7.kristen.c.accardi@intel.com>
-In-Reply-To: <462DBA33.9060207@gmail.com>
-References: <20070424074856.005152262@intel.com>
-	<20070423165950.7d64bd8e.kristen.c.accardi@intel.com>
-	<462DBA33.9060207@gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+   d="scan'208"; a="770580007:sNHT46574924"
+To: David Miller <davem@davemloft.net>
+Cc: ak@suse.de, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
+X-Message-Flag: Warning: May contain useful information
+References: <200704242133.16219.ak@suse.de>
+	<20070424203304.GB27911@linux-os.sc.intel.com>
+	<200704242312.54738.ak@suse.de>
+	<20070424.142351.62664098.davem@davemloft.net>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 24 Apr 2007 14:32:42 -0700
+In-Reply-To: <20070424.142351.62664098.davem@davemloft.net> (David Miller's message of "Tue, 24 Apr 2007 14:23:51 -0700 (PDT)")
+Message-ID: <adaabwx1mrp.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 24 Apr 2007 21:32:43.0073 (UTC) FILETIME=[178F7310:01C786B8]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow user space to determine if a disk supports Asynchronous Notification
-of media changes.  This is done by adding a new sysfs file "capability_flags",
-which is documented in (insert file name).  This sysfs file will export all
-disk capabilities flags to user space.  We also define a new flag to define
-the media change notification capability.
+ > My suggestion would be to allocate top-down in the 32-bit IOMMU space.
 
-Changed from last version:
-* changed sysfs filename to "capability" from "capability_flags"
+I think that's good for normal things, but it's not unreasonable to
+want to map > 4 GB of memory at once for an Infiniband device.
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+So maybe we would want some heuristics about the size of the mapping
+being requested or the amount of 32-bit space left to decide whether a
+mapping should be below 4 GB.
 
-Index: 2.6-git/block/genhd.c
-===================================================================
---- 2.6-git.orig/block/genhd.c
-+++ 2.6-git/block/genhd.c
-@@ -370,7 +370,10 @@ static ssize_t disk_size_read(struct gen
- {
- 	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
- }
--
-+static ssize_t disk_capability_read(struct gendisk *disk, char *page)
-+{
-+	return sprintf(page, "%x\n", disk->flags);
-+}
- static ssize_t disk_stats_read(struct gendisk * disk, char *page)
- {
- 	preempt_disable();
-@@ -413,6 +416,10 @@ static struct disk_attribute disk_attr_s
- 	.attr = {.name = "size", .mode = S_IRUGO },
- 	.show	= disk_size_read
- };
-+static struct disk_attribute disk_attr_capability = {
-+	.attr = {.name = "capability", .mode = S_IRUGO },
-+	.show	= disk_capability_read
-+};
- static struct disk_attribute disk_attr_stat = {
- 	.attr = {.name = "stat", .mode = S_IRUGO },
- 	.show	= disk_stats_read
-@@ -453,6 +460,7 @@ static struct attribute * default_attrs[
- 	&disk_attr_removable.attr,
- 	&disk_attr_size.attr,
- 	&disk_attr_stat.attr,
-+	&disk_attr_capability.attr,
- #ifdef CONFIG_FAIL_MAKE_REQUEST
- 	&disk_attr_fail.attr,
- #endif
-Index: 2.6-git/include/linux/genhd.h
-===================================================================
---- 2.6-git.orig/include/linux/genhd.h
-+++ 2.6-git/include/linux/genhd.h
-@@ -94,6 +94,7 @@ struct hd_struct {
- 
- #define GENHD_FL_REMOVABLE			1
- #define GENHD_FL_DRIVERFS			2
-+#define GENHD_FL_MEDIA_CHANGE_NOTIFY		4
- #define GENHD_FL_CD				8
- #define GENHD_FL_UP				16
- #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
-Index: 2.6-git/Documentation/block/capability.txt
-===================================================================
---- /dev/null
-+++ 2.6-git/Documentation/block/capability.txt
-@@ -0,0 +1,15 @@
-+Generic Block Device Capability
-+===============================================================================
-+This file documents the sysfs file block/<disk>/capability
-+
-+capability is a hex word indicating which capabilities a specific disk
-+supports.  For more information on bits not listed here, see
-+include/linux/genhd.h
-+
-+Capability				Value
-+-------------------------------------------------------------------------------
-+GENHD_FL_MEDIA_CHANGE_NOTIFY		4
-+	When this bit is set, the disk supports Asynchronous Notification
-+	of media change events.  These events will be broadcast to user
-+	space via kernel uevent.
-+
+ - R.
