@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031002AbXDXA4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031012AbXDXA7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031002AbXDXA4j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 20:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031006AbXDXA4j
+	id S1031012AbXDXA7F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 20:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031011AbXDXA7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 20:56:39 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:37662 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031002AbXDXA4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 20:56:39 -0400
-Date: Tue, 24 Apr 2007 09:56:35 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: fastboot@lists.osdl.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Haren Myneni <hbabu@us.ibm.com>
-Subject: Re: Update the list information for kexec and kdump
-Message-ID: <20070424005634.GD11736@verge.net.au>
-References: <20070423083936.GI4272@verge.net.au> <m13b2rvuge.fsf@ebiederm.dsl.xmission.com>
+	Mon, 23 Apr 2007 20:59:05 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:53446 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031009AbXDXA7D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 20:59:03 -0400
+Message-ID: <462D5644.2090103@novell.com>
+Date: Mon, 23 Apr 2007 17:58:44 -0700
+From: Crispin Cowan <crispin@novell.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m13b2rvuge.fsf@ebiederm.dsl.xmission.com>
-User-Agent: mutt-ng/devel-r804 (Debian)
+To: David Wagner <daw-usenet@taverner.cs.berkeley.edu>
+CC: linux-kernel@vger.kernel.org,
+       LSM ML <linux-security-module@vger.kernel.org>
+Subject: Re: AppArmor FAQ
+References: <20070417181016.GA10903@one.firstfloor.org> <Line.LNX.4.64.0704181620130.27545@d.namei> <f085og$3hg$1@taverner.cs.berkeley.edu> <1177004348.27654.139.camel@moss-spartans.epoch.ncsc.mil> <f08kg5$c88$1@taverner.cs.berkeley.edu>
+In-Reply-To: <f08kg5$c88$1@taverner.cs.berkeley.edu>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 12:04:01PM -0600, Eric W. Biederman wrote:
-> Simon Horman <horms@verge.net.au> writes:
-> 
-> > Update the list information for kexec and kdump
-> >
-> > Signed-off-by: Simon Horman <horms@verge.net.au>
-> >
-> > --- 
-> > Is it too early for this change?
-> 
-> It looks like the new list is working, and isn't likely to get overwhelmed
-> with spam.  I don't know if everyone has switched over yet but we can
-> certainly update MAINTAINERS. 
+David Wagner wrote:
+> James Morris  wrote:
+>   
+>> [...] you can change the behavior of the application and then bypass 
+>> policy entirely by utilizing any mechanism other than direct filesystem 
+>> access: IPC, shared memory, Unix domain sockets, local IP networking, 
+>> remote networking etc.
+>>     
+> [...]
+>   
+>> Just look at their code and their own description of AppArmor.
+>>     
+> My gosh, you're right.  What the heck?  With all due respect to the
+> developers of AppArmor, I can't help thinking that that's pretty lame.
+> I think this raises substantial questions about the value of AppArmor.
+> What is the point of having a jail if it leaves gaping holes that
+> malicious code could use to escape?
+>
+> And why isn't this documented clearly, with the implications fully
+> explained?
+>
+> I would like to hear the AppArmor developers defend this design decision.
+>   
+It was a simplicity trade off at the time, when AppArmor was mostly
+aimed at servers, and there was no HAL or DBUS. Now it is definitely a
+limitation that we are addressing. We are working on a mediation system
+for what kind of IPC a confined process can do
+http://forge.novell.com/pipermail/apparmor-dev/2007-April/000503.html
 
-Last time I checked there were 28 people in the kexec@ list.
-This isn't everyone, but it is getting there.
+When our IPC mediation system is code instead of vapor, it will also
+appear here for review. Meanwhile, AppArmor does not make IPC security
+any worse, confined processes are still subject to the usual Linux IPC
+restrictions. AppArmor actually makes the IPC situation somewhat more
+secure than stock Linux, e.g. normal DBUS deployment can be controlled
+through file access permissions. But we are not claiming AppArmor to be
+an IPC security enhancement, yet.
 
-May I add an Acked-by you ?
+The proposed set of patches is a self-contained access control system
+for file system access, and we would like it reviewed as such. Current
+AppArmor docs are quite explicit that AppArmor only mediates file access
+and POSIX.1e capabilities.
 
-> Eric
-> 
-> > Index: linux-2.6/MAINTAINERS
-> > ===================================================================
-> > --- linux-2.6.orig/MAINTAINERS	2007-04-23 17:34:30.000000000 +0900
-> > +++ linux-2.6/MAINTAINERS	2007-04-23 17:34:47.000000000 +0900
-> > @@ -1951,7 +1951,7 @@ P:	Vivek Goyal
-> >  M:	vgoyal@in.ibm.com
-> >  P:	Haren Myneni
-> >  M:	hbabu@us.ibm.com
-> > -L:	fastboot@lists.osdl.org
-> > +L:	kexec@lists.infradead.org
-> >  L:	linux-kernel@vger.kernel.org
-> >  W:	http://lse.sourceforge.net/kdump/
-> >  S:	Maintained
-> > @@ -2001,7 +2001,7 @@ P:	Eric Biederman
-> >  M:	ebiederm@xmission.com
-> >  W:	http://www.xmission.com/~ebiederm/files/kexec/
-> >  L:	linux-kernel@vger.kernel.org
-> > -L:	fastboot@lists.osdl.org
-> > +L:	kexec@lists.infradead.org
-> >  S:	Maintained
-> >  
-> >  KPROBES
+Crispin
 
 -- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+Crispin Cowan, Ph.D.               http://crispincowan.com/~crispin/
+Director of Software Engineering   http://novell.com
 
