@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXDXBP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbXDXBSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXDXBP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 21:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXDXBP5
+	id S1754445AbXDXBSj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:18:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXDXBSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 21:15:57 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:42597 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753289AbXDXBP5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 21:15:57 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=kQB9AIDN0YjJcO776w5GR3pPxeWJp71mFwaf+OfI5KHEuxVyPYFGXMxNWgUvwa/4v/eMvAUKvN62lQfEAIS6XZ5wlYu3AID6YEiwpxhcHlv6cOsIm5RrpEBR9bkHWpIRE/vXvqjAXc9JhxcaH77NMVrfWmpSv3bjWuHSwcDDV90=  ;
-Message-ID: <462D5A2E.5060908@yahoo.com.au>
-Date: Tue, 24 Apr 2007 11:15:26 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Mon, 23 Apr 2007 21:18:39 -0400
+Received: from THUNK.ORG ([69.25.196.29]:52455 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754445AbXDXBSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 21:18:38 -0400
+Date: Mon, 23 Apr 2007 21:17:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Eric Hopper <hopper@omnifarious.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Question about Reiser4
+Message-ID: <20070424011753.GD1663@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Eric Hopper <hopper@omnifarious.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <462C4D32.4000909@redhat.com> <Pine.LNX.4.64.0704230611430.25153@server.thyself> <462C5034.9090403@redhat.com> <Pine.LNX.4.64.0704230640540.25153@server.thyself> <20070423010445.454eda63.akpm@linux-foundation.org> <20070423135216.GA2744@omnifarious.org> <20070423225640.GA1663@thunk.org> <462D46DF.4090802@zytor.com> <20070424001934.GC1663@thunk.org> <462D4FE1.5040406@zytor.com>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, shak <dshaks@redhat.com>,
-       jakub@redhat.com, drepper@redhat.com
-Subject: Re: [PATCH] lazy freeing of memory through MADV_FREE
-References: <46247427.6000902@redhat.com>	<20070420135715.f6e8e091.akpm@linux-foundation.org>	<462932BE.4020005@redhat.com> <20070420150618.179d31a4.akpm@linux-foundation.org> <4629524C.5040302@redhat.com> <462ACA40.8070407@yahoo.com.au> <462B0156.9020407@redhat.com> <462BFAF3.4040509@yahoo.com.au> <462C2DC7.5070709@redhat.com> <462C2F33.8090508@redhat.com> <462C7A6F.9030905@redhat.com> <462C88B1.8080906@yahoo.com.au> <462C8B0A.8060801@redhat.com> <462C8BFF.2050405@yahoo.com.au> <462C8E1D.8000706@redhat.com>
-In-Reply-To: <462C8E1D.8000706@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462D4FE1.5040406@zytor.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Use TLB batching for MADV_FREE.  Adds another 10-15% extra performance
-> to the MySQL sysbench results on my quad core system.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> ---
-> 
-> Nick Piggin wrote:
-> 
->>> 3) because of this, we can treat any such accesses as
->>>    happening simultaneously with the MADV_FREE and
->>>    as illegal, aka undefined behaviour territory and
->>>    we do not need to worry about them
->>
->>
->> Yes, but I'm wondering if it is legal in all architectures.
-> 
-> 
-> It's similar to trying to access memory during an munmap.
-> 
-> You may be able to for a short time, but it'll come back to
-> haunt you.
+On Mon, Apr 23, 2007 at 05:31:29PM -0700, H. Peter Anvin wrote:
+> Heh.  sys_read_tree() -- walk a directory tree and return it as a data 
+> structure in memory :)
 
-The question is whether the architecture specific tlb
-flushing code will break or not.
+But maybe you don't want every single file in the directory, but some
+subset of the files in the directory tree.  So before you know it:
 
+sys_fs_sql("SELECT port,userid,daemon FROM /etc/inetd.conf.d "
+	"WHERE protocol=='tcp'", buf, sizeof(buf));
 
->>> 4) because we flush the tlb before releasing the page
->>>    table lock, other CPUs cannot remove this page from
->>>    the address space - they will block on the page
->>>    table lock before looking at this pte
->>
->>
->> We don't when the ptl is split.
-> 
-> 
-> Even then we do.  Each invocation of zap_pte_range() only touches
-> one page table page, and it flushes the TLB before releasing the
-> page table lock.
+The question is where do you stop on the slippery slope, and is it
+really all that harder than simply parsing a /etc/gitconfig or
+/etc/e2fsck.conf file.  There are plenty of parsers or database
+libraries already written, and many of them are quite efficient.  And
+personally, I'd much rather edit a single /etc/gitconfig or
+/etc/e2fsck.conf file using emacs than have to cd through 3 or 4
+levels of directories to edit each 2-3 byte file one at a time.  But
+to each their own....
 
-What kernel are you looking at? -rc7 and rc6-mm1 don't, AFAIKS.
-
--- 
-SUSE Labs, Novell Inc.
+					- Ted
