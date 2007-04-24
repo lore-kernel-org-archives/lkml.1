@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422773AbXDXQkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422774AbXDXQk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422773AbXDXQkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 12:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422772AbXDXQkY
+	id S1422774AbXDXQk7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 12:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422772AbXDXQk7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 12:40:24 -0400
-Received: from mail.screens.ru ([213.234.233.54]:47376 "EHLO mail.screens.ru"
+	Tue, 24 Apr 2007 12:40:59 -0400
+Received: from waste.org ([66.93.16.53]:45852 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422769AbXDXQkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 12:40:21 -0400
-Date: Tue, 24 Apr 2007 20:40:01 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
-       containers@lists.osdl.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream
-Message-ID: <20070424164001.GA328@tv-sign.ru>
-References: <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com>
-Mime-Version: 1.0
+	id S1422774AbXDXQk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 12:40:58 -0400
+Date: Tue, 24 Apr 2007 11:23:00 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ray Lee <ray@madrabbit.org>
+Cc: Nick Piggin <npiggin@suse.de>, ray-gmail@madrabbit.org,
+       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Mike Galbraith <efault@gmx.de>, ck list <ck@vds.kolivas.org>,
+       Bill Huey <billh@gnuppy.monkey.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Renice X for cpu schedulers
+Message-ID: <20070424162300.GC11115@waste.org>
+References: <20070417062621.GL2986@holomorphy.com> <20070418221432.e4dbcf4f.akpm@linux-foundation.org> <20070419063810.GA22418@elte.hu> <200704192159.35546.kernel@kolivas.org> <2c0942db0704191226t21d3dae1lb0fa99bcd9714cf2@mail.gmail.com> <20070420040933.GA2392@wotan.suse.de> <462E273C.7050607@madrabbit.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <15160.1177429867@redhat.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <462E273C.7050607@madrabbit.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/24, David Howells wrote:
->
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Tue, Apr 24, 2007 at 08:50:20AM -0700, Ray Lee wrote:
+> > Firstly, lots of clients in your list are remote. X usually isn't.
 > 
-> > The current code uses del_timer_sync(). It will also return 0. However, it
-> > will spin waiting for timer->function() to complete. So we are just wasting
-> > CPU.
+> They really aren't, unless you happen to work somewhere that can afford
+> to dedicate a box to a db, which suddenly makes the scheduler a dull
+> topic.
 > 
-> That's my objection to using cancel_delayed_work() as it stands, although in
-> most cases it's a relatively minor waste of time.  However, if the timer
-> expiry routine gets interrupted then it may not be so minor...  So, yes, I'm
-> in full agreement with you there.
+> For example, I have a db and web server installed on my laptop, so
+> that the few times that I have to do web app programming (while wearing
+> a mustache and glasses so that I don't have to admit to it in polite
+> company), I can be functional with just one computer.
 
-Great. I'll send the s/del_timer_sync/del_timer/ patch.
+Indeed. The vast majority of people doing "LAMP" web services are
+doing it on a single machine. Or VM for that matter.
 
-> > I guess I misunderstood you. Perhaps, you propose a new helper which use
-> > try_to_del_timer_sync(), yes? Unless I missed something, this doesn't help.
-> > Because the return value == -1 should be treated as 0. We failed to stop
-> > the timer, and we can't free dwork.
-> 
-> Consider how I'm using try_to_cancel_delayed_work(): I use this when I want to
-> queue a delayed work item with a particular timeout (usually for immediate
-> processing), but the work item may already be pending.
-> 
-> If try_to_cancel_delayed_work() returns 0 or 1 (not pending or pending but
-> dequeued) then I can go ahead and just schedule the work item (I'll be holding
-> a lock to prevent anyone else from interfering).
-> 
-> However, if try_to_cancel_delayed_work() returns -1 then there's no usually no
-> point attempting to schedule the work item because I know the timer expiry
-> handler is doing that or going to do that.
-> 
-> 
-> The code looks like this in pretty much all cases:
-> 
-> 	if (try_to_cancel_delayed_work(&afs_server_reaper) >= 0)
-> 		schedule_delayed_work(&afs_server_reaper, 0);
+It seems that this is a lot like the priority inheritance problem. If
+a nice -19 process blocks on the db running at nice 0, the db ought to
+get a boost until it wakes the original process up. The same should
+apply at the level of dynamic priorities at the same nice level.
 
-Aha, now I see what you mean. However. Why the code above is better then
-
-	cancel_delayed_work(&afs_server_reaper);
-	schedule_delayed_work(&afs_server_reaper, 0);
-
-? (I assume we already changed cancel_delayed_work() to use del_timer).
-
-If delayed_work_timer_fn() is not running - both variants (let's denote them
-as 1 and 2) do the same.
-
-Now suppose that delayed_work_timer_fn() is running.
-
-	1: lock_timer_base(), return -1, skip schedule_delayed_work().
-
-	2: check timer_pending(), return 0, call schedule_delayed_work(),
-	   return immediately because test_and_set_bit(WORK_STRUCT_PENDING)
-	   fails.
-
-So I still don't think try_to_del_timer_sync() can help in this particular
-case.
-
-To some extent, try_to_cancel_delayed_work is
-
-	int try_to_cancel_delayed_work(dwork)
-	{
-		ret = cancel_delayed_work(dwork);
-		if (!ret && work_pending(&dwork->work))
-			ret = -1;
-		return ret;
-	}
-
-iow, work_pending() looks like a more "precise" indication that work->func()
-is going to run soon.
-
-Oleg.
-
+-- 
+Mathematics is the supreme nostalgia of our time.
