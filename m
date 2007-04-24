@@ -1,72 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161709AbXDXIAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031033AbXDXIDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161709AbXDXIAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161708AbXDXIAb
+	id S1031033AbXDXIDj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031042AbXDXIDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:00:31 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:38837 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161706AbXDXIAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:00:30 -0400
-Date: Tue, 24 Apr 2007 09:59:38 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: jeremy@goop.org, Greg KH <gregkh@suse.de>,
-       Marcel Holtmann <marcel@holtmann.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, clg@fr.ibm.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
- at net/core/sock.c:1523
-In-Reply-To: <E1HgBjF-0007Q9-00@gondolin.me.apana.org.au>
-Message-ID: <Pine.LNX.4.64.0704240954200.20657@twin.jikos.cz>
-References: <E1HgBjF-0007Q9-00@gondolin.me.apana.org.au>
+	Tue, 24 Apr 2007 04:03:39 -0400
+Received: from wr-out-0506.google.com ([64.233.184.228]:16182 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031035AbXDXIDf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 04:03:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=dSLnYgr3ltxWbeDdVO9ayZ5L+bvdHjMImaMNHdDCR+O3TxPcMZ1dAg5lU/6/+xu3K5oaO/E8zTXhiQHbbiMuRfJfKb4sBGfJ5AtfUr3FJ2blI8TYx6X7No+kE2EAzOZCClPwtdi539ScYVgo+cftRvGWX3DFBfzDjt2qWU1SvzY=
+Message-ID: <462DB9D1.2070106@gmail.com>
+Date: Tue, 24 Apr 2007 17:03:29 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [patch 1/7] libata: check for AN support
+References: <20070424074856.005152262@intel.com> <20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
+In-Reply-To: <20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Herbert Xu wrote:
+Hello,
 
-> > Hmm, *sigh*. I guess the patch below fixes the problem, but it is a 
-> > masterpiece in the field of ugliness. And I am not sure whether it is 
-> > completely correct either. Are there any immediate ideas for better 
-> > solution with respect to how struct sock locking works?
-> Please cc such patches to netdev.  Thanks.
+Kristen Carlson Accardi wrote:
+>  static unsigned int ata_print_id = 1;
+> @@ -1744,6 +1745,23 @@ int ata_dev_configure(struct ata_device 
+>  		}
+>  		dev->cdb_len = (unsigned int) rc;
+>  
+> +		/*
+> +		 * check to see if this ATAPI device supports
+> +		 * Asynchronous Notification
+> +		 */
+> +		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id))
+> +		{
+> +			/* issue SET feature command to turn this on */
+> +			rc = ata_dev_set_AN(dev);
 
-Hi Herbert,
+Please don't store err_mask into int rc.  Please store it to a separate
+err_mask variable and report it when printing error message.
 
-well it's pretty much bluetooth-specific, and bluez-devel was CCed, but 
-OK.
+> +			if (rc) {
+> +				ata_dev_printk(dev, KERN_ERR,
+> +						"unable to set AN\n");
+> +				rc = -EINVAL;
 
-> > diff --git a/net/bluetooth/hci_sock.c b/net/bluetooth/hci_sock.c
-> > index 71f5cfb..c5c93cd 100644
-> > --- a/net/bluetooth/hci_sock.c
-> > +++ b/net/bluetooth/hci_sock.c
-> > @@ -656,7 +656,10 @@ static int hci_sock_dev_event(struct notifier_block *this, unsigned long event,
-> >                /* Detach sockets from device */
-> >                read_lock(&hci_sk_list.lock);
-> >                sk_for_each(sk, node, &hci_sk_list.head) {
-> > -                       lock_sock(sk);
-> > +                       if (in_atomic())
-> > +                               bh_lock_sock(sk);
-> > +                       else
-> > +                               lock_sock(sk);
-> 
-> This doesn't do what you think it does.  bh_lock_sock can still succeed
-> even with lock_sock held by someone else.
+Wouldn't -EIO be more appropriate?
 
-I know, this was precisely the reason why I converted the bh_lock_sock() 
-to lock_sock() here some time ago (as it was racy with 
-l2cap_connect_cfm()).
+> +				goto err_out_nosup;
+> +			}
+> +			dev->flags |= ATA_DFLAG_AN;
+> +		}
+> +
 
-> Does this need to occur immediately when an event occurs? If not I'd
-> suggest moving this into a workqueue.
+Not NACKing.  Just notes for future improvements.  We need to be more
+careful here.  ATA/ATAPI world is filled with braindamaged devices and I
+bet there are devices which advertises it can do AN but chokes when AN
+is enabled.
 
-Will have to check whether this will be processed properly in time when 
-going to suspend.
+This should be handled similarly to ACPI failure.  Currently ACPI does
+the following.
 
-Thanks,
+1. try once, if fail, record that ACPI failed.  return error to trigger
+retry.
+2. try again, if fail again, ignore error if possible (!FROZEN) and turn
+off ACPI.
+
+This fallback mechanism for optional features can probably be
+generalized and used for both ACPI and AN.
 
 -- 
-Jiri Kosina
+tejun
