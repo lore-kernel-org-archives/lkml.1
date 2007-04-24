@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161473AbXDXOFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161474AbXDXOFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161473AbXDXOFU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXDXOFU
+	id S1161474AbXDXOFy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161771AbXDXOFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:05:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54223 "EHLO mx1.redhat.com"
+	Tue, 24 Apr 2007 10:05:54 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55202 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161473AbXDXOFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:05:17 -0400
-Message-ID: <462E0E60.5080907@redhat.com>
-Date: Tue, 24 Apr 2007 16:04:16 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1161474AbXDXOFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 10:05:53 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       trond.myklebust@fys.uio.no
+Subject: NFS: Unable to handle kernel NULL pointer dereference at nfs_set_page_dirty+0xd/0x5d in 2.6.21rc7-git6
+Date: Tue, 24 Apr 2007 16:05:45 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>,
-       Ralf Baechle <ralf@linux-mips.org>, Andi Kleen <ak@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch v2] Fixes and cleanups for earlyprintk aka boot console.
-References: <20070315154638.944768000@suse.de> <20070423234240.29427438.akpm@linux-foundation.org>
-In-Reply-To: <20070423234240.29427438.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704241605.45353.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I get this, across netconsole:
-> 
-> [17179569.184000] console handover: boot [earlyvga_f_0] -> real [tty0]
-> 
-> wanna take a look at why there's cruft in bootconsole->name please?
-
--EFULL ;)
-
-"earlyvga" is 8 chars.  struct console->name is char[8].  No space left 
-for the trailing ´\0´, the cruft comes from the next field (write 
-function pointer).  Obviously nobody ever printed the early console 
-names before.
-
-Hmm.  We can make the names shorter.  We can make the name field longer 
-(probably 16, it ends up taking that much anyway due to aligments at 
-least on 64bit).  This looks best to me.  We could also use 
-printk("%.8s",name) to make printk stop after 8 chars, but I somehow 
-don't like hardcoding the length like this ...
-
-cheers,
-   Gerd
 
 
+Another issue hit during LTP testing over nfsroot; this time
+on a larger box (4 cores; 6GB RAM; x86-64) 
+
+NFS doesn't seem to be in a good shape for .21
+
+-Andi
+
+Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+ [<ffffffff8031076b>] nfs_set_page_dirty+0xd/0x5d
+PGD 115735067 PUD 11a60a067 PMD 0
+Oops: 0000 [1] SMP
+CPU 1
+Modules linked in:
+Pid: 8476, comm: doio Not tainted 2.6.21-rc7-git6 #20
+RIP: 0010:[<ffffffff8031076b>]  [<ffffffff8031076b>] nfs_set_page_dirty+0xd/0x5d
+RSP: 0000:ffff8101157b7d98  EFLAGS: 00010292
+RAX: 0000000000000000 RBX: ffff81011f9462d8 RCX: 0000000000000004
+RDX: ffff810117840430 RSI: 0000000000000004 RDI: ffff81011f9462d8
+RBP: ffff81011f9462d8 R08: ffff81011c03f205 R09: ffff81011c03f202
+R10: ffff81011a41f228 R11: ffffffff8031075e R12: 0000000114a6cc40
+R13: ffff810117840430 R14: ffff81011b3bdb88 R15: ffff81011fd847b0
+FS:  00002af288f0bb00(0000) GS:ffff81011c03f0c0(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 0000000000000000 CR3: 0000000117297000 CR4: 00000000000006e0
+Process doio (pid: 8476, threadinfo ffff8101157b6000, task ffff81011b8c8240)
+Stack:  ffff81011f9462d8 ffff81011f9462d8 ffff81011f9462d8 ffffffff8025a0bc
+ ffff810114a6cc40 ffffffff80260b75 ffff81011fd77f78 000000011fef0340
+ 00002af289388714 ffff81011a4f04c0 0000000000000c40 ffff81011a952248
+Call Trace:
+ [<ffffffff8025a0bc>] set_page_dirty_balance+0x9/0x39
+ [<ffffffff80260b75>] __handle_mm_fault+0x43e/0x9e1
+ [<ffffffff80544f7e>] do_page_fault+0x42b/0x7ad
+ [<ffffffff80265815>] do_mmap_pgoff+0x619/0x785
+ [<ffffffff8027b951>] sys_newfstat+0x20/0x29
+ [<ffffffff805433ad>] error_exit+0x0/0x84
+
+
+Code: 48 8b 28 48 8d 7d a8 e8 eb 26 23 00 48 89 df e8 e9 e6 ff ff
+RIP  [<ffffffff8031076b>] nfs_set_page_dirty+0xd/0x5d
+ RSP <ffff8101157b7d98>
+CR2: 0000000000000000
