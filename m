@@ -1,102 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422709AbXDXQ7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbXDXRFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422709AbXDXQ7I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 12:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbXDXQ7H
+	id S1754253AbXDXRFu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbXDXRFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 12:59:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34022 "EHLO mx1.redhat.com"
+	Tue, 24 Apr 2007 13:05:50 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:6459 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754273AbXDXQ7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 12:59:05 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070424164001.GA328@tv-sign.ru> 
-References: <20070424164001.GA328@tv-sign.ru>  <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
-       containers@lists.osdl.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 24 Apr 2007 17:58:27 +0100
-Message-ID: <16575.1177433907@redhat.com>
+	id S1754253AbXDXRFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:05:49 -0400
+Date: Tue, 24 Apr 2007 19:02:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vasily Tarasov <vtaras@openvz.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, OVZDL <devel@openvz.org>
+Subject: Re: [PATCH] cfq: get rid of cfqq hash
+Message-ID: <20070424170227.GB27887@kernel.dk>
+References: <1177422791.435404.4031.nullmailer@me>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177422791.435404.4031.nullmailer@me>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> > > The current code uses del_timer_sync(). It will also return 0. However,
-> > > it will spin waiting for timer->function() to complete. So we are just
-> > > wasting CPU.
-> > 
-> > That's my objection to using cancel_delayed_work() as it stands, although in
-> > most cases it's a relatively minor waste of time.  However, if the timer
-> > expiry routine gets interrupted then it may not be so minor...  So, yes, I'm
-> > in full agreement with you there.
+On Tue, Apr 24 2007, Vasily Tarasov wrote:
+> From: Vasily Tarasov <vtaras@openvz.org>
 > 
-> Great. I'll send the s/del_timer_sync/del_timer/ patch.
-
-I didn't say I necessarily agreed that this was a good idea.  I just meant that
-I agree that it will waste CPU.  You must still audit all uses of
-cancel_delayed_work().
-
-> Aha, now I see what you mean. However. Why the code above is better then
+> cfq hash is no more necessary.  We always can get cfqq from io context.
+> cfq_get_io_context_noalloc() function is introduced, because we don't want to
+> allocate cic on merging and checking may_queue.
+> In order to identify sync queue we've used hash key = CFQ_KEY_ASYNC. Since hash
+> is eliminated we need to use other criterion: sync flag for queue is added.
+> In all places where we dig in rb_tree we're in current context, so no
+> additional locking is required.
 > 
-> 	cancel_delayed_work(&afs_server_reaper);
-> 	schedule_delayed_work(&afs_server_reaper, 0);
-> 
-> ? (I assume we already changed cancel_delayed_work() to use del_timer).
+> Advantages of this patch: no additional memory for hash, no seeking in hash,
+> code is cleaner. But it is necessary now to seek cic in per-ioc rbtree, but
+> it is faster:
+> - most processes work only with few devices
+> - most systems have only few block devices
+> - it is a rb-tree
 
-Because calling schedule_delayed_work() is a waste of CPU if the timer expiry
-handler is currently running at this time as *that* is going to also schedule
-the delayed work item.
+Vasily, this is still not against the CFQ branch, I get tons of rejects:
 
-> If delayed_work_timer_fn() is not running - both variants (let's denote them
-> as 1 and 2) do the same.
+axboe@nelson:/src/linux-2.6-block $ patch -p1 --dry-run < ~/foo
+[...]
+10 out of 27 hunks FAILED -- saving rejects to file
+block/cfq-iosched.c.rej
 
-Yes, but that's not the point.
+If you don't want to use the git tree, then just grab
 
-> Now suppose that delayed_work_timer_fn() is running.
-> 
-> 	1: lock_timer_base(), return -1, skip schedule_delayed_work().
->
-> 	2: check timer_pending(), return 0, call schedule_delayed_work(),
-> 	   return immediately because test_and_set_bit(WORK_STRUCT_PENDING)
-> 	   fails.
+http://brick.kernel.dk/snaps/cfq-update-20070424
 
-I don't see what you're illustrating here.  Are these meant to be two steps in
-a single process?  Or are they two alternate steps?
+and apply it to 2.6.21-rc7-gitX (latest) and provide a diff against
+that. Thanks!
 
-> So I still don't think try_to_del_timer_sync() can help in this particular
-> case.
+-- 
+Jens Axboe
 
-It permits us to avoid the test_and_set_bit() under some circumstances.
-
-> To some extent, try_to_cancel_delayed_work is
-> 
-> 	int try_to_cancel_delayed_work(dwork)
-> 	{
-> 		ret = cancel_delayed_work(dwork);
-> 		if (!ret && work_pending(&dwork->work))
-> 			ret = -1;
-> 		return ret;
-> 	}
-> 
-> iow, work_pending() looks like a more "precise" indication that work->func()
-> is going to run soon.
-
-Ah, but the timer routine may try to set the work item pending flag *after* the
-work_pending() check you have here.  Furthermore, it would be better to avoid
-the work_pending() check entirely because that check involves interacting with
-atomic ops done on other CPUs.  try_to_del_timer_sync() returning -1 tells us
-without a shadow of a doubt that the work item is either scheduled now or will
-be scheduled very shortly, thus allowing us to avoid having to do it ourself.
-
-David
