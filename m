@@ -1,141 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbXDXTGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423023AbXDXTJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbXDXTGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 15:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbXDXTGo
+	id S1423023AbXDXTJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 15:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423026AbXDXTJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 15:06:44 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:56567 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbXDXTGn (ORCPT
+	Tue, 24 Apr 2007 15:09:22 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:40991
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1423023AbXDXTJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 15:06:43 -0400
-X-AuditID: d80ac287-ad0c9bb00000590d-4d-462e5542fcc1 
-Date: Tue, 24 Apr 2007 20:06:24 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Lameter <clameter@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <20070424101116.1cb7512e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
- <20070424101116.1cb7512e.akpm@linux-foundation.org>
+	Tue, 24 Apr 2007 15:09:21 -0400
+Date: Tue, 24 Apr 2007 21:12:20 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: kjhall@us.ibm.com, tpm@selhorst.net, tpmdd-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in TPM driver
+Message-ID: <20070424191220.GG6798@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	kjhall@us.ibm.com, tpm@selhorst.net,
+	tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 24 Apr 2007 19:06:36.0487 (UTC) FILETIME=[AE449570:01C786A3]
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Andrew Morton wrote:
-> 
-> From my reading it would be pretty simple to teach unmap_and_move()
-> to pass mapping_gfp_mask(page_mapping(page)) down into
-> (*get_new_page)() to get the correct type of page.
+the TPM driver uses two semaphores as mutexes. use the mutex API
+instead of the (binary) semaphores
 
-Or even simpler, since they're already passed the source page,
-just get it from that.  However, I'm much less able to test this
-patch in a hurry: it looks plausible, builds and runs okay in my
-non-NUMA testing; but whether it does what I intend it to do,
-without causing unexpected side-effects, I don't know.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com> 
 
-Whereas I did check the previous little vma_migratable() patch
-did the right thing, and think it more suitable for lastminute
-and -stable.  This one would need real testing by real migrants
-with real NUMA.
+--
 
-Or Christoph may prevail in persuading there's no such problem.
-
-
-Is there a problem with page migration to HIGHMEM, if pages were
-mapped from a GFP_USER block device?  I failed to demonstrate any
-problem, but here's a quick fix if needed.
-
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
-
- include/linux/migrate.h |    1 +
- mm/mempolicy.c          |    4 ++--
- mm/migrate.c            |   12 +++++++++---
- mm/swap_state.c         |    1 +
- 4 files changed, 13 insertions(+), 5 deletions(-)
-
---- 2.6.21-rc7/include/linux/migrate.h	2007-03-07 14:17:59.000000000 +0000
-+++ linux/include/linux/migrate.h	2007-04-24 19:19:01.000000000 +0100
-@@ -14,6 +14,7 @@ static inline int vma_migratable(struct 
- }
- 
- #ifdef CONFIG_MIGRATION
-+extern gfp_t page_gfp_mask(struct page *page);
- extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
- extern int putback_lru_pages(struct list_head *l);
- extern int migrate_page(struct address_space *,
---- 2.6.21-rc7/mm/mempolicy.c	2007-03-07 14:18:01.000000000 +0000
-+++ linux/mm/mempolicy.c	2007-04-24 19:19:01.000000000 +0100
-@@ -594,7 +594,7 @@ static void migrate_page_add(struct page
- 
- static struct page *new_node_page(struct page *page, unsigned long node, int **x)
+diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+index e5a254a..0805d39 100644
+--- a/drivers/char/tpm/tpm.c
++++ b/drivers/char/tpm/tpm.c
+@@ -328,10 +328,10 @@ static void timeout_work(struct work_struct *work)
  {
--	return alloc_pages_node(node, GFP_HIGHUSER, 0);
-+	return alloc_pages_node(node, page_gfp_mask(page), 0);
+ 	struct tpm_chip *chip = container_of(work, struct tpm_chip, work);
+ 
+-	down(&chip->buffer_mutex);
++	mutex_lock(&chip->buffer_mutex);
+ 	atomic_set(&chip->data_pending, 0);
+ 	memset(chip->data_buffer, 0, TPM_BUFSIZE);
+-	up(&chip->buffer_mutex);
++	mutex_unlock(&chip->buffer_mutex);
  }
  
  /*
-@@ -710,7 +710,7 @@ static struct page *new_vma_page(struct 
- {
- 	struct vm_area_struct *vma = (struct vm_area_struct *)private;
+@@ -380,7 +380,7 @@ static ssize_t tpm_transmit(struct tpm_chip *chip, const char *buf,
+ 		return -E2BIG;
+ 	}
  
--	return alloc_page_vma(GFP_HIGHUSER, vma, page_address_in_vma(page, vma));
-+	return alloc_page_vma(page_gfp_mask(page), vma, page_address_in_vma(page, vma));
- }
- #else
+-	down(&chip->tpm_mutex);
++	mutex_lock(&chip->tpm_mutex);
  
---- 2.6.21-rc7/mm/migrate.c	2007-03-07 14:18:01.000000000 +0000
-+++ linux/mm/migrate.c	2007-04-24 19:19:01.000000000 +0100
-@@ -735,12 +735,18 @@ struct page_to_node {
- 	int status;
- };
- 
--static struct page *new_page_node(struct page *p, unsigned long private,
-+gfp_t page_gfp_mask(struct page *page)
-+{
-+	struct address_space *mapping = page_mapping(page);
-+	return mapping? mapping_gfp_mask(mapping): GFP_HIGHUSER;
-+}
-+
-+static struct page *new_page_node(struct page *page, unsigned long private,
- 		int **result)
- {
- 	struct page_to_node *pm = (struct page_to_node *)private;
- 
--	while (pm->node != MAX_NUMNODES && pm->page != p)
-+	while (pm->node != MAX_NUMNODES && pm->page != page)
- 		pm++;
- 
- 	if (pm->node == MAX_NUMNODES)
-@@ -748,7 +754,7 @@ static struct page *new_page_node(struct
- 
- 	*result = &pm->status;
- 
--	return alloc_pages_node(pm->node, GFP_HIGHUSER | GFP_THISNODE, 0);
-+	return alloc_pages_node(pm->node, page_gfp_mask(page) | GFP_THISNODE, 0);
+ 	if ((rc = chip->vendor.send(chip, (u8 *) buf, count)) < 0) {
+ 		dev_err(chip->dev,
+@@ -419,7 +419,7 @@ out_recv:
+ 		dev_err(chip->dev,
+ 			"tpm_transmit: tpm_recv: error %zd\n", rc);
+ out:
+-	up(&chip->tpm_mutex);
++	mutex_unlock(&chip->tpm_mutex);
+ 	return rc;
  }
  
- /*
---- 2.6.21-rc7/mm/swap_state.c	2006-09-20 04:42:06.000000000 +0100
-+++ linux/mm/swap_state.c	2007-04-24 19:19:01.000000000 +0100
-@@ -40,6 +40,7 @@ struct address_space swapper_space = {
- 	.page_tree	= RADIX_TREE_INIT(GFP_ATOMIC|__GFP_NOWARN),
- 	.tree_lock	= __RW_LOCK_UNLOCKED(swapper_space.tree_lock),
- 	.a_ops		= &swap_aops,
-+	.flags		= (__force unsigned long) GFP_HIGHUSER,
- 	.i_mmap_nonlinear = LIST_HEAD_INIT(swapper_space.i_mmap_nonlinear),
- 	.backing_dev_info = &swap_backing_dev_info,
- };
+@@ -966,14 +966,14 @@ ssize_t tpm_write(struct file *file, const char __user *buf,
+ 	while (atomic_read(&chip->data_pending) != 0)
+ 		msleep(TPM_TIMEOUT);
+ 
+-	down(&chip->buffer_mutex);
++	mutex_lock(&chip->buffer_mutex);
+ 
+ 	if (in_size > TPM_BUFSIZE)
+ 		in_size = TPM_BUFSIZE;
+ 
+ 	if (copy_from_user
+ 	    (chip->data_buffer, (void __user *) buf, in_size)) {
+-		up(&chip->buffer_mutex);
++		mutex_unlock(&chip->buffer_mutex);
+ 		return -EFAULT;
+ 	}
+ 
+@@ -981,7 +981,7 @@ ssize_t tpm_write(struct file *file, const char __user *buf,
+ 	out_size = tpm_transmit(chip, chip->data_buffer, TPM_BUFSIZE);
+ 
+ 	atomic_set(&chip->data_pending, out_size);
+-	up(&chip->buffer_mutex);
++	mutex_unlock(&chip->buffer_mutex);
+ 
+ 	/* Set a timeout by which the reader must come claim the result */
+ 	mod_timer(&chip->user_read_timer, jiffies + (60 * HZ));
+@@ -1004,10 +1004,10 @@ ssize_t tpm_read(struct file *file, char __user *buf,
+ 		if (size < ret_size)
+ 			ret_size = size;
+ 
+-		down(&chip->buffer_mutex);
++		mutex_lock(&chip->buffer_mutex);
+ 		if (copy_to_user(buf, chip->data_buffer, ret_size))
+ 			ret_size = -EFAULT;
+-		up(&chip->buffer_mutex);
++		mutex_unlock(&chip->buffer_mutex);
+ 	}
+ 
+ 	return ret_size;
+@@ -1100,8 +1100,8 @@ struct tpm_chip *tpm_register_hardware(struct device *dev, const struct tpm_vend
+ 	if (chip == NULL)
+ 		return NULL;
+ 
+-	init_MUTEX(&chip->buffer_mutex);
+-	init_MUTEX(&chip->tpm_mutex);
++	mutex_init(&chip->buffer_mutex);
++	mutex_init(&chip->tpm_mutex);
+ 	INIT_LIST_HEAD(&chip->list);
+ 
+ 	INIT_WORK(&chip->work, timeout_work);
+diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
+index bb9a43c..bf58aac 100644
+--- a/drivers/char/tpm/tpm.h
++++ b/drivers/char/tpm/tpm.h
+@@ -95,11 +95,11 @@ struct tpm_chip {
+ 	/* Data passed to and from the tpm via the read/write calls */
+ 	u8 *data_buffer;
+ 	atomic_t data_pending;
+-	struct semaphore buffer_mutex;
++	struct mutex buffer_mutex;
+ 
+ 	struct timer_list user_read_timer;	/* user needs to claim result */
+ 	struct work_struct work;
+-	struct semaphore tpm_mutex;	/* tpm is processing */
++	struct mutex tpm_mutex;	/* tpm is processing */
+ 
+ 	struct tpm_vendor_specific vendor;
+ 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+          Dreams and reality are opposites. Action synthesizes them
+                             (Assata Shakur)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
