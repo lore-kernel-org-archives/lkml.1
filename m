@@ -1,112 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423152AbXDXVlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbXDXVr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423152AbXDXVlO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423147AbXDXVlN
+	id S1754355AbXDXVr1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423123AbXDXVr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:41:13 -0400
-Received: from mga02.intel.com ([134.134.136.20]:30552 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423143AbXDXVlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:41:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="233318232:sNHT32567759"
-Date: Tue, 24 Apr 2007 14:38:27 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 7/7] libata: send event when AN received
-Message-Id: <20070424143827.4a2b672e.kristen.c.accardi@intel.com>
-In-Reply-To: <20070424090910.1d145c24@the-village.bc.nu>
-References: <20070424074856.005152262@intel.com>
-	<20070423170024.73b74a37.kristen.c.accardi@intel.com>
-	<20070424090910.1d145c24@the-village.bc.nu>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 24 Apr 2007 17:47:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52840
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754180AbXDXVr1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:47:27 -0400
+Date: Tue, 24 Apr 2007 14:47:33 -0700 (PDT)
+Message-Id: <20070424.144733.10245273.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: ak@suse.de, ashok.raj@intel.com, linux-kernel@vger.kernel.org,
+       akpm@osdl.org, gregkh@suse.de, muli@il.ibm.com,
+       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when
+ devices cannot address entire range.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adaabwx1mrp.fsf@cisco.com>
+References: <200704242312.54738.ak@suse.de>
+	<20070424.142351.62664098.davem@davemloft.net>
+	<adaabwx1mrp.fsf@cisco.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we get an SDB FIS with the 'N' bit set, we should send
-an event to user space to indicate that there has been a
-media change.  This will be done via the block device. 
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 24 Apr 2007 14:32:42 -0700
 
-changed from last version:
-* Make sure that port_addr is within ATA_MAX_DEVICES
+>  > My suggestion would be to allocate top-down in the 32-bit IOMMU space.
+> 
+> I think that's good for normal things, but it's not unreasonable to
+> want to map > 4 GB of memory at once for an Infiniband device.
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Index: 2.6-git/drivers/ata/ahci.c
-===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -1147,6 +1147,28 @@ static void ahci_host_intr(struct ata_po
- 		return;
- 	}
- 
-+	if (status & PORT_IRQ_SDB_FIS) {
-+		/*
-+		 * if this is an ATAPI device with AN turned on,
-+		 * then we should interrogate the device to
-+		 * determine the cause of the interrupt
-+		 *
-+		 * for AN - this we should check the SDB FIS
-+		 * and find the I and N bits set
-+		 */
-+		const u32 *f = pp->rx_fis + RX_FIS_SDB;
-+
-+		/* check the 'N' bit in word 0 of the FIS */
-+		if (f[0] & (1 << 15)) {
-+			int port_addr =  ((f[0] & 0x00000f00) >> 8);
-+			struct ata_device *adev;
-+			if (port_addr < ATA_MAX_DEVICES) {
-+				adev = &ap->device[port_addr];
-+				if (adev->flags & ATA_DFLAG_AN)
-+					ata_scsi_media_change_notify(adev);
-+			}
-+		}
-+	}
- 	if (ap->sactive)
- 		qc_active = readl(port_mmio + PORT_SCR_ACT);
- 	else
-Index: 2.6-git/include/linux/libata.h
-===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -737,6 +737,7 @@ extern void ata_host_init(struct ata_hos
- extern int ata_scsi_detect(struct scsi_host_template *sht);
- extern int ata_scsi_ioctl(struct scsi_device *dev, int cmd, void __user *arg);
- extern int ata_scsi_queuecmd(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *));
-+extern void ata_scsi_media_change_notify(struct ata_device *atadev);
- extern void ata_sas_port_destroy(struct ata_port *);
- extern struct ata_port *ata_sas_port_alloc(struct ata_host *,
- 					   struct ata_port_info *, struct Scsi_Host *);
-Index: 2.6-git/drivers/ata/libata-scsi.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-scsi.c
-+++ 2.6-git/drivers/ata/libata-scsi.c
-@@ -3057,6 +3057,22 @@ static void ata_scsi_remove_dev(struct a
- }
- 
- /**
-+ *	ata_scsi_media_change_notify - send media change event
-+ *	@atadev: Pointer to the disk device with media change event
-+ *
-+ *	Tell the block layer to send a media change notification
-+ *	event.
-+ *
-+ * 	LOCKING:
-+ * 	interrupt context, may not sleep.
-+ */
-+void ata_scsi_media_change_notify(struct ata_device *atadev)
-+{
-+	genhd_media_change_notify(atadev->sdev->disk);
-+}
-+EXPORT_SYMBOL_GPL(ata_scsi_media_change_notify);
-+
-+/**
-  *	ata_scsi_hotplug - SCSI part of hotplug
-  *	@work: Pointer to ATA port to perform SCSI hotplug on
-  *
+That's what the DAC interfaces were for, but people wanted to
+remoe that since no in-tree users existed.
+
+Devices like that want to essentially map the entire address space,
+via pass-thru, not IOMMU mappings.
+
+Clustering cards, such as those made by Dolphin, are another example.
+
+I realize that this doesn't work when we absolutely must use an IOMMU
+such as for virtualization which is the whole impetus of the Intel
+IOMMU. :-)
+
+> So maybe we would want some heuristics about the size of the mapping
+> being requested or the amount of 32-bit space left to decide whether a
+> mapping should be below 4 GB.
+
+Perhaps, but as I said heuristics might not be enough here.
