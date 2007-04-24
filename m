@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbXDXUQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbXDXUQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbXDXUQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDXUQE
+	id S1754379AbXDXUQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbXDXUQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:16:04 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:21602 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbXDXUQA (ORCPT
+	Tue, 24 Apr 2007 16:16:58 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51360 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbXDXUQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:16:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=g/bTSwkEJF3C0GRf4SDDYwWHOlOeaR/oL+pAeJHW5nDzqykWbBVebcgk69CIpy8zRjdhgqLUln4yI+ET/cV2m+IWSb6/SvUndmn/HV/RbZSulF65JEp1hY8EmsS+KN+jUzPayXSgXe9QxPJu19kPnxSHWEfauBVQEn7ginixRAo=
-Date: Wed, 25 Apr 2007 05:15:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vincent Vanackere <vincent.vanackere@gmail.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [OOPS 2.6.21-rc7-mm1] kernel BUG at fs/sysfs/inode.c:272 (sysfs_drop_dentry)
-Message-ID: <20070424201555.GC17130@htj.dyndns.org>
-References: <65258a580704240820lbee4944t1adef1aeb92394ce@mail.gmail.com> <462E3177.4000901@gmail.com> <20070424103358.3be9efcd.akpm@linux-foundation.org> <462E43AF.2040305@gmail.com> <20070424105844.da798b07.akpm@linux-foundation.org>
+	Tue, 24 Apr 2007 16:16:57 -0400
+X-AuditID: d80ac287-ad0c9bb00000590d-0b-462e65b8ea2e 
+Date: Tue, 24 Apr 2007 21:16:43 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <20070424101116.1cb7512e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070424105844.da798b07.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Apr 2007 20:16:55.0876 (UTC) FILETIME=[81384040:01C786AD]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 10:58:44AM -0700, Andrew Morton wrote:
-> On Wed, 25 Apr 2007 02:51:43 +0900 Tejun Heo <htejun@gmail.com> wrote:
+On Tue, 24 Apr 2007, Christoph Lameter wrote:
+> On Tue, 24 Apr 2007, Hugh Dickins wrote:
 > 
-> > Andrew Morton wrote:
-> > > On Wed, 25 Apr 2007 01:33:59 +0900 Tejun Heo <htejun@gmail.com> wrote:
-> > > 
-> > >> Vincent Vanackere wrote:
-> > >>> Hi,
-> > >>>
-> > >>> I'm getting the following oops at boot with the latest -mm kernel :
-> > >>> ---------------------------------------------------------------
-> > >>> kernel BUG at fs/sysfs/inode.c:272
-> > >> Known problem.  Working on it.  Thanks.
-> > >>
-> > > 
-> > > If it had been known by me I wouldn't have released known-buggy code to
-> > > people who need to be able to test other people's code too. (argh)
-> > > 
-> > 
-> > It's the problem Cornelia reported in the thread the patch was posted.
+> > Or Christoph may prevail in persuading there's no such problem.
 > 
-> Is there a workaround?  What might happen if we just delete that BUG_ON()?
+> This is pointless. NUMA allocations can only be controlled for the highest 
+> zone. If we switch to a lower zone then we allocate on a different zone 
+> than the user requested.
 
-Okay, here's the workaround.  It leaks dentries and inodes if parent
-is deleted first but other than that it should be okay.
+Sorry, I'm not following you there.   Perhaps your comment is saying
+that second patch is pointless, because it forces allocations elsewhere
+than the policy requires?  Rather than commenting on the line you quote?
 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index eea50a5..b466671 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -212,8 +212,11 @@ static struct dentry *sysfs_lookup_sd(struct sysfs_dirent *sd)
- 	depth = sysfs_path_depth(sd);
- 
- 	while (depth--) {
--		/* negative intermediate node is a BUG */
--		BUG_ON(!dentry->d_inode);
-+		/* XXX */ /* negative intermediate node is a BUG */
-+		/* XXX */ /* BUG_ON(!dentry->d_inode); */
-+		if (!dentry->d_inode)
-+			return NULL;
-+		/* XXX */
- 
- 		for (cur = sd, i = 0; i < depth; i++)
- 			cur = cur->s_parent;
-@@ -269,7 +272,7 @@ void sysfs_drop_dentry(struct sysfs_dirent *sd)
- 	}
- 
- 	if (isdir) {
--		BUG_ON(!simple_empty(dentry));
-+		/* XXX */ /* BUG_ON(!simple_empty(dentry)); */
- 		drop_nlink(dir);
- 		/* unpin if directory */
- 		dput(dentry);
+(When I said I didn't know if the patch would have unwanted side-effects
+I was rather wondering what happens when you ask the allocator to do
+some impossible combination.)
+
+> If the system has both high memory and normal memory then only allocations 
+> to highmemory are subject to memory policies etc etc. The block device 
+> allocations would be in zone normal/dma and thus be exempt from NUMA 
+> placement.
+
+Please just point us to the line where sys_move_pages enforces this.
+
+Hugh
