@@ -1,102 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbXDXIRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbXDXISS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbXDXIRg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXDXIR2
+	id S1754479AbXDXISS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbXDXIRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:17:28 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:37546 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754589AbXDXIRN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:17:13 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [REPORT] cfs-v5 vs sd-0.46
-Date: Tue, 24 Apr 2007 10:16:58 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200704240938.07482.mgd@technosis.de> <20070424075319.GA30909@elte.hu>
-In-Reply-To: <20070424075319.GA30909@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4517838.omb7fcXGQB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704241017.10610.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177402633;757ec221;
+	Tue, 24 Apr 2007 04:17:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48762 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754605AbXDXIRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 04:17:30 -0400
+Date: Tue, 24 Apr 2007 10:17:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: davidsen@posidon.tmr.com
+Cc: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] another scheduler beater
+Message-ID: <20070424081726.GA2714@elte.hu>
+References: <462D2B4E.7050009@tmr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462D2B4E.7050009@tmr.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4517838.omb7fcXGQB
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-> > What I also don't understand is the difference in load average, sd=20
-> > constantly had higher values, the above figures are representative for=
-=20
-> > the whole log. I don't know which is better though.
->=20
-> hm, it's hard from here to tell that. What load average does the vanilla=
-=20
-> kernel report? I'd take that as a reference.
+* Bill Davidsen <davidsen@tmr.com> wrote:
 
-I will redo this test with sd-0.46, cfs-v5 and mainline later today.
+> The small attached script does a nice job of showing animation 
+> glitches in the glxgears animation. I have run one set of tests, and 
+> will have several more tomorrow. I'm off to a poker game, and would 
+> like to let people draw their own conclusions.
+> 
+> Based on just this script as load I would say renice on X isn't a good 
+> thing. Based on one small test, I would say that renice of X in 
+> conjunction with heavy disk i/o and a single fast scrolling xterm 
+> (think kernel compile) seems to slow the raid6 thread measurably. 
+> Results late tomorrow, it will be an early and long day :-(
 
-> interesting - CFS has half the context-switch rate of SD. That is=20
-> probably because on your workload CFS defaults to longer 'timeslices'=20
-> than SD. You can influence the 'timeslice length' under SD via=20
-> /proc/sys/kernel/rr_interval (milliseconds units) and under CFS via=20
-> /proc/sys/kernel/sched_granularity_ns. On CFS the value is not=20
-> necessarily the timeslice length you will observe - for example in your=20
-> workload above the granularity is set to 5 msec, but your rescheduling=20
-> rate is 13 msecs. SD default to a rr_interval value of 8 msecs, which in=
-=20
-> your workload produces a timeslice length of 6-7 msecs.
->=20
-> so to be totally 'fair' and get the same rescheduling 'granularity' you=20
-> should probably lower CFS's sched_granularity_ns to 2 msecs.
+hm, i'm wondering what you would expect the scheduler to do here?
 
-I'll change default nice in cfs to -10.
+for this particular test you'll get the best result by renicing X to 
++19! Why? Because, as far as i can see this is a partially 'inverted' 
+test of X's scheduling.
 
-I'm also happy to adjust /proc/sys/kernel/sched_granularity_ns to 2msec.
-However checking /proc/sys/kernel/rr_interval reveals it is 16 (msec)
-on my system.
+While the script is definitely useful (you taught me that nice xterm 
+-geom trick to automate the placing of busy xterms :), some caveats do 
+apply when interpreting the results:
 
-Anyway, I'll have to do some urgent other work and won't be able to
-do lots of testing until tonight (but then I will).
+If you have a kernel 3D driver (which you seem to have, judging by the 
+glxgears numbers you are getting) then running 'glxgears' wont involve X 
+at all. glxgears just gets its own window and then the kernel driver 
+draws straight into it, without any side-trips to X. You can see this 
+for yourself by starting glitch1.sh from an ssh terminal, and then 
+_totally stop_ the X server via "kill -STOP 12345" - all the xterms will 
+stop, the X desktop freezes, but the glxgears instance will still 
+happily draw its stuff and wheels are happily turning on the screen.
 
-Best,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+So in this sense glxgears is a 'CPU hog' workload, largely independent 
+of X.
 
---nextPart4517838.omb7fcXGQB
-Content-Type: application/pgp-signature
+now, by renicing X to -10 and running the xterms you'll definitely hurt 
+"CPU hogs" - even if it happens to be a glxgears process that draws 3D 
+graphics in a window provided by X. But this is precisely what is 
+supposed to happen in this case. You should get the best glxgears 
+performance by renicing X to _+19_, and that seems to be happening 
+according to your numbers - and that's what happens in my own testing 
+too.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGLb0GUYYhyuxDQc4RAg0RAJ9eFbbq4wFoze53DQVRn0Y5krcazgCcCtp1
-WNJwe+vVP5bwxg2+WJmd8Hk=
-=ERBx
------END PGP SIGNATURE-----
-
---nextPart4517838.omb7fcXGQB--
+	Ingo
