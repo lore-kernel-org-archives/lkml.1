@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXDXFPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161552AbXDXFRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbXDXFPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 01:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbXDXFPd
+	id S1161552AbXDXFRs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161554AbXDXFRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 01:15:33 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37368 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753507AbXDXFPc (ORCPT
+	Tue, 24 Apr 2007 01:17:48 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53290 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161552AbXDXFRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 01:15:32 -0400
-Date: Tue, 24 Apr 2007 14:14:40 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Make new setting of panic_on_oom
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Linux Kernel ML <linux-kernel@vger.kernel.org>,
-       Larry Woodman <lwoodman@redhat.com>, Benjamin LaHaise <bcrl@kvack.org>
-In-Reply-To: <20070421152705.GE21709@kvack.org>
-References: <20070421132543.CA5D.Y-GOTO@jp.fujitsu.com> <20070421152705.GE21709@kvack.org>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20070424140750.FD8E.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 24 Apr 2007 01:17:47 -0400
+Date: Mon, 23 Apr 2007 22:17:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: William Heimbigner <icxcnika@mar.tar.cc>
+Cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: BUG: Null pointer dereference in fs/open.c
+Message-Id: <20070423221726.ccfa982c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704240507110.25153@server.thyself>
+References: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
+	<20070423010032.c89e8d32.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704231356480.25153@server.thyself>
+	<Pine.LNX.4.64.0704231633210.25153@server.thyself>
+	<Pine.LNX.4.64.0704240347470.25153@server.thyself>
+	<20070423215810.5a24ed9a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704240507110.25153@server.thyself>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 24 Apr 2007 05:10:04 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
 
-I tested this patch. It worked well.
-So, I fixed its description.
+> > --- a/drivers/block/pktcdvd.c~packet-fix-error-handling
+> > +++ a/drivers/block/pktcdvd.c
+> > @@ -777,7 +777,8 @@ static int pkt_generic_packet(struct pkt
+> > 		rq->cmd_flags |= REQ_QUIET;
+> >
+> > 	blk_execute_rq(rq->q, pd->bdev->bd_disk, rq, 0);
+> > -	ret = rq->errors;
+> > +	if (rq->errors)
+> > +		ret = -EIO;
+> > out:
+> > 	blk_put_request(rq);
+> > 	return ret;
+> > _
+> 
+> This patch fixes (or conceals?) the oops.
+> 
 
-Please apply.
-
-
-----------
-
-The current panic_on_oom may not work if there is a process using 
-cpusets/mempolicy, because other nodes' memory may remain.
-But some people want failover by panic ASAP even if they are used.
-This patch makes new setting for its request.
-
-This is tested on my ia64 box which has 3 nodes.
-
-Please apply.
-
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Signed-off-by: Benjamin LaHaise <bcrl@kvack.org>
-
-
----
- Documentation/sysctl/vm.txt |   23 +++++++++++++++++------
- mm/oom_kill.c               |    3 +++
- 2 files changed, 20 insertions(+), 6 deletions(-)
-
-Index: panic_on_oom2/Documentation/sysctl/vm.txt
-===================================================================
---- panic_on_oom2.orig/Documentation/sysctl/vm.txt	2007-04-21 12:39:09.000000000 +0900
-+++ panic_on_oom2/Documentation/sysctl/vm.txt	2007-04-21 12:39:58.000000000 +0900
-@@ -197,11 +197,22 @@
- 
- panic_on_oom
- 
--This enables or disables panic on out-of-memory feature.  If this is set to 1,
--the kernel panics when out-of-memory happens.  If this is set to 0, the kernel
--will kill some rogue process, called oom_killer.  Usually, oom_killer can kill
--rogue processes and system will survive.  If you want to panic the system
--rather than killing rogue processes, set this to 1.
-+This enables or disables panic on out-of-memory feature.
- 
--The default value is 0.
-+If this is set to 0, the kernel will kill some rogue process,
-+called oom_killer.  Usually, oom_killer can kill rogue processes and
-+system will survive.
-+
-+If this is set to 1, the kernel panics when out-of-memory happens.
-+However, if a process limits using nodes by mempolicy/cpusets,
-+and those nodes become memory exhaustion status, one process
-+may be killed by oom-killer. No panic occurs in this case.
-+Because other nodes' memory may be free. This means system total status
-+may be not fatal yet.
- 
-+If this is set to 2, the kernel panics compulsorily even on the
-+above-mentioned.
-+
-+The default value is 0.
-+1 and 2 are for failover of clustering. Please select either
-+according to your policy of failover.
-Index: panic_on_oom2/mm/oom_kill.c
-===================================================================
---- panic_on_oom2.orig/mm/oom_kill.c	2007-04-21 12:39:09.000000000 +0900
-+++ panic_on_oom2/mm/oom_kill.c	2007-04-21 12:40:31.000000000 +0900
-@@ -409,6 +409,9 @@
- 		show_mem();
- 	}
- 
-+	if (sysctl_panic_on_oom == 2)
-+		panic("out of memory. Compulsory panic_on_oom is selected.\n");
-+
- 	cpuset_lock();
- 	read_lock(&tasklist_lock);
- 
-
--- 
-Yasunori Goto 
-
-
+Fixes.  But does the packet driver actually work OK for you?  Writes
+files and stuff like that?
