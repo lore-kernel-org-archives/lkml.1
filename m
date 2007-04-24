@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422843AbXDXRsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422889AbXDXRvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422843AbXDXRsm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422883AbXDXRsm
+	id S1422889AbXDXRvQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422907AbXDXRvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:48:42 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50993 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422843AbXDXRsl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:48:41 -0400
-Date: Tue, 24 Apr 2007 10:48:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-In-Reply-To: <Pine.LNX.4.64.0704241841190.19956@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0704241047570.8418@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
- <20070423142919.5809e03f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
- <20070423154224.15ebf8f7.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0704241036020.8341@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0704241841190.19956@blonde.wat.veritas.com>
+	Tue, 24 Apr 2007 13:51:16 -0400
+Received: from gw.goop.org ([64.81.55.164]:51488 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422889AbXDXRvP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:51:15 -0400
+Message-ID: <462E43A7.1050001@goop.org>
+Date: Tue, 24 Apr 2007 10:51:35 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
+       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Chris Lalancette <clalance@redhat.com>,
+       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
+References: <20070327214919.800272641@goop.org>	<20070327215827.871954359@goop.org> <20070423234910.50149faf.akpm@linux-foundation.org>
+In-Reply-To: <20070423234910.50149faf.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007, Hugh Dickins wrote:
+Andrew Morton wrote:
+> It seems fairly sensitive to .config settings.  See
+> http://userweb.kernel.org/~akpm/config-sony.txt
+>   
 
-> > And if a page is in the wrong area then it can be bounced before I/O 
-> > is performed on it.
-> 
-> I think that much is also true, but not where the problem lies.
-> Isn't the problem that filesystems using these block devices
-> expect their metadata to be accessible without kmap calls?
+I haven't tried your config yet, but I haven't managed to reproduce it
+by playing with the usual suspects in my config (SMP, PREEMPT).  Any
+idea about which config changes make the difference?
 
-Metadata is not movable nor subject to memory policies. It will never be 
-mapped into a process space.
+Hm, is it caused by using sched_clock() to generate the printk
+timestamps while generating the lock test output?
 
-
+    J
