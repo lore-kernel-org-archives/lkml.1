@@ -1,126 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422696AbXDXPQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422717AbXDXPQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422696AbXDXPQb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 11:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422689AbXDXPPJ
+	id S1422717AbXDXPQp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 11:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXDXPQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 11:15:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:36185 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161804AbXDXPIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 11:08:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="218705758:sNHT424212530"
-Message-Id: <20070423164957.619268000@linux.intel.com>
-References: <20070423163837.447443000@linux.intel.com>
-User-Agent: quilt/0.46-1
-Date: Mon, 23 Apr 2007 09:38:45 -0700
-From: Ashok Raj <ashok.raj@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@osdl.org, ak@suse.de, gregkh@suse.de, muli@il.ibm.com,
-       asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
-       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
-       ashok.raj@intel.com, shaohua.li@intel.com
-Subject: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
-Content-Disposition: inline; filename=iova_preserve_option.patch
+	Tue, 24 Apr 2007 11:16:33 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:58579 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422717AbXDXPQU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 11:16:20 -0400
+Message-ID: <462E1F2D.6010806@nortel.com>
+Date: Tue, 24 Apr 2007 09:15:57 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Rogan Dawes <lists@dawes.za.net>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Peter Williams <pwil3058@bigpond.net.au>,
+       ck list <ck@vds.kolivas.org>, Thomas Gleixner <tglx@linutronix.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+References: <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <20070423203317.GA26668@elte.hu> <462DAC06.9040309@dawes.za.net> <20070424073103.GA29054@elte.hu> <462DBEF6.70205@dawes.za.net> <462E1C2E.30406@nortel.com> <462E1D37.3060008@dawes.za.net>
+In-Reply-To: <462E1D37.3060008@dawes.za.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Apr 2007 15:16:01.0426 (UTC) FILETIME=[77EDCF20:01C78683]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some devices may not support entire 64bit DMA. In a situation where such 
-devices are co-located in a shared domain, we need to ensure there is some 
-address space reserved for such devices without the low addresses getting
-depleted by other devices capable of handling high dma addresses.
+Rogan Dawes wrote:
 
-Signed-off-by: Ashok Raj <ashok.raj@intel.com>
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Index: linux-2.6.21-rc5/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.21-rc5.orig/Documentation/kernel-parameters.txt	2007-04-17 06:02:24.000000000 -0700
-+++ linux-2.6.21-rc5/Documentation/kernel-parameters.txt	2007-04-17 06:02:33.000000000 -0700
-@@ -735,6 +735,11 @@
- 			first 16M. The floppy disk could be modified to use
- 			the DMA api's but thats a lot of pain for very small
- 			gain. This option is turned on by default.
-+		preserve_{1g/2g/4g/512m/256m/16m}
-+			If a device is sharing a domain with other devices
-+			and the device mask doesnt cover the 64bit range,
-+			use this option to let the iommu code preserve some
-+			virtual addr for such devices.
- 	io7=		[HW] IO7 for Marvel based alpha systems
- 			See comment before marvel_specify_io7 in
- 			arch/alpha/kernel/core_marvel.c.
-Index: linux-2.6.21-rc5/drivers/pci/intel-iommu.c
-===================================================================
---- linux-2.6.21-rc5.orig/drivers/pci/intel-iommu.c	2007-04-17 06:02:24.000000000 -0700
-+++ linux-2.6.21-rc5/drivers/pci/intel-iommu.c	2007-04-17 06:05:49.000000000 -0700
-@@ -90,6 +90,7 @@
- static int dmar_disabled, dmar_force_rw;
- static int dmar_map_gfx = 1, dmar_no_gfx_identity_map = 1;
- static int dmar_fix_isa = 1;
-+static u64 dmar_preserve_iova_mask;
- 
- static char *get_fault_reason(u8 fault_reason)
- {
-@@ -119,6 +120,32 @@
- 		} else if (!strncmp(str, "noisamap", 8)) {
- 			dmar_fix_isa = 0;
- 			printk (KERN_INFO"Intel-IOMMU: Turning off 16M unity map for LPC\n");
-+ 		} else if (!strncmp(str, "preserve_", 9)) {
-+ 			if (!strncmp(str + 9, "4g", 2) ||
-+ 			    !strncmp(str + 9, "4G", 2))
-+ 				dmar_preserve_iova_mask = DMA_32BIT_MASK;
-+ 			else if (!strncmp(str + 9, "2g", 2) ||
-+ 				!strncmp(str + 9, "2G", 2))
-+ 				dmar_preserve_iova_mask = DMA_31BIT_MASK;
-+ 			else if (!strncmp(str + 9, "1g", 2) ||
-+ 			         !strncmp(str + 9, "1G", 2))
-+ 				dmar_preserve_iova_mask = DMA_30BIT_MASK;
-+ 			else if (!strncmp(str + 9, "512m", 2) ||
-+ 			         !strncmp(str + 9, "512M", 2))
-+ 				dmar_preserve_iova_mask = DMA_29BIT_MASK;
-+ 			else if (!strncmp(str + 9, "256m", 4) ||
-+ 			         !strncmp(str + 9, "256M", 4))
-+ 				dmar_preserve_iova_mask = DMA_28BIT_MASK;
-+ 			else if (!strncmp(str + 9, "16m", 3) ||
-+ 			         !strncmp(str + 9, "16M", 3))
-+ 				dmar_preserve_iova_mask = DMA_24BIT_MASK;
-+			if (dmar_preserve_iova_mask)
-+				printk(KERN_INFO
-+				"DMAR: Preserved IOVA mask 0x%Lx for devices "
-+				"sharing domain\n", dmar_preserve_iova_mask);
-+			else
-+				printk(KERN_ERR"DMAR: Unsuppored preserve mask"
-+					" provided");
- 		}
- 
- 		str += strcspn(str, ",");
-@@ -1723,7 +1750,6 @@
- 			last_addr : IOVA_START_ADDR);
- 	}
- 	return last_addr;
--
- }
- #endif
- 
-@@ -1751,13 +1777,14 @@
- 
- 	/*
- 	 * If the device shares a domain with other devices and the device can
--	 * handle > 4G DMA, let the device use DMA address started from 4G, so to
--	 * leave rooms for other devices
-+	 * can handle higher address, leave rooms for devices that cant
-+	 * address high address ranges.
- 	 */
- 	if ((domain->flags & DOMAIN_FLAG_MULTIPLE_DEVICES) &&
--			pdev->dma_mask > DMA_32BIT_MASK)
-+ 			dmar_preserve_iova_mask &&
-+ 			(pdev->dma_mask > dmar_preserve_iova_mask))
- 		iova = alloc_iova(domain, addr, size,
--				DMA_32BIT_MASK + 1, pdev->dma_mask);
-+ 				dmar_preserve_iova_mask + 1, pdev->dma_mask);
- 	else {
- #ifndef CONFIG_IOVA_NEXT_CONTIG
- 		iova = alloc_iova(domain, addr, size,
+> My concern was that since Ingo said that this is a closed economy, with 
+> a fixed sum/total, if we lose a nanosecond here and there, eventually 
+> we'll lose them all.
 
--- 
+I assume Ingo has set it up so that the system doesn't "lose" partial 
+nanoseconds, but rather they'd just be accounted to the wrong task.
+
+Chris
