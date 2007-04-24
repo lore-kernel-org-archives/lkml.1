@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbXDXBYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbXDXBiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754543AbXDXBYK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 21:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754545AbXDXBYK
+	id S1754550AbXDXBiF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 21:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbXDXBiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 21:24:10 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53853 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbXDXBYJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 21:24:09 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Simon Horman <horms@verge.net.au>
-Cc: fastboot@lists.osdl.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Haren Myneni <hbabu@us.ibm.com>
-Subject: Re: Update the list information for kexec and kdump
-References: <20070423083936.GI4272@verge.net.au>
-	<m13b2rvuge.fsf@ebiederm.dsl.xmission.com>
-	<20070424005634.GD11736@verge.net.au>
-Date: Mon, 23 Apr 2007 19:22:01 -0600
-In-Reply-To: <20070424005634.GD11736@verge.net.au> (Simon Horman's message of
-	"Tue, 24 Apr 2007 09:56:35 +0900")
-Message-ID: <m1irbmva6e.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 23 Apr 2007 21:38:05 -0400
+Received: from smtp3.cc.ksu.edu ([129.130.7.17]:52404 "EHLO smtp3.cc.ksu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754550AbXDXBiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 21:38:03 -0400
+Date: Mon, 23 Apr 2007 20:38:01 -0500 (CDT)
+From: Amit Gud <gud@cis.ksu.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Theodore Tso <tytso@mit.edu>, Kalpak Shah <kalpak@linsyssoft.com>,
+       Karuna sagar K <karunasagark@gmail.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: ChunkFS - measuring cross-chunk references
+In-Reply-To: <Pine.LNX.4.64.0704232014571.10676@camaro.cis.ksu.edu>
+Message-ID: <Pine.LNX.4.64.0704232031040.10676@camaro.cis.ksu.edu>
+References: <2e4afe1e0704221335y6d4c84d8id65e71826ce60acb@mail.gmail.com> 
+ <462B8D0C.7020509@ksu.edu>  <2e4afe1e0704230019h3853bc82uae6c9b5cdc325ab9@mail.gmail.com>
+  <1177320876.23226.7.camel@garfield>  <20070423205333.GZ5967@schatzie.adilger.int>
+  <20070424001306.GB1663@thunk.org> <1177376549.3244.0.camel@laptopd505.fenrus.org>
+ <Pine.LNX.4.64.0704232014571.10676@camaro.cis.ksu.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman <horms@verge.net.au> writes:
+On Mon, 23 Apr 2007, Amit Gud wrote:
 
-> On Mon, Apr 23, 2007 at 12:04:01PM -0600, Eric W. Biederman wrote:
->> Simon Horman <horms@verge.net.au> writes:
->> 
->> > Update the list information for kexec and kdump
->> >
->> > Signed-off-by: Simon Horman <horms@verge.net.au>
->> >
->> > --- 
->> > Is it too early for this change?
->> 
->> It looks like the new list is working, and isn't likely to get overwhelmed
->> with spam.  I don't know if everyone has switched over yet but we can
->> certainly update MAINTAINERS. 
+> On Mon, 23 Apr 2007, Arjan van de Ven wrote:
 >
-> Last time I checked there were 28 people in the kexec@ list.
-> This isn't everyone, but it is getting there.
+>> 
+>> >  The other thing which we should consider is that chunkfs really
+>> >  requires a 64-bit inode number space, which means either we only allow
+>>
+>>  does it?
+>>  I'd think it needs a "chunk space" number and a 32 bit local inode
+>>  number ;) (same for blocks)
+>> 
 >
-> May I add an Acked-by you ?
+> For inodes, yes, either 64-bit inode or some field for the chunk id in which 
+> the inode is. But for block numbers, you don't. Because individual chunks 
+> manage part of the whole file system in an independent way. They have their 
+> block bitmaps starting at an offset. Inode bitmaps, however, remains same.
+>
 
-Sure.
+In that sense, we also can do away without having chunk identifier encoded 
+into inode number and chunkfs would still be fine with it. But we will 
+then loose inode uniqueness property, which could well be OK as it is with 
+other file systems in which inode number is not sufficient for unique 
+identification of an inode.
 
-Eric
+
+AG
+--
+May the source be with you.
+http://www.cis.ksu.edu/~gud
