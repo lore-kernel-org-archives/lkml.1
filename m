@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161698AbXDXHoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161696AbXDXHqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161698AbXDXHoH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 03:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161697AbXDXHoG
+	id S1161696AbXDXHqO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 03:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161699AbXDXHqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 03:44:06 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:53847 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161690AbXDXHoD (ORCPT
+	Tue, 24 Apr 2007 03:46:14 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:22031 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161696AbXDXHqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 03:44:03 -0400
-Date: Tue, 24 Apr 2007 09:46:48 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linas Vepstas <linas@austin.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "<Andrew Morton" <akpm@osdl.org>,
-       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-Message-ID: <20070424094648.43d2b9b4@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1177390842.14873.94.camel@localhost.localdomain>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
-	<1177378733.14873.52.camel@localhost.localdomain>
-	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	<1177382544.14873.57.camel@localhost.localdomain>
-	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-	<1177390842.14873.94.camel@localhost.localdomain>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Apr 2007 03:46:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FTMT293XVUonZXzh9RRTXNy40VtyDJgW8BZwLN7Zkz8f1zHO8bp5FbWdmSs6zNa60QRZyPQB6lWJ/CDXWhk1ZzYZ2cu5XlzxDfI+xw8ggdeHoAjbVQ34e5himrpcihTFyBD+DAh9JfY101wZHPp7YOC3Wy5ho0G/wuT7RTZno/s=
+Message-ID: <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
+Date: Tue, 24 Apr 2007 09:46:12 +0200
+From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
+To: "William Heimbigner" <icxcnika@mar.tar.cc>
+Subject: Re: NonExecutable Bit in 32Bit
+Cc: "Cestonaro, Thilo (external)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704240640470.25153@server.thyself>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net>
+	 <Pine.LNX.4.64.0704240640470.25153@server.thyself>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 15:00:42 +1000,
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On 4/24/07, William Heimbigner <icxcnika@mar.tar.cc> wrote:
+> On Tue, 24 Apr 2007, Cestonaro, Thilo (external) wrote:
+>
+> > Hey,
+> >
+> > is it right, that the NX Bit is not used under i386-Arch but
+> > under x86_64-Arch?
+> > When yes, is there a special argument for it not to be used?
+> >
+> > Ciao Thilo
+> I don't think so - some i386 cpus definitely have support for
+> the NX bit.
+>
 
-> Like anything else, modules should have separated the entrypoints for
-> 
->  - Initiating a removal request
->  - Releasing the module
-> 
-> The former is use did "rmmod", can unregister things from subsystems,
-> etc... (and can file if the driver decides to refuse removal requests
-> when it's busy doing things or whatever policy that module wants to
-> implement).
-> 
-> The later is called when all references to the modules have been
-> dropped, it's a bit like the kref "release" (and could be implemented as
-> one).
+In detail:
+1) if your CPU has NX support (some 32bit Xeons do)
+2) it is not disabled in the BIOS
+3) you see 'nx' in the 'flags' line in /proc/cpuinfo
+4) and you have a kernel with the following config options
+CONFIG_HIGHMEM64G=y
+CONFIG_HIGHMEM=y
+CONFIG_X86_PAE=y
 
-That sounds quite similar to the problems we have with kobject
-refcounting vs. module unloading. The patchset I posted at
-http://marc.info/?l=linux-kernel&m=117679014404994&w=2 exposes the
-refcount of the kobject embedded in the module. Maybe the kthread code
-could use that reference as well?
+NX should just work.
+
+[snip]
