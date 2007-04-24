@@ -1,109 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423118AbXDXVbI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423129AbXDXVb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423118AbXDXVbI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:31:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423119AbXDXVbI
+	id S1423129AbXDXVb6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423128AbXDXVb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:31:08 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:33333 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423118AbXDXVbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:31:06 -0400
-Date: Tue, 24 Apr 2007 23:29:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070424212956.GE16457@elf.ucw.cz>
-References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424205416.GA23032@elte.hu>
+	Tue, 24 Apr 2007 17:31:58 -0400
+Received: from holomorphy.com ([66.93.40.71]:45262 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423127AbXDXVb4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:31:56 -0400
+Date: Tue, 24 Apr 2007 14:27:17 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: "Li, Tong N" <tong.n.li@intel.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070424212717.GR31925@holomorphy.com>
+References: <462D37D2.3060208@goop.org> <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070424205416.GA23032@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB5419485F34BEB@fmsmsx411.amr.corp.intel.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
+> I don't know if we've discussed this or not. Since both CFS and SD claim
+> to be fair, I'd like to hear more opinions on the fairness aspect of
+> these designs. In areas such as OS, networking, and real-time, fairness,
+> and its more general form, proportional fairness, are well-defined
+> terms. In fact, perfect fairness is not feasible since it requires all
+> runnable threads to be running simultaneously and scheduled with
+> infinitesimally small quanta (like a fluid system). So to evaluate if a
+> new scheduling algorithm is fair, the common approach is to take the
+> ideal fair algorithm (often referred to as Generalized Processor
+> Scheduling or GPS) as a reference model and analyze if the new algorithm
+> can achieve a constant error bound (different error metrics also exist).
 
-> > I have not a frigging clue whether that is the case in suspend2 vs 
-> > uswsusp, but I object to this idiotic argument of counting "kernel 
-> > code". That's simply not a valid argument. It never was.
-> 
-> the raw linecount appears to be the following:
-> 
->  suspend2-2.2.9.12-for-2.6.21-rc6.patch
-> 
->    89 files changed, 16452 insertions(+), 69 deletions(-)
-> 
->  $ suspend-0.5> countlines
->  32260
+Could you explain for the audience the technical definition of fairness
+and what sorts of error metrics are commonly used? There seems to be
+some disagreement, and you're neutral enough of an observer that your
+statement would help.
 
-(I'm getting very different numbers here. Userland part:)
 
-pavel@amd:~/sf/suspend$ wc -l *.c
-   125 bootsplash.c
-    12 breakit.c
-   119 config.c
-   136 delme.c
-   207 dmidecode.c
-    92 encrypt.c
-   222 keygen.c
-   447 md5.c
-   286 radeontool.c
-   870 resume.c
-   434 s2ram.c
-    78 splash.c
-    73 splashy_funcs.c
-  1481 suspend.c
-   117 swap-offset.c
-    11 vfork_test.c
-   123 vt.c
-   413 whitelist.c
-   136 whitelist2.c
-  5382 total
-pavel@amd:~/sf/suspend$ wc -l *.h
-    23 bootsplash.h
-    26 config.h
-    62 encrypt.h
-   106 md5.h
-  1764 radeon_reg.h
-    20 s2ram.h
-    26 splash.h
-    25 splashy_funcs.h
-   217 swsusp.h
-    10 vt.h
-  2279 total
-pavel@amd:~/sf/suspend$
+On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
+> I understand that via experiments we can show a design is reasonably
+> fair in the common case, but IMHO, to claim that a design is fair, there
+> needs to be some kind of formal analysis on the fairness bound, and this
+> bound should be proven to be constant. Even if the bound is not
+> constant, at least this analysis can help us better understand and
+> predict the degree of fairness that users would experience (e.g., would
+> the system be less fair if the number of threads increases? What happens
+> if a large number of threads dynamically join and leave the system?).
 
-> so, while it's probably apples to oranges, uswsusp seems to be larger, 
-> while there's at least one feature that it is missing.
+Carrying out this sort of analysis on various policies would help, but
+I'd expect most of them to be difficult to analyze. cfs' current
+->fair_key computation should be simple enough to analyze, at least
+ignoring nice numbers, though I've done nothing rigorous in this area.
 
-(We are talking "save 100% memory" here).
 
-As I said, that one feature is doable in uswsusp, too. It is 200
-lines. It also makes mm <-> swsusp interaction _way_ more complex, and
-noone was able to review it. It will corrupt memory if we got it
-wrong.
-
-(Suspend2 has the same problem. It includes that same feature, and
-noone is able to review it. It has few more problems.).
-
-> also, from the structure of the suspend2 patch it seemed to me that they 
-> could peacefully coexist in the kernel without stepping on each other's 
-> toes - why not do that? Users will then pick the winner.
-
-We do not want to fragment the testing base, and suspend2 does not
-really have any interesting features over uswsusp.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- wli
