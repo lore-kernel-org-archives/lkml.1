@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbXDXXy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423200AbXDXX4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbXDXXy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 19:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXDXXy2
+	id S1423200AbXDXX4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 19:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbXDXX4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 19:54:28 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:52912 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbXDXXy1 (ORCPT
+	Tue, 24 Apr 2007 19:56:13 -0400
+Received: from omta01ps.mx.bigpond.com ([144.140.82.153]:34208 "EHLO
+	omta01ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754139AbXDXX4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 19:54:27 -0400
-Date: Tue, 24 Apr 2007 17:53:41 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver
-In-reply-to: <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no>
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Oliver Neukum <oneukum@suse.de>, linux-kernel@vger.kernel.org
-Message-id: <462E9885.1010605@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.CH+7gvaumSAVtl/1QOSoYPsXewg@ifi.uio.no>
- <fa.NPDKv3GAx73J43g63faobz7IZVo@ifi.uio.no>
- <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 24 Apr 2007 19:56:12 -0400
+Message-ID: <462E990B.6000902@bigpond.net.au>
+Date: Wed, 25 Apr 2007 09:55:55 +1000
+From: Peter Williams <pwil3058@bigpond.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Rogan Dawes <lists@dawes.za.net>
+CC: Chris Friesen <cfriesen@nortel.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+References: <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <20070423203317.GA26668@elte.hu> <462DAC06.9040309@dawes.za.net> <20070424073103.GA29054@elte.hu> <462DBEF6.70205@dawes.za.net> <462E1C2E.30406@nortel.com> <462E1D37.3060008@dawes.za.net>
+In-Reply-To: <462E1D37.3060008@dawes.za.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta06ps.mx.bigpond.com from [58.164.138.40] using ID pwil3058@bigpond.net.au at Tue, 24 Apr 2007 23:56:00 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthias Kaehlcke wrote:
-> El Tue, Apr 24, 2007 at 07:53:04PM +0200 Oliver Neukum ha dit:
+Rogan Dawes wrote:
+> Chris Friesen wrote:
+>> Rogan Dawes wrote:
+>>
+>>> I guess my point was if we somehow get to an odd number of 
+>>> nanoseconds, we'd end up with rounding errors. I'm not sure if your 
+>>> algorithm will ever allow that.
+>>
+>> And Ingo's point was that when it takes thousands of nanoseconds for a 
+>> single context switch, an error of half a nanosecond is down in the 
+>> noise.
+>>
+>> Chris
 > 
->> Am Dienstag, 24. April 2007 19:49 schrieb Matthias Kaehlcke:
->>> @@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
->>>         if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
->>>                 return 0;
->>>  
->>> -       down_interruptible(&info->write_sem);
->>> +       mutex_lock_interruptible(&info->write_mtx);
->> This is a bug. It is also present in the current code, but nevertheless
->> it is a bug. If you use an interruptible lock, you must be ready to deal
->> with interrupts, which are ignored by this code.
+> My concern was that since Ingo said that this is a closed economy, with 
+> a fixed sum/total, if we lose a nanosecond here and there, eventually 
+> we'll lose them all.
 > 
-> i fear i don't have the experience/knowledge to fix this bug, thanks
-> for your remark. 
+> Some folks have uptimes of multiple years.
 > 
-> i'm a bit confused now about the interruptible locks, i thought using
-> them means that the process will be waked up when receiving a
-> signal. what role are playing interrupts when using interruptible locks?
+> Of course, I could (very likely!) be full of it! ;-)
 
-You are correct, interrupts aren't involved. However if the wait is 
-interrupted by a signal, mutex_lock_interruptible will return a nonzero 
-return code which needs to be checked for (and likely -ERESTARTSYS or 
--EINTR returned), otherwise the code will blindly continue as though it 
-has locked the mutex even though it has not.
+And won't be using the any new scheduler on these computers anyhow as 
+that would involve bringing the system down to install the new kernel. :-)
 
+Peter
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Peter Williams                                   pwil3058@bigpond.net.au
 
+"Learning, n. The kind of ignorance distinguishing the studious."
+  -- Ambrose Bierce
