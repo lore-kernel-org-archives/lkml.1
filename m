@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932203AbXDXJsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXDXJsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932203AbXDXJsK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 05:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932231AbXDXJsK
+	id S932231AbXDXJsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 05:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbXDXJsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 05:48:10 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:64653 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932203AbXDXJsI (ORCPT
+	Tue, 24 Apr 2007 05:48:55 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:40057 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932231AbXDXJsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 05:48:08 -0400
-Message-ID: <462DD22D.3030401@linux.vnet.ibm.com>
-Date: Tue, 24 Apr 2007 15:17:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Pavel Emelianov <xemul@sw.ru>
-CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-References: <461A3010.90403@sw.ru> <461A397A.8080609@sw.ru>
-In-Reply-To: <461A397A.8080609@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 05:48:54 -0400
+To: a.p.zijlstra@chello.nl
+CC: miklos@szeredi.hu, neilb@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+In-reply-to: <1177406817.26937.65.camel@twins> (message from Peter Zijlstra on
+	Tue, 24 Apr 2007 11:26:57 +0200)
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+References: <20070420155154.898600123@chello.nl>
+	 <20070420155503.608300342@chello.nl>
+	 <17965.29252.950216.971096@notabene.brown>
+	 <1177398589.26937.40.camel@twins>
+	 <E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+	 <1177403494.26937.59.camel@twins>
+	 <E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu> <1177406817.26937.65.camel@twins>
+Message-Id: <E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 24 Apr 2007 11:47:20 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov wrote:
-> Implement try_to_free_pages_in_container() to free the
-> pages in container that has run out of memory.
+> Ahh, now I see; I had totally blocked out these few lines:
 > 
-> The scan_control->isolate_pages() function isolates the
-> container pages only.
+> 			pages_written += write_chunk - wbc.nr_to_write;
+> 			if (pages_written >= write_chunk)
+> 				break;		/* We've done our duty */
 > 
+> yeah, those look dubious indeed... And reading back Neil's comments, I
+> think he agrees.
+> 
+> Shall we just kill those?
 
-Pavel,
+I think we should.
 
-I've just started playing around with these patches, I preferred
-the approach of v1. Please see below
+Athough I'm a little afraid, that Akpm will tell me again, that I'm a
+stupid git, and that those lines are in fact vitally important ;)
 
-> +static unsigned long isolate_container_pages(unsigned long nr_to_scan,
-> +		struct list_head *src, struct list_head *dst,
-> +		unsigned long *scanned, struct zone *zone)
-> +{
-> +	unsigned long nr_taken = 0;
-> +	struct page *page;
-> +	struct page_container *pc;
-> +	unsigned long scan;
-> +	LIST_HEAD(pc_list);
-> +
-> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
-> +		pc = list_entry(src->prev, struct page_container, list);
-> +		page = pc->page;
-> +		if (page_zone(page) != zone)
-> +			continue;
-
-shrink_zone() will walk all pages looking for pages belonging to this
-container and this slows down the reclaim quite a bit. Although we've
-reused code, we've ended up walking the entire list of the zone to
-find pages belonging to a particular container, this was the same
-problem I had with my RSS controller patches.
-
-> +
-> +		list_move(&pc->list, &pc_list);
-> +
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Miklos
