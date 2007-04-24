@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423101AbXDXUy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423091AbXDXUzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423101AbXDXUy1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXDXUy1
+	id S1423091AbXDXUzk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXDXUzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:54:27 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39225 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423101AbXDXUyZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:54:25 -0400
-Date: Tue, 24 Apr 2007 13:53:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-Message-Id: <20070424135348.4e69ac23.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
-	<20070423142919.5809e03f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
-	<20070423154224.15ebf8f7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
-	<20070424101116.1cb7512e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
-	<20070424134206.95bd6c92.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 24 Apr 2007 16:55:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58054 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423091AbXDXUzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:55:39 -0400
+Date: Tue, 24 Apr 2007 22:54:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070424205416.GA23032@elte.hu>
+References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 13:44:50 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Tue, 24 Apr 2007, Andrew Morton wrote:
-> 
-> > > I would say that the filesystem is broke if it has such expectations 
-> > > regardless of page migration.
-> > 
-> > Others disagree ;)
-> > 
-> > The filesystem has *told* the core kernel what its allocation constraints
-> > are by setting up mapping_gfp_mask().  If the core kernel stops honouring
-> > that request then it is core kernel which is broken.
-> 
-> Then I think we should disable page migration for allocations that do not 
-> allow access to the policy zone. That would fix it.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Can't we use mapping_gfp_mask() when allocating the destination page?
+> I have not a frigging clue whether that is the case in suspend2 vs 
+> uswsusp, but I object to this idiotic argument of counting "kernel 
+> code". That's simply not a valid argument. It never was.
 
-It would be better to do so, really.  Who knows, mapping_gfp_mask() might
-be extented in the future to say "I want GFP_NOIO" or something.  Or a
-filesystem might specify GFP_KERNEL for regular pagecache pages or
-whatever.
+the raw linecount appears to be the following:
 
-Generally, the interface is "address_space tells core kernel how to
-allocate its pages", and to be nice we should honour that in all places
-where we allocate a page for an address_space.
+ suspend2-2.2.9.12-for-2.6.21-rc6.patch
 
-If we'd had any brains we would have implemented this function as an
-address_space_operations callback, but we don't so we didn't.
+   89 files changed, 16452 insertions(+), 69 deletions(-)
 
+ $ suspend-0.5> countlines
+ 32260
+
+so, while it's probably apples to oranges, uswsusp seems to be larger, 
+while there's at least one feature that it is missing.
+
+also, from the structure of the suspend2 patch it seemed to me that they 
+could peacefully coexist in the kernel without stepping on each other's 
+toes - why not do that? Users will then pick the winner.
+
+	Ingo
