@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423099AbXDXU6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXDXU6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423099AbXDXU6R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXDXU6R
+	id S1423110AbXDXU6h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423112AbXDXU6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:58:17 -0400
-Received: from smtp.nokia.com ([131.228.20.171]:33415 "EHLO
-	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423099AbXDXU6Q (ORCPT
+	Tue, 24 Apr 2007 16:58:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49146 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423111AbXDXU6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:58:16 -0400
-Message-ID: <462E6DE5.7090206@indt.org.br>
-Date: Tue, 24 Apr 2007 16:51:49 -0400
-From: Carlos Aguiar <carlos.aguiar@indt.org.br>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070104)
+	Tue, 24 Apr 2007 16:58:36 -0400
+Date: Tue, 24 Apr 2007 13:58:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <20070424135348.4e69ac23.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704241354470.13382@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <20070424101116.1cb7512e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
+ <20070424134206.95bd6c92.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
+ <20070424135348.4e69ac23.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       "Anderson F. Briglia" <anderson.briglia@indt.org.br>
-Subject: [PATCH 0/3] Aligning omap.c from Linux-OMAP to mainline kernel
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Apr 2007 20:58:05.0578 (UTC) FILETIME=[4146DEA0:01C786B3]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+On Tue, 24 Apr 2007, Andrew Morton wrote:
 
-Find in this series the pending patches from Linux-OMAP to mainline for
-drivers/mmc/omap.c
+> > Then I think we should disable page migration for allocations that do not 
+> > allow access to the policy zone. That would fix it.
+> 
+> Can't we use mapping_gfp_mask() when allocating the destination page?
 
-The patches series was applied against Linus' tree 2.6.21-rc7-git6.
+There is no point in migrating something if you cannot reach the 
+destination. If the policy zone is not allowed by an allocation then the 
+page cannot be migrated because (on 32 bit NUMA) there is only a single 
+ZONE_NORMAL on the system. A different node requires a HIGHMEM allocation!
+ 
+> It would be better to do so, really.  Who knows, mapping_gfp_mask() might
+> be extented in the future to say "I want GFP_NOIO" or something.  Or a
+> filesystem might specify GFP_KERNEL for regular pagecache pages or
+> whatever.
 
-Anyway, it was tested on OMAP H2 (using omap_h2_1610_defconfig available
-on linus' tree).
+Hmmm..... How about a VM_DONTMIGRATE flag instead? That would be easy to 
+check and could be set by a device that must have all pages of the address
+space conforming to the gfp mask.
 
-BR,
+Or more general
 
-Carlos.
+VM_STRICT_ALLOC?
 
--- 
-Carlos Eduardo
-Nokia Institute of Technology - INdT
-Open Source Mobile Research Center - OSMRC
-Phone: +55 92 2126-1079
-Mobile: +55 92 8127-1797
-E-mail: carlos.aguiar@indt.org.br
+> Generally, the interface is "address_space tells core kernel how to
+> allocate its pages", and to be nice we should honour that in all places
+> where we allocate a page for an address_space.
+> 
+> If we'd had any brains we would have implemented this function as an
+> address_space_operations callback, but we don't so we didn't.
 
+We have enough flags I think.
