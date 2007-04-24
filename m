@@ -1,47 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030962AbXDXAel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030964AbXDXAiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030962AbXDXAel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 20:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030964AbXDXAel
+	id S1030964AbXDXAiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 20:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030971AbXDXAiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 20:34:41 -0400
-Received: from ns2.suse.de ([195.135.220.15]:41363 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030962AbXDXAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 20:34:40 -0400
-From: Neil Brown <neilb@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Date: Tue, 24 Apr 2007 10:34:31 +1000
+	Mon, 23 Apr 2007 20:38:24 -0400
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:55654 "EHLO
+	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030964AbXDXAiX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 20:38:23 -0400
+Date: Mon, 23 Apr 2007 20:38:21 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Roland McGrath <roland@redhat.com>
+cc: linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Return EPERM not ECHILD on security_task_wait failure
+In-Reply-To: <20070424002641.5FB061801A4@magilla.sf.frob.com>
+Message-ID: <Line.LNX.4.64.0704232038130.6142@d.namei>
+References: <20070424002641.5FB061801A4@magilla.sf.frob.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17965.20631.736307.24491@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: SLUB: kmem_cache_destroy doesn't - version 2.
-In-Reply-To: message from Christoph Lameter on Monday April 23
-References: <17960.16739.870487.497750@notabene.brown>
-	<Pine.LNX.4.64.0704192215420.16306@schroedinger.engr.sgi.com>
-	<17960.20796.761309.771912@notabene.brown>
-	<Pine.LNX.4.64.0704192236510.16503@schroedinger.engr.sgi.com>
-	<17964.21972.961812.744601@notabene.brown>
-	<Pine.LNX.4.64.0704231340180.512@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday April 23, clameter@sgi.com wrote:
-> Would this work? Contains a solution somewhat along the lines of your 
-> thoughts on the subject.
-> 
+On Mon, 23 Apr 2007, Roland McGrath wrote:
 
-Concept seems sound.
-Code needs a kfree of the name returned by create_unique_id, and I
-think ID_STR_LENGTH needs to be at least 34.
-Maybe that should be allocated on the stack in sysfs_slab_add, rather
-than using kmalloc/free.
+> As I said in some earlier discussion following my original patch, that
+> would be fine with me.  I haven't coded up that variant, but it's simple
+> enough.  Would you like to do it?
 
-Thanks,
-NeilBrown
+Sure.
+
+
+-- 
+James Morris
+<jmorris@namei.org>
