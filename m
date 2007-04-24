@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031075AbXDXLXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031060AbXDXL2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031075AbXDXLXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 07:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031072AbXDXLXk
+	id S1031060AbXDXL2c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 07:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031072AbXDXL2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 07:23:40 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:40711 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031075AbXDXLXj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 07:23:39 -0400
-To: akpm@linux-foundation.org
-CC: a.p.zijlstra@chello.nl, miklos@szeredi.hu, neilb@suse.de,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
-In-reply-to: <20070424034024.f953f93f.akpm@linux-foundation.org> (message from
-	Andrew Morton on Tue, 24 Apr 2007 03:40:24 -0700)
-Subject: Re: [PATCH 10/10] mm: per device dirty threshold
-References: <20070420155154.898600123@chello.nl>
-	<20070420155503.608300342@chello.nl>
-	<17965.29252.950216.971096@notabene.brown>
-	<1177398589.26937.40.camel@twins>
-	<E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
-	<1177403494.26937.59.camel@twins>
-	<E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
-	<1177406817.26937.65.camel@twins>
-	<E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
-	<20070424030021.a091018d.akpm@linux-foundation.org>
-	<1177409538.26937.75.camel@twins> <20070424034024.f953f93f.akpm@linux-foundation.org>
-Message-Id: <E1HgJ5u-0000aD-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 24 Apr 2007 13:22:02 +0200
+	Tue, 24 Apr 2007 07:28:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37076 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031060AbXDXL2c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 07:28:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [RFC][PATCH -mm 2/3] freezer: Introduce freezer_flags
+Date: Tue, 24 Apr 2007 13:32:47 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       ego@in.ibm.com, linux-kernel@vger.kernel.org, vatsa@in.ibm.com,
+       paulmck@us.ibm.com, pavel@ucw.cz
+References: <20070419120131.GB13435@in.ibm.com> <200704240110.35770.rjw@sisk.pl> <20070423231926.GA684@tv-sign.ru>
+In-Reply-To: <20070423231926.GA684@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704241332.48082.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 24 Apr 2007 12:12:18 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> 
-> > On Tue, 2007-04-24 at 03:00 -0700, Andrew Morton wrote:
-> > > On Tue, 24 Apr 2007 11:47:20 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tuesday, 24 April 2007 01:19, Oleg Nesterov wrote:
+> On 04/24, Rafael J. Wysocki wrote:
+> >
+> > On Tuesday, 24 April 2007 00:55, Oleg Nesterov wrote:
+> > > On 04/24, Rafael J. Wysocki wrote:
+> > > >
+> > > > Should I clear it in dup_task_struct() or is there a better place?
 > > > 
-> > > > > Ahh, now I see; I had totally blocked out these few lines:
-> > > > > 
-> > > > > 			pages_written += write_chunk - wbc.nr_to_write;
-> > > > > 			if (pages_written >= write_chunk)
-> > > > > 				break;		/* We've done our duty */
-> > > > > 
-> > > > > yeah, those look dubious indeed... And reading back Neil's comments, I
-> > > > > think he agrees.
-> > > > > 
-> > > > > Shall we just kill those?
-> > > > 
-> > > > I think we should.
-> > > > 
-> > > > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
-> > > > stupid git, and that those lines are in fact vitally important ;)
-> > > > 
+> > > I personally think we should do this in dup_task_struct(). In fact, I believe
+> > > it is better to replace the
 > > > 
-> > > It depends what they're replaced with.
+> > > 	*tsk = *orig;
 > > > 
-> > > That code is there, iirc, to prevent a process from getting stuck in
-> > > balance_dirty_pages() forever due to the dirtying activity of other
-> > > processes.
-> > > 
-> > > hm, we ask the process to write write_chunk pages each go around the loop.
-> > > So if it wrote write-chunk/2 pages on the first pass it might end up writing
-> > > write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
-> > > if it does happen - the upper bound is write_chunk*2-1, I think.
+> > > with some helper (like setup_thread_stack() below), and that helper clears
+> > > ->freezer_flags. Say, copy_task_struct().
 > > 
-> > Right, but I think the problem is that its dirty -> writeback, not dirty
-> > -> writeback completed.
+> > Hmm, wouldn't that be overkill?  copy_task_struct() would have to do
+> > *tsk = *orig anyway, and we only need to clear one field apart from this.
 > > 
-> > Ie. they don't guarantee progress, it could be that the total
-> > nr_reclaimable + nr_writeback will steadily increase due to this break.
+> > Some other fields are cleared towards the end of dup_task_struct(), so perhaps
+> > we could clear freezer_flags in there too?
 > 
-> Don't think so.  We call balance_dirty_pages() once per ratelimit_pages
-> dirtyings and when we get there, we write 1.5*ratelimit_pages pages.
+> Yes. And I strongly believe it is bad we don't have the helper which does some
+> random stuf like "p->did_exec = 0".
+> 
+> The same for thread_info. Could you answer quickly where do we clear TIF_FREEZE
+> currently? We don't.
 
-No, we _start_ writeback for 1.5*ratelimit_pages pages, but do not
-wait for those writebacks to finish.
+Right.
 
-So for a slow device and a fast writer, dirty+writeback can indeed
-increase beyond the dirty threshold.
+That said, I think the right thing to do would be to add just one line
+'freezer_flags = 0' to dup_task_struct() directly in this patch and then
+move all of the random stuff (including this line) to the helper in a separate
+patch.
 
-Miklos
+I mean, the introduction of the helper seems to be logically unrelated to the
+other things this patch does, so it should go in another patch IMHO.
+
+Greetings,
+Rafael
