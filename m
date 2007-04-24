@@ -1,129 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161339AbXDXGwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161358AbXDXG5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161339AbXDXGwf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 02:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161361AbXDXGwf
+	id S1161358AbXDXG5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 02:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161364AbXDXG5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 02:52:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39108 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161339AbXDXGwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 02:52:33 -0400
-Date: Mon, 23 Apr 2007 23:49:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-Message-Id: <20070423234910.50149faf.akpm@linux-foundation.org>
-In-Reply-To: <20070327215827.871954359@goop.org>
-References: <20070327214919.800272641@goop.org>
-	<20070327215827.871954359@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 24 Apr 2007 02:57:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51889 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161358AbXDXG5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 02:57:20 -0400
+Date: Tue, 24 Apr 2007 08:57:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ed Tomlinson <edt@aei.ca>
+Cc: davidsen@posidon.tmr.com, "Kolivas, Con" <kernel@kolivas.org>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD 0.46
+Message-ID: <20070424065709.GB19802@elte.hu>
+References: <462D2BDD.4040406@tmr.com> <200704231945.25613.edt@aei.ca> <200704231949.06108.edt@aei.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704231949.06108.edt@aei.ca>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Mar 2007 14:49:20 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> The softlockup watchdog is currently a nuisance in a virtual machine,
-> since the whole system could have the CPU stolen from it for a long
-> period of time.  While it would be unlikely for a guest domain to be
-> denied timer interrupts for over 10s, it could happen and any softlockup
-> message would be completely spurious.
-> 
-> Earlier I proposed that sched_clock() return time in unstolen
-> nanoseconds, which is how Xen and VMI currently implement it.  If the
-> softlockup watchdog uses sched_clock() to measure time, it would
-> automatically ignore stolen time, and therefore only report when the
-> guest itself locked up.  When running native, sched_clock() returns
-> real-time nanoseconds, so the behaviour would be unchanged.
-> 
-> Note that sched_clock() used this way is inherently per-cpu, so this
-> patch makes sure that the per-processor watchdog thread initialized
-> its own timestamp.
+* Ed Tomlinson <edt@aei.ca> wrote:
 
-This patch
-(ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/broken-out/ignore-stolen-time-in-the-softlockup-watchdog.patch)
-causes six failures in the locking self-tests, which I must say is rather
-clever of it.
+> > SD 0.46		1-2 FPS
+> > cfs v5 nice -19	219-233 FPS
+> > cfs v5 nice 0 	1000-1996
+>    cfs v5 nice -10  60-65 FPS
 
+the problem is, the glxgears portion of this test is an _inverse_ 
+testcase.
 
-Here's the first one:
+The reason? glxgears on true 3D hardware will _not_ use X, it will 
+directly use the 3D driver of the kernel. So by renicing X to -19 you 
+give the xterms more chance to show stuff - the performance of the 
+glxgears will 'degrade' - but that is what you asked for: glxgears is 
+'just another CPU hog' that competes with X, it's not a "true" X client.
 
-[17179569.184000] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-[17179569.184000] ... MAX_LOCKDEP_SUBCLASSES:    8
-[17179569.184000] ... MAX_LOCK_DEPTH:          30
-[17179569.184000] ... MAX_LOCKDEP_KEYS:        2048
-[17179569.184000] ... CLASSHASH_SIZE:           1024
-[17179569.184000] ... MAX_LOCKDEP_ENTRIES:     8192
-[17179569.184000] ... MAX_LOCKDEP_CHAINS:      16384
-[17179569.184000] ... CHAINHASH_SIZE:          8192
-[17179569.184000]  memory used by lock dependency info: 992 kB
-[17179569.184000]  per task-struct memory footprint: 1200 bytes
-[17179569.184000] ------------------------
-[17179569.184000] | Locking API testsuite:
-[17179569.184000] ----------------------------------------------------------------------------
-[17179569.184000]                                  | spin |wlock |rlock |mutex | wsem | rsem |
-[17179569.184000]   --------------------------------------------------------------------------
-[17179569.184000]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184000]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184000]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184001]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184002]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184003]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184004]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184005]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184006]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184006]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-[17179569.184006]   --------------------------------------------------------------------------
-[17179569.184006]               recursive read-lock:             |  ok  |             |  ok  |
-[17179569.184006]            recursive read-lock #2:             |  ok  |             |  ok  |
-[17179569.184007]             mixed read-write-lock:             |  ok  |             |  ok  |
-[17179569.184007]             mixed write-read-lock:             |  ok  |             |  ok  |
-[17179569.184007]   --------------------------------------------------------------------------
-[17179569.184007]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[17179569.184007]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-[17179569.184007]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[17179569.184007]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-[17179569.184007]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |irq event stamp: 458
-[17179569.184007] hardirqs last  enabled at (458): [<c01e4116>] irqsafe2A_rlock_12+0x96/0xa3
-[17179569.184007] hardirqs last disabled at (457): [<c01095b9>] sched_clock+0x5e/0xe9
-[17179569.184007] softirqs last  enabled at (454): [<c01e4101>] irqsafe2A_rlock_12+0x81/0xa3
-[17179569.184007] softirqs last disabled at (450): [<c01e408b>] irqsafe2A_rlock_12+0xb/0xa3
-[17179569.184007] FAILED| [<c0104cf0>] dump_trace+0x63/0x1ec
-[17179569.184007]  [<c0104e93>] show_trace_log_lvl+0x1a/0x30
-[17179569.184007]  [<c01059ec>] show_trace+0x12/0x14
-[17179569.184007]  [<c0105a45>] dump_stack+0x16/0x18
-[17179569.184007]  [<c01e1eb5>] dotest+0x6b/0x3d0
-[17179569.184007]  [<c01eb249>] locking_selftest+0x915/0x1a58
-[17179569.184007]  [<c048c979>] start_kernel+0x1d0/0x2a2
-[17179569.184007]  =======================
-[17179569.184007] 
-[17179569.184007]        sirq-safe-A => hirqs-on/21:irq event stamp: 462
-[17179569.184007] hardirqs last  enabled at (462): [<c01e3eb2>] irqsafe2A_spin_21+0x1b/0xa3
-[17179569.184007] hardirqs last disabled at (461): [<c01095b9>] sched_clock+0x5e/0xe9
-[17179569.184007] softirqs last  enabled at (454): [<c01e4101>] irqsafe2A_rlock_12+0x81/0xa3
-[17179569.184007] softirqs last disabled at (450): [<c01e408b>] irqsafe2A_rlock_12+0xb/0xa3
-[17179569.184007]   ok  |irq event stamp: 466
+if you are after glxgears performance in this test then you'll get the 
+best performance out of this by renicing X to +19 or even SCHED_BATCH.
 
-
-It's a challenge to even find the code which corresponds with this failure,
-so good luck.
-
-
-It seems fairly sensitive to .config settings.  See
-http://userweb.kernel.org/~akpm/config-sony.txt
-
-Unfortunately this causes lockdep to disable itself, thus hiding all the
-other bugs which people have contributed, so I'll drop your patch for now.
+	Ingo
