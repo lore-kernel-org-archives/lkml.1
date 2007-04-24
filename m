@@ -1,119 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751052AbXDXOoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbXDXOz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751052AbXDXOoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbXDXOoS
+	id S1752204AbXDXOz3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXDXOz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:44:18 -0400
-Received: from mail.zelnet.ru ([80.92.97.13]:39219 "EHLO mail.zelnet.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbXDXOoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:44:17 -0400
-Message-ID: <462E17AF.7090604@namesys.com>
-Date: Tue, 24 Apr 2007 18:43:59 +0400
-From: Edward Shishkin <edward@namesys.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       Andi Kleen <andi@firstfloor.org>
-CC: Alex Zarochentsev <zam@namesys.com>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Eric Hopper <hopper@omnifarious.org>, Lex Lyamin <flx@msu.ru>,
-       William Heimbigner <icxcnika@mar.tar.cc>,
-       Rik van Riel <riel@redhat.com>, Xu CanHao <xucanhao@gmail.com>
-Subject: Re: Question about Reiser4
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-In-Reply-To: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.86.0.0
-X-Enigmail-Supports: pgp-inline, pgp-mime
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 10:55:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49621 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751605AbXDXOz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 10:55:28 -0400
+Date: Tue, 24 Apr 2007 15:55:25 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Christoph Hellwig <hch@infradead.org>, gnb@sgi.com,
+       xfs-oss <xfs@oss.sgi.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: review: don't block non-blocking writes when frozen
+Message-ID: <20070424145525.GA18918@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Chinner <dgc@sgi.com>, gnb@sgi.com, xfs-oss <xfs@oss.sgi.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20070423002616.GY32602149@melbourne.sgi.com> <20070423212715.GF13572@infradead.org> <20070423231337.GN32602149@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423231337.GN32602149@melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone.
+On Tue, Apr 24, 2007 at 09:13:37AM +1000, David Chinner wrote:
+> So, given the catch-22 you've just presented us can we revisit the
+> nfsd non-blocking I/O issue again?  This affects anyone using DM
+> snapshots on their NFS servers and has nothing to do with HSMs
+> or DMAPI...
+> 
+> FWIW, you can still do non-blocking userspace I/O to a file, so this
+> XFS patch is still valid for mainline (that's how I tested it).
 
->Begin forwarded message:
->
->Date: 23 Apr 2007 21:05:13 +0200
->From: Andi Kleen <andi@firstfloor.org>
->To: Andrew Morton <akpm@linux-foundation.org>
->Cc: Eric Hopper <hopper@omnifarious.org>, linux-kernel@vger.kernel.org
->Subject: Re: Question about Reiser4
->
->
->Andrew Morton <akpm@linux-foundation.org> writes:
->  
->
->>To get it unstuck we'd need a general push, get people looking at and testing
->>the code, get the vendors to have a serious think about it, etc.  We could do
->>that - it'd require that the namesys people (and I) start making threatening
->>noises about merging it, I guess.
->>    
->>
->
->My impression was that a lot of negative discussion came out of some of the
->user interface inventions in r4 (like sys_reiser4 and the
->new incompatible EA interface). 
->
->  
->
+I've been investigating the situation a little bit more, and here's
+what's going on:
 
-sys_reiser4 and metas interface were removed (current -mm stuff
-doesn't contain them).
+ - SuS allows for O_NONBLOCK on regular files as per
+   http://www.opengroup.org/onlinepubs/007908799/xsh/write.html
+ - actually implementing O_NONBLOCK semantics for regular fixes
+   breaks userspace when poll/select claims files are ready to
+   read/write but they aren't, see http://lkml.org/lkml/2004/10/17/17
 
->I guess a good strategy to get it going would be to extract just
->a "core reiser4" out of it that is just a file system without
->any new interfaces like this.
->
->  
->
+So we can't really expose O_NONBLOCK on regular files to userspace,
+and we need to make sure in common code this does not happen.
 
-I think that current reiser4 is exactly that "core", which responds solely
-to VFS. The popular opinion that plugins make more sense in the VFS
-is a great delusion, as plugins are entities related to reiser4 disk 
-layouts.
-There are many aspects where plugin architecture is useful, I tried to
-describe one of them -- backward compatibility that was got with
-minimal efforts: http://dev.namesys.com/Version4.X.Y
-If this needs more comments, then we will proceed the documentation.
+EJUKEBOX on snaphots does make sense, though.  Can you please send
+a full patchseries for nfsd, the common code and the xfs writepath
+so that this actually gets used and behaviour is consistant for all
+(or at least most) filesystems?
 
->I would expect that reviewing that would be much smoother
->because people could actually concentrate on the technical details.
->
->-Andi
->
->  
->
+Also now that the patch goes to mainline please kill ugly FILP_DELAY_FLAG
+and just check the flags directly.  And it should probably only check
+O_NONBLOCK.  The only architecture having O_NDELAY different from
+O_NONBLOCK is sparc, and it already translates the value for us.
 
-Other comments:
 
-1. Why Namesys developers aren't presently asking for inclusion?
-
-Because there are unaddressed items in this todo list:
-http://pub.namesys.com/Reiser4/ToDo
-The main issues here are xattrs and support for blocksize != pagesize.
-I think that adding xattrs will take ~1 month of full-time working.
-Not sure about blocksize support. Also, the statement about "main
-issues" may be too optimistic. Let's try to estimate..
-
-2. Who will maintain this?
-
-Currently there are two namesys employees working mostly on
-enthusiasm. Divide them into 2 file systems, plus many people who
-really help with fixing problems.
-
-So we need to estimate how dramatic the situation with reiser4 is
-(experts are welcome). In the worst case (no funding for this in the
-perspective) I hope to devote ~25% of my working time to this
-project. Vladimir might want to add something here, but he is sick
-for now. By the way, he has its own opinion what part of current
-reiser4 should go to mainline (separating tail's support (which
-makes things complicated) as special incremental update available
-on our website).
-
-Thanks,
-Edward.
 
