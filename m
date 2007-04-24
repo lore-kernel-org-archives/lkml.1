@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422863AbXDXRpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422887AbXDXRpo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422863AbXDXRpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422881AbXDXRpM
+	id S1422887AbXDXRpo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:45:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422889AbXDXRpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:45:12 -0400
-Received: from smtp1-g19.free.fr ([212.27.42.27]:52399 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422863AbXDXRpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:45:10 -0400
-Message-ID: <462E4223.1050109@trango-systems.com>
-Date: Tue, 24 Apr 2007 19:45:07 +0200
-From: LAPLACE Cyprien <cyprien.laplace@trango-systems.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Tue, 24 Apr 2007 13:45:44 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:21693 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422881AbXDXRpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:45:17 -0400
+X-AuditID: d80ac287-ab3e3bb00000590d-ed-462e422c663c 
+Date: Tue, 24 Apr 2007 18:45:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+In-Reply-To: <Pine.LNX.4.64.0704241036020.8341@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704241841190.19956@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+ <20070423142919.5809e03f.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+ <20070423154224.15ebf8f7.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704241036020.8341@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: virtualization@lists.linux-foundation.org
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: SMP lockup in virtualized environment
-X-Enigmail-Version: 0.94.1.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 24 Apr 2007 17:45:16.0218 (UTC) FILETIME=[5166A1A0:01C78698]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a previous mail, Jeremy Fitzhardinge wrote:
-> The softlockup watchdog is currently a nuisance in a virtual machine,
-> since the whole system could have the CPU stolen from it for a long
-> period of time.  While it would be unlikely for a guest domain to be
-> denied timer interrupts for over 10s, it could happen and any
-> softlockup message would be completely spurious.
+On Tue, 24 Apr 2007, Christoph Lameter wrote:
+> On Tue, 24 Apr 2007, Hugh Dickins wrote:
+> 
+> > I've not yet looked at the patch under discussion, but this remark
+> > prompts me...  a couple of days ago I got very worried by the various
+> > hard-wired GFP_HIGHUSER allocations in mm/migrate.c and mm/mempolicy.c,
+> > and wondered how those would work out if someone has a blockdev mmap'ed.
+> 
+> Hmmm.... These not that critical given that 32 bit NUMA systems are a bit 
+> rare.
 
-I wonder how the guest domain can be denied timer interrupts for such a
-long time ? The only reason I see is that the guest domain is not
-scheduled at all (host domain or another higher priority guest running).
+That's true.  And everybody but the owners of those systems wish
+fervently that they didn't exist ;)
 
-Now in SMP host and guest, what happens if a guest CPU is not scheduled
-for a while ?
+> And if a page is in the wrong area then it can be bounced before I/O 
+> is performed on it.
 
-An example: in kernel/pid.c:alloc_pid(), if one of the guest CPUs is
-descheduled when holding the pidmap_lock, what happens to the other
-guest CPUs who want to alloc/free pids ? Are they blocked too ?
+I think that much is also true, but not where the problem lies.
+Isn't the problem that filesystems using these block devices
+expect their metadata to be accessible without kmap calls?
 
-
--- 
-Cyprien Laplace
-
+Hugh
