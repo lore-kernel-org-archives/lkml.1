@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161552AbXDXFRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161628AbXDXFdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161552AbXDXFRs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 01:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161554AbXDXFRs
+	id S1161628AbXDXFdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161627AbXDXFdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 01:17:48 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53290 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161552AbXDXFRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 01:17:47 -0400
-Date: Mon, 23 Apr 2007 22:17:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Heimbigner <icxcnika@mar.tar.cc>
-Cc: linux-kernel@vger.kernel.org, Peter Osterlund <petero2@telia.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: BUG: Null pointer dereference in fs/open.c
-Message-Id: <20070423221726.ccfa982c.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704240507110.25153@server.thyself>
-References: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
-	<20070423010032.c89e8d32.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704231356480.25153@server.thyself>
-	<Pine.LNX.4.64.0704231633210.25153@server.thyself>
-	<Pine.LNX.4.64.0704240347470.25153@server.thyself>
-	<20070423215810.5a24ed9a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704240507110.25153@server.thyself>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 01:33:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:35009 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161580AbXDXFdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 01:33:37 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>,
+       Linux Memory Management <linux-mm@kvack.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 24 Apr 2007 15:33:33 +1000
+Subject: [PATCH 0/12] Pass MAP_FIXED down to get_unmapped_area
+Message-Id: <1177392813.924664.32930750763.qpush@grosgo>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 05:10:04 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
+This is a "first step" as there are still cleanups to be done in various
+areas touched by that code but I think it's probably good to go as is and
+at least enables me to implement what I need for PowerPC.
 
-> > --- a/drivers/block/pktcdvd.c~packet-fix-error-handling
-> > +++ a/drivers/block/pktcdvd.c
-> > @@ -777,7 +777,8 @@ static int pkt_generic_packet(struct pkt
-> > 		rq->cmd_flags |= REQ_QUIET;
-> >
-> > 	blk_execute_rq(rq->q, pd->bdev->bd_disk, rq, 0);
-> > -	ret = rq->errors;
-> > +	if (rq->errors)
-> > +		ret = -EIO;
-> > out:
-> > 	blk_put_request(rq);
-> > 	return ret;
-> > _
-> 
-> This patch fixes (or conceals?) the oops.
-> 
+(Andrew, this is also candidate for 2.6.22 since I haven't had any real
+objection, mostly suggestion for improving further, which I'll try to
+do later, and I have further powerpc patches that rely on this).
 
-Fixes.  But does the packet driver actually work OK for you?  Writes
-files and stuff like that?
+The current get_unmapped_area code calls the f_ops->get_unmapped_area or
+the arch one (via the mm) only when MAP_FIXED is not passed. That makes
+it impossible for archs to impose proper constraints on regions of the
+virtual address space. To work around that, get_unmapped_area() then
+calls some hugetlbfs specific hacks.
+
+This cause several problems, among others:
+
+ - It makes it impossible for a driver or filesystem to do the same thing
+that hugetlbfs does (for example, to allow a driver to use larger page
+sizes to map external hardware) if that requires applying a constraint
+on the addresses (constraining that mapping in certain regions and other
+mappings out of those regions).
+
+ - Some archs like arm, mips, sparc, sparc64, sh and sh64 already want
+MAP_FIXED to be passed down in order to deal with aliasing issues.
+The code is there to handle it... but is never called.
+
+This serie of patches moves the logic to handle MAP_FIXED down to the
+various arch/driver get_unmapped_area() implementations, and then changes
+the generic code to always call them. The hugetlbfs hacks then disappear
+from the generic code.
+
+Since I need to do some special 64K pages mappings for SPEs on cell, I need
+to work around the first problem at least. I have further patches thus
+implementing a "slices" layer that handles multiple page sizes through
+slices of the address space for use by hugetlbfs, the SPE code, and possibly
+others, but it requires that serie of patches first/
+
+There is still a potential (but not practical) issue due to the fact that
+filesystems/drivers implemeting g_u_a will effectively bypass all arch
+checks. This is not an issue in practice as the only filesystems/drivers
+using that hook are doing so for arch specific purposes in the first place.
+
+There is also a problem with mremap that will completely bypass all arch
+checks. I'll try to address that separately, I'm not 100% certain yet how,
+possibly by making it not work when the vma has a file whose f_ops has a
+get_unmapped_area callback, and by making it use is_hugepage_only_range()
+before expanding into a new area.
+
+Also, I want to turn is_hugepage_only_range() into a more generic
+is_normal_page_range() as that's really what it will end up meaning
+when used in stack grow, brk grow and mremap.
+
+None of the above "issues" however are introduced by this patch, they are
+already there, so I think the patch can go ini for 2.6.22.
+
+(Patch is against Linus current git, I'll give a go at -mm asap)
+
+Cheers,
+Ben.
+
