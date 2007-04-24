@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161773AbXDXOW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161777AbXDXOXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161773AbXDXOW6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161775AbXDXOW6
+	id S1161777AbXDXOXH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161775AbXDXOXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:22:58 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56355 "EHLO mx2.suse.de"
+	Tue, 24 Apr 2007 10:23:06 -0400
+Received: from mail.screens.ru ([213.234.233.54]:39887 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161773AbXDXOW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:22:57 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
-Date: Tue, 24 Apr 2007 16:22:30 +0200
-User-Agent: KMail/1.9.6
-Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2> <6.0.0.20.2.20070424100507.049670d0@172.19.0.2> <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1161774AbXDXOXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 10:23:05 -0400
+Date: Tue, 24 Apr 2007 18:22:44 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream
+Message-ID: <20070424142244.GA158@tv-sign.ru>
+References: <20070423171157.GA205@tv-sign.ru> <20070420212835.GA863@tv-sign.ru> <20070420.015838.83621529.davem@davemloft.net> <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704241622.30773.ak@suse.de>
+In-Reply-To: <9767.1177421824@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Why would you need any kind of lock when just changing a single bit,
-> if it didn't affect other bits of the same word?  Just as you don't
-> need a lock when simply assigning a word, setting a bit to 0 or 1
-> is simple in itself (it doesn't matter if it was 0 or 1 before).
+On 04/24, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
 > 
-> > But, I think that concurrent bit operation on different bits
-> > is just like OR operation , so lock prefix is not needed.
+> > > > We only care when del_timer() returns true. In that case, if the timer
+> > > > function still runs (possible for single-threaded wqs), it has already
+> > > > passed __queue_work().
+> > > 
+> > > Why do you assume that?
 > 
-> I firmly believe that it is; but I'm not a processor expert.
+> Sorry, I should have been more clear.  I meant the assumption that we only
+> care about a true return from del_timer().
+> 
+> > If del_timer() returns true, the timer was pending. This means it was
+> > started by work->func() (note that __run_timers() clears timer_pending()
+> > before calling timer->function). This in turn means that
+> > delayed_work_timer_fn() has already called __queue_work(dwork), otherwise
+> > work->func() has no chance to run.
+> 
+> But if del_timer() returns 0, then there may be a problem.  We can't tell the
+> difference between the following two cases:
+> 
+>  (1) The timer hadn't been started.
+> 
+>  (2) The timer had been started, has expired and is no longer pending, but
+>      another CPU is running its handler routine.
+> 
+> try_to_del_timer_sync() _does_, however, distinguish between these cases: the
+> first is the 0 return, the second is the -1 return, and the case where it
+> dequeued the timer is the 1 return.
 
-Think of the CPU cache like the page cache. The VFS cannot change
-anything directly on disk - it always has to read a page (or block);
-change it there even if it's only a single bit and back.
+Of course, del_timer() and del_timer_sync() are different. What I meant the
+latter buys nothing for cancel_delayed_work() (which in fact could be named
+try_to_cancel_delayed_work()).
 
-Now imagine multiple independent kernels to that disk doing this in parallel
-without any locking. You will lose data on simple changes because
-of data races.
+Let's look at (2). cancel_delayed_work() (on top of del_timer()) returns 0,
+and this is correct, we failed to cancel the timer, and we don't know whether
+work->func() finished, or not.
 
-The CPU is similar. The memory is the disk; the protocol talking to 
-the memory only knows cache lines.  There are multiple CPUs talking
-to that memory. The CPUs cannot change anything 
-without reading  a full cache line first and then later writing it back. 
-There is "just do OR operation" when talking to memory, just like
-disks don't have such a operation; just read and write.
+The current code uses del_timer_sync(). It will also return 0. However, it will
+spin waiting for timer->function() to complete. So we are just wasting CPU.
 
-[there are some special cases with uncached mappings, but they are not
-relevant here]
+I guess I misunderstood you. Perhaps, you propose a new helper which use
+try_to_del_timer_sync(), yes? Unless I missed something, this doesn't help.
+Because the return value == -1 should be treated as 0. We failed to stop
+the timer, and we can't free dwork.
 
-With lock the CPU ensures the read-modify-write cycle is atomic, 
-without it doesn't.
- 
-The CPU also guarantees you that multiple writes don't get lost
-even when they hit the same cache line (otherwise you would need lock
-for anything in the same cache line), but it doesn't guarantee that
-for a word. The details for that vary by architecture; on x86 it is 
-any memory access, on others it can be only guaranteed for long stores.
+IOW, currently we should do:
 
-The exact rules for all this can be quite complicated (and also vary
-by architecture), this is a simplification but should be enough as a rough 
-guide.
+	if (!cancel_delayed_work(dwork))
+		cancel_work_sync(dwork));
 
-Hope this helps,
+The same if we use del_timer(). If we use try_to_del_timer_sync(),
 
--Andi
+	if (cancel_delayed_work(dwork) <= 0)
+		cancel_work_sync(dwork));
+
+(of course, dwork shouldn't re-arm itself).
+
+Could you clarify if I misunderstood you again?
+
+> BTW, can a timer handler be preempted?  I assume not...  But it can be delayed
+> by interrupt processing.
+
+No, it can't be preempted, it runs in softirq context.
+
+Oleg.
+
