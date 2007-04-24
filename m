@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423120AbXDXVGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965254AbXDXVNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423120AbXDXVGj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423123AbXDXVGi
+	id S965254AbXDXVNG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965280AbXDXVNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:06:38 -0400
-Received: from nlpi012.sbcis.sbc.com ([207.115.36.41]:33663 "EHLO
-	nlpi012.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423120AbXDXVGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:06:37 -0400
-X-ORBL: [67.117.73.34]
-Date: Tue, 24 Apr 2007 21:06:08 +0000
-From: Tony Lindgren <tony@atomide.com>
-To: Carlos Aguiar <carlos.aguiar@indt.org.br>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org,
-       "Anderson F. Briglia" <anderson.briglia@indt.org.br>
-Subject: Re: [PATCH 0/3] Aligning omap.c from Linux-OMAP to mainline kernel
-Message-ID: <20070424210607.GA7700@atomide.com>
-References: <462E6DE5.7090206@indt.org.br>
-MIME-Version: 1.0
+	Tue, 24 Apr 2007 17:13:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36555 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965254AbXDXVND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:13:03 -0400
+Date: Tue, 24 Apr 2007 17:12:53 -0400
+From: Dave Jones <davej@redhat.com>
+To: William Heimbigner <icxcnika@mar.tar.cc>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+Message-ID: <20070424211253.GG23598@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	William Heimbigner <icxcnika@mar.tar.cc>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <462E6DE5.7090206@indt.org.br>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Carlos Aguiar <carlos.aguiar@indt.org.br> [070424 21:01]:
-> Hi Pierre,
-> 
-> Find in this series the pending patches from Linux-OMAP to mainline for
-> drivers/mmc/omap.c
-> 
-> The patches series was applied against Linus' tree 2.6.21-rc7-git6.
-> 
-> Anyway, it was tested on OMAP H2 (using omap_h2_1610_defconfig available
-> on linus' tree).
+On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
+ > The following patches should allow selection of conservative, powersave, and 
+ > ondemand in the kernel configuration.
 
-Can you please repost them by adding a second From: line above the
-commit message to the top of the mail?
+This has been rejected several times already.
+Ondemand and conservative isn't a viable governor for all cpufreq implementations
+(ie, ones with high switching latencies).  Also, see the comment in the Kconfig
+a few lines above where you are adding this.
 
-That way the commit goest to the original author when Pierre applies
-them to his tree.
+	Dave
 
-So, for example:
-
-...
-
-From: Arnaud Patard <arnaud.patard@rtp-net.org>
-
-This patch add a missing '\n' at the end of the 'cover is open' string
-in mmc_omap_switch_handler().
-
-Signed-off-by: Arnaud Patard <arnaud.patard@rtp-net.org>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
-
-...
-
-Regards,
-
-Tony
+-- 
+http://www.codemonkey.org.uk
