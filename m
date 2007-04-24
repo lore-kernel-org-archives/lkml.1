@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422950AbXDXR65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422952AbXDXSAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422950AbXDXR65 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422953AbXDXR65
+	id S1422952AbXDXSAf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 14:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422953AbXDXSAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:58:57 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40220 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422952AbXDXR64 (ORCPT
+	Tue, 24 Apr 2007 14:00:35 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:56196 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422952AbXDXSAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:58:56 -0400
-Date: Tue, 24 Apr 2007 10:57:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-Message-Id: <20070424105738.e0ce36a9.akpm@linux-foundation.org>
-In-Reply-To: <462E43A7.1050001@goop.org>
-References: <20070327214919.800272641@goop.org>
-	<20070327215827.871954359@goop.org>
-	<20070423234910.50149faf.akpm@linux-foundation.org>
-	<462E43A7.1050001@goop.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 14:00:34 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, apw@shadowen.org, y-goto@jp.fujitsu.com,
+       kamezawa.hiroyu@jp.fujitsu.com
+Message-Id: <20070424180032.22005.82088.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/2] Fix two boot problems related to ZONE_MOVABLE sizing
+Date: Tue, 24 Apr 2007 19:00:32 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 10:51:35 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Following this mail are two fixes related to a boot problem in relation
+to ZONE_MOVABLE. These are fixes for memory partitioning where kernelcore=
+is used and is unrelated to grouping pages by mobility.
 
-> Andrew Morton wrote:
-> > It seems fairly sensitive to .config settings.  See
-> > http://userweb.kernel.org/~akpm/config-sony.txt
-> >   
-> 
-> I haven't tried your config yet, but I haven't managed to reproduce it
-> by playing with the usual suspects in my config (SMP, PREEMPT).  Any
-> idea about which config changes make the difference?
+The first patch moves kernelcore= parsing to common code. This avoids an
+infinite loop that can occur when booting on IA64. As a side-effect,
+it extends support of kernelcore= to all architectures that use
+architecture-independent zone-sizing.
 
-I said that because the damn thing went away when I was hunting it down
-because I lost the config and was unable to remember the right combination
-of debug settings.  Fortunately it later came back so I took care to
-preserve the config.
+The second patch aligns ZONE_MOVABLE correctly. The bootmem allocator makes
+assumptions on the alignment of zones. This can cause pages to be placed
+on the freelists for the wrong zone resulting in a BUG() later. Aligning
+ZONE_MOVABLE avoids the problem.
 
-> Hm, is it caused by using sched_clock() to generate the printk
-> timestamps while generating the lock test output?
-
-Conceivably.  What does that locking API test do?
-
-I was using printk timestamps and netconsole at the time.
+They have been successfully boot-tested with and without kernelcore=
+specified on x86_64, ppc64 and IA64 (where the bug was first triggered).
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
