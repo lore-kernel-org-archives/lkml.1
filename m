@@ -1,140 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423182AbXDXW2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423193AbXDXW3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423182AbXDXW2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXDXW1R
+	id S1423193AbXDXW3g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423184AbXDXW3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:27:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43931 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423183AbXDXWXI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 18:23:08 -0400
-Message-Id: <20070424222307.932574137@sgi.com>
-References: <20070424222105.883597089@sgi.com>
-User-Agent: quilt/0.45-1
-Date: Tue, 24 Apr 2007 15:21:20 -0700
-From: clameter@sgi.com
-To: linux-kernel@vger.kernel.org
-Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [15/17] ramfs: Variable order page cache support
-Content-Disposition: inline; filename=var_pc_ramfs
+	Tue, 24 Apr 2007 18:29:35 -0400
+Received: from mga02.intel.com ([134.134.136.20]:14569 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423170AbXDXW2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 18:28:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: i="4.14,448,1170662400"; 
+   d="scan'208"; a="233351517:sNHT56817173"
+Date: Tue, 24 Apr 2007 15:26:57 -0700
+From: Ashok Raj <ashok.raj@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: David Miller <davem@davemloft.net>, ashok.raj@intel.com,
+       linux-kernel@vger.kernel.org, akpm@osdl.org, gregkh@suse.de,
+       muli@il.ibm.com, asit.k.mallick@intel.com, suresh.b.siddha@intel.com,
+       anil.s.keshavamurthy@intel.com, arjan@linux.intel.com,
+       shaohua.li@intel.com
+Subject: Re: [Intel IOMMU][patch 8/8] Preserve some Virtual Address when devices cannot address entire range.
+Message-ID: <20070424222656.GA3317@linux-os.sc.intel.com>
+References: <200704242312.54738.ak@suse.de> <20070424213835.GB31920@linux-os.sc.intel.com> <20070424.145026.128110905.davem@davemloft.net> <200704250003.57968.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704250003.57968.ak@suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The simplest file system to use is ramfs. Add a mount parameter that
-specifies the page order of the pages that ramfs should use. If the
-order is greater than zero then disable mmap functionality.
+On Wed, Apr 25, 2007 at 12:03:57AM +0200, Andi Kleen wrote:
+> On Tuesday 24 April 2007 23:50:26 David Miller wrote:
+> > From: Ashok Raj <ashok.raj@intel.com>
+> > Date: Tue, 24 Apr 2007 14:38:35 -0700
+> > 
+> > > Its not clear if we have a very generic device breakage.. most devices
+> > > on these platforms are going to be more recent, (except maybe some
+> > > legacy fd)... 
+> > 
+> > I'm not so sure, there are some "modern" sound cards that have
+> > a 31-bit DMA addressing limitation because they use the 31st
+> > bit as a status bit in their DMA descriptors :-)
+> 
+> There's also a 2GB only megaraid RAID controller that's pretty popular 
+> because Dell shipped it for a long time.
 
-This could be removed if the VM would be changes to support faulting
-higher order pages but for now we are content with buffered I/O on higher
-order pages.
+Sounds like we have quite a few of those weird ones!
 
-Note that ramfs does not use the lower layers (buffer I/O etc) so its
-the safest to use right now.
+The real question is whats the working set for mapped dma handles for such
+a controller. They would typically allocate only a few to what the controller
+could handle, and would submit when the io completes right.. So typically
+we shouldnt have any trouble since they would be able to reclaim what they
+freed before submission (for iova).
 
-If you apply this patch and then you can f.e. try this:
+Having a IOVA requirement in 2g etc is not a problem, except how many devices
+on the same pci bus and what the total working set for iova is for that config.
 
-mount -tramfs -o10 none /media
-
-Mounts a ramfs filesystem with order 10 pages (4 MB)
-
-cp linux-2.6.21-rc7.tar.gz /media
-
-Populate the ramfs. Note that we allocate 14 pages of 4M each
-instead of 13508..
-
-umount /media
-
-Gets rid of the large pages again
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- fs/ramfs/file-mmu.c   |   11 +++++++++++
- fs/ramfs/inode.c      |   16 +++++++++++++---
- include/linux/ramfs.h |    1 +
- 3 files changed, 25 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21-rc7/fs/ramfs/file-mmu.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/ramfs/file-mmu.c	2007-04-23 22:26:18.000000000 -0700
-+++ linux-2.6.21-rc7/fs/ramfs/file-mmu.c	2007-04-23 22:27:51.000000000 -0700
-@@ -45,6 +45,17 @@ const struct file_operations ramfs_file_
- 	.llseek		= generic_file_llseek,
- };
- 
-+/* Higher order mappings do not support mmmap */
-+const struct file_operations ramfs_file_higher_order_operations = {
-+	.read		= do_sync_read,
-+	.aio_read	= generic_file_aio_read,
-+	.write		= do_sync_write,
-+	.aio_write	= generic_file_aio_write,
-+	.fsync		= simple_sync_file,
-+	.sendfile	= generic_file_sendfile,
-+	.llseek		= generic_file_llseek,
-+};
-+
- const struct inode_operations ramfs_file_inode_operations = {
- 	.getattr	= simple_getattr,
- };
-Index: linux-2.6.21-rc7/fs/ramfs/inode.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/ramfs/inode.c	2007-04-23 22:26:18.000000000 -0700
-+++ linux-2.6.21-rc7/fs/ramfs/inode.c	2007-04-23 22:33:23.000000000 -0700
-@@ -61,6 +61,8 @@ struct inode *ramfs_get_inode(struct sup
- 		inode->i_blocks = 0;
- 		inode->i_mapping->a_ops = &ramfs_aops;
- 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
-+		set_mapping_order(inode->i_mapping,
-+			sb->s_blocksize_bits - PAGE_CACHE_SHIFT);
- 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
- 		switch (mode & S_IFMT) {
- 		default:
-@@ -68,7 +70,10 @@ struct inode *ramfs_get_inode(struct sup
- 			break;
- 		case S_IFREG:
- 			inode->i_op = &ramfs_file_inode_operations;
--			inode->i_fop = &ramfs_file_operations;
-+			if (mapping_order(inode->i_mapping))
-+				inode->i_fop = &ramfs_file_higher_order_operations;
-+			else
-+				inode->i_fop = &ramfs_file_operations;
- 			break;
- 		case S_IFDIR:
- 			inode->i_op = &ramfs_dir_inode_operations;
-@@ -164,10 +169,15 @@ static int ramfs_fill_super(struct super
- {
- 	struct inode * inode;
- 	struct dentry * root;
-+	int order = 0;
-+	char *options = data;
-+
-+	if (options && *options)
-+		order = simple_strtoul(options, NULL, 10);
- 
- 	sb->s_maxbytes = MAX_LFS_FILESIZE;
--	sb->s_blocksize = PAGE_CACHE_SIZE;
--	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-+	sb->s_blocksize = PAGE_CACHE_SIZE << order;
-+	sb->s_blocksize_bits = order + PAGE_CACHE_SHIFT;
- 	sb->s_magic = RAMFS_MAGIC;
- 	sb->s_op = &ramfs_ops;
- 	sb->s_time_gran = 1;
-Index: linux-2.6.21-rc7/include/linux/ramfs.h
-===================================================================
---- linux-2.6.21-rc7.orig/include/linux/ramfs.h	2007-04-23 22:26:18.000000000 -0700
-+++ linux-2.6.21-rc7/include/linux/ramfs.h	2007-04-23 22:27:51.000000000 -0700
-@@ -16,6 +16,7 @@ extern int ramfs_nommu_mmap(struct file 
- #endif
- 
- extern const struct file_operations ramfs_file_operations;
-+extern const struct file_operations ramfs_file_higher_order_operations;
- extern struct vm_operations_struct generic_file_vm_ops;
- extern int __init init_rootfs(void);
- 
-
---
+The only way to gaurantee would be for the device to ask for a gauranteed set
+maybe during pci_set_dma_mask() or some such time, and pre-reserve some
+IOVA to gaurantee we never run out. BUt this is again driver changes and 
+wont be fair if some driver is greedy.
