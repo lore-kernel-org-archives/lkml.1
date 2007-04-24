@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031047AbXDXI0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbXDXI3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031047AbXDXI0S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 04:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031038AbXDXI0S
+	id S1754590AbXDXI3X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 04:29:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXDXI3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 04:26:18 -0400
-Received: from sd-green-bigip-207.dreamhost.com ([208.97.132.207]:56389 "EHLO
-	spunkymail-a7.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1031047AbXDXIZp (ORCPT
+	Tue, 24 Apr 2007 04:29:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51991 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754590AbXDXI3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 04:25:45 -0400
-X-Greylist: delayed 4846 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Apr 2007 04:25:45 EDT
-Message-ID: <462DBEF6.70205@dawes.za.net>
-Date: Tue, 24 Apr 2007 10:25:26 +0200
-From: Rogan Dawes <lists@dawes.za.net>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Peter Williams <pwil3058@bigpond.net.au>,
-       ck list <ck@vds.kolivas.org>, Thomas Gleixner <tglx@linutronix.de>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-References: <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <20070423203317.GA26668@elte.hu> <462DAC06.9040309@dawes.za.net> <20070424073103.GA29054@elte.hu>
-In-Reply-To: <20070424073103.GA29054@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Apr 2007 04:29:21 -0400
+Date: Tue, 24 Apr 2007 01:29:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Cc: mpm@selenic.com, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
+Message-Id: <20070424012902.1089bc02.akpm@linux-foundation.org>
+In-Reply-To: <462DBC64.9070102@bx.jp.nec.com>
+References: <462605DC.2080804@bx.jp.nec.com>
+	<462609D1.50300@bx.jp.nec.com>
+	<20070419210813.a599c54f.akpm@linux-foundation.org>
+	<46288D11.4000801@bx.jp.nec.com>
+	<20070420111526.01ad7f4c.akpm@linux-foundation.org>
+	<462DBC64.9070102@bx.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Rogan Dawes <lists@dawes.za.net> wrote:
-> 
->>>        if (p_to && p->wait_runtime > 0) {
->>>                p->wait_runtime >>= 1;
->>>                p_to->wait_runtime += p->wait_runtime;
->>>        }
->>>
->>> the above is the basic expression of: "charge a positive bank balance". 
->>>
->> [..]
->>
->>> [note, due to the nanoseconds unit there's no rounding loss to worry 
->>> about.]
->> Surely if you divide 5 nanoseconds by 2, you'll get a rounding loss?
-> 
-> yes. But not that we'll only truly have to worry about that when we'll 
-> have context-switching performance in that range - currently it's at 
-> least 2-3 orders of magnitude above that. Microseconds seemed to me to 
-> be too coarse already, that's why i picked nanoseconds and 64-bit 
-> arithmetics for CFS.
-> 
-> 	Ingo
+On Tue, 24 Apr 2007 17:14:28 +0900 Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
 
-I guess my point was if we somehow get to an odd number of nanoseconds, 
-we'd end up with rounding errors. I'm not sure if your algorithm will 
-ever allow that.
+> > On Fri, 20 Apr 2007 18:51:13 +0900
+> > Keiichi KII <k-keiichi@bx.jp.nec.com> wrote:
+> > 
+> >>> I started to do some cleanups and fixups here, but abandoned it when it was
+> >>> all getting a bit large.
+> >>>
+> >>> Here are some fixes against this patch:
+> >> I'm going to fix my patches by following your reviews and send new patches 
+> >> on the LKML and the netdev ML in a few days.
+> >>
+> > 
+> > Well..  before you can finish this work we need to decide upon what the
+> > interface to userspace will be.
+> > 
+> > - The miscdev isn't appropriate
+> > 
+> 
+> Why isn't miscdev appropriate? 
+> We just shouldn't use miscdev for networking conventionally?
+> 
 
-Rogan
+Yes it's rather odd, especially for networking.
+
+What does the miscdev _do_ anyway?  Is it purely a target for the ioctls?
