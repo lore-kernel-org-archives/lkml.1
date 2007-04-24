@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423004AbXDXScB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422999AbXDXSca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423004AbXDXScB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 14:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423000AbXDXScB
+	id S1422999AbXDXSca (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 14:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423000AbXDXSca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 14:32:01 -0400
-Received: from mga01.intel.com ([192.55.52.88]:2796 "EHLO mga01.intel.com"
+	Tue, 24 Apr 2007 14:32:30 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:21932 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422996AbXDXSb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 14:31:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: i="4.14,448,1170662400"; 
-   d="scan'208"; a="235976892:sNHT7524161211"
-Date: Tue, 24 Apr 2007 11:29:21 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 1/7] libata: check for AN support
-Message-Id: <20070424112921.c451d64a.kristen.c.accardi@intel.com>
-In-Reply-To: <20070424180552.GA17319@dspnet.fr.eu.org>
-References: <20070424074856.005152262@intel.com>
-	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
-	<20070424090713.65657495@the-village.bc.nu>
-	<20070424102304.GA58841@dspnet.fr.eu.org>
-	<20070424084904.61932994.kristen.c.accardi@intel.com>
-	<20070424180552.GA17319@dspnet.fr.eu.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	id S1422999AbXDXSc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 14:32:29 -0400
+Date: Tue, 24 Apr 2007 20:29:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Vasily Tarasov <vtaras@openvz.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, OVZDL <devel@openvz.org>
+Subject: Re: [PATCH] cfq: get rid of cfqq hash
+Message-ID: <20070424182906.GF27887@kernel.dk>
+References: <1177422791.435404.4031.nullmailer@me> <20070424170227.GB27887@kernel.dk> <20070424172228.GC27887@kernel.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070424172228.GC27887@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 20:05:52 +0200
-Olivier Galibert <galibert@pobox.com> wrote:
+On Tue, Apr 24 2007, Jens Axboe wrote:
+> -		if (key != CFQ_KEY_ASYNC)
+> +		if (!is_sync)
+>  			cfq_mark_cfqq_idle_window(cfqq);
+> +		else
+> +			cfq_mark_cfqq_sync(cfqq);
 
-> On Tue, Apr 24, 2007 at 08:49:04AM -0700, Kristen Carlson Accardi wrote:
-> > On Tue, 24 Apr 2007 12:23:04 +0200
-> > Olivier Galibert <galibert@pobox.com> wrote:
-> > 
-> > > Sorry for replying to Alan's reply, I missed the original mail.
-> > > 
-> > > > > +#define ata_id_has_AN(id)	\
-> > > > > +	((id[76] && (~id[76])) & ((id)[78] & (1 << 5)))
-> > > 
-> > > (a && ~a) & (b & 32)
-> > > 
-> > > I don't think that does what you think it does, because at that point
-> > > it's a funny way to write 0 ((0 or 1) binary-and (0 or 32)).
-> > > 
-> > > I'm not even sure what it is you want.  If for the first part you
-> > > wanted (id[76] != 0x00 && id[76] != 0xff), please write just that,
-> > > thanks :-)
-> > > 
-> > >   OG.
-> > > 
-> > 
-> > >From the serial ata spec, we have:
-> > 
-> > 13.2.1.18        Word 78: Serial ATA features supported
-> > If Word 76 is not 0000h or FFFFh, Word 78 reports the optional features 
-> > supported by the device.  Support for this word is optional and if not 
-> > supported the word shall be zero indicating the device has no support for new 
-> > Serial ATA capabilities.
-> > 
-> > so, basically yes, I'm really testing to make sure that word 76 isn't 0 or all
-> > one then using that value & with value of bit in work 78 to determine AN
-> > support - if you think this is really obfuscated, I've got no problem changing 
-> > it - there's obviously many ways to mess around with bits.
-> 
-> & is not &&, so right now it's really incorrect.  1 & 32 is 0.
+Woops, should be
 
-ah - ok, gotcha, thanks.
+        if (is_sync) {
+                cfq_mark_cfqq_idle_window(cfqq);
+                cfq_mark_cfqq_sync(cfqq);
+        }
 
-> 
-> ((id)[76] != 0x0000 && (id)[76] != 0xffff && ((id)[78] & (1 << 5)))
-> 
-> The implicit typing of id looks dangerous to me, but you're not the
-> one who has started it.
-> 
->   OG.
-> 
+of course.
+
+> +static struct cfq_io_context *
+> +cfq_get_io_context_noalloc(struct cfq_data *cfqd, struct task_struct *tsk)
+> +{
+> +	struct cfq_io_context *cic = NULL;
+> +	struct io_context *ioc;
+> +
+> +	ioc = tsk->io_context;
+> +	if (ioc)
+> +		cic = cfq_cic_rb_lookup(cfqd, ioc);
+> +
+> +	return cic;
+> +}
+
+I'll change that to just call cfq_cic_rb_lookup(), returning NULL for
+NULL ioc.
+
+-- 
+Jens Axboe
+
