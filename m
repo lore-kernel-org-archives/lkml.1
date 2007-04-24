@@ -1,144 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423104AbXDXVDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423122AbXDXVFL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423104AbXDXVDZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423114AbXDXVDZ
+	id S1423122AbXDXVFL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:05:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423116AbXDXVFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:03:25 -0400
-Received: from [70.254.190.220] ([70.254.190.220]:56314 "EHLO server.willdawg"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423104AbXDXVDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:03:24 -0400
-Date: Tue, 24 Apr 2007 21:03:23 +0000 (GMT)
-From: William Heimbigner <icxcnika@mar.tar.cc>
-X-X-Sender: icxcnika@server.thyself
-To: linux-kernel@vger.kernel.org
-cc: Andrew Morton <akpm@linux-foundation.org>, davej@codemonkey.org.uk
-Subject: [RFC] [PATCH] cpufreq: allow full selection of default governors
-Message-ID: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Tue, 24 Apr 2007 17:05:11 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:37874 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423122AbXDXVFJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:05:09 -0400
+Date: Tue, 24 Apr 2007 14:04:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, apw@shadowen.org,
+       y-goto@jp.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com
+Subject: Re: [PATCH 1/2] Handle kernelcore= boot parameter in common code to
+ avoid boot problem on IA64
+Message-Id: <20070424140421.5c1e6457.akpm@linux-foundation.org>
+In-Reply-To: <20070424180052.22005.61762.sendpatchset@skynet.skynet.ie>
+References: <20070424180032.22005.82088.sendpatchset@skynet.skynet.ie>
+	<20070424180052.22005.61762.sendpatchset@skynet.skynet.ie>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patches should allow selection of conservative, powersave, and 
-ondemand in the kernel configuration.
+On Tue, 24 Apr 2007 19:00:52 +0100 (IST) Mel Gorman <mel@csn.ul.ie> wrote:
 
-William Heimbigner
-icxcnika@mar.tar.cc
+> 
+> When "kernelcore" boot option is specified, kernel can't boot up on ia64
+> because of an infinite loop.  In addition, the parsing code can be handled
+> in an architecture-independent manner.
+> 
+> This patch patches uses common code to handle the kernelcore= parameter.
+> It is only available to architectures that support arch-independent
+> zone-sizing (i.e. define CONFIG_ARCH_POPULATES_NODE_MAP). Other architectures
+> will ignore the boot parameter.
+> 
+> This effectively removes the following arch-specific patches;
+> 
+> ia64-specify-amount-of-kernel-memory-at-boot-time.patch
+> ppc-and-powerpc-specify-amount-of-kernel-memory-at-boot-time.patch
+> x86_64-specify-amount-of-kernel-memory-at-boot-time.patch
+> x86-specify-amount-of-kernel-memory-at-boot-time.patch
+> 
 
-diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig
---- linux-2.6.21-rc7-git6/drivers/cpufreq/Kconfig	2007-04-25 13:03:41.000000000 -0500
-+++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/Kconfig	2007-04-25 13:08:13.000000000 -0500
-@@ -75,6 +75,24 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
-  	  program shall be able to set the CPU dynamically without having
-  	  to enable the userspace governor manually.
+hm, OK.  That makes a bit of a mess of the patch series but we can live
+with that.
 
-+config CPU_FREQ_DEFAULT_GOV_POWERSAVE
-+	bool "powersave"
-+	select CPU_FREQ_GOV_POWERSAVE
-+	help
-+	  Use the CPUFreq governor 'powersave' as default.
-+
-+config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-+	bool "conservative"
-+	select CPU_FREQ_GOV_CONSERVATIVE
-+	help
-+	  Use the CPUFreq governor 'conservative' as the default.
-+
-+config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+	bool "ondemand"
-+	select CPU_FREQ_GOV_ONDEMAND
-+	help
-+	  Use the CPUFreq governor 'ondemand' as the default.
-+
-  endchoice
+> 
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Acked-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Andy Whitcroft <apw@shadowen.org>
 
-  config CPU_FREQ_GOV_PERFORMANCE
-diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_conservative.c linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_conservative.c
---- linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_conservative.c	2007-04-25 13:03:41.000000000 -0500
-+++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_conservative.c	2007-04-25 09:54:58.000000000 -0500
-@@ -551,7 +551,7 @@ static int cpufreq_governor_dbs(struct c
-  	return 0;
-  }
-
--static struct cpufreq_governor cpufreq_gov_dbs = {
-+struct cpufreq_governor cpufreq_gov_conservative = {
-  	.name		= "conservative",
-  	.governor	= cpufreq_governor_dbs,
-  	.owner		= THIS_MODULE,
-@@ -559,7 +559,7 @@ static struct cpufreq_governor cpufreq_g
-
-  static int __init cpufreq_gov_dbs_init(void)
-  {
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_conservative);
-  }
-
-  static void __exit cpufreq_gov_dbs_exit(void)
-@@ -567,7 +567,7 @@ static void __exit cpufreq_gov_dbs_exit(
-  	/* Make sure that the scheduled work is indeed not running */
-  	flush_scheduled_work();
-
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_conservative);
-  }
+Patch protocol: Yasunori Gogo wrote the patch, so there should have been a
+From:him at the very top of the changelog.  And you were in the patch
+delivery path so you should have used Signed-off-by: rather than Acked-by:.
+I made those two changes.
 
 
-diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_ondemand.c linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_ondemand.c
---- linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_ondemand.c	2007-04-25 13:03:41.000000000 -0500
-+++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_ondemand.c	2007-04-25 13:17:00.000000000 -0500
-@@ -573,7 +573,7 @@ static int cpufreq_governor_dbs(struct c
-  	return 0;
-  }
-
--static struct cpufreq_governor cpufreq_gov_dbs = {
-+struct cpufreq_governor cpufreq_gov_ondemand = {
-  	.name = "ondemand",
-  	.governor = cpufreq_governor_dbs,
-  	.owner = THIS_MODULE,
-@@ -586,12 +586,12 @@ static int __init cpufreq_gov_dbs_init(v
-  		printk(KERN_ERR "Creation of kondemand failed\n");
-  		return -EFAULT;
-  	}
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_ondemand);
-  }
-
-  static void __exit cpufreq_gov_dbs_exit(void)
-  {
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_ondemand);
-  	destroy_workqueue(kondemand_wq);
-  }
-
-diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_powersave.c linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_powersave.c
---- linux-2.6.21-rc7-git6/drivers/cpufreq/cpufreq_powersave.c	2007-02-04 12:44:54.000000000 -0600
-+++ linux-2.6.21-rc7-git6-hwill/drivers/cpufreq/cpufreq_powersave.c	2007-04-25 08:51:03.000000000 -0500
-@@ -35,7 +35,7 @@ static int cpufreq_governor_powersave(st
-  	return 0;
-  }
-
--static struct cpufreq_governor cpufreq_gov_powersave = {
-+struct cpufreq_governor cpufreq_gov_powersave = {
-  	.name		= "powersave",
-  	.governor	= cpufreq_governor_powersave,
-  	.owner		= THIS_MODULE,
-
-diff -uprN -X linux-2.6.21-rc7-git6/Documentation/dontdiff linux-2.6.21-rc7-git6/include/linux/cpufreq.h linux-2.6.21-rc7-git6-hwill/include/linux/cpufreq.h
---- linux-2.6.21-rc7-git6/include/linux/cpufreq.h	2007-04-25 13:04:00.000000000 -0500
-+++ linux-2.6.21-rc7-git6-hwill/include/linux/cpufreq.h	2007-04-25 13:10:26.000000000 -0500
-@@ -286,6 +286,15 @@ extern struct cpufreq_governor cpufreq_g
-  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
-  extern struct cpufreq_governor cpufreq_gov_userspace;
-  #define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_userspace
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE)
-+extern struct cpufreq_governor cpufreq_gov_powersave;
-+#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_powersave
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
-+extern struct cpufreq_governor cpufreq_gov_conservative;
-+#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_conservative
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND)
-+extern struct cpufreq_governor cpufreq_gov_ondemand;
-+#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_ondemand
-  #endif
