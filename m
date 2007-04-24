@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423078AbXDXUBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423080AbXDXUBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423078AbXDXUBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423086AbXDXUBO
+	id S1423080AbXDXUBP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423086AbXDXUBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:01:14 -0400
-Received: from gw.goop.org ([64.81.55.164]:53718 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423080AbXDXUBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:01:12 -0400
-Message-ID: <462E6222.3060302@goop.org>
-Date: Tue, 24 Apr 2007 13:01:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 24 Apr 2007 16:01:15 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:45390 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1423085AbXDXUBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:01:13 -0400
+Date: Tue, 24 Apr 2007 12:26:32 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Nikita Danilov <nikita@clusterfs.com>
+cc: Amit Gud <gud@cis.ksu.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, val_henson@linux.intel.com,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
+       gud@ksu.edu
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+In-Reply-To: <17966.23512.363955.141489@gargle.gargle.HOWL>
+Message-ID: <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu><17965.6084
+ 1.900376.524639@gargle.gargle.HOWL><Pine.LNX.4.63.0704241123200.7701@qynat.
+ qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Gerd Hoffmann <kraxel@suse.de>
-Subject: Re: [PATCH 16/25] xen: Use the hvc console infrastructure for Xen
- console
-References: <20070423215638.563901986@goop.org> <20070423215712.328111104@goop.org> <20070424012111.GA28649@lixom.net>
-In-Reply-To: <20070424012111.GA28649@lixom.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olof Johansson wrote:
-> On Mon, Apr 23, 2007 at 02:56:54PM -0700, Jeremy Fitzhardinge wrote:
->   
->> Implement a Xen back-end for hvc console.
->>
->> From: Gerd Hoffmann <kraxel@suse.de>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->>
->> ---
->>  arch/i386/xen/Kconfig     |    1 
->>  arch/i386/xen/events.c    |    3 -
->>  drivers/Makefile          |    3 +
->>  drivers/xen/Makefile      |    1 
->>  drivers/xen/hvc-console.c |  134 +++++++++++++++++++++++++++++++++++++++++++++
->>  include/xen/events.h      |    1 
->>  6 files changed, 142 insertions(+), 1 deletion(-)
->>     
->
-> If you move the driver to drivers/char/hvc_xen.c instead, you won't have to do...
->
->   
->> +#include "../char/hvc_console.h"
->>     
->
-> ...this.
->
-> Other single-platform backend hvc drivers are under drivers/char already.
+On Tue, 24 Apr 2007, Nikita Danilov wrote:
 
-Good point.
+> David Lang writes:
+> > On Tue, 24 Apr 2007, Nikita Danilov wrote:
+> >
+> > > Amit Gud writes:
+> > >
+> > > Hello,
+> > >
+> > > >
+> > > > This is an initial implementation of ChunkFS technique, briefly discussed
+> > > > at: http://lwn.net/Articles/190222 and
+> > > > http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
+> > >
+> > > I have a couple of questions about chunkfs repair process.
+> > >
+> > > First, as I understand it, each continuation inode is a sparse file,
+> > > mapping some subset of logical file blocks into block numbers. Then it
+> > > seems, that during "final phase" fsck has to check that these partial
+> > > mappings are consistent, for example, that no two different continuation
+> > > inodes for a given file contain a block number for the same offset. This
+> > > check requires scan of all chunks (rather than of only "active during
+> > > crash"), which seems to return us back to the scalability problem
+> > > chunkfs tries to address.
+> >
+> > not quite.
+> >
+> > this checking is a O(n^2) or worse problem, and it can eat a lot of memory in
+> > the process. with chunkfs you divide the problem by a large constant (100 or
+> > more) for the checks of individual chunks. after those are done then the final
+> > pass checking the cross-chunk links doesn't have to keep track of everything, it
+> > only needs to check those links and what they point to
+>
+> Maybe I failed to describe the problem presicely.
+>
+> Suppose that all chunks have been checked. After that, for every inode
+> I0 having continuations I1, I2, ... In, one has to check that every
+> logical block is presented in at most one of these inodes. For this one
+> has to read I0, with all its indirect (double-indirect, triple-indirect)
+> blocks, then read I1 with all its indirect blocks, etc. And to repeat
+> this for every inode with continuations.
+>
+> In the worst case (every inode has a continuation in every chunk) this
+> obviously is as bad as un-chunked fsck. But even in the average case,
+> total amount of io necessary for this operation is proportional to the
+> _total_ file system size, rather than to the chunk size.
 
-    J
+actually, it should be proportional to the number of continuation nodes. The 
+expectation (and design) is that they are rare.
+
+If you get into the worst-case situation of all of them being continuation 
+nodes, then you are actually worse off then you were to start with (as you are 
+saying), but numbers from people's real filesystems (assuming a chunk size equal 
+to a block cluster size) indicates that we are more on the order of a fraction 
+of a percent of the nodes. and the expectation is that since the chunk sizes 
+will be substantially larger then the block cluster sizes this should get 
+reduced even more.
+
+David Lang
