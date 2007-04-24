@@ -1,64 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422891AbXDXRqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422854AbXDXRq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422891AbXDXRqH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 13:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422889AbXDXRqH
+	id S1422854AbXDXRq5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 13:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422881AbXDXRq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 13:46:07 -0400
-Received: from 1wt.eu ([62.212.114.60]:2251 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422881AbXDXRqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 13:46:05 -0400
-Date: Tue, 24 Apr 2007 19:44:45 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Lang <david.lang@digitalinsight.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       caglar@pardus.org.tr
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070424174445.GA31270@1wt.eu>
-References: <200704220959.34978.kernel@kolivas.org> <Pine.LNX.4.63.0704232342440.7121@qynat.qvtvafvgr.pbz> <20070424072408.GA27769@elte.hu> <200704241038.32766.gene.heskett@gmail.com>
-Mime-Version: 1.0
+	Tue, 24 Apr 2007 13:46:56 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:52166
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422854AbXDXRqz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 13:46:55 -0400
+Date: Tue, 24 Apr 2007 19:49:53 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in RocketPort driver
+Message-ID: <20070424174953.GB6798@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704241038.32766.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 10:38:32AM -0400, Gene Heskett wrote:
-> On Tuesday 24 April 2007, Ingo Molnar wrote:
-> >* David Lang <david.lang@digitalinsight.com> wrote:
-> >> > (Btw., to protect against such mishaps in the future i have changed
-> >> > the SysRq-N [SysRq-Nice] implementation in my tree to not only
-> >> > change real-time tasks to SCHED_OTHER, but to also renice negative
-> >> > nice levels back to 0 - this will show up in -v6. That way you'd
-> >> > only have had to hit SysRq-N to get the system out of the wedge.)
-> >>
-> >> if you are trying to unwedge a system it may be a good idea to renice
-> >> all tasks to 0, it could be that a task at +19 is holding a lock that
-> >> something else is waiting for.
-> >
-> >Yeah, that's possible too, but +19 tasks are getting a small but
-> >guaranteed share of the CPU so eventually it ought to release it. It's
-> >still a possibility, but i think i'll wait for a specific incident to
-> >happen first, and then react to that incident :-)
-> >
-> >	Ingo
-> 
-> In the instance I created, even the SysRq+b was ignored, and ISTR thats 
-> supposed to initiate a reboot is it not?  So it was well and truly wedged.
+the RocketPort driver uses a semaphore as mutex. use the mutex API
+instead of the (binary) semaphore
 
-On many machines I use this on, I have to release Alt while still holding B.
-Don't know why, but it works like this.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-Willy
+--
 
+diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
+index 76357c8..faa5dd5 100644
+--- a/drivers/char/rocket.c
++++ b/drivers/char/rocket.c
+@@ -702,7 +702,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
+ 		}
+ 	}
+ 	spin_lock_init(&info->slock);
+-	sema_init(&info->write_sem, 1);
++	mutex_init(&info->write_mtx);
+ 	rp_table[line] = info;
+ 	if (pci_dev)
+ 		tty_register_device(rocket_driver, line, &pci_dev->dev);
+@@ -1662,7 +1662,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+ 		return;
+ 
+ 	/*  Grab the port write semaphore, locking out other processes that try to write to this port */
+-	down(&info->write_sem);
++	mutex_lock(&info->write_mtx);
+ 
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_put_char %c...", ch);
+@@ -1684,7 +1684,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+ 		info->xmit_fifo_room--;
+ 	}
+ 	spin_unlock_irqrestore(&info->slock, flags);
+-	up(&info->write_sem);
++	mutex_unlock(&info->write_mtx);
+ }
+ 
+ /*
+@@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
+ 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+ 		return 0;
+ 
+-	down_interruptible(&info->write_sem);
++	mutex_lock_interruptible(&info->write_mtx);
+ 
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_write %d chars...", count);
+@@ -1777,7 +1777,7 @@ end:
+ 		wake_up_interruptible(&tty->poll_wait);
+ #endif
+ 	}
+-	up(&info->write_sem);
++	mutex_unlock(&info->write_mtx);
+ 	return retval;
+ }
+ 
+diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
+index 3a8bcc8..04bcf61 100644
+--- a/drivers/char/rocket_int.h
++++ b/drivers/char/rocket_int.h
+@@ -1171,7 +1171,7 @@ struct r_port {
+ 	struct wait_queue *close_wait;
+ #endif
+ 	spinlock_t slock;
+-	struct semaphore write_sem;
++	struct mutex write_mtx;
+ };
+ 
+ #define RPORT_MAGIC 0x525001
+
+
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+
+   Usually when people are sad, they don't do anything. They just cry over
+     their condition. But when they get angry, they bring about a change
+                              (Malcolm X)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
