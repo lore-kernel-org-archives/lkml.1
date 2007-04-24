@@ -1,53 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161544AbXDXCzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161542AbXDXC6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161544AbXDXCzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 22:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161548AbXDXCzg
+	id S1161542AbXDXC6q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 22:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161546AbXDXC6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 22:55:36 -0400
-Received: from web36706.mail.mud.yahoo.com ([209.191.85.40]:35919 "HELO
-	web36706.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161544AbXDXCzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 22:55:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=fOGAxHbbYtBpOhV7NA5Ilnbr3XpXAsfeudjpVjwWCsLRWS22iwFsN4yA354s+XePf9ZDk2nPicsNek6iqrs68tGVT/HWUIef1PbNYQZZvvWt+0QHrM54kl2zQcJX3LkfTFBCpobFPTrD49GyBGGOs1nR9qYegmZ3kPKPRR7kW8o=;
-X-YMail-OSG: os2cjSYVM1nfvpRs0kNy9i4btBSzmQszfF1c7zgQd.nEmcnmFI1oebp2wC8FWjli.3CPnzv8DbHJe2xXAzyyKD8ZDPu0prc29iEGTycfPBwQPac7msJMc1Z6xCWs4g--
-Date: Mon, 23 Apr 2007 19:55:34 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-To: Sergey Yanovich <ynvich@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <5a04609e0704230712i1d4aeeb8ke9d8649e167eebe9@mail.gmail.com>
+	Mon, 23 Apr 2007 22:58:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:55147 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161542AbXDXC6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 22:58:45 -0400
+From: Neil Brown <neilb@suse.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue, 24 Apr 2007 12:58:12 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <86245.21997.qm@web36706.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17965.29252.950216.971096@notabene.brown>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+In-Reply-To: message from Peter Zijlstra on Friday April 20
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> I am not in any way argue that your driver architecture is wrong or that you
-> should change anything. My point was simple. [tifm_sd] can only work with
-> [tifm_7xx1]. If you add support for let's say [tifm_8xx2] in the future, which
-> would have port offsets different that [tifm_7xx1], you would also need a
-> completely new modules for slots (sd, ms, etc).
-> 
+On Friday April 20, a.p.zijlstra@chello.nl wrote:
+> Scale writeback cache per backing device, proportional to its writeout speed.
 
-Does not this constitutes an unbounded speculation? And then, what would you propose to do with
-adapters that have SD support disabled? There are quite a few of those in the wild, as of right
-now (SD support is provided by bundled SDHCI on such systems, if at all). Similar argument goes
-for other media types as well - many controllers have xD support disabled too (I think you have
-one of those - Sony really values its customers). After all, it is not healthy to have dead code
-in the kernel.
+So it works like this:
 
-On the other hand, if TI puts out a controller which is functionally identical, but has different
-register map, it wouldn't be hard to refactor the code. 
+ We account for writeout in full pages.
+ When a page has the Writeback flag cleared, we account that as a
+ successfully retired write for the relevant bdi.
+ By using floating averages we keep track of how many writes each bdi
+ has retired 'recently' where the unit of time in which we understand
+ 'recently' is a single page written.
+
+ We keep a floating average for each bdi, and a floating average for
+ the total writeouts (that 'average' is, of course, 1.)
+
+ Using these numbers we can calculate what faction of 'recently'
+ retired writes were retired by each bdi (get_writeout_scale).
+
+ Multiplying this fraction by the system-wide number of pages that are
+ allowed to be dirty before write-throttling, we get the number of
+ pages that the bdi can have dirty before write-throttling the bdi.
+
+ I note that the same fraction is *not* applied to background_thresh.
+ Should it be?  I guess not - there would be interesting starting
+ transients, as a bdi which had done no writeout would not be allowed
+ any dirty pages, so background writeout would start immediately,
+ which isn't what you want... or is it?
+
+ For each bdi we also track the number of (dirty, writeback, unstable)
+ pages and do not allow this to exceed the limit set for this bdi.
+
+ The calculations involving 'reserve' in get_dirty_limits are a little
+ confusing.  It looks like you calculating how much total head-room
+ there is for the bdi (pages that the system can still dirty - pages
+ this bdi has dirty) and making sure the number returned in pbdi_dirty
+ doesn't allow more than that to be used.  This is probably a
+ reasonable thing to do but it doesn't feel like the right place.  I
+ think get_dirty_limits should return the raw threshold, and
+ balance_dirty_pages should do both tests - the bdi-local test and the
+ system-wide test.
+
+ Currently you have a rather odd situation where
++			if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
++				break;
+ might included numbers obtained with bdi_stat_sum being compared with
+ numbers obtained with bdi_stat.
 
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+ With these patches, the VM still (I think) assumes that each BDI has
+ a reasonable queue limit, so that writeback_inodes will block on a
+ full queue.  If a BDI has a very large queue, balance_dirty_pages
+ will simply turn lots of DIRTY pages into WRITEBACK pages and then
+ think "We've done our duty" without actually blocking at all.
+
+ With the extra accounting that we now have, I would like to see
+ balance_dirty_pages dirty pages wait until RECLAIMABLE+WRITEBACK is
+ actually less than 'threshold'.  This would probably mean that we
+ would need to support per-bdi background_writeout to smooth things
+ out.  Maybe that it fodder for another patch-set.
+
+ You set:
++	vm_cycle_shift = 1 + ilog2(vm_total_pages);
+
+ Can you explain that?  My experience is that scaling dirty limits
+ with main memory isn't what we really want.  When you get machines
+ with very large memory, the amount that you want to be dirty is more
+ a function of the speed of your IO devices, rather than the amount
+ of memory, otherwise you can sometimes see large filesystem lags
+ ('sync' taking minutes?)
+
+ I wonder if it makes sense to try to limit the dirty data for a bdi
+ to the amount that it can write out in some period of time - maybe 3
+ seconds.  Probably configurable.  You seem to have almost all the
+ infrastructure in place to do that, and I think it could be a
+ valuable feature.
+
+ At least, I think vm_cycle_shift should be tied (loosely) to 
+   dirty_ratio * vm_total_pages
+ ??
+
+On the whole, looks good!
+
+Thanks,
+NeilBrown
