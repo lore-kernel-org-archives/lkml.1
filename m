@@ -1,86 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423083AbXDXTks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422984AbXDXTtw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423083AbXDXTks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 15:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423087AbXDXTks
+	id S1422984AbXDXTtw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 15:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423066AbXDXTtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 15:40:48 -0400
-Received: from wasp.net.au ([203.190.192.17]:45828 "EHLO wasp.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423083AbXDXTkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 15:40:47 -0400
-Message-ID: <462E5D38.5000801@wasp.net.au>
-Date: Tue, 24 Apr 2007 23:40:40 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Neil Brown <neilb@suse.de>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-References: <4621FAF0.7000705@wasp.net.au> <46220339.9080205@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk>
-In-Reply-To: <20070423073543.GE5311@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Apr 2007 15:49:52 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39412 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422984AbXDXTtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 15:49:51 -0400
+Date: Tue, 24 Apr 2007 12:49:22 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, pj@sgi.com
+Subject: Re: Pagecache: find_or_create_page does not call a proper page
+ allocator function
+Message-Id: <20070424124922.d406aac1.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704241234341.12753@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
+	<20070423142919.5809e03f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
+	<20070423154224.15ebf8f7.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0704241042550.8418@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0704241941421.28487@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0704241234341.12753@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
+On Tue, 24 Apr 2007 12:34:53 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> Ok, can you try and reproduce with this one applied? It'll keep the
-> system running (unless there are other corruptions going on), so it
-> should help you a bit as well. It will dump some cfq state info when the
-> condition triggers that can perhaps help diagnose this. So if you can
-> apply this patch and reproduce + send the output, I'd much appreciate
-> it!
+> > Not as metadata, no.  But someone (let's hope only root, though I may
+> > be wrong on that) can map any part of the block device into userspace.
 > 
+> Concurrent access to a block device by a filesystem and the user? That 
+> cannot go over well. If one just reads then I would expect that a copy
+> of the metadata becomes available to the user. Also you cannot migrate 
+> pages that have multiple references (which is the case here if the 
+> filesystem uses the page cache for the metadata) unless the user has 
+> special priviledges and uses special command options.
+> 
+> A page that has references that cannot be accounted for by page migration 
+> is never migrated. I would assume that the filesystem at minimum takes a 
+> refcount on the page used for metadata.
+> 
+> If the filesystem would not take a refcount then it would already be in 
+> trouble because the page may then be evicted at any time.
 
-I think I'm wearing holes in my platters. This is being a swine to hit, but I finally got some..
-It seems to respond to a combination of high cpu usage and relatively high disk utilisation.
+No, think of the following scenario:
 
-I tried all sorts of acrobatics with multiple readers and hammering the array while reading from 
-individual drives..
+- file I/O causes a read of an ext2 file's bitmap.  The bitmap is
+  brought into /dev/hda1's pagecache using !__GFP_HIGHMEM
 
-The only reliable way I can reproduce this seems to be on a degraded array running a "while true ; 
-do md5sum -c md5 ; done" on about a 180GB directory of files. It is taking anywhere from 4 to 96 
-hours to hit it though.. but at least it's reproducible.
+- references are released against that page and it's now just clean
+  reclaimable pagecache
 
+- someone (say, an online filesystem checker or something) mmaps
+  /dev/hda1 and reads that page.
 
-[105449.653682] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-lkml@vger.kernel.org
-[105449.683646] cfq: busy=1,drv=0,timer=0
-[105449.694871] cfq rr_list:
-[105449.702715]   3108: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
-[105449.720693] cfq busy_list:
-[105449.729054] cfq idle_list:
-[105449.737418] cfq cur_rr:
-[115435.022192] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-lkml@vger.kernel.org
-[115435.052160] cfq: busy=1,drv=0,timer=0
-[115435.063383] cfq rr_list:
-[115435.071227]   3196: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
-[115435.089205] cfq busy_list:
-[115435.097566] cfq idle_list:
-[115435.105930] cfq cur_rr:
-[115616.651883] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-lkml@vger.kernel.org
-[115616.681848] cfq: busy=1,drv=0,timer=0
-[115616.693071] cfq rr_list:
-[115616.700916]   3196: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=61
-[115616.718893] cfq busy_list:
-[115616.727253] cfq idle_list:
-[115616.735617] cfq cur_rr:
-[119679.564753] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-lkml@vger.kernel.org
-[119679.594732] cfq: busy=1,drv=0,timer=0
-[119679.605955] cfq rr_list:
-[119679.613799]   3241: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
-[119679.631778] cfq busy_list:
-[119679.640136] cfq idle_list:
-[119679.648502] cfq cur_rr:
+- migration comes alnog and migrates that page into highmem
 
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
+- file I/O causes a read of that bitmap again.  We find it in
+  /dev/hda's pagecache.
+
+  Here's set_bh_page().
+
+	void set_bh_page(struct buffer_head *bh,
+			struct page *page, unsigned long offset)
+	{
+		bh->b_page = page;
+		BUG_ON(offset >= PAGE_SIZE);
+		if (PageHighMem(page))
+			/*
+			 * This catches illegal uses and preserves the offset:
+			 */
+			bh->b_data = (char *)(0 + offset);
+		else
+			bh->b_data = page_address(page) + offset;
+	}
+
+- ext2 now tries to access the bits in the bitmap via page->bh->b_data
+
+- game over
