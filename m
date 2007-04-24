@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161647AbXDXFgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161626AbXDXFgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161647AbXDXFgM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 01:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161626AbXDXFeg
+	id S1161626AbXDXFgN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 01:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161631AbXDXFef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 01:34:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:35025 "EHLO ozlabs.org"
+	Tue, 24 Apr 2007 01:34:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:35023 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161634AbXDXFdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 01:33:41 -0400
+	id S1161626AbXDXFdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 01:33:40 -0400
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: <linux-kernel@vger.kernel.org>,
        Linux Memory Management <linux-mm@kvack.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Apr 2007 15:33:38 +1000
-Subject: [PATCH 9/12] get_unmapped_area handles MAP_FIXED on x86_64
+Date: Tue, 24 Apr 2007 15:33:37 +1000
+Subject: [PATCH 8/12] get_unmapped_area handles MAP_FIXED on sparc64
 In-Reply-To: <1177392813.924664.32930750763.qpush@grosgo>
-Message-Id: <20070424053340.DE26BDDF0F@ozlabs.org>
+Message-Id: <20070424053340.5B581DDF0E@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle MAP_FIXED in x86_64 arch_get_unmapped_area(), simple case, just
-return the address as passed in
+Handle MAP_FIXED in hugetlb_get_unmapped_area on sparc64
+by just using prepare_hugepage_range()
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: William Irwin <bill.irwin@oracle.com>
 
- arch/x86_64/kernel/sys_x86_64.c |    3 +++
- 1 file changed, 3 insertions(+)
+ arch/sparc64/mm/hugetlbpage.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Index: linux-cell/arch/x86_64/kernel/sys_x86_64.c
+Index: linux-cell/arch/sparc64/mm/hugetlbpage.c
 ===================================================================
---- linux-cell.orig/arch/x86_64/kernel/sys_x86_64.c	2007-03-22 16:10:10.000000000 +1100
-+++ linux-cell/arch/x86_64/kernel/sys_x86_64.c	2007-03-22 16:11:06.000000000 +1100
-@@ -93,6 +93,9 @@ arch_get_unmapped_area(struct file *filp
- 	unsigned long start_addr;
- 	unsigned long begin, end;
- 	
-+	if (flags & MAP_FIXED)
-+		return addr;
-+
- 	find_start_end(flags, &begin, &end); 
+--- linux-cell.orig/arch/sparc64/mm/hugetlbpage.c	2007-03-22 16:12:57.000000000 +1100
++++ linux-cell/arch/sparc64/mm/hugetlbpage.c	2007-03-22 16:15:33.000000000 +1100
+@@ -175,6 +175,12 @@ hugetlb_get_unmapped_area(struct file *f
+ 	if (len > task_size)
+ 		return -ENOMEM;
  
- 	if (len > end)
++	if (flags & MAP_FIXED) {
++		if (prepare_hugepage_range(addr, len, pgoff))
++			return -EINVAL;
++		return addr;
++	}
++
+ 	if (addr) {
+ 		addr = ALIGN(addr, HPAGE_SIZE);
+ 		vma = find_vma(mm, addr);
