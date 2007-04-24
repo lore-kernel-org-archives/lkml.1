@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423066AbXDXUAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423078AbXDXUBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423066AbXDXUAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 16:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423080AbXDXUAb
+	id S1423078AbXDXUBO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 16:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423086AbXDXUBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 16:00:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:53702 "EHLO mail.goop.org"
+	Tue, 24 Apr 2007 16:01:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:53718 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423066AbXDXUAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 16:00:30 -0400
-Message-ID: <462E61F1.7060403@goop.org>
-Date: Tue, 24 Apr 2007 13:00:49 -0700
+	id S1423080AbXDXUBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 16:01:12 -0400
+Message-ID: <462E6222.3060302@goop.org>
+Date: Tue, 24 Apr 2007 13:01:38 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, Prarit Bhargava <prarit@redhat.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Zachary Amsden <zach@vmware.com>, James Morris <jmorris@namei.org>,
-       Dan Hecht <dhecht@vmware.com>, Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Chris Lalancette <clalance@redhat.com>,
-       Rick Lindsley <ricklind@us.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 1/4] Ignore stolen time in the softlockup watchdog
-References: <20070327214919.800272641@goop.org>	<20070327215827.871954359@goop.org>	<20070423234910.50149faf.akpm@linux-foundation.org>	<462E43A7.1050001@goop.org>	<20070424105738.e0ce36a9.akpm@linux-foundation.org>	<462E4969.6070802@goop.org> <20070424113222.ed2e1314.akpm@linux-foundation.org>
-In-Reply-To: <20070424113222.ed2e1314.akpm@linux-foundation.org>
+To: Olof Johansson <olof@lixom.net>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Gerd Hoffmann <kraxel@suse.de>
+Subject: Re: [PATCH 16/25] xen: Use the hvc console infrastructure for Xen
+ console
+References: <20070423215638.563901986@goop.org> <20070423215712.328111104@goop.org> <20070424012111.GA28649@lixom.net>
+In-Reply-To: <20070424012111.GA28649@lixom.net>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Well, it _is_ mysterious.
->
-> Did you try to locate the code which failed?  I got lost in macros and
-> include files, and gave up very very easily.  Stop hiding, Ingo.
+Olof Johansson wrote:
+> On Mon, Apr 23, 2007 at 02:56:54PM -0700, Jeremy Fitzhardinge wrote:
 >   
+>> Implement a Xen back-end for hvc console.
+>>
+>> From: Gerd Hoffmann <kraxel@suse.de>
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>>
+>> ---
+>>  arch/i386/xen/Kconfig     |    1 
+>>  arch/i386/xen/events.c    |    3 -
+>>  drivers/Makefile          |    3 +
+>>  drivers/xen/Makefile      |    1 
+>>  drivers/xen/hvc-console.c |  134 +++++++++++++++++++++++++++++++++++++++++++++
+>>  include/xen/events.h      |    1 
+>>  6 files changed, 142 insertions(+), 1 deletion(-)
+>>     
+>
+> If you move the driver to drivers/char/hvc_xen.c instead, you won't have to do...
+>
+>   
+>> +#include "../char/hvc_console.h"
+>>     
+>
+> ...this.
+>
+> Other single-platform backend hvc drivers are under drivers/char already.
 
-OK, I've managed to reproduce it.  Removing the local_irq_save/restore
-from sched_clock() makes it go away, as I'd expect (otherwise it would
-really be magic).  But given that it never seems to touch the softlockup
-during testing, I have no idea what difference it makes...
+Good point.
 
     J
