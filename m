@@ -1,136 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423176AbXDXW2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423182AbXDXW2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423176AbXDXW2u (ORCPT <rfc822;w@1wt.eu>);
+	id S1423182AbXDXW2u (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 24 Apr 2007 18:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423183AbXDXW1U
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXDXW1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:27:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56820 "EHLO
+	Tue, 24 Apr 2007 18:27:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43931 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423177AbXDXWXI (ORCPT
+	with ESMTP id S1423183AbXDXWXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Apr 2007 18:23:08 -0400
-Message-Id: <20070424222307.720364206@sgi.com>
+Message-Id: <20070424222307.932574137@sgi.com>
 References: <20070424222105.883597089@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Apr 2007 15:21:19 -0700
+Date: Tue, 24 Apr 2007 15:21:20 -0700
 From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
        David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [14/17] Add VM_BUG_ONs to check for correct page order
-Content-Disposition: inline; filename=var_pc_guards
+Subject: [15/17] ramfs: Variable order page cache support
+Content-Disposition: inline; filename=var_pc_ramfs
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before we start changing the page order we better get some debugging
-in there that trips us up whenever a wrong order page shows up in a
-mapping. This will be helpful for converting new filesystems to
-utilize higher orders.
+The simplest file system to use is ramfs. Add a mount parameter that
+specifies the page order of the pages that ramfs should use. If the
+order is greater than zero then disable mmap functionality.
+
+This could be removed if the VM would be changes to support faulting
+higher order pages but for now we are content with buffered I/O on higher
+order pages.
+
+Note that ramfs does not use the lower layers (buffer I/O etc) so its
+the safest to use right now.
+
+If you apply this patch and then you can f.e. try this:
+
+mount -tramfs -o10 none /media
+
+Mounts a ramfs filesystem with order 10 pages (4 MB)
+
+cp linux-2.6.21-rc7.tar.gz /media
+
+Populate the ramfs. Note that we allocate 14 pages of 4M each
+instead of 13508..
+
+umount /media
+
+Gets rid of the large pages again
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- mm/filemap.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
+ fs/ramfs/file-mmu.c   |   11 +++++++++++
+ fs/ramfs/inode.c      |   16 +++++++++++++---
+ include/linux/ramfs.h |    1 +
+ 3 files changed, 25 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.21-rc7/mm/filemap.c
+Index: linux-2.6.21-rc7/fs/ramfs/file-mmu.c
 ===================================================================
---- linux-2.6.21-rc7.orig/mm/filemap.c	2007-04-24 11:45:26.000000000 -0700
-+++ linux-2.6.21-rc7/mm/filemap.c	2007-04-24 11:46:04.000000000 -0700
-@@ -127,6 +127,7 @@ void remove_from_page_cache(struct page 
- 	struct address_space *mapping = page->mapping;
+--- linux-2.6.21-rc7.orig/fs/ramfs/file-mmu.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ramfs/file-mmu.c	2007-04-23 22:27:51.000000000 -0700
+@@ -45,6 +45,17 @@ const struct file_operations ramfs_file_
+ 	.llseek		= generic_file_llseek,
+ };
  
- 	BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 
- 	write_lock_irq(&mapping->tree_lock);
- 	__remove_from_page_cache(page);
-@@ -268,6 +269,7 @@ int wait_on_page_writeback_range(struct 
- 			if (page->index > end)
- 				continue;
- 
-+			VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 			wait_on_page_writeback(page);
- 			if (PageError(page))
- 				ret = -EIO;
-@@ -439,6 +441,7 @@ int add_to_page_cache(struct page *page,
- {
- 	int error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
- 
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 	if (error == 0) {
- 		write_lock_irq(&mapping->tree_lock);
- 		error = radix_tree_insert(&mapping->page_tree, offset, page);
-@@ -598,8 +601,10 @@ struct page * find_get_page(struct addre
- 
- 	read_lock_irq(&mapping->tree_lock);
- 	page = radix_tree_lookup(&mapping->page_tree, offset);
--	if (page)
-+	if (page) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 		page_cache_get(page);
-+	}
- 	read_unlock_irq(&mapping->tree_lock);
- 	return page;
- }
-@@ -624,6 +629,7 @@ struct page *find_lock_page(struct addre
- repeat:
- 	page = radix_tree_lookup(&mapping->page_tree, offset);
- 	if (page) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 		page_cache_get(page);
- 		if (TestSetPageLocked(page)) {
- 			read_unlock_irq(&mapping->tree_lock);
-@@ -685,6 +691,7 @@ repeat:
- 		} else if (err == -EEXIST)
- 			goto repeat;
- 	}
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 	if (cached_page)
- 		page_cache_release(cached_page);
- 	return page;
-@@ -716,8 +723,10 @@ unsigned find_get_pages(struct address_s
- 	read_lock_irq(&mapping->tree_lock);
- 	ret = radix_tree_gang_lookup(&mapping->page_tree,
- 				(void **)pages, start, nr_pages);
--	for (i = 0; i < ret; i++)
-+	for (i = 0; i < ret; i++) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
-+	}
- 	read_unlock_irq(&mapping->tree_lock);
- 	return ret;
- }
-@@ -747,6 +756,7 @@ unsigned find_get_pages_contig(struct ad
- 		if (pages[i]->mapping == NULL || pages[i]->index != index)
++/* Higher order mappings do not support mmmap */
++const struct file_operations ramfs_file_higher_order_operations = {
++	.read		= do_sync_read,
++	.aio_read	= generic_file_aio_read,
++	.write		= do_sync_write,
++	.aio_write	= generic_file_aio_write,
++	.fsync		= simple_sync_file,
++	.sendfile	= generic_file_sendfile,
++	.llseek		= generic_file_llseek,
++};
++
+ const struct inode_operations ramfs_file_inode_operations = {
+ 	.getattr	= simple_getattr,
+ };
+Index: linux-2.6.21-rc7/fs/ramfs/inode.c
+===================================================================
+--- linux-2.6.21-rc7.orig/fs/ramfs/inode.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ramfs/inode.c	2007-04-23 22:33:23.000000000 -0700
+@@ -61,6 +61,8 @@ struct inode *ramfs_get_inode(struct sup
+ 		inode->i_blocks = 0;
+ 		inode->i_mapping->a_ops = &ramfs_aops;
+ 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
++		set_mapping_order(inode->i_mapping,
++			sb->s_blocksize_bits - PAGE_CACHE_SHIFT);
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		switch (mode & S_IFMT) {
+ 		default:
+@@ -68,7 +70,10 @@ struct inode *ramfs_get_inode(struct sup
  			break;
+ 		case S_IFREG:
+ 			inode->i_op = &ramfs_file_inode_operations;
+-			inode->i_fop = &ramfs_file_operations;
++			if (mapping_order(inode->i_mapping))
++				inode->i_fop = &ramfs_file_higher_order_operations;
++			else
++				inode->i_fop = &ramfs_file_operations;
+ 			break;
+ 		case S_IFDIR:
+ 			inode->i_op = &ramfs_dir_inode_operations;
+@@ -164,10 +169,15 @@ static int ramfs_fill_super(struct super
+ {
+ 	struct inode * inode;
+ 	struct dentry * root;
++	int order = 0;
++	char *options = data;
++
++	if (options && *options)
++		order = simple_strtoul(options, NULL, 10);
  
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
- 		index++;
- 	}
-@@ -774,8 +784,10 @@ unsigned find_get_pages_tag(struct addre
- 	read_lock_irq(&mapping->tree_lock);
- 	ret = radix_tree_gang_lookup_tag(&mapping->page_tree,
- 				(void **)pages, *index, nr_pages, tag);
--	for (i = 0; i < ret; i++)
-+	for (i = 0; i < ret; i++) {
-+		VM_BUG_ON(mapping_order(mapping) != compound_order(pages[i]));
- 		page_cache_get(pages[i]);
-+	}
- 	if (ret)
- 		*index = pages[ret - 1]->index + 1;
- 	read_unlock_irq(&mapping->tree_lock);
-@@ -2457,6 +2469,7 @@ int try_to_release_page(struct page *pag
- 	struct address_space * const mapping = page->mapping;
+ 	sb->s_maxbytes = MAX_LFS_FILESIZE;
+-	sb->s_blocksize = PAGE_CACHE_SIZE;
+-	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
++	sb->s_blocksize = PAGE_CACHE_SIZE << order;
++	sb->s_blocksize_bits = order + PAGE_CACHE_SHIFT;
+ 	sb->s_magic = RAMFS_MAGIC;
+ 	sb->s_op = &ramfs_ops;
+ 	sb->s_time_gran = 1;
+Index: linux-2.6.21-rc7/include/linux/ramfs.h
+===================================================================
+--- linux-2.6.21-rc7.orig/include/linux/ramfs.h	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/include/linux/ramfs.h	2007-04-23 22:27:51.000000000 -0700
+@@ -16,6 +16,7 @@ extern int ramfs_nommu_mmap(struct file 
+ #endif
  
- 	BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(mapping_order(mapping) != compound_order(page));
- 	if (PageWriteback(page))
- 		return 0;
+ extern const struct file_operations ramfs_file_operations;
++extern const struct file_operations ramfs_file_higher_order_operations;
+ extern struct vm_operations_struct generic_file_vm_ops;
+ extern int __init init_rootfs(void);
  
 
 --
