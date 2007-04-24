@@ -1,82 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbXDXKk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbXDXKlw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbXDXKk3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 06:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbXDXKk3
+	id S1751479AbXDXKlw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 06:41:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXDXKlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 06:40:29 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54252 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbXDXKk2 (ORCPT
+	Tue, 24 Apr 2007 06:41:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57484 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751479AbXDXKlv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 06:40:28 -0400
-Date: Tue, 24 Apr 2007 12:40:24 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: BUG: Dentry still in use during umount in 2.6.21-rc5-git6
-Message-ID: <20070424104024.GF1330@atrey.karlin.mff.cuni.cz>
-References: <200704202348.39357.ak@suse.de>
+	Tue, 24 Apr 2007 06:41:51 -0400
+Date: Tue, 24 Apr 2007 03:40:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, neilb@suse.de, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com
+Subject: Re: [PATCH 10/10] mm: per device dirty threshold
+Message-Id: <20070424034024.f953f93f.akpm@linux-foundation.org>
+In-Reply-To: <1177409538.26937.75.camel@twins>
+References: <20070420155154.898600123@chello.nl>
+	<20070420155503.608300342@chello.nl>
+	<17965.29252.950216.971096@notabene.brown>
+	<1177398589.26937.40.camel@twins>
+	<E1HgGF4-00008p-00@dorka.pomaz.szeredi.hu>
+	<1177403494.26937.59.camel@twins>
+	<E1HgH69-0000Fl-00@dorka.pomaz.szeredi.hu>
+	<1177406817.26937.65.camel@twins>
+	<E1HgHcG-0000J5-00@dorka.pomaz.szeredi.hu>
+	<20070424030021.a091018d.akpm@linux-foundation.org>
+	<1177409538.26937.75.camel@twins>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704202348.39357.ak@suse.de>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> One of my autoboot test clients gave me this during shutdown. It used
-> reiserfs and autofs and NFS heavily.
-  Jeff has a fix for this bug so it should go away soon... Thanks for
-report anyway :).
+On Tue, 24 Apr 2007 12:12:18 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-									Honza
+> On Tue, 2007-04-24 at 03:00 -0700, Andrew Morton wrote:
+> > On Tue, 24 Apr 2007 11:47:20 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > > Ahh, now I see; I had totally blocked out these few lines:
+> > > > 
+> > > > 			pages_written += write_chunk - wbc.nr_to_write;
+> > > > 			if (pages_written >= write_chunk)
+> > > > 				break;		/* We've done our duty */
+> > > > 
+> > > > yeah, those look dubious indeed... And reading back Neil's comments, I
+> > > > think he agrees.
+> > > > 
+> > > > Shall we just kill those?
+> > > 
+> > > I think we should.
+> > > 
+> > > Athough I'm a little afraid, that Akpm will tell me again, that I'm a
+> > > stupid git, and that those lines are in fact vitally important ;)
+> > > 
+> > 
+> > It depends what they're replaced with.
+> > 
+> > That code is there, iirc, to prevent a process from getting stuck in
+> > balance_dirty_pages() forever due to the dirtying activity of other
+> > processes.
+> > 
+> > hm, we ask the process to write write_chunk pages each go around the loop.
+> > So if it wrote write-chunk/2 pages on the first pass it might end up writing
+> > write_chunk*1.5 pages total.  I guess that's rare and doesn't matter much
+> > if it does happen - the upper bound is write_chunk*2-1, I think.
+> 
+> Right, but I think the problem is that its dirty -> writeback, not dirty
+> -> writeback completed.
+> 
+> Ie. they don't guarantee progress, it could be that the total
+> nr_reclaimable + nr_writeback will steadily increase due to this break.
 
-> Unmounting file systems
-> BUG: Dentry ffff8100f3693a40{i=2352220,n=xattrs} still in use (1) [unmount of reiserfs sda9]
-> ------------[ cut here ]------------
-> kernel BUG at /mnt/dm-2/newautoboot/autoboot/lsrc/mainline/linux/fs/dcache.c:623!
-> invalid opcode: 0000 [1] SMP 
-> CPU 1 
-> Modules linked in:
-> Pid: 15791, comm: umount Not tainted 2.6.21-rc5-git6 #44
-> RIP: 0010:[<ffffffff80287454>]  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
-> RSP: 0018:ffff8100f5f67e18  EFLAGS: 00010292
-> RAX: 0000000000000060 RBX: ffff8100f3693a40 RCX: 0000000000005207
-> RDX: 00000000ffffffff RSI: 0000000000000046 RDI: 0000000000014661
-> RBP: ffff8100f6dc9cc0 R08: 00000000000000a0 R09: 00000005ffffffff
-> R10: 0000000000000000 R11: 0000000000000000 R12: ffff8100f3693aa0
-> R13: 0000000000014661 R14: 000000000050ea70 R15: 000000000050ead0
-> FS:  00002adc863a86d0(0000) GS:ffff8100f7fdc1c0(0000) knlGS:00000000b7be38d0
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00002adc8626a688 CR3: 00000000f628b000 CR4: 00000000000006e0
-> Process umount (pid: 15791, threadinfo ffff8100f5f66000, task ffff8100f7a08100)
-> Stack:  ffff810004dab218 ffff810004dab000 ffffffff80558860 ffff810004dab000
->  0000000000000000 ffffffff8028815b ffff810004dab000 ffffffff8027a1a5
->  0000000000000000 ffff8100f6c50980 ffffffff806c1600 ffffffff8027a2a4
-> Call Trace:
->  [<ffffffff8028815b>] shrink_dcache_for_umount+0x2f/0x3d
->  [<ffffffff8027a1a5>] generic_shutdown_super+0x19/0xf2
->  [<ffffffff8027a2a4>] kill_block_super+0x26/0x3b
->  [<ffffffff8027a350>] deactivate_super+0x47/0x60
->  [<ffffffff8028bf94>] sys_umount+0x1f7/0x22a
->  [<ffffffff8027b64d>] sys_newstat+0x19/0x31
->  [<ffffffff8020932e>] system_call+0x7e/0x83
-> 
-> 
-> Code: 0f 0b eb fe 48 8b 6b 28 48 39 dd 75 04 31 ed eb 04 f0 ff 4d 
-> RIP  [<ffffffff80287454>] shrink_dcache_for_umount_subtree+0x178/0x250
->  RSP <ffff8100f5f67e18>
-> /etc/init.d/boot.d/K14boot.localfs: line 93: 15791 Segmentation fault      umount -avt noproc,nonfs,nonfs4,nosmbfs,nocifs,notmpfs
-> 
-> 
-> 
-> -Andi
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+Don't think so.  We call balance_dirty_pages() once per ratelimit_pages
+dirtyings and when we get there, we write 1.5*ratelimit_pages pages.
+
