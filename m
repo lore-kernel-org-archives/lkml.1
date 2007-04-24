@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161510AbXDXCnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbXDXCq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161510AbXDXCnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Apr 2007 22:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbXDXCnp
+	id S1754560AbXDXCq3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Apr 2007 22:46:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbXDXCq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Apr 2007 22:43:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33829 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754562AbXDXCno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Apr 2007 22:43:44 -0400
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Linas Vepstas <linas@austin.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>, "<Andrew Morton" <akpm@osdl.org>,
-       containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
-       linux-s390@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	 <11769695763104-git-send-email-ebiederm@xmission.com>
-	 <20070422123155.GF20763@infradead.org>
-	 <20070423205020.GR31947@austin.ibm.com>
-	 <1177378733.14873.52.camel@localhost.localdomain>
-	 <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 12:42:24 +1000
-Message-Id: <1177382544.14873.57.camel@localhost.localdomain>
+	Mon, 23 Apr 2007 22:46:29 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50009 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754560AbXDXCq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Apr 2007 22:46:28 -0400
+Date: Mon, 23 Apr 2007 19:45:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Davide Libenzi <davidel@xmailserver.org>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] change kernel threads to ignore signals instead of
+ blocking them
+Message-Id: <20070423194527.ab86799f.akpm@linux-foundation.org>
+In-Reply-To: <20070413073116.GA1540@tv-sign.ru>
+References: <20070413073116.GA1540@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-23 at 20:08 -0600, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Fri, 13 Apr 2007 11:31:16 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> On top of Eric's
 > 
-> >> The only reason for using threads here is to get the error recovery
-> >> out of an interrupt context (where errors may be detected), and then,
-> >> an hour later, decrement a counter (which is how we limit these to 
-> >> 6 per hour). Thread reaping is "trivial", the thread just exits
-> >> after an hour.
-> >
-> > In addition, it should be a thread and not done from within keventd
-> > because :
-> >
-> >  - It can take a long time (well, relatively but still too long for a
-> > work queue)
-> >
-> >  - The driver callbacks might need to use keventd or do flush_workqueue
-> > to synchronize with their own workqueues when doing an internal
-> > recovery.
-> >
-> >> Since these are events rare, I've no particular concern about
-> >> performance or resource consumption. The current code seems 
-> >> to work just fine. :-)
-> >
-> > I think moving to kthread's is cleaner (just a wrapper around kernel
-> > threads that simplify dealing with reaping them out mostly) and I agree
-> > with Christoph that it would be nice to be able to "fire off" kthreads
-> > from interrupt context.. in many cases, we abuse work queues for things
-> > that should really done from kthreads instead (basically anything that
-> > takes more than a couple hundred microsecs or so).
+> 	kthread-dont-depend-on-work-queues-take-2.patch
 > 
-> On that note does anyone have a problem is we manage the irq spawning
-> safe kthreads the same way that we manage the work queue entries.
+> Currently kernel threads use sigprocmask(SIG_BLOCK) to protect against signals.
+> This doesn't prevent the signal delivery, this only blocks signal_wake_up().
+> Every "killall -33 kthreadd" means a "struct siginfo" leak.
 > 
-> i.e. by a structure allocated by the caller?
+> Change kthreadd_setup() to set all handlers to SIG_IGN instead of blocking them
+> (make a new helper ignore_signals() for that). If the kernel thread needs some
+> signal, it should use allow_signal() anyway, and in that case it should not use
+> CLONE_SIGHAND.
+> 
+> Note that we can't change daemonize() (should die!) in the same way, because
+> it can be used along with CLONE_SIGHAND. This means that allow_signal() still
+> should unblock the signal to work correctly with daemonize()ed threads.
+> 
+> However, disallow_signal() doesn't block the signal any longer but ignores it.
+> 
+> NOTE: with or without this patch the kernel threads are not protected from
+> handle_stop_signal(), this seems harmless, but not good.
 
-Not sure... I can see places where I might want to spawn an arbitrary
-number of these without having to preallocate structures... and if I
-allocate on the fly, then I need a way to free that structure when the
-kthread is reaped which I don't think we have currently, do we ? (In
-fact, I could use that for other things too now that I'm thinking of
-it ... I might have a go at providing optional kthread destructors).
+I'm seeing 500 zombied instances of khelper (from udev startup).  It only
+happens when the utrace patches are applied.  Presumably an interaction
+between utrace and one of these kthread changes.
 
-Ben.
+I'll drop utrace for now.  I don't think it's getting much help from being
+in -mm at present and it's getting increasingly painful to keep it merged
+against all the other stuff which is happening.
 
-
+Roland, I'll squirt all the extra utrace patches which I have in your direction.
+Please merge them or hang on to them for later on.
