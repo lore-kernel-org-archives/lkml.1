@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161327AbXDXORs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161773AbXDXOW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161327AbXDXORs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 10:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161464AbXDXORr
+	id S1161773AbXDXOW6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 10:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161775AbXDXOW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 10:17:47 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:33306 "EHLO mail.sf-mail.de"
+	Tue, 24 Apr 2007 10:22:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:56355 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161327AbXDXORr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 10:17:47 -0400
-X-Greylist: delayed 404 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Apr 2007 10:17:47 EDT
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] MM: use DIV_ROUND_UP() in mm/memory.c
-Date: Tue, 24 Apr 2007 16:10:22 +0200
+	id S1161773AbXDXOW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 10:22:57 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
+Date: Tue, 24 Apr 2007 16:22:30 +0200
 User-Agent: KMail/1.9.6
+Cc: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2> <6.0.0.20.2.20070424100507.049670d0@172.19.0.2> <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200704241610.23342.eike-kernel@sf-tec.de>
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704241622.30773.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This should make no difference in behaviour.
 
-Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+> Why would you need any kind of lock when just changing a single bit,
+> if it didn't affect other bits of the same word?  Just as you don't
+> need a lock when simply assigning a word, setting a bit to 0 or 1
+> is simple in itself (it doesn't matter if it was 0 or 1 before).
+> 
+> > But, I think that concurrent bit operation on different bits
+> > is just like OR operation , so lock prefix is not needed.
+> 
+> I firmly believe that it is; but I'm not a processor expert.
 
----
-commit 64aa7c3136258d3abc76354b5f83b9a9575169c0
-tree 8037adc04b57cd6150456399b7caccf99489385a
-parent bf0bd376f79cadb4f8cd454db1723eb9be0aabc1
-author Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 24 Apr 2007 16:05:40 +0200
-committer Rolf Eike Beer <eike-kernel@sf-tec.de> Tue, 24 Apr 2007 16:05:40 
-+0200
+Think of the CPU cache like the page cache. The VFS cannot change
+anything directly on disk - it always has to read a page (or block);
+change it there even if it's only a single bit and back.
 
- mm/memory.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+Now imagine multiple independent kernels to that disk doing this in parallel
+without any locking. You will lose data on simple changes because
+of data races.
 
-diff --git a/mm/memory.c b/mm/memory.c
-index e7066e7..45bba1f 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1838,12 +1838,11 @@ void unmap_mapping_range(struct address_space 
-*mapping,
- {
- 	struct zap_details details;
- 	pgoff_t hba = holebegin >> PAGE_SHIFT;
--	pgoff_t hlen = (holelen + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+	pgoff_t hlen = DIV_ROUND_UP(holelen, PAGE_SIZE);
+The CPU is similar. The memory is the disk; the protocol talking to 
+the memory only knows cache lines.  There are multiple CPUs talking
+to that memory. The CPUs cannot change anything 
+without reading  a full cache line first and then later writing it back. 
+There is "just do OR operation" when talking to memory, just like
+disks don't have such a operation; just read and write.
+
+[there are some special cases with uncached mappings, but they are not
+relevant here]
+
+With lock the CPU ensures the read-modify-write cycle is atomic, 
+without it doesn't.
  
- 	/* Check for overflow. */
- 	if (sizeof(holelen) > sizeof(hlen)) {
--		long long holeend =
--			(holebegin + holelen + PAGE_SIZE - 1) >> PAGE_SHIFT;
-+		long long holeend = DIV_ROUND_UP(holebegin + holelen, PAGE_SIZE);
- 		if (holeend & ~(long long)ULONG_MAX)
- 			hlen = ULONG_MAX - hba + 1;
- 	}
-@@ -2592,7 +2591,7 @@ int make_pages_present(unsigned long addr, unsigned long 
-end)
- 	write = (vma->vm_flags & VM_WRITE) != 0;
- 	BUG_ON(addr >= end);
- 	BUG_ON(end > vma->vm_end);
--	len = (end+PAGE_SIZE-1)/PAGE_SIZE-addr/PAGE_SIZE;
-+	len = DIV_ROUND_UP(end, PAGE_SIZE) - addr/PAGE_SIZE;
- 	ret = get_user_pages(current, current->mm, addr,
- 			len, write, 0, NULL, NULL);
- 	if (ret < 0)
+The CPU also guarantees you that multiple writes don't get lost
+even when they hit the same cache line (otherwise you would need lock
+for anything in the same cache line), but it doesn't guarantee that
+for a word. The details for that vary by architecture; on x86 it is 
+any memory access, on others it can be only guaranteed for long stores.
+
+The exact rules for all this can be quite complicated (and also vary
+by architecture), this is a simplification but should be enough as a rough 
+guide.
+
+Hope this helps,
+
+-Andi
