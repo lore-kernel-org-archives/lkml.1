@@ -1,324 +1,286 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423192AbXDXW0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423185AbXDXW1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423192AbXDXW0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 18:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423170AbXDXW0Z
+	id S1423185AbXDXW1Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 18:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXDXW1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 18:26:25 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56837 "EHLO
+	Tue, 24 Apr 2007 18:27:15 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56831 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423186AbXDXWXJ (ORCPT
+	with ESMTP id S1423185AbXDXWXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Apr 2007 18:23:09 -0400
-Message-Id: <20070424222308.400316486@sgi.com>
+Message-Id: <20070424222308.255805360@sgi.com>
 References: <20070424222105.883597089@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 24 Apr 2007 15:21:22 -0700
+Date: Tue, 24 Apr 2007 15:21:21 -0700
 From: clameter@sgi.com
 To: linux-kernel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
        David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: [17/17] xfs: Variable order page cache support
-Content-Disposition: inline; filename=var_pc_xfs
+Subject: [16/17] ext2: Variable order page cache support
+Content-Disposition: inline; filename=var_pc_ext2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Chinner <dgc@sgi.com>
+This adds variable page size support. It is then possible to mount filesystems
+that have a larger blocksize than the page size.
 
-Patch is attached that converts the XFS data path to use large order
-page cache pages.
+F.e. the following is possible on x86_64 and i386 that have only a 4k page
+size.
 
-I haven't tested this on a real system yet but it works on UML. I've
-tested it with fsx and it seems to do everything it is supposed to.
-Data is actually written to the block device as it persists across
-mount and unmount, so that appears to be working as well.
+mke2fs -b 16384 /dev/hdd2	<Ignore warning about too large block size>
 
-> - Lets try to keep scope as small as possible.
+mount /dev/hdd2 /media
+ls -l /media
 
-Hence I haven't tried to convert anything on the metadata side
-of XFS to use the high order page cache - the XFS buffer cache
-takes care of that for us right now and it's not a simple
-change like the data path is.
+.... Do more things with the volume that uses a 16k page cache size on
+a 4k page sized platform..
 
-Cheers,
+We disable mmap for higher order pages like also done for ramfs. This
+is temporary until we get support for mmapping higher order pages.
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 ---
- fs/xfs/linux-2.6/xfs_aops.c  |   53 ++++++++++++++++++++++---------------------
- fs/xfs/linux-2.6/xfs_file.c  |   22 +++++++++++++++++
- fs/xfs/linux-2.6/xfs_iops.h  |    1 
- fs/xfs/linux-2.6/xfs_lrw.c   |    6 ++--
- fs/xfs/linux-2.6/xfs_super.c |    5 +++-
- fs/xfs/xfs_mount.c           |   13 ----------
- 6 files changed, 58 insertions(+), 42 deletions(-)
+ fs/ext2/dir.c   |   40 +++++++++++++++++++++++-----------------
+ fs/ext2/ext2.h  |    1 +
+ fs/ext2/file.c  |   18 ++++++++++++++++++
+ fs/ext2/inode.c |   10 ++++++++--
+ fs/ext2/namei.c |   10 ++++++++--
+ 5 files changed, 58 insertions(+), 21 deletions(-)
 
-Index: linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_aops.c
+Index: linux-2.6.21-rc7/fs/ext2/dir.c
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/linux-2.6/xfs_aops.c	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_aops.c	2007-04-23 22:27:52.000000000 -0700
-@@ -74,7 +74,7 @@ xfs_page_trace(
- 	xfs_inode_t	*ip;
- 	bhv_vnode_t	*vp = vn_from_inode(inode);
- 	loff_t		isize = i_size_read(inode);
--	loff_t		offset = page_offset(page);
-+	loff_t		offset = page_cache_offset(page->mapping);
- 	int		delalloc = -1, unmapped = -1, unwritten = -1;
+--- linux-2.6.21-rc7.orig/fs/ext2/dir.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ext2/dir.c	2007-04-23 22:27:52.000000000 -0700
+@@ -44,7 +44,8 @@ static inline void ext2_put_page(struct 
  
- 	if (page_has_buffers(page))
-@@ -547,7 +547,7 @@ xfs_probe_page(
- 					break;
- 			} while ((bh = bh->b_this_page) != head);
- 		} else
--			ret = mapped ? 0 : PAGE_CACHE_SIZE;
-+			ret = mapped ? 0 : page_cache_size(page->mapping);
- 	}
+ static inline unsigned long dir_pages(struct inode *inode)
+ {
+-	return (inode->i_size+PAGE_CACHE_SIZE-1)>>PAGE_CACHE_SHIFT;
++	return (inode->i_size+page_cache_size(inode->i_mapping)-1)>>
++			page_cache_shift(inode->i_mapping);
+ }
  
- 	return ret;
-@@ -574,7 +574,7 @@ xfs_probe_cluster(
- 	} while ((bh = bh->b_this_page) != head);
+ /*
+@@ -55,10 +56,11 @@ static unsigned
+ ext2_last_byte(struct inode *inode, unsigned long page_nr)
+ {
+ 	unsigned last_byte = inode->i_size;
++	struct address_space *mapping = inode->i_mapping;
  
- 	/* if we reached the end of the page, sum forwards in following pages */
--	tlast = i_size_read(inode) >> PAGE_CACHE_SHIFT;
-+	tlast = page_cache_index(inode->i_mapping, i_size_read(inode));
- 	tindex = startpage->index + 1;
+-	last_byte -= page_nr << PAGE_CACHE_SHIFT;
+-	if (last_byte > PAGE_CACHE_SIZE)
+-		last_byte = PAGE_CACHE_SIZE;
++	last_byte -= page_nr << page_cache_shift(mapping);
++	if (last_byte > page_cache_size(mapping))
++		last_byte = page_cache_size(mapping);
+ 	return last_byte;
+ }
  
- 	/* Prune this back to avoid pathological behavior */
-@@ -592,14 +592,14 @@ xfs_probe_cluster(
- 			size_t pg_offset, len = 0;
+@@ -77,18 +79,19 @@ static int ext2_commit_chunk(struct page
  
- 			if (tindex == tlast) {
--				pg_offset =
--				    i_size_read(inode) & (PAGE_CACHE_SIZE - 1);
-+				pg_offset = page_cache_offset(inode->i_mapping,
-+							i_size_read(inode));
- 				if (!pg_offset) {
- 					done = 1;
- 					break;
- 				}
- 			} else
--				pg_offset = PAGE_CACHE_SIZE;
-+				pg_offset = page_cache_size(inode->i_mapping);
+ static void ext2_check_page(struct page *page)
+ {
+-	struct inode *dir = page->mapping->host;
++	struct address_space *mapping = page->mapping;
++	struct inode *dir = mapping->host;
+ 	struct super_block *sb = dir->i_sb;
+ 	unsigned chunk_size = ext2_chunk_size(dir);
+ 	char *kaddr = page_address(page);
+ 	u32 max_inumber = le32_to_cpu(EXT2_SB(sb)->s_es->s_inodes_count);
+ 	unsigned offs, rec_len;
+-	unsigned limit = PAGE_CACHE_SIZE;
++	unsigned limit = page_cache_size(mapping);
+ 	ext2_dirent *p;
+ 	char *error;
  
- 			if (page->index == tindex && !TestSetPageLocked(page)) {
- 				len = xfs_probe_page(page, pg_offset, mapped);
-@@ -681,7 +681,8 @@ xfs_convert_page(
- 	int			bbits = inode->i_blkbits;
- 	int			len, page_dirty;
- 	int			count = 0, done = 0, uptodate = 1;
-- 	xfs_off_t		offset = page_offset(page);
-+	struct address_space	*map = inode->i_mapping;
-+	xfs_off_t		offset = page_cache_pos(map, page->index, 0);
+-	if ((dir->i_size >> PAGE_CACHE_SHIFT) == page->index) {
+-		limit = dir->i_size & ~PAGE_CACHE_MASK;
++	if (page_cache_index(mapping, dir->i_size) == page->index) {
++		limit = page_cache_offset(mapping, dir->i_size);
+ 		if (limit & (chunk_size - 1))
+ 			goto Ebadsize;
+ 		if (!limit)
+@@ -140,7 +143,7 @@ Einumber:
+ bad_entry:
+ 	ext2_error (sb, "ext2_check_page", "bad entry in directory #%lu: %s - "
+ 		"offset=%lu, inode=%lu, rec_len=%d, name_len=%d",
+-		dir->i_ino, error, (page->index<<PAGE_CACHE_SHIFT)+offs,
++		dir->i_ino, error, page_cache_pos(mapping, page->index, offs),
+ 		(unsigned long) le32_to_cpu(p->inode),
+ 		rec_len, p->name_len);
+ 	goto fail;
+@@ -149,7 +152,7 @@ Eend:
+ 	ext2_error (sb, "ext2_check_page",
+ 		"entry in directory #%lu spans the page boundary"
+ 		"offset=%lu, inode=%lu",
+-		dir->i_ino, (page->index<<PAGE_CACHE_SHIFT)+offs,
++		dir->i_ino, page_cache_pos(mapping, page->index, offs),
+ 		(unsigned long) le32_to_cpu(p->inode));
+ fail:
+ 	SetPageChecked(page);
+@@ -250,8 +253,9 @@ ext2_readdir (struct file * filp, void *
+ 	loff_t pos = filp->f_pos;
+ 	struct inode *inode = filp->f_path.dentry->d_inode;
+ 	struct super_block *sb = inode->i_sb;
+-	unsigned int offset = pos & ~PAGE_CACHE_MASK;
+-	unsigned long n = pos >> PAGE_CACHE_SHIFT;
++	struct address_space *mapping = inode->i_mapping;
++	unsigned int offset = page_cache_offset(mapping, pos);
++	unsigned long n = page_cache_index(mapping, pos);
+ 	unsigned long npages = dir_pages(inode);
+ 	unsigned chunk_mask = ~(ext2_chunk_size(inode)-1);
+ 	unsigned char *types = NULL;
+@@ -272,14 +276,14 @@ ext2_readdir (struct file * filp, void *
+ 			ext2_error(sb, __FUNCTION__,
+ 				   "bad page in #%lu",
+ 				   inode->i_ino);
+-			filp->f_pos += PAGE_CACHE_SIZE - offset;
++			filp->f_pos += page_cache_size(mapping) - offset;
+ 			return -EIO;
+ 		}
+ 		kaddr = page_address(page);
+ 		if (unlikely(need_revalidate)) {
+ 			if (offset) {
+ 				offset = ext2_validate_entry(kaddr, offset, chunk_mask);
+-				filp->f_pos = (n<<PAGE_CACHE_SHIFT) + offset;
++				filp->f_pos = page_cache_pos(mapping, n, offset);
+ 			}
+ 			filp->f_version = inode->i_version;
+ 			need_revalidate = 0;
+@@ -302,7 +306,7 @@ ext2_readdir (struct file * filp, void *
  
- 	if (page->index != tindex)
- 		goto fail;
-@@ -689,7 +690,7 @@ xfs_convert_page(
- 		goto fail;
- 	if (PageWriteback(page))
- 		goto fail_unlock_page;
--	if (page->mapping != inode->i_mapping)
-+	if (page->mapping != map)
- 		goto fail_unlock_page;
- 	if (!xfs_is_delayed_page(page, (*ioendp)->io_type))
- 		goto fail_unlock_page;
-@@ -701,20 +702,20 @@ xfs_convert_page(
- 	 * Derivation:
- 	 *
- 	 * End offset is the highest offset that this page should represent.
--	 * If we are on the last page, (end_offset & (PAGE_CACHE_SIZE - 1))
--	 * will evaluate non-zero and be less than PAGE_CACHE_SIZE and
-+	 * If we are on the last page, (end_offset & page_cache_mask())
-+	 * will evaluate non-zero and be less than page_cache_size() and
- 	 * hence give us the correct page_dirty count. On any other page,
- 	 * it will be zero and in that case we need page_dirty to be the
- 	 * count of buffers on the page.
- 	 */
- 	end_offset = min_t(unsigned long long,
--			(xfs_off_t)(page->index + 1) << PAGE_CACHE_SHIFT,
-+			(xfs_off_t)(page->index + 1) << page_cache_shift(map),
- 			i_size_read(inode));
- 
- 	len = 1 << inode->i_blkbits;
--	p_offset = min_t(unsigned long, end_offset & (PAGE_CACHE_SIZE - 1),
--					PAGE_CACHE_SIZE);
--	p_offset = p_offset ? roundup(p_offset, len) : PAGE_CACHE_SIZE;
-+	p_offset = min_t(unsigned long, page_cache_offset(map, end_offset),
-+					page_cache_size(map));
-+	p_offset = p_offset ? roundup(p_offset, len) : page_cache_size(map);
- 	page_dirty = p_offset / len;
- 
- 	bh = head = page_buffers(page);
-@@ -870,6 +871,7 @@ xfs_page_state_convert(
- 	int			page_dirty, count = 0;
- 	int			trylock = 0;
- 	int			all_bh = unmapped;
-+	struct address_space	*map = inode->i_mapping;
- 
- 	if (startio) {
- 		if (wbc->sync_mode == WB_SYNC_NONE && wbc->nonblocking)
-@@ -878,11 +880,11 @@ xfs_page_state_convert(
- 
- 	/* Is this page beyond the end of the file? */
- 	offset = i_size_read(inode);
--	end_index = offset >> PAGE_CACHE_SHIFT;
--	last_index = (offset - 1) >> PAGE_CACHE_SHIFT;
-+	end_index = page_cache_index(map, offset);
-+	last_index = page_cache_index(map, (offset - 1));
- 	if (page->index >= end_index) {
- 		if ((page->index >= end_index + 1) ||
--		    !(i_size_read(inode) & (PAGE_CACHE_SIZE - 1))) {
-+		    !(page_cache_offset(map, i_size_read(inode)))) {
- 			if (startio)
- 				unlock_page(page);
- 			return 0;
-@@ -896,22 +898,23 @@ xfs_page_state_convert(
- 	 * Derivation:
- 	 *
- 	 * End offset is the highest offset that this page should represent.
--	 * If we are on the last page, (end_offset & (PAGE_CACHE_SIZE - 1))
--	 * will evaluate non-zero and be less than PAGE_CACHE_SIZE and
-+	 * If we are on the last page, (end_offset & page_cache_mask())
-+	 * will evaluate non-zero and be less than page_cache_size() and
- 	 * hence give us the correct page_dirty count. On any other page,
- 	 * it will be zero and in that case we need page_dirty to be the
- 	 * count of buffers on the page.
-  	 */
- 	end_offset = min_t(unsigned long long,
--			(xfs_off_t)(page->index + 1) << PAGE_CACHE_SHIFT, offset);
-+			(xfs_off_t)(page->index + 1) << page_cache_shift(map),
-+			offset);
- 	len = 1 << inode->i_blkbits;
--	p_offset = min_t(unsigned long, end_offset & (PAGE_CACHE_SIZE - 1),
--					PAGE_CACHE_SIZE);
--	p_offset = p_offset ? roundup(p_offset, len) : PAGE_CACHE_SIZE;
-+	p_offset = min_t(unsigned long, page_cache_offset(map, end_offset),
-+					page_cache_size(map));
-+	p_offset = p_offset ? roundup(p_offset, len) : page_cache_size(map);
- 	page_dirty = p_offset / len;
- 
- 	bh = head = page_buffers(page);
--	offset = page_offset(page);
-+	offset = page_cache_pos(map, page->index, 0);
- 	flags = -1;
- 	type = 0;
- 
-@@ -1040,7 +1043,7 @@ xfs_page_state_convert(
- 
- 	if (ioend && iomap_valid) {
- 		offset = (iomap.iomap_offset + iomap.iomap_bsize - 1) >>
--					PAGE_CACHE_SHIFT;
-+					page_cache_shift(map);
- 		tlast = min_t(pgoff_t, offset, last_index);
- 		xfs_cluster_write(inode, page->index + 1, &iomap, &ioend,
- 					wbc, startio, all_bh, tlast);
-Index: linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_lrw.c
+ 				offset = (char *)de - kaddr;
+ 				over = filldir(dirent, de->name, de->name_len,
+-						(n<<PAGE_CACHE_SHIFT) | offset,
++						page_cache_pos(mapping, n, offset),
+ 						le32_to_cpu(de->inode), d_type);
+ 				if (over) {
+ 					ext2_put_page(page);
+@@ -328,6 +332,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 			struct dentry *dentry, struct page ** res_page)
+ {
+ 	const char *name = dentry->d_name.name;
++	struct address_space *mapping = dir->i_mapping;
+ 	int namelen = dentry->d_name.len;
+ 	unsigned reclen = EXT2_DIR_REC_LEN(namelen);
+ 	unsigned long start, n;
+@@ -369,7 +374,7 @@ struct ext2_dir_entry_2 * ext2_find_entr
+ 		if (++n >= npages)
+ 			n = 0;
+ 		/* next page is past the blocks we've got */
+-		if (unlikely(n > (dir->i_blocks >> (PAGE_CACHE_SHIFT - 9)))) {
++		if (unlikely(n > (dir->i_blocks >> (page_cache_shift(mapping) - 9)))) {
+ 			ext2_error(dir->i_sb, __FUNCTION__,
+ 				"dir %lu size %lld exceeds block count %llu",
+ 				dir->i_ino, dir->i_size,
+@@ -438,6 +443,7 @@ void ext2_set_link(struct inode *dir, st
+ int ext2_add_link (struct dentry *dentry, struct inode *inode)
+ {
+ 	struct inode *dir = dentry->d_parent->d_inode;
++	struct address_space *mapping = inode->i_mapping;
+ 	const char *name = dentry->d_name.name;
+ 	int namelen = dentry->d_name.len;
+ 	unsigned chunk_size = ext2_chunk_size(dir);
+@@ -467,7 +473,7 @@ int ext2_add_link (struct dentry *dentry
+ 		kaddr = page_address(page);
+ 		dir_end = kaddr + ext2_last_byte(dir, n);
+ 		de = (ext2_dirent *)kaddr;
+-		kaddr += PAGE_CACHE_SIZE - reclen;
++		kaddr += page_cache_size(mapping) - reclen;
+ 		while ((char *)de <= kaddr) {
+ 			if ((char *)de == dir_end) {
+ 				/* We hit i_size */
+Index: linux-2.6.21-rc7/fs/ext2/ext2.h
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/linux-2.6/xfs_lrw.c	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_lrw.c	2007-04-23 22:27:52.000000000 -0700
-@@ -143,9 +143,9 @@ xfs_iozero(
- 	do {
- 		unsigned long index, offset;
+--- linux-2.6.21-rc7.orig/fs/ext2/ext2.h	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ext2/ext2.h	2007-04-23 22:27:52.000000000 -0700
+@@ -160,6 +160,7 @@ extern const struct file_operations ext2
+ /* file.c */
+ extern const struct inode_operations ext2_file_inode_operations;
+ extern const struct file_operations ext2_file_operations;
++extern const struct file_operations ext2_no_mmap_file_operations;
+ extern const struct file_operations ext2_xip_file_operations;
  
--		offset = (pos & (PAGE_CACHE_SIZE -1)); /* Within page */
--		index = pos >> PAGE_CACHE_SHIFT;
--		bytes = PAGE_CACHE_SIZE - offset;
-+		offset = page_cache_offset(mapping, pos); /* Within page */
-+		index = page_cache_index(mapping, pos);
-+		bytes = page_cache_size(mapping) - offset;
- 		if (bytes > count)
- 			bytes = count;
- 
-Index: linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_file.c
+ /* inode.c */
+Index: linux-2.6.21-rc7/fs/ext2/file.c
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/linux-2.6/xfs_file.c	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_file.c	2007-04-23 22:27:52.000000000 -0700
-@@ -469,6 +469,28 @@ const struct file_operations xfs_file_op
- #endif
+--- linux-2.6.21-rc7.orig/fs/ext2/file.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ext2/file.c	2007-04-23 22:27:52.000000000 -0700
+@@ -58,6 +58,24 @@ const struct file_operations ext2_file_o
+ 	.splice_write	= generic_file_splice_write,
  };
  
-+const struct file_operations xfs_no_mmap_file_operations = {
++const struct file_operations ext2_no_mmap_file_operations = {
 +	.llseek		= generic_file_llseek,
 +	.read		= do_sync_read,
 +	.write		= do_sync_write,
-+	.aio_read	= xfs_file_aio_read,
-+	.aio_write	= xfs_file_aio_write,
-+	.sendfile	= xfs_file_sendfile,
-+	.splice_read	= xfs_file_splice_read,
-+	.splice_write	= xfs_file_splice_write,
-+	.unlocked_ioctl	= xfs_file_ioctl,
++	.aio_read	= generic_file_aio_read,
++	.aio_write	= generic_file_aio_write,
++	.ioctl		= ext2_ioctl,
 +#ifdef CONFIG_COMPAT
-+	.compat_ioctl	= xfs_file_compat_ioctl,
++	.compat_ioctl	= ext2_compat_ioctl,
 +#endif
-+	.open		= xfs_file_open,
-+	.flush		= xfs_file_close,
-+	.release	= xfs_file_release,
-+	.fsync		= xfs_file_fsync,
-+#ifdef HAVE_FOP_OPEN_EXEC
-+	.open_exec	= xfs_file_open_exec,
-+#endif
++	.open		= generic_file_open,
++	.release	= ext2_release_file,
++	.fsync		= ext2_sync_file,
++	.sendfile	= generic_file_sendfile,
++	.splice_read	= generic_file_splice_read,
++	.splice_write	= generic_file_splice_write,
 +};
 +
- const struct file_operations xfs_invis_file_operations = {
+ #ifdef CONFIG_EXT2_FS_XIP
+ const struct file_operations ext2_xip_file_operations = {
  	.llseek		= generic_file_llseek,
- 	.read		= do_sync_read,
-Index: linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_iops.h
+Index: linux-2.6.21-rc7/fs/ext2/inode.c
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/linux-2.6/xfs_iops.h	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_iops.h	2007-04-23 22:27:52.000000000 -0700
-@@ -23,6 +23,7 @@ extern const struct inode_operations xfs
- extern const struct inode_operations xfs_symlink_inode_operations;
- 
- extern const struct file_operations xfs_file_operations;
-+extern const struct file_operations xfs_no_mmap_file_operations;
- extern const struct file_operations xfs_dir_file_operations;
- extern const struct file_operations xfs_invis_file_operations;
- 
-Index: linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_super.c
+--- linux-2.6.21-rc7.orig/fs/ext2/inode.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ext2/inode.c	2007-04-23 22:29:49.000000000 -0700
+@@ -1128,10 +1128,16 @@ void ext2_read_inode (struct inode * ino
+ 			inode->i_fop = &ext2_xip_file_operations;
+ 		} else if (test_opt(inode->i_sb, NOBH)) {
+ 			inode->i_mapping->a_ops = &ext2_nobh_aops;
+-			inode->i_fop = &ext2_file_operations;
++			if (mapping_order(inode->i_mapping))
++				inode->i_fop = &ext2_no_mmap_file_operations;
++			else
++				inode->i_fop = &ext2_file_operations;
+ 		} else {
+ 			inode->i_mapping->a_ops = &ext2_aops;
+-			inode->i_fop = &ext2_file_operations;
++			if (mapping_order(inode->i_mapping))
++				inode->i_fop = &ext2_no_mmap_file_operations;
++			else
++				inode->i_fop = &ext2_file_operations;
+ 		}
+ 	} else if (S_ISDIR(inode->i_mode)) {
+ 		inode->i_op = &ext2_dir_inode_operations;
+Index: linux-2.6.21-rc7/fs/ext2/namei.c
 ===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/linux-2.6/xfs_super.c	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/linux-2.6/xfs_super.c	2007-04-23 22:34:50.000000000 -0700
-@@ -125,8 +125,11 @@ xfs_set_inodeops(
- {
- 	switch (inode->i_mode & S_IFMT) {
- 	case S_IFREG:
-+		if (mapping_order(inode->i_mapping))
-+			inode->i_fop = &xfs_no_mmap_file_operations;
-+		else
-+			inode->i_fop = &xfs_file_operations;
- 		inode->i_op = &xfs_inode_operations;
--		inode->i_fop = &xfs_file_operations;
- 		inode->i_mapping->a_ops = &xfs_address_space_operations;
- 		break;
- 	case S_IFDIR:
-Index: linux-2.6.21-rc7/fs/xfs/xfs_mount.c
-===================================================================
---- linux-2.6.21-rc7.orig/fs/xfs/xfs_mount.c	2007-04-23 22:26:17.000000000 -0700
-+++ linux-2.6.21-rc7/fs/xfs/xfs_mount.c	2007-04-23 22:27:52.000000000 -0700
-@@ -315,19 +315,6 @@ xfs_mount_validate_sb(
- 		return XFS_ERROR(ENOSYS);
- 	}
- 
--	/*
--	 * Until this is fixed only page-sized or smaller data blocks work.
--	 */
--	if (unlikely(sbp->sb_blocksize > PAGE_SIZE)) {
--		xfs_fs_mount_cmn_err(flags,
--			"file system with blocksize %d bytes",
--			sbp->sb_blocksize);
--		xfs_fs_mount_cmn_err(flags,
--			"only pagesize (%ld) or less will currently work.",
--			PAGE_SIZE);
--		return XFS_ERROR(ENOSYS);
--	}
--
- 	return 0;
- }
- 
+--- linux-2.6.21-rc7.orig/fs/ext2/namei.c	2007-04-23 22:26:18.000000000 -0700
++++ linux-2.6.21-rc7/fs/ext2/namei.c	2007-04-23 22:30:56.000000000 -0700
+@@ -114,10 +114,16 @@ static int ext2_create (struct inode * d
+ 			inode->i_fop = &ext2_xip_file_operations;
+ 		} else if (test_opt(inode->i_sb, NOBH)) {
+ 			inode->i_mapping->a_ops = &ext2_nobh_aops;
+-			inode->i_fop = &ext2_file_operations;
++			if (mapping_order(inode->i_mapping))
++				inode->i_fop = &ext2_no_mmap_file_operations;
++			else
++				inode->i_fop = &ext2_file_operations;
+ 		} else {
+ 			inode->i_mapping->a_ops = &ext2_aops;
+-			inode->i_fop = &ext2_file_operations;
++			if (mapping_order(inode->i_mapping))
++				inode->i_fop = &ext2_no_mmap_file_operations;
++			else
++				inode->i_fop = &ext2_file_operations;
+ 		}
+ 		mark_inode_dirty(inode);
+ 		err = ext2_add_nondir(dentry, inode);
 
 --
