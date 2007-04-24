@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031080AbXDXVYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423090AbXDXVZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031080AbXDXVYX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 17:24:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031082AbXDXVYX
+	id S1423090AbXDXVZZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 17:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423097AbXDXVZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 17:24:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34497 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031080AbXDXVYW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 17:24:22 -0400
-Date: Tue, 24 Apr 2007 14:24:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, pj@sgi.com
-Subject: Re: Pagecache: find_or_create_page does not call a proper page
- allocator function
-Message-Id: <20070424142411.95462085.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704241354470.13382@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704231408530.691@schroedinger.engr.sgi.com>
-	<20070423142919.5809e03f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704231503540.975@schroedinger.engr.sgi.com>
-	<20070423154224.15ebf8f7.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241339460.26223@blonde.wat.veritas.com>
-	<20070424101116.1cb7512e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241954050.28487@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0704241254420.12907@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0704242109290.11314@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0704241326410.13005@schroedinger.engr.sgi.com>
-	<20070424134206.95bd6c92.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241344100.13005@schroedinger.engr.sgi.com>
-	<20070424135348.4e69ac23.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241354470.13382@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 17:25:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34507 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423090AbXDXVZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 17:25:24 -0400
+Date: Tue, 24 Apr 2007 23:24:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070424212408.GD16457@elf.ucw.cz>
+References: <20070413202100.GA9957@elte.hu> <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 13:58:35 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+Hi!
 
-> On Tue, 24 Apr 2007, Andrew Morton wrote:
+> > Well, current uswsusp code can do most of stuff suspend2 can do, with
+> > 20% (or so) of kernel code. 
 > 
-> > > Then I think we should disable page migration for allocations that do not 
-> > > allow access to the policy zone. That would fix it.
-> > 
-> > Can't we use mapping_gfp_mask() when allocating the destination page?
+> Btw, this is a totally inane argument.
 > 
-> There is no point in migrating something if you cannot reach the 
-> destination. If the policy zone is not allowed by an allocation then the 
-> page cannot be migrated because (on 32 bit NUMA) there is only a single 
-> ZONE_NORMAL on the system. A different node requires a HIGHMEM allocation!
+> If the code just moved somewhere else, it's not "less code".
 
-don't care really.  If we're allocating a page for an address_space, we
-should be using its allocation mask.  As I said, we might add more things in
-the future.
+It is not "just moved". It is in userspace, where we can use liblzf /
+gcrypt / ( and vbetool for s2ram/s2both) as libraries. We have about
+7000 LoC of userland code (that is not libraries).
 
-If in so doing the user pointlessly wastes some CPU cycles in one weird
-case, it doesn't matter a lot.
+> You compare complete subsystems against complete subsystems, OR YOU DON'T 
+> COMPARE THEM AT ALL!
 
-> > It would be better to do so, really.  Who knows, mapping_gfp_mask() might
-> > be extented in the future to say "I want GFP_NOIO" or something.  Or a
-> > filesystem might specify GFP_KERNEL for regular pagecache pages or
-> > whatever.
-> 
-> Hmmm..... How about a VM_DONTMIGRATE flag instead? That would be easy to 
-> check and could be set by a device that must have all pages of the address
-> space conforming to the gfp mask.
-> 
-> Or more general
-> 
-> VM_STRICT_ALLOC?
+Ok, I do not know how big suspend2 user code is, but kernel uswsusp
+(4 kLoC) + userland support (7 kLoC) is still smaller than suspend2
+kernel code (+ ? kLoC suspend2 userland support).
 
-ug.  That's special-casing the blockdev pagecache peculiarity when someone
-mmaps it.  It'd be better to stick with the existing interfaces and
-conventions: the address_space gets to dictate how is pages are allocated.
+> This whole notion that "kernel lines of code" is somehow different is a 
+> stupid and idiotic _disease_ that is spread by microkernel people and 
+> people who have been brainwashed by them.
 
-> > Generally, the interface is "address_space tells core kernel how to
-> > allocate its pages", and to be nice we should honour that in all places
-> > where we allocate a page for an address_space.
-> > 
-> > If we'd had any brains we would have implemented this function as an
-> > address_space_operations callback, but we don't so we didn't.
-> 
-> We have enough flags I think.
+Yep, sorry about that.
 
-mapping_gfp_mask if a pretty foul thing.  Adding
+> Separation of code often makes things *harder* to understand and debug. A 
+> few prime examples of this f*cking idiotic stupid disease of discounting 
+> user level code because it somehow "doesn't matter" is:
 
-	struct page (*alloc_page)(struct address_space *mapping);
+I believe uswsusp user/kernel separation is clean enough. Kernel
+provides "snapshot image" and "resume image". (Thanks go to Rafael for
+very clean interface).
 
-to address_space_operations would be a quite nice cleanup.
-
-But I ain't taking cleanups at present.
-
-<goes back to working on a critical 2.6.21 bug>
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
