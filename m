@@ -1,97 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031134AbXDYPuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031127AbXDYPvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031134AbXDYPuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031125AbXDYPuC
+	id S1031127AbXDYPvI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031135AbXDYPug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:50:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47939 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031118AbXDYPty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:49:54 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 03/16] AF_RXRPC: Key facility changes for AF_RXRPC [try #4]
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 25 Apr 2007 16:49:12 +0100
-Message-ID: <20070425154912.26581.22492.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
-References: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Wed, 25 Apr 2007 11:50:36 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55370 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031127AbXDYPuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 11:50:06 -0400
+X-AuditID: d80ac287-adacabb00000590d-36-462f78ae0921 
+Date: Wed, 25 Apr 2007 16:49:36 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] slub: update cpu after new_slab()
+In-Reply-To: <Pine.LNX.4.64.0704250824070.24363@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704251642450.22530@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0704251613280.19217@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0704250824070.24363@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 25 Apr 2007 15:49:48.0238 (UTC) FILETIME=[5A6A86E0:01C78751]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the keyring key type definition and document its availability.
+On Wed, 25 Apr 2007, Christoph Lameter wrote:
+> On Wed, 25 Apr 2007, Hugh Dickins wrote:
+> 
+> > SLUB gave me a NULL pointer dereference in slab_alloc(), in the
+> > slab_lock(page) of its "Current cpuslab is acceptable" block: cpu
+> > 1 had been looking at cpu_slab[2], which then went NULL beneath it.
+> > Since new_slab() may reenable interrupts and sleep (when __GFP_WAIT),
+> > we may get rescheduled on a different cpu: so need to reevaluate it.
+> 
+> Right. local_irq_save does not switch off preemption as I thought.
 
-Add alternative types into the key's type_data union to make it more useful.
-Not all users necessarily want to use it as a list_head (AF_RXRPC doesn't, for
-example), so make it clear that it can be used in other ways.
+Strange comment.  Preemption is not possible while IRQs are disabled,
+but new_slab() rightly reenables them within itself in the __GFP_WAIT
+case, since it's going off to do a page allocation and may need to wait.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+(And actually, this kernel was a CONFIG_PREEMPT_NONE=y one.)
 
- Documentation/keys.txt  |   12 ++++++++++++
- include/linux/key.h     |    2 ++
- security/keys/keyring.c |    2 ++
- 3 files changed, 16 insertions(+), 0 deletions(-)
+> 
+> Acked-by: Christoph Lameter <clameter@sgi.com>
 
-diff --git a/Documentation/keys.txt b/Documentation/keys.txt
-index 60c665d..81d9aa0 100644
---- a/Documentation/keys.txt
-+++ b/Documentation/keys.txt
-@@ -859,6 +859,18 @@ payload contents" for more information.
- 	void unregister_key_type(struct key_type *type);
- 
- 
-+Under some circumstances, it may be desirable to desirable to deal with a
-+bundle of keys.  The facility provides access to the keyring type for managing
-+such a bundle:
-+
-+	struct key_type key_type_keyring;
-+
-+This can be used with a function such as request_key() to find a specific
-+keyring in a process's keyrings.  A keyring thus found can then be searched
-+with keyring_search().  Note that it is not possible to use request_key() to
-+search a specific keyring, so using keyrings in this way is of limited utility.
-+
-+
- ===================================
- NOTES ON ACCESSING PAYLOAD CONTENTS
- ===================================
-diff --git a/include/linux/key.h b/include/linux/key.h
-index 169f05e..a9220e7 100644
---- a/include/linux/key.h
-+++ b/include/linux/key.h
-@@ -160,6 +160,8 @@ struct key {
- 	 */
- 	union {
- 		struct list_head	link;
-+		unsigned long		x[2];
-+		void			*p[2];
- 	} type_data;
- 
- 	/* key data
-diff --git a/security/keys/keyring.c b/security/keys/keyring.c
-index ad45ce7..88292e3 100644
---- a/security/keys/keyring.c
-+++ b/security/keys/keyring.c
-@@ -66,6 +66,8 @@ struct key_type key_type_keyring = {
- 	.read		= keyring_read,
- };
- 
-+EXPORT_SYMBOL(key_type_keyring);
-+
- /*
-  * semaphore to serialise link/link calls to prevent two link calls in parallel
-  * introducing a cycle
-
+Thanks,
+Hugh
