@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031110AbXDYTfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031126AbXDYTfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031110AbXDYTfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031119AbXDYTfb
+	id S1031126AbXDYTfk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDYTfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:35:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46558 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031110AbXDYTf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:35:29 -0400
-Date: Wed, 25 Apr 2007 15:35:11 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
-Message-ID: <20070425193511.GB3006@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>
-References: <1177512596.4856.17.camel@daplas> <20070425121242.52698643.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425121242.52698643.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 25 Apr 2007 15:35:33 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:40953 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031117AbXDYTfa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 15:35:30 -0400
+To: serge@hallyn.com
+CC: ebiederm@xmission.com, hpa@zytor.com, miklos@szeredi.hu,
+       akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, linux-security-module@vger.kernel.org
+In-reply-to: <20070425185244.GA20688@vino.hallyn.com> (serge@hallyn.com)
+Subject: Re: [patch] unprivileged mounts update
+References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu> <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com>
+Message-Id: <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Apr 2007 21:33:43 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 12:12:42PM -0700, Andrew Morton wrote:
-  > > EIP:    0060:[<c014c469>]    Tainted: G      D VLI
- > 
- > For some reason all oopses (and boy there are a lot of them) are being
- > described as tainted.
+> Right, I figure if the normal action is to always do
+> mnt->user = current->fsuid, then for the special case we
+> pass a uid in someplace.  Of course...  do we not have a
+> place to do that?  Would it be a no-no to use 'data' for
+> a non-fs-specific arg?
 
-What's "D" though ?  grep -i taint broken-out/* doesn't show
--mm adding any new flags, and I don't see it present in mainline.
+I guess it would be OK for bind, but not for new- and remounts, where
+'data' is already used.
 
-	Dave
+Maybe it's best to stay with fsuid after all, and live with having to
+restore capabilities.  It's not so bad after all, this seems to do the
+trick:
 
--- 
-http://www.codemonkey.org.uk
+	cap_t cap = cap_get_proc();
+	setfsuid(uid);
+	cap_set_proc(cap);
+
+Unfortunately these functions are not in libc, but in a separate
+"libcap" library.  Ugh.
+
+Miklos
