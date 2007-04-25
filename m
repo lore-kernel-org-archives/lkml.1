@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423359AbXDYSTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423370AbXDYSUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423359AbXDYSTh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423363AbXDYSTh
+	id S1423370AbXDYSUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423365AbXDYSUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:19:37 -0400
-Received: from mx1.suse.de ([195.135.220.2]:54949 "EHLO mx1.suse.de"
+	Wed, 25 Apr 2007 14:20:18 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:16044 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423359AbXDYSTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:19:36 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: pgprot_writecombine() and PATs on x86
-Date: Wed, 25 Apr 2007 20:19:27 +0200
-User-Agent: KMail/1.9.6
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       mst@mellanox.co.il, jackm@mellanox.co.il
-References: <ada1wi8xrgt.fsf@cisco.com>
-In-Reply-To: <ada1wi8xrgt.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1423371AbXDYSUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:20:16 -0400
+Date: Wed, 25 Apr 2007 20:16:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070425181643.GJ4730@kernel.dk>
+References: <20070424222105.883597089@sgi.com> <20070425113530.GX9715@kernel.dk> <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com> <20070425175335.GG4730@kernel.dk> <Pine.LNX.4.64.0704251101490.21918@schroedinger.engr.sgi.com> <20070425180528.GH4730@kernel.dk> <Pine.LNX.4.64.0704251113460.27844@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704252019.28017.ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0704251113460.27844@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007 20:02:26 Roland Dreier wrote:
-> Hi Eric,
+On Wed, Apr 25 2007, Christoph Lameter wrote:
+> On Wed, 25 Apr 2007, Jens Axboe wrote:
 > 
-> Where do your patches to add an implementation of
-> pgprot_writecombine() using PATs on x86 stand?  
-
-It's on my todo list.
-
-> The mlx4 driver I'm 
-> planning on merging for 2.6.22 would really like writecombining, and
-> I'm interested in doing the work to finally get the PAT stuff merged
-> (probably for 2.6.23 I guess).
+> > All of memory is lowmem. There are no bounces going on, for sure.
 > 
-> Just to give a little background on my motivation: the mlx4 hardware
-> allows a page in its PCI space to be mapped, where the driver can write
-> descriptors and payloads directly, instead of ringing a doorbell and
-> having the HW fetch the descriptor from system memory, for better latency.
+> Could you figure out what this is? The patchset was intentionally only for 
+> 64 bit. I cannot get to the 32 bit headaches for a week or so.
 
-When it's PCI space you can likely just use MTRRs. PAT is mostly useful
-for applications that do IO with random memory pages
+Sure, but I probably wont have cycles to throw at that until next
+week... Come monday I'll see if I can pin point the problem(s).
 
--Andi
+-- 
+Jens Axboe
+
