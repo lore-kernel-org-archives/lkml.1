@@ -1,98 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992546AbXDYKBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992522AbXDYKCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992546AbXDYKBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXDYKBW
+	id S2992522AbXDYKCY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXDYKCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:01:22 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:44977 "EHLO mailer.gwdg.de"
+	Wed, 25 Apr 2007 06:02:23 -0400
+Received: from wasp.net.au ([203.190.192.17]:48393 "EHLO wasp.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992546AbXDYKBV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:01:21 -0400
-Date: Wed, 25 Apr 2007 11:59:15 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Jakub Jelinek <jakub@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Big reserved mappings on x86_64
-In-Reply-To: <20070425113005.21bccfab.dada1@cosmosbay.com>
-Message-ID: <Pine.LNX.4.61.0704251155230.19711@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704251035480.19711@yvahk01.tjqt.qr>
- <20070425084931.GC355@devserv.devel.redhat.com> <20070425113005.21bccfab.dada1@cosmosbay.com>
+	id S2992522AbXDYKCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 06:02:23 -0400
+Message-ID: <462F2727.7090205@wasp.net.au>
+Date: Wed, 25 Apr 2007 14:02:15 +0400
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Neil Brown <neilb@suse.de>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+References: <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk> <17967.8536.788076.851546@notabene.brown> <20070425094712.GP9715@kernel.dk>
+In-Reply-To: <20070425094712.GP9715@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
 
-On Apr 25 2007 11:30, Eric Dumazet wrote:
->Jakub Jelinek <jakub@redhat.com> wrote:
->
->> On Wed, Apr 25, 2007 at 10:42:20AM +0200, Jan Engelhardt wrote:
->> > I actually took a look at `pmap $$`, which reveals that a lot of shared 
->> > libraries map 2044K or 2048K unreadable-unwritable-private 
->> > mappings...for _what_ purpose?
->> > 
->> > 10:37 opteron:~ > pmap $$
->> > 4403: bash
->> > START       SIZE     RSS   DIRTY PERM MAPPING
->> > 2ae6cca70000    212K    172K      0K r-xp /lib64/libreadline.so.5.2
->> > 2ae6ccaa5000   2044K      0K      0K ---p /lib64/libreadline.so.5.2 <--
->> > 2ae6ccca4000      4K      4K      4K r--p /lib64/libreadline.so.5.2
->> > 2ae6ccca5000     28K     28K     28K rw-p /lib64/libreadline.so.5.2
->> > 2ae6cccac000      8K      8K      8K rw-p [anon]
->> > 2ae6cccae000     28K     16K      0K r-xp /lib64/libhistory.so.5.2
->> > 2ae6cccb5000   2048K      0K      0K ---p /lib64/libhistory.so.5.2 <--
->> > 2ae6cceb5000      8K      8K      8K rw-p /lib64/libhistory.so.5.2
->> > 2ae6cceb7000    320K    208K      0K r-xp /lib64/libncurses.so.5.5
->> > 2ae6ccf07000   2048K      0K      0K ---p /lib64/libncurses.so.5.5 <--
->> > 2ae6cd107000     48K     48K     48K r--p /lib64/libncurses.so.5.5
->> > 2ae6cd113000     28K     28K     28K rw-p /lib64/libncurses.so.5.5
->> > [...]
->> > 
->> > What could these ominous mappings be? Does anyone else see that - 
->> > perhaps someone with x86_64 && !(opensuse 10.2)?
->> 
->> While i386 only supports 4KB pages, x86_64 ELF objects ought to support
->> up to 2MB pages.  The gap between read-only/executable and writable segments
->> is intentionally mapped PROT_NONE, so that other things aren't mapped in
->> between the segments.
->
->This makes sense for catching some programming errors, but it also
->has a cost for innocent users, since it adds one vm_area_struct per
->dll. It slows down all find_vma() operations that tend to be done
->quite frequently these days :( Even with a rbtree, adding 150
->vm_area_struct increase memory needs and cache misses. Maybe these
->PROT_NONE mappings could be done iff some LD_DEBUG or other ld.so
->variable says so ?
+> It looks to be extremely rare. Aliases are extremely rare, front merges
+> are rare. And you need both to happen with the details you outlined. But
+> it's a large user base, and we've had 3-4 reports on this in the past
+> months. So it obviously does happen. I could not make it trigger without
+> doctoring the unplug code when I used aio.
 
-And even then, there should probably be one or two variables inside
-the vma struct that defines a "padding" the must come before/after a
-specific vma. I think that would get rid of these PROT_NONE vmas
-while catching errors. Hey btw, are there any architectures that do
-_not_ actually implement a read/write check? Having no vma mapped at
-all might catch a bogus read/write attempt earlier than a prot_none
-vma, does not it?
+Well, not that rare on this particular machine (I had a case where I could reproduce it in less than 
+an hour of normal use previously on this box), and I've had it occur a number of times on my 
+servers, I just never reported it before as I never took the time to set up a serial console and 
+capture the oops.
 
->BTW I dont see such mappings on my 32bit distro (Ubuntu 7.04, glibc-2.5)
+> Here's a fix for it, confirmed.
 
-It seems specific to x86_64. sparc64 looks like this:
+Shall I leave the other debugging in, apply this and run it for a few hard days?
 
-f7d34000   1376K r-x--  /lib/libc-2.5.so
-f7e8c000     56K -----  /lib/libc-2.5.so <-
-f7e9a000      8K r----  /lib/libc-2.5.so
-f7e9c000     16K rwx--  /lib/libc-2.5.so
-f7ea0000      8K rwx--    [ anon ]
-f7ea4000     16K r-x--  /lib/libdl-2.5.so
-f7ea8000     56K -----  /lib/libdl-2.5.so <-
-f7eb6000      8K r----  /lib/libdl-2.5.so
-f7eb8000      8K rwx--  /lib/libdl-2.5.so
-f7ebc000     16K r-x--  /lib/libtermcap.so.2.0.8
-f7ec0000     56K -----  /lib/libtermcap.so.2.0.8 <-
-f7ece000      8K rwx--  /lib/libtermcap.so.2.0.8
-
-
-Jan
+Brad
 -- 
+"Human beings, who are almost unique in having the ability
+to learn from the experience of others, are also remarkable
+for their apparent disinclination to do so." -- Douglas Adams
