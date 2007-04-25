@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161126AbXDYObe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030927AbXDYOfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161126AbXDYObe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 10:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030948AbXDYObe
+	id S1030927AbXDYOfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 10:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030924AbXDYOfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 10:31:34 -0400
-Received: from mx0.starentnetworks.com ([12.38.223.203]:59608 "EHLO
-	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030934AbXDYObd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 10:31:33 -0400
-X-MessageTextProcessor: DisclaimIt (2.70.271) [Starent Networks Corp.]
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.1830
-Content-Class: urn:content-classes:message
+	Wed, 25 Apr 2007 10:35:18 -0400
+Received: from mail.zelnet.ru ([80.92.97.13]:50005 "EHLO mail.zelnet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030927AbXDYOfQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 10:35:16 -0400
+Message-ID: <462F6717.70508@namesys.com>
+Date: Wed, 25 Apr 2007 18:35:03 +0400
+From: Edward Shishkin <edward@namesys.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060411
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
-Date: Wed, 25 Apr 2007 10:31:23 -0400
-Message-ID: <7CCD07160348804497EF29E9EA5560D7020F6206@exchtewks2.starentnetworks.com>
-In-Reply-To: <p73k5w032wv.fsf@bingen.suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
-thread-index: AceHQ+ELOyqKHkl3Tha8tYZqHNNYTAAAE/iA
-From: "Ristuccia, Brian" <bristuccia@starentnetworks.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Importance: normal
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-X-OriginalArrivalTime: 25 Apr 2007 14:31:24.0377 (UTC) FILETIME=[66B24C90:01C78746]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Vladimir V. Saveliev" <vs@namesys.com>,
+       Alex Zarochentsev <zam@namesys.com>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Eric Hopper <hopper@omnifarious.org>, Lex Lyamin <flx@msu.ru>,
+       William Heimbigner <icxcnika@mar.tar.cc>,
+       Rik van Riel <riel@redhat.com>, Xu CanHao <xucanhao@gmail.com>
+Subject: Re: Question about Reiser4
+References: <20070423111939.c876c9cc.akpm@linux-foundation.org> <462E17AF.7090604@namesys.com> <20070424193921.GA17129@one.firstfloor.org>
+In-Reply-To: <20070424193921.GA17129@one.firstfloor.org>
+X-Enigmail-Version: 0.86.0.0
+X-Enigmail-Supports: pgp-inline, pgp-mime
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
 
-> > 08:39:55.493029 IP 12.33.234.69.35026 > 10.2.10.254.22: S 
-> > 2768979373:2768979373(
-> > 0) win 5840 <mss 1460,sackOK,timestamp 3873837730 0,nop,wscale 2>
-> > 08:39:55.493119 IP 10.2.10.254.22 > 12.33.234.69.35026: S
-> > 963242385:963242385(0)
-> >  ack 2768979374 win 17896 <mss 8960,sackOK,timestamp 413751
-> 
-> The MSS clamp for sending to 10.2.10.254.22 is 8960. MSS is 
-> only one way -- each uses what the other tells it.
-> 
+>>Because there are unaddressed items in this todo list:
+>>http://pub.namesys.com/Reiser4/ToDo
+>>The main issues here are xattrs and support for blocksize != pagesize.
+>>    
+>>
+>
+>I would consider both to be optional. We have various file systems
+>in tree that don't support either (e.g. JFS only supports 4K blocks
+>and OCFS2 doesn't support xattr) They shouldn't block merging.
+>
+>  
+>
 
-Right - except that 10.2.10.254 keeps sending to 12.33.234.69 with an
-increasingly large MSS, even though 12.33.234.69 has asked for no larger
-than 1460.
+xattrs also were considered as some guarantee of vendor support.
+If possible, then we'll address it as low-priority issue.
+Maybe somebody will help.. (xattrs support should go as incremental
+update of FPL-subversion for reiser4 kernel module and reiser4progs).
 
-> > In the following dump, the system eventually gets in a 
-> state where it 
-> > oscillates between sendng undeliverable 2896 byte packets and 
-> > deliverable 1448 byte ones.
-> 
-> This should only happen on PMTU expire, which is normally ~15mins.
-> Perhaps you misconfigured it manually using sysctl.
-> 
+>>2. Who will maintain this?
+>>
+>>Currently there are two namesys employees working mostly on
+>>enthusiasm. Divide them into 2 file systems, plus many people who
+>>really help with fixing problems.
+>>    
+>>
+>
+>Merging will probably be a peak of work for the necessary changes,
+>then hopefully the work will be less once you're in tree because
+>you don't need to track mainline anymore
+>(assuming not to many bugs come in from users) 
+>
+>-Andi
+>  
+>
 
-This is /proc/sys/net/ipv4/route/mtu_expires? It's 600.
+Hope we survive this, at least such peaks is not something new in
+our practice.
 
--- 
-Brian Ristuccia
+Well, gentlemen, so we'll address other items (except #26, 27) and
+resume this discussion.
 
+Thanks,
+Edward.
 
-"This email message and any attachments are confidential information of Starent Networks, Corp. The information transmitted may not be used to create or change any contractual obligations of Starent Networks, Corp.  Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon this e-mail and its attachments by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify the sender immediately -- by replying to this message or by sending an email to postmaster@starentnetworks.com -- and destroy all copies of this message and any attachments without reading or disclosing their contents. Thank you."
