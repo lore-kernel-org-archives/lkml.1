@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDYMb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965528AbXDYMd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965550AbXDYMb2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 08:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXDYMb2
+	id S965528AbXDYMd5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 08:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965552AbXDYMd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 08:31:28 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:52929 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965522AbXDYMb0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 08:31:26 -0400
-Subject: Re: [PATCH 5/5] jffs2: Allow selection of compression mode via a
-	sysfs attribute
-From: David Woodhouse <dwmw2@infradead.org>
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
-       linux-mtd <linux-mtd@lists.infradead.org>, linux-crypto@vger.kernel.org
-In-Reply-To: <1172690034.16062.144.camel@localhost.localdomain>
-References: <1172690034.16062.144.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 13:31:20 +0100
-Message-Id: <1177504280.2755.212.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+	Wed, 25 Apr 2007 08:33:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37531 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965528AbXDYMdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 08:33:55 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Fernando Luis =?utf-8?q?V=C3=A1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+Subject: Re: [PATCH 2/10] safe_apic_wait_icr_idle - x86_64
+Date: Wed, 25 Apr 2007 14:26:14 +0200
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, horms@verge.net.au,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@in.ibm.com, mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
+       akpm@linux-foundation.org
+References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp> <1177499715.17974.12.camel@sebastian.intellilink.co.jp>
+In-Reply-To: <1177499715.17974.12.camel@sebastian.intellilink.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200704251426.14398.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-02-28 at 19:13 +0000, Richard Purdie wrote:
-> Allow selection of the compression mode for jffs2 via a sysfs 
-> attribute. This establishes a sysfs presence for jffs2 through
-> which other compression options could easily be exported too. 
 
-And other options like GC threshold and other allocation things. So
-perhaps put the sysfs subsystem_register() and other core bits into a
-generic (and Linux-specific) file?
+>  static __inline__ void apic_wait_icr_idle(void)
+>  {
+> -	while (apic_read( APIC_ICR ) & APIC_ICR_BUSY)
+> +	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+>  		cpu_relax();
+>  }
+>  
+> +static __inline__ unsigned int safe_apic_wait_icr_idle(void)
 
--- 
-dwmw2
+This should be probably not inline -- too large
 
+-Andi
