@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXDYNiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992770AbXDYNjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751672AbXDYNiy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161126AbXDYNix
+	id S2992770AbXDYNjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992768AbXDYNjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:38:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52163 "EHLO mx1.redhat.com"
+	Wed, 25 Apr 2007 09:39:52 -0400
+Received: from mail.suse.de ([195.135.220.2]:35797 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbXDYNiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:38:52 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070425041514.bb770377.akpm@linux-foundation.org> 
-References: <20070425041514.bb770377.akpm@linux-foundation.org>  <20070425105036.10872.48596.stgit@warthog.cambridge.redhat.com> 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 00/16] AF_RXRPC socket family and AFS rewrite [try #3] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 25 Apr 2007 14:38:32 +0100
-Message-ID: <13484.1177508312@redhat.com>
+	id S1161742AbXDYNju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:39:50 -0400
+To: Fengguang Wu <fengguang.wu@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] on-demand readahead
+References: <377506695.54393@ustc.edu.cn>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 25 Apr 2007 16:37:41 +0200
+In-Reply-To: <377506695.54393@ustc.edu.cn>
+Message-ID: <p73odlc34ga.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Fengguang Wu <fengguang.wu@gmail.com> writes:
 
-> I'm ducking all feature and cleanup patches now, and probably shall
-> continue to do so for some weeks.  The priority (which I believe to be
-> increasingly urgent) is to fix the 2.6.21 regressions and to stabilise
-> the things which we presently have queued for 2.6.22.  Not to
-> mention the 1000ish unaddressed bug reports in bugzilla and elsewhere.
+> OVERHEADS
+> 
+> The new code reduced the overheads of
+> 
+> 	- excessively calling the readahead routine on small sized reads
+> 	  (the current readahead code insists on seeing all requests)
+> 
+> 	- doing a lot of pointless page-cache lookups for small cached files
+> 	  (the current readahead only turns itself off after 256 cache hits,
+> 	  unfortunately most files are < 1MB, so never see that chance)
 
-Fair enough.  I think the idea is for them (or at least some of them) to go
-through one of DaveM's net git trees anyway.
+Would it make sense to keep track in the AS if the file is completely in cache?
+Then you could probably avoid a lot of these lookups for small in cache files
 
-David
+> --- linux-2.6.21-rc7-mm1.orig/mm/readahead.c
+> +++ linux-2.6.21-rc7-mm1/mm/readahead.c
+> @@ -733,6 +733,11 @@ unsigned long max_sane_readahead(unsigne
+
+Quite simple patch, why is it that much simpler than your earlier patchkits?
+Or is that on top of them?
+
+You seem to have a lot of magic numbers. They probably all need symbols and 
+explanations.
+
+Your white space also needs some work.
+
+-Andi
