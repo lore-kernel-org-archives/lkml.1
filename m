@@ -1,69 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992856AbXDYSgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992878AbXDYSj2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992856AbXDYSgy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992878AbXDYSgy
+	id S2992878AbXDYSj2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:39:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992883AbXDYSj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:36:54 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49093 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992856AbXDYSgx (ORCPT
+	Wed, 25 Apr 2007 14:39:28 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34176 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992878AbXDYSj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:36:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       mst@mellanox.co.il, jackm@mellanox.co.il
-Subject: Re: pgprot_writecombine() and PATs on x86
-References: <ada1wi8xrgt.fsf@cisco.com> <200704252019.28017.ak@suse.de>
-Date: Wed, 25 Apr 2007 12:31:34 -0600
-In-Reply-To: <200704252019.28017.ak@suse.de> (Andi Kleen's message of "Wed, 25
-	Apr 2007 20:19:27 +0200")
-Message-ID: <m1abwws3uh.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 25 Apr 2007 14:39:27 -0400
+Date: Wed, 25 Apr 2007 20:39:34 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+Message-ID: <20070425183934.GX3468@stusta.de>
+References: <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de> <20070425173405.GE17074@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070425173405.GE17074@elf.ucw.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+On Wed, Apr 25, 2007 at 07:34:05PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > Even I am running in-kernel swsusp, but my managers were pretty clear
+> > > they want graphical progress bar hiding all the 'ugly' swsusp
+> > > messages... and in the end the same uswsusp enables compression, too.
+> > > 
+> > > > I absolutely detest all suspend-to-disk crap. Quite frankly, I hate the 
+> > > > whole thing. I think they've _all_ caused problems for the "true" suspend 
+> > > > (suspend-to-ram), and the last thing I want to see is three or four 
+> > > 
+> > > Well, it is a bit more complex than that.
+> > > 
+> > > suspend-to-disk is a workaround for
+> > > 
+> > > 	'suspend-to-ram eats too much power' (plus some details like
+> > > 	being able to replace battery).
+> > >...
+> > 
+> > Why does everyone think suspend-to-disk was a laptop-only thing?
+> > 
+> > My personal usage of suspend-to-disk is for turning the computer off in 
+> > the evening and getting the complete FVWM with all programs running, 
+> > open browser tabs,... back the next morning.
+> 
+> Ok ok ok, suspend-to-disk has some other uses, too.
+> 
+> But ... you are really using suspend-to-disk as a workaround for "my
+> desktop takes too much power when idle". Imagine pressing "lock
+> screensaver" combination, and your machine going to low power mode
+> (3W?), immediately. (Quiet, too; you can't generate much noise for
+> 3W). In the morning, you'd just press any key, machine would power up,
+> immediately... ok, you'd have to ifconfig eth0 down, so that spurious
+> packets on the local net would wake your machine, with all its fans
+> etc.
 
-> On Wednesday 25 April 2007 20:02:26 Roland Dreier wrote:
->> Hi Eric,
->> 
->> Where do your patches to add an implementation of
->> pgprot_writecombine() using PATs on x86 stand?  
->
-> It's on my todo list.
+3W for the complete system? In CPU state S1? [1]
+And even 3W would still be a waste of energy.
 
-Basically enabling PAT is easy.  Adding the paranoid checks is
-trickier.  I keep intending to do something but...
+And what would be the advantage? The socket my computer is connected at 
+is located below my bed so I can turn the power on while still lying in 
+bed (the computer is not reachable from my bed). OK, I could create an 
+external power button for the computer using longer cables connected to 
+the motherboard, but I still haven't understood why this should be 
+better for my use case than suspend-to-disk.
 
->> The mlx4 driver I'm 
->> planning on merging for 2.6.22 would really like writecombining, and
->> I'm interested in doing the work to finally get the PAT stuff merged
->> (probably for 2.6.23 I guess).
->> 
->> Just to give a little background on my motivation: the mlx4 hardware
->> allows a page in its PCI space to be mapped, where the driver can write
->> descriptors and payloads directly, instead of ringing a doorbell and
->> having the HW fetch the descriptor from system memory, for better latency.
->
-> When it's PCI space you can likely just use MTRRs. PAT is mostly useful
-> for applications that do IO with random memory pages
+> 								Pavel
 
-The problem is that on machines with larger memory configurations (8-12G)
-there are no spare mtrrs, or the mtrrs can frequently be configured in
-an overlapping way so that we can't set them up.   In general mtrrs
-work ok for one card possible for two and after that they are just
-useless.
+cu
+Adrian
 
-PAT is also much easier to use from a driver perspective, and it is
-much more portable between architectures.  Using mtrrs from drivers
-is almost impossible.
+[1] unless I'm misunderstanding [2], page 9, that's the highest state
+    my processor supports
+[2] http://www.amd.com/us-en/assets/content_type/white_papers_and_tech_docs/24309.pdf
 
-Roland is the mlx4 sane enough to put the memory that needs
-write-combining a prefetchable bar.  So several cards can be combined
-together?
+-- 
 
-Eric
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
