@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992908AbXDYTCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992923AbXDYTC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992908AbXDYTCP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992923AbXDYTCP
+	id S2992923AbXDYTC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992927AbXDYTC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:02:15 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:18984 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992908AbXDYTCO (ORCPT
+	Wed, 25 Apr 2007 15:02:26 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37500 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992923AbXDYTCZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:02:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
-        b=tEjuzxIgighi88BqTrUJ0kaREnkTcnPqUkpwHofmsbyPWb9ZrCOpmlqb9PA7qx+7I6zZQU2Wml2JRs4AOQZQRCg0eVoYP+CpmkurKfIu9y0UPH4WSVRjqQw1d9iaYwOO/c44aPAEdzRy6ueYL76D1m5p5Uh4NSRbKG27VQRAK6k=
-From: "Hua Zhong" <hzhong@gmail.com>
-To: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'Adrian Bunk'" <bunk@stusta.de>
-Cc: "'Pavel Machek'" <pavel@ucw.cz>, "'Ingo Molnar'" <mingo@elte.hu>,
-       "'Nigel Cunningham'" <nigel@nigel.suspend2.net>,
-       "'Christian Hesse'" <mail@earthworm.de>,
-       "'Nick Piggin'" <npiggin@suse.de>, "'Mike Galbraith'" <efault@gmx.de>,
-       <linux-kernel@vger.kernel.org>, "'Con Kolivas'" <kernel@kolivas.org>,
-       <suspend2-devel@lists.suspend2.net>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Thomas Gleixner'" <tglx@linutronix.de>,
-       "'Arjan van de Ven'" <arjan@infradead.org>
-References: <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de> <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de> <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
-Subject: RE: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Date: Wed, 25 Apr 2007 12:02:01 -0700
-Message-ID: <021401c7876c$36b640c0$a422c240$@com>
+	Wed, 25 Apr 2007 15:02:25 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
+	<20070425044813.f83dde4e.akpm@linux-foundation.org>
+	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+	<462F9B64.3020107@goop.org>
+Date: Wed, 25 Apr 2007 13:01:19 -0600
+In-Reply-To: <462F9B64.3020107@goop.org> (Jeremy Fitzhardinge's message of
+	"Wed, 25 Apr 2007 11:18:12 -0700")
+Message-ID: <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-thread-index: AceHa0yd0MXZHrhBSYK9plMy/TZkBwAAEyBg
-Content-Language: en-us
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In STR, 3W is quite realistic. The CPU is off, all (or most - up to you)
-> the devices are off, but the motherboard and memory is powered.
-> 
-> > And even 3W would still be a waste of energy.
-> 
-> .. but if the alternative is a feature that just isn't worth it, and
-> likely to not only have its own bugs, but cause bugs elsewhere? (And
-> yes,
-> I believe STD is both of those. There's a reason it's called "STD". Go
-> to google and type "STD" and press "I'm feeling lucky". Google is God).
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Linus, the fact that you personally don't use S2D does not mean it's not
-useful for other people. I've been using solely laptop for six years and
-until recently (when my commute is now only two miles) I'd always used
-hibernate when I go to or leave form work. And even now if I take my laptop
-to somewhere farther away (like on a vacation) I need hibernation.
+> I might have introduced it as part of the paravirt_ops patches.  When
+> setting up pagetables under Xen, we need to make sure we preserve the
+> initial mappings Xen put in place (it starts the VM with paging enabled,
+> and a sane initial pagetable).  This may have leaked over into native if
+> it doesn't replace an existing entry.
 
-This is one area where Windows has been doing great for many years, and it's
-not like Linux has not had a mature implementation for many years either. So
-don't you think your comments are a bit odd at this point?
+Yes in paravirt_ops-hooks-to-set-up-initial-pagetable
+Grr.  That is what I get for trying to avoid conflicts by working
+against the -mm tree.
 
-Hua
+I thought that code had been like that for a while.  Since it hasn't
+been merged upstream it looks to me like that patch needs to be fixed.
+And we can keep HPA debugging patch.
 
+> Hm, but it should be overwriting small mappings with large ones.  Maybe
+> I overlooked that.
 
+Nope.  It's not overwriting anything.  I'm not at all convinced we
+should preserve the Xen sillyness.  I'm not exactly against it,
+but it adds complexity to already complex code.
+
+>> I'm halfway through putting together a patchset to address a
+>> bunch of these.
+>>
+>> I haven't yet resolved how I want to allocate the pages for the
+>> identity mapping of the page table yet.  I can't use the bootmem
+>> allocate as it exists because that assumes the page is mapped
+>> into the address space already.
+>>   
+>
+> Are you going to clash horribly with the paravirt pagetable setup?  We
+> should probably coordinate if so.
+
+We will have to see.  Currently the paravirt pagetable setup clashes
+horrible with actually running a kernel on real hardware.
+
+Color me not impressed by the paravirt mess.
+
+Eric
