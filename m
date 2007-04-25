@@ -1,89 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXDYAdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbXDYAs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030419AbXDYAdE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 20:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDYAdE
+	id S1754549AbXDYAs7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 20:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXDYAs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 20:33:04 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:2806 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030419AbXDYAdB (ORCPT
+	Tue, 24 Apr 2007 20:48:59 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:38566 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbXDYAs6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 20:33:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
-        b=XxCP/eHEHJuZRZ1OEdE15EMc1snjo3LjJpt6ffyljLch/Mi/HFK2n9PDRSgWaRW88Aumb6m1UnGpl4WwuPiaTgSIPxANL350d35Qltt1OfK5C0reMiwyJs4iGPLLjvqB/s9emdQWBCclIWXOE7EmX2BoqAKXxIZiz5cQjpvOjxY=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Willy Tarreau <w@1wt.eu>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, David Lang <david.lang@digitalinsight.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       caglar@pardus.org.tr
-References: <200704220959.34978.kernel@kolivas.org> <200704241038.32766.gene.heskett@gmail.com> <20070424174445.GA31270@1wt.eu>
-In-Reply-To: <20070424174445.GA31270@1wt.eu>
+	Tue, 24 Apr 2007 20:48:58 -0400
+Message-ID: <462EA523.8090909@zytor.com>
+Date: Tue, 24 Apr 2007 17:47:31 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Tue, 24 Apr 2007 20:32:54 -0400
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: clameter@sgi.com
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com>
+In-Reply-To: <20070424222105.883597089@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704242032.54753.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 April 2007, Willy Tarreau wrote:
->On Tue, Apr 24, 2007 at 10:38:32AM -0400, Gene Heskett wrote:
->> On Tuesday 24 April 2007, Ingo Molnar wrote:
->> >* David Lang <david.lang@digitalinsight.com> wrote:
->> >> > (Btw., to protect against such mishaps in the future i have changed
->> >> > the SysRq-N [SysRq-Nice] implementation in my tree to not only
->> >> > change real-time tasks to SCHED_OTHER, but to also renice negative
->> >> > nice levels back to 0 - this will show up in -v6. That way you'd
->> >> > only have had to hit SysRq-N to get the system out of the wedge.)
->> >>
->> >> if you are trying to unwedge a system it may be a good idea to renice
->> >> all tasks to 0, it could be that a task at +19 is holding a lock that
->> >> something else is waiting for.
->> >
->> >Yeah, that's possible too, but +19 tasks are getting a small but
->> >guaranteed share of the CPU so eventually it ought to release it. It's
->> >still a possibility, but i think i'll wait for a specific incident to
->> >happen first, and then react to that incident :-)
->> >
->> >	Ingo
->>
->> In the instance I created, even the SysRq+b was ignored, and ISTR thats
->> supposed to initiate a reboot is it not?  So it was well and truly wedged.
->
->On many machines I use this on, I have to release Alt while still holding B.
->Don't know why, but it works like this.
->
->Willy
+FWIW, this would also let zisofs remove the ugly hacks we currently 
+employ to deal with compression blocks.
 
-Yeah, Willy, and pardon a slight bit of sarcasm here but that's how we get the 
-reputation for needing virgins to sacrifice, regular experienced girls just 
-wouldn't do.
+	-hpa
 
-This isn't APL running on an IBM 5120, so it should Just Work(TM) and not need 
-a sceance or something to conjure up the right spell.  Besides, the reset 
-button is only about 6 feet away...  I get some execsize that way by getting 
-up to push it. :)
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-It is so soon that I am done for, I wonder what I was begun for.
-		-- Epitaph, Cheltenham Churchyard
