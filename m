@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbXDYWNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbXDYWNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbXDYWNM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbXDYWNM
+	id S1754497AbXDYWNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXDYWNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:13:12 -0400
-Received: from mail1.panix.com ([166.84.1.72]:50657 "EHLO mail1.panix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754492AbXDYWNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:13:10 -0400
-Date: Wed, 25 Apr 2007 15:13:05 -0700 (PDT)
-From: Kenneth Crudup <kenny@panix.com>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <20070425192512.GZ3468@stusta.de>
-Message-ID: <Pine.LNX.4.64.0704251512200.8406@vaio.localdomain>
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
- <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
- <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de>
- <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
- <20070425192512.GZ3468@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Apr 2007 18:13:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:22830 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754497AbXDYWNQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:13:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=irIUc28Y7wbnlgk8NShhc4EF7Ykc2+a4ha93jcTexkSyMMrrL2NhaBhY1DcEIQQZCqvBk0FUGPBi+tz8nLBJudaXE6QDL/89/DXcs54KKnqjGaTLQmtLv8Gcm74EyHmnFTKoQkH0yJdLQYepKqpm1+DjN0X/OKFUFl00MbcRTpY=
+From: Sergey Yanovich <ynvich@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sergey Yanovich <ynvich@gmail.com>
+Subject: [PATCH] [mmc] [tifm] Reduces delay in card insert/removal
+Date: Thu, 26 Apr 2007 01:13:16 +0300
+Message-Id: <11775391961930-git-send-email-ynvich@gmail.com>
+X-Mailer: git-send-email 1.5.1.2
+In-Reply-To: 200704200056.33866.arnd@arndb.de
+References: 200704200056.33866.arnd@arndb.de
+Message-Id: <033d5e9dede8853d54e81bc9c1435a2b7915518b.1177536863.git.ynvich@gmail.com>
+In-Reply-To: <5e03dd4e0b14c8155162a5b5b1cea4ed7e04cea3.1177536862.git.ynvich@gmail.com>
+References: <5e03dd4e0b14c8155162a5b5b1cea4ed7e04cea3.1177536862.git.ynvich@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+First, I tried to replace 'mdelay' with 'msleep' and put it after
+'unlock'. It gives a certain oops.
 
-On Wed, 25 Apr 2007, Adrian Bunk wrote:
+With the delay of 50 msec driver remains stable. It has something
+to do with hardware initialization, so this value should not be
+affected by CPU speed. I hope so.
 
-> Some people might boot Windows between suspending and resuming.
+Signed-off-by: Sergey Yanovich <ynvich@gmail.com>
+---
+ drivers/mmc/tifm.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Oh yeah- that, too. Since iTunes doesn't work well with VMWare, I do this
-all the time.
-
-	-Kenny
-
+diff --git a/drivers/mmc/tifm.c b/drivers/mmc/tifm.c
+index 30cab30..310f07c 100644
+--- a/drivers/mmc/tifm.c
++++ b/drivers/mmc/tifm.c
+@@ -361,7 +361,7 @@ mmc_tifm_irq_chip(unsigned long param)
+ 		socket->state = READY;
+ 		tasklet_schedule(&socket->cmd_end);
+ 	}
+-	mdelay(100);
++	mdelay(50);
+ 	spin_unlock_irqrestore(&socket->lock, flags);
+ 	mmc_detect_change(mmc, 0);
+ }
 -- 
-Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
-O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
+1.5.1.2
+
