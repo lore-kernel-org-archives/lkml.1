@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992628AbXDYL13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXDYL2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992628AbXDYL13 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992698AbXDYL12
+	id S2992696AbXDYL2N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992713AbXDYL2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:27:28 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:47191 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992628AbXDYL12 (ORCPT
+	Wed, 25 Apr 2007 07:28:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:54816 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992698AbXDYL2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:27:28 -0400
-Subject: [PATCH 6/10] inquire_remote_apic: use safe_apic_wait_icr_idle -
-	x86_64
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: horms@verge.net.au, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, ak@suse.de, vgoyal@in.ibm.com,
-       mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
-       akpm@linux-foundation.org
-In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 20:27:26 +0900
-Message-Id: <1177500446.17974.30.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Wed, 25 Apr 2007 07:28:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FXyxFiKwIqo6ZLXQNjAKmVQL8BYKv7azHRA2L8wL6CQiwIqswWghL8emzyZ7Qh7q5BF+dG8h/5LaSLWMRdGKA+oO5f4+1BQq60uX6oIt/1CGuVS0OYx1A9svBgbAexYCS9sLuFPIRJ9Ek9KOI1Tlo3+08QYPNjYsoTM+4BvEcR0=
+Message-ID: <2e4afe1e0704250428v30ac35cfwe499a07182464fc5@mail.gmail.com>
+Date: Wed, 25 Apr 2007 16:58:09 +0530
+From: "Karuna sagar K" <karunasagark@gmail.com>
+To: "Avishay Traeger" <atraeger@cs.sunysb.edu>
+Subject: Re: Testing framework
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1177337041.3704.4.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <2e4afe1e0704221346u6d6baec1uab88dc273ff08de9@mail.gmail.com>
+	 <1177337041.3704.4.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inquire_remote_apic is used for APIC debugging, so use
-safe_apic_wait_icr_idle  instead of apic_wait_icr_idle to avoid possible
-lockups when APIC delivery fails.
+On 4/23/07, Avishay Traeger <atraeger@cs.sunysb.edu> wrote:
+> On Mon, 2007-04-23 at 02:16 +0530, Karuna sagar K wrote:
+> <snip>
+>
+> You may want to check out the paper "EXPLODE: A Lightweight, General
+> System for Finding Serious Storage System Errors" from OSDI 2006 (if you
+> haven't already).  The idea sounds very similar to me, although I
+> haven't read all the details of your proposal.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+EXPLODE is more of a generic tool i.e. it is used to find larger set
+of errors/bugs in file systems than the Test framework which focuses
+on the repair of file systems.
 
-diff -urNp linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c
---- linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c	2007-04-18 15:53:11.000000000 +0900
-+++ linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c	2007-04-18 16:39:20.000000000 +0900
-@@ -392,7 +392,8 @@ static void inquire_remote_apic(int apic
- {
- 	unsigned i, regs[] = { APIC_ID >> 4, APIC_LVR >> 4, APIC_SPIV >> 4 };
- 	char *names[] = { "ID", "VERSION", "SPIV" };
--	int timeout, status;
-+	int timeout;
-+	unsigned int status;
- 
- 	printk(KERN_INFO "Inquiring remote APIC #%d...\n", apicid);
- 
-@@ -402,7 +403,9 @@ static void inquire_remote_apic(int apic
- 		/*
- 		 * Wait for idle.
- 		 */
--		apic_wait_icr_idle();
-+		status = safe_apic_wait_icr_idle();
-+		if (status)
-+			printk("a previous APIC delivery may have failed\n");
- 
- 		apic_write(APIC_ICR2, SET_APIC_DEST_FIELD(apicid));
- 		apic_write(APIC_ICR, APIC_DM_REMRD | regs[i]);
+The Test framework is focused towards repairability of the file
+systems, it doesnt use model checking concept, it uses replayable
+corruption mechanism and is user space implementation. Thats the
+reason why this is not similar to EXPLODE.
 
+>
+> Avishay
+>
+>
 
+Thanks,
+Karuna
