@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423249AbXDYHRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423250AbXDYHTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423249AbXDYHRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 03:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423250AbXDYHRa
+	id S1423250AbXDYHTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 03:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423252AbXDYHTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 03:17:30 -0400
-Received: from pfx2.jmh.fr ([194.153.89.55]:34127 "EHLO pfx2.jmh.fr"
+	Wed, 25 Apr 2007 03:19:42 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:59194 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423249AbXDYHR3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 03:17:29 -0400
-Date: Wed, 25 Apr 2007 09:17:24 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-To: Shani Moideen <shani.moideen@wipro.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@lists.osdl.org
-Subject: Re: [PATCH]:Replacing current->state with set_current_state in
- kernel/signal.c
-Message-Id: <20070425091724.6f2c212b.dada1@cosmosbay.com>
-In-Reply-To: <1177483138.27118.25.camel@shani-win>
-References: <1177483138.27118.25.camel@shani-win>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1423250AbXDYHTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 03:19:41 -0400
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH] cxacru: Cleanup sysfs attribute code
+Date: Wed, 25 Apr 2007 09:19:50 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <462E730F.3090401@simon.arlott.org.uk>
+In-Reply-To: <462E730F.3090401@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704250919.50382.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 12:08:58 +0530
-Shani Moideen <shani.moideen@wipro.com> wrote:
+Hi Simon,
 
-> Hi,
-> 
-> Replacing current->state with set_current_state in kernel/signal.c
-> 	
-
-> @@ -2596,7 +2596,7 @@ sys_signal(int sig, __sighandler_t handler)
->  asmlinkage long
->  sys_pause(void)
+>  static ssize_t cxacru_sysfs_showattr_dB(s16 value, char *buf)
 >  {
-> -       current->state = TASK_INTERRUPTIBLE;
-> +       set_current_state(TASK_INTERRUPTIBLE);
->         schedule();
+> -	if (unlikely(value < 0)) {
+> -		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
+> -						value / 100, -value % 100);
+> -	} else {
+> -		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
+> -						value / 100, value % 100);
+> -	}
+> +	return snprintf(buf, PAGE_SIZE, "%u.%02u\n",
+> +					value / 100, abs(value) % 100);
 
-Hi Shani
+shouldn't this be "%d.%02u\n"?
 
-Either you think you corrected a BUG, so please state it clearly in Changelog so that Linus immediatly apply your patch for 2.6.21 :)
+> +	static char *str[] = { "no", "yes" };
+...
+> +	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
 
-Either you dont know the exact semantic of set_current_state() and think it's a cleaner way to set current->state.
-It might looks better for you but it's not the *same* thing.
+This could be
+	static char *str[] = { "no\n", "yes\n" };
+...
+	return snprintf(buf, PAGE_SIZE, str[value]);
+I'm not saying that it's better, just a remark!
 
-I suggest you carefully study the difference between set_current_state() and __set_current_state(), and submit a new patch, once you feel comfortable with it.
+Ciao,
 
-Here is the relevant extract from include/linux/sched.h
-
-/*
- * set_current_state() includes a barrier so that the write of current->state
- * is correctly serialised wrt the caller's subsequent test of whether to
- * actually sleep:
- *
- *      set_current_state(TASK_UNINTERRUPTIBLE);
- *      if (do_i_need_to_sleep())
- *              schedule();
- *
- * If the caller does not need such serialisation then use __set_current_state()
- */
-#define __set_current_state(state_value)                        \
-        do { current->state = (state_value); } while (0)
-#define set_current_state(state_value)          \
-        set_mb(current->state, (state_value))
-
-
-Thank you
+Duncan.
