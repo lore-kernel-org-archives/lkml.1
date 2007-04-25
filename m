@@ -1,52 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbXDYDkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161596AbXDYEF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbXDYDkT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 23:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbXDYDkT
+	id S1161596AbXDYEF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 00:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161591AbXDYEF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 23:40:19 -0400
-Received: from nofear-snat.bivio.net ([216.142.75.231]:55957 "EHLO
-	corpexc01.corp.networkrobots.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753729AbXDYDkR convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 23:40:17 -0400
-X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Apr 2007 23:40:17 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 25 Apr 2007 00:05:27 -0400
+Received: from smtp.osdl.org ([65.172.181.24]:37412 "EHLO smtp.osdl.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161590AbXDYEF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 00:05:26 -0400
+Message-ID: <462ED398.5080405@linux-foundation.org>
+Date: Tue, 24 Apr 2007 21:05:44 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Organization: Linux Foundation
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Ramdisk Vs NFS
-Date: Tue, 24 Apr 2007 20:27:23 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D762CA83@corpexc01.corp.networkrobots.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Ramdisk Vs NFS
-Thread-Index: AceG6aO/OsP/xp17Rb+KAuUZY7SZDw==
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linux-kernel@vger.kernel.org>
+To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com, davem@davemloft.net
+Subject: Re: [PATCH] IPROUTE: Modify tc for new PRIO multiqueue behavior
+References: <20070425013920.6031.30149.stgit@gitlost.site>
+In-Reply-To: <20070425013920.6031.30149.stgit@gitlost.site>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-What is the primary difference between Ramdisk and NFS with respect to
-the wait_queue's?
-
-If I use ramdisk, every thing works fine, but with NFS (or you may read
-as 'no ramdisk') kernel/sched.c:__wake_up_common() routines has a
-problem. Basically the value of "&q->task_list->next" is out of our
-memory range (not between 0xc0000000 and 0xF0000000), and this causes
-trouble of accessing non-existing memory. Why would this happen?
-
-Interesting thing is, this happens much before we even load the ramdisk
-drivers.
-
-Appreciate if any one has some insight into this. At least a pointer to
-where to start looking would be great.
-
-Thanks
-Siva
-
+Peter P Waskiewicz Jr wrote:
+> From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+>
+> Modified tc so PRIO can now have a multiqueue parameter passed to it.  This
+> will turn on multiqueue behavior if a device has more than 1 queue.  Also,
+> running tc qdisc ls dev <dev> will display if multiqueue is on or off.
+>
+> Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+> ---
+>
+>  include/linux/pkt_sched.h |    1 +
+>  tc/q_prio.c               |    9 ++++++---
+>  2 files changed, 7 insertions(+), 3 deletions(-)
+>
+> diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
+> index d10f353..bab0b9e 100644
+> --- a/include/linux/pkt_sched.h
+> +++ b/include/linux/pkt_sched.h
+> @@ -99,6 +99,7 @@ struct tc_prio_qopt
+>  {
+>  	int	bands;			/* Number of bands */
+>  	__u8	priomap[TC_PRIO_MAX+1];	/* Map: logical priority -> PRIO band */
+> +	unsigned short multiqueue;	/* 0 for no mq, 1 for mq */
+>  };
+>  
+>  /* TBF section */
+> diff --git a/tc/q_prio.c b/tc/q_prio.c
+> index d696e1b..55cb207 100644
+> --- a/tc/q_prio.c
+> +++ b/tc/q_prio.c
+> @@ -29,7 +29,7 @@
+>  
+>  static void explain(void)
+>  {
+> -	fprintf(stderr, "Usage: ... prio bands NUMBER priomap P1 P2...\n");
+> +	fprintf(stderr, "Usage: ... prio [multiqueue] bands NUMBER priomap P1 P2...\n");
+>  }
+>  
+>  #define usage() return(-1)
+> @@ -39,7 +39,7 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
+>  	int ok=0;
+>  	int pmap_mode = 0;
+>  	int idx = 0;
+> -	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 }};
+> +	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 },0};
+>  
+>  	while (argc > 0) {
+>  		if (strcmp(*argv, "bands") == 0) {
+> @@ -57,7 +57,9 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
+>  				return -1;
+>  			}
+>  			pmap_mode = 1;
+> -		} else if (strcmp(*argv, "help") == 0) {
+> +		} else if (strcmp(*argv, "multiqueue") == 0)
+> +			opt.multiqueue = 1;
+> +		else if (strcmp(*argv, "help") == 0) {
+>  			explain();
+>  			return -1;
+>  		} else {
+> @@ -105,6 +107,7 @@ int prio_print_opt(struct qdisc_util *qu, FILE *f, struct rtattr *opt)
+>  	if (RTA_PAYLOAD(opt)  < sizeof(*qopt))
+>  		return -1;
+>  	qopt = RTA_DATA(opt);
+> +	fprintf(f, "multiqueue %s  ", qopt->multiqueue ? "on" : "off");
+>  	fprintf(f, "bands %u priomap ", qopt->bands);
+>  	for (i=0; i<=TC_PRIO_MAX; i++)
+>  		fprintf(f, " %d", qopt->priomap[i]);
+>
+>   
+Only if this binary compatiable with older kernels.
