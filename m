@@ -1,59 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992524AbXDYJpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992500AbXDYJsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992524AbXDYJpL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992530AbXDYJpK
+	id S2992500AbXDYJsX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992529AbXDYJsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:45:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33583 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992529AbXDYJpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:45:08 -0400
-Date: Wed, 25 Apr 2007 11:44:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Li, Tong N" <tong.n.li@intel.com>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070425094403.GA3290@elte.hu>
-References: <20070424212717.GR31925@holomorphy.com> <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
+	Wed, 25 Apr 2007 05:48:23 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:36759 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992500AbXDYJsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:48:23 -0400
+Date: Wed, 25 Apr 2007 11:47:12 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070425094712.GP9715@kernel.dk>
+References: <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk> <17967.8536.788076.851546@notabene.brown>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <17967.8536.788076.851546@notabene.brown>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 25 2007, Neil Brown wrote:
+> On Wednesday April 25, jens.axboe@oracle.com wrote:
+> > 
+> > That's pretty close to where I think the problem is (the front merging
+> > and cfq_reposition_rq_rb()). The issue with that is that you'd only get
+> > aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
+> > here. Given that front merges are equally not very likely, I'd be
+> > surprised is something like that has ever happened.
+> 
+> Well it certainly doesn't happen very often....
+> And I can imagine a filesystem genuinely wanting to read the same
+> block twice - maybe a block that contained packed tails of two
+> different files.
 
-* Li, Tong N <tong.n.li@intel.com> wrote:
+But that usually happens through the page cache, so it's nicely
+serialized. You'd only ever get duplicate/alias blocks if you go raw, or
+have some layer on top of your block device (like md) that issues io on
+its own.
 
-> [...] A corollary of this is that if both threads i and j are 
-> continuously runnable with fixed weights in the time interval, then 
-> the ratio of their CPU time should be equal to the ratio of their 
-> weights. This definition is pretty restrictive since it requires the 
-> properties to hold for any thread in any interval, which is not 
-> feasible. [...]
+> > BUT... That may explain while we are only seeing it on md. Would md
+> > ever be issuing such requests that trigger this condition?
+> 
+> Can someone remind me which raid level(s) was/were involved?
+> 
+> I think one was raid0 - that just passes requests on from the
+> filesystem, so md would only issue requests like that if the
+> filesystem did.
 
-yes, it's a pretty strong definition, but also note that while it is 
-definitely not easy to implement, the solution is nevertheless feasible 
-in my opinion and there exists a scheduler that implements it: CFS.
+Yep, one was raid0.
 
-	Ingo
+> I guess it could happen with raid4/5/6.  A read request that was
+> properly aligned (and we do encourage proper alignment) will be passed
+> directly to the underlying device.  A concurrent write elsewhere could
+> require the same block to be read into the stripe-cache to enable a
+> parity calculation.  So you could get two reads at the same block
+> address.
+> Getting a front-merge would probably require two stripe-heads to be
+> processed in reverse-sector order, and it tends to preserve the order
+> of incoming requests (though that isn't firmly enforced).
+> 
+> raid1 is much like raid0 (with totally different code) in that the
+> request pattern seen by the underlying device matches the request
+> pattern generated by the filesystem.
+> 
+> If I read the debugging output correctly, the request which I
+> hypothesise was the subject of a front-merge is a 'sync' request.
+> raid5 does not generate sync requests to fill the stripe cache (maybe
+> it should?) so I really think it must have come directly from the
+> filesystem.
+> 
+> (just checked previous email for more detail of when it hits)
+> The fact that it hits degraded arrays more easily is interesting.
+> Maybe we try to read a block on the missing device and so schedule
+> reads for the other devices.  Then we try to read a block on a good
+> device and issue a request for exactly the same block that raid5 asked
+> for.  That still doesn't explain the 'sync' and the 'front merge'.
+> But that is quite possible, just not common maybe.
+> 
+> It doesn't help us understand the raid0 example though.  May it is
+> just a 'can happen, but only rarely' thing.
+
+It looks to be extremely rare. Aliases are extremely rare, front merges
+are rare. And you need both to happen with the details you outlined. But
+it's a large user base, and we've had 3-4 reports on this in the past
+months. So it obviously does happen. I could not make it trigger without
+doctoring the unplug code when I used aio.
+
+Here's a fix for it, confirmed.
+
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 9e37971..f965be7 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -532,6 +532,11 @@ static void cfq_add_rq_rb(struct request *rq)
+ 
+ 	if (!cfq_cfqq_on_rr(cfqq))
+ 		cfq_add_cfqq_rr(cfqd, cfqq);
++
++	/*
++	 * check if this request is a better next-serve candidate
++	 */
++	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
+ }
+ 
+ static inline void
+@@ -1639,12 +1644,6 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		cfqq->meta_pending++;
+ 
+ 	/*
+-	 * check if this request is a better next-serve candidate)) {
+-	 */
+-	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
+-	BUG_ON(!cfqq->next_rq);
+-
+-	/*
+ 	 * we never wait for an async request and we don't allow preemption
+ 	 * of an async request. so just return early
+ 	 */
+
+-- 
+Jens Axboe
+
