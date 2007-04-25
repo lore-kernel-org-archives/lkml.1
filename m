@@ -1,87 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423375AbXDYWq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423393AbXDYWrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423375AbXDYWq0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423392AbXDYWq0
+	id S1423393AbXDYWrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423392AbXDYWrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:46:26 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:42402 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423375AbXDYWqZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:46:25 -0400
-Subject: Re: [00/17] Large Blocksize Support V3
-From: Badari Pulavarty <pbadari@gmail.com>
-To: clameter@sgi.com
-Cc: lkml <linux-kernel@vger.kernel.org>, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-In-Reply-To: <20070424222105.883597089@sgi.com>
-References: <20070424222105.883597089@sgi.com>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 15:46:19 -0700
-Message-Id: <1177541179.32569.2.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 18:47:14 -0400
+Received: from mga09.intel.com ([134.134.136.24]:23349 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422881AbXDYWrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:47:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,452,1170662400"; 
+   d="scan'208";a="79225067"
+Date: Wed, 25 Apr 2007 15:47:10 -0700
+From: Valerie Henson <val_henson@linux.intel.com>
+To: Nikita Danilov <nikita@clusterfs.com>
+Cc: David Lang <david.lang@digitalinsight.com>, Amit Gud <gud@cis.ksu.edu>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
+       gud@ksu.edu
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070425224710.GB16129@nifty>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17967.15531.450627.972572@gargle.gargle.HOWL>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 15:21 -0700, clameter@sgi.com wrote:
-> V2->V3
+On Wed, Apr 25, 2007 at 03:34:03PM +0400, Nikita Danilov wrote:
+> 
+> What is more important, design puts (as far as I can see) no upper limit
+> on the number of continuation inodes, and hence, even if _average_ fsck
+> time is greatly reduced, occasionally it can take more time than ext2 of
+> the same size. This is clearly unacceptable in many situations (HA,
+> etc.).
 
-Hmm.. It broke ext2 :(
+Actually, there is an upper limit on the number of continuation
+inodes.  Each file can have a maximum of one continuation inode per
+chunk. (This is why we need to support sparse files.)
 
-V2 worked fine with the small fix I sent you earlier.
-But on V3, I can't run fsx. I see random data showing up.
-I will debug, when I get a chance.
-
-Thanks,
-Badari
-
-READ BAD DATA: offset = 0x5092a4, size = 0x5093a0, fname = (null)
-OFFSET  GOOD    BAD     RANGE
-0x77f466d0      0x77e1f7c0      0x0000  0x  6ef
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  6f1
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  6f1
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  6f3
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  6f3
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  6f5
-operation# (mod 256) for the bad data unknown, check HOLE and EXTEND ops
-0x776f6e6b      0x6b636568      0x0000  0x  84f
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  851
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  851
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  853
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  853
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  855
-operation# (mod 256) for the bad data unknown, check HOLE and EXTEND ops
-0x776f6e6b      0x6b636568      0x0000  0x  857
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  859
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  859
-operation# (mod 256) for the bad data may be 5284080
-0x2820236e      0x77e1f7c0      0x0000  0x  85b
-operation# (mod 256) for the bad data may be 5284080
-LOG DUMP (49149 total operations):
-0(2012505808 mod 256): WRITE    0x77f466d0 thru 0x77e1f7c0      (0x0
-bytes) HOL***WWWW
-0(2012505808 mod 256): WRITE    0x77f466d0 thru 0x77e1f7c0      (0x0
-bytes)
-0(2012505808 mod 256): READ     0x77f466d0 thru 0x77e1f7c0      (0x0
-bytes)
-0(2012505808 mod 256): READ     0x77f466d0 thru 0x77e1f7c0      (0x0
-bytes)    ***RRRR***
-
-
+-VAL
