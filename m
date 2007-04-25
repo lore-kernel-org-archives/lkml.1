@@ -1,155 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161218AbXDYOjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752100AbXDYOpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161218AbXDYOjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 10:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161750AbXDYOjN
+	id S1752100AbXDYOpX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 10:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161195AbXDYOpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 10:39:13 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:35520
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1161218AbXDYOjM (ORCPT
+	Wed, 25 Apr 2007 10:45:23 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:40008 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752100AbXDYOpW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 10:39:12 -0400
-Date: Wed, 25 Apr 2007 16:42:08 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: gregkh@suse.de
+	Wed, 25 Apr 2007 10:45:22 -0400
+Message-Id: <1177512322.14817.1186503257@webmail.messagingengine.com>
+X-Sasl-Enc: Rtt7zYTuucE5GlqByx9RfqP56z16SvNRU0ax1RrO9duR 1177512322
+From: lkml777@123mail.org
+To: "Eric M. Hopper" <hopper@omnifarious.org>, "Theodore Tso" <tytso@mit.edu>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of semaphore for misc char devices
-Message-ID: <20070425144208.GO6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	gregkh@suse.de, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <462C4858.3050006@redhat.com>
+   <Pine.LNX.4.64.0704230555020.25153@server.thyself>
+   <462C4D32.4000909@redhat.com>
+   <Pine.LNX.4.64.0704230611430.25153@server.thyself>
+   <462C5034.9090403@redhat.com>
+   <Pine.LNX.4.64.0704230640540.25153@server.thyself>
+   <20070423010445.454eda63.akpm@linux-foundation.org>
+   <20070423135216.GA2744@omnifarious.org>
+   <20070423225640.GA1663@thunk.org> <462D46DF.4090802@zytor.com>
+   <20070424001934.GC1663@thunk.org>
+   <1177483176.3315.32.camel@bats.omnifarious.org>
+Subject: Re: Question about Reiser4
+In-Reply-To: <1177483176.3315.32.camel@bats.omnifarious.org>
+Date: Wed, 25 Apr 2007 07:45:22 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the misc character device driver uses a semaphore as mutex. use the
-mutex API instead of the (binary) semaphore
+On Tue, 24 Apr 2007 23:39:36 -0700, "Eric M. Hopper"
+<hopper@omnifarious.org> said:
+> On Tue, 2007-04-24 at 17:12 -0700, lkml777@123mail.org wrote:
+> > On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
+> > > <hopper@omnifarious.org> said:
+> > 
+> > > I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
+> > > benchmark showing that compressing long strings of 0s results in things
+> > > taking up very little space and being very fast.
+> > 
+> > I think you are deliberately being stupid here.
+> > 
+> > You are claiming that REISER4's good speed results when using
+> > compression actually has a simple explanation and THEREFORE all good
+> > result for the filesystem, even those results that have nothing to do
+> > with compression, are negated.
+> 
+> I am claiming nothing of the sort. You are assuming that I'm claiming
+> this for some random reason.  And in so doing, you are hurting your
+> cause and mine.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Yes you are. Your claim may have only been implicit, but it was also
+VERY clear.
 
---
+You complain that Reiser4's excellent speed results when using
+compression might have a simple explanation. 
 
-diff --git a/drivers/char/misc.c b/drivers/char/misc.c
-index 7e975f6..afd7cf5 100644
---- a/drivers/char/misc.c
-+++ b/drivers/char/misc.c
-@@ -53,7 +53,7 @@
-  * Head entry for the doubly linked miscdevice list
-  */
- static LIST_HEAD(misc_list);
--static DECLARE_MUTEX(misc_sem);
-+static DEFINE_MUTEX(misc_mtx);
- 
- /*
-  * Assigned numbers, used for dynamic minors
-@@ -69,7 +69,7 @@ static void *misc_seq_start(struct seq_file *seq, loff_t *pos)
- 	struct miscdevice *p;
- 	loff_t off = 0;
- 
--	down(&misc_sem);
-+	mutex_lock(&misc_mtx);
- 	list_for_each_entry(p, &misc_list, list) {
- 		if (*pos == off++) 
- 			return p;
-@@ -89,7 +89,7 @@ static void *misc_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- 
- static void misc_seq_stop(struct seq_file *seq, void *v)
- {
--	up(&misc_sem);
-+	mutex_unlock(&misc_mtx);
- }
- 
- static int misc_seq_show(struct seq_file *seq, void *v)
-@@ -129,7 +129,7 @@ static int misc_open(struct inode * inode, struct file * file)
- 	int err = -ENODEV;
- 	const struct file_operations *old_fops, *new_fops = NULL;
- 	
--	down(&misc_sem);
-+	mutex_lock(&misc_mtx);
- 	
- 	list_for_each_entry(c, &misc_list, list) {
- 		if (c->minor == minor) {
-@@ -139,9 +139,9 @@ static int misc_open(struct inode * inode, struct file * file)
- 	}
- 		
- 	if (!new_fops) {
--		up(&misc_sem);
-+		mutex_unlock(&misc_mtx);
- 		request_module("char-major-%d-%d", MISC_MAJOR, minor);
--		down(&misc_sem);
-+		mutex_lock(&misc_mtx);
- 
- 		list_for_each_entry(c, &misc_list, list) {
- 			if (c->minor == minor) {
-@@ -165,7 +165,7 @@ static int misc_open(struct inode * inode, struct file * file)
- 	}
- 	fops_put(old_fops);
- fail:
--	up(&misc_sem);
-+	mutex_unlock(&misc_mtx);
- 	return err;
- }
- 
-@@ -201,10 +201,10 @@ int misc_register(struct miscdevice * misc)
- 
- 	INIT_LIST_HEAD(&misc->list);
- 
--	down(&misc_sem);
-+	mutex_lock(&misc_mtx);
- 	list_for_each_entry(c, &misc_list, list) {
- 		if (c->minor == misc->minor) {
--			up(&misc_sem);
-+			mutex_unlock(&misc_mtx);
- 			return -EBUSY;
- 		}
- 	}
-@@ -215,7 +215,7 @@ int misc_register(struct miscdevice * misc)
- 			if ( (misc_minors[i>>3] & (1 << (i&7))) == 0)
- 				break;
- 		if (i<0) {
--			up(&misc_sem);
-+			mutex_unlock(&misc_mtx);
- 			return -EBUSY;
- 		}
- 		misc->minor = i;
-@@ -238,7 +238,7 @@ int misc_register(struct miscdevice * misc)
- 	 */
- 	list_add(&misc->list, &misc_list);
-  out:
--	up(&misc_sem);
-+	mutex_unlock(&misc_mtx);
- 	return err;
- }
- 
-@@ -259,13 +259,13 @@ int misc_deregister(struct miscdevice * misc)
- 	if (list_empty(&misc->list))
- 		return -EINVAL;
- 
--	down(&misc_sem);
-+	mutex_lock(&misc_mtx);
- 	list_del(&misc->list);
- 	device_destroy(misc_class, MKDEV(MISC_MAJOR, misc->minor));
- 	if (i < DYNAMIC_MINORS && i>0) {
- 		misc_minors[i>>3] &= ~(1 << (misc->minor & 7));
- 	}
--	up(&misc_sem);
-+	mutex_unlock(&misc_mtx);
- 	return 0;
- }
- 
+You then implicitly write off the whole set of results on this basis,
+which is just plain dishonest.
+
+You could have pointed out that most of the results did NOT use
+compression, but instead you just ignored them.
+
+You could have asked by how much, bonnie++'s use of files that are
+mainly zeroes, affected the excellent speeds.
+
+But you didn't, because you weren't really interested.
+
+You ignored about 90% of the benchmarks and concentrated on a very small
+area that you could raise a question about.
+
+That is not someone looking for the truth. That is a propagandist
+working against Reiser4.
+
+Your conclusion was that of someone who is trying to destroy Reiser4,
+while PRETENDING to support it.
+
+Well. At least that is what it looks like to me.
+
+> and ranting about how everybody is ignoring all the good parts of it and
+> focusing on the bad parts makes things even worse.
+
+Yes YOU are ignoring all the good parts of it and focusing on the (well
+not bad parts but) parts that seem too good to be true.
+-- 
+  
+  lkml777@123mail.org
 
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+http://www.fastmail.fm - A no graphics, no pop-ups email service
 
-  Control over the use of one's ideas really constitutes control over other
-  people's lives; and it is usually used to make their lives more difficult.
-                          (Richard Stallman)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
