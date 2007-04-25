@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161839AbXDYH60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161845AbXDYIKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161839AbXDYH60 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 03:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161840AbXDYH60
+	id S1161845AbXDYIKm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161843AbXDYIKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 03:58:26 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:11766 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161839AbXDYH6Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 03:58:25 -0400
-Date: Wed, 25 Apr 2007 09:57:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vasily Tarasov <vtaras@openvz.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, OVZDL <devel@openvz.org>
-Subject: Re: [PATCH] cfq: get rid of cfqq hash
-Message-ID: <20070425075725.GK9715@kernel.dk>
-References: <1177422791.435404.4031.nullmailer@me> <20070425065822.GG9715@kernel.dk> <1177501827.988228.3870.nullmailer@me>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177501827.988228.3870.nullmailer@me>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 25 Apr 2007 04:10:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58120 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161706AbXDYIKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 04:10:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070424193404.GA5042@tv-sign.ru> 
+References: <20070424193404.GA5042@tv-sign.ru>  <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> <16575.1177433907@redhat.com> <17966.1177438970@redhat.com> 
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 25 Apr 2007 09:10:12 +0100
+Message-ID: <5461.1177488612@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Vasily Tarasov wrote:
-> >> @@ -1806,7 +1765,11 @@ static int cfq_may_queue(request_queue_t
-> >>  	 * so just lookup a possibly existing queue, or return 'may queue'
-> >>  	 * if that fails
-> >>  	 */
-> >> -	cfqq = cfq_find_cfq_hash(cfqd, key, tsk->ioprio);
-> >> +	cic = cfq_get_io_context_noalloc(cfqd, tsk);
-> >> +	if (!cic)
-> >> +		return ELV_MQUEUE_MAY; 
-> >> +
-> >> +	cfqq = cic->cfqq[rw & REQ_RW_SYNC];
-> >>  	if (cfqq) {
-> >>  		cfq_init_prio_data(cfqq);
-> >>  		cfq_prio_boost(cfqq);
-> > 
-> > Ahem, how well did you test this patch?
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
+
+> Yes sure. Note that this is documented:
 > 
-> Ugh, again: bio_sync() returns not only 0/1
-> Sorry for giving so much trouble...
+> 	/*
+> 	 * Kill off a pending schedule_delayed_work().  Note that the work callback
+> 	 * function may still be running on return from cancel_delayed_work().  Run
+> 	 * flush_workqueue() or cancel_work_sync() to wait on it.
+> 	 */
 
-Right, and REQ_RW_SYNC isn't 1 either, so it returns a large number if
-set.
+No, it isn't documented.  It says that the *work* callback may be running, but
+does not mention the timer callback.  However, just looking at the
+cancellation function source made it clear that this would wait for the timer
+handler to return first.
 
-> BTW, what tests do you use to check patches?
-> I'll run them on our nodes each time when sending it to you.
-> At the moment I use some self made tests and a bit fio scripts.
 
-I went to run a test testing many disks, with a fio file like so:
+However, is it worth just making cancel_delayed_work() a void function and not
+returning anything?  I'm not sure the return value is very useful.
 
-[root@AS4 ~]# cat many-rw-256 
-[global]
-rw=write
-bs=256k
-direct=1
-ioengine=libaio
-iodepth=4096
-
-[md0]
-file_service_type=roundrobin:16
-filename=/dev/sdix:/dev/sdiw:/dev/sdiv:...
-
-filename is 256 scsi disks, using scsi_debug. I wanted to evaluate the
-possible extra CPU usage from one process with a lot of io contexts
-attached. And the benefits of such a patch as this one:
-
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=7e950c8181e63345743130d839680999c5de968a;hp=551e9405cb9e1f900da456ba57ddcf35dea110b9
-
--- 
-Jens Axboe
-
+David
