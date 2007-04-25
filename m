@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992770AbXDYNjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753931AbXDYNlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992770AbXDYNjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992768AbXDYNjw
+	id S1753931AbXDYNlx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXDYNlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:39:52 -0400
-Received: from mail.suse.de ([195.135.220.2]:35797 "EHLO mx1.suse.de"
+	Wed, 25 Apr 2007 09:41:53 -0400
+Received: from mail.screens.ru ([213.234.233.54]:33084 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161742AbXDYNju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:39:50 -0400
-To: Fengguang Wu <fengguang.wu@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Steven Pratt <slpratt@austin.ibm.com>, Ram Pai <linuxram@us.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] on-demand readahead
-References: <377506695.54393@ustc.edu.cn>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 25 Apr 2007 16:37:41 +0200
-In-Reply-To: <377506695.54393@ustc.edu.cn>
-Message-ID: <p73odlc34ga.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
+	id S1753931AbXDYNlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:41:52 -0400
+Date: Wed, 25 Apr 2007 16:47:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070425124714.GA94@tv-sign.ru>
+References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425122814.GF1613@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fengguang Wu <fengguang.wu@gmail.com> writes:
-
-> OVERHEADS
+On 04/25, Jarek Poplawski wrote:
+>
+> On Wed, Apr 25, 2007 at 02:20:38PM +0200, Jarek Poplawski wrote:
+> > 2 cents more...
+> ... 
+> > On Tue, Apr 24, 2007 at 10:55:37PM +0400, Oleg Nesterov wrote:
+> > > +	do {
+> > > +		retry = 1;
 > 
-> The new code reduced the overheads of
+> Of course this'll be shorter:
 > 
-> 	- excessively calling the readahead routine on small sized reads
-> 	  (the current readahead code insists on seeing all requests)
-> 
-> 	- doing a lot of pointless page-cache lookups for small cached files
-> 	  (the current readahead only turns itself off after 256 cache hits,
-> 	  unfortunately most files are < 1MB, so never see that chance)
+> 		retry = 0;
 
-Would it make sense to keep track in the AS if the file is completely in cache?
-Then you could probably avoid a lot of these lookups for small in cache files
+No, this would be wrong. Note the comment about CPU-hotplug below,
+we should retry if cwq was changed.
 
-> --- linux-2.6.21-rc7-mm1.orig/mm/readahead.c
-> +++ linux-2.6.21-rc7-mm1/mm/readahead.c
-> @@ -733,6 +733,11 @@ unsigned long max_sane_readahead(unsigne
+> > > +		spin_lock_irq(&cwq->lock);
+> > > +		/* CPU_DEAD in progress may change cwq */
+> > > +		if (likely(cwq == get_wq_data(work))) {
+> > > +			list_del_init(&work->entry);
+> > > +			__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> > > +			retry = try_to_del_timer_sync(&dwork->timer) < 0;
+> > > +		}
+> > > +		spin_unlock_irq(&cwq->lock);
+> > > +	} while (unlikely(retry));
 
-Quite simple patch, why is it that much simpler than your earlier patchkits?
-Or is that on top of them?
+>  1. If delayed_work_timer_fn of this work is fired and is waiting
+>  on the above spin_lock then, after above spin_unlock, the work
+>  will be queued.
 
-You seem to have a lot of magic numbers. They probably all need symbols and 
-explanations.
+No, in that case try_to_del_timer_sync() returns -1.
 
-Your white space also needs some work.
+>                   Probably this is also possible without timer i.e.
+>  with queue_work.
 
--Andi
+Yes, thanks. While adding cpu-hotplug check I forgot to add ->current_work
+check, which is needed to actually implement this
+
+	> > Note that cancel_rearming_delayed_work() now can handle the works
+	> > which re-arm itself via queue_work(), not only queue_delayed_work().
+
+part. I'll resend after fix.
+
+>  2. If this function is fired after setting _PENDING flag in
+>  queue_delayed_work_on, but before add_timer, this
+>  try_to_del_timer_sync loop would miss this, too.
+
+same as above, thanks.
+
+Oleg.
+
