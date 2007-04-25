@@ -1,137 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161811AbXDYBWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161834AbXDYBW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161811AbXDYBWw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 21:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161830AbXDYBWw
+	id S1161834AbXDYBW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 21:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161829AbXDYBW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 21:22:52 -0400
-Received: from [63.64.152.142] ([63.64.152.142]:1883 "EHLO gitlost.site"
+	Tue, 24 Apr 2007 21:22:56 -0400
+Received: from [63.64.152.142] ([63.64.152.142]:1895 "EHLO gitlost.site"
 	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161811AbXDYBWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 21:22:48 -0400
+	id S1161828AbXDYBWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 21:22:52 -0400
 From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Subject: [PATCH 1/2] Adding documentation for the new multiqueue API.
-Date: Tue, 24 Apr 2007 18:39:17 -0700
-To: davem@davemloft.net
+Subject: [PATCH] IPROUTE: Modify tc for new PRIO multiqueue behavior
+Date: Tue, 24 Apr 2007 18:39:20 -0700
+To: shemminger@linux-foundation.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
        cramerj@intel.com, auke-jan.h.kok@intel.com,
-       christopher.leech@intel.com
-Message-Id: <20070425013917.6010.92763.stgit@gitlost.site>
-In-Reply-To: <20070425013331.6010.38587.stgit@gitlost.site>
-References: <20070425013331.6010.38587.stgit@gitlost.site>
+       christopher.leech@intel.com, davem@davemloft.net
+Message-Id: <20070425013920.6031.30149.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
 
+Modified tc so PRIO can now have a multiqueue parameter passed to it.  This
+will turn on multiqueue behavior if a device has more than 1 queue.  Also,
+running tc qdisc ls dev <dev> will display if multiqueue is on or off.
+
 Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
 ---
 
- Documentation/networking/multiqueue.txt |   97 +++++++++++++++++++++++++++++++
- 1 files changed, 97 insertions(+), 0 deletions(-)
+ include/linux/pkt_sched.h |    1 +
+ tc/q_prio.c               |    9 ++++++---
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/networking/multiqueue.txt b/Documentation/networking/multiqueue.txt
-new file mode 100644
-index 0000000..0bc5222
---- /dev/null
-+++ b/Documentation/networking/multiqueue.txt
-@@ -0,0 +1,97 @@
-+
-+		HOWTO for multiqueue network device support
-+		===========================================
-+
-+Section 1: Base driver requirements for implementing multiqueue support
-+Section 2: Qdisc support for multiqueue devices
-+Section 3: Brief howto using PRIO for multiqueue devices
-+
-+
-+Intro: Kernel support for multiqueue devices
-+---------------------------------------------------------
-+
-+Kernel support for multiqueue devices is only an API that is presented to the
-+netdevice layer for base drivers to implement.  This feature is part of the
-+core networking stack, and all network devices will be running on the
-+multiqueue-aware stack.  If a base driver only has one queue, then these
-+changes are transparent to that driver.
-+
-+
-+Section 2: Base driver requirements for implementing multiqueue support
-+-----------------------------------------------------------------------
-+
-+Base drivers are required to use the new alloc_etherdev_mq() or
-+alloc_netdev_mq() functions to allocate the subqueues for the device.  The
-+underlying kernel API will take care of the allocation and deallocation of
-+the subqueue memory, as well as netdev configuration of where the queues
-+exist in memory.
-+
-+The base driver will also need to manage the queues as it does the global
-+netdev->queue_lock today.  Therefore base drivers should use the
-+netif_{start|stop|wake}_subqueue() functions to manage each queue while the
-+device is still operational.  netdev->queue_lock is still used when the device
-+comes online or when it's completely shut down (unregister_netdev(), etc.).
-+
-+Finally, the base driver should indicate that it is a multiqueue device.  The
-+feature flag NETIF_F_MULTI_QUEUE should be added to the netdev->features
-+bitmap on device initialization.  Below is an example from e1000:
-+
-+#ifdef CONFIG_E1000_MQ
-+	if ( (adapter->hw.mac.type == e1000_82571) ||
-+	     (adapter->hw.mac.type == e1000_82572) ||
-+	     (adapter->hw.mac.type == e1000_80003es2lan))
-+		netdev->features |= NETIF_F_MULTI_QUEUE;
-+#endif
-+
-+
-+Section 3: Qdisc support for multiqueue devices
-+-----------------------------------------------
-+
-+Currently two qdiscs support multiqueue devices.  The default qdisc, pfifo_fast,
-+and the PRIO qdisc.  The qdisc is responsible for classifying the skb's to
-+bands and queues, and will store the queue mapping into skb->queue_mapping.
-+Use this field in the base driver to determine which queue to send the skb
-+to.
-+
-+pfifo_fast, being the default qdisc when a device is brought online, will not
-+assign a queue mapping, therefore the skb will have a value of zero.  We
-+cannot assume anything about the device itself, how many queues it really has,
-+etc.  Therefore sending all traffic to queue 0 is the safest thing to do here.
-+
-+The PRIO qdisc naturally plugs into a multiqueue device.  Upon load of the
-+qdisc, PRIO will make a best-effort assignment of queue to PRIO band to evenly
-+distribute traffic flows.  The algorithm can be found in prio_tune() in
-+net/sched/sch_prio.c.  Once the association is made, any skb that is
-+classified will have skb->queue_mapping set, which will allow the driver to
-+properly queue skb's to multiple queues.
-+
-+
-+Section 4: Brief howto using PRIO for multiqueue devices
-+--------------------------------------------------------
-+
-+The userspace command 'tc,' part of the iproute2 package, is used to configure
-+qdiscs.  To add the PRIO qdisc to your network device, assuming the device is
-+called eth0, run the following command:
-+
-+# tc qdisc add dev eth0 root handle 1: prio multiqueue
-+
-+This will create 3 bands, 0 being highest priority, and associate those bands
-+to the queues on your NIC.  Assuming eth0 has 2 Tx queues, the band mapping
-+would look like:
-+
-+band 0 => queue 0
-+band 1 => queue 0
-+band 2 => queue 1
-+
-+Traffic will begin flowing through each queue if your TOS values are assigning
-+traffic across the various bands.  For example, ssh traffic will always try to
-+go out band 0 based on TOS -> Linux priority conversion (realtime traffic),
-+so it will be sent out queue 0.  ICMP traffic (pings) fall into the "normal"
-+traffic classification, which is band 1.  Therefore pings will be send out
-+queue 1 on the NIC.
-+
-+The behavior of tc filters remains the same, where it will override TOS priority
-+classification.
-+
-+
-+Author: Peter P. Waskiewicz Jr. <peter.p.waskiewicz.jr@intel.com>
+diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
+index d10f353..bab0b9e 100644
+--- a/include/linux/pkt_sched.h
++++ b/include/linux/pkt_sched.h
+@@ -99,6 +99,7 @@ struct tc_prio_qopt
+ {
+ 	int	bands;			/* Number of bands */
+ 	__u8	priomap[TC_PRIO_MAX+1];	/* Map: logical priority -> PRIO band */
++	unsigned short multiqueue;	/* 0 for no mq, 1 for mq */
+ };
+ 
+ /* TBF section */
+diff --git a/tc/q_prio.c b/tc/q_prio.c
+index d696e1b..55cb207 100644
+--- a/tc/q_prio.c
++++ b/tc/q_prio.c
+@@ -29,7 +29,7 @@
+ 
+ static void explain(void)
+ {
+-	fprintf(stderr, "Usage: ... prio bands NUMBER priomap P1 P2...\n");
++	fprintf(stderr, "Usage: ... prio [multiqueue] bands NUMBER priomap P1 P2...\n");
+ }
+ 
+ #define usage() return(-1)
+@@ -39,7 +39,7 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
+ 	int ok=0;
+ 	int pmap_mode = 0;
+ 	int idx = 0;
+-	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 }};
++	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 },0};
+ 
+ 	while (argc > 0) {
+ 		if (strcmp(*argv, "bands") == 0) {
+@@ -57,7 +57,9 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
+ 				return -1;
+ 			}
+ 			pmap_mode = 1;
+-		} else if (strcmp(*argv, "help") == 0) {
++		} else if (strcmp(*argv, "multiqueue") == 0)
++			opt.multiqueue = 1;
++		else if (strcmp(*argv, "help") == 0) {
+ 			explain();
+ 			return -1;
+ 		} else {
+@@ -105,6 +107,7 @@ int prio_print_opt(struct qdisc_util *qu, FILE *f, struct rtattr *opt)
+ 	if (RTA_PAYLOAD(opt)  < sizeof(*qopt))
+ 		return -1;
+ 	qopt = RTA_DATA(opt);
++	fprintf(f, "multiqueue %s  ", qopt->multiqueue ? "on" : "off");
+ 	fprintf(f, "bands %u priomap ", qopt->bands);
+ 	for (i=0; i<=TC_PRIO_MAX; i++)
+ 		fprintf(f, " %d", qopt->priomap[i]);
 
