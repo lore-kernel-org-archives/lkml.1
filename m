@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030852AbXDYKUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030892AbXDYKWC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030852AbXDYKUK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030879AbXDYKUK
+	id S1030892AbXDYKWC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:22:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030879AbXDYKWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:20:10 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49722 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030852AbXDYKUI (ORCPT
+	Wed, 25 Apr 2007 06:22:01 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39676 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030881AbXDYKWA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:20:08 -0400
-Date: Wed, 25 Apr 2007 12:18:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Brad Campbell <brad@wasp.net.au>
-Cc: Neil Brown <neilb@suse.de>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070425101857.GR9715@kernel.dk>
-References: <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk> <17967.8536.788076.851546@notabene.brown> <20070425094712.GP9715@kernel.dk> <462F2727.7090205@wasp.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462F2727.7090205@wasp.net.au>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 25 Apr 2007 06:22:00 -0400
+Date: Wed, 25 Apr 2007 11:25:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm1 BUG at kernel/sched-clock.c:175
+ init_sched_clock()
+Message-ID: <20070425112533.19d4a1aa@the-village.bc.nu>
+In-Reply-To: <20070425085432.GD17130@htj.dyndns.org>
+References: <462E4C4D.9020806@gmail.com>
+	<20070425011654.222a2b4b.akpm@linux-foundation.org>
+	<462F1481.8010807@gmail.com>
+	<20070425085432.GD17130@htj.dyndns.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Brad Campbell wrote:
-> Jens Axboe wrote:
-> 
-> >It looks to be extremely rare. Aliases are extremely rare, front merges
-> >are rare. And you need both to happen with the details you outlined. But
-> >it's a large user base, and we've had 3-4 reports on this in the past
-> >months. So it obviously does happen. I could not make it trigger without
-> >doctoring the unplug code when I used aio.
-> 
-> Well, not that rare on this particular machine (I had a case where I could 
-> reproduce it in less than an hour of normal use previously on this box), 
-> and I've had it occur a number of times on my servers, I just never 
-> reported it before as I never took the time to set up a serial console and 
-> capture the oops.
+> diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
+> index 72c286e..a128717 100644
+> --- a/drivers/ata/ahci.c
+> +++ b/drivers/ata/ahci.c
+> @@ -1369,10 +1369,14 @@ static unsigned int ahci_qc_issue(struct ata_queued_cmd *qc)
+>  
+>  static void ahci_freeze(struct ata_port *ap)
+>  {
+> +	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
+>  	void __iomem *port_mmio = ahci_port_base(ap);
+>  
+>  	/* turn IRQ off */
+>  	writel(0, port_mmio + PORT_IRQ_MASK);
+> +
+> +	/* clear IRQ pending bit */
+> +	writel(1 << ap->port_no, mmio + HOST_IRQ_STAT);
+>  }
+>  
 
-Extremely rare in the sense that it takes md and some certain conditions
-to happen for it to trigger. So for most people it'll be extremely rare,
-and for others (such as yourself) that hit it, it wont be so rare :-)
+Actually now I think about it the problem is even worse. On older systems
+IRQ delivery for SMP machines is asynchronous. So the following can occur
 
-> >Here's a fix for it, confirmed.
-> 
-> Shall I leave the other debugging in, apply this and run it for a few hard 
-> days?
 
-Yes, that would be perfect!
+		device raises IRQ line
+		IRQ request hits APIC bus
 
--- 
-Jens Axboe
+		We write IRQ off
+		We clear IRQ pending
 
+		We read back to ensure the write took
+	
+
+		IRQ arrives on CPU APIC
+
+(and yes this happens on dual P3 boxes - NE2K has some fantastic bugs at
+one point due to this)
