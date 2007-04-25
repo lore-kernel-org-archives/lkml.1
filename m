@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXDYMxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965655AbXDYMx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965632AbXDYMxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 08:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXDYMxH
+	id S965655AbXDYMx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 08:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXDYMx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 08:53:07 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:46714
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S965632AbXDYMxF (ORCPT
+	Wed, 25 Apr 2007 08:53:57 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:47595 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S965650AbXDYMx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 08:53:05 -0400
-Date: Wed, 25 Apr 2007 14:56:01 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Oliver Neukum <oneukum@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver
-Message-ID: <20070425125600.GJ6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Satyam Sharma <satyam.sharma@gmail.com>,
-	Robert Hancock <hancockr@shaw.ca>, Oliver Neukum <oneukum@suse.de>,
-	linux-kernel@vger.kernel.org
-References: <fa.CH+7gvaumSAVtl/1QOSoYPsXewg@ifi.uio.no> <fa.NPDKv3GAx73J43g63faobz7IZVo@ifi.uio.no> <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no> <462E9885.1010605@shaw.ca> <a781481a0704242206i569e4768oe4b34272181f1ce@mail.gmail.com>
+	Wed, 25 Apr 2007 08:53:56 -0400
+Message-ID: <462F4D7D.8020707@aitel.hist.no>
+Date: Wed, 25 Apr 2007 14:45:49 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0704242206i569e4768oe4b34272181f1ce@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz> <20070412202519.GB14705@aitel.hist.no> <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz> <462F2558.5010909@aitel.hist.no> <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, Apr 25, 2007 at 10:36:38AM +0530 Satyam Sharma ha dit:
+Jiri Kosina wrote:
+> On Wed, 25 Apr 2007, Helge Hafting wrote:
+>
+>   
+>>> Anyway, based on information you have provided in your later messages, 
+>>> it seems that it is probably not necessairly related neither to USB 
+>>> nor HID, as you are getting hangs at different stages of boot, 
+>>> depending on your local configuration/kernel version used. Is vanilla 
+>>> 2.6.21-rc6 ok? If so, would you have time to bisect the offending 
+>>> patch?
+>>>       
+>> I don't know about 2.6.21-rc6, but 2.6.21-rc7 (from fresh sources) is 
+>> good.  It boots up without hanging, and my USB devices works too. Should 
+>> I test rc7-mm1 then?
+>>     
+>
+> That would also be useful.
+>
+> But really identifying offending patch using bisection would help most. 
+>   
+If there is an offending patch at all - my rc6-mm1 kernel must
+have been built from messed-up sources - we saw that when your
+patch did not apply.  So my source had errors - right in the USB part.
 
-> Hi Matthias,
-> 
-> On 4/25/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> >Matthias Kaehlcke wrote:
-> >> El Tue, Apr 24, 2007 at 07:53:04PM +0200 Oliver Neukum ha dit:
-> >>
-> >>> Am Dienstag, 24. April 2007 19:49 schrieb Matthias Kaehlcke:
-> >>>> @@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
-> >>>>         if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
-> >>>>                 return 0;
-> >>>>
-> >>>> -       down_interruptible(&info->write_sem);
-> >>>> +       mutex_lock_interruptible(&info->write_mtx);
-> >>> This is a bug. It is also present in the current code, but nevertheless
-> >>> it is a bug. If you use an interruptible lock, you must be ready to deal
-> >>> with interrupts, which are ignored by this code.
-> >> [...]
-> >> i'm a bit confused now about the interruptible locks, i thought using
-> >> them means that the process will be waked up when receiving a
-> >> signal. what role are playing interrupts when using interruptible locks?
-> >
-> >You are correct, interrupts aren't involved. However if the wait is
-> >interrupted by a signal, mutex_lock_interruptible will return a nonzero
-> >return code which needs to be checked for (and likely -ERESTARTSYS or
-> >-EINTR returned), otherwise the code will blindly continue as though it
-> >has locked the mutex even though it has not.
-> 
-> Think I'll elaborate Robert's explanation for your benefit :-) Unlike
-> mutex_lock() and down() that put the task to TASK_UNINTERRUPTIBLE
-> sleep if the lock can't be acquired immediately,
-> mutex_lock_interruptible() and down_interruptible() sleep in
-> TASK_INTERRUPTIBLE state. So the task _can_ be woken up (without even
-> acquiring the lock) by incoming signals. When that happens, we can't
-> just blindly go on ... so the return values of the _interruptible()
-> versions of the locking functions *must* be checked for success and if
-> not, the task should return with error.
-> 
-> Use -ERESTARTSYS if a previous intermediate caller checks this return
-> value and tries and restarts the whole operation. If no such previous
-> caller exists (and/or introducing it would involve a change in kernel
-> behaviour as seen from userspace), you can safely use -EINTR. The goal
-> is that userspace must not get to see -ERESTARTSYS.
+I haven't tested a correct rc6-mm1, so I don't even know if it
+has problems.  I can make such a kernel of course. . .
+> And it should be pretty easy and not too much time consuming for you, as 
+> the bug triggers immediately upon boot in your case.
+>   
+Indeed - it is easy to spot. :-)
 
-thanks to both of you for your explications, i think i understand the
-problem much better now
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-      The assumption that what currently exists must necessarily
-        exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Helge Hafting
