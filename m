@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992964AbXDYTOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992961AbXDYTQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992964AbXDYTOb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDYTOb
+	id S2992961AbXDYTQN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDYTQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:14:31 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:49818 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992964AbXDYTOR (ORCPT
+	Wed, 25 Apr 2007 15:16:13 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:2092 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992961AbXDYTQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:14:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Q96wLEAFK6q0QgdJ1gcWU0K/kLhrXegOYRP83we9+5vQOjHTubfQvI3yjN69mTMiJNYQkSZifsOLQWJgMnvK9rTAhGCKLnLQVVFTErYDEXC5X4nMcjXRx43stsNaU+e05XKSnxXZlLvG+myzvFy8OCDIuboyZr0wAG4je/8Sgdc=
-Message-ID: <f4e013870704251214s37395ea2i85381313a406c56b@mail.gmail.com>
-Date: Wed, 25 Apr 2007 12:14:15 -0700
-From: "Mark Hull-Richter" <mhullrich@gmail.com>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-Subject: Re: Kernel traces coming back with trash/clutter [SOLVED]
-Cc: linux-kernel@vger.kernel.org
+	Wed, 25 Apr 2007 15:16:12 -0400
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: suspend2-devel@lists.suspend2.net
+Subject: Re: suspend2 merge
+Date: Wed, 25 Apr 2007 21:16:06 +0200
+User-Agent: KMail/1.9.6
+Cc: Romano Giannetti <romanol@upcomillas.es>, Pavel Machek <pavel@ucw.cz>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <200704182245.24156.mail@earthworm.de> <20070425072350.GA6866@ucw.cz> <1177491760.21928.20.camel@localhost> (sfid-20070425_120827_404083_9BCA4770) (sfid-20070425_120827_404083_9BCA4770)
+In-Reply-To: <1177491760.21928.20.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200704252116.07426.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/07, John Anthony Kazos Jr. <jakj@j-a-k-j.com> wrote:
-> > > Perhaps you have something looping that's outputting KERN_DEBUG with a
-> > > null message? Or one of your diagnostic printk statements includes
-> > > KERN_DEBUG with no actual message?
-> > >
-> > No, they are all KERN_DEBUG<space>"some string here", almost all with
-> > some formatted output as well.  Could I be overloading the printk
-> > output buffer, as in possibly too tightly repeated/looped code to be
-> > able to output it all?
+Am Mittwoch 25 April 2007 schrieb Romano Giannetti:
+> On Wed, 2007-04-25 at 07:23 +0000, Pavel Machek wrote:
+> > suspend-to-disk is a workaround for
+> >
+> >         'suspend-to-ram eats too much power' (plus some details like
+> >         being able to replace battery).
 >
-> It is possible, I suppose. Is what you're working on open-source? If so,
-> you could send it to me and I could try and reproduce it here and track it
-> down. If you want me to, that is. (If you do send, please include a
-> ".config".)
->
-> Otherwise, I couldn't tell you what it might be. Make sure all your
-> messages end with '\n', make sure you're not accidentally using the wrong
-> formatting codes and it's backing over previous output with ^H or
-> something. You could confirm or rule out the possibility of overflowing
-> the printk buffers by writing a dummy module with a tight loop of nothing
-> but printk statements with counters to see if you can get it to asplode.
->
+> ...and let me add 'suspend-to-disk' is a workaround for when s2ram does
+> not work for a gazillion interacting reasons (ACPI, vga bios, drm/dri,
+> you name it).
 
-It seems that my 'all KERN_DEBUG<space>"some string here"' was off by
-one - there was one, the newest, with a comma after the KERN_DEBUG.
-Removing it solved the problem.
+Hello Romano,
 
-Many thanks for the assistance.
+for me not only. I usually do not put the batteries into my laptops if not 
+needed cause I read and experienced that I can extend battery life by 
+that while making sure they are always charged more than 50%. Suspend to 
+RAM thus wouldn't work at all for me.
 
+I use suspend2 since 2.6.14 cause I never managed to get userspace 
+software suspend working on my ThinkPad T23 and T42, not even with 
+standard Debian kernel packages, didn't try the latest ones however, 
+AFAIR my last try was with one 2.6.18 package. And cause its faster and 
+the machine is more responsive after resuming than swsusp that I used 
+upto kernel 2.6.13.
+
+With that 1.5 GB RAM on my T42 suspending to disk with suspend2 takes 
+quite some time and resuming also, but I didn't optimize it and thus it 
+saves out almost everything of that:
+
+martin@shambala:~> free -m
+             total       used       free     shared    buffers     cached
+Mem:          1518       1219        298          0          0        831
+-/+ buffers/cache:        388       1130
+Swap:         1908          0       1908
+
+Probably should limit that.
+
+I would like suspend2 getting merged! Its proven technology and just 
+works, while I couldn't get userspace software suspend to work for me. 
+Maybe I made a mistake while setting it up, but I think setting it up at 
+first shouldn't be that complicated than I perceived it to be.
+
+I use suspend2 for our workstations at work, too, and my workstation has a 
+uptime of more than 43 days with more than 17 successful suspend and 
+resume cycles.
+
+Regards,
 -- 
-Mark Hull-Richter, Linux Kernel Engineer
-DATAllegro (www.datallegro.com)
-85 Enterprise, Second Floor, Aliso Viejo, CA  92656
-949-680-3082 - Office     949-330-7691 - fax
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
