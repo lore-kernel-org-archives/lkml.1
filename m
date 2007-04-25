@@ -1,163 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993028AbXDYUC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993039AbXDYUDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993028AbXDYUC3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993031AbXDYUC3
+	id S2993039AbXDYUDE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXDYUDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:02:29 -0400
-Received: from mithrandir.softwarenexus.net ([66.98.186.96]:2846 "EHLO
-	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993026AbXDYUC1 (ORCPT
+	Wed, 25 Apr 2007 16:03:04 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25219 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993039AbXDYUDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:02:27 -0400
-X-Greylist: delayed 2741 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 16:02:27 EDT
-Message-ID: <462FA923.5000301@genesi-usa.com>
-Date: Wed, 25 Apr 2007 20:16:51 +0100
-From: Matt Sealey <matt@genesi-usa.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: Olivier Galibert <galibert@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       jeff@garzik.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 1/7] libata: check for AN support
-References: <20070424074856.005152262@intel.com>	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>	<20070424090713.65657495@the-village.bc.nu>	<20070424102304.GA58841@dspnet.fr.eu.org>	<20070424084904.61932994.kristen.c.accardi@intel.com>	<20070424180552.GA17319@dspnet.fr.eu.org>	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>	<20070425004946.GA63747@dspnet.fr.eu.org> <20070425114002.1975da48.kristen.c.accardi@intel.com>
-In-Reply-To: <20070425114002.1975da48.kristen.c.accardi@intel.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Apr 2007 16:03:00 -0400
+Date: Wed, 25 Apr 2007 13:05:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
+Message-Id: <20070425130518.504111fd.randy.dunlap@oracle.com>
+In-Reply-To: <20070425121242.52698643.akpm@linux-foundation.org>
+References: <1177512596.4856.17.camel@daplas>
+	<20070425121242.52698643.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Apr 2007 12:12:42 -0700 Andrew Morton wrote:
 
-Kristen Carlson Accardi wrote:
-> Check to see if an ATAPI device supports Asynchronous Notification.
-> If so, enable it.
+> On Wed, 25 Apr 2007 22:49:56 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
 > 
-> Changes from last version:
-> * use parens around id in ata.h
+> > The Gnome desktop does not finish launching.  And I get this tracing,
+> > all coming from Gnome apps.
+> > 
+> > Tony
+> > 
+> > BUG: unable to handle kernel paging request at virtual address c0a74000
 > 
-> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> This might have been caused by the now-dropped
+> mm-only-i386-for-debugging-make-the-initial-page-table-setup-less-forgiving.patch
 > 
-> Index: 2.6-git/drivers/ata/libata-core.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/ata/libata-core.c
-> +++ 2.6-git/drivers/ata/libata-core.c
-> @@ -70,6 +70,7 @@ const unsigned long sata_deb_timing_long
->  static unsigned int ata_dev_init_params(struct ata_device *dev,
->  					u16 heads, u16 sectors);
->  static unsigned int ata_dev_set_xfermode(struct ata_device *dev);
-> +static unsigned int ata_dev_set_AN(struct ata_device *dev);
->  static void ata_dev_xfermask(struct ata_device *dev);
->  
->  static unsigned int ata_print_id = 1;
-> @@ -1744,6 +1745,22 @@ int ata_dev_configure(struct ata_device 
->  		}
->  		dev->cdb_len = (unsigned int) rc;
->  
-> +		/*
-> +		 * check to see if this ATAPI device supports
-> +		 * Asynchronous Notification
-> +		 */
-> +		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id)) {
-> +			int err;
-> +			/* issue SET feature command to turn this on */
-> +			err = ata_dev_set_AN(dev);
-> +			if (err)
-> +				ata_dev_printk(dev, KERN_ERR,
-> +						"unable to set AN, err %x\n",
-> +						err);
-> +			else
-> +				dev->flags |= ATA_DFLAG_AN;
-> +		}
-> +
->  		if (ata_id_cdb_intr(dev->id)) {
->  			dev->flags |= ATA_DFLAG_CDB_INTR;
->  			cdb_intr_string = ", CDB intr";
-> @@ -3525,6 +3542,42 @@ static unsigned int ata_dev_set_xfermode
->  }
->  
->  /**
-> + *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
-> + *                       with sector count set to indicate
-> + *                       Asynchronous Notification feature
-> + *	@dev: Device to which command will be sent
-> + *
-> + *	Issue SET FEATURES - SATA FEATURES command to device @dev
-> + *	on port @ap.
-> + *
-> + *	LOCKING:
-> + *	PCI/etc. bus probe sem.
-> + *
-> + *	RETURNS:
-> + *	0 on success, AC_ERR_* mask otherwise.
-> + */
-> +static unsigned int ata_dev_set_AN(struct ata_device *dev)
-> +{
-> +	struct ata_taskfile tf;
-> +	unsigned int err_mask;
-> +
-> +	/* set up set-features taskfile */
-> +	DPRINTK("set features - SATA features\n");
-> +
-> +	ata_tf_init(dev, &tf);
-> +	tf.command = ATA_CMD_SET_FEATURES;
-> +	tf.feature = SETFEATURES_SATA_ENABLE;
-> +	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-> +	tf.protocol = ATA_PROT_NODATA;
-> +	tf.nsect = SATA_AN;
-> +
-> +	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-> +
-> +	DPRINTK("EXIT, err_mask=%x\n", err_mask);
-> +	return err_mask;
-> +}
-> +
-> +/**
->   *	ata_dev_init_params - Issue INIT DEV PARAMS command
->   *	@dev: Device to which command will be sent
->   *	@heads: Number of heads (taskfile parameter)
-> Index: 2.6-git/include/linux/ata.h
-> ===================================================================
-> --- 2.6-git.orig/include/linux/ata.h
-> +++ 2.6-git/include/linux/ata.h
-> @@ -194,6 +194,12 @@ enum {
->  	SETFEATURES_WC_ON	= 0x02, /* Enable write cache */
->  	SETFEATURES_WC_OFF	= 0x82, /* Disable write cache */
->  
-> +	SETFEATURES_SATA_ENABLE = 0x10, /* Enable use of SATA feature */
-> +	SETFEATURES_SATA_DISABLE = 0x90, /* Disable use of SATA feature */
-> +
-> +	/* SETFEATURE Sector counts for SATA features */
-> +	SATA_AN			= 0x05,  /* Asynchronous Notification */
-> +
->  	/* ATAPI stuff */
->  	ATAPI_PKT_DMA		= (1 << 0),
->  	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
-> @@ -299,6 +305,9 @@ struct ata_taskfile {
->  #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
->  #define ata_id_removeable(id)	((id)[0] & (1 << 7))
->  #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
-> +#define ata_id_has_AN(id)	\
-> +	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
-> +	  ((id)[78] & (1 << 5)) )
+> 
+> >  printing eip:
+> > c014c469
+> > *pde = 005f3027
+> > *pte = 00000000
+> > Oops: 0002 [#1]
+> > Modules linked in: xt_pkttype xt_tcpudp ipt_LOG xt_limit nfsd exportfs
+> > lockd nfs_acl sunrpc snd_pcm_oss snd_mixer_oss snd_seq button battery ac
+> > ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter
+> > ip6table_filter nf_conntrack_ipv4 nf_conntrack ip_tables ip6_tables
+> > x_tables nls_iso8859_1 nls_cp437 vfat fat nls_utf8 ntfs reiserfs loop
+> > usblp snd_via82xx snd_ac97_codec ac97_bus snd_pcm ide_cd cdrom snd_timer
+> > snd_page_alloc snd_mpu401_uart rtc_cmos snd_rawmidi rtc_core
+> > snd_seq_device rtc_lib snd soundcore via_rhine ehci_hcd uhci_hcd usbcore
+> > sc92031 via_agp 8139too i2c_viapro ext3 mbcache jbd edd fan thermal
+> > processor via82cxxx ide_disk ide_core
+> > CPU:    0
+> > EIP:    0060:[<c014c469>]    Tainted: G      D VLI
+> 
+> For some reason all oopses (and boy there are a lot of them) are being
+> described as tainted.
 
-??
+probably the recent die_counter/Oops implies Tainted patch.
 
-> --- 2.6-git.orig/include/linux/libata.h
-> +++ 2.6-git/include/linux/libata.h
-> @@ -136,6 +136,7 @@ enum {
->  	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
->  	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
->  	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
-> +	ATA_DFLAG_AN		= (1 << 5), /* device supports Async notification */
->  	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
-
-Why don't the macros use the enums? It makes the code hard to read without
-painful cross-reference doesn't it? Surely (id)[76] & (ATA_DFLAG_AN) is a
-lot more readable than 1 << 5 - even if the flag is obviously that, a lot
-of values and registers can have 1 << 5 as a flag and mean a lot of different
-things.
-
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
