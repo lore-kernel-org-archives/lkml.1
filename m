@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXDYTwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbXDYTyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752929AbXDYTwm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbXDYTwl
+	id S1753558AbXDYTyz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDYTyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:52:41 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.155]:19916 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752929AbXDYTwl (ORCPT
+	Wed, 25 Apr 2007 15:54:55 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60830 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753558AbXDYTyy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:52:41 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: mingo@elte.hu
-Subject: [PATCH 2.6.21-rc6-rt0] ns2cyc() result fix
-Date: Wed, 25 Apr 2007 22:54:17 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, dwalker@mvista.com,
-       johnstul@us.ibm.com
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 25 Apr 2007 15:54:54 -0400
+Date: Wed, 25 Apr 2007 12:54:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Jones <davej@redhat.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Pavel Emelianov <xemul@sw.ru>
+Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
+Message-Id: <20070425125406.9253bd49.akpm@linux-foundation.org>
+In-Reply-To: <20070425193511.GB3006@redhat.com>
+References: <1177512596.4856.17.camel@daplas>
+	<20070425121242.52698643.akpm@linux-foundation.org>
+	<20070425193511.GB3006@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704252354.17404.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the dubious use of cycles_t where cycle_t was appropriate.  On the machines
-with 32-bit cycles_t (like ARM/PPC) it caused these warnings:
+On Wed, 25 Apr 2007 15:35:11 -0400 Dave Jones <davej@redhat.com> wrote:
 
-In file included from arch/powerpc/kernel/time.c:1045:
-include/linux/clocksource.h: In function `ns2cyc':
-include/linux/clocksource.h:213: warning: comparison of distinct pointer types lacks a cast
-include/linux/clocksource.h:213: warning: right shift count >= width of type
-include/linux/clocksource.h:213: warning: passing argument 1 of `__div64_32' from incompatible pointer type
+> On Wed, Apr 25, 2007 at 12:12:42PM -0700, Andrew Morton wrote:
+>   > > EIP:    0060:[<c014c469>]    Tainted: G      D VLI
+>  > 
+>  > For some reason all oopses (and boy there are a lot of them) are being
+>  > described as tainted.
+> 
+> What's "D" though ?
 
-This function and therefore usecs_to_cycles() was unlikely to return a correct
-result on such machines because of the shift result truncation.
+Pretty flattering, if it's on a scale of A-F.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>  grep -i taint broken-out/* doesn't show
+> -mm adding any new flags, and I don't see it present in mainline.
 
----
-I'm also uncertain about 'preempt_max_latency' and 'preempt_thresh' variables
-being declared as 'unsigned long' -- however, looks like those are unlikely to
-overflow... yet it's unclear why there's casts to 'cycle_t' (which is always
-64-bit) when initializing/comparing them...
+report-that-kernel-is-tainted-if-there-were-an-oops-before.patch:
 
-Index: linux-2.6/include/linux/clocksource.h
-===================================================================
---- linux-2.6.orig/include/linux/clocksource.h
-+++ linux-2.6/include/linux/clocksource.h
-@@ -206,9 +206,9 @@ static inline s64 cyc2ns(struct clocksou
-  * @cs:		Pointer to clocksource
-  * @nsecs:	Nanoseconds
-  */
--static inline cycles_t ns2cyc(struct clocksource *cs, u64 nsecs)
-+static inline cycle_t ns2cyc(struct clocksource *cs, u64 nsecs)
- {
--	cycles_t ret = nsecs << cs->shift;
-+	cycle_t ret = nsecs << cs->shift;
- 
- 	do_div(ret, cs->mult + 1);
- 
++  8: 'D' if a kernel has died recently, i.e. there was an OOPS or BUG
++      before, ' ' otherwise. This is useful when seeing the calltrace
++      from SysRq-P output.
 
+I suspect that patch has gone bad and it's reporting 'D' for the very first
+oops, which it shouldn't do.
+
+But I haven't checked that theory.
