@@ -1,79 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992477AbXDYJfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992490AbXDYJf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992477AbXDYJfg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992483AbXDYJfg
+	id S2992490AbXDYJf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992500AbXDYJf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:35:36 -0400
-Received: from antispam.upcomillas.es ([130.206.70.245]:44695 "EHLO
-	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992477AbXDYJff convert rfc822-to-8bit (ORCPT
+	Wed, 25 Apr 2007 05:35:56 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:30554 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992490AbXDYJfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:35:35 -0400
-X-Greylist: delayed 1968 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 05:35:34 EDT
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and 
-	suspend2:hang in atomic copy)
-From: Romano Giannetti <romanol@upcomillas.es>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070425072350.GA6866@ucw.cz>
-References: <200704182245.24156.mail@earthworm.de> 
-	<20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> 
-	<20070418220228.GA14536@elte.hu> 
-	<1176947576.5906.21.camel@nigel.suspend2.net> 
-	<20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> 
-	<alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> 
-	<20070424212408.GD16457@elf.ucw.cz> 
-	<alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> 
-	<20070425072350.GA6866@ucw.cz>
-Content-Type: text/plain;
-	charset=utf-8
-Date: Wed, 25 Apr 2007 11:02:40 +0200
-Message-Id: <1177491760.21928.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Apr 2007 05:35:55 -0400
+Date: Wed, 25 Apr 2007 11:34:25 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070425093425.GO9715@kernel.dk>
+References: <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425084607.GM9715@kernel.dk>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 07:23 +0000, Pavel Machek wrote:
-> suspend-to-disk is a workaround for
->
->         'suspend-to-ram eats too much power' (plus some details like
->         being able to replace battery).
->
+On Wed, Apr 25 2007, Jens Axboe wrote:
+> On Wed, Apr 25 2007, Neil Brown wrote:
+> > On Tuesday April 24, brad@wasp.net.au wrote:
+> > > [105449.653682] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
+> > > lkml@vger.kernel.org
+> > > [105449.683646] cfq: busy=1,drv=0,timer=0
+> > > [105449.694871] cfq rr_list:
+> > > [105449.702715]   3108: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
+> > > [105449.720693] cfq busy_list:
+> > > [105449.729054] cfq idle_list:
+> > > [105449.737418] cfq cur_rr:
+> > 
+> > Ok, I have a theory.
+> > 
+> > An ELEVATOR_FRONT_MERGE occurs which changes req->sector and calls
+> > ->elevator_merged_fn which is cfq_merged_request.
+> > 
+> > At this time there is already a request in cfq with the same sector
+> > number, and that request is the only other request on the queue.
+> > 
+> > cfq_merged_request calls cfq_reposition_rq_rb which removes the
+> > req from ->sortlist and then calls cfq_add_rq_rb to add it back (at
+> > the new location because ->sector has changed).
+> > 
+> > cfq_add_rq_rb finds there is already a request with the same sector
+> > number and so elv_rb_add returns an __alias which is passed to
+> > cfq_dispatch_insert. 
+> > This calls cfq_remove_request and as that is the only request present,
+> > ->next_rq gets set to NULL.
+> > The old request with the new sector number is then added to the
+> > ->sortlist, but ->next_rq is never set - it remains NULL.
+> > 
+> > How likely it would be to get two requests with the same sector number
+> > I don't know.  I wouldn't expect it to ever happen - I have seen it
+> > before, but it was due to a bug in ext3.  Maybe XFS does it
+> > intentionally some times?
+> > 
+> > You could test this theory by putting a
+> >    WARN_ON(cfqq->next_rq == NULL);
+> > at the end of cfq_reposition_rq_rb, just after the cfq_add_rq_rb call.
+> > 
+> > I will leave the development of a suitable fix up to Jens if he agrees
+> > that this is possible.
+> 
+> That's pretty close to where I think the problem is (the front merging
+> and cfq_reposition_rq_rb()). The issue with that is that you'd only get
+> aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
+> here. Given that front merges are equally not very likely, I'd be
+> surprised is something like that has ever happened.
+> 
+> BUT... That may explain while we are only seeing it on md. Would md
+> ever be issuing such requests that trigger this condition?
+> 
+> I'll try and concoct a test case.
 
-...and let me add 'suspend-to-disk' is a workaround for when s2ram does
-not work for a gazillion interacting reasons (ACPI, vga bios, drm/dri,
-you name it).
-I am quite happy with s2ram now on my AMD-based vaio, but it started to
-work with 2.6.17 kernels (Ubuntu Edgy, really), and the three years
-before that suspend-to-disk (sometime Pavel's, sometime Nigel's) 
-saved the day (yes, it's quite faster to use suspend-to-disk that doing
-shutdown, reboot, and re-open all the applications).
+I made a test case and reproduced it, this is indeed what is happening.
+md must be issuing direct requests in such a manner, that you do get a
+front merge and then an alias to an existing request. Will test a fix!
 
-So, please do not dismiss suspend-to-disk as "crap". It has its place
-under the sun.
-
-Romano
-
---
-Romano Giannetti --- romano.giannetti@gmail.com
-Sorry for the following disclaimer, it's attached by our outgoing server
-and I cannot shut it up.
-
-
-
---
-La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
-
-This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+-- 
+Jens Axboe
 
