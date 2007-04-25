@@ -1,136 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbXDYWI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbXDYWLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbXDYWI2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbXDYWI2
+	id S1754467AbXDYWLJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbXDYWLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:08:28 -0400
-Received: from gw.goop.org ([64.81.55.164]:33955 "EHLO mail.goop.org"
+	Wed, 25 Apr 2007 18:11:09 -0400
+Received: from mail1.panix.com ([166.84.1.72]:51104 "EHLO mail1.panix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbXDYWI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:08:27 -0400
-Message-ID: <462FD179.6070802@goop.org>
-Date: Wed, 25 Apr 2007 15:08:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1754467AbXDYWLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:11:07 -0400
+Date: Wed, 25 Apr 2007 15:11:01 -0700 (PDT)
+From: Kenneth Crudup <kenny@panix.com>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Adrian Bunk <bunk@stusta.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+In-Reply-To: <20070425173405.GE17074@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0704251501550.8406@vaio.localdomain>
+References: <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu>
+ <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu>
+ <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+ <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+ <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
+ <20070425173405.GE17074@elf.ucw.cz>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Zachary Amsden <zach@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
- less forgiving.
-References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>	<20070425044813.f83dde4e.akpm@linux-foundation.org>	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>	<462F9B64.3020107@goop.org> <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Nope.  It's not overwriting anything.
 
-This should fix it.
+On Wed, 25 Apr 2007, Pavel Machek wrote:
 
-Subject: x86: fix PSE pagetable construction
+> But ... you are really using suspend-to-disk as a workaround for "my
+> desktop takes too much power when idle".
 
-When constructing the initial pagetable in pagetable_init, make sure
-that non-PSE pmds are updated to PSE ones.
+While rare is the day admittedly, that my machine isn't on, there are
+days I take a break from loooong days and won't work for 2-5 days at
+a time.
 
-This moves the definition of pmd_huge() out of the hugetlbfs files
-into pgtable.h.
+My main revenue machine is a laptop with a fast, but last-generation
+mobile processor and 2GB of DDR2 SDRAM.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+I think it's ridiculous to expect that I could resume off battery (and
+this thing is a behemoth, with a 17" screen and backlight and a lot of
+little juice-eating peripherals that'll go thru a 4.4A/Hr battery in a
+little over 90 mins, even with conservative power settings) after that
+kind of delay. I don't even like "suspend to RAM, then suspend to disk
+on battery low" 'cause that means when I turn it on again I have a low
+battery for an hour and a half.
 
----
- arch/i386/mm/hugetlbpage.c   |    6 +-----
- arch/i386/mm/init.c          |    2 +-
- include/asm-i386/pgtable.h   |    2 +-
- include/asm-x86_64/pgtable.h |    1 +
- include/linux/hugetlb.h      |    2 --
- 5 files changed, 4 insertions(+), 9 deletions(-)
+The only acceptable power usage when (completely) idle, IMO, is *zero*.
 
-===================================================================
---- a/arch/i386/mm/hugetlbpage.c
-+++ b/arch/i386/mm/hugetlbpage.c
-@@ -183,6 +183,7 @@ follow_huge_addr(struct mm_struct *mm, u
- 	return page;
- }
- 
-+#undef pmd_huge
- int pmd_huge(pmd_t pmd)
- {
- 	return 0;
-@@ -201,11 +202,6 @@ follow_huge_addr(struct mm_struct *mm, u
- follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
- {
- 	return ERR_PTR(-EINVAL);
--}
--
--int pmd_huge(pmd_t pmd)
--{
--	return !!(pmd_val(pmd) & _PAGE_PSE);
- }
- 
- struct page *
-===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -172,7 +172,7 @@ static void __init kernel_physical_mappi
- 			/* Map with big pages if possible, otherwise create normal page tables. */
- 			if (cpu_has_pse) {
- 				unsigned int address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE + PAGE_OFFSET + PAGE_SIZE-1;
--				if (!pmd_present(*pmd)) {
-+				if (!pmd_present(*pmd) || !pmd_huge(*pmd)) {
- 					if (is_kernel_text(address) || is_kernel_text(address2))
- 						set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
- 					else
-===================================================================
---- a/include/asm-i386/pgtable.h
-+++ b/include/asm-i386/pgtable.h
-@@ -211,7 +211,7 @@ extern unsigned long pg0[];
- #define pmd_none(x)	(!(unsigned long)pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
- #define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
--
-+#define pmd_huge(x)	((pmd_val(x) & _PAGE_PSE) != 0)
- 
- #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
- 
-===================================================================
---- a/include/asm-x86_64/pgtable.h
-+++ b/include/asm-x86_64/pgtable.h
-@@ -352,6 +352,7 @@ static inline int pmd_large(pmd_t pte) {
- 			pmd_index(address))
- #define pmd_none(x)	(!pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
-+#define pmd_huge(x)	((pmd_val(x) & _PAGE_PSE) != 0)
- #define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
- #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
- #define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
-===================================================================
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -41,7 +41,6 @@ struct page *follow_huge_addr(struct mm_
- 			      int write);
- struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
- 				pmd_t *pmd, int write);
--int pmd_huge(pmd_t pmd);
- void hugetlb_change_protection(struct vm_area_struct *vma,
- 		unsigned long address, unsigned long end, pgprot_t newprot);
- 
-@@ -114,7 +113,6 @@ static inline unsigned long hugetlb_tota
- #define hugetlb_report_node_meminfo(n, buf)	0
- #define follow_huge_pmd(mm, addr, pmd, write)	NULL
- #define prepare_hugepage_range(addr,len,pgoff)	(-EINVAL)
--#define pmd_huge(x)	0
- #define is_hugepage_only_range(mm, addr, len)	0
- #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
- #define hugetlb_fault(mm, vma, addr, write)	({ BUG(); 0; })
+	-Kenny
 
-
-
-
+-- 
+Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
+O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
