@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423387AbXDYWmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423394AbXDYWnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423387AbXDYWmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423391AbXDYWmf
+	id S1423394AbXDYWnx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423392AbXDYWnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:42:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45071 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423387AbXDYWme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:42:34 -0400
-Date: Thu, 26 Apr 2007 00:42:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425224216.GI17387@elf.ucw.cz>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+	Wed, 25 Apr 2007 18:43:53 -0400
+Received: from mga07.intel.com ([143.182.124.22]:19242 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423390AbXDYWnw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:43:52 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,452,1170662400"; 
+   d="scan'208";a="219411207"
+Date: Wed, 25 Apr 2007 15:43:50 -0700
+From: Valerie Henson <val_henson@linux.intel.com>
+To: Nikita Danilov <nikita@clusterfs.com>
+Cc: David Lang <david.lang@digitalinsight.com>, Amit Gud <gud@cis.ksu.edu>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
+       gud@ksu.edu
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070425224349.GA16129@nifty>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <17966.23512.363955.141489@gargle.gargle.HOWL>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Not the same... but they are still related. "freeze" (for atomic
-> > snapshot) is actually subset of "suspend"... freeze needs DMAs off and
-> > saved state, and you need DMAs off and saved state for "suspend".
+On Tue, Apr 24, 2007 at 11:34:48PM +0400, Nikita Danilov wrote:
 > 
-> THEY HAVE ABSOLUTELY NOTHING IN COMMON!
+> Maybe I failed to describe the problem presicely.
 > 
-> Nobody in their right mind thinks that "disable DMA" and "suspend" are 
-> similar operations. 
+> Suppose that all chunks have been checked. After that, for every inode
+> I0 having continuations I1, I2, ... In, one has to check that every
+> logical block is presented in at most one of these inodes. For this one
+> has to read I0, with all its indirect (double-indirect, triple-indirect)
+> blocks, then read I1 with all its indirect blocks, etc. And to repeat
+> this for every inode with continuations.
 > 
-> > So it is actually correct to do "suspend" when you want "freeze"; it
-> > is just slow. That's why they only differ in parameter these days.
-> 
-> It is *not* correct to "suspend" when you want "freeze".
+> In the worst case (every inode has a continuation in every chunk) this
+> obviously is as bad as un-chunked fsck. But even in the average case,
+> total amount of io necessary for this operation is proportional to the
+> _total_ file system size, rather than to the chunk size.
 
-Example?
+Fsck in chunkfs is still going to have an element that is proportional
+to the file system size for certain cases.  However, that element will
+be a great deal smaller than in a regular file system, except in the
+most pathological cases.  If those pathological cases happen often,
+then it's back to the drawing board.  My hunch is that they won't be
+common.
 
-> I don't understand how you can even *claim* something like that.
-> 
-> Here's a trivial example:
->  - SCSI disk
-> 
-> Tell me, what does "suspend" do, and what does "freeze" (snapshot) do?
-
-Suspend syncs caches/spins down. Freeze does not do anything.
-
-That's okay, I keep claiming "freeze" is subset of "suspend". Can you
-name device where that is not true?
-
-Remember we do
-
-suspend(PMSG_FREEZE)
-atomic snapshot
-resume()
-write snapshot.
-
-So if we do spin the scsi disk down, nothing really bad happens, we'll
-just spin it up. (So scsi disk is not example I want. Spining down
-scsi disk on freeze is slow and stupid, but it is not incorrect).
-
-Yes, If I'd knew what I know now, drivers would have
-suspend/freeze/thaw/resume methods. We probably still can do that
-change. Unfortunately, it needs driver authors to understand 4 hooks
-(not 2) and do the right thing.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-VAL
