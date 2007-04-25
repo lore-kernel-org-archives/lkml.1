@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423236AbXDYGlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161618AbXDYGmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423236AbXDYGlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 02:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423238AbXDYGlg
+	id S1161618AbXDYGmQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 02:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161619AbXDYGmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 02:41:36 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:51516 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423237AbXDYGld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 02:41:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hjhwh1yqdBVmkMXTnApQG2jYUzYeXbhQnxFv9cqURF8K8KCxdSbbABHO+vouByJCvza4Pn045QznwxXNjGWakS9QZPcUVUM/Sw+FycBIb3ZD0OgmvjmXxn2HYGp27uSUTS9rGvbfqnhpFcXmVwTxcwBze4BVUPV7S+oBBJvTSkI=
-Message-ID: <a44ae5cd0704242341n4c8d9eaaw4516759ff79e8cd5@mail.gmail.com>
-Date: Tue, 24 Apr 2007 23:41:32 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc7-mm1 + sysfs-oops-workaround.patch -- software suspend failed (1 tasks refusing to freeze)
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Oleg Nesterov" <oleg@tv-sign.ru>
-In-Reply-To: <20070424225429.544075c8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 02:42:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50334 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161618AbXDYGmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 02:42:15 -0400
+Date: Wed, 25 Apr 2007 08:41:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070425064137.GA25247@elte.hu>
+References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a44ae5cd0704242227x14986fe3v5c2fc3a5bceedc89@mail.gmail.com>
-	 <20070424224137.0ccf7874.akpm@linux-foundation.org>
-	 <a44ae5cd0704242249i210ba860i659c230b5dbb211c@mail.gmail.com>
-	 <20070424225429.544075c8.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Tue, 24 Apr 2007 22:49:48 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
->
-> > On 4/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > On Tue, 24 Apr 2007 22:27:44 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
-> > >
-> > > > [ 1251.506964] PM: Preparing system for mem sleep
-> > > > [ 1251.514790] Stopping tasks ...
-> > > > [ 1271.456065] Stopping user space processes timed out after 20
-> > > > seconds (1 tasks refusing to freeze):
-> > > > [ 1271.456243]  multiload-apple
-> > > > [ 1271.456291] Restarting tasks ... done.
-> > > >
-> > > > This isn't happening under earlier builds I've tested.  How can I debug this?
-> > > >
-> > >
-> > > hm, that's multiload-applet, some gnome thing.
-> > >
-> > > sysrq-T, perhaps?  Perhaps the process is sleeping in the kernel somewhere.
-> >
-> > Should I wait for the next patch from Tejun before retesting?  Perhaps
-> > this suspend problem is a side effect of the locking problem he
-> > mentioned.
->
-> It's unlikely to be related to Tejun's sysfs changes.
->
-I tried to reproduce this, but this time when I tried to suspend, the
-machine just hung with a message showing saying the system was
-suspending.  When I touched my Synaptics mousepad after about ten
-seconds of waiting, the system suddenly suspended.  Upon resuming, I
-checked dmesg and found the time seems to be totally out of whack:
 
-[ 1334.589074] pci 0000:00:1f.6: LATE suspend
-[ 1334.589080] Intel ICH 0000:00:1f.5: LATE suspend
-[ 1334.589085] pci 0000:00:1f.3: LATE suspend
-[ 1334.589091] pci 0000:00:1f.0: LATE suspend
-[ 1334.589096] pci 0000:00:1e.0: LATE suspend, may wakeup
-[ 1334.589102] pci 0000:00:02.1: LATE suspend
-[ 1334.589108] pci 0000:00:02.0: LATE suspend
-[ 1334.589113] pci 0000:00:00.3: LATE suspend
-[ 1334.589118] pci 0000:00:00.1: LATE suspend
-[ 1334.589124] agpgart-intel 0000:00:00.0: LATE suspend
-[ 1334.589733]  hwsleep-0323 [03] enter_sleep_state     : Entering
-sleep state [S3]
-[18014527.889728] Intel machine check architecture supported.
-[18014527.889749] Intel machine check reporting enabled on CPU#0.
-[18014527.889783] Back to C!
-[18014527.889783] agpgart-intel 0000:00:00.0: EARLY resume
-[18014527.889783] PCI: Calling quirk c01c94b2 for 0000:00:00.0
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> I absolutely detest all suspend-to-disk crap. Quite frankly, I hate 
+> the whole thing. I think they've _all_ caused problems for the "true" 
+> suspend (suspend-to-ram), and the last thing I want to see is three or 
+> four different suspend-to-disk implementations.  So unlike Ingo, I 
+> don't think "let's just integrate them all side-by-side and maintain 
+> them and look who wins" is really a good idea.
+>
+> How many different magic ioctl's does the thing introduce? Is it 
+> really just *two* entry-points (and how simple are they, 
+> interface-wise), and nothing else?
+
+userspace-driven-suspend is already in the kernel, today. So it's not 
+really "two versions side by side doing the same thing", but more of:
+
+           A B C + D E F G H
+
+where "ABC" is used by the uswsusp code today, and "ABCDEFGH" is used by 
+suspend2. So any "suspend2 merge" would largely be about adding "DEFGH". 
+(uswsusp of course redoes 'DEFGH' in user-space its own way, and there 
+is the inevitable "+" glue code as well, but it's at least not two 
+parallel versions of the same thing in the kernel, which would be 
+gross.)
+
+My original mail was about the following thing: i tried the suspend2 
+patch (which just makes "echo disk > /sys/power/state" work as expected, 
+as long as you give the booting up kernel image an idea about where the 
+swap partition we suspended to is, via a single boot option) and that it 
+was pretty straightforward and worked well, and that i think its way of 
+reusing the existing suspend infrastructure and doing the add-ons 
+cleanly while keeping the existing user-hibernate code intact looked 
+viable to me.
+
+I.e. to me it looked like while there are apparent conflicts of 
+personalities suspend2 did not really seem to be a hostile 
+reimplementation of 'A B C', but that it tries to build upon 'A B C' and 
+just has a different technical opinion about whether 'DEFGH' should be 
+in the kernel or outside of it.
+
+	Ingo
