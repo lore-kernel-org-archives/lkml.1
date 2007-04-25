@@ -1,51 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423361AbXDYSP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423367AbXDYSRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423361AbXDYSP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423364AbXDYSP3
+	id S1423367AbXDYSRi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423365AbXDYSRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:15:29 -0400
-Received: from ns.suse.de ([195.135.220.2]:54462 "EHLO mx1.suse.de"
+	Wed, 25 Apr 2007 14:17:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:58015 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423361AbXDYSP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:15:28 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 09/25] xen: Account for time stolen by Xen
-Date: Wed, 25 Apr 2007 20:15:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-References: <20070423215638.563901986@goop.org> <200704251115.49966.ak@suse.de> <462F9A4E.5050905@goop.org>
-In-Reply-To: <462F9A4E.5050905@goop.org>
+	id S1423359AbXDYSRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:17:37 -0400
+Message-ID: <462F9B64.3020107@goop.org>
+Date: Wed, 25 Apr 2007 11:18:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>	<20070425044813.f83dde4e.akpm@linux-foundation.org>	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704252015.06269.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007 20:13:34 Jeremy Fitzhardinge wrote:
-> Andi Kleen wrote:
-> >> +
-> >> +	do {
-> >> +		state_time = state->state_entry_time;
-> >> +		barrier();
-> >>     
-> >
-> > Should be likely rmb
-> 
-> We discussed this, and decided that it wasn't necessary.  The state is
-> always updated by the current CPU, so if it changes under our feet it
-> will be because we were preempted, and so that should shoot down any
-> speculated reads.
+Eric W. Biederman wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
+>
+>   
+>> Andrew Morton wrote:
+>>
+>>     
+>>> This patch causes oopses after a minute or so running LTP's
+>>>
+>>> ./testcases/bin/growfiles -W gf16 -b -e 1 -i 0 -L 120 -u -g 4090 -T 100 -t
+>>>       
+>> 408990 -l -C 10 -c 1000 -S 10 -f Lgf02_
+>>     
+>>> on everyone's favoutite Vaio, configured with
+>>> http://userweb.kernel.org/~akpm/config-sony.txt
+>>>
+>>>       
+>> *BLINK*
+>>
+>> This patch only affects the initial page tables, which should have been
+>> thrown out *way* long ago at this point.
+>>     
+>
+> Yes.  I noticed this was happening a few days ago.
+> I must not have mentioned it loudly enough.
+>   
 
-Then the barrier shouldn't be needed at all? 
+I might have introduced it as part of the paravirt_ops patches.  When
+setting up pagetables under Xen, we need to make sure we preserve the
+initial mappings Xen put in place (it starts the VM with paging enabled,
+and a sane initial pagetable).  This may have leaked over into native if
+it doesn't replace an existing entry.
 
-Anyways needs comments
+Hm, but it should be overwriting small mappings with large ones.  Maybe
+I overlooked that.
 
--Andi
+> I'm halfway through putting together a patchset to address a
+> bunch of these.
+>
+> I haven't yet resolved how I want to allocate the pages for the
+> identity mapping of the page table yet.  I can't use the bootmem
+> allocate as it exists because that assumes the page is mapped
+> into the address space already.
+>   
+
+Are you going to clash horribly with the paravirt pagetable setup?  We
+should probably coordinate if so.
+
+    J
