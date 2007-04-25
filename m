@@ -1,150 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031131AbXDYUu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993094AbXDYUvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031131AbXDYUu0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031133AbXDYUu0
+	id S2993094AbXDYUvA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993175AbXDYUvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:50:26 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:34305 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031131AbXDYUuZ (ORCPT
+	Wed, 25 Apr 2007 16:51:00 -0400
+Received: from smtp.ono.com ([62.42.230.12]:43397 "EHLO resmaa06.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2993094AbXDYUu7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:50:25 -0400
-Subject: Re: [ofa-general] [PATCH 6/6] [RFC]mlx4 build system stuff
-From: Steve Wise <swise@opengridcomputing.com>
-To: Roland Dreier <rolandd@cisco.com>
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20074201532.jhCN1hLvxaAengJm@cisco.com>
-References: <20074201532.jhCN1hLvxaAengJm@cisco.com>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 15:50:19 -0500
-Message-Id: <1177534219.29222.0.camel@stevo-desktop>
+	Wed, 25 Apr 2007 16:50:59 -0400
+Date: Wed, 25 Apr 2007 22:50:39 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc6-mm1
+Message-ID: <20070425225039.1cf6c1ee@werewolf-wl>
+In-Reply-To: <20070424102250.ab8469bd.akpm@linux-foundation.org>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+	<20070424101041.2fb2d9e0@werewolf-wl>
+	<20070424045801.607b30d4.akpm@linux-foundation.org>
+	<20070424154321.11c70ace@werewolf-wl>
+	<20070424102250.ab8469bd.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1cvs23 (GTK+ 2.10.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-20 at 15:32 -0700, Roland Dreier wrote:
-> Hook up mlx4_core and mlx4_ib drivers to Kconfig and Makefiles.
-> 
-> Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> 
-> ---
-> 
->  infiniband/Kconfig          |    2 ++
->  infiniband/Makefile         |    1 +
->  infiniband/hw/mlx4/Kconfig  |    9 +++++++++
->  infiniband/hw/mlx4/Makefile |    3 +++
->  net/Kconfig                 |   14 ++++++++++++++
->  net/Makefile                |    1 +
->  net/mlx4/Makefile           |    4 ++++
->  7 files changed, 34 insertions(+)
-> 
-> diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
-> index 82afba5..37deaae 100644
-> --- a/drivers/infiniband/Kconfig
-> +++ b/drivers/infiniband/Kconfig
-> @@ -45,6 +45,8 @@ source "drivers/infiniband/hw/ehca/Kconfig"
->  source "drivers/infiniband/hw/amso1100/Kconfig"
->  source "drivers/infiniband/hw/cxgb3/Kconfig"
->  
-> +source "drivers/infiniband/hw/mlx4/Kconfig"
-> +
->  source "drivers/infiniband/ulp/ipoib/Kconfig"
->  
->  source "drivers/infiniband/ulp/srp/Kconfig"
-> diff --git a/drivers/infiniband/Makefile b/drivers/infiniband/Makefile
-> index da2066c..75f325e 100644
-> --- a/drivers/infiniband/Makefile
-> +++ b/drivers/infiniband/Makefile
-> @@ -4,6 +4,7 @@ obj-$(CONFIG_INFINIBAND_IPATH)		+= hw/ipath/
->  obj-$(CONFIG_INFINIBAND_EHCA)		+= hw/ehca/
->  obj-$(CONFIG_INFINIBAND_AMSO1100)	+= hw/amso1100/
->  obj-$(CONFIG_INFINIBAND_CXGB3)		+= hw/cxgb3/
-> +obj-$(CONFIG_MLX4_INFINIBAND)		+= hw/mlx4/
->  obj-$(CONFIG_INFINIBAND_IPOIB)		+= ulp/ipoib/
->  obj-$(CONFIG_INFINIBAND_SRP)		+= ulp/srp/
->  obj-$(CONFIG_INFINIBAND_ISER)		+= ulp/iser/
-> diff --git a/drivers/infiniband/hw/mlx4/Kconfig b/drivers/infiniband/hw/mlx4/Kconfig
-> new file mode 100644
-> index 0000000..b8912cd
-> --- /dev/null
-> +++ b/drivers/infiniband/hw/mlx4/Kconfig
-> @@ -0,0 +1,9 @@
-> +config MLX4_INFINIBAND
-> +	tristate "Mellanox ConnectX HCA support"
-> +	depends on INFINIBAND
-> +	select MLX4_CORE
-> +	---help---
-> +	  This driver provides low-level InfiniBand support for
-> +	  Mellanox ConnectX PCI Express host channel adapters (HCAs).
-> +	  This is required to use InfiniBand protocols such as
-> +	  IP-over-IB or SRP with these devices.
-> diff --git a/drivers/infiniband/hw/mlx4/Makefile b/drivers/infiniband/hw/mlx4/Makefile
-> new file mode 100644
-> index 0000000..70f09c7
-> --- /dev/null
-> +++ b/drivers/infiniband/hw/mlx4/Makefile
-> @@ -0,0 +1,3 @@
-> +obj-$(CONFIG_MLX4_INFINIBAND)	+= mlx4_ib.o
-> +
-> +mlx4_ib-y :=	ah.o cq.o doorbell.o mad.o main.o mr.o qp.o srq.o
-> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-> index c3f9f59..842f020 100644
-> --- a/drivers/net/Kconfig
-> +++ b/drivers/net/Kconfig
-> @@ -2493,6 +2493,20 @@ config PASEMI_MAC
->  	  This driver supports the on-chip 1/10Gbit Ethernet controller on
->  	  PA Semi's PWRficient line of chips.
->  
-> +config MLX4_CORE
-> +	tristate
-> +	depends on PCI
-> +	default n
-> +
+On Tue, 24 Apr 2007 10:22:50 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-No help menu for the core module?
-
-
-> +config MLX4_DEBUG
-> +	bool "Verbose debugging output" if (MLX4_CORE && EMBEDDED)
-> +	default y
-> +	---help---
-> +	  This option causes debugging code to be compiled into the
-> +	  mlx4_core driver.  The output can be turned on via the
-> +	  debug_level module parameter (which can also be set after
-> +	  the driver is loaded through sysfs).
-> +
->  endmenu
->  
->  source "drivers/net/tokenring/Kconfig"
-> diff --git a/drivers/net/Makefile b/drivers/net/Makefile
-> index 33af833..1604e1a 100644
-> --- a/drivers/net/Makefile
-> +++ b/drivers/net/Makefile
-> @@ -197,6 +197,7 @@ obj-$(CONFIG_SMC911X) += smc911x.o
->  obj-$(CONFIG_DM9000) += dm9000.o
->  obj-$(CONFIG_FEC_8XX) += fec_8xx/
->  obj-$(CONFIG_PASEMI_MAC) += pasemi_mac.o
-> +obj-$(CONFIG_MLX4_CORE) += mlx4/
->  
->  obj-$(CONFIG_MACB) += macb.o
->  
-> diff --git a/drivers/net/mlx4/Makefile b/drivers/net/mlx4/Makefile
-> new file mode 100644
-> index 0000000..4f18889
-> --- /dev/null
-> +++ b/drivers/net/mlx4/Makefile
-> @@ -0,0 +1,4 @@
-> +obj-$(CONFIG_MLX4_CORE)		+= mlx4_core.o
-> +
-> +mlx4_core-y :=	alloc.o cmd.o cq.o eq.o fw.o icm.o intf.o main.o mcg.o mr.o \
-> +		pd.o profile.o qp.o reset.o srq.o
-> _______________________________________________
-> general mailing list
-> general@lists.openfabrics.org
-> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> On Tue, 24 Apr 2007 15:43:21 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
 > 
-> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
+> > On Tue, 24 Apr 2007 04:58:01 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Tue, 24 Apr 2007 10:10:41 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
+> > > 
+> > > > On Sun, 8 Apr 2007 14:35:59 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > 
+> > > > > 
+> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
+> > > > > 
+> > > > > 
+> > > > > - Lots of x86 updates
+> > > > > 
+> > > > 
+> > > > Has somthing related with PTY's changed in this kernel ?
+> > > 
+> > > Not as far as I know, but there were some kobject_uevent changes which
+> > > might have caused udev upcalls to break.  Perhaps.
+> > > 
+> > > > I have to enable legacy PTY handling in a couple boxes to get ssh working.
+> > > > If not, I had openpty() errors and nor sshd nor virtual terminals (aterm) were
+> > > > able to get a terminal.
+> > > 
+> > > I have CONFIG_PM_LEGACY unset in at least one of my test configs and it
+> > > works OK here.
+> > > 
+> > > > User space (udev) is the same in three boxes and one works and two fail.
+> > > > I had /dev/ptmx everywhere and /dev/pts mounted
+> > > > 
+> > > > Any idea ?
+> > > 
+> > > Nope.  Can you please check 2.6.21-rc7-mm1, see if that fixed it?  If so,
+> > > it might have been the kobject_uevent thing.
+> > > 
+> > 
+> > I will, thanks.
+> > 
+> > A couple questions (as far as udev behaviour is sooooooo distro dependent):
+> > - What should I have in /dev if I don't use legacy ptys ? As I understand
+> >   it, only /dev/ptmx and /dev/pts/*, no /dev/tty* nor /dev/pty* ?
+> 
+> My FC5 CONFIG_LEGACY_PTYS=n box has no /dev/ptmx, /dev/pts/*, all of
+> /dev/tty0 through /dev/tty63 and no /dev/pty*.
+> 
+> I'm not sure where all the /dev/tty*'s came from - perhaps a static udev
+> rule?
+>
 
+Uh ?
+>From the Kconfig help fot UNIX98_PTYS:
+
+Linux has traditionally used the BSD-like names /dev/ptyxx for
+masters and /dev/ttyxx for slaves of pseudo terminals. This scheme
+has a number of problems. The GNU C library glibc 2.1 and later,
+however, supports the Unix98 naming standard: in order to acquire a
+pseudo terminal, a process opens /dev/ptmx; the number of the pseudo
+terminal is then made available to the process and the pseudo
+terminal slave can be accessed as /dev/pts/<number>. What was
+traditionally /dev/ttyp2 will then be /dev/pts/2, for example.
+
+So if all userspace is Unix98-aware, you just would be done with
+/dev/ptmx and /dev/pts/*. In your setup it looks like you are not able
+to use Unix98 PTYs, but as udev has created tty* things work.
+Or not ?
+
+> > - If my setup, for whatever strange reasons has /dev/tty* stored anyware
+> >   (/dev/.udev, links.conf...) and they get created, I supose that opening
+> >   /dev/tty will give a ENODEV ?
+> 
+> well, /dev/tty is attached to your current tty and /dev/tty2 will get you
+> talking to the second VT.  I can't immediately thing what /dev/tty22 is
+> attached to.
+> 
+
+I supposed it was something like you always opened /dev/tty but kernel+glibc
+redirect you to /dev/ttyXX, that is your _real_ terminal.
+I will try to check docs...
+
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.20-jam10 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #4 SMP PREEMPT
