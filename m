@@ -1,47 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031126AbXDYTfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031117AbXDYTkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031126AbXDYTfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXDYTfd
+	id S1031117AbXDYTkb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031114AbXDYTkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:35:33 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:40953 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031117AbXDYTfa (ORCPT
+	Wed, 25 Apr 2007 15:40:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59485 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030998AbXDYTk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:35:30 -0400
-To: serge@hallyn.com
-CC: ebiederm@xmission.com, hpa@zytor.com, miklos@szeredi.hu,
-       akpm@linux-foundation.org, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, linux-security-module@vger.kernel.org
-In-reply-to: <20070425185244.GA20688@vino.hallyn.com> (serge@hallyn.com)
-Subject: Re: [patch] unprivileged mounts update
-References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu> <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com>
-Message-Id: <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 25 Apr 2007 21:33:43 +0200
+	Wed, 25 Apr 2007 15:40:29 -0400
+Date: Wed, 25 Apr 2007 12:38:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+In-Reply-To: <20070425192512.GZ3468@stusta.de>
+Message-ID: <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
+ <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+ <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+ <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
+ <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de>
+ <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
+ <20070425192512.GZ3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Right, I figure if the normal action is to always do
-> mnt->user = current->fsuid, then for the special case we
-> pass a uid in someplace.  Of course...  do we not have a
-> place to do that?  Would it be a no-no to use 'data' for
-> a non-fs-specific arg?
 
-I guess it would be OK for bind, but not for new- and remounts, where
-'data' is already used.
 
-Maybe it's best to stay with fsuid after all, and live with having to
-restore capabilities.  It's not so bad after all, this seems to do the
-trick:
+On Wed, 25 Apr 2007, Adrian Bunk wrote:
+> > 
+> > .. but if the alternative is a feature that just isn't worth it, and 
+> > likely to not only have its own bugs, but cause bugs elsewhere? (And yes, 
+> > I believe STD is both of those. There's a reason it's called "STD". Go 
+> > to google and type "STD" and press "I'm feeling lucky". Google is God).
+> 
+> Is there really no use case for STD?
 
-	cap_t cap = cap_get_proc();
-	setfsuid(uid);
-	cap_set_proc(cap);
+People seem to have reading comprehension problems.
 
-Unfortunately these functions are not in libc, but in a separate
-"libcap" library.  Ugh.
+The STD code is buggy, and has introduced bugs in STR too, largely thanks 
+to bad design. Some of them have happily gotten fixed. Others did not, and 
+now we have three totally different versions (two of which share some 
+infrastructure), all of which are broken (ie the "suspend2" people will 
+swear up-and-down that swsusp doesn't work for them, but anybody who 
+thinks that "suspend2" will work for everybody is just being a total 
+idiot, and I have a bridge to sell to them).
 
-Miklos
+I'd actually be happier *removing* STD support in the sense it is now: 
+it's way too closely integrated with STR, even though it has absolutely 
+nothing in common with it. When you STD, you'e actually much closer to a 
+*shutdown* than to STR, yet the STD code continually seems to want to be 
+in the "suspend" path, as shown even by its name.
+
+So my objections to STD have nothing to do with saving state and shutting 
+down. They have everything to do with the fact that it is not - and will 
+never be - a "suspend", and it shouldn't affect suspend.
+
+And that's a *fundamental* problem. If the STD people cannot even realize 
+that they have less to do with "suspend" than to "reboot", how do you ever 
+expect them to get anything to work, and not affect other things 
+negatively?
+
+Yeah, I'm down on it. I'm down on it because every person involved with 
+the whole STD thing seems to have basically zero taste, and a total 
+inability to work with anybody else. 
+
+		Linus
