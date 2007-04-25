@@ -1,62 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030877AbXDYNtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030929AbXDYNuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030877AbXDYNtn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030929AbXDYNtn
+	id S1030929AbXDYNuf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030996AbXDYNuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:49:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55698 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030877AbXDYNtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:49:41 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070420.015838.83621529.davem@davemloft.net> 
-References: <20070420.015838.83621529.davem@davemloft.net>  <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> 
-To: David Miller <davem@davemloft.net>
-Cc: ebiederm@xmission.com, akpm@osdl.org, containers@lists.osdl.org,
-       oleg@tv-sign.ru, hch@infradead.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 25 Apr 2007 14:48:39 +0100
-Message-ID: <13634.1177508919@redhat.com>
+	Wed, 25 Apr 2007 09:50:35 -0400
+Received: from ag-out-0708.google.com ([72.14.246.248]:11873 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030929AbXDYNud (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:50:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Nj0Ti2B+1dla7r9xYdJZgXARrM65+A8fjU6VlBaJiN21CK2IdskA3yEY0vLTpzUGe9XttQSBSocMb7HmgU2ytIBZ+67Ey4XRc8sNhBYhOS7FocoshTOhLAL9MmhpSiiIyW/4fZI7y7jkYV6rD3M9uhBMO43/zy47ErVepmXftig=
+Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+In-Reply-To: <20070425130102.GA10141@redhat.com>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	 <20070423214909.GD3468@stusta.de>
+	 <20070425040605.6d6b4a82.akpm@linux-foundation.org>
+	 <20070425113102.GU3468@stusta.de>  <20070425130102.GA10141@redhat.com>
+Content-Type: text/plain
+Date: Wed, 25 Apr 2007 21:50:14 +0800
+Message-Id: <1177509014.29878.12.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-04-25 at 09:01 -0400, Dave Jones wrote:
+> On Wed, Apr 25, 2007 at 01:31:02PM +0200, Adrian Bunk wrote:
+>  > On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
+>  > > On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+>  > >...
+>  > > > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+>  > > >              workaround: CONFIG_FB_BACKLIGHT=n
+>  > > > References : http://lkml.org/lkml/2007/3/13/3
+>  > > > Submitter  : Dave Jones <davej@redhat.com>
+>  > > > Caused-By  : PCI merge
+>  > > >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+>  > > > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+>  > > >              Rafael J. Wysocki <rjw@sisk.pl>
+>  > > >              Antonino A. Daplas <adaplas@gmail.com>
+>  > > > Status     : unknown
+>  > > 
+>  > > Is this related to the problems Jeremy has been looking at?
+>  > >...
+>  > 
+>  > Dave and Jeremy hran into similar looking but most likely different 
+>  > problems.
+>  > 
+>  > For Jeremy -rc7 is working fine, but for Dave it doesn't.
+> 
+> I think this was due to Jeremy not having CONFIG_FB_BACKLIGHT=y in his config.
 
-David Miller <davem@davemloft.net> wrote:
+This is really weird, as CONFIG_FB_BACKLIGHT just selects
+BACKLIGHT_CLASS and LCD_CLASS, and adds an entry (bl_curve)
+under /sys/class/backlight/*/. ACPI_IBM which is set (presumably) in
+Dave's kconfig, also selects the BACKLIGHT_CLASS. And the only possible
+framebuffer drivers in the thinkpad are vesafb and intelfb, none of
+which has a backlight driver.
 
-> Is it possible for your changes to be purely networking
-> and not need those changes outside of the networking?
+I'm still at a loss how this happens.  Dave, can you post your config?
+And have you tried the following settings:
 
-See my latest patchset release.  I've reduced the dependencies on
-non-networking changes to:
+FB_BACKLIGHT=y
+ACPI_IBM=n
+ACPI_VIDEO=n
 
- (1) Oleg Nesterov's patch to change cancel_delayed_work() to use del_timer()
-     rather than del_timer_sync() [patch 02/16].
+I'm also adding Richard Purdie to the CC list.
 
-     This patch can be discarded without compilation failure at the expense of
-     making AFS slightly less efficient. It also makes AF_RXRPC slightly less
-     efficient, but only in the rmmod path.
+Tony 
 
- (2) A symbol export in the keyring stuff plus a proliferation of the types
-     available in the struct key::type_data union [patch 03/16].  This does
-     not conflict with any other patches that I know about.
+PS: I also get a blank display on resume with a Toshiba laptop.  But
+cycling through the Fn keys brings it back.  I don't know if this is a
+regression, I will have to try older kernels.
 
- (3) A symbol export in the timer stuff [patch 04/16].
 
-Everything else that remains after the reduction is confined to the AF_RXRPC
-or AFS code, save for a couple of networking patches in my patchset that you
-already have and I just need to make the thing compile.
-
-I'm not sure that I can make the AF_RXRPC patches totally independent of the
-AFS patches as the two sets need to interleave since the last AF_RXRPC patch
-deletes the old RxRPC code - which the old AFS code depends on.
-
-David
