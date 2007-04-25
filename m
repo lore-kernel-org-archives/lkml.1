@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422986AbXDYXpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422982AbXDYXp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422986AbXDYXpX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422982AbXDYXpX
+	id S1422982AbXDYXp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422987AbXDYXp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:45:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:39270 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422986AbXDYXpW (ORCPT
+	Wed, 25 Apr 2007 19:45:28 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56477 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422982AbXDYXp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:45:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lUQhNAb7FmgdCEehIk7sDNUu+CK7nyMR0WskmUHwUX2yBCEkH33aej4ZGadSWXTv2SyeNpv1qeu+vHMMnieIsfUcpCauJbh23303xaROO7+strFSfIUrOaIAPEoISUqQ05Nx7Rn25ufPo5A5PyHqvHCXZPUfk7fdBrIaWb90ybg=
-Subject: Nonfunctional ethernet (was Re: 2.6.21-rc7-mm1 +
-	sysfs-oops-workaround.patch -- INFO: possible recursive locking detected)
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Miles Lane <miles.lane@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1177512528.4856.15.camel@daplas>
-References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>
-	 <462EE4B7.6000708@gmail.com>  <1177512528.4856.15.camel@daplas>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 07:45:02 +0800
-Message-Id: <1177544702.4668.9.camel@daplas>
+	Wed, 25 Apr 2007 19:45:27 -0400
+Date: Wed, 25 Apr 2007 16:45:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: johnpol@2ka.mipt.ru, lkml <linux-kernel@vger.kernel.org>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: W1 printk format warning
+Message-Id: <20070425164509.715ca5c9.akpm@linux-foundation.org>
+In-Reply-To: <20070425162104.168c32b6.randy.dunlap@oracle.com>
+References: <20070425162104.168c32b6.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 22:48 +0800, Antonino A. Daplas wrote:
-> On Wed, 2007-04-25 at 14:18 +0900, Tejun Heo wrote:
-> > Miles Lane wrote:
+On Wed, 25 Apr 2007 16:21:04 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> eth0 renamed to eth54
-> BUG: atomic counter underflow at:
->  [<c0104378>] show_trace_log_lvl+0x1a/0x30
->  [<c0104ec9>] show_trace+0x12/0x14
->  [<c0104f22>] dump_stack+0x16/0x18
->  [<c01bd575>] _atomic_dec_and_lock+0x29/0x4c
->  [<c0174388>] dput+0x34/0x103
->  [<c019d181>] sysfs_drop_dentry+0x141/0x149
->  [<c019d212>] sysfs_hash_and_remove+0x89/0x10e
->  [<c019f1fc>] sysfs_remove_link+0xe/0x10
->  [<c0221839>] device_rename+0x110/0x181
->  [<c025420a>] dev_change_name+0x11e/0x1ca
->  [<c02545e6>] dev_ifsioc+0x330/0x3d7
->  [<c0254d25>] dev_ioctl+0x350/0x46e
->  [<c0249792>] sock_ioctl+0x1be/0x1ca
->  [<c016f3c0>] do_ioctl+0x1c/0x53
->  [<c016f5e3>] vfs_ioctl+0x1ec/0x203
->  [<c016f643>] sys_ioctl+0x49/0x62
->  [<c0103cde>] sysenter_past_esp+0x5f/0x99
->  =======================
+> in 2.6.21-rc7-mm1.  Are you aware of this?
+> 
+> drivers/w1/w1.c:460: warning: too few arguments for format
+> 
+> 	dev_dbg(&sl->dev, "%s: registering %s as %p.\n", __func__,
+> 		&sl->dev.bus_id[0]);
+> 
 
-The above tracing was caused by CONFIG_SYSFS_DEPRECATED=y and by setting
-this to n, the tracing disappeared..  Still, all my network cards are
-non-functional.  Entries in /sys/class/net are bogus:
+Yeah, that's because Dan's dev_dbg-check-dev_dbg-arguments.patch added
+printk arg-checking to dev_dbg() and a bunch of bugs got exposed.  I fixed
+a few of them.
 
-/ # cd /sys/class/net/
-/sys/class/net # ls
-eth1  eth44  eth54  lo
+Incidentally, there are at least four different drivers which privately do
+things like:
 
-/sys/class/net # cd eth1
--bash: cd: eth1: No such file or directory
+#if !defined(DEBUG)
+#undef dev_dbg
+static inline int __attribute__ ((format (printf, 2, 3))) dev_dbg(
+	const struct device *_dev, const char *fmt, ...) {return 0;}
+#endif
 
-/sys/class/net # ls -l eth1
-lrwxrwxrwx 1 root root 0 Apr 26 07:15 eth1 ->
-../../devices/pci0000:00/0000:00:12.0/net/eth0
-
-/sys/class/net # cd ../../devices/pci0000\:00/0000\:00\:12.0/net/eth0
--bash: cd: ../../devices/pci0000:00/0000:00:12.0/net/eth0: No such file
-or directory
-
-Do you know of any patches I need to revert/apply?  Anyway, I have to
-boot back to this kernel and find out more what's going on.
-
-Tony
-
-
+which can all be removed with Dan's (good) patch in place.
