@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423357AbXDYR6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423362AbXDYR62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423357AbXDYR6M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423356AbXDYR6M
+	id S1423362AbXDYR62 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423356AbXDYR62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:58:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41854 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Apr 2007 13:58:28 -0400
+Received: from mga02.intel.com ([134.134.136.20]:28674 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423354AbXDYR6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:58:09 -0400
-Date: Wed, 25 Apr 2007 19:57:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-Message-ID: <20070425175758.GA28201@elte.hu>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070423214909.GD3468@stusta.de> <20070425040605.6d6b4a82.akpm@linux-foundation.org>
+	id S1423354AbXDYR6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:58:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,451,1170662400"; 
+   d="scan'208";a="233896144"
+Date: Wed, 25 Apr 2007 10:55:53 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Olivier Galibert <galibert@pobox.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 1/7] libata: check for AN support
+Message-Id: <20070425105553.eee16f00.kristen.c.accardi@intel.com>
+In-Reply-To: <20070425004946.GA63747@dspnet.fr.eu.org>
+References: <20070424074856.005152262@intel.com>
+	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
+	<20070424090713.65657495@the-village.bc.nu>
+	<20070424102304.GA58841@dspnet.fr.eu.org>
+	<20070424084904.61932994.kristen.c.accardi@intel.com>
+	<20070424180552.GA17319@dspnet.fr.eu.org>
+	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>
+	<20070425004946.GA63747@dspnet.fr.eu.org>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425040605.6d6b4a82.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Apr 2007 02:49:46 +0200
+Olivier Galibert <galibert@pobox.com> wrote:
 
-just found and fixed the bug below in SysRq-T - should be included in 
-v2.6.21 i think.
+> On Tue, Apr 24, 2007 at 01:53:27PM -0700, Kristen Carlson Accardi wrote:
+> > Check to see if an ATAPI device supports Asynchronous Notification.
+> > If so, enable it.
+> > 
+> > changes from last version: 
+> > * fix typo in ata_id_has_AN and make word 76 test more clear
+> > * If we fail to set the AN feature, just print a warning and continue
+> >  
+> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > 
+> > @@ -299,6 +305,8 @@ struct ata_taskfile {
+> >  #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
+> >  #define ata_id_removeable(id)	((id)[0] & (1 << 7))
+> >  #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
+> > +#define ata_id_has_AN(id)	\
+> > +	(((id[76] != 0x0000) && (id[76] != 0xffff)) && ((id)[78] & (1 << 5)))
+> 
+> (id)[76] I guess ?  Sorry for being a pain :/
+> 
+>   OG.
+> 
 
--------------------------->
-Subject: [patch] make SysRq-T show all tasks again
-From: Ingo Molnar <mingo@elte.hu>
-
-show_state() (SysRq-T) developed the buggy habbit of not showing 
-TASK_RUNNING tasks. This was due to the mistaken belief that 
-state_filter == -1 would be a pass-through filter - while in reality it 
-did not let TASK_RUNNING == 0 p->state values through.
-
-(fix this be restoring the original '!state_filter means all tasks' 
-special-case i had in the original version. Test-built and test-booted 
-on i686, SysRq-T now works as intended.)
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h |    4 ++--
- kernel/sched.c        |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -196,13 +196,13 @@ extern void init_idle(struct task_struct
- extern cpumask_t nohz_cpu_mask;
- 
- /*
-- * Only dump TASK_* tasks. (-1 for all tasks)
-+ * Only dump TASK_* tasks. (0 for all tasks)
-  */
- extern void show_state_filter(unsigned long state_filter);
- 
- static inline void show_state(void)
- {
--	show_state_filter(-1);
-+	show_state_filter(0);
- }
- 
- extern void show_regs(struct pt_regs *);
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -4746,7 +4746,7 @@ void show_state_filter(unsigned long sta
- 		 * console might take alot of time:
- 		 */
- 		touch_nmi_watchdog();
--		if (p->state & state_filter)
-+		if (!state_filter || (p->state & state_filter))
- 			show_task(p);
- 	} while_each_thread(g, p);
- 
+Ok - I'll fix that.  Thank you for being a pain :), I really appreciate
+the time you are taking to review my patches.
