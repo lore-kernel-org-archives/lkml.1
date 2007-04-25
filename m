@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754624AbXDYXlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754583AbXDYXmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754624AbXDYXlE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXDYXlE
+	id S1754583AbXDYXmc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbXDYXmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:41:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:44645 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754620AbXDYXlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:41:01 -0400
-Message-ID: <462FE728.5060802@goop.org>
-Date: Wed, 25 Apr 2007 16:41:28 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 25 Apr 2007 19:42:32 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:58836 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754583AbXDYXmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 19:42:31 -0400
+Date: Wed, 25 Apr 2007 19:42:16 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Richard Knutsson <ricknu-0@student.ltu.se>, Jiri Bohac <jbohac@suse.cz>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
+In-Reply-To: <462F75FF.5090008@oracle.com>
+Message-ID: <alpine.DEB.0.98.0704251937160.31620@sigma.j-a-k-j.com>
+References: <20070419092339.GA13569@dwarf.suse.cz>
+ <20070419084339.418dbe69.randy.dunlap@oracle.com> <4628B5B6.90303@student.ltu.se>
+ <20070425082028.8ece3094.randy.dunlap@oracle.com>
+ <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
+ <462F75FF.5090008@oracle.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
- mappings
-References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>	<m1abwwqiof.fsf@ebiederm.dsl.xmission.com> <462FC8CD.1030505@goop.org>	<m11wi8qflo.fsf@ebiederm.dsl.xmission.com> <462FD0EF.5050706@goop.org>	<m1tzv4p079.fsf@ebiederm.dsl.xmission.com> <462FDBB4.8020604@goop.org> <m14pn4owpy.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pn4owpy.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Then why you had to allocate enough pages to cause a failure has me stumped.
-> Perhaps there is some other bug?
->   
+> > Can there even be any reason beyond unnecessary pedantics to have [l[l]]abs?
+> 
+> See Paragraph 1 above.  We do lots of functions in a manner that is
+> like C (or libc) so that we don't confuse developers.
 
-Perhaps, but nothing comes to mind. I'll see what happens when I boot
-this kernel on real hardware (rather than kvm).
+I have the perfect solution that includes compatibility while avoiding 
+stupidity.
 
-J
+Macro "abs" which evaluates its argument once and uses typeof().
+
+#define labs(n) abs(n)
+#define llabs(n) labs(n)
+
+Leave that in the kernel for a year or two. At the end of that time, grep 
+the kernel to show that only two silly people actually use them. Change 
+those, and remove the aliases. Sense restored.
+
+As far as I'm concerned, the only reason those functions exist like that 
+is because standard C doesn't support function overloading and doesn't 
+want to promote every argument to the biggest width and -also- can't 
+define it as a macro because there's no typeof() in standard C. So since 
+we do have it...
+
+...and why do we want people hacking the kernel who get confused by a 
+single "abs" function? Isn't that quite a lot like saying "Do not use 
+hairdryer while sleeping."?
