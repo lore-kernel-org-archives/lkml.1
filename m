@@ -1,42 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031132AbXDYTpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992996AbXDYTpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031132AbXDYTpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992996AbXDYTpF
+	id S2992996AbXDYTpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992973AbXDYTpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:45:05 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35489 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993015AbXDYTox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:44:53 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 06/25] xen: Core Xen implementation II
-Date: Wed, 25 Apr 2007 21:44:48 +0200
-User-Agent: KMail/1.9.6
-Cc: Ian Pratt <ian.pratt@xensource.com>, lkml <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20070423215638.563901986@goop.org> <462FAEE3.9090900@goop.org> <200704252143.48363.ak@suse.de>
-In-Reply-To: <200704252143.48363.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 15:45:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55203 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993000AbXDYTpw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 15:45:52 -0400
+Date: Wed, 25 Apr 2007 20:45:50 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in tty_io.c
+Message-ID: <20070425194550.GA18914@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <20070425154934.GP6798@traven> <20070425191359.GA13241@infradead.org> <20070425194633.GA3280@traven>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704252144.48761.ak@suse.de>
+In-Reply-To: <20070425194633.GA3280@traven>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 25, 2007 at 09:46:33PM +0200, Matthias Kaehlcke wrote:
+> thanks for your remarks. is the following patch what you are
+> proposing?
 
-> To summarize the outstanding issues are:
-> - fixing sched_clock first
-> - hopefully more review of the core pieces by others
-> - what i commented (minor stuff mostly)
-> - review of xenbus and drivers
-> [i did upto the grant table code, but not more] 
+Yes, exactly.  Looks good to me this way.:w
 
-- and more testing by other people (forgot that earlier)
 
--Andi
