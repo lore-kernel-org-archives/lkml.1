@@ -1,93 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXDYJhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992516AbXDYJmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992483AbXDYJhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992486AbXDYJhr
+	id S2992516AbXDYJmB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992522AbXDYJmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:37:47 -0400
-Received: from ns.suse.de ([195.135.220.2]:47180 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992483AbXDYJhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:37:46 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Date: Wed, 25 Apr 2007 19:37:28 +1000
+	Wed, 25 Apr 2007 05:42:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:30773 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992516AbXDYJmA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:42:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pPjIUYZjed4huCX5X86omLMyMz9te+EJgELaTDK6KCy4FBSzjXGRoul7Ra8qPPivDYJn7Nh98ZzK2Pp8XchxNXdSvxa3S+NZ57addfn4x00pubPuynJRHawiqyDkK+43xwqmqBS4fRXGG8/ib7BARmqwhDCofBswx/cTjGMOxGM=
+Message-ID: <698310e10704250241k755c5438q93db6647181061e1@mail.gmail.com>
+Date: Wed, 25 Apr 2007 13:41:58 +0400
+From: "Marat Buharov" <marat.buharov@gmail.com>
+To: "Cestonaro, Thilo (external)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+Subject: Re: NonExecutable Bit in 32Bit
+Cc: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530264B@ABGEX01E.abg.fsc.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17967.8536.788076.851546@notabene.brown>
-Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-In-Reply-To: message from Jens Axboe on Wednesday April 25
-References: <46220339.9080205@wasp.net.au>
-	<4623FB29.1000603@redhat.com>
-	<17956.22235.574867.179016@notabene.brown>
-	<20070418123757.GC3796@kernel.dk>
-	<46261ACE.1050407@wasp.net.au>
-	<20070418132157.GC3720@kernel.dk>
-	<462B10C3.1030906@wasp.net.au>
-	<20070423073543.GE5311@kernel.dk>
-	<462E5D38.5000801@wasp.net.au>
-	<17967.4734.783140.512857@notabene.brown>
-	<20070425084607.GM9715@kernel.dk>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net>
+	 <Pine.LNX.4.64.0704240640470.25153@server.thyself>
+	 <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
+	 <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530256E@ABGEX01E.abg.fsc.net>
+	 <4ac8254d0704242333g17972a7q2106015af946ea5@mail.gmail.com>
+	 <4ac8254d0704242337m518d87c3y8a26df66632ea6e4@mail.gmail.com>
+	 <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530264B@ABGEX01E.abg.fsc.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday April 25, jens.axboe@oracle.com wrote:
-> 
-> That's pretty close to where I think the problem is (the front merging
-> and cfq_reposition_rq_rb()). The issue with that is that you'd only get
-> aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
-> here. Given that front merges are equally not very likely, I'd be
-> surprised is something like that has ever happened.
+On 4/25/07, Cestonaro, Thilo (external)
+<Thilo.Cestonaro.external@fujitsu-siemens.com> wrote:
+> And this prevents the lowmemory to be secured by NX?
 
-Well it certainly doesn't happen very often....
-And I can imagine a filesystem genuinely wanting to read the same
-block twice - maybe a block that contained packed tails of two
-different files.
-> 
-> BUT... That may explain while we are only seeing it on md. Would md
-> ever be issuing such requests that trigger this condition?
-
-Can someone remind me which raid level(s) was/were involved?
-
-I think one was raid0 - that just passes requests on from the
-filesystem, so md would only issue requests like that if the
-filesystem did.
-I guess it could happen with raid4/5/6.  A read request that was
-properly aligned (and we do encourage proper alignment) will be passed
-directly to the underlying device.  A concurrent write elsewhere could
-require the same block to be read into the stripe-cache to enable a
-parity calculation.  So you could get two reads at the same block
-address.
-Getting a front-merge would probably require two stripe-heads to be
-processed in reverse-sector order, and it tends to preserve the order
-of incoming requests (though that isn't firmly enforced).
-
-raid1 is much like raid0 (with totally different code) in that the
-request pattern seen by the underlying device matches the request
-pattern generated by the filesystem.
-
-If I read the debugging output correctly, the request which I
-hypothesise was the subject of a front-merge is a 'sync' request.
-raid5 does not generate sync requests to fill the stripe cache (maybe
-it should?) so I really think it must have come directly from the
-filesystem.
-
-(just checked previous email for more detail of when it hits)
-The fact that it hits degraded arrays more easily is interesting.
-Maybe we try to read a block on the missing device and so schedule
-reads for the other devices.  Then we try to read a block on a good
-device and issue a request for exactly the same block that raid5 asked
-for.  That still doesn't explain the 'sync' and the 'front merge'.
-But that is quite possible, just not common maybe.
-
-It doesn't help us understand the raid0 example though.  May it is
-just a 'can happen, but only rarely' thing.
-
-NeilBrown
+What do you mean, when you say "lowmemory"?
