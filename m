@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031042AbXDYPMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030996AbXDYPNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031042AbXDYPMo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031038AbXDYPMo
+	id S1030996AbXDYPNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031011AbXDYPNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:12:44 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:29928 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030996AbXDYPMn (ORCPT
+	Wed, 25 Apr 2007 11:13:35 -0400
+Received: from smtp113.sbc.mail.mud.yahoo.com ([68.142.198.212]:34220 "HELO
+	smtp113.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030996AbXDYPNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:12:43 -0400
-Date: Wed, 25 Apr 2007 08:15:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, oliver@neukum.org,
-       oneukum@suse.de, tilman@imap.cc
-Subject: Re: + codingstyle-start-flamewar-about-use-of-braces.patch added to
- -mm tree
-Message-Id: <20070425081525.9e9b1e57.randy.dunlap@oracle.com>
-In-Reply-To: <200704201802.l3KI2Nlh020621@shell0.pdx.osdl.net>
-References: <200704201802.l3KI2Nlh020621@shell0.pdx.osdl.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 11:13:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=NqLv0RTirApwI9WWfUuEsAlLf+qCd5F1BPtWlT8KH3El7lf3sGQFrwZyKXanrC1DiQVFTCIM9Qra+kjne64PHbL26OtygDOTjl/16/BIPcZkSk9pqK5eItwHw1s9aBlHrs3MxxP2PV6TubxFpN9DCuAwiYx+BnW0vUXWUS+Y4ww=  ;
+X-YMail-OSG: qr3DiEAVM1kvR4d0PM559v.GXU8OMRC1lnb7mpDoSVF7sgFoVoH8lHEj5hl8xydEI5I0eOTIqQ--
+From: David Brownell <david-b@pacbell.net>
+To: spi-devel-general@lists.sourceforge.net
+Subject: Re: [spi-devel-general] adding bits_per_word to struct spi_board_info to mirror struct spi_device
+Date: Wed, 25 Apr 2007 08:13:30 -0700
+User-Agent: KMail/1.9.6
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>, "Wu, Bryan" <Bryan.Wu@analog.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com>
+In-Reply-To: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+Message-Id: <200704250813.30999.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Apr 2007 11:02:23 -0700 akpm@linux-foundation.org wrote:
+On Wednesday 25 April 2007, Mike Frysinger wrote:
+> the spi_device structure has a bits_per_word so that you can change
+> the value on a per-device setting, yet the spi_board_info structure
+> does not ... this means that the bus-specific structure has to have a
+> bits_per_word member which the spi bus driver will copy into the spi
+> device bits_per_word member
 
-> 
-> The patch titled
->      CodingStyle: start flamewar about use of braces
-> has been added to the -mm tree.  Its filename is
->      codingstyle-start-flamewar-about-use-of-braces.patch
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> ------------------------------------------------------
-> Subject: CodingStyle: start flamewar about use of braces
-> From: Oliver Neukum <oliver@neukum.org>
-> 
-> Signed-off-by: Oliver Neukum <oneukum@suse.de>
-> Cc: Tilman Schmidt <tilman@imap.cc>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-
-Was this on lkml?  I couldn't find it anywhere.
-
-I won't add an ack to it.  No flames.
+Actually that's more likely a driver-specific characteristic than
+something related to board wiring/configuration ... a characteristic
+of the particular protocol requests being made.  That's why for
+example bits_per_word has a per-transfer override, and drivers are
+able to call spi_setup(spi).
 
 
->  Documentation/CodingStyle |   15 +++++++++++++++
->  1 files changed, 15 insertions(+)
-> 
-> diff -puN Documentation/CodingStyle~codingstyle-start-flamewar-about-use-of-braces Documentation/CodingStyle
-> --- a/Documentation/CodingStyle~codingstyle-start-flamewar-about-use-of-braces
-> +++ a/Documentation/CodingStyle
-> @@ -160,6 +160,21 @@ supply of new-lines on your screen is no
->  25-line terminal screens here), you have more empty lines to put
->  comments on.
->  
-> +Do not unnecessarily use braces where a single statement will do.
-> +
-> +if (condition)
-> +	action();
-> +
-> +This does not apply if one branch of a conditional statement is a single
-> +statement. Use braces in both branches.
-> +
-> +if (condition) {
-> +	do_this();
-> +	do_that();
-> +} else {
-> +	otherwise();
-> +}
-> +
->  		3.1:  Spaces
->  
->  Linux kernel style for use of spaces depends (mostly) on
+> is there something obvious i'm missing ?  seems to me that if the
+> generic spi framework respects bits_per_word on a per-spi device
+> basis, then it should be exposed in the generic info structure so that
+> the setting can be tracked in the boards file ...
 
+The initial driver set didn't need it, that's all.  ISTR someone
+else pointed out this quirk, but never provided a patch to resolve
+the issue.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+- Dave
