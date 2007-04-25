@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993039AbXDYUDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993031AbXDYUD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993039AbXDYUDE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXDYUDE
+	id S2993031AbXDYUD2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993041AbXDYUD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:03:04 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:25219 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993039AbXDYUDA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:03:00 -0400
-Date: Wed, 25 Apr 2007 13:05:18 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
-Message-Id: <20070425130518.504111fd.randy.dunlap@oracle.com>
-In-Reply-To: <20070425121242.52698643.akpm@linux-foundation.org>
-References: <1177512596.4856.17.camel@daplas>
-	<20070425121242.52698643.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 16:03:28 -0400
+Received: from gw.goop.org ([64.81.55.164]:40724 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993031AbXDYUD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:03:26 -0400
+Message-ID: <462FB42F.5070503@goop.org>
+Date: Wed, 25 Apr 2007 13:03:59 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Ian Pratt <ian.pratt@xensource.com>, lkml <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>, virtualization@lists.osdl.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 06/25] xen: Core Xen implementation
+References: <20070423215638.563901986@goop.org> <200704251112.45898.ak@suse.de> <462FAEE3.9090900@goop.org> <200704252143.48363.ak@suse.de>
+In-Reply-To: <200704252143.48363.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 12:12:42 -0700 Andrew Morton wrote:
+Andi Kleen wrote:
+> For me you don't need anymore, but possibly for others.
+>   
 
-> On Wed, 25 Apr 2007 22:49:56 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
-> > The Gnome desktop does not finish launching.  And I get this tracing,
-> > all coming from Gnome apps.
-> > 
-> > Tony
-> > 
-> > BUG: unable to handle kernel paging request at virtual address c0a74000
-> 
-> This might have been caused by the now-dropped
-> mm-only-i386-for-debugging-make-the-initial-page-table-setup-less-forgiving.patch
-> 
-> 
-> >  printing eip:
-> > c014c469
-> > *pde = 005f3027
-> > *pte = 00000000
-> > Oops: 0002 [#1]
-> > Modules linked in: xt_pkttype xt_tcpudp ipt_LOG xt_limit nfsd exportfs
-> > lockd nfs_acl sunrpc snd_pcm_oss snd_mixer_oss snd_seq button battery ac
-> > ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter
-> > ip6table_filter nf_conntrack_ipv4 nf_conntrack ip_tables ip6_tables
-> > x_tables nls_iso8859_1 nls_cp437 vfat fat nls_utf8 ntfs reiserfs loop
-> > usblp snd_via82xx snd_ac97_codec ac97_bus snd_pcm ide_cd cdrom snd_timer
-> > snd_page_alloc snd_mpu401_uart rtc_cmos snd_rawmidi rtc_core
-> > snd_seq_device rtc_lib snd soundcore via_rhine ehci_hcd uhci_hcd usbcore
-> > sc92031 via_agp 8139too i2c_viapro ext3 mbcache jbd edd fan thermal
-> > processor via82cxxx ide_disk ide_core
-> > CPU:    0
-> > EIP:    0060:[<c014c469>]    Tainted: G      D VLI
-> 
-> For some reason all oopses (and boy there are a lot of them) are being
-> described as tainted.
+Hm.  I'm not a fan of the great big monolithic patch myself, but on the
+other hand I don't like the idea of patches which are not self-contained
+steps from working->working state.  Xen-core.patch is currently the
+(more or less) minimal set of stuff which needs to be in place to get
+working Xen guest up, and so from that perspective I don't think there's
+a good way of splitting it up.
 
-probably the recent die_counter/Oops implies Tainted patch.
+> To summarize the outstanding issues are:
+> - fixing sched_clock first
+>   
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+What was the sched_clock problem?  I don't remember and outstanding
+issues with it.  I noticed you didn't take paravirt-sched_clock.
+
+> - hopefully more review of the core pieces by others
+> - what i commented (minor stuff mostly)
+>   
+
+I just rebased onto your newest patches, so I'll address your comments
+and repost.
+
+> - review of xenbus and drivers
+
+Yes, not much response there.
+
+    J
