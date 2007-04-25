@@ -1,80 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423351AbXDYR5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423341AbXDYR5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423351AbXDYR5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423341AbXDYR5J
+	id S1423341AbXDYR5L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423358AbXDYR5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Apr 2007 13:57:11 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:60323 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423354AbXDYR5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Apr 2007 13:57:09 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28169 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423351AbXDYR5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:57:08 -0400
-Date: Wed, 25 Apr 2007 19:53:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070425175335.GG4730@kernel.dk>
-References: <20070424222105.883597089@sgi.com> <20070425113530.GX9715@kernel.dk> <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com>
+Message-ID: <462F9665.1090602@zytor.com>
+Date: Wed, 25 Apr 2007 10:56:53 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>	<20070425044813.f83dde4e.akpm@linux-foundation.org>	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Christoph Lameter wrote:
-> On Wed, 25 Apr 2007, Jens Axboe wrote:
+Eric W. Biederman wrote:
+>> This patch only affects the initial page tables, which should have been
+>> thrown out *way* long ago at this point.
 > 
-> > I need this patch to actually boot the thing, or it bombs with a NULL
-> > deref in page_cache_size().
-> 
-> Yeah on 32 bit which I disabled....
+> Yes.  I noticed this was happening a few days ago.
+> I must not have mentioned it loudly enough.
 
-Yep, on the grounds that devices may not cover the full address space.
-On my box they do.
+You mentioned the continued use of init_mm.  This is *very* different.
 
-> > It then boots, doing a little test with 8kb ext2 quickly dies though:
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at virtual address
-> 
-> > EIP: [<d8149519>] 0xd8149519 SS:ESP 0068:e9049d1c
-> > 
-> > That's here:
-> > 
-> >         page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
-> >                                 zonelist, ALLOC_WMARK_LOW|ALLOC_CPUSET);
-> > ->     if (page)
-> >                 goto got_pg;
-> 
-> Impossible. page is not dereferenced. Cannot cause a NULL pointer 
-> deference.
+What we're seeing here is that ON PSE-CAPABLE HARDWARE, we continue to
+not just use the init_mm page directory, but the actual page *tables*,
+which should all have been replaced with PSE large pages to begin with.
 
-Sure I know that, hence the oops happening there is likely fallout from
-something scribbling where it should not have.
+Reusing the initial page tables on non-PSE-capable hardware *sort of*
+makes sense, but his hardware should not fall in that category, I don't
+think?  (Unless it's one of these machines that fall over if you map the
+bottom 4 MB with PSE pages?)
 
-> > which doesn't look healthy. Note that this is a 32-bit machine, I
-> > removed the 32-bit check (devices in this box are fine).
-> 
-> 
-> > 
-> > --- fs/libfs.c~	2007-04-25 13:30:50.000000000 +0200
-> > +++ fs/libfs.c	2007-04-25 13:31:00.000000000 +0200
-> > @@ -330,7 +330,7 @@
-> >  int simple_prepare_write(struct file *file, struct page *page,
-> >  			unsigned from, unsigned to)
-> >  {
-> > -	unsigned int page_size = page_cache_size(file->f_mapping);
-> > +	unsigned int page_size = page_cache_size(page->mapping);
-> 
-> We do a write operation on a file that has no mapping (and thus no radix 
-> tree etc etc)? Is that legit?
-
-Probably not.
-
--- 
-Jens Axboe
-
+	-hpa
