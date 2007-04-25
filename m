@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993132AbXDYXVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbXDYX2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993132AbXDYXVI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993136AbXDYXVI
+	id S1754586AbXDYX2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbXDYX2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:21:08 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37411 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993132AbXDYXVG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:21:06 -0400
-Date: Wed, 25 Apr 2007 16:20:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+	Wed, 25 Apr 2007 19:28:42 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34732 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754586AbXDYX2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 19:28:39 -0400
+Date: Thu, 26 Apr 2007 01:28:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <20070425235718.66b71f01@the-village.bc.nu>
-Message-ID: <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
- <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
- <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
- <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
- <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
- <20070425235718.66b71f01@the-village.bc.nu>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070425232806.GL17387@elf.ucw.cz>
+References: <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425224928.GJ17387@elf.ucw.cz> <alpine.LFD.0.98.0704251601020.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704251601020.9964@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-
-On Wed, 25 Apr 2007, Alan Cox wrote:
+> > > I don't understand how you can even *claim* something like that.
+> > 
+> > BTW most problems are in thaw/resume functions.
 > 
-> Both of them have to ensure you can make a consistent snapshot.
+> And do you realize that the thaw/resume functions are totally different 
+> too?
+> 
+> Or rather, they *would* be, if you allowed them to.
+> 
+> For example, for "snapshot + thaw", the _sane_ thing is to actually make 
+> the snapshot just throw away all the DMA tables etc, and let the thawing 
+> just do a full initialization (as it did on boot). It basically needs to 
+> do that anyway, and it simplifies the whole thing (ie you don't even 
+> *want* to save things like the DMA command queues etc - the ones that will 
+> quite often be stepped on by the final "write snapshot to disk" stuff 
+> anyway).
 
-Bzzt. Wrong again. Very much so.
+I'd prefer thaw to be similar to module insert, yes.
 
-STR does not need to "ensure that you have a consistent snapshot".
+> For suspend to ram, in contrast, since you *know* that nobody will be 
+> touching the hardware, and since the timings are very different anyway 
+> (you'd hope that you can resume in a second or two), you'd generally want 
+> to keep the DMA engine tables right where they are, and just literally 
+> suspend the PCI chip itself.
 
-Why? Becuase there is no _room_ for inconsistency. There's nothing to be 
-"inconsistent with", since any changes to memory (by things like DMA or 
-other setup that happens while the suspend process is going on) is by 
-_definition_ consistent with the resume image (becasue there is no 
-separate image).
+I'd actually prefer resume to be similar to module insert, too... Do
+you think that resume is _that_ time critical?
 
-> Doing that means you've got to be able to define a single "point" at 
-> which the snapshot is made and is internally self-consistent. That in 
-> both cases tends to mean you've got to ensure nothing occurs which pees 
-> on the image while you are making that snapshot (such as outstanding 
-> O_DIRECT I/O to user pages).
+> You think they have things in common just because your whole (incorrect) 
+> mindset has _forced_ them to have things in common, becasue your setup 
+> stupidly thinks that "resume" is the same as "thaw", the same way you 
+> think "freeze" is the same as "suspend".
+> 
+> NEITHER is true. You've _made_ them true in your mind, but there's 
+> absolutely zero reason that they *should* be true.
 
-Get off the drugs, Alan. There *is* no snapshot with suspend-to-ram.
+[I'd like you to drop me a line saying you understand current design
+and that it works -- even if it is very inelegant]
 
-Which is the whole point I'm trying to make! A _lot_ of people are 
-confused about this.
+Now, we can separate suspend/freeze and resume/thaw (with some common
+helpers). It will speed the code up by avoiding unneccessary
+operations. It also needs attetion from driver writers (ouch).
 
-With suspend-to-ram, you don't need to do a damn thing to the chip, except 
-suspend it and resume it. There are _zero_ consistency issues. There is no 
-need to freeze anything at any point. You can suspend each device totally 
-independently of all other devices (taking into account things like bus 
-topology, of course), and there is no "atomic" snapshot that needs to ever 
-exist.
-
-That's TOTALLY DIFFERENT from "suspend to disk". In suspend to disk, you 
-need a completely different kind of mindset, namely you need a single 
-consistent image, where the image is consistent not only with memory, but 
-with all the devices.
-
-For example, the whole myth that "freeze" needs to shut off DMA is a total 
-and utter *myth*. It needs nothing of the sort at all. Rather than shut 
-off DMA and try to make the hardware be wevy wevy quiet while it's hunting 
-wabbits, it's a lot easier to just do nothing at all on "freeze", and just 
-make sure that "thaw" will re-initialze the DMA tables entirely! All 
-drivers have code to do that anyway, since that's what you need to do at 
-boot.
-
-Notice?  Totally different. Absolutely NOTHING in common. Not on a 
-practical plane, and not even conceptually.  The current (broken!) 
-implementation has forced a totally idiotic model on things, where instead 
-of snapshotting doing the sane and simple thing, it ends up doing extra 
-work that is totally unnecessary, but *becomes* necessary just because it 
-*also* shares the "resume" path (which should _not_ be the same either!)
-
-			Linus
+Do we want to do that?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
