@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031143AbXDYU5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993082AbXDYU5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031143AbXDYU5a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031139AbXDYU5a
+	id S2993082AbXDYU5s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993177AbXDYU5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:57:30 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:42700 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031143AbXDYU53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:57:29 -0400
-X-IronPort-AV: i="4.14,451,1170662400"; 
-   d="scan'208"; a="415615736:sNHT327567320"
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: Roland Dreier <rolandd@cisco.com>, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ofa-general] [PATCH 6/6] [RFC]mlx4 build system stuff
-X-Message-Flag: Warning: May contain useful information
-References: <20074201532.jhCN1hLvxaAengJm@cisco.com>
-	<1177534219.29222.0.camel@stevo-desktop>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 25 Apr 2007 13:57:20 -0700
-In-Reply-To: <1177534219.29222.0.camel@stevo-desktop> (Steve Wise's message of "Wed, 25 Apr 2007 15:50:19 -0500")
-Message-ID: <ada1wi8w4sv.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Wed, 25 Apr 2007 16:57:48 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40060 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993082AbXDYU5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:57:46 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Date: Wed, 25 Apr 2007 22:57:41 +0200
+User-Agent: KMail/1.9.6
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <200704252248.03243.ak@suse.de> <6bffcb0e0704251355r6de26273s47ba5c857ed0f129@mail.gmail.com>
+In-Reply-To: <6bffcb0e0704251355r6de26273s47ba5c857ed0f129@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 25 Apr 2007 20:57:20.0440 (UTC) FILETIME=[50C91B80:01C7877C]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704252257.41950.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > +config MLX4_CORE
- > > +	tristate
- > > +	depends on PCI
- > > +	default n
- > > +
- > 
- > No help menu for the core module?
 
-It's an invisible option.  You get it if you enable anything that uses
-it (mlx4_ib or mlx4_eth), and you never even have to know about the
-option.
+> Maybe because it's P4 HT?
 
- - R.
+Shouldn't make a difference. 
+
+Can you please: apply the latest patch from
+
+ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
+
+to a 2.6.21-rc7 kernel and then send me a full boot log? 
+
+-Andi
