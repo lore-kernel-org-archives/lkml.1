@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423250AbXDYHTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423252AbXDYHUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423250AbXDYHTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 03:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423252AbXDYHTm
+	id S1423252AbXDYHUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 03:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423257AbXDYHUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 03:19:42 -0400
-Received: from smtp1-g19.free.fr ([212.27.42.27]:59194 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423250AbXDYHTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 03:19:41 -0400
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] cxacru: Cleanup sysfs attribute code
-Date: Wed, 25 Apr 2007 09:19:50 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <462E730F.3090401@simon.arlott.org.uk>
-In-Reply-To: <462E730F.3090401@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704250919.50382.duncan.sands@math.u-psud.fr>
+	Wed, 25 Apr 2007 03:20:06 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:52630 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423252AbXDYHTt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 03:19:49 -0400
+To: kzak@redhat.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, serue@us.ibm.com,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+In-reply-to: <20070425000414.GH14086@petra.dvoda.cz> (message from Karel Zak
+	on Wed, 25 Apr 2007 02:04:14 +0200)
+Subject: Re: [patch 0/8]  mount ownership and unprivileged mount syscall (v4)
+References: <20070420102532.385211890@szeredi.hu> <20070425000414.GH14086@petra.dvoda.cz>
+Message-Id: <E1Hgblk-00045y-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Apr 2007 09:18:28 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Simon,
+> > The following extra security measures are taken for unprivileged
+> > mounts:
+> > 
+> >  - usermounts are limited by a sysctl tunable
+> >  - force "nosuid,nodev" mount options on the created mount
+> 
+>  The original userspace "user=" solution also implies the "noexec"
+>  option by default (you can override the default by "exec" option).
 
->  static ssize_t cxacru_sysfs_showattr_dB(s16 value, char *buf)
->  {
-> -	if (unlikely(value < 0)) {
-> -		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
-> -						value / 100, -value % 100);
-> -	} else {
-> -		return snprintf(buf, PAGE_SIZE, "%d.%02u\n",
-> -						value / 100, value % 100);
-> -	}
-> +	return snprintf(buf, PAGE_SIZE, "%u.%02u\n",
-> +					value / 100, abs(value) % 100);
+Unlike "nosuid" and "nodev", I don't think "noexec" has real security
+benefits.
 
-shouldn't this be "%d.%02u\n"?
+>  It means the kernel based solution is not fully compatible ;-(
 
-> +	static char *str[] = { "no", "yes" };
-...
-> +	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+Oh, I don't think that matters.  For traditional /etc/fstab based user
+mounts, mount(8) will have to remain suid-root, the kernel can't
+replace the fstab check.
 
-This could be
-	static char *str[] = { "no\n", "yes\n" };
-...
-	return snprintf(buf, PAGE_SIZE, str[value]);
-I'm not saying that it's better, just a remark!
+In fact the latest patches don't even support these "legacy" user
+mounts too well: setting the owner of a mount gives not only umount
+privilege, but the ability to submount.  This is not necessarily a
+good thing for these kinds of user mounts.
 
-Ciao,
+We could add a new "nosubmount" or similar flag, to prevent
+submounting, but that again would go against the simplicity of the
+current approach, so I'm not sure it's worth it.
 
-Duncan.
+Miklos
