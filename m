@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161865AbXDYSOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423361AbXDYSP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161865AbXDYSOt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161868AbXDYSOt
+	id S1423361AbXDYSP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423364AbXDYSP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:14:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34385 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161865AbXDYSOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:14:48 -0400
-Date: Wed, 25 Apr 2007 11:14:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <20070425180528.GH4730@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0704251113460.27844@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <20070425113530.GX9715@kernel.dk>
- <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com>
- <20070425175335.GG4730@kernel.dk> <Pine.LNX.4.64.0704251101490.21918@schroedinger.engr.sgi.com>
- <20070425180528.GH4730@kernel.dk>
+	Wed, 25 Apr 2007 14:15:29 -0400
+Received: from ns.suse.de ([195.135.220.2]:54462 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423361AbXDYSP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:15:28 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 09/25] xen: Account for time stolen by Xen
+Date: Wed, 25 Apr 2007 20:15:06 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+References: <20070423215638.563901986@goop.org> <200704251115.49966.ak@suse.de> <462F9A4E.5050905@goop.org>
+In-Reply-To: <462F9A4E.5050905@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704252015.06269.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007, Jens Axboe wrote:
+On Wednesday 25 April 2007 20:13:34 Jeremy Fitzhardinge wrote:
+> Andi Kleen wrote:
+> >> +
+> >> +	do {
+> >> +		state_time = state->state_entry_time;
+> >> +		barrier();
+> >>     
+> >
+> > Should be likely rmb
+> 
+> We discussed this, and decided that it wasn't necessary.  The state is
+> always updated by the current CPU, so if it changes under our feet it
+> will be because we were preempted, and so that should shoot down any
+> speculated reads.
 
-> All of memory is lowmem. There are no bounces going on, for sure.
+Then the barrier shouldn't be needed at all? 
 
-Could you figure out what this is? The patchset was intentionally only for 
-64 bit. I cannot get to the 32 bit headaches for a week or so.
+Anyways needs comments
 
+-Andi
