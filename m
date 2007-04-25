@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965013AbXDYLvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbXDYL74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965013AbXDYLvO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXDYLvO
+	id S1753191AbXDYL74 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXDYL74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:51:14 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47251 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965211AbXDYLvN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:51:13 -0400
-Subject: [PATCH 10/10] Use safe_apic_wait_icr_idle in __send_IPI_dest_field
-	- x86_64
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: horms@verge.net.au, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, ak@suse.de, vgoyal@in.ibm.com,
-       mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
-       akpm@linux-foundation.org
-In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 20:51:12 +0900
-Message-Id: <1177501872.17974.56.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 07:59:56 -0400
+Received: from holomorphy.com ([66.93.40.71]:36323 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753191AbXDYL7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 07:59:55 -0400
+Date: Wed, 25 Apr 2007 04:58:40 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Li, Tong N" <tong.n.li@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070425115840.GT31925@holomorphy.com>
+References: <20070424212717.GR31925@holomorphy.com> <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com> <20070425094403.GA3290@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425094403.GA3290@elte.hu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use safe_apic_wait_icr_idle to check ICR idle bit if the vector is
-NMI_VECTOR to avoid potential hangups in the event of crash when kdump
-tries to stop the other CPUs.
+* Li, Tong N <tong.n.li@intel.com> wrote:
+>> [...] A corollary of this is that if both threads i and j are 
+>> continuously runnable with fixed weights in the time interval, then 
+>> the ratio of their CPU time should be equal to the ratio of their 
+>> weights. This definition is pretty restrictive since it requires the 
+>> properties to hold for any thread in any interval, which is not 
+>> feasible. [...]
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+On Wed, Apr 25, 2007 at 11:44:03AM +0200, Ingo Molnar wrote:
+> yes, it's a pretty strong definition, but also note that while it is 
+> definitely not easy to implement, the solution is nevertheless feasible 
+> in my opinion and there exists a scheduler that implements it: CFS.
 
-diff -urNp linux-2.6.21-rc7-orig/include/asm-x86_64/ipi.h linux-2.6.21-rc7/include/asm-x86_64/ipi.h
---- linux-2.6.21-rc7-orig/include/asm-x86_64/ipi.h	2007-04-23 17:34:56.000000000 +0900
-+++ linux-2.6.21-rc7/include/asm-x86_64/ipi.h	2007-04-25 19:15:01.000000000 +0900
-@@ -87,7 +87,10 @@ static inline void __send_IPI_dest_field
- 	/*
- 	 * Wait for idle.
- 	 */
--	apic_wait_icr_idle();
-+	if (unlikely(vector == NMI_VECTOR))
-+		safe_apic_wait_icr_idle();
-+	else
-+		apic_wait_icr_idle();
- 
- 	/*
- 	 * prepare target chip field
+The feasibility comment refers to the unimplementability of schedulers
+with infinitesimal timeslices/quanta/sched_granularity_ns. It's no
+failing of cfs (or any other scheduler) if, say, the ratios are not
+exact within a time interval of one nanosecond or one picosecond.
+
+One of the reasons you get the results you do is that what you use for
+->fair_key is very close to the definition of lag, which is used as a
+metric of fairness. It differs is in a couple of ways, but how it's
+computed and used for queueing can be altered to more precisely match.
+
+The basic concept you appear to be trying to implement is a greedy
+algorithm: run the task with the largest lag first. As far as I can
+tell, this is sound enough, though I have no formal proof. So with the
+lag computation and queueing adjusted appropriately, it should work out.
+
+Adjustments to the lag computation for for arrivals and departures
+during execution are among the missing pieces. Some algorithmic devices
+are also needed to account for the varying growth rates of lags of tasks
+waiting to run, which arise from differing priorities/weights.
+
+There are no mysteries.
 
 
+-- wli
