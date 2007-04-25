@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031026AbXDYNyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030503AbXDYN6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031026AbXDYNyb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031038AbXDYNyb
+	id S1030503AbXDYN6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030965AbXDYN6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:54:31 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:41361 "EHLO minas.ics.muni.cz"
+	Wed, 25 Apr 2007 09:58:43 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:37173 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031026AbXDYNya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:54:30 -0400
-Message-ID: <462F5D9C.9050706@gmail.com>
-Date: Wed, 25 Apr 2007 15:54:36 +0200
+	id S1030503AbXDYN6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:58:42 -0400
+Message-ID: <462F5E9A.4010009@gmail.com>
+Date: Wed, 25 Apr 2007 15:58:50 +0200
 From: Jiri Slaby <jirislaby@gmail.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
@@ -23,7 +23,7 @@ X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 X-Muni-Spam-TestIP: 147.251.48.3
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 25 Apr 2007 15:54:27 +0200 (CEST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 25 Apr 2007 15:58:40 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -72,11 +72,10 @@ Matthias Kaehlcke napsal(a):
 >  
 > -	down_interruptible(&info->write_sem);
 > +	if(mutex_lock_interruptible(&info->write_mtx))
-> +		return -EINTR;
+          ^
+and put a space here "if (".
 
-I think that ERESTARTSYS is appropriate here.
-
-reagrds,
+regards,
 -- 
 http://www.fi.muni.cz/~xslaby/            Jiri Slaby
 faculty of informatics, masaryk university, brno, cz
