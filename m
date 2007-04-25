@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754261AbXDYV4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754277AbXDYV6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754261AbXDYV4a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 17:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbXDYV4a
+	id S1754277AbXDYV6H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 17:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXDYV6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 17:56:30 -0400
-Received: from waste.org ([66.93.16.53]:53740 "EHLO waste.org"
+	Wed, 25 Apr 2007 17:58:07 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43365 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbXDYV4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 17:56:30 -0400
-Date: Wed, 25 Apr 2007 16:41:56 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425214156.GI11166@waste.org>
-References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424205416.GA23032@elte.hu> <20070424212956.GE16457@elf.ucw.cz>
+	id S1754277AbXDYV6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 17:58:06 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Jiri Bohac" <jbohac@suse.cz>, <akpm@osdl.org>,
+       "Linux kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
+References: <20070419092339.GA13569@dwarf.suse.cz>
+	<20070419084339.418dbe69.randy.dunlap@oracle.com>
+	<4628B5B6.90303@student.ltu.se>
+	<20070425082028.8ece3094.randy.dunlap@oracle.com>
+	<alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
+	<Pine.LNX.4.61.0704251418010.26778@chaos.analogic.com>
+	<jetzv41aot.fsf@sykes.suse.de>
+	<Pine.LNX.4.61.0704251612090.27302@chaos.analogic.com>
+X-Yow: Here we are in America...  when do we collect unemployment?
+Date: Wed, 25 Apr 2007 23:57:53 +0200
+In-Reply-To: <Pine.LNX.4.61.0704251612090.27302@chaos.analogic.com>
+	(linux-os@analogic.com's message of "Wed, 25 Apr 2007 16:30:29 -0400")
+Message-ID: <jehcr415i6.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070424212956.GE16457@elf.ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 11:29:56PM +0200, Pavel Machek wrote:
-> We do not want to fragment the testing base, and suspend2 does not
-> really have any interesting features over uswsusp.
+"linux-os (Dick Johnson)" <linux-os@analogic.com> writes:
 
-The testing base is already fragmented!
+> The original query was for a macro.
 
-What the current situation means is that you simply never hear from
-the people who get fed up with suspend but who manage to get suspend2
-working.
+A macro that does not evaluate its argument more than once.  If you want
+it to match the behaviour as defined by the C standard then it is not
+allowed to do so.
+
+Andreas.
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
