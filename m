@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992475AbXDYJ02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992464AbXDYJ06@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992475AbXDYJ02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992478AbXDYJ02
+	id S2992464AbXDYJ06 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:26:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992481AbXDYJ06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:26:28 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54776 "EHLO mx2.suse.de"
+	Wed, 25 Apr 2007 05:26:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38444 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992475AbXDYJ01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:26:27 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 11/25] xen: Xen SMP guest support
-Date: Wed, 25 Apr 2007 11:24:48 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Benjamin LaHaise <bcrl@kvack.org>,
-       Ingo Molnar <mingo@redhat.com>
-References: <20070423215638.563901986@goop.org> <20070423215711.197402369@goop.org>
-In-Reply-To: <20070423215711.197402369@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S2992464AbXDYJ05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:26:57 -0400
+Date: Wed, 25 Apr 2007 11:25:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch] CFS scheduler, -v5
+Message-ID: <20070425092544.GA498@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <200704241854.47269.mail@earthworm.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704251124.48445.ak@suse.de>
+In-Reply-To: <200704241854.47269.mail@earthworm.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Christian Hesse <mail@earthworm.de> wrote:
 
->  #ifdef CONFIG_X86_LOCAL_APIC
->  static unsigned long xen_apic_read(unsigned long reg)
+> On Monday 23 April 2007, Ingo Molnar wrote:
+> > i'm pleased to announce release -v5 of the CFS scheduler patchset.
+> 
+> Hi Ingo,
+> 
+> I just noticed that with cfs all processes (except some kernel 
+> threads) run on cpu 0. I don't think this is expected cpu affinity for 
+> an smp system? I remember about half of the processes running on each 
+> core with mainline.
 
-Can't you just make them all NULL? Crashing here should be correct.
+i've got several SMP systems with CFS and all distribute the load 
+properly to all CPUs, so it would be nice if you could tell me more 
+about how the problem manifests itself on your system.
 
+for example, if you start two infinite loops:
 
-  
-> +#ifdef CONFIG_SMP
-> +static const struct smp_ops xen_smp_ops __initdata = {
+    for (( N=0; N < 2; N++ )); do ( while :; do :; done ) & done
 
-Why __initdata? 
+do they end up on the same CPU?
 
-> +/* VCPUs are single-cored, and have no siblings */
-> +static void set_cpu_sibling_map(int cpu)
+Or do you mean that the default placement of single tasks starts at 
+CPU#0, while with mainline they were alternating?
 
-Can you put this somewhere generic and use it everywhere? Don't want
-duplication of this code.
-
-> +{
-> +	struct cpuinfo_x86 *c = &cpu_data[cpu];
-> +
-> +	cpu_set(cpu, cpu_sibling_map[cpu]);
-> +	cpu_set(cpu, c->llc_shared_map);
-> +	cpu_core_map[cpu] = cpu_sibling_map[cpu];
-> +	c->booted_cores = 1;
-> +}
-> +
-> +static void remove_siblinginfo(int cpu)
-
-Similar.
-
-> +void __init xen_fill_possible_map(void)
-> +{
-> +	int i, rc;
-> +
-> +	for_each_possible_cpu(i)
-> +	    if (i != smp_processor_id())
-> +		return;
-
-Strange check?
-
-> +
-> + * We need to reload %cr3 since the page tables may be going
-> + * away from under us..
-> + */
-> +static inline void leave_mm (unsigned long cpu)
-> +{
-> +#ifdef CONFIG_SMP
-> +	if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK)
-> +		BUG();
-> +	cpu_clear(cpu, per_cpu(cpu_tlbstate, cpu).active_mm->cpu_vm_mask);
-> +#endif
-> +	load_cr3(swapper_pg_dir);
->  }
-
-Should be out of line
-
-
--Andi
+	Ingo
