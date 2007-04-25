@@ -1,71 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992866AbXDYRUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992880AbXDYRUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992866AbXDYRUT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992878AbXDYRUT
+	id S2992880AbXDYRUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992876AbXDYRUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:20:19 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:57892 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992864AbXDYRUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:20:16 -0400
-Date: Wed, 25 Apr 2007 12:20:12 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       ebiederm@xmission.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [patch] unprivileged mounts update
-Message-ID: <20070425172012.GA20336@sergelap.austin.ibm.com>
-References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu> <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com>
+	Wed, 25 Apr 2007 13:20:47 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:57885 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992880AbXDYRUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:20:38 -0400
+Date: Wed, 25 Apr 2007 17:20:37 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+In-Reply-To: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>
+Message-ID: <Pine.LNX.4.64.0704251717220.25153@server.thyself>
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462F87EA.1000002@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting H. Peter Anvin (hpa@zytor.com):
-> Miklos Szeredi wrote:
-> > 
-> > Andrew, please skip this patch, for now.
-> > 
-> > Serge found a problem with the fsuid approach: setfsuid(nonzero) will
-> > remove filesystem related capabilities.  So even if root is trying to
-> > set the "user=UID" flag on a mount, access to the target (and in case
-> > of bind, the source) is checked with user privileges.
-> > 
-> > Root should be able to set this flag on any mountpoint, _regardless_
-> > of permissions.
-> > 
-> 
-> Right, if you're using fsuid != 0, you're not running as root 
+On Wed, 25 Apr 2007, akpm@linux-foundation.org wrote:
 
-Sure, but what I'm not clear on is why, if I've done a
-prctl(PR_SET_KEEPCAPS, 1) before the setfsuid, I still lose the
-CAP_FS_MASK perms.  I see the special case handling in
-cap_task_post_setuid().  I'm sure there was a reason for it, but
-this is a piece of the capability implementation I don't understand
-right now.
+> The mm snapshot broken-out-2007-04-25-02-49.tar.gz has been uploaded to
+>
+>   ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-04-25-02-49.tar.gz
+>
 
-I would send in a patch to make it honor current->keep_capabilities,
-but I have a feeling there was a good reason not to do so in the
-first place.
+Was support for UnionFS deliberately removed in this release?
 
-> (fsuid is
-> the equivalent to euid for the filesystem.)
-
-If it were really the equivalent then I could keep my capabilities :)
-after changing it.
-
-> I fail to see how ruid should have *any* impact on mount(2).  That seems
-> to be a design flaw.
-
-May be, but just using fsuid at this point stops me from enabling user
-mounts under /share if /share is chmod 000 (which it is).
-
-thanks,
--serge
+William Heimbigner
+icxcnika@mar.tar.cc
