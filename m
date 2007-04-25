@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXDYBDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbXDYBGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754672AbXDYBDl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 21:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXDYBDl
+	id S1754678AbXDYBGr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 21:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbXDYBGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 21:03:41 -0400
-Received: from tresys.irides.com ([216.250.243.126]:13314 "HELO
-	exchange.columbia.tresys.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754566AbXDYBDk (ORCPT
+	Tue, 24 Apr 2007 21:06:47 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57141 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754673AbXDYBGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 21:03:40 -0400
-Message-ID: <462EA8E9.6050700@tresys.com>
-Date: Tue, 24 Apr 2007 21:03:37 -0400
-From: Joshua Brindle <jbrindle@tresys.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 24 Apr 2007 21:06:46 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Karel Zak <kzak@redhat.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/8]  mount ownership and unprivileged mount syscall (v4)
+References: <20070420102532.385211890@szeredi.hu>
+	<20070425000414.GH14086@petra.dvoda.cz>
+Date: Tue, 24 Apr 2007 19:04:36 -0600
+In-Reply-To: <20070425000414.GH14086@petra.dvoda.cz> (Karel Zak's message of
+	"Wed, 25 Apr 2007 02:04:14 +0200")
+Message-ID: <m1647ltgbf.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Crispin Cowan <crispin@novell.com>
-CC: David Wagner <daw-usenet@taverner.cs.berkeley.edu>,
-       linux-kernel@vger.kernel.org,
-       LSM ML <linux-security-module@vger.kernel.org>
-Subject: Re: AppArmor FAQ
-References: <20070417181016.GA10903@one.firstfloor.org> <Line.LNX.4.64.0704181620130.27545@d.namei> <f085og$3hg$1@taverner.cs.berkeley.edu> <1177004348.27654.139.camel@moss-spartans.epoch.ncsc.mil> <f08kg5$c88$1@taverner.cs.berkeley.edu> <462D5644.2090103@novell.com>
-In-Reply-To: <462D5644.2090103@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Apr 2007 01:03:39.0663 (UTC) FILETIME=[8F79D1F0:01C786D5]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Crispin Cowan wrote:
-> David Wagner wrote:
->   
->> James Morris  wrote:
->>   
->>     
->>> [...] you can change the behavior of the application and then bypass 
->>> policy entirely by utilizing any mechanism other than direct filesystem 
->>> access: IPC, shared memory, Unix domain sockets, local IP networking, 
->>> remote networking etc.
->>>     
->>>       
->> [...]
->>   
->>     
->>> Just look at their code and their own description of AppArmor.
->>>     
->>>       
->> My gosh, you're right.  What the heck?  With all due respect to the
->> developers of AppArmor, I can't help thinking that that's pretty lame.
->> I think this raises substantial questions about the value of AppArmor.
->> What is the point of having a jail if it leaves gaping holes that
->> malicious code could use to escape?
->>
->> And why isn't this documented clearly, with the implications fully
->> explained?
->>
->> I would like to hear the AppArmor developers defend this design decision.
->>   
->>     
-> It was a simplicity trade off at the time, when AppArmor was mostly
-> aimed at servers, and there was no HAL or DBUS. Now it is definitely a
-> limitation that we are addressing. We are working on a mediation system
-> for what kind of IPC a confined process can do
-> http://forge.novell.com/pipermail/apparmor-dev/2007-April/000503.html
+Karel Zak <kzak@redhat.com> writes:
+
+> On Fri, Apr 20, 2007 at 12:25:32PM +0200, Miklos Szeredi wrote:
+>> The following extra security measures are taken for unprivileged
+>> mounts:
+>> 
+>>  - usermounts are limited by a sysctl tunable
+>>  - force "nosuid,nodev" mount options on the created mount
 >
->   
-Also, things like:
+>  The original userspace "user=" solution also implies the "noexec"
+>  option by default (you can override the default by "exec" option).
+>  
+>  It means the kernel based solution is not fully compatible ;-(
 
-    share_mem /usr/bin/firefox r,        # /bin/foo can share memory with /usr/bin/firefox for read only
+Why noexec?  Either it was a silly or arbitrary decision, or
+our kernel design may be incomplete.
 
-clearly show that you aren't using native abstractions for IPC. The 
-native abstraction for shared memory would be the key used when creating 
-the shared memory segment. The same goes for message queues which are 
-noticeably missing from the "simplified" IPC model.
+Now I can see not wanting to support executables if you are locking
+down a system.  The classic don't execute a program from a CD just because
+the CD was stuck in the drive problem.
 
-This, of course, begs the question of whether you are using native 
-abstractions for profiles at all, processes have nothing to do with the 
-binary they started from after they've been started. The binary on disk 
-could be something entirely different than the process from which it ran.
+So I can see how executing code from an untrusted source could prevent
+exploitation of other problems, and we certainly don't want to do it
+automatically.
+
+Eric
