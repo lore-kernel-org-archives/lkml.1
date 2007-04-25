@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbXDYQ0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992828AbXDYQdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752105AbXDYQ0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 12:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbXDYQ0U
+	id S2992828AbXDYQdc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 12:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992829AbXDYQdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 12:26:20 -0400
-Received: from lug-owl.de ([195.71.106.12]:38963 "EHLO lug-owl.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbXDYQ0T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 12:26:19 -0400
-Date: Wed, 25 Apr 2007 16:27:06 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: about linux console and printk
-Message-ID: <20070425142706.GR25077@lug-owl.de>
-Mail-Followup-To: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>,
-	linux-kernel@vger.kernel.org
-References: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF6B90@exch03.qd.lucent.com>
+	Wed, 25 Apr 2007 12:33:32 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:32786 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992828AbXDYQdb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 12:33:31 -0400
+Message-ID: <462F82EB.8020404@oracle.com>
+Date: Wed, 25 Apr 2007 09:33:47 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Bi+HF1AHjw0mn3zx"
-Content-Disposition: inline
-In-Reply-To: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF6B90@exch03.qd.lucent.com>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mel Gorman <mel@skynet.ie>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       y-goto@jp.fujitsu.com, apw@shadowen.org
+Subject: Re: + handle-kernelcore=-boot-parameter-in-common-code-to-avoid-boot-problem-on-ia64.patch
+ added to -mm tree
+References: <200704242104.l3OL4SV3019236@shell0.pdx.osdl.net> <20070425080846.3b03299c.randy.dunlap@oracle.com> <20070425162313.GA30246@skynet.ie>
+In-Reply-To: <20070425162313.GA30246@skynet.ie>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mel Gorman wrote:
+> On (25/04/07 08:08), Randy Dunlap didst pronounce:
+>> On Tue, 24 Apr 2007 14:04:28 -0700 akpm@linux-foundation.org wrote:
+>>
+>>> The patch titled
+>>>      Handle kernelcore= boot parameter in common code to avoid boot problem on IA64
+>>> has been added to the -mm tree.  Its filename is
+>>>      handle-kernelcore=-boot-parameter-in-common-code-to-avoid-boot-problem-on-ia64.patch
+>>>
+>>> *** Remember to use Documentation/SubmitChecklist when testing your code ***
+>>>
+>>> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+>>> out what to do about this
+>>>
+>>> ------------------------------------------------------
+>>> Subject: Handle kernelcore= boot parameter in common code to avoid boot problem on IA64
+>>> From: Yasunori Goto <y-goto@jp.fujitsu.com>
+>>>
+>>> When "kernelcore" boot option is specified, kernel can't boot up on ia64
+>>> because of an infinite loop.  In addition, the parsing code can be handled
+>>> in an architecture-independent manner.
+>> Is this boot option documented anywhere in the kernel source tree?
+>>
+> 
+> Documentation/kernel-parameters.txt
 
---Bi+HF1AHjw0mn3zx
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks, my bad.  I failed to look at that file in -mm.
 
-On Wed, 2007-04-25 22:22:22 +0800, Shan, Guo Wen (Gavin) <gshan@alcatel-luc=
-ent.com> wrote:
-> The linux could support several console driver at same time? If so,
-> what I need to do is call register_console() for several times?
-
-Did you try that? Have you read through the register_console() code as
-well as printk() and how it actually outputs its output?
-
-MfG, JBG
-PS: netdev no longer Cc'ed. It's not a networking topic.
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-Signature of:            http://www.chiark.greenend.org.uk/~sgtatham/bugs.h=
-tml
-the second  :
-
---Bi+HF1AHjw0mn3zx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGL2U6Hb1edYOZ4bsRArttAJ9p3AI78KjojRuzbgG1vJhPMbcZwQCfSVA2
-xoH3sstOUmkQZHwEWyHMJaQ=
-=nnxS
------END PGP SIGNATURE-----
-
---Bi+HF1AHjw0mn3zx--
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
