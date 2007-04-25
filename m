@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXDYDif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbXDYDkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXDYDif (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 23:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161554AbXDYDif
+	id S1753729AbXDYDkT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 23:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbXDYDkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 23:38:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48291 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753729AbXDYDie (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 23:38:34 -0400
-Date: Tue, 24 Apr 2007 20:39:07 -0700
-From: Greg KH <greg@kroah.com>
-To: ray-gmail@madrabbit.org
-Cc: Adrian Bunk <bunk@stusta.de>, Wolfgang Erig <Wolfgang.Erig@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: regression with gammu on 2.6.21-rc7
-Message-ID: <20070425033907.GA10322@kroah.com>
-References: <20070420085853.GA5594@erig.dyndns.org> <20070423054717.GB17997@kroah.com> <20070423081022.GA25694@erig.dyndns.org> <20070425001356.GB1183@kroah.com> <2c0942db0704241812m72e02611sc41f83c1b89629be@mail.gmail.com>
+	Tue, 24 Apr 2007 23:40:19 -0400
+Received: from nofear-snat.bivio.net ([216.142.75.231]:55957 "EHLO
+	corpexc01.corp.networkrobots.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753729AbXDYDkR convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 23:40:17 -0400
+X-Greylist: delayed 643 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Apr 2007 23:40:17 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c0942db0704241812m72e02611sc41f83c1b89629be@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Ramdisk Vs NFS
+Date: Tue, 24 Apr 2007 20:27:23 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D762CA83@corpexc01.corp.networkrobots.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Ramdisk Vs NFS
+Thread-Index: AceG6aO/OsP/xp17Rb+KAuUZY7SZDw==
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 06:12:33PM -0700, Ray Lee wrote:
->  On 4/24/07, Greg KH <greg@kroah.com> wrote:
-> > Also, if you know how to use git, doing a 'git bisect' to try to track
-> > down the problem commit would be very helpful.
-> 
->  Has to do with SIGIO, see this blog post:
-> 
->  http://blog.cihar.com/archives/2007/04/24/kernel_2_6_21_hits_gammu/
 
-Ah, thank you very much, that makes more sense as nothing changed in
-that usb-serial driver and I was starting to get a bit worried...
+Hi,
 
-thanks,
+What is the primary difference between Ramdisk and NFS with respect to
+the wait_queue's?
 
-greg k-h
+If I use ramdisk, every thing works fine, but with NFS (or you may read
+as 'no ramdisk') kernel/sched.c:__wake_up_common() routines has a
+problem. Basically the value of "&q->task_list->next" is out of our
+memory range (not between 0xc0000000 and 0xF0000000), and this causes
+trouble of accessing non-existing memory. Why would this happen?
+
+Interesting thing is, this happens much before we even load the ramdisk
+drivers.
+
+Appreciate if any one has some insight into this. At least a pointer to
+where to start looking would be great.
+
+Thanks
+Siva
+
