@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031105AbXDYPvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161488AbXDYPvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031105AbXDYPvv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031104AbXDYPud
+	id S1161488AbXDYPvy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161707AbXDYPvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:50:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48029 "EHLO mx1.redhat.com"
+	Wed, 25 Apr 2007 11:51:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48264 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031118AbXDYPuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:50:08 -0400
+	id S1031129AbXDYPus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 11:50:48 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
@@ -16,12 +16,12 @@ Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
 	David Owens (Ireland)
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 11/16] AFS: Add security support [try #4]
+Subject: [PATCH 16/16] AFS: Add "directory write" support [try #4]
 To: torvalds@osdl.org, akpm@osdl.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        netdev@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 25 Apr 2007 16:49:53 +0100
-Message-ID: <20070425154953.26581.13006.stgit@warthog.cambridge.redhat.com>
+Date: Wed, 25 Apr 2007 16:50:19 +0100
+Message-ID: <20070425155019.26581.8741.stgit@warthog.cambridge.redhat.com>
 In-Reply-To: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
 References: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
 User-Agent: StGIT/0.12.1
@@ -31,2357 +31,2783 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add security support to the AFS filesystem.  Kerberos IV tickets are added as
-RxRPC keys are added to the session keyring with the klog program.  open() and
-other VFS operations then find this ticket with request_key() and either use
-it immediately (eg: mkdir, unlink) or attach it to a file descriptor (open).
+Add support for the create, link, symlink, unlink, mkdir, rmdir and rename VFS
+operations to the in-kernel AFS filesystem.
+
+Also:
+
+ (1) Fix dentry and inode revalidation.  d_revalidate should only look at
+     state of the dentry.  Revalidation of the contents of an inode pointed to
+     by a dentry is now separate.
+
+ (2) Fix afs_lookup() to hash negative dentries as well as positive ones.
 
 Signed-Off-By: David Howells <dhowells@redhat.com>
 ---
 
- fs/afs/Makefile    |    1 
- fs/afs/afs.h       |   27 ++++
- fs/afs/callback.c  |    5 +
- fs/afs/cell.c      |   98 ++++++++++++---
- fs/afs/cmservice.c |    3 
- fs/afs/dir.c       |   51 ++++++--
- fs/afs/file.c      |   60 ++++++++-
- fs/afs/fsclient.c  |    9 +
- fs/afs/inode.c     |   21 ++-
- fs/afs/internal.h  |  106 ++++++++++++----
- fs/afs/mntpt.c     |   12 +-
- fs/afs/rxrpc.c     |  137 ++++++++++++++++-----
- fs/afs/security.c  |  345 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/afs/super.c     |  142 ++++++++++++++++++---
- fs/afs/vlclient.c  |    6 +
- fs/afs/vlocation.c |   26 ++--
- fs/afs/vnode.c     |   25 +++-
- fs/afs/volume.c    |  109 +++-------------
- 18 files changed, 945 insertions(+), 238 deletions(-)
+ fs/afs/afs.h      |   26 ++
+ fs/afs/afs_fs.h   |   11 +
+ fs/afs/callback.c |   36 +++
+ fs/afs/dir.c      |  676 ++++++++++++++++++++++++++++++++++++++++++-----------
+ fs/afs/file.c     |    7 +
+ fs/afs/fsclient.c |  625 +++++++++++++++++++++++++++++++++++++++++++++----
+ fs/afs/inode.c    |  115 ++++++++-
+ fs/afs/internal.h |   54 ++++
+ fs/afs/misc.c     |   21 ++
+ fs/afs/security.c |   31 ++
+ fs/afs/server.c   |    2 
+ fs/afs/super.c    |    6 
+ fs/afs/vnode.c    |  422 +++++++++++++++++++++++++++++++--
+ fs/afs/volume.c   |   14 +
+ 14 files changed, 1778 insertions(+), 268 deletions(-)
 
-diff --git a/fs/afs/Makefile b/fs/afs/Makefile
-index 66bdc21..cca198b 100644
---- a/fs/afs/Makefile
-+++ b/fs/afs/Makefile
-@@ -15,6 +15,7 @@ kafs-objs := \
- 	mntpt.o \
- 	proc.o \
- 	rxrpc.o \
-+	security.o \
- 	server.o \
- 	super.o \
- 	vlclient.o \
 diff --git a/fs/afs/afs.h b/fs/afs/afs.h
-index 0362e11..3f255d6 100644
+index 3f255d6..085cf60 100644
 --- a/fs/afs/afs.h
 +++ b/fs/afs/afs.h
-@@ -14,6 +14,9 @@
+@@ -106,19 +106,37 @@ struct afs_file_status {
  
- #include <linux/in.h>
- 
-+#define AFS_MAXCELLNAME	64		/* maximum length of a cell name */
-+#define AFS_MAXVOLNAME	64		/* maximum length of a volume name */
-+
- typedef unsigned			afs_volid_t;
- typedef unsigned			afs_vnodeid_t;
- typedef unsigned long long		afs_dataversion_t;
-@@ -75,6 +78,26 @@ struct afs_volume_info {
+ 	afs_file_type_t		type;		/* file type */
+ 	unsigned		nlink;		/* link count */
+-	size_t			size;		/* file size */
++	u64			size;		/* file size */
+ 	afs_dataversion_t	data_version;	/* current data version */
+-	unsigned		author;		/* author ID */
+-	unsigned		owner;		/* owner ID */
++	u32			author;		/* author ID */
++	u32			owner;		/* owner ID */
++	u32			group;		/* group ID */
+ 	afs_access_t		caller_access;	/* access rights for authenticated caller */
+ 	afs_access_t		anon_access;	/* access rights for unauthenticated caller */
+ 	umode_t			mode;		/* UNIX mode */
+-	struct afs_fid		parent;		/* parent file ID */
++	struct afs_fid		parent;		/* parent dir ID for non-dirs only */
+ 	time_t			mtime_client;	/* last time client changed data */
+ 	time_t			mtime_server;	/* last time server changed data */
  };
  
  /*
-+ * AFS security ACE access mask
++ * AFS file status change request
 + */
-+typedef u32 afs_access_t;
-+#define AFS_ACE_READ		0x00000001U	/* - permission to read a file/dir */
-+#define AFS_ACE_WRITE		0x00000002U	/* - permission to write/chmod a file */
-+#define AFS_ACE_INSERT		0x00000004U	/* - permission to create dirent in a dir */
-+#define AFS_ACE_LOOKUP		0x00000008U	/* - permission to lookup a file/dir in a dir */
-+#define AFS_ACE_DELETE		0x00000010U	/* - permission to delete a dirent from a dir */
-+#define AFS_ACE_LOCK		0x00000020U	/* - permission to lock a file */
-+#define AFS_ACE_ADMINISTER	0x00000040U	/* - permission to change ACL */
-+#define AFS_ACE_USER_A		0x01000000U	/* - 'A' user-defined permission */
-+#define AFS_ACE_USER_B		0x02000000U	/* - 'B' user-defined permission */
-+#define AFS_ACE_USER_C		0x04000000U	/* - 'C' user-defined permission */
-+#define AFS_ACE_USER_D		0x08000000U	/* - 'D' user-defined permission */
-+#define AFS_ACE_USER_E		0x10000000U	/* - 'E' user-defined permission */
-+#define AFS_ACE_USER_F		0x20000000U	/* - 'F' user-defined permission */
-+#define AFS_ACE_USER_G		0x40000000U	/* - 'G' user-defined permission */
-+#define AFS_ACE_USER_H		0x80000000U	/* - 'H' user-defined permission */
++struct afs_store_status {
++	u32			mask;		/* which bits of the struct are set */
++	u32			mtime_client;	/* last time client changed data */
++	u32			owner;		/* owner ID */
++	u32			group;		/* group ID */
++	umode_t			mode;		/* UNIX mode */
++};
++
++#define AFS_SET_MTIME		0x01		/* set the mtime */
++#define AFS_SET_OWNER		0x02		/* set the owner ID */
++#define AFS_SET_GROUP		0x04		/* set the group ID (unsupported?) */
++#define AFS_SET_MODE		0x08		/* set the UNIX mode */
++#define AFS_SET_SEG_SIZE	0x10		/* set the segment size (unsupported) */
 +
 +/*
-  * AFS file status information
+  * AFS volume synchronisation information
   */
- struct afs_file_status {
-@@ -87,8 +110,8 @@ struct afs_file_status {
- 	afs_dataversion_t	data_version;	/* current data version */
- 	unsigned		author;		/* author ID */
- 	unsigned		owner;		/* owner ID */
--	unsigned		caller_access;	/* access rights for authenticated caller */
--	unsigned		anon_access;	/* access rights for unauthenticated caller */
-+	afs_access_t		caller_access;	/* access rights for authenticated caller */
-+	afs_access_t		anon_access;	/* access rights for unauthenticated caller */
- 	umode_t			mode;		/* UNIX mode */
- 	struct afs_fid		parent;		/* parent file ID */
- 	time_t			mtime_client;	/* last time client changed data */
+ struct afs_volsync {
+diff --git a/fs/afs/afs_fs.h b/fs/afs/afs_fs.h
+index fd38595..89e0d16 100644
+--- a/fs/afs/afs_fs.h
++++ b/fs/afs/afs_fs.h
+@@ -16,12 +16,19 @@
+ #define FS_SERVICE		1	/* AFS File Service ID */
+ 
+ enum AFS_FS_Operations {
+-	FSFETCHSTATUS		= 132,	/* AFS Fetch file status */
+ 	FSFETCHDATA		= 130,	/* AFS Fetch file data */
++	FSFETCHSTATUS		= 132,	/* AFS Fetch file status */
++	FSREMOVEFILE		= 136,	/* AFS Remove a file */
++	FSCREATEFILE		= 137,	/* AFS Create a file */
++	FSRENAME		= 138,	/* AFS Rename or move a file or directory */
++	FSSYMLINK		= 139,	/* AFS Create a symbolic link */
++	FSLINK			= 140,	/* AFS Create a hard link */
++	FSMAKEDIR		= 141,	/* AFS Create a directory */
++	FSREMOVEDIR		= 142,	/* AFS Remove a directory */
+ 	FSGIVEUPCALLBACKS	= 147,	/* AFS Discard callback promises */
+ 	FSGETVOLUMEINFO		= 148,	/* AFS Get root volume information */
+ 	FSGETROOTVOLUME		= 151,	/* AFS Get root volume name */
+-	FSLOOKUP		= 161	/* AFS lookup file in directory */
++	FSLOOKUP		= 161,	/* AFS lookup file in directory */
+ };
+ 
+ enum AFS_FS_Errors {
 diff --git a/fs/afs/callback.c b/fs/afs/callback.c
-index 6112155..e674beb 100644
+index e674beb..639399f 100644
 --- a/fs/afs/callback.c
 +++ b/fs/afs/callback.c
-@@ -72,7 +72,10 @@ void afs_broken_callback_work(struct work_struct *work)
+@@ -44,7 +44,8 @@ void afs_init_callback_state(struct afs_server *server)
+ 	while (!RB_EMPTY_ROOT(&server->cb_promises)) {
+ 		vnode = rb_entry(server->cb_promises.rb_node,
+ 				 struct afs_vnode, cb_promise);
+-		printk("\nUNPROMISE on %p\n", vnode);
++		_debug("UNPROMISE { vid=%x vn=%u uq=%u}",
++		       vnode->fid.vid, vnode->fid.vnode, vnode->fid.unique);
+ 		rb_erase(&vnode->cb_promise, &server->cb_promises);
+ 		vnode->cb_promised = false;
+ 	}
+@@ -68,7 +69,7 @@ void afs_broken_callback_work(struct work_struct *work)
+ 
+ 	/* we're only interested in dealing with a broken callback on *this*
+ 	 * vnode and only if no-one else has dealt with it yet */
+-	if (!mutex_trylock(&vnode->cb_broken_lock))
++	if (!mutex_trylock(&vnode->validate_lock))
  		return; /* someone else is dealing with it */
  
  	if (test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags)) {
--		if (afs_vnode_fetch_status(vnode) < 0)
-+		if (S_ISDIR(vnode->vfs_inode.i_mode))
-+			afs_clear_permits(vnode);
-+
-+		if (afs_vnode_fetch_status(vnode, NULL, NULL) < 0)
- 			goto out;
- 
- 		if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
-diff --git a/fs/afs/cell.c b/fs/afs/cell.c
-index 733c602..9b1311a 100644
---- a/fs/afs/cell.c
-+++ b/fs/afs/cell.c
-@@ -11,6 +11,9 @@
- 
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/key.h>
-+#include <linux/ctype.h>
-+#include <keys/rxrpc-type.h>
- #include "internal.h"
- 
- DECLARE_RWSEM(afs_proc_cells_sem);
-@@ -23,45 +26,43 @@ static DECLARE_WAIT_QUEUE_HEAD(afs_cells_freeable_wq);
- static struct afs_cell *afs_cell_root;
- 
- /*
-- * create a cell record
-- * - "name" is the name of the cell
-- * - "vllist" is a colon separated list of IP addresses in "a.b.c.d" format
-+ * allocate a cell record and fill in its name, VL server address list and
-+ * allocate an anonymous key
-  */
--struct afs_cell *afs_cell_create(const char *name, char *vllist)
-+static struct afs_cell *afs_cell_alloc(const char *name, char *vllist)
- {
- 	struct afs_cell *cell;
--	char *next;
-+	size_t namelen;
-+	char keyname[4 + AFS_MAXCELLNAME + 1], *cp, *dp, *next;
- 	int ret;
- 
- 	_enter("%s,%s", name, vllist);
- 
- 	BUG_ON(!name); /* TODO: want to look up "this cell" in the cache */
- 
-+	namelen = strlen(name);
-+	if (namelen > AFS_MAXCELLNAME)
-+		return ERR_PTR(-ENAMETOOLONG);
-+
- 	/* allocate and initialise a cell record */
--	cell = kmalloc(sizeof(struct afs_cell) + strlen(name) + 1, GFP_KERNEL);
-+	cell = kzalloc(sizeof(struct afs_cell) + namelen + 1, GFP_KERNEL);
- 	if (!cell) {
- 		_leave(" = -ENOMEM");
- 		return ERR_PTR(-ENOMEM);
+@@ -84,13 +85,14 @@ void afs_broken_callback_work(struct work_struct *work)
+ 		/* if the vnode's data version number changed then its contents
+ 		 * are different */
+ 		if (test_and_clear_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
+-			_debug("zap data");
++			_debug("zap data {%x:%u}",
++			       vnode->fid.vid, vnode->fid.vnode);
+ 			invalidate_remote_inode(&vnode->vfs_inode);
+ 		}
  	}
  
--	down_write(&afs_cells_sem);
-+	memcpy(cell->name, name, namelen);
-+	cell->name[namelen] = 0;
+ out:
+-	mutex_unlock(&vnode->cb_broken_lock);
++	mutex_unlock(&vnode->validate_lock);
  
--	memset(cell, 0, sizeof(struct afs_cell));
- 	atomic_set(&cell->usage, 1);
--
- 	INIT_LIST_HEAD(&cell->link);
--
- 	rwlock_init(&cell->servers_lock);
- 	INIT_LIST_HEAD(&cell->servers);
--
- 	init_rwsem(&cell->vl_sem);
- 	INIT_LIST_HEAD(&cell->vl_list);
- 	spin_lock_init(&cell->vl_lock);
+ 	/* avoid the potential race whereby the mutex_trylock() in this
+ 	 * function happens again between the clear_bit() and the
+@@ -252,6 +254,32 @@ static void afs_do_give_up_callback(struct afs_server *server,
+ }
  
--	strcpy(cell->name, name);
--
- 	/* fill in the VL server list from the rest of the string */
--	ret = -EINVAL;
- 	do {
- 		unsigned a, b, c, d;
- 
-@@ -70,18 +71,73 @@ struct afs_cell *afs_cell_create(const char *name, char *vllist)
- 			*next++ = 0;
- 
- 		if (sscanf(vllist, "%u.%u.%u.%u", &a, &b, &c, &d) != 4)
--			goto badaddr;
-+			goto bad_address;
- 
- 		if (a > 255 || b > 255 || c > 255 || d > 255)
--			goto badaddr;
-+			goto bad_address;
- 
- 		cell->vl_addrs[cell->vl_naddrs++].s_addr =
- 			htonl((a << 24) | (b << 16) | (c << 8) | d);
- 
--		if (cell->vl_naddrs >= AFS_CELL_MAX_ADDRS)
--			break;
-+	} while (cell->vl_naddrs < AFS_CELL_MAX_ADDRS && (vllist = next));
-+
-+	/* create a key to represent an anonymous user */
-+	memcpy(keyname, "afs@", 4);
-+	dp = keyname + 4;
-+	cp = cell->name;
-+	do {
-+		*dp++ = toupper(*cp);
-+	} while (*cp++);
-+	cell->anonymous_key = key_alloc(&key_type_rxrpc, keyname, 0, 0, current,
-+					KEY_POS_SEARCH, KEY_ALLOC_NOT_IN_QUOTA);
-+	if (IS_ERR(cell->anonymous_key)) {
-+		_debug("no key");
-+		ret = PTR_ERR(cell->anonymous_key);
-+		goto error;
-+	}
-+
-+	ret = key_instantiate_and_link(cell->anonymous_key, NULL, 0,
-+				       NULL, NULL);
-+	if (ret < 0) {
-+		_debug("instantiate failed");
-+		goto error;
-+	}
-+
-+	_debug("anon key %p{%x}",
-+	       cell->anonymous_key, key_serial(cell->anonymous_key));
-+
-+	_leave(" = %p", cell);
-+	return cell;
-+
-+bad_address:
-+	printk(KERN_ERR "kAFS: bad VL server IP address\n");
-+	ret = -EINVAL;
-+error:
-+	key_put(cell->anonymous_key);
-+	kfree(cell);
-+	_leave(" = %d", ret);
-+	return ERR_PTR(ret);
-+}
- 
--	} while ((vllist = next));
-+/*
-+ * create a cell record
-+ * - "name" is the name of the cell
-+ * - "vllist" is a colon separated list of IP addresses in "a.b.c.d" format
+ /*
++ * discard the callback on a deleted item
 + */
-+struct afs_cell *afs_cell_create(const char *name, char *vllist)
++void afs_discard_callback_on_delete(struct afs_vnode *vnode)
 +{
-+	struct afs_cell *cell;
-+	int ret;
++	struct afs_server *server = vnode->server;
 +
-+	_enter("%s,%s", name, vllist);
++	_enter("%d", vnode->cb_promised);
 +
-+	cell = afs_cell_alloc(name, vllist);
-+	if (IS_ERR(cell)) {
-+		_leave(" = %ld", PTR_ERR(cell));
-+		return cell;
++	if (!vnode->cb_promised) {
++		_leave(" [not promised]");
++		return;
 +	}
 +
-+	down_write(&afs_cells_sem);
- 
- 	/* add a proc directory for this cell */
- 	ret = afs_proc_cell_setup(cell);
-@@ -109,10 +165,9 @@ struct afs_cell *afs_cell_create(const char *name, char *vllist)
- 	_leave(" = %p", cell);
- 	return cell;
- 
--badaddr:
--	printk(KERN_ERR "kAFS: bad VL server IP address\n");
- error:
- 	up_write(&afs_cells_sem);
-+	key_put(cell->anonymous_key);
- 	kfree(cell);
- 	_leave(" = %d", ret);
- 	return ERR_PTR(ret);
-@@ -301,6 +356,7 @@ static void afs_cell_destroy(struct afs_cell *cell)
- 	cachefs_relinquish_cookie(cell->cache, 0);
- #endif
- 
-+	key_put(cell->anonymous_key);
- 	kfree(cell);
- 
- 	_leave(" [destroyed]");
-diff --git a/fs/afs/cmservice.c b/fs/afs/cmservice.c
-index 9cbd21b..7e184bb 100644
---- a/fs/afs/cmservice.c
-+++ b/fs/afs/cmservice.c
-@@ -28,6 +28,7 @@ static void afs_cm_destructor(struct afs_call *);
-  * CB.CallBack operation type
++	ASSERT(server != NULL);
++
++	spin_lock(&server->cb_lock);
++	if (vnode->cb_promised) {
++		ASSERT(server->cb_promises.rb_node != NULL);
++		rb_erase(&vnode->cb_promise, &server->cb_promises);
++		vnode->cb_promised = false;
++	}
++	spin_unlock(&server->cb_lock);
++	_leave("");
++}
++
++/*
+  * give up the callback registered for a vnode on the file server when the
+  * inode is being cleared
   */
- static const struct afs_call_type afs_SRXCBCallBack = {
-+	.name		= "CB.CallBack",
- 	.deliver	= afs_deliver_cb_callback,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_cm_destructor,
-@@ -37,6 +38,7 @@ static const struct afs_call_type afs_SRXCBCallBack = {
-  * CB.InitCallBackState operation type
-  */
- static const struct afs_call_type afs_SRXCBInitCallBackState = {
-+	.name		= "CB.InitCallBackState",
- 	.deliver	= afs_deliver_cb_init_call_back_state,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_cm_destructor,
-@@ -46,6 +48,7 @@ static const struct afs_call_type afs_SRXCBInitCallBackState = {
-  * CB.Probe operation type
-  */
- static const struct afs_call_type afs_SRXCBProbe = {
-+	.name		= "CB.Probe",
- 	.deliver	= afs_deliver_cb_probe,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_cm_destructor,
 diff --git a/fs/afs/dir.c b/fs/afs/dir.c
-index d7697f6..8736841 100644
+index 8736841..dbbe75d 100644
 --- a/fs/afs/dir.c
 +++ b/fs/afs/dir.c
-@@ -15,6 +15,7 @@
- #include <linux/slab.h>
- #include <linux/fs.h>
- #include <linux/pagemap.h>
-+#include <linux/ctype.h>
+@@ -18,40 +18,50 @@
+ #include <linux/ctype.h>
  #include "internal.h"
  
- static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
-@@ -28,11 +29,13 @@ static int afs_dir_lookup_filldir(void *_cookie, const char *name, int nlen,
+-static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+-				     struct nameidata *nd);
++static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
++				 struct nameidata *nd);
+ static int afs_dir_open(struct inode *inode, struct file *file);
+-static int afs_dir_readdir(struct file *file, void *dirent, filldir_t filldir);
++static int afs_readdir(struct file *file, void *dirent, filldir_t filldir);
+ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd);
+ static int afs_d_delete(struct dentry *dentry);
+-static int afs_dir_lookup_filldir(void *_cookie, const char *name, int nlen,
++static void afs_d_release(struct dentry *dentry);
++static int afs_lookup_filldir(void *_cookie, const char *name, int nlen,
+ 				  loff_t fpos, u64 ino, unsigned dtype);
++static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
++		      struct nameidata *nd);
++static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode);
++static int afs_rmdir(struct inode *dir, struct dentry *dentry);
++static int afs_unlink(struct inode *dir, struct dentry *dentry);
++static int afs_link(struct dentry *from, struct inode *dir,
++		    struct dentry *dentry);
++static int afs_symlink(struct inode *dir, struct dentry *dentry,
++		       const char *content);
++static int afs_rename(struct inode *old_dir, struct dentry *old_dentry,
++		      struct inode *new_dir, struct dentry *new_dentry);
  
  const struct file_operations afs_dir_file_operations = {
  	.open		= afs_dir_open,
-+	.release	= afs_release,
- 	.readdir	= afs_dir_readdir,
+ 	.release	= afs_release,
+-	.readdir	= afs_dir_readdir,
++	.readdir	= afs_readdir,
  };
  
  const struct inode_operations afs_dir_inode_operations = {
- 	.lookup		= afs_dir_lookup,
-+	.permission	= afs_permission,
+-	.lookup		= afs_dir_lookup,
++	.create		= afs_create,
++	.lookup		= afs_lookup,
++	.link		= afs_link,
++	.unlink		= afs_unlink,
++	.symlink	= afs_symlink,
++	.mkdir		= afs_mkdir,
++	.rmdir		= afs_rmdir,
++	.rename		= afs_rename,
+ 	.permission	= afs_permission,
  	.getattr	= afs_inode_getattr,
- #if 0 /* TODO */
- 	.create		= afs_dir_create,
-@@ -169,13 +172,17 @@ static inline void afs_dir_put_page(struct page *page)
+-#if 0 /* TODO */
+-	.create		= afs_dir_create,
+-	.link		= afs_dir_link,
+-	.unlink		= afs_dir_unlink,
+-	.symlink	= afs_dir_symlink,
+-	.mkdir		= afs_dir_mkdir,
+-	.rmdir		= afs_dir_rmdir,
+-	.mknod		= afs_dir_mknod,
+-	.rename		= afs_dir_rename,
+-#endif
+ };
+ 
+ static struct dentry_operations afs_fs_dentry_operations = {
+ 	.d_revalidate	= afs_d_revalidate,
+ 	.d_delete	= afs_d_delete,
++	.d_release	= afs_d_release,
+ };
+ 
+ #define AFS_DIR_HASHTBL_SIZE	128
+@@ -103,7 +113,7 @@ struct afs_dir_page {
+ 	union afs_dir_block blocks[PAGE_SIZE / sizeof(union afs_dir_block)];
+ };
+ 
+-struct afs_dir_lookup_cookie {
++struct afs_lookup_cookie {
+ 	struct afs_fid	fid;
+ 	const char	*name;
+ 	size_t		nlen;
+@@ -299,7 +309,7 @@ static int afs_dir_iterate_block(unsigned *fpos,
+ 			      nlen,
+ 			      blkoff + offset * sizeof(union afs_dirent),
+ 			      ntohl(dire->u.vnode),
+-			      filldir == afs_dir_lookup_filldir ?
++			      filldir == afs_lookup_filldir ?
+ 			      ntohl(dire->u.unique) : DT_UNKNOWN);
+ 		if (ret < 0) {
+ 			_leave(" = 0 [full]");
+@@ -379,7 +389,7 @@ out:
  /*
-  * get a page into the pagecache
+  * read an AFS directory
   */
--static struct page *afs_dir_get_page(struct inode *dir, unsigned long index)
-+static struct page *afs_dir_get_page(struct inode *dir, unsigned long index,
-+				     struct key *key)
+-static int afs_dir_readdir(struct file *file, void *cookie, filldir_t filldir)
++static int afs_readdir(struct file *file, void *cookie, filldir_t filldir)
  {
- 	struct page *page;
-+	struct file file = {
-+		.private_data = key,
-+	};
+ 	unsigned fpos;
+ 	int ret;
+@@ -403,10 +413,10 @@ static int afs_dir_readdir(struct file *file, void *cookie, filldir_t filldir)
+  * - if afs_dir_iterate_block() spots this function, it'll pass the FID
+  *   uniquifier through dtype
+  */
+-static int afs_dir_lookup_filldir(void *_cookie, const char *name, int nlen,
+-				  loff_t fpos, u64 ino, unsigned dtype)
++static int afs_lookup_filldir(void *_cookie, const char *name, int nlen,
++			      loff_t fpos, u64 ino, unsigned dtype)
+ {
+-	struct afs_dir_lookup_cookie *cookie = _cookie;
++	struct afs_lookup_cookie *cookie = _cookie;
  
- 	_enter("{%lu},%lu", dir->i_ino, index);
- 
--	page = read_mapping_page(dir->i_mapping, index, NULL);
-+	page = read_mapping_page(dir->i_mapping, index, &file);
- 	if (!IS_ERR(page)) {
- 		wait_on_page_locked(page);
- 		kmap(page);
-@@ -207,8 +214,7 @@ static int afs_dir_open(struct inode *inode, struct file *file)
- 	if (test_bit(AFS_VNODE_DELETED, &AFS_FS_I(inode)->flags))
- 		return -ENOENT;
- 
--	_leave(" = 0");
--	return 0;
-+	return afs_open(inode, file);
- }
+ 	_enter("{%s,%Zu},%s,%u,,%llu,%u",
+ 	       cookie->name, cookie->nlen, name, nlen, ino, dtype);
+@@ -430,11 +440,12 @@ static int afs_dir_lookup_filldir(void *_cookie, const char *name, int nlen,
  
  /*
-@@ -311,7 +317,7 @@ static int afs_dir_iterate_block(unsigned *fpos,
-  * iterate through the data blob that lists the contents of an AFS directory
-  */
- static int afs_dir_iterate(struct inode *dir, unsigned *fpos, void *cookie,
--			   filldir_t filldir)
-+			   filldir_t filldir, struct key *key)
- {
- 	union afs_dir_block *dblock;
- 	struct afs_dir_page *dbuf;
-@@ -336,7 +342,7 @@ static int afs_dir_iterate(struct inode *dir, unsigned *fpos, void *cookie,
- 		blkoff = *fpos & ~(sizeof(union afs_dir_block) - 1);
- 
- 		/* fetch the appropriate page from the directory */
--		page = afs_dir_get_page(dir, blkoff / PAGE_SIZE);
-+		page = afs_dir_get_page(dir, blkoff / PAGE_SIZE, key);
- 		if (IS_ERR(page)) {
- 			ret = PTR_ERR(page);
- 			break;
-@@ -381,9 +387,11 @@ static int afs_dir_readdir(struct file *file, void *cookie, filldir_t filldir)
- 	_enter("{%Ld,{%lu}}",
- 	       file->f_pos, file->f_path.dentry->d_inode->i_ino);
- 
-+	ASSERT(file->private_data != NULL);
-+
- 	fpos = file->f_pos;
- 	ret = afs_dir_iterate(file->f_path.dentry->d_inode, &fpos,
--			      cookie, filldir);
-+			      cookie, filldir, file->private_data);
- 	file->f_pos = fpos;
- 
- 	_leave(" = %d", ret);
-@@ -424,7 +432,7 @@ static int afs_dir_lookup_filldir(void *_cookie, const char *name, int nlen,
   * do a lookup in a directory
++ * - just returns the FID the dentry name maps to if found
   */
  static int afs_do_lookup(struct inode *dir, struct dentry *dentry,
--			 struct afs_fid *fid)
-+			 struct afs_fid *fid, struct key *key)
+ 			 struct afs_fid *fid, struct key *key)
  {
- 	struct afs_dir_lookup_cookie cookie;
+-	struct afs_dir_lookup_cookie cookie;
++	struct afs_lookup_cookie cookie;
  	struct afs_super_info *as;
-@@ -442,7 +450,8 @@ static int afs_do_lookup(struct inode *dir, struct dentry *dentry,
+ 	unsigned fpos;
+ 	int ret;
+@@ -450,7 +461,7 @@ static int afs_do_lookup(struct inode *dir, struct dentry *dentry,
  	cookie.found	= 0;
  
  	fpos = 0;
--	ret = afs_dir_iterate(dir, &fpos, &cookie, afs_dir_lookup_filldir);
-+	ret = afs_dir_iterate(dir, &fpos, &cookie, afs_dir_lookup_filldir,
-+			      key);
+-	ret = afs_dir_iterate(dir, &fpos, &cookie, afs_dir_lookup_filldir,
++	ret = afs_dir_iterate(dir, &fpos, &cookie, afs_lookup_filldir,
+ 			      key);
  	if (ret < 0) {
  		_leave(" = %d [iter]", ret);
- 		return ret;
-@@ -468,6 +477,7 @@ static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+@@ -471,8 +482,8 @@ static int afs_do_lookup(struct inode *dir, struct dentry *dentry,
+ /*
+  * look up an entry in a directory
+  */
+-static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+-				     struct nameidata *nd)
++static struct dentry *afs_lookup(struct inode *dir, struct dentry *dentry,
++				 struct nameidata *nd)
+ {
  	struct afs_vnode *vnode;
  	struct afs_fid fid;
- 	struct inode *inode;
-+	struct key *key;
+@@ -480,14 +491,18 @@ static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+ 	struct key *key;
  	int ret;
  
- 	_enter("{%lu},%p{%s}", dir->i_ino, dentry, dentry->d_name.name);
-@@ -483,14 +493,22 @@ static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
- 		return ERR_PTR(-ESTALE);
+-	_enter("{%lu},%p{%s}", dir->i_ino, dentry, dentry->d_name.name);
++	vnode = AFS_FS_I(dir);
++
++	_enter("{%x:%d},%p{%s},",
++	       vnode->fid.vid, vnode->fid.vnode, dentry, dentry->d_name.name);
++
++	ASSERTCMP(dentry->d_inode, ==, NULL);
+ 
+ 	if (dentry->d_name.len > 255) {
+ 		_leave(" = -ENAMETOOLONG");
+ 		return ERR_PTR(-ENAMETOOLONG);
  	}
  
--	ret = afs_do_lookup(dir, dentry, &fid);
-+	key = afs_request_key(vnode->volume->cell);
-+	if (IS_ERR(key)) {
-+		_leave(" = %ld [key]", PTR_ERR(key));
-+		return ERR_PTR(PTR_ERR(key));
+-	vnode = AFS_FS_I(dir);
+ 	if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
+ 		_leave(" = -ESTALE");
+ 		return ERR_PTR(-ESTALE);
+@@ -499,15 +514,28 @@ static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+ 		return ERR_PTR(PTR_ERR(key));
+ 	}
+ 
++	ret = afs_validate(vnode, key);
++	if (ret < 0) {
++		key_put(key);
++		_leave(" = %d [val]", ret);
++		return ERR_PTR(ret);
 +	}
 +
-+	ret = afs_do_lookup(dir, dentry, &fid, key);
+ 	ret = afs_do_lookup(dir, dentry, &fid, key);
  	if (ret < 0) {
-+		key_put(key);
+ 		key_put(key);
++		if (ret == -ENOENT) {
++			d_add(dentry, NULL);
++			_leave(" = NULL [negative]");
++			return NULL;
++		}
  		_leave(" = %d [do]", ret);
  		return ERR_PTR(ret);
  	}
++	dentry->d_fsdata = (void *)(unsigned long) vnode->status.data_version;
  
  	/* instantiate the dentry */
--	inode = afs_iget(dir->i_sb, &fid);
-+	inode = afs_iget(dir->i_sb, key, &fid);
-+	key_put(key);
+-	inode = afs_iget(dir->i_sb, key, &fid);
++	inode = afs_iget(dir->i_sb, key, &fid, NULL, NULL);
+ 	key_put(key);
  	if (IS_ERR(inode)) {
  		_leave(" = %ld", PTR_ERR(inode));
- 		return ERR_PTR(PTR_ERR(inode));
-@@ -559,6 +577,7 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+@@ -527,105 +555,64 @@ static struct dentry *afs_dir_lookup(struct inode *dir, struct dentry *dentry,
+ }
+ 
+ /*
+- * propagate changed and modified flags on a directory to all the children of
+- * that directory as they may indicate that the ACL on the dir has changed,
+- * potentially rendering the child inaccessible or that a file has been deleted
+- * or renamed
+- */
+-static void afs_propagate_dir_changes(struct dentry *dir)
+-{
+-	struct dentry *child;
+-	bool c, m;
+-
+-	c = test_bit(AFS_VNODE_CHANGED, &AFS_FS_I(dir->d_inode)->flags);
+-	m = test_bit(AFS_VNODE_MODIFIED, &AFS_FS_I(dir->d_inode)->flags);
+-
+-	_enter("{%d,%d}", c, m);
+-
+-	spin_lock(&dir->d_lock);
+-
+-	list_for_each_entry(child, &dir->d_subdirs, d_u.d_child) {
+-		if (child->d_inode) {
+-			struct afs_vnode *vnode;
+-
+-			_debug("tag %s", child->d_name.name);
+-			vnode = AFS_FS_I(child->d_inode);
+-			if (c)
+-				set_bit(AFS_VNODE_DIR_CHANGED, &vnode->flags);
+-			if (m)
+-				set_bit(AFS_VNODE_DIR_MODIFIED, &vnode->flags);
+-		}
+-	}
+-
+-	spin_unlock(&dir->d_lock);
+-}
+-
+-/*
+  * check that a dentry lookup hit has found a valid entry
+  * - NOTE! the hit can be a negative hit too, so we can't assume we have an
+  *   inode
+- * - there are several things we need to check
+- *   - parent dir data changes (rm, rmdir, rename, mkdir, create, link,
+- *     symlink)
+- *   - parent dir metadata changed (security changes)
+- *   - dentry data changed (write, truncate)
+- *   - dentry metadata changed (security changes)
+  */
+ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ {
+-	struct afs_vnode *vnode;
++	struct afs_vnode *vnode, *dir;
  	struct afs_fid fid;
  	struct dentry *parent;
- 	struct inode *inode, *dir;
-+	struct key *key;
+-	struct inode *inode, *dir;
+ 	struct key *key;
++	void *dir_version;
  	int ret;
  
  	vnode = AFS_FS_I(dentry->d_inode);
-@@ -566,6 +585,10 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
- 	_enter("{sb=%p n=%s fl=%lx},",
- 	       dentry->d_sb, dentry->d_name.name, vnode->flags);
  
-+	key = afs_request_key(vnode->volume->cell);
-+	if (IS_ERR(key))
-+		key = NULL;
-+
+-	_enter("{sb=%p n=%s fl=%lx},",
+-	       dentry->d_sb, dentry->d_name.name, vnode->flags);
++	if (dentry->d_inode)
++		_enter("{v={%x:%u} n=%s fl=%lx},",
++		       vnode->fid.vid, vnode->fid.vnode, dentry->d_name.name,
++		       vnode->flags);
++	else
++		_enter("{neg n=%s}", dentry->d_name.name);
+ 
+-	key = afs_request_key(vnode->volume->cell);
++	key = afs_request_key(AFS_FS_S(dentry->d_sb)->volume->cell);
+ 	if (IS_ERR(key))
+ 		key = NULL;
+ 
  	/* lock down the parent dentry so we can peer at it */
  	parent = dget_parent(dentry);
+-
+-	dir = parent->d_inode;
+-	inode = dentry->d_inode;
+-
+-	/* handle a negative dentry */
+-	if (!inode)
++	if (!parent->d_inode)
+ 		goto out_bad;
  
-@@ -595,7 +618,7 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
- 		_debug("dir modified");
+-	/* handle a bad inode */
+-	if (is_bad_inode(inode)) {
+-		printk("kAFS: afs_d_revalidate: %s/%s has bad inode\n",
+-		       parent->d_name.name, dentry->d_name.name);
+-		goto out_bad;
+-	}
++	dir = AFS_FS_I(parent->d_inode);
  
- 		/* search the directory for this vnode */
--		ret = afs_do_lookup(dir, dentry, &fid);
-+		ret = afs_do_lookup(dir, dentry, &fid, key);
- 		if (ret == -ENOENT) {
- 			_debug("%s: dirent not found", dentry->d_name.name);
- 			goto not_found;
-@@ -637,7 +660,7 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
- 	    test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags)) {
- 		_debug("%s: changed", dentry->d_name.name);
- 		set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
--		if (afs_vnode_fetch_status(vnode) < 0) {
-+		if (afs_vnode_fetch_status(vnode, NULL, key) < 0) {
- 			mutex_unlock(&vnode->cb_broken_lock);
+-	/* check that this dirent still exists if the directory's contents were
+-	 * modified */
+-	if (test_bit(AFS_VNODE_DELETED, &AFS_FS_I(dir)->flags)) {
++	/* validate the parent directory */
++	if (test_bit(AFS_VNODE_MODIFIED, &dir->flags))
++		afs_validate(dir, key);
++
++	if (test_bit(AFS_VNODE_DELETED, &dir->flags)) {
+ 		_debug("%s: parent dir deleted", dentry->d_name.name);
+ 		goto out_bad;
+ 	}
+ 
+-	if (test_and_clear_bit(AFS_VNODE_DIR_MODIFIED, &vnode->flags)) {
+-		/* rm/rmdir/rename may have occurred */
+-		_debug("dir modified");
++	dir_version = (void *) (unsigned long) dir->status.data_version;
++	if (dentry->d_fsdata == dir_version)
++		goto out_valid; /* the dir contents are unchanged */
+ 
+-		/* search the directory for this vnode */
+-		ret = afs_do_lookup(dir, dentry, &fid, key);
+-		if (ret == -ENOENT) {
+-			_debug("%s: dirent not found", dentry->d_name.name);
+-			goto not_found;
+-		}
+-		if (ret < 0) {
+-			_debug("failed to iterate dir %s: %d",
+-			       parent->d_name.name, ret);
++	_debug("dir modified");
++
++	/* search the directory for this vnode */
++	ret = afs_do_lookup(&dir->vfs_inode, dentry, &fid, key);
++	switch (ret) {
++	case 0:
++		/* the filename maps to something */
++		if (!dentry->d_inode)
++			goto out_bad;
++		if (is_bad_inode(dentry->d_inode)) {
++			printk("kAFS: afs_d_revalidate: %s/%s has bad inode\n",
++			       parent->d_name.name, dentry->d_name.name);
  			goto out_bad;
  		}
-@@ -667,6 +690,7 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
  
- out_valid:
- 	dput(parent);
-+	key_put(key);
- 	_leave(" = 1 [valid]");
- 	return 1;
+@@ -639,56 +626,35 @@ static int afs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ 		}
  
-@@ -688,6 +712,7 @@ out_bad:
- 	shrink_dcache_parent(dentry);
- 	d_drop(dentry);
- 	dput(parent);
-+	key_put(key);
+ 		/* if the vnode ID uniqifier has changed, then the file has
+-		 * been deleted */
++		 * been deleted and replaced, and the original vnode ID has
++		 * been reused */
+ 		if (fid.unique != vnode->fid.unique) {
+ 			_debug("%s: file deleted (uq %u -> %u I:%lu)",
+ 			       dentry->d_name.name, fid.unique,
+-			       vnode->fid.unique, inode->i_version);
++			       vnode->fid.unique, dentry->d_inode->i_version);
+ 			spin_lock(&vnode->lock);
+ 			set_bit(AFS_VNODE_DELETED, &vnode->flags);
+ 			spin_unlock(&vnode->lock);
+-			invalidate_remote_inode(inode);
+-			goto out_bad;
++			goto not_found;
+ 		}
+-	}
++		goto out_valid;
  
- 	_leave(" = 0 [bad]");
- 	return 0;
-diff --git a/fs/afs/file.c b/fs/afs/file.c
-index 6990327..101bbb8 100644
---- a/fs/afs/file.c
-+++ b/fs/afs/file.c
-@@ -17,17 +17,23 @@
- #include <linux/pagemap.h>
- #include "internal.h"
- 
--#if 0
--static int afs_file_open(struct inode *inode, struct file *file);
--static int afs_file_release(struct inode *inode, struct file *file);
--#endif
+-	/* if the directory's metadata were changed then the security may be
+-	 * different and we may no longer have access */
+-	mutex_lock(&vnode->cb_broken_lock);
 -
- static int afs_file_readpage(struct file *file, struct page *page);
- static void afs_file_invalidatepage(struct page *page, unsigned long offset);
- static int afs_file_releasepage(struct page *page, gfp_t gfp_flags);
+-	if (test_and_clear_bit(AFS_VNODE_DIR_CHANGED, &vnode->flags) ||
+-	    test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags)) {
+-		_debug("%s: changed", dentry->d_name.name);
+-		set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
+-		if (afs_vnode_fetch_status(vnode, NULL, key) < 0) {
+-			mutex_unlock(&vnode->cb_broken_lock);
+-			goto out_bad;
+-		}
+-	}
++	case -ENOENT:
++		/* the filename is unknown */
++		_debug("%s: dirent not found", dentry->d_name.name);
++		if (dentry->d_inode)
++			goto not_found;
++		goto out_valid;
  
-+const struct file_operations afs_file_operations = {
-+	.open		= afs_open,
-+	.release	= afs_release,
-+	.llseek		= generic_file_llseek,
-+	.read		= do_sync_read,
-+	.aio_read	= generic_file_aio_read,
-+	.mmap		= generic_file_readonly_mmap,
-+	.sendfile	= generic_file_sendfile,
-+};
+-	if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
+-		_debug("%s: file already deleted", dentry->d_name.name);
+-		mutex_unlock(&vnode->cb_broken_lock);
++	default:
++		_debug("failed to iterate dir %s: %d",
++		       parent->d_name.name, ret);
+ 		goto out_bad;
+ 	}
+ 
+-	/* if the vnode's data version number changed then its contents are
+-	 * different */
+-	if (test_and_clear_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
+-		_debug("zap data");
+-		invalidate_remote_inode(inode);
+-	}
+-
+-	if (S_ISDIR(inode->i_mode) &&
+-	    (test_bit(AFS_VNODE_CHANGED, &vnode->flags) ||
+-	     test_bit(AFS_VNODE_MODIFIED, &vnode->flags)))
+-		afs_propagate_dir_changes(dentry);
+-
+-	clear_bit(AFS_VNODE_CHANGED, &vnode->flags);
+-	clear_bit(AFS_VNODE_MODIFIED, &vnode->flags);
+-	mutex_unlock(&vnode->cb_broken_lock);
+-
+ out_valid:
++	dentry->d_fsdata = dir_version;
++out_skip:
+ 	dput(parent);
+ 	key_put(key);
+ 	_leave(" = 1 [valid]");
+@@ -701,10 +667,10 @@ not_found:
+ 	spin_unlock(&dentry->d_lock);
+ 
+ out_bad:
+-	if (inode) {
++	if (dentry->d_inode) {
+ 		/* don't unhash if we have submounts */
+ 		if (have_submounts(dentry))
+-			goto out_valid;
++			goto out_skip;
+ 	}
+ 
+ 	_debug("dropping dentry %s/%s",
+@@ -742,3 +708,433 @@ zap:
+ 	_leave(" = 1 [zap]");
+ 	return 1;
+ }
 +
- const struct inode_operations afs_file_inode_operations = {
- 	.getattr	= afs_inode_getattr,
-+	.permission	= afs_permission,
- };
- 
- const struct address_space_operations afs_fs_aops = {
-@@ -38,6 +44,41 @@ const struct address_space_operations afs_fs_aops = {
- };
- 
- /*
-+ * open an AFS file or directory and attach a key to it
++/*
++ * handle dentry release
 + */
-+int afs_open(struct inode *inode, struct file *file)
++static void afs_d_release(struct dentry *dentry)
 +{
-+	struct afs_vnode *vnode = AFS_FS_I(inode);
++	_enter("%s", dentry->d_name.name);
++}
++
++/*
++ * create a directory on an AFS filesystem
++ */
++static int afs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
++{
++	struct afs_file_status status;
++	struct afs_callback cb;
++	struct afs_server *server;
++	struct afs_vnode *dvnode, *vnode;
++	struct afs_fid fid;
++	struct inode *inode;
 +	struct key *key;
++	int ret;
 +
-+	_enter("{%x:%x},", vnode->fid.vid, vnode->fid.vnode);
++	dvnode = AFS_FS_I(dir);
 +
-+	key = afs_request_key(vnode->volume->cell);
++	_enter("{%x:%d},{%s},%o",
++	       dvnode->fid.vid, dvnode->fid.vnode, dentry->d_name.name, mode);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
 +	if (IS_ERR(key)) {
-+		_leave(" = %ld [key]", PTR_ERR(key));
-+		return PTR_ERR(key);
++		ret = PTR_ERR(key);
++		goto error;
 +	}
 +
-+	file->private_data = key;
++	mode |= S_IFDIR;
++	ret = afs_vnode_create(dvnode, key, dentry->d_name.name,
++			       mode, &fid, &status, &cb, &server);
++	if (ret < 0)
++		goto mkdir_error;
++
++	inode = afs_iget(dir->i_sb, key, &fid, &status, &cb);
++	if (IS_ERR(inode)) {
++		/* ENOMEM at a really inconvenient time - just abandon the new
++		 * directory on the server */
++		ret = PTR_ERR(inode);
++		goto iget_error;
++	}
++
++	/* apply the status report we've got for the new vnode */
++	vnode = AFS_FS_I(inode);
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++	afs_vnode_finalise_status_update(vnode, server);
++	afs_put_server(server);
++
++	d_instantiate(dentry, inode);
++	if (d_unhashed(dentry)) {
++		_debug("not hashed");
++		d_rehash(dentry);
++	}
++	key_put(key);
 +	_leave(" = 0");
 +	return 0;
++
++iget_error:
++	afs_put_server(server);
++mkdir_error:
++	key_put(key);
++error:
++	d_drop(dentry);
++	_leave(" = %d", ret);
++	return ret;
 +}
 +
 +/*
-+ * release an AFS file or directory and discard its key
++ * remove a directory from an AFS filesystem
 + */
-+int afs_release(struct inode *inode, struct file *file)
++static int afs_rmdir(struct inode *dir, struct dentry *dentry)
 +{
-+	struct afs_vnode *vnode = AFS_FS_I(inode);
++	struct afs_vnode *dvnode, *vnode;
++	struct key *key;
++	int ret;
 +
-+	_enter("{%x:%x},", vnode->fid.vid, vnode->fid.vnode);
++	dvnode = AFS_FS_I(dir);
 +
-+	key_put(file->private_data);
++	_enter("{%x:%d},{%s}",
++	       dvnode->fid.vid, dvnode->fid.vnode, dentry->d_name.name);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	ret = afs_vnode_remove(dvnode, key, dentry->d_name.name, true);
++	if (ret < 0)
++		goto rmdir_error;
++
++	if (dentry->d_inode) {
++		vnode = AFS_FS_I(dentry->d_inode);
++		clear_nlink(&vnode->vfs_inode);
++		set_bit(AFS_VNODE_DELETED, &vnode->flags);
++		afs_discard_callback_on_delete(vnode);
++	}
++
++	key_put(key);
 +	_leave(" = 0");
 +	return 0;
++
++rmdir_error:
++	key_put(key);
++error:
++	_leave(" = %d", ret);
++	return ret;
 +}
 +
 +/*
-  * deal with notification that a page was read from the cache
-  */
- #ifdef AFS_CACHING_SUPPORT
-@@ -79,13 +120,18 @@ static int afs_file_readpage(struct file *file, struct page *page)
- {
- 	struct afs_vnode *vnode;
- 	struct inode *inode;
++ * remove a file from an AFS filesystem
++ */
++static int afs_unlink(struct inode *dir, struct dentry *dentry)
++{
++	struct afs_vnode *dvnode, *vnode;
 +	struct key *key;
- 	size_t len;
- 	off_t offset;
- 	int ret;
- 
- 	inode = page->mapping->host;
- 
--	_enter("{%lu},{%lu}", inode->i_ino, page->index);
-+	ASSERT(file != NULL);
-+	key = file->private_data;
-+	ASSERT(key != NULL);
++	int ret;
 +
-+	_enter("{%x},{%lu},{%lu}", key_serial(key), inode->i_ino, page->index);
++	dvnode = AFS_FS_I(dir);
++
++	_enter("{%x:%d},{%s}",
++	       dvnode->fid.vid, dvnode->fid.vnode, dentry->d_name.name);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	if (dentry->d_inode) {
++		vnode = AFS_FS_I(dentry->d_inode);
++
++		/* make sure we have a callback promise on the victim */
++		ret = afs_validate(vnode, key);
++		if (ret < 0)
++			goto error;
++	}
++
++	ret = afs_vnode_remove(dvnode, key, dentry->d_name.name, false);
++	if (ret < 0)
++		goto remove_error;
++
++	if (dentry->d_inode) {
++		/* if the file wasn't deleted due to excess hard links, the
++		 * fileserver will break the callback promise on the file - if
++		 * it had one - before it returns to us, and if it was deleted,
++		 * it won't
++		 *
++		 * however, if we didn't have a callback promise outstanding,
++		 * or it was outstanding on a different server, then it won't
++		 * break it either...
++		 */
++		vnode = AFS_FS_I(dentry->d_inode);
++		if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
++			_debug("AFS_VNODE_DELETED");
++		if (test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags))
++			_debug("AFS_VNODE_CB_BROKEN");
++		set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
++		ret = afs_validate(vnode, key);
++		_debug("nlink %d [val %d]", vnode->vfs_inode.i_nlink, ret);
++	}
++
++	key_put(key);
++	_leave(" = 0");
++	return 0;
++
++remove_error:
++	key_put(key);
++error:
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * create a regular file on an AFS filesystem
++ */
++static int afs_create(struct inode *dir, struct dentry *dentry, int mode,
++		      struct nameidata *nd)
++{
++	struct afs_file_status status;
++	struct afs_callback cb;
++	struct afs_server *server;
++	struct afs_vnode *dvnode, *vnode;
++	struct afs_fid fid;
++	struct inode *inode;
++	struct key *key;
++	int ret;
++
++	dvnode = AFS_FS_I(dir);
++
++	_enter("{%x:%d},{%s},%o,",
++	       dvnode->fid.vid, dvnode->fid.vnode, dentry->d_name.name, mode);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	mode |= S_IFREG;
++	ret = afs_vnode_create(dvnode, key, dentry->d_name.name,
++			       mode, &fid, &status, &cb, &server);
++	if (ret < 0)
++		goto create_error;
++
++	inode = afs_iget(dir->i_sb, key, &fid, &status, &cb);
++	if (IS_ERR(inode)) {
++		/* ENOMEM at a really inconvenient time - just abandon the new
++		 * directory on the server */
++		ret = PTR_ERR(inode);
++		goto iget_error;
++	}
++
++	/* apply the status report we've got for the new vnode */
++	vnode = AFS_FS_I(inode);
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++	afs_vnode_finalise_status_update(vnode, server);
++	afs_put_server(server);
++
++	d_instantiate(dentry, inode);
++	if (d_unhashed(dentry)) {
++		_debug("not hashed");
++		d_rehash(dentry);
++	}
++	key_put(key);
++	_leave(" = 0");
++	return 0;
++
++iget_error:
++	afs_put_server(server);
++create_error:
++	key_put(key);
++error:
++	d_drop(dentry);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * create a hard link between files in an AFS filesystem
++ */
++static int afs_link(struct dentry *from, struct inode *dir,
++		    struct dentry *dentry)
++{
++	struct afs_vnode *dvnode, *vnode;
++	struct key *key;
++	int ret;
++
++	vnode = AFS_FS_I(from->d_inode);
++	dvnode = AFS_FS_I(dir);
++
++	_enter("{%x:%d},{%x:%d},{%s}",
++	       vnode->fid.vid, vnode->fid.vnode,
++	       dvnode->fid.vid, dvnode->fid.vnode,
++	       dentry->d_name.name);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	ret = afs_vnode_link(dvnode, vnode, key, dentry->d_name.name);
++	if (ret < 0)
++		goto link_error;
++
++	atomic_inc(&vnode->vfs_inode.i_count);
++	d_instantiate(dentry, &vnode->vfs_inode);
++	key_put(key);
++	_leave(" = 0");
++	return 0;
++
++link_error:
++	key_put(key);
++error:
++	d_drop(dentry);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * create a symlink in an AFS filesystem
++ */
++static int afs_symlink(struct inode *dir, struct dentry *dentry,
++		       const char *content)
++{
++	struct afs_file_status status;
++	struct afs_server *server;
++	struct afs_vnode *dvnode, *vnode;
++	struct afs_fid fid;
++	struct inode *inode;
++	struct key *key;
++	int ret;
++
++	dvnode = AFS_FS_I(dir);
++
++	_enter("{%x:%d},{%s},%s",
++	       dvnode->fid.vid, dvnode->fid.vnode, dentry->d_name.name,
++	       content);
++
++	ret = -ENAMETOOLONG;
++	if (dentry->d_name.len > 255)
++		goto error;
++
++	ret = -EINVAL;
++	if (strlen(content) > 1023)
++		goto error;
++
++	key = afs_request_key(dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	ret = afs_vnode_symlink(dvnode, key, dentry->d_name.name, content,
++				&fid, &status, &server);
++	if (ret < 0)
++		goto create_error;
++
++	inode = afs_iget(dir->i_sb, key, &fid, &status, NULL);
++	if (IS_ERR(inode)) {
++		/* ENOMEM at a really inconvenient time - just abandon the new
++		 * directory on the server */
++		ret = PTR_ERR(inode);
++		goto iget_error;
++	}
++
++	/* apply the status report we've got for the new vnode */
++	vnode = AFS_FS_I(inode);
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++	afs_vnode_finalise_status_update(vnode, server);
++	afs_put_server(server);
++
++	d_instantiate(dentry, inode);
++	if (d_unhashed(dentry)) {
++		_debug("not hashed");
++		d_rehash(dentry);
++	}
++	key_put(key);
++	_leave(" = 0");
++	return 0;
++
++iget_error:
++	afs_put_server(server);
++create_error:
++	key_put(key);
++error:
++	d_drop(dentry);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
++ * rename a file in an AFS filesystem and/or move it between directories
++ */
++static int afs_rename(struct inode *old_dir, struct dentry *old_dentry,
++		      struct inode *new_dir, struct dentry *new_dentry)
++{
++	struct afs_vnode *orig_dvnode, *new_dvnode, *vnode;
++	struct key *key;
++	int ret;
++
++	vnode = AFS_FS_I(old_dentry->d_inode);
++	orig_dvnode = AFS_FS_I(old_dir);
++	new_dvnode = AFS_FS_I(new_dir);
++
++	_enter("{%x:%d},{%x:%d},{%x:%d},{%s}",
++	       orig_dvnode->fid.vid, orig_dvnode->fid.vnode,
++	       vnode->fid.vid, vnode->fid.vnode,
++	       new_dvnode->fid.vid, new_dvnode->fid.vnode,
++	       new_dentry->d_name.name);
++
++	ret = -ENAMETOOLONG;
++	if (new_dentry->d_name.len > 255)
++		goto error;
++
++	key = afs_request_key(orig_dvnode->volume->cell);
++	if (IS_ERR(key)) {
++		ret = PTR_ERR(key);
++		goto error;
++	}
++
++	ret = afs_vnode_rename(orig_dvnode, new_dvnode, key,
++			       old_dentry->d_name.name,
++			       new_dentry->d_name.name);
++	if (ret < 0)
++		goto rename_error;
++	key_put(key);
++	_leave(" = 0");
++	return 0;
++
++rename_error:
++	key_put(key);
++error:
++	d_drop(new_dentry);
++	_leave(" = %d", ret);
++	return ret;
++}
+diff --git a/fs/afs/file.c b/fs/afs/file.c
+index 101bbb8..59cd955 100644
+--- a/fs/afs/file.c
++++ b/fs/afs/file.c
+@@ -50,6 +50,7 @@ int afs_open(struct inode *inode, struct file *file)
+ {
+ 	struct afs_vnode *vnode = AFS_FS_I(inode);
+ 	struct key *key;
++	int ret;
  
- 	vnode = AFS_FS_I(inode);
+ 	_enter("{%x:%x},", vnode->fid.vid, vnode->fid.vnode);
  
-@@ -124,7 +170,7 @@ static int afs_file_readpage(struct file *file, struct page *page)
+@@ -58,6 +59,12 @@ int afs_open(struct inode *inode, struct file *file)
+ 		_leave(" = %ld [key]", PTR_ERR(key));
+ 		return PTR_ERR(key);
+ 	}
++	
++	ret = afs_validate(vnode, key);
++	if (ret < 0) {
++		_leave(" = %d [val]", ret);
++		return ret;
++	}
  
- 		/* read the contents of the file from the server into the
- 		 * page */
--		ret = afs_vnode_fetch_data(vnode, offset, len, page);
-+		ret = afs_vnode_fetch_data(vnode, key, offset, len, page);
- 		if (ret < 0) {
- 			if (ret == -ENOENT) {
- 				_debug("got NOENT from server"
+ 	file->private_data = key;
+ 	_leave(" = 0");
 diff --git a/fs/afs/fsclient.c b/fs/afs/fsclient.c
-index 167ca61..321b489 100644
+index 321b489..f036b4c 100644
 --- a/fs/afs/fsclient.c
 +++ b/fs/afs/fsclient.c
-@@ -148,6 +148,7 @@ static int afs_deliver_fs_fetch_status(struct afs_call *call,
-  * FS.FetchStatus operation type
+@@ -16,14 +16,28 @@
+ #include "afs_fs.h"
+ 
+ /*
++ * decode an AFSFid block
++ */
++static void xdr_decode_AFSFid(const __be32 **_bp, struct afs_fid *fid)
++{
++	const __be32 *bp = *_bp;
++
++	fid->vid		= ntohl(*bp++);
++	fid->vnode		= ntohl(*bp++);
++	fid->unique		= ntohl(*bp++);
++	*_bp = bp;
++}
++
++/*
+  * decode an AFSFetchStatus block
   */
- static const struct afs_call_type afs_RXFSFetchStatus = {
-+	.name		= "FS.FetchStatus",
- 	.deliver	= afs_deliver_fs_fetch_status,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_flat_call_destructor,
-@@ -157,6 +158,7 @@ static const struct afs_call_type afs_RXFSFetchStatus = {
-  * fetch the status information for a file
+ static void xdr_decode_AFSFetchStatus(const __be32 **_bp,
++				      struct afs_file_status *status,
+ 				      struct afs_vnode *vnode)
+ {
+ 	const __be32 *bp = *_bp;
+ 	umode_t mode;
+-	u64 data_version;
++	u64 data_version, size;
+ 	u32 changed = 0; /* becomes non-zero if ctime-type changes seen */
+ 
+ #define EXTRACT(DST)				\
+@@ -33,55 +47,68 @@ static void xdr_decode_AFSFetchStatus(const __be32 **_bp,
+ 		DST = x;			\
+ 	} while (0)
+ 
+-	vnode->status.if_version = ntohl(*bp++);
+-	EXTRACT(vnode->status.type);
+-	vnode->status.nlink = ntohl(*bp++);
+-	EXTRACT(vnode->status.size);
++	status->if_version = ntohl(*bp++);
++	EXTRACT(status->type);
++	EXTRACT(status->nlink);
++	size = ntohl(*bp++);
+ 	data_version = ntohl(*bp++);
+-	EXTRACT(vnode->status.author);
+-	EXTRACT(vnode->status.owner);
+-	EXTRACT(vnode->status.caller_access); /* call ticket dependent */
+-	EXTRACT(vnode->status.anon_access);
+-	EXTRACT(vnode->status.mode);
+-	vnode->status.parent.vid = vnode->fid.vid;
+-	EXTRACT(vnode->status.parent.vnode);
+-	EXTRACT(vnode->status.parent.unique);
++	EXTRACT(status->author);
++	EXTRACT(status->owner);
++	EXTRACT(status->caller_access); /* call ticket dependent */
++	EXTRACT(status->anon_access);
++	EXTRACT(status->mode);
++	EXTRACT(status->parent.vnode);
++	EXTRACT(status->parent.unique);
+ 	bp++; /* seg size */
+-	vnode->status.mtime_client = ntohl(*bp++);
+-	vnode->status.mtime_server = ntohl(*bp++);
+-	bp++; /* group */
++	status->mtime_client = ntohl(*bp++);
++	status->mtime_server = ntohl(*bp++);
++	EXTRACT(status->group);
+ 	bp++; /* sync counter */
+ 	data_version |= (u64) ntohl(*bp++) << 32;
+-	bp++; /* spare2 */
+-	bp++; /* spare3 */
+-	bp++; /* spare4 */
++	bp++; /* lock count */
++	size |= (u64) ntohl(*bp++) << 32;
++	bp++; /* spare 4 */
+ 	*_bp = bp;
+ 
+-	if (changed) {
+-		_debug("vnode changed");
+-		set_bit(AFS_VNODE_CHANGED, &vnode->flags);
+-		vnode->vfs_inode.i_uid		= vnode->status.owner;
+-		vnode->vfs_inode.i_size		= vnode->status.size;
+-		vnode->vfs_inode.i_version	= vnode->fid.unique;
+-
+-		vnode->status.mode &= S_IALLUGO;
+-		mode = vnode->vfs_inode.i_mode;
+-		mode &= ~S_IALLUGO;
+-		mode |= vnode->status.mode;
+-		vnode->vfs_inode.i_mode = mode;
++	if (size != status->size) {
++		status->size = size;
++		changed |= true;
+ 	}
++	status->mode &= S_IALLUGO;
+ 
+ 	_debug("vnode time %lx, %lx",
+-	       vnode->status.mtime_client, vnode->status.mtime_server);
+-	vnode->vfs_inode.i_ctime.tv_sec	= vnode->status.mtime_server;
+-	vnode->vfs_inode.i_mtime	= vnode->vfs_inode.i_ctime;
+-	vnode->vfs_inode.i_atime	= vnode->vfs_inode.i_ctime;
+-
+-	if (vnode->status.data_version != data_version) {
+-		_debug("vnode modified %llx", data_version);
+-		vnode->status.data_version = data_version;
+-		set_bit(AFS_VNODE_MODIFIED, &vnode->flags);
+-		set_bit(AFS_VNODE_ZAP_DATA, &vnode->flags);
++	       status->mtime_client, status->mtime_server);
++
++	if (vnode) {
++		status->parent.vid = vnode->fid.vid;
++		if (changed && !test_bit(AFS_VNODE_UNSET, &vnode->flags)) {
++			_debug("vnode changed");
++			i_size_write(&vnode->vfs_inode, size);
++			vnode->vfs_inode.i_uid = status->owner;
++			vnode->vfs_inode.i_gid = status->group;
++			vnode->vfs_inode.i_version = vnode->fid.unique;
++			vnode->vfs_inode.i_nlink = status->nlink;
++
++			mode = vnode->vfs_inode.i_mode;
++			mode &= ~S_IALLUGO;
++			mode |= status->mode;
++			barrier();
++			vnode->vfs_inode.i_mode = mode;
++		}
++
++		vnode->vfs_inode.i_ctime.tv_sec	= status->mtime_server;
++		vnode->vfs_inode.i_mtime	= vnode->vfs_inode.i_ctime;
++		vnode->vfs_inode.i_atime	= vnode->vfs_inode.i_ctime;
++	}
++
++	if (status->data_version != data_version) {
++		status->data_version = data_version;
++		if (vnode && !test_bit(AFS_VNODE_UNSET, &vnode->flags)) {
++			_debug("vnode modified %llx on {%x:%u}",
++			       data_version, vnode->fid.vid, vnode->fid.vnode);
++			set_bit(AFS_VNODE_MODIFIED, &vnode->flags);
++			set_bit(AFS_VNODE_ZAP_DATA, &vnode->flags);
++		}
+ 	}
+ }
+ 
+@@ -99,6 +126,17 @@ static void xdr_decode_AFSCallBack(const __be32 **_bp, struct afs_vnode *vnode)
+ 	*_bp = bp;
+ }
+ 
++static void xdr_decode_AFSCallBack_raw(const __be32 **_bp,
++				       struct afs_callback *cb)
++{
++	const __be32 *bp = *_bp;
++
++	cb->version	= ntohl(*bp++);
++	cb->expiry	= ntohl(*bp++);
++	cb->type	= ntohl(*bp++);
++	*_bp = bp;
++}
++
+ /*
+  * decode an AFSVolSync block
   */
- int afs_fs_fetch_file_status(struct afs_server *server,
-+			     struct key *key,
- 			     struct afs_vnode *vnode,
- 			     struct afs_volsync *volsync,
- 			     const struct afs_wait_mode *wait_mode)
-@@ -164,12 +166,13 @@ int afs_fs_fetch_file_status(struct afs_server *server,
+@@ -122,6 +160,7 @@ static void xdr_decode_AFSVolSync(const __be32 **_bp,
+ static int afs_deliver_fs_fetch_status(struct afs_call *call,
+ 				       struct sk_buff *skb, bool last)
+ {
++	struct afs_vnode *vnode = call->reply;
+ 	const __be32 *bp;
+ 
+ 	_enter(",,%u", last);
+@@ -135,8 +174,8 @@ static int afs_deliver_fs_fetch_status(struct afs_call *call,
+ 
+ 	/* unmarshall the reply once we've received all of it */
+ 	bp = call->buffer;
+-	xdr_decode_AFSFetchStatus(&bp, call->reply);
+-	xdr_decode_AFSCallBack(&bp, call->reply);
++	xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++	xdr_decode_AFSCallBack(&bp, vnode);
+ 	if (call->reply2)
+ 		xdr_decode_AFSVolSync(&bp, call->reply2);
+ 
+@@ -166,9 +205,10 @@ int afs_fs_fetch_file_status(struct afs_server *server,
  	struct afs_call *call;
  	__be32 *bp;
  
--	_enter("");
-+	_enter(",%x,,,", key_serial(key));
+-	_enter(",%x,,,", key_serial(key));
++	_enter(",%x,{%x:%d},,",
++	       key_serial(key), vnode->fid.vid, vnode->fid.vnode);
  
- 	call = afs_alloc_flat_call(&afs_RXFSFetchStatus, 16, 120);
+-	call = afs_alloc_flat_call(&afs_RXFSFetchStatus, 16, 120);
++	call = afs_alloc_flat_call(&afs_RXFSFetchStatus, 16, (21 + 3 + 6) * 4);
  	if (!call)
  		return -ENOMEM;
  
-+	call->key = key;
- 	call->reply = vnode;
- 	call->reply2 = volsync;
- 	call->service_id = FS_SERVICE;
-@@ -279,6 +282,7 @@ static int afs_deliver_fs_fetch_data(struct afs_call *call,
-  * FS.FetchData operation type
-  */
- static const struct afs_call_type afs_RXFSFetchData = {
-+	.name		= "FS.FetchData",
- 	.deliver	= afs_deliver_fs_fetch_data,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_flat_call_destructor,
-@@ -288,6 +292,7 @@ static const struct afs_call_type afs_RXFSFetchData = {
-  * fetch data from a file
-  */
- int afs_fs_fetch_data(struct afs_server *server,
-+		      struct key *key,
+@@ -194,6 +234,7 @@ int afs_fs_fetch_file_status(struct afs_server *server,
+ static int afs_deliver_fs_fetch_data(struct afs_call *call,
+ 				     struct sk_buff *skb, bool last)
+ {
++	struct afs_vnode *vnode = call->reply;
+ 	const __be32 *bp;
+ 	struct page *page;
+ 	void *buffer;
+@@ -248,7 +289,8 @@ static int afs_deliver_fs_fetch_data(struct afs_call *call,
+ 
+ 		/* extract the metadata */
+ 	case 3:
+-		ret = afs_extract_data(call, skb, last, call->buffer, 120);
++		ret = afs_extract_data(call, skb, last, call->buffer,
++				       (21 + 3 + 6) * 4);
+ 		switch (ret) {
+ 		case 0:		break;
+ 		case -EAGAIN:	return 0;
+@@ -256,8 +298,8 @@ static int afs_deliver_fs_fetch_data(struct afs_call *call,
+ 		}
+ 
+ 		bp = call->buffer;
+-		xdr_decode_AFSFetchStatus(&bp, call->reply);
+-		xdr_decode_AFSCallBack(&bp, call->reply);
++		xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++		xdr_decode_AFSCallBack(&bp, vnode);
+ 		if (call->reply2)
+ 			xdr_decode_AFSVolSync(&bp, call->reply2);
+ 
+@@ -296,7 +338,6 @@ int afs_fs_fetch_data(struct afs_server *server,
  		      struct afs_vnode *vnode,
  		      off_t offset, size_t length,
  		      struct page *buffer,
-@@ -303,6 +308,7 @@ int afs_fs_fetch_data(struct afs_server *server,
+-		      struct afs_volsync *volsync,
+ 		      const struct afs_wait_mode *wait_mode)
+ {
+ 	struct afs_call *call;
+@@ -304,13 +345,13 @@ int afs_fs_fetch_data(struct afs_server *server,
+ 
+ 	_enter("");
+ 
+-	call = afs_alloc_flat_call(&afs_RXFSFetchData, 24, 120);
++	call = afs_alloc_flat_call(&afs_RXFSFetchData, 24, (21 + 3 + 6) * 4);
  	if (!call)
  		return -ENOMEM;
  
-+	call->key = key;
+ 	call->key = key;
  	call->reply = vnode;
- 	call->reply2 = volsync;
+-	call->reply2 = volsync;
++	call->reply2 = NULL; /* volsync */
  	call->reply3 = buffer;
-@@ -338,6 +344,7 @@ static int afs_deliver_fs_give_up_callbacks(struct afs_call *call,
-  * FS.GiveUpCallBacks operation type
-  */
- static const struct afs_call_type afs_RXFSGiveUpCallBacks = {
-+	.name		= "FS.GiveUpCallBacks",
- 	.deliver	= afs_deliver_fs_give_up_callbacks,
- 	.abort_to_error	= afs_abort_to_error,
- 	.destructor	= afs_flat_call_destructor,
+ 	call->service_id = FS_SERVICE;
+ 	call->port = htons(AFS_FS_PORT);
+@@ -411,3 +452,485 @@ int afs_fs_give_up_callbacks(struct afs_server *server,
+ 
+ 	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
+ }
++
++/*
++ * deliver reply data to an FS.CreateFile or an FS.MakeDir
++ */
++static int afs_deliver_fs_create_vnode(struct afs_call *call,
++				       struct sk_buff *skb, bool last)
++{
++	struct afs_vnode *vnode = call->reply;
++	const __be32 *bp;
++
++	_enter("{%u},{%u},%d", call->unmarshall, skb->len, last);
++
++	afs_transfer_reply(call, skb);
++	if (!last)
++		return 0;
++
++	if (call->reply_size != call->reply_max)
++		return -EBADMSG;
++
++	/* unmarshall the reply once we've received all of it */
++	bp = call->buffer;
++	xdr_decode_AFSFid(&bp, call->reply2);
++	xdr_decode_AFSFetchStatus(&bp, call->reply3, NULL);
++	xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++	xdr_decode_AFSCallBack_raw(&bp, call->reply4);
++	/* xdr_decode_AFSVolSync(&bp, call->replyX); */
++
++	_leave(" = 0 [done]");
++	return 0;
++}
++
++/*
++ * FS.CreateFile and FS.MakeDir operation type
++ */
++static const struct afs_call_type afs_RXFSCreateXXXX = {
++	.name		= "FS.CreateXXXX",
++	.deliver	= afs_deliver_fs_create_vnode,
++	.abort_to_error	= afs_abort_to_error,
++	.destructor	= afs_flat_call_destructor,
++};
++
++/*
++ * create a file or make a directory
++ */
++int afs_fs_create(struct afs_server *server,
++		  struct key *key,
++		  struct afs_vnode *vnode,
++		  const char *name,
++		  umode_t mode,
++		  struct afs_fid *newfid,
++		  struct afs_file_status *newstatus,
++		  struct afs_callback *newcb,
++		  const struct afs_wait_mode *wait_mode)
++{
++	struct afs_call *call;
++	size_t namesz, reqsz, padsz;
++	__be32 *bp;
++
++	_enter("");
++
++	namesz = strlen(name);
++	padsz = (4 - (namesz & 3)) & 3;
++	reqsz = (5 * 4) + namesz + padsz + (6 * 4);
++
++	call = afs_alloc_flat_call(&afs_RXFSCreateXXXX, reqsz,
++				   (3 + 21 + 21 + 3 + 6) * 4);
++	if (!call)
++		return -ENOMEM;
++
++	call->key = key;
++	call->reply = vnode;
++	call->reply2 = newfid;
++	call->reply3 = newstatus;
++	call->reply4 = newcb;
++	call->service_id = FS_SERVICE;
++	call->port = htons(AFS_FS_PORT);
++
++	/* marshall the parameters */
++	bp = call->request;
++	*bp++ = htonl(S_ISDIR(mode) ? FSMAKEDIR : FSCREATEFILE);
++	*bp++ = htonl(vnode->fid.vid);
++	*bp++ = htonl(vnode->fid.vnode);
++	*bp++ = htonl(vnode->fid.unique);
++	*bp++ = htonl(namesz);
++	memcpy(bp, name, namesz);
++	bp = (void *) bp + namesz;
++	if (padsz > 0) {
++		memset(bp, 0, padsz);
++		bp = (void *) bp + padsz;
++	}
++	*bp++ = htonl(AFS_SET_MODE);
++	*bp++ = 0; /* mtime */
++	*bp++ = 0; /* owner */
++	*bp++ = 0; /* group */
++	*bp++ = htonl(mode & S_IALLUGO); /* unix mode */
++	*bp++ = 0; /* segment size */
++
++	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
++}
++
++/*
++ * deliver reply data to an FS.RemoveFile or FS.RemoveDir
++ */
++static int afs_deliver_fs_remove(struct afs_call *call,
++				 struct sk_buff *skb, bool last)
++{
++	struct afs_vnode *vnode = call->reply;
++	const __be32 *bp;
++
++	_enter("{%u},{%u},%d", call->unmarshall, skb->len, last);
++
++	afs_transfer_reply(call, skb);
++	if (!last)
++		return 0;
++
++	if (call->reply_size != call->reply_max)
++		return -EBADMSG;
++
++	/* unmarshall the reply once we've received all of it */
++	bp = call->buffer;
++	xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++	/* xdr_decode_AFSVolSync(&bp, call->replyX); */
++
++	_leave(" = 0 [done]");
++	return 0;
++}
++
++/*
++ * FS.RemoveDir/FS.RemoveFile operation type
++ */
++static const struct afs_call_type afs_RXFSRemoveXXXX = {
++	.name		= "FS.RemoveXXXX",
++	.deliver	= afs_deliver_fs_remove,
++	.abort_to_error	= afs_abort_to_error,
++	.destructor	= afs_flat_call_destructor,
++};
++
++/*
++ * remove a file or directory
++ */
++int afs_fs_remove(struct afs_server *server,
++		  struct key *key,
++		  struct afs_vnode *vnode,
++		  const char *name,
++		  bool isdir,
++		  const struct afs_wait_mode *wait_mode)
++{
++	struct afs_call *call;
++	size_t namesz, reqsz, padsz;
++	__be32 *bp;
++
++	_enter("");
++
++	namesz = strlen(name);
++	padsz = (4 - (namesz & 3)) & 3;
++	reqsz = (5 * 4) + namesz + padsz;
++
++	call = afs_alloc_flat_call(&afs_RXFSRemoveXXXX, reqsz, (21 + 6) * 4);
++	if (!call)
++		return -ENOMEM;
++
++	call->key = key;
++	call->reply = vnode;
++	call->service_id = FS_SERVICE;
++	call->port = htons(AFS_FS_PORT);
++
++	/* marshall the parameters */
++	bp = call->request;
++	*bp++ = htonl(isdir ? FSREMOVEDIR : FSREMOVEFILE);
++	*bp++ = htonl(vnode->fid.vid);
++	*bp++ = htonl(vnode->fid.vnode);
++	*bp++ = htonl(vnode->fid.unique);
++	*bp++ = htonl(namesz);
++	memcpy(bp, name, namesz);
++	bp = (void *) bp + namesz;
++	if (padsz > 0) {
++		memset(bp, 0, padsz);
++		bp = (void *) bp + padsz;
++	}
++
++	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
++}
++
++/*
++ * deliver reply data to an FS.Link
++ */
++static int afs_deliver_fs_link(struct afs_call *call,
++			       struct sk_buff *skb, bool last)
++{
++	struct afs_vnode *dvnode = call->reply, *vnode = call->reply2;
++	const __be32 *bp;
++
++	_enter("{%u},{%u},%d", call->unmarshall, skb->len, last);
++
++	afs_transfer_reply(call, skb);
++	if (!last)
++		return 0;
++
++	if (call->reply_size != call->reply_max)
++		return -EBADMSG;
++
++	/* unmarshall the reply once we've received all of it */
++	bp = call->buffer;
++	xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++	xdr_decode_AFSFetchStatus(&bp, &dvnode->status, dvnode);
++	/* xdr_decode_AFSVolSync(&bp, call->replyX); */
++
++	_leave(" = 0 [done]");
++	return 0;
++}
++
++/*
++ * FS.Link operation type
++ */
++static const struct afs_call_type afs_RXFSLink = {
++	.name		= "FS.Link",
++	.deliver	= afs_deliver_fs_link,
++	.abort_to_error	= afs_abort_to_error,
++	.destructor	= afs_flat_call_destructor,
++};
++
++/*
++ * make a hard link
++ */
++int afs_fs_link(struct afs_server *server,
++		struct key *key,
++		struct afs_vnode *dvnode,
++		struct afs_vnode *vnode,
++		const char *name,
++		const struct afs_wait_mode *wait_mode)
++{
++	struct afs_call *call;
++	size_t namesz, reqsz, padsz;
++	__be32 *bp;
++
++	_enter("");
++
++	namesz = strlen(name);
++	padsz = (4 - (namesz & 3)) & 3;
++	reqsz = (5 * 4) + namesz + padsz + (3 * 4);
++
++	call = afs_alloc_flat_call(&afs_RXFSLink, reqsz, (21 + 21 + 6) * 4);
++	if (!call)
++		return -ENOMEM;
++
++	call->key = key;
++	call->reply = dvnode;
++	call->reply2 = vnode;
++	call->service_id = FS_SERVICE;
++	call->port = htons(AFS_FS_PORT);
++
++	/* marshall the parameters */
++	bp = call->request;
++	*bp++ = htonl(FSLINK);
++	*bp++ = htonl(dvnode->fid.vid);
++	*bp++ = htonl(dvnode->fid.vnode);
++	*bp++ = htonl(dvnode->fid.unique);
++	*bp++ = htonl(namesz);
++	memcpy(bp, name, namesz);
++	bp = (void *) bp + namesz;
++	if (padsz > 0) {
++		memset(bp, 0, padsz);
++		bp = (void *) bp + padsz;
++	}
++	*bp++ = htonl(vnode->fid.vid);
++	*bp++ = htonl(vnode->fid.vnode);
++	*bp++ = htonl(vnode->fid.unique);
++
++	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
++}
++
++/*
++ * deliver reply data to an FS.Symlink
++ */
++static int afs_deliver_fs_symlink(struct afs_call *call,
++				  struct sk_buff *skb, bool last)
++{
++	struct afs_vnode *vnode = call->reply;
++	const __be32 *bp;
++
++	_enter("{%u},{%u},%d", call->unmarshall, skb->len, last);
++
++	afs_transfer_reply(call, skb);
++	if (!last)
++		return 0;
++
++	if (call->reply_size != call->reply_max)
++		return -EBADMSG;
++
++	/* unmarshall the reply once we've received all of it */
++	bp = call->buffer;
++	xdr_decode_AFSFid(&bp, call->reply2);
++	xdr_decode_AFSFetchStatus(&bp, call->reply3, NULL);
++	xdr_decode_AFSFetchStatus(&bp, &vnode->status, vnode);
++	/* xdr_decode_AFSVolSync(&bp, call->replyX); */
++
++	_leave(" = 0 [done]");
++	return 0;
++}
++
++/*
++ * FS.Symlink operation type
++ */
++static const struct afs_call_type afs_RXFSSymlink = {
++	.name		= "FS.Symlink",
++	.deliver	= afs_deliver_fs_symlink,
++	.abort_to_error	= afs_abort_to_error,
++	.destructor	= afs_flat_call_destructor,
++};
++
++/*
++ * create a symbolic link
++ */
++int afs_fs_symlink(struct afs_server *server,
++		   struct key *key,
++		   struct afs_vnode *vnode,
++		   const char *name,
++		   const char *contents,
++		   struct afs_fid *newfid,
++		   struct afs_file_status *newstatus,
++		   const struct afs_wait_mode *wait_mode)
++{
++	struct afs_call *call;
++	size_t namesz, reqsz, padsz, c_namesz, c_padsz;
++	__be32 *bp;
++
++	_enter("");
++
++	namesz = strlen(name);
++	padsz = (4 - (namesz & 3)) & 3;
++
++	c_namesz = strlen(contents);
++	c_padsz = (4 - (c_namesz & 3)) & 3;
++
++	reqsz = (6 * 4) + namesz + padsz + c_namesz + c_padsz + (6 * 4);
++
++	call = afs_alloc_flat_call(&afs_RXFSSymlink, reqsz,
++				   (3 + 21 + 21 + 6) * 4);
++	if (!call)
++		return -ENOMEM;
++
++	call->key = key;
++	call->reply = vnode;
++	call->reply2 = newfid;
++	call->reply3 = newstatus;
++	call->service_id = FS_SERVICE;
++	call->port = htons(AFS_FS_PORT);
++
++	/* marshall the parameters */
++	bp = call->request;
++	*bp++ = htonl(FSSYMLINK);
++	*bp++ = htonl(vnode->fid.vid);
++	*bp++ = htonl(vnode->fid.vnode);
++	*bp++ = htonl(vnode->fid.unique);
++	*bp++ = htonl(namesz);
++	memcpy(bp, name, namesz);
++	bp = (void *) bp + namesz;
++	if (padsz > 0) {
++		memset(bp, 0, padsz);
++		bp = (void *) bp + padsz;
++	}
++	*bp++ = htonl(c_namesz);
++	memcpy(bp, contents, c_namesz);
++	bp = (void *) bp + c_namesz;
++	if (c_padsz > 0) {
++		memset(bp, 0, c_padsz);
++		bp = (void *) bp + c_padsz;
++	}
++	*bp++ = htonl(AFS_SET_MODE);
++	*bp++ = 0; /* mtime */
++	*bp++ = 0; /* owner */
++	*bp++ = 0; /* group */
++	*bp++ = htonl(S_IRWXUGO); /* unix mode */
++	*bp++ = 0; /* segment size */
++
++	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
++}
++
++/*
++ * deliver reply data to an FS.Rename
++ */
++static int afs_deliver_fs_rename(struct afs_call *call,
++				  struct sk_buff *skb, bool last)
++{
++	struct afs_vnode *orig_dvnode = call->reply, *new_dvnode = call->reply2;
++	const __be32 *bp;
++
++	_enter("{%u},{%u},%d", call->unmarshall, skb->len, last);
++
++	afs_transfer_reply(call, skb);
++	if (!last)
++		return 0;
++
++	if (call->reply_size != call->reply_max)
++		return -EBADMSG;
++
++	/* unmarshall the reply once we've received all of it */
++	bp = call->buffer;
++	xdr_decode_AFSFetchStatus(&bp, &orig_dvnode->status, orig_dvnode);
++	if (new_dvnode != orig_dvnode)
++		xdr_decode_AFSFetchStatus(&bp, &new_dvnode->status, new_dvnode);
++	/* xdr_decode_AFSVolSync(&bp, call->replyX); */
++
++	_leave(" = 0 [done]");
++	return 0;
++}
++
++/*
++ * FS.Rename operation type
++ */
++static const struct afs_call_type afs_RXFSRename = {
++	.name		= "FS.Rename",
++	.deliver	= afs_deliver_fs_rename,
++	.abort_to_error	= afs_abort_to_error,
++	.destructor	= afs_flat_call_destructor,
++};
++
++/*
++ * create a symbolic link
++ */
++int afs_fs_rename(struct afs_server *server,
++		  struct key *key,
++		  struct afs_vnode *orig_dvnode,
++		  const char *orig_name,
++		  struct afs_vnode *new_dvnode,
++		  const char *new_name,
++		  const struct afs_wait_mode *wait_mode)
++{
++	struct afs_call *call;
++	size_t reqsz, o_namesz, o_padsz, n_namesz, n_padsz;
++	__be32 *bp;
++
++	_enter("");
++
++	o_namesz = strlen(orig_name);
++	o_padsz = (4 - (o_namesz & 3)) & 3;
++
++	n_namesz = strlen(new_name);
++	n_padsz = (4 - (n_namesz & 3)) & 3;
++
++	reqsz = (4 * 4) +
++		4 + o_namesz + o_padsz +
++		(3 * 4) +
++		4 + n_namesz + n_padsz;
++
++	call = afs_alloc_flat_call(&afs_RXFSRename, reqsz, (21 + 21 + 6) * 4);
++	if (!call)
++		return -ENOMEM;
++
++	call->key = key;
++	call->reply = orig_dvnode;
++	call->reply2 = new_dvnode;
++	call->service_id = FS_SERVICE;
++	call->port = htons(AFS_FS_PORT);
++
++	/* marshall the parameters */
++	bp = call->request;
++	*bp++ = htonl(FSRENAME);
++	*bp++ = htonl(orig_dvnode->fid.vid);
++	*bp++ = htonl(orig_dvnode->fid.vnode);
++	*bp++ = htonl(orig_dvnode->fid.unique);
++	*bp++ = htonl(o_namesz);
++	memcpy(bp, orig_name, o_namesz);
++	bp = (void *) bp + o_namesz;
++	if (o_padsz > 0) {
++		memset(bp, 0, o_padsz);
++		bp = (void *) bp + o_padsz;
++	}
++
++	*bp++ = htonl(new_dvnode->fid.vid);
++	*bp++ = htonl(new_dvnode->fid.vnode);
++	*bp++ = htonl(new_dvnode->fid.unique);
++	*bp++ = htonl(n_namesz);
++	memcpy(bp, new_name, n_namesz);
++	bp = (void *) bp + n_namesz;
++	if (n_padsz > 0) {
++		memset(bp, 0, n_padsz);
++		bp = (void *) bp + n_padsz;
++	}
++
++	return afs_make_call(&server->addr, call, GFP_NOFS, wait_mode);
++}
 diff --git a/fs/afs/inode.c b/fs/afs/inode.c
-index 1886331..2273362 100644
+index 2273362..56ca858 100644
 --- a/fs/afs/inode.c
 +++ b/fs/afs/inode.c
-@@ -29,7 +29,7 @@ struct afs_iget_data {
- /*
-  * map the AFS file status to the inode member variables
-  */
--static int afs_inode_map_status(struct afs_vnode *vnode)
-+static int afs_inode_map_status(struct afs_vnode *vnode, struct key *key)
+@@ -33,7 +33,7 @@ static int afs_inode_map_status(struct afs_vnode *vnode, struct key *key)
  {
  	struct inode *inode = AFS_VNODE_TO_I(vnode);
  
-@@ -44,7 +44,7 @@ static int afs_inode_map_status(struct afs_vnode *vnode)
- 	case AFS_FTYPE_FILE:
- 		inode->i_mode	= S_IFREG | vnode->status.mode;
- 		inode->i_op	= &afs_file_inode_operations;
--		inode->i_fop	= &generic_ro_fops;
-+		inode->i_fop	= &afs_file_operations;
- 		break;
- 	case AFS_FTYPE_DIR:
- 		inode->i_mode	= S_IFDIR | vnode->status.mode;
-@@ -73,7 +73,7 @@ static int afs_inode_map_status(struct afs_vnode *vnode)
- 
- 	/* check to see whether a symbolic link is really a mountpoint */
- 	if (vnode->status.type == AFS_FTYPE_SYMLINK) {
--		afs_mntpt_check_symlink(vnode);
-+		afs_mntpt_check_symlink(vnode, key);
- 
- 		if (test_bit(AFS_VNODE_MOUNTPOINT, &vnode->flags)) {
- 			inode->i_mode	= S_IFDIR | vnode->status.mode;
-@@ -115,7 +115,8 @@ static int afs_iget5_set(struct inode *inode, void *opaque)
+-	_debug("FS: ft=%d lk=%d sz=%Zu ver=%Lu mod=%hu",
++	_debug("FS: ft=%d lk=%d sz=%llu ver=%Lu mod=%hu",
+ 	       vnode->status.type,
+ 	       vnode->status.nlink,
+ 	       vnode->status.size,
+@@ -115,8 +115,9 @@ static int afs_iget5_set(struct inode *inode, void *opaque)
  /*
   * inode retrieval
   */
--inline struct inode *afs_iget(struct super_block *sb, struct afs_fid *fid)
-+inline struct inode *afs_iget(struct super_block *sb, struct key *key,
-+			      struct afs_fid *fid)
+-inline struct inode *afs_iget(struct super_block *sb, struct key *key,
+-			      struct afs_fid *fid)
++struct inode *afs_iget(struct super_block *sb, struct key *key,
++		       struct afs_fid *fid, struct afs_file_status *status,
++		       struct afs_callback *cb)
  {
  	struct afs_iget_data data = { .fid = *fid };
  	struct afs_super_info *as;
-@@ -157,10 +158,10 @@ inline struct inode *afs_iget(struct super_block *sb, struct afs_fid *fid)
+@@ -156,16 +157,37 @@ inline struct inode *afs_iget(struct super_block *sb, struct key *key,
+ 			       &vnode->cache);
+ #endif
  
- 	/* okay... it's a new inode */
- 	set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
--	ret = afs_vnode_fetch_status(vnode);
-+	ret = afs_vnode_fetch_status(vnode, NULL, key);
+-	/* okay... it's a new inode */
+-	set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
+-	ret = afs_vnode_fetch_status(vnode, NULL, key);
+-	if (ret < 0)
+-		goto bad_inode;
++	if (!status) {
++		/* it's a remotely extant inode */
++		set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
++		ret = afs_vnode_fetch_status(vnode, NULL, key);
++		if (ret < 0)
++			goto bad_inode;
++	} else {
++		/* it's an inode we just created */
++		memcpy(&vnode->status, status, sizeof(vnode->status));
++
++		if (!cb) {
++			/* it's a symlink we just created (the fileserver
++			 * didn't give us a callback) */
++			vnode->cb_version = 0;
++			vnode->cb_expiry = 0;
++			vnode->cb_type = 0;
++			vnode->cb_expires = get_seconds();
++		} else {
++			vnode->cb_version = cb->version;
++			vnode->cb_expiry = cb->expiry;
++			vnode->cb_type = cb->type;
++			vnode->cb_expires = vnode->cb_expiry + get_seconds();
++		}
++	}
++
+ 	ret = afs_inode_map_status(vnode, key);
  	if (ret < 0)
  		goto bad_inode;
--	ret = afs_inode_map_status(vnode);
-+	ret = afs_inode_map_status(vnode, key);
- 	if (ret < 0)
- 		goto bad_inode;
  
-@@ -201,6 +202,7 @@ int afs_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
+ 	/* success */
++	clear_bit(AFS_VNODE_UNSET, &vnode->flags);
+ 	inode->i_flags |= S_NOATIME;
+ 	unlock_new_inode(inode);
+ 	_leave(" = %p [CB { v=%u t=%u }]", inode, vnode->cb_version, vnode->cb_type);
+@@ -182,6 +204,78 @@ bad_inode:
+ }
+ 
+ /*
++ * validate a vnode/inode
++ * - there are several things we need to check
++ *   - parent dir data changes (rm, rmdir, rename, mkdir, create, link,
++ *     symlink)
++ *   - parent dir metadata changed (security changes)
++ *   - dentry data changed (write, truncate)
++ *   - dentry metadata changed (security changes)
++ */
++int afs_validate(struct afs_vnode *vnode, struct key *key)
++{
++	int ret;
++
++	_enter("{v={%x:%u} fl=%lx},%x",
++	       vnode->fid.vid, vnode->fid.vnode, vnode->flags,
++	       key_serial(key));
++
++	if (vnode->cb_promised &&
++	    !test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags) &&
++	    !test_bit(AFS_VNODE_MODIFIED, &vnode->flags) &&
++	    !test_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
++		if (vnode->cb_expires < get_seconds() + 10) {
++			_debug("callback expired");
++			set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
++		} else {
++			goto valid;
++		}
++	}
++
++	if (test_bit(AFS_VNODE_DELETED, &vnode->flags))
++		goto valid;
++
++	mutex_lock(&vnode->validate_lock);
++
++	/* if the promise has expired, we need to check the server again to get
++	 * a new promise - note that if the (parent) directory's metadata was
++	 * changed then the security may be different and we may no longer have
++	 * access */
++	if (!vnode->cb_promised ||
++	    test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags)) {
++		_debug("not promised");
++		ret = afs_vnode_fetch_status(vnode, NULL, key);
++		if (ret < 0)
++			goto error_unlock;
++		_debug("new promise [fl=%lx]", vnode->flags);
++	}
++
++	if (test_bit(AFS_VNODE_DELETED, &vnode->flags)) {
++		_debug("file already deleted");
++		ret = -ESTALE;
++		goto error_unlock;
++	}
++
++	/* if the vnode's data version number changed then its contents are
++	 * different */
++	if (test_and_clear_bit(AFS_VNODE_ZAP_DATA, &vnode->flags)) {
++		_debug("zap data {%x:%d}", vnode->fid.vid, vnode->fid.vnode);
++		invalidate_remote_inode(&vnode->vfs_inode);
++	}
++
++	clear_bit(AFS_VNODE_MODIFIED, &vnode->flags);
++	mutex_unlock(&vnode->validate_lock);
++valid:
++	_leave(" = 0");
++	return 0;
++
++error_unlock:
++	mutex_unlock(&vnode->validate_lock);
++	_leave(" = %d", ret);
++	return ret;
++}
++
++/*
+  * read the attributes of an inode
   */
- void afs_clear_inode(struct inode *inode)
- {
-+	struct afs_permits *permits;
- 	struct afs_vnode *vnode;
+ int afs_inode_getattr(struct vfsmount *mnt, struct dentry *dentry,
+@@ -207,9 +301,10 @@ void afs_clear_inode(struct inode *inode)
  
  	vnode = AFS_FS_I(inode);
-@@ -233,5 +235,12 @@ void afs_clear_inode(struct inode *inode)
- 	vnode->cache = NULL;
- #endif
  
-+	mutex_lock(&vnode->permits_lock);
-+	permits = vnode->permits;
-+	rcu_assign_pointer(vnode->permits, NULL);
-+	mutex_unlock(&vnode->permits_lock);
-+	if (permits)
-+		call_rcu(&permits->rcu, afs_zap_permits);
-+
- 	_leave("");
- }
+-	_enter("ino=%lu { vn=%08x v=%u x=%u t=%u }",
+-	       inode->i_ino,
++	_enter("{%x:%d.%d} v=%u x=%u t=%u }",
++	       vnode->fid.vid,
+ 	       vnode->fid.vnode,
++	       vnode->fid.unique,
+ 	       vnode->cb_version,
+ 	       vnode->cb_expiry,
+ 	       vnode->cb_type);
 diff --git a/fs/afs/internal.h b/fs/afs/internal.h
-index afc6f0f..8bed242 100644
+index 6120d4b..73bfa0b 100644
 --- a/fs/afs/internal.h
 +++ b/fs/afs/internal.h
-@@ -15,6 +15,7 @@
- #include <linux/pagemap.h>
- #include <linux/skbuff.h>
- #include <linux/rxrpc.h>
-+#include <linux/key.h>
- #include "afs.h"
- #include "afs_vl.h"
- 
-@@ -32,6 +33,17 @@ typedef enum {
- 	AFS_VL_UNCERTAIN,		/* uncertain state (update failed) */
- } __attribute__((packed)) afs_vlocation_state_t;
- 
-+struct afs_mount_params {
-+	bool			rwpath;		/* T if the parent should be considered R/W */
-+	bool			force;		/* T to force cell type */
-+	afs_voltype_t		type;		/* type of volume requested */
-+	int			volnamesz;	/* size of volume name */
-+	const char		*volname;	/* name of volume to mount */
-+	struct afs_cell		*cell;		/* cell in which to find volume */
-+	struct afs_volume	*volume;	/* volume record */
-+	struct key		*key;		/* key to use for secure mounting */
-+};
-+
- /*
-  * definition of how to wait for the completion of an operation
-  */
-@@ -95,6 +107,8 @@ struct afs_call {
- };
- 
- struct afs_call_type {
-+	const char *name;
-+
- 	/* deliver request or reply data to an call
- 	 * - returning an error will cause the call to be aborted
- 	 */
-@@ -128,8 +142,8 @@ extern struct file_system_type afs_fs_type;
-  * entry in the cached cell catalogue
-  */
- struct afs_cache_cell {
--	char			name[64];	/* cell name (padded with NULs) */
--	struct in_addr		vl_servers[15];	/* cached cell VL servers */
-+	char		name[AFS_MAXCELLNAME];	/* cell name (padded with NULs) */
-+	struct in_addr	vl_servers[15];		/* cached cell VL servers */
- };
- 
- /*
-@@ -138,6 +152,7 @@ struct afs_cache_cell {
- struct afs_cell {
- 	atomic_t		usage;
- 	struct list_head	link;		/* main cell list link */
-+	struct key		*anonymous_key;	/* anonymous user key for this cell */
- 	struct list_head	proc_link;	/* /proc cell list link */
- 	struct proc_dir_entry	*proc_dir;	/* /proc dir for this cell */
- #ifdef AFS_CACHING_SUPPORT
-@@ -163,7 +178,9 @@ struct afs_cell {
-  * entry in the cached volume location catalogue
-  */
- struct afs_cache_vlocation {
--	uint8_t			name[64 + 1];	/* volume name (lowercase, padded with NULs) */
-+	/* volume name (lowercase, padded with NULs) */
-+	uint8_t			name[AFS_MAXVOLNAME + 1];
-+
- 	uint8_t			nservers;	/* number of entries used in servers[] */
- 	uint8_t			vidmask;	/* voltype mask for vid[] */
- 	uint8_t			srvtmask[8];	/* voltype masks for servers[] */
-@@ -281,7 +298,8 @@ struct afs_vnode {
- #ifdef AFS_CACHING_SUPPORT
- 	struct cachefs_cookie	*cache;		/* caching cookie */
+@@ -80,6 +80,7 @@ struct afs_call {
+ 	void			*reply;		/* reply buffer (first part) */
+ 	void			*reply2;	/* reply buffer (second part) */
+ 	void			*reply3;	/* reply buffer (third part) */
++	void			*reply4;	/* reply buffer (fourth part) */
+ 	enum {					/* call state */
+ 		AFS_CALL_REQUESTING,	/* request is being sent for outgoing call */
+ 		AFS_CALL_AWAIT_REPLY,	/* awaiting reply to outgoing call */
+@@ -300,19 +301,18 @@ struct afs_vnode {
  #endif
--
-+	struct afs_permits	*permits;	/* cache of permits so far obtained */
-+	struct mutex		permits_lock;	/* lock for altering permits list */
+ 	struct afs_permits	*permits;	/* cache of permits so far obtained */
+ 	struct mutex		permits_lock;	/* lock for altering permits list */
++	struct mutex		validate_lock;	/* lock for validating this vnode */
  	wait_queue_head_t	update_waitq;	/* status fetch waitqueue */
- 	unsigned		update_cnt;	/* number of outstanding ops that will update the
+-	unsigned		update_cnt;	/* number of outstanding ops that will update the
++	int			update_cnt;	/* number of outstanding ops that will update the
  						 * status */
-@@ -296,12 +314,13 @@ struct afs_vnode {
- #define AFS_VNODE_DIR_CHANGED	6		/* set if vnode's parent dir metadata changed */
- #define AFS_VNODE_DIR_MODIFIED	7		/* set if vnode's parent dir data modified */
+ 	spinlock_t		lock;		/* waitqueue/flags lock */
+ 	unsigned long		flags;
+ #define AFS_VNODE_CB_BROKEN	0		/* set if vnode's callback was broken */
+-#define AFS_VNODE_CHANGED	1		/* set if vnode's metadata changed */
++#define AFS_VNODE_UNSET		1		/* set if vnode attributes not yet set */
+ #define AFS_VNODE_MODIFIED	2		/* set if vnode's data modified */
+ #define AFS_VNODE_ZAP_DATA	3		/* set if vnode's data should be invalidated */
+ #define AFS_VNODE_DELETED	4		/* set if vnode deleted on server */
+ #define AFS_VNODE_MOUNTPOINT	5		/* set if vnode is a mountpoint symlink */
+-#define AFS_VNODE_DIR_CHANGED	6		/* set if vnode's parent dir metadata changed */
+-#define AFS_VNODE_DIR_MODIFIED	7		/* set if vnode's parent dir data modified */
  
-+	long			acl_order;	/* ACL check count (callback break count) */
-+
- 	/* outstanding callback notification on this file */
+ 	long			acl_order;	/* ACL check count (callback break count) */
+ 
+@@ -320,7 +320,6 @@ struct afs_vnode {
  	struct rb_node		server_rb;	/* link in server->fs_vnodes */
  	struct rb_node		cb_promise;	/* link in server->cb_promises */
  	struct work_struct	cb_broken_work;	/* work to be done on callback break */
- 	struct mutex		cb_broken_lock;	/* lock against multiple attempts to fix break */
--//	struct list_head	cb_hash_link;	/* link in master callback hash */
+-	struct mutex		cb_broken_lock;	/* lock against multiple attempts to fix break */
  	time_t			cb_expires;	/* time at which callback expires */
  	time_t			cb_expires_at;	/* time used to order cb_promise */
  	unsigned		cb_version;	/* callback version */
-@@ -310,6 +329,23 @@ struct afs_vnode {
- 	bool			cb_promised;	/* true if promise still holds */
- };
- 
-+/*
-+ * cached security record for one user's attempt to access a vnode
-+ */
-+struct afs_permit {
-+	struct key		*key;		/* RxRPC ticket holding a security context */
-+	afs_access_t		access_mask;	/* access mask for this key */
-+};
-+
-+/*
-+ * cache of security records from attempts to access a vnode
-+ */
-+struct afs_permits {
-+	struct rcu_head		rcu;		/* disposal procedure */
-+	int			count;		/* number of records */
-+	struct afs_permit	permits[0];	/* the permits so far examined */
-+};
-+
- /*****************************************************************************/
- /*
-  * callback.c
-@@ -352,11 +388,17 @@ extern bool afs_cm_incoming_call(struct afs_call *);
- extern const struct inode_operations afs_dir_inode_operations;
- extern const struct file_operations afs_dir_file_operations;
- 
-+extern int afs_permission(struct inode *, int, struct nameidata *);
-+
- /*
-  * file.c
-  */
- extern const struct address_space_operations afs_fs_aops;
- extern const struct inode_operations afs_file_inode_operations;
-+extern const struct file_operations afs_file_operations;
-+
-+extern int afs_open(struct inode *, struct file *);
-+extern int afs_release(struct inode *, struct file *);
- 
- #ifdef AFS_CACHING_SUPPORT
- extern int afs_cache_get_page_cookie(struct page *, struct cachefs_page **);
-@@ -365,22 +407,24 @@ extern int afs_cache_get_page_cookie(struct page *, struct cachefs_page **);
- /*
-  * fsclient.c
-  */
--extern int afs_fs_fetch_file_status(struct afs_server *,
--				    struct afs_vnode *,
--				    struct afs_volsync *,
-+extern int afs_fs_fetch_file_status(struct afs_server *, struct key *,
-+				    struct afs_vnode *, struct afs_volsync *,
+@@ -388,6 +387,7 @@ extern void afs_init_callback_state(struct afs_server *);
+ extern void afs_broken_callback_work(struct work_struct *);
+ extern void afs_break_callbacks(struct afs_server *, size_t,
+ 				struct afs_callback[]);
++extern void afs_discard_callback_on_delete(struct afs_vnode *);
+ extern void afs_give_up_callback(struct afs_vnode *);
+ extern void afs_dispatch_give_up_callbacks(struct work_struct *);
+ extern void afs_flush_callback_breaks(struct afs_server *);
+@@ -448,14 +448,34 @@ extern int afs_fs_give_up_callbacks(struct afs_server *,
  				    const struct afs_wait_mode *);
- extern int afs_fs_give_up_callbacks(struct afs_server *,
- 				    const struct afs_wait_mode *);
--extern int afs_fs_fetch_data(struct afs_server *, struct afs_vnode *, off_t,
--			     size_t, struct page *, struct afs_volsync *,
-+extern int afs_fs_fetch_data(struct afs_server *, struct key *,
-+			     struct afs_vnode *, off_t, size_t, struct page *,
-+			     struct afs_volsync *,
+ extern int afs_fs_fetch_data(struct afs_server *, struct key *,
+ 			     struct afs_vnode *, off_t, size_t, struct page *,
+-			     struct afs_volsync *,
  			     const struct afs_wait_mode *);
++extern int afs_fs_create(struct afs_server *, struct key *,
++			 struct afs_vnode *, const char *, umode_t,
++			 struct afs_fid *, struct afs_file_status *,
++			 struct afs_callback *,
++			 const struct afs_wait_mode *);
++extern int afs_fs_remove(struct afs_server *, struct key *,
++			 struct afs_vnode *, const char *, bool,
++			 const struct afs_wait_mode *);
++extern int afs_fs_link(struct afs_server *, struct key *, struct afs_vnode *,
++		       struct afs_vnode *, const char *,
++		       const struct afs_wait_mode *);
++extern int afs_fs_symlink(struct afs_server *, struct key *,
++			  struct afs_vnode *, const char *, const char *,
++			  struct afs_fid *, struct afs_file_status *,
++			  const struct afs_wait_mode *);
++extern int afs_fs_rename(struct afs_server *, struct key *,
++			 struct afs_vnode *, const char *,
++			 struct afs_vnode *, const char *,
++			 const struct afs_wait_mode *);
  
  /*
   * inode.c
   */
--extern struct inode *afs_iget(struct super_block *, struct afs_fid *);
-+extern struct inode *afs_iget(struct super_block *, struct key *,
-+			      struct afs_fid *);
+ extern struct inode *afs_iget(struct super_block *, struct key *,
+-			      struct afs_fid *);
++			      struct afs_fid *, struct afs_file_status *,
++			      struct afs_callback *);
++extern int afs_validate(struct afs_vnode *, struct key *);
  extern int afs_inode_getattr(struct vfsmount *, struct dentry *,
  			     struct kstat *);
-+extern void afs_zap_permits(struct rcu_head *);
- extern void afs_clear_inode(struct inode *);
- 
- /*
-@@ -402,17 +446,11 @@ extern const struct inode_operations afs_mntpt_inode_operations;
- extern const struct file_operations afs_mntpt_file_operations;
- extern unsigned long afs_mntpt_expiry_timeout;
- 
--extern int afs_mntpt_check_symlink(struct afs_vnode *);
-+extern int afs_mntpt_check_symlink(struct afs_vnode *, struct key *);
- extern void afs_mntpt_kill_timer(void);
- extern void afs_umount_begin(struct vfsmount *, int);
- 
- /*
-- * super.c
-- */
--extern int afs_fs_init(void);
--extern void afs_fs_exit(void);
--
--/*
-  * proc.c
-  */
- extern int afs_proc_init(void);
-@@ -436,6 +474,14 @@ extern int afs_extract_data(struct afs_call *, struct sk_buff *, bool, void *,
- 			    size_t);
- 
- /*
-+ * security.c
-+ */
-+extern void afs_clear_permits(struct afs_vnode *);
-+extern void afs_cache_permit(struct afs_vnode *, struct key *, long);
-+extern struct key *afs_request_key(struct afs_cell *);
-+extern int afs_permission(struct inode *, int, struct nameidata *);
-+
-+/*
-  * server.c
+ extern void afs_zap_permits(struct rcu_head *);
+@@ -522,7 +542,11 @@ extern int afs_permission(struct inode *, int, struct nameidata *);
   */
  extern spinlock_t afs_server_peer_lock;
-@@ -449,16 +495,23 @@ extern void afs_put_server(struct afs_server *);
- extern void __exit afs_purge_servers(void);
  
- /*
-+ * super.c
-+ */
-+extern int afs_fs_init(void);
-+extern void afs_fs_exit(void);
-+
-+/*
-  * vlclient.c
-  */
- #ifdef AFS_CACHING_SUPPORT
- extern struct cachefs_index_def afs_vlocation_cache_index_def;
- #endif
+-#define afs_get_server(S) do { atomic_inc(&(S)->usage); } while(0)
++#define afs_get_server(S)					\
++do {								\
++	_debug("GET SERVER %d", atomic_read(&(S)->usage));	\
++	atomic_inc(&(S)->usage);				\
++} while(0)
  
--extern int afs_vl_get_entry_by_name(struct in_addr *, const char *,
--				    struct afs_cache_vlocation *,
-+extern int afs_vl_get_entry_by_name(struct in_addr *, struct key *,
-+				    const char *, struct afs_cache_vlocation *,
- 				    const struct afs_wait_mode *);
--extern int afs_vl_get_entry_by_id(struct in_addr *, afs_volid_t, afs_voltype_t,
-+extern int afs_vl_get_entry_by_id(struct in_addr *, struct key *,
-+				  afs_volid_t, afs_voltype_t,
- 				  struct afs_cache_vlocation *,
- 				  const struct afs_wait_mode *);
- 
-@@ -469,6 +522,7 @@ extern int afs_vl_get_entry_by_id(struct in_addr *, afs_volid_t, afs_voltype_t,
- 
- extern int __init afs_vlocation_update_init(void);
- extern struct afs_vlocation *afs_vlocation_lookup(struct afs_cell *,
-+						  struct key *,
- 						  const char *, size_t);
- extern void afs_put_vlocation(struct afs_vlocation *);
- extern void __exit afs_vlocation_purge(void);
-@@ -492,9 +546,10 @@ static inline struct inode *AFS_VNODE_TO_I(struct afs_vnode *vnode)
+ extern struct afs_server *afs_lookup_server(struct afs_cell *,
+ 					    const struct in_addr *);
+@@ -588,10 +612,24 @@ static inline struct inode *AFS_VNODE_TO_I(struct afs_vnode *vnode)
  	return &vnode->vfs_inode;
  }
  
--extern int afs_vnode_fetch_status(struct afs_vnode *);
--extern int afs_vnode_fetch_data(struct afs_vnode *vnode, off_t, size_t,
--				struct page *);
-+extern int afs_vnode_fetch_status(struct afs_vnode *, struct afs_vnode *,
-+				  struct key *);
-+extern int afs_vnode_fetch_data(struct afs_vnode *, struct key *,
-+				off_t, size_t, struct page *);
++extern void afs_vnode_finalise_status_update(struct afs_vnode *,
++					     struct afs_server *);
+ extern int afs_vnode_fetch_status(struct afs_vnode *, struct afs_vnode *,
+ 				  struct key *);
+ extern int afs_vnode_fetch_data(struct afs_vnode *, struct key *,
+ 				off_t, size_t, struct page *);
++extern int afs_vnode_create(struct afs_vnode *, struct key *, const char *,
++			    umode_t, struct afs_fid *, struct afs_file_status *,
++			    struct afs_callback *, struct afs_server **);
++extern int afs_vnode_remove(struct afs_vnode *, struct key *, const char *,
++			    bool);
++extern int afs_vnode_link(struct afs_vnode *, struct afs_vnode *, struct key *,
++			  const char *);
++extern int afs_vnode_symlink(struct afs_vnode *, struct key *, const char *,
++			     const char *, struct afs_fid *,
++			     struct afs_file_status *, struct afs_server **);
++extern int afs_vnode_rename(struct afs_vnode *, struct afs_vnode *,
++			    struct key *, const char *, const char *);
  
  /*
   * volume.c
-@@ -506,8 +561,7 @@ extern struct cachefs_index_def afs_volume_cache_index_def;
- #define afs_get_volume(V) do { atomic_inc(&(V)->usage); } while(0)
- 
- extern void afs_put_volume(struct afs_volume *);
--extern struct afs_volume *afs_volume_lookup(const char *, struct afs_cell *,
--					    int);
-+extern struct afs_volume *afs_volume_lookup(struct afs_mount_params *);
- extern struct afs_server *afs_volume_pick_fileserver(struct afs_vnode *);
- extern int afs_volume_release_fileserver(struct afs_vnode *,
- 					 struct afs_server *, int);
-diff --git a/fs/afs/mntpt.c b/fs/afs/mntpt.c
-index 08c11a0..b905ae3 100644
---- a/fs/afs/mntpt.c
-+++ b/fs/afs/mntpt.c
-@@ -48,8 +48,11 @@ unsigned long afs_mntpt_expiry_timeout = 10 * 60;
-  * check a symbolic link to see whether it actually encodes a mountpoint
-  * - sets the AFS_VNODE_MOUNTPOINT flag on the vnode appropriately
-  */
--int afs_mntpt_check_symlink(struct afs_vnode *vnode)
-+int afs_mntpt_check_symlink(struct afs_vnode *vnode, struct key *key)
+diff --git a/fs/afs/misc.c b/fs/afs/misc.c
+index 98e9276..cdb9792 100644
+--- a/fs/afs/misc.c
++++ b/fs/afs/misc.c
+@@ -22,6 +22,7 @@ int afs_abort_to_error(u32 abort_code)
  {
-+	struct file file = {
-+		.private_data = key,
-+	};
- 	struct page *page;
- 	size_t size;
- 	char *buf;
-@@ -58,7 +61,7 @@ int afs_mntpt_check_symlink(struct afs_vnode *vnode)
- 	_enter("{%u,%u}", vnode->fid.vnode, vnode->fid.unique);
- 
- 	/* read the contents of the symlink into the pagecache */
--	page = read_mapping_page(AFS_VNODE_TO_I(vnode)->i_mapping, 0, NULL);
-+	page = read_mapping_page(AFS_VNODE_TO_I(vnode)->i_mapping, 0, &file);
- 	if (IS_ERR(page)) {
- 		ret = PTR_ERR(page);
- 		goto out;
-@@ -214,7 +217,7 @@ static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd)
- 	struct vfsmount *newmnt;
- 	int err;
- 
--	_enter("%p{%s},{%s:%p{%s}}",
-+	_enter("%p{%s},{%s:%p{%s},}",
- 	       dentry,
- 	       dentry->d_name.name,
- 	       nd->mnt->mnt_devname,
-@@ -234,7 +237,8 @@ static void *afs_mntpt_follow_link(struct dentry *dentry, struct nameidata *nd)
- 	err = do_add_mount(newmnt, nd, MNT_SHRINKABLE, &afs_vfsmounts);
- 	switch (err) {
- 	case 0:
--		path_release(nd);
-+		mntput(nd->mnt);
-+		dput(nd->dentry);
- 		nd->mnt = newmnt;
- 		nd->dentry = dget(newmnt->mnt_root);
- 		schedule_delayed_work(&afs_mntpt_expiry_timer,
-diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
-index b927742..e86c527 100644
---- a/fs/afs/rxrpc.c
-+++ b/fs/afs/rxrpc.c
-@@ -17,6 +17,8 @@
- 
- static struct socket *afs_socket; /* my RxRPC socket */
- static struct workqueue_struct *afs_async_calls;
-+static atomic_t afs_outstanding_calls;
-+static atomic_t afs_outstanding_skbs;
- 
- static void afs_wake_up_call_waiter(struct afs_call *);
- static int afs_wait_for_call_to_complete(struct afs_call *);
-@@ -45,6 +47,7 @@ static const struct afs_wait_mode afs_async_incoming_call = {
- 
- /* asynchronous incoming call initial processing */
- static const struct afs_call_type afs_RXCMxxxx = {
-+	.name		= "CB.xxxx",
- 	.deliver	= afs_deliver_cm_op_id,
- 	.abort_to_error	= afs_abort_to_error,
- };
-@@ -118,10 +121,67 @@ void afs_close_socket(void)
- 
- 	_debug("dework");
- 	destroy_workqueue(afs_async_calls);
-+
-+	ASSERTCMP(atomic_read(&afs_outstanding_skbs), ==, 0);
-+	ASSERTCMP(atomic_read(&afs_outstanding_calls), ==, 0);
- 	_leave("");
+ 	switch (abort_code) {
+ 	case 13:		return -EACCES;
++	case 30:		return -EROFS;
+ 	case VSALVAGE:		return -EIO;
+ 	case VNOVNODE:		return -ENOENT;
+ 	case VNOVOL:		return -ENOMEDIUM;
+@@ -33,6 +34,24 @@ int afs_abort_to_error(u32 abort_code)
+ 	case VOVERQUOTA:	return -EDQUOT;
+ 	case VBUSY:		return -EBUSY;
+ 	case VMOVED:		return -ENXIO;
+-	default:		return -EIO;
++	case 0x2f6df0c:		return -EACCES;
++	case 0x2f6df0f:		return -EBUSY;
++	case 0x2f6df10:		return -EEXIST;
++	case 0x2f6df11:		return -EXDEV;
++	case 0x2f6df13:		return -ENOTDIR;
++	case 0x2f6df14:		return -EISDIR;
++	case 0x2f6df15:		return -EINVAL;
++	case 0x2f6df1a:		return -EFBIG;
++	case 0x2f6df1b:		return -ENOSPC;
++	case 0x2f6df1d:		return -EROFS;
++	case 0x2f6df1e:		return -EMLINK;
++	case 0x2f6df20:		return -EDOM;
++	case 0x2f6df21:		return -ERANGE;
++	case 0x2f6df22:		return -EDEADLK;
++	case 0x2f6df23:		return -ENAMETOOLONG;
++	case 0x2f6df24:		return -ENOLCK;
++	case 0x2f6df26:		return -ENOTEMPTY;
++	case 0x2f6df78:		return -EDQUOT;
++	default:		return -EREMOTEIO;
+ 	}
  }
- 
- /*
-+ * note that the data in a socket buffer is now delivered and that the buffer
-+ * should be freed
-+ */
-+static void afs_data_delivered(struct sk_buff *skb)
-+{
-+	if (!skb) {
-+		_debug("DLVR NULL [%d]", atomic_read(&afs_outstanding_skbs));
-+		dump_stack();
-+	} else {
-+		_debug("DLVR %p{%u} [%d]",
-+		       skb, skb->mark, atomic_read(&afs_outstanding_skbs));
-+		if (atomic_dec_return(&afs_outstanding_skbs) == -1)
-+			BUG();
-+		rxrpc_kernel_data_delivered(skb);
-+	}
-+}
-+
-+/*
-+ * free a socket buffer
-+ */
-+static void afs_free_skb(struct sk_buff *skb)
-+{
-+	if (!skb) {
-+		_debug("FREE NULL [%d]", atomic_read(&afs_outstanding_skbs));
-+		dump_stack();
-+	} else {
-+		_debug("FREE %p{%u} [%d]",
-+		       skb, skb->mark, atomic_read(&afs_outstanding_skbs));
-+		if (atomic_dec_return(&afs_outstanding_skbs) == -1)
-+			BUG();
-+		rxrpc_kernel_free_skb(skb);
-+	}
-+}
-+
-+/*
-+ * free a call
-+ */
-+static void afs_free_call(struct afs_call *call)
-+{
-+	_debug("DONE %p{%s} [%d]",
-+	       call, call->type->name, atomic_read(&afs_outstanding_calls));
-+	if (atomic_dec_return(&afs_outstanding_calls) == -1)
-+		BUG();
-+
-+	ASSERTCMP(call->rxcall, ==, NULL);
-+	ASSERT(!work_pending(&call->async_work));
-+	ASSERT(skb_queue_empty(&call->rx_queue));
-+	ASSERT(call->type->name != NULL);
-+
-+	kfree(call->request);
-+	kfree(call);
-+}
-+
-+/*
-  * allocate a call with flat request and reply buffers
-  */
- struct afs_call *afs_alloc_flat_call(const struct afs_call_type *type,
-@@ -133,30 +193,32 @@ struct afs_call *afs_alloc_flat_call(const struct afs_call_type *type,
- 	if (!call)
- 		goto nomem_call;
- 
-+	_debug("CALL %p{%s} [%d]",
-+	       call, type->name, atomic_read(&afs_outstanding_calls));
-+	atomic_inc(&afs_outstanding_calls);
-+
-+	call->type = type;
-+	call->request_size = request_size;
-+	call->reply_max = reply_size;
-+
- 	if (request_size) {
- 		call->request = kmalloc(request_size, GFP_NOFS);
- 		if (!call->request)
--			goto nomem_request;
-+			goto nomem_free;
- 	}
- 
- 	if (reply_size) {
- 		call->buffer = kmalloc(reply_size, GFP_NOFS);
- 		if (!call->buffer)
--			goto nomem_buffer;
-+			goto nomem_free;
- 	}
- 
--	call->type = type;
--	call->request_size = request_size;
--	call->reply_max = reply_size;
--
- 	init_waitqueue_head(&call->waitq);
- 	skb_queue_head_init(&call->rx_queue);
- 	return call;
- 
--nomem_buffer:
--	kfree(call->request);
--nomem_request:
--	kfree(call);
-+nomem_free:
-+	afs_free_call(call);
- nomem_call:
- 	return NULL;
- }
-@@ -188,6 +250,12 @@ int afs_make_call(struct in_addr *addr, struct afs_call *call, gfp_t gfp,
- 
- 	_enter("%x,{%d},", addr->s_addr, ntohs(call->port));
- 
-+	ASSERT(call->type != NULL);
-+	ASSERT(call->type->name != NULL);
-+
-+	_debug("MAKE %p{%s} [%d]",
-+	       call, call->type->name, atomic_read(&afs_outstanding_calls));
-+
- 	call->wait_mode = wait_mode;
- 	INIT_WORK(&call->async_work, afs_process_async_call);
- 
-@@ -203,6 +271,7 @@ int afs_make_call(struct in_addr *addr, struct afs_call *call, gfp_t gfp,
- 	/* create a call */
- 	rxcall = rxrpc_kernel_begin_call(afs_socket, &srx, call->key,
- 					 (unsigned long) call, gfp);
-+	call->key = NULL;
- 	if (IS_ERR(rxcall)) {
- 		ret = PTR_ERR(rxcall);
- 		goto error_kill_call;
-@@ -237,10 +306,10 @@ int afs_make_call(struct in_addr *addr, struct afs_call *call, gfp_t gfp,
- error_do_abort:
- 	rxrpc_kernel_abort_call(rxcall, RX_USER_ABORT);
- 	rxrpc_kernel_end_call(rxcall);
-+	call->rxcall = NULL;
- error_kill_call:
- 	call->type->destructor(call);
--	ASSERT(skb_queue_empty(&call->rx_queue));
--	kfree(call);
-+	afs_free_call(call);
- 	_leave(" = %d", ret);
- 	return ret;
- }
-@@ -257,15 +326,19 @@ static void afs_rx_interceptor(struct sock *sk, unsigned long user_call_ID,
- 
- 	_enter("%p,,%u", call, skb->mark);
- 
-+	_debug("ICPT %p{%u} [%d]",
-+	       skb, skb->mark, atomic_read(&afs_outstanding_skbs));
-+
- 	ASSERTCMP(sk, ==, afs_socket->sk);
-+	atomic_inc(&afs_outstanding_skbs);
- 
- 	if (!call) {
- 		/* its an incoming call for our callback service */
--		__skb_queue_tail(&afs_incoming_calls, skb);
-+		skb_queue_tail(&afs_incoming_calls, skb);
- 		schedule_work(&afs_collect_incoming_call_work);
- 	} else {
- 		/* route the messages directly to the appropriate call */
--		__skb_queue_tail(&call->rx_queue, skb);
-+		skb_queue_tail(&call->rx_queue, skb);
- 		call->wait_mode->rx_wakeup(call);
- 	}
- 
-@@ -317,9 +390,9 @@ static void afs_deliver_to_call(struct afs_call *call)
- 				call->state = AFS_CALL_ERROR;
- 				break;
- 			}
--			rxrpc_kernel_data_delivered(skb);
-+			afs_data_delivered(skb);
- 			skb = NULL;
--			break;
-+			continue;
- 		case RXRPC_SKB_MARK_FINAL_ACK:
- 			_debug("Rcv ACK");
- 			call->state = AFS_CALL_COMPLETE;
-@@ -350,19 +423,19 @@ static void afs_deliver_to_call(struct afs_call *call)
- 			break;
- 		}
- 
--		rxrpc_kernel_free_skb(skb);
-+		afs_free_skb(skb);
- 	}
- 
- 	/* make sure the queue is empty if the call is done with (we might have
- 	 * aborted the call early because of an unmarshalling error) */
- 	if (call->state >= AFS_CALL_COMPLETE) {
- 		while ((skb = skb_dequeue(&call->rx_queue)))
--			rxrpc_kernel_free_skb(skb);
-+			afs_free_skb(skb);
- 		if (call->incoming) {
- 			rxrpc_kernel_end_call(call->rxcall);
-+			call->rxcall = NULL;
- 			call->type->destructor(call);
--			ASSERT(skb_queue_empty(&call->rx_queue));
--			kfree(call);
-+			afs_free_call(call);
- 		}
- 	}
- 
-@@ -409,14 +482,14 @@ static int afs_wait_for_call_to_complete(struct afs_call *call)
- 		_debug("call incomplete");
- 		rxrpc_kernel_abort_call(call->rxcall, RX_CALL_DEAD);
- 		while ((skb = skb_dequeue(&call->rx_queue)))
--			rxrpc_kernel_free_skb(skb);
-+			afs_free_skb(skb);
- 	}
- 
- 	_debug("call complete");
- 	rxrpc_kernel_end_call(call->rxcall);
-+	call->rxcall = NULL;
- 	call->type->destructor(call);
--	ASSERT(skb_queue_empty(&call->rx_queue));
--	kfree(call);
-+	afs_free_call(call);
- 	_leave(" = %d", ret);
- 	return ret;
- }
-@@ -459,9 +532,7 @@ static void afs_delete_async_call(struct work_struct *work)
- 
- 	_enter("");
- 
--	ASSERT(skb_queue_empty(&call->rx_queue));
--	ASSERT(!work_pending(&call->async_work));
--	kfree(call);
-+	afs_free_call(call);
- 
- 	_leave("");
- }
-@@ -489,6 +560,7 @@ static void afs_process_async_call(struct work_struct *work)
- 
- 		/* kill the call */
- 		rxrpc_kernel_end_call(call->rxcall);
-+		call->rxcall = NULL;
- 		if (call->type->destructor)
- 			call->type->destructor(call);
- 
-@@ -526,7 +598,7 @@ static void afs_collect_incoming_call(struct work_struct *work)
- 		_debug("new call");
- 
- 		/* don't need the notification */
--		rxrpc_kernel_free_skb(skb);
-+		afs_free_skb(skb);
- 
- 		if (!call) {
- 			call = kzalloc(sizeof(struct afs_call), GFP_KERNEL);
-@@ -541,6 +613,11 @@ static void afs_collect_incoming_call(struct work_struct *work)
- 			init_waitqueue_head(&call->waitq);
- 			skb_queue_head_init(&call->rx_queue);
- 			call->state = AFS_CALL_AWAIT_OP_ID;
-+
-+			_debug("CALL %p{%s} [%d]",
-+			       call, call->type->name,
-+			       atomic_read(&afs_outstanding_calls));
-+			atomic_inc(&afs_outstanding_calls);
- 		}
- 
- 		rxcall = rxrpc_kernel_accept_call(afs_socket,
-@@ -551,7 +628,8 @@ static void afs_collect_incoming_call(struct work_struct *work)
- 		}
- 	}
- 
--	kfree(call);
-+	if (call)
-+		afs_free_call(call);
- }
- 
- /*
-@@ -629,8 +707,7 @@ void afs_send_empty_reply(struct afs_call *call)
- 		rxrpc_kernel_end_call(call->rxcall);
- 		call->rxcall = NULL;
- 		call->type->destructor(call);
--		ASSERT(skb_queue_empty(&call->rx_queue));
--		kfree(call);
-+		afs_free_call(call);
- 		_leave(" [error]");
- 		return;
- 	}
 diff --git a/fs/afs/security.c b/fs/afs/security.c
-new file mode 100644
-index 0000000..cbdd7f7
---- /dev/null
+index cbdd7f7..f9f424d 100644
+--- a/fs/afs/security.c
 +++ b/fs/afs/security.c
-@@ -0,0 +1,345 @@
-+/* AFS security handling
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/slab.h>
-+#include <linux/fs.h>
-+#include <linux/ctype.h>
-+#include <keys/rxrpc-type.h>
-+#include "internal.h"
-+
-+/*
-+ * get a key
-+ */
-+struct key *afs_request_key(struct afs_cell *cell)
-+{
-+	struct key *key;
-+
-+	_enter("{%x}", key_serial(cell->anonymous_key));
-+
-+	_debug("key %s", cell->anonymous_key->description);
-+	key = request_key(&key_type_rxrpc, cell->anonymous_key->description,
-+			  NULL);
-+	if (IS_ERR(key)) {
-+		if (PTR_ERR(key) != -ENOKEY) {
-+			_leave(" = %ld", PTR_ERR(key));
-+			return key;
-+		}
-+
-+		/* act as anonymous user */
-+		_leave(" = {%x} [anon]", key_serial(cell->anonymous_key));
-+		return key_get(cell->anonymous_key);
-+	} else {
-+		/* act as authorised user */
-+		_leave(" = {%x} [auth]", key_serial(key));
-+		return key;
-+	}
-+}
-+
-+/*
-+ * dispose of a permits list
-+ */
-+void afs_zap_permits(struct rcu_head *rcu)
-+{
-+	struct afs_permits *permits =
-+		container_of(rcu, struct afs_permits, rcu);
-+	int loop;
-+
-+	_enter("{%d}", permits->count);
-+
-+	for (loop = permits->count - 1; loop >= 0; loop--)
-+		key_put(permits->permits[loop].key);
-+	kfree(permits);
-+}
-+
-+/*
-+ * dispose of a permits list in which all the key pointers have been copied
-+ */
-+static void afs_dispose_of_permits(struct rcu_head *rcu)
-+{
-+	struct afs_permits *permits =
-+		container_of(rcu, struct afs_permits, rcu);
-+
-+	_enter("{%d}", permits->count);
-+
-+	kfree(permits);
-+}
-+
-+/*
-+ * get the authorising vnode - this is the specified inode itself if it's a
-+ * directory or it's the parent directory if the specified inode is a file or
-+ * symlink
-+ * - the caller must release the ref on the inode
-+ */
-+static struct afs_vnode *afs_get_auth_inode(struct afs_vnode *vnode,
-+					    struct key *key)
-+{
-+	struct afs_vnode *auth_vnode;
-+	struct inode *auth_inode;
-+
-+	_enter("");
-+
-+	if (S_ISDIR(vnode->vfs_inode.i_mode)) {
-+		auth_inode = igrab(&vnode->vfs_inode);
-+		ASSERT(auth_inode != NULL);
-+	} else {
-+		auth_inode = afs_iget(vnode->vfs_inode.i_sb, key,
-+				      &vnode->status.parent);
-+		if (IS_ERR(auth_inode))
-+			return ERR_PTR(PTR_ERR(auth_inode));
+@@ -92,7 +92,7 @@ static struct afs_vnode *afs_get_auth_inode(struct afs_vnode *vnode,
+ 		ASSERT(auth_inode != NULL);
+ 	} else {
+ 		auth_inode = afs_iget(vnode->vfs_inode.i_sb, key,
+-				      &vnode->status.parent);
++				      &vnode->status.parent, NULL, NULL);
+ 		if (IS_ERR(auth_inode))
+ 			return ERR_PTR(PTR_ERR(auth_inode));
+ 	}
+@@ -288,7 +288,8 @@ int afs_permission(struct inode *inode, int mask, struct nameidata *nd)
+ 	struct key *key;
+ 	int ret;
+ 
+-	_enter("{%x:%x},%x,", vnode->fid.vid, vnode->fid.vnode, mask);
++	_enter("{{%x:%x},%lx},%x,",
++	       vnode->fid.vid, vnode->fid.vnode, vnode->flags, mask);
+ 
+ 	key = afs_request_key(vnode->volume->cell);
+ 	if (IS_ERR(key)) {
+@@ -296,13 +297,19 @@ int afs_permission(struct inode *inode, int mask, struct nameidata *nd)
+ 		return PTR_ERR(key);
+ 	}
+ 
++	/* if the promise has expired, we need to check the server again */
++	if (!vnode->cb_promised) {
++		_debug("not promised");
++		ret = afs_vnode_fetch_status(vnode, NULL, key);
++		if (ret < 0)
++			goto error;
++		_debug("new promise [fl=%lx]", vnode->flags);
 +	}
 +
-+	auth_vnode = AFS_FS_I(auth_inode);
-+	_leave(" = {%x}", auth_vnode->fid.vnode);
-+	return auth_vnode;
-+}
+ 	/* check the permits to see if we've got one yet */
+ 	ret = afs_check_permit(vnode, key, &access);
+-	if (ret < 0) {
+-		key_put(key);
+-		_leave(" = %d [check]", ret);
+-		return ret;
+-	}
++	if (ret < 0)
++		goto error;
+ 
+ 	/* interpret the access mask */
+ 	_debug("REQ %x ACC %x on %s",
+@@ -336,10 +343,14 @@ int afs_permission(struct inode *inode, int mask, struct nameidata *nd)
+ 	}
+ 
+ 	key_put(key);
+-	return generic_permission(inode, mask, NULL);
++	ret = generic_permission(inode, mask, NULL);
++	_leave(" = %d", ret);
++	return ret;
+ 
+ permission_denied:
++	ret = -EACCES;
++error:
+ 	key_put(key);
+-	_leave(" = -EACCES");
+-	return -EACCES;
++	_leave(" = %d", ret);
++	return ret;
+ }
+diff --git a/fs/afs/server.c b/fs/afs/server.c
+index d44bba3..1654e90 100644
+--- a/fs/afs/server.c
++++ b/fs/afs/server.c
+@@ -223,6 +223,8 @@ void afs_put_server(struct afs_server *server)
+ 
+ 	_enter("%p{%d}", server, atomic_read(&server->usage));
+ 
++	_debug("PUT SERVER %d", atomic_read(&server->usage));
 +
-+/*
-+ * clear the permit cache on a directory vnode
-+ */
-+void afs_clear_permits(struct afs_vnode *vnode)
-+{
-+	struct afs_permits *permits;
-+
-+	_enter("{%x}", vnode->fid.vnode);
-+
-+	mutex_lock(&vnode->permits_lock);
-+	permits = vnode->permits;
-+	rcu_assign_pointer(vnode->permits, NULL);
-+	mutex_unlock(&vnode->permits_lock);
-+
-+	if (permits)
-+		call_rcu(&permits->rcu, afs_zap_permits);
-+	_leave("");
-+}
-+
-+/*
-+ * add the result obtained for a vnode to its or its parent directory's cache
-+ * for the key used to access it
-+ */
-+void afs_cache_permit(struct afs_vnode *vnode, struct key *key, long acl_order)
-+{
-+	struct afs_permits *permits, *xpermits;
-+	struct afs_permit *permit;
-+	struct afs_vnode *auth_vnode;
-+	int count, loop;
-+
-+	_enter("{%x},%x,%lx", vnode->fid.vnode, key_serial(key), acl_order);
-+
-+	auth_vnode = afs_get_auth_inode(vnode, key);
-+	if (IS_ERR(auth_vnode)) {
-+		_leave(" [get error %ld]", PTR_ERR(auth_vnode));
-+		return;
-+	}
-+
-+	mutex_lock(&auth_vnode->permits_lock);
-+
-+	/* guard against a rename being detected whilst we waited for the
-+	 * lock */
-+	if (memcmp(&auth_vnode->fid, &vnode->status.parent,
-+		   sizeof(struct afs_fid)) != 0) {
-+		_debug("renamed");
-+		goto out_unlock;
-+	}
-+
-+	/* have to be careful as the directory's callback may be broken between
-+	 * us receiving the status we're trying to cache and us getting the
-+	 * lock to update the cache for the status */
-+	if (auth_vnode->acl_order - acl_order > 0) {
-+		_debug("ACL changed?");
-+		goto out_unlock;
-+	}
-+
-+	/* always update the anonymous mask */
-+	_debug("anon access %x", vnode->status.anon_access);
-+	auth_vnode->status.anon_access = vnode->status.anon_access;
-+	if (key == vnode->volume->cell->anonymous_key)
-+		goto out_unlock;
-+
-+	xpermits = auth_vnode->permits;
-+	count = 0;
-+	if (xpermits) {
-+		/* see if the permit is already in the list
-+		 * - if it is then we just amend the list
-+		 */
-+		count = xpermits->count;
-+		permit = xpermits->permits;
-+		for (loop = count; loop > 0; loop--) {
-+			if (permit->key == key) {
-+				permit->access_mask =
-+					vnode->status.caller_access;
-+				goto out_unlock;
-+			}
-+			permit++;
-+		}
-+	}
-+
-+	permits = kmalloc(sizeof(*permits) + sizeof(*permit) * (count + 1),
-+			  GFP_NOFS);
-+	if (!permits)
-+		goto out_unlock;
-+
-+	memcpy(permits->permits, xpermits->permits,
-+	       count * sizeof(struct afs_permit));
-+
-+	_debug("key %x access %x",
-+	       key_serial(key), vnode->status.caller_access);
-+	permits->permits[count].access_mask = vnode->status.caller_access;
-+	permits->permits[count].key = key_get(key);
-+	permits->count = count + 1;
-+
-+	rcu_assign_pointer(auth_vnode->permits, permits);
-+	if (xpermits)
-+		call_rcu(&xpermits->rcu, afs_dispose_of_permits);
-+
-+out_unlock:
-+	mutex_unlock(&auth_vnode->permits_lock);
-+	iput(&auth_vnode->vfs_inode);
-+	_leave("");
-+}
-+
-+/*
-+ * check with the fileserver to see if the directory or parent directory is
-+ * permitted to be accessed with this authorisation, and if so, what access it
-+ * is granted
-+ */
-+static int afs_check_permit(struct afs_vnode *vnode, struct key *key,
-+			    afs_access_t *_access)
-+{
-+	struct afs_permits *permits;
-+	struct afs_permit *permit;
-+	struct afs_vnode *auth_vnode;
-+	bool valid;
-+	int loop, ret;
-+
-+	_enter("");
-+
-+	auth_vnode = afs_get_auth_inode(vnode, key);
-+	if (IS_ERR(auth_vnode)) {
-+		*_access = 0;
-+		_leave(" = %ld", PTR_ERR(auth_vnode));
-+		return PTR_ERR(auth_vnode);
-+	}
-+
-+	ASSERT(S_ISDIR(auth_vnode->vfs_inode.i_mode));
-+
-+	/* check the permits to see if we've got one yet */
-+	if (key == auth_vnode->volume->cell->anonymous_key) {
-+		_debug("anon");
-+		*_access = auth_vnode->status.anon_access;
-+		valid = true;
-+	} else {
-+		valid = false;
-+		rcu_read_lock();
-+		permits = rcu_dereference(auth_vnode->permits);
-+		if (permits) {
-+			permit = permits->permits;
-+			for (loop = permits->count; loop > 0; loop--) {
-+				if (permit->key == key) {
-+					_debug("found in cache");
-+					*_access = permit->access_mask;
-+					valid = true;
-+					break;
-+				}
-+				permit++;
-+			}
-+		}
-+		rcu_read_unlock();
-+	}
-+
-+	if (!valid) {
-+		/* check the status on the file we're actually interested in
-+		 * (the post-processing will cache the result on auth_vnode) */
-+		_debug("no valid permit");
-+
-+		set_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
-+		ret = afs_vnode_fetch_status(vnode, auth_vnode, key);
-+		if (ret < 0) {
-+			iput(&auth_vnode->vfs_inode);
-+			*_access = 0;
-+			_leave(" = %d", ret);
-+			return ret;
-+		}
-+	}
-+
-+	*_access = vnode->status.caller_access;
-+	iput(&auth_vnode->vfs_inode);
-+	_leave(" = 0 [access %x]", *_access);
-+	return 0;
-+}
-+
-+/*
-+ * check the permissions on an AFS file
-+ * - AFS ACLs are attached to directories only, and a file is controlled by its
-+ *   parent directory's ACL
-+ */
-+int afs_permission(struct inode *inode, int mask, struct nameidata *nd)
-+{
-+	struct afs_vnode *vnode = AFS_FS_I(inode);
-+	afs_access_t access;
-+	struct key *key;
-+	int ret;
-+
-+	_enter("{%x:%x},%x,", vnode->fid.vid, vnode->fid.vnode, mask);
-+
-+	key = afs_request_key(vnode->volume->cell);
-+	if (IS_ERR(key)) {
-+		_leave(" = %ld [key]", PTR_ERR(key));
-+		return PTR_ERR(key);
-+	}
-+
-+	/* check the permits to see if we've got one yet */
-+	ret = afs_check_permit(vnode, key, &access);
-+	if (ret < 0) {
-+		key_put(key);
-+		_leave(" = %d [check]", ret);
-+		return ret;
-+	}
-+
-+	/* interpret the access mask */
-+	_debug("REQ %x ACC %x on %s",
-+	       mask, access, S_ISDIR(inode->i_mode) ? "dir" : "file");
-+
-+	if (S_ISDIR(inode->i_mode)) {
-+		if (mask & MAY_EXEC) {
-+			if (!(access & AFS_ACE_LOOKUP))
-+				goto permission_denied;
-+		} else if (mask & MAY_READ) {
-+			if (!(access & AFS_ACE_READ))
-+				goto permission_denied;
-+		} else if (mask & MAY_WRITE) {
-+			if (!(access & (AFS_ACE_DELETE | /* rmdir, unlink, rename from */
-+					AFS_ACE_INSERT | /* create, mkdir, symlink, rename to */
-+					AFS_ACE_WRITE))) /* chmod */
-+				goto permission_denied;
-+		} else {
-+			BUG();
-+		}
-+	} else {
-+		if (!(access & AFS_ACE_LOOKUP))
-+			goto permission_denied;
-+		if (mask & (MAY_EXEC | MAY_READ)) {
-+			if (!(access & AFS_ACE_READ))
-+				goto permission_denied;
-+		} else if (mask & MAY_WRITE) {
-+			if (!(access & AFS_ACE_WRITE))
-+				goto permission_denied;
-+		}
-+	}
-+
-+	key_put(key);
-+	return generic_permission(inode, mask, NULL);
-+
-+permission_denied:
-+	key_put(key);
-+	_leave(" = -EACCES");
-+	return -EACCES;
-+}
+ 	ASSERTCMP(atomic_read(&server->usage), >, 0);
+ 
+ 	if (likely(!atomic_dec_and_test(&server->usage))) {
 diff --git a/fs/afs/super.c b/fs/afs/super.c
-index 77e6875..17d7092 100644
+index 17d7092..441f583 100644
 --- a/fs/afs/super.c
 +++ b/fs/afs/super.c
-@@ -24,12 +24,6 @@
- 
- #define AFS_FS_MAGIC 0x6B414653 /* 'kAFS' */
- 
--struct afs_mount_params {
--	int			rwpath;
--	struct afs_cell		*default_cell;
--	struct afs_volume	*volume;
--};
--
- static void afs_i_init_once(void *foo, struct kmem_cache *cachep,
- 			    unsigned long flags);
- 
-@@ -150,8 +144,8 @@ static int want_no_value(char *const *_value, const char *option)
-  * - this function has been shamelessly adapted from the ext3 fs which
-  *   shamelessly adapted it from the msdos fs
-  */
--static int afs_super_parse_options(struct afs_mount_params *params,
--				   char *options, const char **devname)
-+static int afs_parse_options(struct afs_mount_params *params,
-+			     char *options, const char **devname)
- {
- 	struct afs_cell *cell;
- 	char *key, *value;
-@@ -183,8 +177,8 @@ static int afs_super_parse_options(struct afs_mount_params *params,
- 			cell = afs_cell_lookup(value, strlen(value));
- 			if (IS_ERR(cell))
- 				return PTR_ERR(cell);
--			afs_put_cell(params->default_cell);
--			params->default_cell = cell;
-+			afs_put_cell(params->cell);
-+			params->cell = cell;
- 		} else {
- 			printk("kAFS: Unknown mount option: '%s'\n",  key);
- 			ret = -EINVAL;
-@@ -199,6 +193,99 @@ error:
- }
- 
- /*
-+ * parse a device name to get cell name, volume name, volume type and R/W
-+ * selector
-+ * - this can be one of the following:
-+ *	"%[cell:]volume[.]"		R/W volume
-+ *	"#[cell:]volume[.]"		R/O or R/W volume (rwpath=0),
-+ *					 or R/W (rwpath=1) volume
-+ *	"%[cell:]volume.readonly"	R/O volume
-+ *	"#[cell:]volume.readonly"	R/O volume
-+ *	"%[cell:]volume.backup"		Backup volume
-+ *	"#[cell:]volume.backup"		Backup volume
-+ */
-+static int afs_parse_device_name(struct afs_mount_params *params,
-+				 const char *name)
-+{
-+	struct afs_cell *cell;
-+	const char *cellname, *suffix;
-+	int cellnamesz;
-+
-+	_enter(",%s", name);
-+
-+	if (!name) {
-+		printk(KERN_ERR "kAFS: no volume name specified\n");
-+		return -EINVAL;
-+	}
-+
-+	if ((name[0] != '%' && name[0] != '#') || !name[1]) {
-+		printk(KERN_ERR "kAFS: unparsable volume name\n");
-+		return -EINVAL;
-+	}
-+
-+	/* determine the type of volume we're looking for */
-+	params->type = AFSVL_ROVOL;
-+	params->force = false;
-+	if (params->rwpath || name[0] == '%') {
-+		params->type = AFSVL_RWVOL;
-+		params->force = true;
-+	}
-+	name++;
-+
-+	/* split the cell name out if there is one */
-+	params->volname = strchr(name, ':');
-+	if (params->volname) {
-+		cellname = name;
-+		cellnamesz = params->volname - name;
-+		params->volname++;
-+	} else {
-+		params->volname = name;
-+		cellname = NULL;
-+		cellnamesz = 0;
-+	}
-+
-+	/* the volume type is further affected by a possible suffix */
-+	suffix = strrchr(params->volname, '.');
-+	if (suffix) {
-+		if (strcmp(suffix, ".readonly") == 0) {
-+			params->type = AFSVL_ROVOL;
-+			params->force = true;
-+		} else if (strcmp(suffix, ".backup") == 0) {
-+			params->type = AFSVL_BACKVOL;
-+			params->force = true;
-+		} else if (suffix[1] == 0) {
-+		} else {
-+			suffix = NULL;
-+		}
-+	}
-+
-+	params->volnamesz = suffix ?
-+		suffix - params->volname : strlen(params->volname);
-+
-+	_debug("cell %*.*s [%p]",
-+	       cellnamesz, cellnamesz, cellname ?: "", params->cell);
-+
-+	/* lookup the cell record */
-+	if (cellname || !params->cell) {
-+		cell = afs_cell_lookup(cellname, cellnamesz);
-+		if (IS_ERR(cell)) {
-+			printk(KERN_ERR "kAFS: unable to lookup cell '%s'\n",
-+			       cellname ?: "");
-+			return PTR_ERR(cell);
-+		}
-+		afs_put_cell(params->cell);
-+		params->cell = cell;
-+	}
-+
-+	_debug("CELL:%s [%p] VOLUME:%*.*s SUFFIX:%s TYPE:%d%s",
-+	       params->cell->name, params->cell,
-+	       params->volnamesz, params->volnamesz, params->volname,
-+	       suffix ?: "-", params->type, params->force ? " FORCE" : "");
-+
-+	return 0;
-+}
-+
-+/*
-  * check a superblock to see if it's the one we're looking for
-  */
- static int afs_test_super(struct super_block *sb, void *data)
-@@ -244,7 +331,7 @@ static int afs_fill_super(struct super_block *sb, void *data)
+@@ -331,7 +331,7 @@ static int afs_fill_super(struct super_block *sb, void *data)
  	fid.vid		= as->volume->vid;
  	fid.vnode	= 1;
  	fid.unique	= 1;
--	inode = afs_iget(sb, &fid);
-+	inode = afs_iget(sb, params->key, &fid);
+-	inode = afs_iget(sb, params->key, &fid);
++	inode = afs_iget(sb, params->key, &fid, NULL, NULL);
  	if (IS_ERR(inode))
  		goto error_inode;
  
-@@ -285,31 +372,40 @@ static int afs_get_sb(struct file_system_type *fs_type,
- 	struct afs_mount_params params;
- 	struct super_block *sb;
- 	struct afs_volume *vol;
-+	struct key *key;
- 	int ret;
- 
- 	_enter(",,%s,%p", dev_name, options);
- 
- 	memset(&params, 0, sizeof(params));
- 
--	/* parse the options */
-+	/* parse the options and device name */
- 	if (options) {
--		ret = afs_super_parse_options(&params, options, &dev_name);
-+		ret = afs_parse_options(&params, options, &dev_name);
- 		if (ret < 0)
- 			goto error;
--		if (!dev_name) {
--			printk("kAFS: no volume name specified\n");
--			ret = -EINVAL;
--			goto error;
--		}
- 	}
-+		
-+
-+	ret = afs_parse_device_name(&params, dev_name);
-+	if (ret < 0)
-+		goto error;
-+
-+	/* try and do the mount securely */
-+	key = afs_request_key(params.cell);
-+	if (IS_ERR(key)) {
-+		_leave(" = %ld [key]", PTR_ERR(key));
-+		ret = PTR_ERR(key);
-+		goto error;
-+	}
-+	params.key = key;
- 
- 	/* parse the device name */
--	vol = afs_volume_lookup(dev_name, params.default_cell, params.rwpath);
-+	vol = afs_volume_lookup(&params);
- 	if (IS_ERR(vol)) {
- 		ret = PTR_ERR(vol);
- 		goto error;
- 	}
--
- 	params.volume = vol;
- 
- 	/* allocate a deviceless superblock */
-@@ -337,13 +433,14 @@ static int afs_get_sb(struct file_system_type *fs_type,
- 
- 	simple_set_mnt(mnt, sb);
- 	afs_put_volume(params.volume);
--	afs_put_cell(params.default_cell);
-+	afs_put_cell(params.cell);
- 	_leave(" = 0 [%p]", sb);
- 	return 0;
- 
- error:
- 	afs_put_volume(params.volume);
--	afs_put_cell(params.default_cell);
-+	afs_put_cell(params.cell);
-+	key_put(params.key);
- 	_leave(" = %d", ret);
- 	return ret;
- }
-@@ -375,6 +472,7 @@ static void afs_i_init_once(void *_vnode, struct kmem_cache *cachep,
- 		memset(vnode, 0, sizeof(*vnode));
+@@ -473,9 +473,9 @@ static void afs_i_init_once(void *_vnode, struct kmem_cache *cachep,
  		inode_init_once(&vnode->vfs_inode);
  		init_waitqueue_head(&vnode->update_waitq);
-+		mutex_init(&vnode->permits_lock);
+ 		mutex_init(&vnode->permits_lock);
++		mutex_init(&vnode->validate_lock);
  		spin_lock_init(&vnode->lock);
  		INIT_WORK(&vnode->cb_broken_work, afs_broken_callback_work);
- 		mutex_init(&vnode->cb_broken_lock);
-diff --git a/fs/afs/vlclient.c b/fs/afs/vlclient.c
-index 0c7eba1..36c1306 100644
---- a/fs/afs/vlclient.c
-+++ b/fs/afs/vlclient.c
-@@ -127,6 +127,7 @@ static int afs_deliver_vl_get_entry_by_xxx(struct afs_call *call,
-  * VL.GetEntryByName operation type
-  */
- static const struct afs_call_type afs_RXVLGetEntryByName = {
-+	.name		= "VL.GetEntryByName",
- 	.deliver	= afs_deliver_vl_get_entry_by_xxx,
- 	.abort_to_error	= afs_vl_abort_to_error,
- 	.destructor	= afs_flat_call_destructor,
-@@ -136,6 +137,7 @@ static const struct afs_call_type afs_RXVLGetEntryByName = {
-  * VL.GetEntryById operation type
-  */
- static const struct afs_call_type afs_RXVLGetEntryById = {
-+	.name		= "VL.GetEntryById",
- 	.deliver	= afs_deliver_vl_get_entry_by_xxx,
- 	.abort_to_error	= afs_vl_abort_to_error,
- 	.destructor	= afs_flat_call_destructor,
-@@ -145,6 +147,7 @@ static const struct afs_call_type afs_RXVLGetEntryById = {
-  * dispatch a get volume entry by name operation
-  */
- int afs_vl_get_entry_by_name(struct in_addr *addr,
-+			     struct key *key,
- 			     const char *volname,
- 			     struct afs_cache_vlocation *entry,
- 			     const struct afs_wait_mode *wait_mode)
-@@ -163,6 +166,7 @@ int afs_vl_get_entry_by_name(struct in_addr *addr,
- 	if (!call)
- 		return -ENOMEM;
+-		mutex_init(&vnode->cb_broken_lock);
+ 	}
+ }
  
-+	call->key = key;
- 	call->reply = entry;
- 	call->service_id = VL_SERVICE;
- 	call->port = htons(AFS_VL_PORT);
-@@ -183,6 +187,7 @@ int afs_vl_get_entry_by_name(struct in_addr *addr,
-  * dispatch a get volume entry by ID operation
-  */
- int afs_vl_get_entry_by_id(struct in_addr *addr,
-+			   struct key *key,
- 			   afs_volid_t volid,
- 			   afs_voltype_t voltype,
- 			   struct afs_cache_vlocation *entry,
-@@ -197,6 +202,7 @@ int afs_vl_get_entry_by_id(struct in_addr *addr,
- 	if (!call)
- 		return -ENOMEM;
+@@ -497,7 +497,7 @@ static struct inode *afs_alloc_inode(struct super_block *sb)
  
-+	call->key = key;
- 	call->reply = entry;
- 	call->service_id = VL_SERVICE;
- 	call->port = htons(AFS_VL_PORT);
-diff --git a/fs/afs/vlocation.c b/fs/afs/vlocation.c
-index 60cb2f4..7d9815e 100644
---- a/fs/afs/vlocation.c
-+++ b/fs/afs/vlocation.c
-@@ -33,6 +33,7 @@ static struct workqueue_struct *afs_vlocation_update_worker;
-  * about the volume in question
-  */
- static int afs_vlocation_access_vl_by_name(struct afs_vlocation *vl,
-+					   struct key *key,
- 					   struct afs_cache_vlocation *vldb)
- {
- 	struct afs_cell *cell = vl->cell;
-@@ -49,7 +50,7 @@ static int afs_vlocation_access_vl_by_name(struct afs_vlocation *vl,
- 		_debug("CellServ[%hu]: %08x", cell->vl_curr_svix, addr.s_addr);
+ 	vnode->volume		= NULL;
+ 	vnode->update_cnt	= 0;
+-	vnode->flags		= 0;
++	vnode->flags		= 1 << AFS_VNODE_UNSET;
+ 	vnode->cb_promised	= false;
  
- 		/* attempt to access the VL server */
--		ret = afs_vl_get_entry_by_name(&addr, vl->vldb.name, vldb,
-+		ret = afs_vl_get_entry_by_name(&addr, key, vl->vldb.name, vldb,
- 					       &afs_sync_call);
- 		switch (ret) {
- 		case 0:
-@@ -86,6 +87,7 @@ out:
-  * about the volume in question
-  */
- static int afs_vlocation_access_vl_by_id(struct afs_vlocation *vl,
-+					 struct key *key,
- 					 afs_volid_t volid,
- 					 afs_voltype_t voltype,
- 					 struct afs_cache_vlocation *vldb)
-@@ -104,7 +106,7 @@ static int afs_vlocation_access_vl_by_id(struct afs_vlocation *vl,
- 		_debug("CellServ[%hu]: %08x", cell->vl_curr_svix, addr.s_addr);
- 
- 		/* attempt to access the VL server */
--		ret = afs_vl_get_entry_by_id(&addr, volid, voltype, vldb,
-+		ret = afs_vl_get_entry_by_id(&addr, key, volid, voltype, vldb,
- 					     &afs_sync_call);
- 		switch (ret) {
- 		case 0:
-@@ -188,6 +190,7 @@ static struct afs_vlocation *afs_vlocation_alloc(struct afs_cell *cell,
-  * update record if we found it in the cache
-  */
- static int afs_vlocation_update_record(struct afs_vlocation *vl,
-+				       struct key *key,
- 				       struct afs_cache_vlocation *vldb)
- {
- 	afs_voltype_t voltype;
-@@ -228,7 +231,7 @@ static int afs_vlocation_update_record(struct afs_vlocation *vl,
- 	/* contact the server to make sure the volume is still available
- 	 * - TODO: need to handle disconnected operation here
- 	 */
--	ret = afs_vlocation_access_vl_by_id(vl, vid, voltype, vldb);
-+	ret = afs_vlocation_access_vl_by_id(vl, key, vid, voltype, vldb);
- 	switch (ret) {
- 		/* net error */
- 	default:
-@@ -287,7 +290,8 @@ static void afs_vlocation_apply_update(struct afs_vlocation *vl,
-  * fill in a volume location record, consulting the cache and the VL server
-  * both
-  */
--static int afs_vlocation_fill_in_record(struct afs_vlocation *vl)
-+static int afs_vlocation_fill_in_record(struct afs_vlocation *vl,
-+					struct key *key)
- {
- 	struct afs_cache_vlocation vldb;
- 	int ret;
-@@ -310,11 +314,11 @@ static int afs_vlocation_fill_in_record(struct afs_vlocation *vl)
- 		/* try to update a known volume in the cell VL databases by
- 		 * ID as the name may have changed */
- 		_debug("found in cache");
--		ret = afs_vlocation_update_record(vl, &vldb);
-+		ret = afs_vlocation_update_record(vl, key, &vldb);
- 	} else {
- 		/* try to look up an unknown volume in the cell VL databases by
- 		 * name */
--		ret = afs_vlocation_access_vl_by_name(vl, &vldb);
-+		ret = afs_vlocation_access_vl_by_name(vl, key, &vldb);
- 		if (ret < 0) {
- 			printk("kAFS: failed to locate '%s' in cell '%s'\n",
- 			       vl->vldb.name, vl->cell->name);
-@@ -366,14 +370,16 @@ void afs_vlocation_queue_for_updates(struct afs_vlocation *vl)
-  * - insert/update in the local cache if did get a VL response
-  */
- struct afs_vlocation *afs_vlocation_lookup(struct afs_cell *cell,
-+					   struct key *key,
- 					   const char *name,
- 					   size_t namesz)
- {
- 	struct afs_vlocation *vl;
- 	int ret;
- 
--	_enter("{%s},%*.*s,%zu",
--	       cell->name, (int) namesz, (int) namesz, name, namesz);
-+	_enter("{%s},{%x},%*.*s,%zu",
-+	       cell->name, key_serial(key),
-+	       (int) namesz, (int) namesz, name, namesz);
- 
- 	if (namesz > sizeof(vl->vldb.name)) {
- 		_leave(" = -ENAMETOOLONG");
-@@ -405,7 +411,7 @@ struct afs_vlocation *afs_vlocation_lookup(struct afs_cell *cell,
- 	up_write(&cell->vl_sem);
- 
- fill_in_record:
--	ret = afs_vlocation_fill_in_record(vl);
-+	ret = afs_vlocation_fill_in_record(vl, key);
- 	if (ret < 0)
- 		goto error_abandon;
- 	vl->state = AFS_VL_VALID;
-@@ -656,7 +662,7 @@ static void afs_vlocation_updater(struct work_struct *work)
- 	vl->upd_rej_cnt = 0;
- 	vl->upd_busy_cnt = 0;
- 
--	ret = afs_vlocation_update_record(vl, &vldb);
-+	ret = afs_vlocation_update_record(vl, NULL, &vldb);
- 	switch (ret) {
- 	case 0:
- 		afs_vlocation_apply_update(vl, &vldb);
+ 	return &vnode->vfs_inode;
 diff --git a/fs/afs/vnode.c b/fs/afs/vnode.c
-index d2ca139..1600976 100644
+index 1600976..a1904ab 100644
 --- a/fs/afs/vnode.c
 +++ b/fs/afs/vnode.c
-@@ -238,9 +238,11 @@ static void afs_vnode_finalise_status_update(struct afs_vnode *vnode,
-  *   - there are any outstanding ops that will fetch the status
-  * - TODO implement local caching
-  */
--int afs_vnode_fetch_status(struct afs_vnode *vnode)
-+int afs_vnode_fetch_status(struct afs_vnode *vnode,
-+			   struct afs_vnode *auth_vnode, struct key *key)
- {
- 	struct afs_server *server;
-+	unsigned long acl_order;
- 	int ret;
+@@ -30,7 +30,7 @@ static noinline bool dump_tree_aux(struct rb_node *node, struct rb_node *parent,
+ 		bad = dump_tree_aux(node->rb_left, node, depth + 2, '/');
  
- 	DECLARE_WAITQUEUE(myself, current);
-@@ -260,6 +262,10 @@ int afs_vnode_fetch_status(struct afs_vnode *vnode)
- 		return -ENOENT;
+ 	vnode = rb_entry(node, struct afs_vnode, cb_promise);
+-	kdebug("%c %*.*s%c%p {%d}",
++	_debug("%c %*.*s%c%p {%d}",
+ 	       rb_is_red(node) ? 'R' : 'B',
+ 	       depth, depth, "", lr,
+ 	       vnode, vnode->cb_expires_at);
+@@ -47,7 +47,7 @@ static noinline bool dump_tree_aux(struct rb_node *node, struct rb_node *parent,
+ 
+ static noinline void dump_tree(const char *name, struct afs_server *server)
+ {
+-	kenter("%s", name);
++	_enter("%s", name);
+ 	if (dump_tree_aux(server->cb_promises.rb_node, NULL, 0, '-'))
+ 		BUG();
+ }
+@@ -187,47 +187,61 @@ static void afs_vnode_deleted_remotely(struct afs_vnode *vnode)
+ 		spin_unlock(&server->cb_lock);
  	}
  
-+	acl_order = 0;
-+	if (auth_vnode)
-+		acl_order = auth_vnode->acl_order;
++	spin_lock(&vnode->server->fs_lock);
++	rb_erase(&vnode->server_rb, &vnode->server->fs_vnodes);
++	spin_unlock(&vnode->server->fs_lock);
 +
++	vnode->server = NULL;
+ 	afs_put_server(server);
+ }
+ 
+ /*
+- * finish off updating the recorded status of a file
++ * finish off updating the recorded status of a file after a successful
++ * operation completion
+  * - starts callback expiry timer
+  * - adds to server's callback list
+  */
+-static void afs_vnode_finalise_status_update(struct afs_vnode *vnode,
+-					     struct afs_server *server,
+-					     int ret)
++void afs_vnode_finalise_status_update(struct afs_vnode *vnode,
++				      struct afs_server *server)
+ {
+ 	struct afs_server *oldserver = NULL;
+ 
+-	_enter("%p,%p,%d", vnode, server, ret);
++	_enter("%p,%p", vnode, server);
++
++	spin_lock(&vnode->lock);
++	clear_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
++	afs_vnode_note_promise(vnode, server);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++
++	wake_up_all(&vnode->update_waitq);
++	afs_put_server(oldserver);
++	_leave("");
++}
++
++/*
++ * finish off updating the recorded status of a file after an operation failed
++ */
++static void afs_vnode_status_update_failed(struct afs_vnode *vnode, int ret)
++{
++	_enter("%p,%d", vnode, ret);
+ 
  	spin_lock(&vnode->lock);
  
- 	if (!test_bit(AFS_VNODE_CB_BROKEN, &vnode->flags) &&
-@@ -324,12 +330,14 @@ get_anyway:
+ 	clear_bit(AFS_VNODE_CB_BROKEN, &vnode->flags);
+ 
+-	switch (ret) {
+-	case 0:
+-		afs_vnode_note_promise(vnode, server);
+-		break;
+-	case -ENOENT:
++	if (ret == -ENOENT) {
+ 		/* the file was deleted on the server */
+ 		_debug("got NOENT from server - marking file deleted");
+ 		afs_vnode_deleted_remotely(vnode);
+-		break;
+-	default:
+-		break;
+ 	}
+ 
+ 	vnode->update_cnt--;
+-
++	ASSERTCMP(vnode->update_cnt, >=, 0);
+ 	spin_unlock(&vnode->lock);
+ 
+ 	wake_up_all(&vnode->update_waitq);
+-
+-	afs_put_server(oldserver);
+-
+ 	_leave("");
+ }
+ 
+@@ -275,8 +289,12 @@ int afs_vnode_fetch_status(struct afs_vnode *vnode,
+ 		return 0;
+ 	}
+ 
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++
+ 	if (vnode->update_cnt > 0) {
+ 		/* someone else started a fetch */
++		_debug("wait on fetch %d", vnode->update_cnt);
++
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		ASSERT(myself.func != NULL);
+ 		add_wait_queue(&vnode->update_waitq, &myself);
+@@ -325,7 +343,7 @@ get_anyway:
+ 		/* pick a server to query */
+ 		server = afs_volume_pick_fileserver(vnode);
+ 		if (IS_ERR(server))
+-			return PTR_ERR(server);
++			goto no_server;
+ 
  		_debug("USING SERVER: %p{%08x}",
  		       server, ntohl(server->addr.s_addr));
+@@ -336,17 +354,34 @@ get_anyway:
+ 	} while (!afs_volume_release_fileserver(vnode, server, ret));
  
--		ret = afs_fs_fetch_file_status(server, vnode, NULL,
-+		ret = afs_fs_fetch_file_status(server, key, vnode, NULL,
- 					       &afs_sync_call);
+ 	/* adjust the flags */
+-	if (ret == 0 && auth_vnode)
+-		afs_cache_permit(vnode, key, acl_order);
+-	afs_vnode_finalise_status_update(vnode, server, ret);
++	if (ret == 0) {
++		_debug("adjust");
++		if (auth_vnode)
++			afs_cache_permit(vnode, key, acl_order);
++		afs_vnode_finalise_status_update(vnode, server);
++		afs_put_server(server);
++	} else {
++		_debug("failed [%d]", ret);
++		afs_vnode_status_update_failed(vnode, ret);
++	}
+ 
+-	_leave(" = %d", ret);
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++
++	_leave(" = %d [cnt %d]", ret, vnode->update_cnt);
+ 	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), vnode->update_cnt);
++	return PTR_ERR(server);
+ }
+ 
+ /*
+  * fetch file data from the volume
+- * - TODO implement caching and server failover
++ * - TODO implement caching
+  */
+ int afs_vnode_fetch_data(struct afs_vnode *vnode, struct key *key,
+ 			 off_t offset, size_t length, struct page *page)
+@@ -372,18 +407,349 @@ int afs_vnode_fetch_data(struct afs_vnode *vnode, struct key *key,
+ 		/* pick a server to query */
+ 		server = afs_volume_pick_fileserver(vnode);
+ 		if (IS_ERR(server))
+-			return PTR_ERR(server);
++			goto no_server;
+ 
+ 		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
+ 
+ 		ret = afs_fs_fetch_data(server, key, vnode, offset, length,
+-					page, NULL, &afs_sync_call);
++					page, &afs_sync_call);
  
  	} while (!afs_volume_release_fileserver(vnode, server, ret));
  
  	/* adjust the flags */
-+	if (ret == 0 && auth_vnode)
-+		afs_cache_permit(vnode, key, acl_order);
- 	afs_vnode_finalise_status_update(vnode, server, ret);
+-	afs_vnode_finalise_status_update(vnode, server, ret);
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(vnode, server);
++		afs_put_server(server);
++	} else {
++		afs_vnode_status_update_failed(vnode, ret);
++	}
  
  	_leave(" = %d", ret);
-@@ -340,17 +348,18 @@ get_anyway:
-  * fetch file data from the volume
-  * - TODO implement caching and server failover
-  */
--int afs_vnode_fetch_data(struct afs_vnode *vnode, off_t offset, size_t length,
--			 struct page *page)
-+int afs_vnode_fetch_data(struct afs_vnode *vnode, struct key *key,
-+			 off_t offset, size_t length, struct page *page)
- {
- 	struct afs_server *server;
- 	int ret;
- 
--	_enter("%s,{%u,%u,%u}",
-+	_enter("%s{%u,%u,%u},%x,,,",
- 	       vnode->volume->vlocation->vldb.name,
- 	       vnode->fid.vid,
- 	       vnode->fid.vnode,
--	       vnode->fid.unique);
+ 	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	return PTR_ERR(server);
++}
++
++/*
++ * make a file or a directory
++ */
++int afs_vnode_create(struct afs_vnode *vnode, struct key *key,
++		     const char *name, umode_t mode, struct afs_fid *newfid,
++		     struct afs_file_status *newstatus,
++		     struct afs_callback *newcb, struct afs_server **_server)
++{
++	struct afs_server *server;
++	int ret;
++
++	_enter("%s{%u,%u,%u},%x,%s,,",
++	       vnode->volume->vlocation->vldb.name,
++	       vnode->fid.vid,
++	       vnode->fid.vnode,
 +	       vnode->fid.unique,
-+	       key_serial(key));
- 
- 	/* this op will fetch the status */
- 	spin_lock(&vnode->lock);
-@@ -367,8 +376,8 @@ int afs_vnode_fetch_data(struct afs_vnode *vnode, off_t offset, size_t length,
- 
- 		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
- 
--		ret = afs_fs_fetch_data(server, vnode, offset, length, page,
--					NULL, &afs_sync_call);
-+		ret = afs_fs_fetch_data(server, key, vnode, offset, length,
-+					page, NULL, &afs_sync_call);
- 
- 	} while (!afs_volume_release_fileserver(vnode, server, ret));
- 
++	       key_serial(key),
++	       name);
++
++	/* this op will fetch the status on the directory we're creating in */
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++
++	do {
++		/* pick a server to query */
++		server = afs_volume_pick_fileserver(vnode);
++		if (IS_ERR(server))
++			goto no_server;
++
++		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
++
++		ret = afs_fs_create(server, key, vnode, name, mode, newfid,
++				    newstatus, newcb, &afs_sync_call);
++
++	} while (!afs_volume_release_fileserver(vnode, server, ret));
++
++	/* adjust the flags */
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(vnode, server);
++		*_server = server;
++	} else {
++		afs_vnode_status_update_failed(vnode, ret);
++		*_server = NULL;
++	}
++
++	_leave(" = %d [cnt %d]", ret, vnode->update_cnt);
++	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), vnode->update_cnt);
++	return PTR_ERR(server);
++}
++
++/*
++ * remove a file or directory
++ */
++int afs_vnode_remove(struct afs_vnode *vnode, struct key *key, const char *name,
++		     bool isdir)
++{
++	struct afs_server *server;
++	int ret;
++
++	_enter("%s{%u,%u,%u},%x,%s",
++	       vnode->volume->vlocation->vldb.name,
++	       vnode->fid.vid,
++	       vnode->fid.vnode,
++	       vnode->fid.unique,
++	       key_serial(key),
++	       name);
++
++	/* this op will fetch the status on the directory we're removing from */
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++
++	do {
++		/* pick a server to query */
++		server = afs_volume_pick_fileserver(vnode);
++		if (IS_ERR(server))
++			goto no_server;
++
++		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
++
++		ret = afs_fs_remove(server, key, vnode, name, isdir,
++				    &afs_sync_call);
++
++	} while (!afs_volume_release_fileserver(vnode, server, ret));
++
++	/* adjust the flags */
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(vnode, server);
++		afs_put_server(server);
++	} else {
++		afs_vnode_status_update_failed(vnode, ret);
++	}
++
++	_leave(" = %d [cnt %d]", ret, vnode->update_cnt);
++	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), vnode->update_cnt);
++	return PTR_ERR(server);
++}
++
++/*
++ * create a hard link
++ */
++extern int afs_vnode_link(struct afs_vnode *dvnode, struct afs_vnode *vnode,
++			  struct key *key, const char *name)
++{
++	struct afs_server *server;
++	int ret;
++
++	_enter("%s{%u,%u,%u},%s{%u,%u,%u},%x,%s",
++	       dvnode->volume->vlocation->vldb.name,
++	       dvnode->fid.vid,
++	       dvnode->fid.vnode,
++	       dvnode->fid.unique,
++	       vnode->volume->vlocation->vldb.name,
++	       vnode->fid.vid,
++	       vnode->fid.vnode,
++	       vnode->fid.unique,
++	       key_serial(key),
++	       name);
++
++	/* this op will fetch the status on the directory we're removing from */
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++	spin_lock(&dvnode->lock);
++	dvnode->update_cnt++;
++	spin_unlock(&dvnode->lock);
++
++	do {
++		/* pick a server to query */
++		server = afs_volume_pick_fileserver(dvnode);
++		if (IS_ERR(server))
++			goto no_server;
++
++		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
++
++		ret = afs_fs_link(server, key, dvnode, vnode, name,
++				  &afs_sync_call);
++
++	} while (!afs_volume_release_fileserver(dvnode, server, ret));
++
++	/* adjust the flags */
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(vnode, server);
++		afs_vnode_finalise_status_update(dvnode, server);
++		afs_put_server(server);
++	} else {
++		afs_vnode_status_update_failed(vnode, ret);
++		afs_vnode_status_update_failed(dvnode, ret);
++	}
++
++	_leave(" = %d [cnt %d]", ret, vnode->update_cnt);
++	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	spin_lock(&dvnode->lock);
++	dvnode->update_cnt--;
++	ASSERTCMP(dvnode->update_cnt, >=, 0);
++	spin_unlock(&dvnode->lock);
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), vnode->update_cnt);
++	return PTR_ERR(server);
++}
++
++/*
++ * create a symbolic link
++ */
++int afs_vnode_symlink(struct afs_vnode *vnode, struct key *key,
++		      const char *name, const char *content,
++		      struct afs_fid *newfid,
++		      struct afs_file_status *newstatus,
++		      struct afs_server **_server)
++{
++	struct afs_server *server;
++	int ret;
++
++	_enter("%s{%u,%u,%u},%x,%s,%s,,,",
++	       vnode->volume->vlocation->vldb.name,
++	       vnode->fid.vid,
++	       vnode->fid.vnode,
++	       vnode->fid.unique,
++	       key_serial(key),
++	       name, content);
++
++	/* this op will fetch the status on the directory we're creating in */
++	spin_lock(&vnode->lock);
++	vnode->update_cnt++;
++	spin_unlock(&vnode->lock);
++
++	do {
++		/* pick a server to query */
++		server = afs_volume_pick_fileserver(vnode);
++		if (IS_ERR(server))
++			goto no_server;
++
++		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
++
++		ret = afs_fs_symlink(server, key, vnode, name, content,
++				     newfid, newstatus, &afs_sync_call);
++
++	} while (!afs_volume_release_fileserver(vnode, server, ret));
++
++	/* adjust the flags */
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(vnode, server);
++		*_server = server;
++	} else {
++		afs_vnode_status_update_failed(vnode, ret);
++		*_server = NULL;
++	}
++
++	_leave(" = %d [cnt %d]", ret, vnode->update_cnt);
++	return ret;
++
++no_server:
++	spin_lock(&vnode->lock);
++	vnode->update_cnt--;
++	ASSERTCMP(vnode->update_cnt, >=, 0);
++	spin_unlock(&vnode->lock);
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), vnode->update_cnt);
++	return PTR_ERR(server);
++}
++
++/*
++ * rename a file
++ */
++int afs_vnode_rename(struct afs_vnode *orig_dvnode,
++		     struct afs_vnode *new_dvnode,
++		     struct key *key,
++		     const char *orig_name,
++		     const char *new_name)
++{
++	struct afs_server *server;
++	int ret;
++
++	_enter("%s{%u,%u,%u},%s{%u,%u,%u},%x,%s,%s",
++	       orig_dvnode->volume->vlocation->vldb.name,
++	       orig_dvnode->fid.vid,
++	       orig_dvnode->fid.vnode,
++	       orig_dvnode->fid.unique,
++	       new_dvnode->volume->vlocation->vldb.name,
++	       new_dvnode->fid.vid,
++	       new_dvnode->fid.vnode,
++	       new_dvnode->fid.unique,
++	       key_serial(key),
++	       orig_name,
++	       new_name);
++
++	/* this op will fetch the status on both the directories we're dealing
++	 * with */
++	spin_lock(&orig_dvnode->lock);
++	orig_dvnode->update_cnt++;
++	spin_unlock(&orig_dvnode->lock);
++	if (new_dvnode != orig_dvnode) {
++		spin_lock(&new_dvnode->lock);
++		new_dvnode->update_cnt++;
++		spin_unlock(&new_dvnode->lock);
++	}
++
++	do {
++		/* pick a server to query */
++		server = afs_volume_pick_fileserver(orig_dvnode);
++		if (IS_ERR(server))
++			goto no_server;
++
++		_debug("USING SERVER: %08x\n", ntohl(server->addr.s_addr));
++
++		ret = afs_fs_rename(server, key, orig_dvnode, orig_name,
++				    new_dvnode, new_name, &afs_sync_call);
++
++	} while (!afs_volume_release_fileserver(orig_dvnode, server, ret));
++
++	/* adjust the flags */
++	if (ret == 0) {
++		afs_vnode_finalise_status_update(orig_dvnode, server);
++		if (new_dvnode != orig_dvnode)
++			afs_vnode_finalise_status_update(new_dvnode, server);
++		afs_put_server(server);
++	} else {
++		afs_vnode_status_update_failed(orig_dvnode, ret);
++		if (new_dvnode != orig_dvnode)
++			afs_vnode_status_update_failed(new_dvnode, ret);
++	}
++
++	_leave(" = %d [cnt %d]", ret, orig_dvnode->update_cnt);
++	return ret;
++
++no_server:
++	spin_lock(&orig_dvnode->lock);
++	orig_dvnode->update_cnt--;
++	ASSERTCMP(orig_dvnode->update_cnt, >=, 0);
++	spin_unlock(&orig_dvnode->lock);
++	if (new_dvnode != orig_dvnode) {
++		spin_lock(&new_dvnode->lock);
++		new_dvnode->update_cnt--;
++		ASSERTCMP(new_dvnode->update_cnt, >=, 0);
++		spin_unlock(&new_dvnode->lock);
++	}
++	_leave(" = %ld [cnt %d]", PTR_ERR(server), orig_dvnode->update_cnt);
++	return PTR_ERR(server);
+ }
 diff --git a/fs/afs/volume.c b/fs/afs/volume.c
-index 45491cf..15e1367 100644
+index 15e1367..dd160ca 100644
 --- a/fs/afs/volume.c
 +++ b/fs/afs/volume.c
-@@ -41,83 +41,20 @@ static const char *afs_voltypes[] = { "R/W", "R/O", "BAK" };
-  * - Rule 3: If parent volume is R/W, then only mount R/W volume unless
-  *           explicitly told otherwise
+@@ -295,6 +295,7 @@ struct afs_server *afs_volume_pick_fileserver(struct afs_vnode *vnode)
+  * - releases the ref on the server struct that was acquired by picking
+  * - records result of using a particular server to access a volume
+  * - return 0 to try again, 1 if okay or to issue error
++ * - the caller must release the server struct if result was 0
   */
--struct afs_volume *afs_volume_lookup(const char *name, struct afs_cell *cell,
--				     int rwpath)
-+struct afs_volume *afs_volume_lookup(struct afs_mount_params *params)
- {
- 	struct afs_vlocation *vlocation = NULL;
- 	struct afs_volume *volume = NULL;
- 	struct afs_server *server = NULL;
--	afs_voltype_t type;
--	const char *cellname, *volname, *suffix;
- 	char srvtmask;
--	int force, ret, loop, cellnamesz, volnamesz;
-+	int ret, loop;
+ int afs_volume_release_fileserver(struct afs_vnode *vnode,
+ 				  struct afs_server *server,
+@@ -312,7 +313,8 @@ int afs_volume_release_fileserver(struct afs_vnode *vnode,
+ 	case 0:
+ 		server->fs_act_jif = jiffies;
+ 		server->fs_state = 0;
+-		break;
++		_leave("");
++		return 1;
  
--	_enter("%s,,%d,", name, rwpath);
--
--	if (!name || (name[0] != '%' && name[0] != '#') || !name[1]) {
--		printk("kAFS: unparsable volume name\n");
--		return ERR_PTR(-EINVAL);
--	}
--
--	/* determine the type of volume we're looking for */
--	force = 0;
--	type = AFSVL_ROVOL;
--
--	if (rwpath || name[0] == '%') {
--		type = AFSVL_RWVOL;
--		force = 1;
--	}
--
--	suffix = strrchr(name, '.');
--	if (suffix) {
--		if (strcmp(suffix, ".readonly") == 0) {
--			type = AFSVL_ROVOL;
--			force = 1;
--		} else if (strcmp(suffix, ".backup") == 0) {
--			type = AFSVL_BACKVOL;
--			force = 1;
--		} else if (suffix[1] == 0) {
--		} else {
--			suffix = NULL;
--		}
--	}
--
--	/* split the cell and volume names */
--	name++;
--	volname = strchr(name, ':');
--	if (volname) {
--		cellname = name;
--		cellnamesz = volname - name;
--		volname++;
--	} else {
--		volname = name;
--		cellname = NULL;
--		cellnamesz = 0;
--	}
--
--	volnamesz = suffix ? suffix - volname : strlen(volname);
--
--	_debug("CELL:%*.*s [%p] VOLUME:%*.*s SUFFIX:%s TYPE:%d%s",
--	       cellnamesz, cellnamesz, cellname ?: "", cell,
--	       volnamesz, volnamesz, volname, suffix ?: "-",
--	       type,
--	       force ? " FORCE" : "");
--
--	/* lookup the cell record */
--	if (cellname || !cell) {
--		cell = afs_cell_lookup(cellname, cellnamesz);
--		if (IS_ERR(cell)) {
--			ret = PTR_ERR(cell);
--			printk("kAFS: unable to lookup cell '%s'\n",
--			       cellname ?: "");
--			goto error;
--		}
--	} else {
--		afs_get_cell(cell);
--	}
-+	_enter("{%*.*s,%d}",
-+	       params->volnamesz, params->volnamesz, params->volname, params->rwpath);
- 
- 	/* lookup the volume location record */
--	vlocation = afs_vlocation_lookup(cell, volname, volnamesz);
-+	vlocation = afs_vlocation_lookup(params->cell, params->key,
-+					 params->volname, params->volnamesz);
- 	if (IS_ERR(vlocation)) {
- 		ret = PTR_ERR(vlocation);
- 		vlocation = NULL;
-@@ -126,30 +63,30 @@ struct afs_volume *afs_volume_lookup(const char *name, struct afs_cell *cell,
- 
- 	/* make the final decision on the type we want */
- 	ret = -ENOMEDIUM;
--	if (force && !(vlocation->vldb.vidmask & (1 << type)))
-+	if (params->force && !(vlocation->vldb.vidmask & (1 << params->type)))
- 		goto error;
- 
- 	srvtmask = 0;
- 	for (loop = 0; loop < vlocation->vldb.nservers; loop++)
- 		srvtmask |= vlocation->vldb.srvtmask[loop];
- 
--	if (force) {
--		if (!(srvtmask & (1 << type)))
-+	if (params->force) {
-+		if (!(srvtmask & (1 << params->type)))
- 			goto error;
- 	} else if (srvtmask & AFS_VOL_VTM_RO) {
--		type = AFSVL_ROVOL;
-+		params->type = AFSVL_ROVOL;
- 	} else if (srvtmask & AFS_VOL_VTM_RW) {
--		type = AFSVL_RWVOL;
-+		params->type = AFSVL_RWVOL;
- 	} else {
- 		goto error;
+ 		/* the fileserver denied all knowledge of the volume */
+ 	case -ENOMEDIUM:
+@@ -377,14 +379,12 @@ int afs_volume_release_fileserver(struct afs_vnode *vnode,
+ 		server->fs_act_jif = jiffies;
+ 	case -ENOMEM:
+ 	case -ENONET:
+-		break;
++		/* tell the caller to accept the result */
++		afs_put_server(server);
++		_leave(" [local failure]");
++		return 1;
  	}
  
--	down_write(&cell->vl_sem);
-+	down_write(&params->cell->vl_sem);
- 
- 	/* is the volume already active? */
--	if (vlocation->vols[type]) {
-+	if (vlocation->vols[params->type]) {
- 		/* yes - re-use it */
--		volume = vlocation->vols[type];
-+		volume = vlocation->vols[params->type];
- 		afs_get_volume(volume);
- 		goto success;
- 	}
-@@ -163,10 +100,10 @@ struct afs_volume *afs_volume_lookup(const char *name, struct afs_cell *cell,
- 		goto error_up;
- 
- 	atomic_set(&volume->usage, 1);
--	volume->type		= type;
--	volume->type_force	= force;
--	volume->cell		= cell;
--	volume->vid		= vlocation->vldb.vid[type];
-+	volume->type		= params->type;
-+	volume->type_force	= params->force;
-+	volume->cell		= params->cell;
-+	volume->vid		= vlocation->vldb.vid[params->type];
- 
- 	init_rwsem(&volume->server_sem);
- 
-@@ -196,28 +133,26 @@ struct afs_volume *afs_volume_lookup(const char *name, struct afs_cell *cell,
- 	afs_get_vlocation(vlocation);
- 	volume->vlocation = vlocation;
- 
--	vlocation->vols[type] = volume;
-+	vlocation->vols[volume->type] = volume;
- 
- success:
- 	_debug("kAFS selected %s volume %08x",
- 	       afs_voltypes[volume->type], volume->vid);
--	up_write(&cell->vl_sem);
-+	up_write(&params->cell->vl_sem);
- 	afs_put_vlocation(vlocation);
--	afs_put_cell(cell);
- 	_leave(" = %p", volume);
- 	return volume;
- 
- 	/* clean up */
- error_up:
--	up_write(&cell->vl_sem);
-+	up_write(&params->cell->vl_sem);
- error:
- 	afs_put_vlocation(vlocation);
--	afs_put_cell(cell);
- 	_leave(" = %d", ret);
- 	return ERR_PTR(ret);
- 
- error_discard:
--	up_write(&cell->vl_sem);
-+	up_write(&params->cell->vl_sem);
- 
- 	for (loop = volume->nservers - 1; loop >= 0; loop--)
- 		afs_put_server(volume->servers[loop]);
+-	/* tell the caller to accept the result */
+-	afs_put_server(server);
+-	_leave("");
+-	return 1;
+-
+ 	/* tell the caller to loop around and try the next server */
+ try_next_server_upw:
+ 	up_write(&volume->server_sem);
 
