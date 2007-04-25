@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993082AbXDYU5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753221AbXDYU7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993082AbXDYU5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993177AbXDYU5s
+	id S1753221AbXDYU7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:59:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422770AbXDYU7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:57:48 -0400
-Received: from ns2.suse.de ([195.135.220.15]:40060 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993082AbXDYU5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:57:46 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
-Date: Wed, 25 Apr 2007 22:57:41 +0200
-User-Agent: KMail/1.9.6
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <200704252248.03243.ak@suse.de> <6bffcb0e0704251355r6de26273s47ba5c857ed0f129@mail.gmail.com>
-In-Reply-To: <6bffcb0e0704251355r6de26273s47ba5c857ed0f129@mail.gmail.com>
+	Wed, 25 Apr 2007 16:59:38 -0400
+Received: from mithrandir.softwarenexus.net ([66.98.186.96]:4554 "EHLO
+	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753221AbXDYU7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:59:36 -0400
+Message-ID: <462FC139.3040703@genesi-usa.com>
+Date: Wed, 25 Apr 2007 21:59:37 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: Olivier Galibert <galibert@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       jeff@garzik.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 1/7] libata: check for AN support
+References: <20070424074856.005152262@intel.com>	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>	<20070424090713.65657495@the-village.bc.nu>	<20070424102304.GA58841@dspnet.fr.eu.org>	<20070424084904.61932994.kristen.c.accardi@intel.com>	<20070424180552.GA17319@dspnet.fr.eu.org>	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>	<20070425004946.GA63747@dspnet.fr.eu.org>	<20070425114002.1975da48.kristen.c.accardi@intel.com>	<462FA923.5000301@genesi-usa.com> <20070425133447.ca9000b3.kristen.c.accardi@intel.com>
+In-Reply-To: <20070425133447.ca9000b3.kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704252257.41950.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Maybe because it's P4 HT?
 
-Shouldn't make a difference. 
+Kristen Carlson Accardi wrote:
+> On Wed, 25 Apr 2007 20:16:51 +0100
+> Matt Sealey <matt@genesi-usa.com> wrote:
+> 
+>>> +#define ata_id_has_AN(id)	\
+>>> +	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
+>>> +	  ((id)[78] & (1 << 5)) )
+>> ??
+>>
+>>> --- 2.6-git.orig/include/linux/libata.h
+>>> +++ 2.6-git/include/linux/libata.h
+>>> @@ -136,6 +136,7 @@ enum {
+>>>  	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
+>>>  	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
+>>>  	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
+>>> +	ATA_DFLAG_AN		= (1 << 5), /* device supports Async notification */
+>>>  	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
+>> Why don't the macros use the enums? It makes the code hard to read without
+>> painful cross-reference doesn't it? Surely (id)[76] & (ATA_DFLAG_AN) is a
+>> lot more readable than 1 << 5 - even if the flag is obviously that, a lot
+>> of values and registers can have 1 << 5 as a flag and mean a lot of different
+>> things.
+> 
+> It's really just a coincidence that the ATA_DFLAG_AN bit is the same as the bit
+> in the identify device word, so this would not be appropriate.
 
-Can you please: apply the latest patch from
+Okay, that makes sense.. I just had a bad day cross-referencing some terrible
+code in another project, was in the mood to nit :D
 
-ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
-
-to a 2.6.21-rc7 kernel and then send me a full boot log? 
-
--Andi
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
