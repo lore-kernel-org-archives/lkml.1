@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423228AbXDYG0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXDYG1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423228AbXDYG0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 02:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423229AbXDYG0f
+	id S1423229AbXDYG1t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 02:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423230AbXDYG1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 02:26:35 -0400
-Received: from attic.omnifarious.org ([216.254.16.17]:52557 "EHLO
-	attic.omnifarious.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423228AbXDYG0e (ORCPT
+	Wed, 25 Apr 2007 02:27:49 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48901 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423229AbXDYG1s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 02:26:34 -0400
-Subject: Re: Question about Reiser4
-From: "Eric M. Hopper" <hopper@omnifarious.org>
-To: lkml777@123mail.org
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1177459922.31000.1186391425@webmail.messagingengine.com>
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-	 <462E17AF.7090604@namesys.com>
-	 <1177459922.31000.1186391425@webmail.messagingengine.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-9MJw0jQzCktsrPZBMn3j"
-Organization: Omnifarious Software
-Date: Tue, 24 Apr 2007 23:26:31 -0700
-Message-Id: <1177482391.3315.20.camel@bats.omnifarious.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 25 Apr 2007 02:27:48 -0400
+Date: Tue, 24 Apr 2007 23:27:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [08/17] Define functions for page cache handling
+In-Reply-To: <462E8C1E.6070204@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0704242324520.21125@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070424222306.289124159@sgi.com>
+ <462E8C1E.6070204@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Apr 2007, Eric Dumazet wrote:
 
---=-9MJw0jQzCktsrPZBMn3j
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> >  	struct radix_tree_root	page_tree;	/* radix tree of all pages */
+> >  	rwlock_t		tree_lock;	/* and rwlock protecting it */
+> > +#ifdef CONFIG_LARGE_BLOCKSIZE
+> > +	unsigned int		order;		/* Page order of the pages in
+> > here */
+> > +	unsigned int		shift;		/* Shift of index */
+> > +	loff_t			offset_mask;	/* Mask to get to offset bits
+> > */
+> > +#endif
+> >  	unsigned int		i_mmap_writable;/* count VM_SHARED mappings */
+> >  	struct prio_tree_root	i_mmap;		/* tree of private and shared
+> > mappings */
+> >  	struct list_head	i_mmap_nonlinear;/*list VM_NONLINEAR mappings
+> > */
+> 
+> Some comments about this :
+> 
+> 1) not optimal placement on 64bits arches (it creates one hole before
+> i_mmap_writeable)
 
-On Tue, 2007-04-24 at 17:12 -0700, lkml777@123mail.org wrote:
-> On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> > <hopper@omnifarious.org> said:
->=20
-> > I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-> > benchmark showing that compressing long strings of 0s results in things
-> > taking up very little space and being very fast.
->=20
-> I think you are deliberately being stupid here.
->=20
-> You are claiming that REISER4's good speed results when using
-> compression actually has a simple explanation and THEREFORE all good
-> result for the filesystem, even those results that have nothing to do
-> with compression, are negated.
+loff_t is a 64 bit long. We could put shift behind offset_mask.
 
-I am claiming nothing of the sort.  You are assuming that I'm claiming
-this for some random reason.  And in so doing, you are hurting your
-cause and mine.
+> 2) sizeof(struct address_space) is an issue, given it is included in every
+> inode, even sockets or pipes.
 
-If you would bother to read, I really like the ideas in Reiser4, and I
-definitely think it has distinct performance advantages in some much
-more common situations than the highly flawed benchmark with Bonnie++
-and compression.  I would like it included in the mainline kernel.  In
-arguing with me, you are arguing against someone who (as far as I can
-tell) you actually share a cause with.
+Right. I had an earlier implementation that just used an order field. See 
+V2 of this patchset. That did a lot of shifting instead of lookups.
+ 
+> -> 2.1) Do we really need 32 bits for 'order' and 'shift'
 
-But, bringing in benchmarks that have serious flaws as a general
-use-case and attempting to use them as an argument does way more to hurt
-your cause than help.  It brands you as a crackpot and a crank (note
-that I am not calling you either of those things) and that impression
-will also bleed off onto all those who share an association with you by
-way of sharing some of your opinions.
+No. u8 would be sufficient. If you can stuff in other stuff in between 
+then I can switch it.
 
-Additionally, repeatedly posting something everybody has already read
-and ranting about how everybody is ignoring all the good parts of it and
-focusing on the bad parts makes things even worse.
+> -> 2.2) Do we really need a 64bits offset_mask since it's a trivial arithmetic
+> from 'shift' (or 'order') ?
 
-I will not respond to you again.  Please stop jumping into discussions
-about Reiser4.  I would like it included in the mainline kernel, and you
-are hurting that cause.
+It simplifies the generated asm code significantly.
 
---=20
-Eric Hopper (hopper@omnifarious.org  http://www.omnifarious.org/~hopper/)
+> BTW, I presume splice() is not yet supported ? If yes, each pipe could hold 16
+> 'big pages' so we probably can hit some DOS condition sooner...
 
---=-9MJw0jQzCktsrPZBMn3j
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Not yet. I'd be glad if you could come up with a patch that converts it.
 
------BEGIN PGP MESSAGE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGLvSXjtsvlOwvazYRAkfCAJwIFYBqet3ZUBlPf1rb2X8yMiznjACghUI7
-IgBHAIUvi48J5hrESknTYjM=
-=9lS/
------END PGP MESSAGE-----
-
---=-9MJw0jQzCktsrPZBMn3j--
