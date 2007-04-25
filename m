@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992687AbXDYLTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992648AbXDYLVQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992687AbXDYLTq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992691AbXDYLTp
+	id S2992648AbXDYLVQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:21:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992628AbXDYLVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:19:45 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:47157 "EHLO
+	Wed, 25 Apr 2007 07:21:16 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47169 "EHLO
 	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992687AbXDYLTp (ORCPT
+	with ESMTP id S2992648AbXDYLVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:19:45 -0400
-Subject: [PATCH 3/10] smpboot: use safe_apic_wait_icr_idle - i386
+	Wed, 25 Apr 2007 07:21:15 -0400
+Subject: [PATCH 4/10] smpboot: use safe_apic_wait_icr_idle - x86_64
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -22,8 +22,8 @@ In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 20:19:43 +0900
-Message-Id: <1177499983.17974.19.camel@sebastian.intellilink.co.jp>
+Date: Wed, 25 Apr 2007 20:21:13 +0900
+Message-Id: <1177500073.17974.21.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
@@ -37,46 +37,21 @@ instead to consolidate code and ease maintenance.
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urNp linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c linux-2.6.21-rc7/arch/i386/kernel/smpboot.c
---- linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c	2007-04-18 15:27:48.000000000 +0900
-+++ linux-2.6.21-rc7/arch/i386/kernel/smpboot.c	2007-04-18 15:44:41.000000000 +0900
-@@ -568,8 +568,8 @@ static inline void __inquire_remote_apic
- static int __devinit
- wakeup_secondary_cpu(int logical_apicid, unsigned long start_eip)
- {
--	unsigned long send_status = 0, accept_status = 0;
--	int timeout, maxlvt;
-+	unsigned long send_status, accept_status = 0;
-+	int maxlvt;
- 
- 	/* Target chip */
- 	apic_write_around(APIC_ICR2, SET_APIC_DEST_FIELD(logical_apicid));
-@@ -579,12 +579,7 @@ wakeup_secondary_cpu(int logical_apicid,
- 	apic_write_around(APIC_ICR, APIC_DM_NMI | APIC_DEST_LOGICAL);
- 
- 	Dprintk("Waiting for send to finish...\n");
--	timeout = 0;
--	do {
--		Dprintk("+");
--		udelay(100);
--		send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
--	} while (send_status && (timeout++ < 1000));
-+	send_status = safe_apic_wait_icr_idle();
- 
- 	/*
- 	 * Give the other CPU some time to accept the IPI.
-@@ -614,8 +609,8 @@ wakeup_secondary_cpu(int logical_apicid,
- static int __devinit
- wakeup_secondary_cpu(int phys_apicid, unsigned long start_eip)
+diff -urNp linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c
+--- linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c	2007-04-18 15:27:48.000000000 +0900
++++ linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c	2007-04-18 15:52:08.000000000 +0900
+@@ -430,8 +430,8 @@ static void inquire_remote_apic(int apic
+  */
+ static int __cpuinit wakeup_secondary_via_INIT(int phys_apicid, unsigned int start_rip)
  {
 -	unsigned long send_status = 0, accept_status = 0;
 -	int maxlvt, timeout, num_starts, j;
 +	unsigned long send_status, accept_status = 0;
 +	int maxlvt, num_starts, j;
  
- 	/*
- 	 * Be paranoid about clearing APIC errors.
-@@ -640,12 +635,7 @@ wakeup_secondary_cpu(int phys_apicid, un
+ 	Dprintk("Asserting INIT.\n");
+ 
+@@ -447,12 +447,7 @@ static int __cpuinit wakeup_secondary_vi
  				| APIC_DM_INIT);
  
  	Dprintk("Waiting for send to finish...\n");
@@ -90,8 +65,8 @@ diff -urNp linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c linux-2.6.21-rc7/arc
  
  	mdelay(10);
  
-@@ -658,12 +648,7 @@ wakeup_secondary_cpu(int phys_apicid, un
- 	apic_write_around(APIC_ICR, APIC_INT_LEVELTRIG | APIC_DM_INIT);
+@@ -465,12 +460,7 @@ static int __cpuinit wakeup_secondary_vi
+ 	apic_write(APIC_ICR, APIC_INT_LEVELTRIG | APIC_DM_INIT);
  
  	Dprintk("Waiting for send to finish...\n");
 -	timeout = 0;
@@ -102,9 +77,9 @@ diff -urNp linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c linux-2.6.21-rc7/arc
 -	} while (send_status && (timeout++ < 1000));
 +	send_status = safe_apic_wait_icr_idle();
  
+ 	mb();
  	atomic_set(&init_deasserted, 1);
- 
-@@ -719,12 +704,7 @@ wakeup_secondary_cpu(int phys_apicid, un
+@@ -509,12 +499,7 @@ static int __cpuinit wakeup_secondary_vi
  		Dprintk("Startup point 1.\n");
  
  		Dprintk("Waiting for send to finish...\n");
