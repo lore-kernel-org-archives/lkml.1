@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992821AbXDYQW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992823AbXDYQXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992821AbXDYQW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 12:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992823AbXDYQW7
+	id S2992823AbXDYQXM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 12:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992828AbXDYQXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 12:22:59 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:38205 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992821AbXDYQW6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 12:22:58 -0400
+	Wed, 25 Apr 2007 12:23:12 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:56544 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2992823AbXDYQXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 12:23:10 -0400
+Date: Wed, 25 Apr 2007 16:23:09 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Pavel Machek <pavel@ucw.cz>
+cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, Al Boldi <a1426z@gawab.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Reasons to merge suspend2.
+In-Reply-To: <20070425161656.GA17253@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.64.0704251620240.25153@server.thyself>
+References: <200704251551.38373.a1426z@gawab.com>
+ <alpine.DEB.0.98.0704251111000.18512@sigma.j-a-k-j.com>
+ <Pine.LNX.4.64.0704251600030.25153@server.thyself> <20070425161656.GA17253@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17967.32856.616216.761311@smtp.charter.net>
-Date: Wed, 25 Apr 2007 12:22:48 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: John Stoffel <john@stoffel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: Serial console problem in 2.6.21-rc7-mm1 and earlier
-In-Reply-To: <Pine.LNX.4.64.0704250838360.24504@schroedinger.engr.sgi.com>
-References: <20070424130601.4ab89d54.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241320540.13005@schroedinger.engr.sgi.com>
-	<20070424132740.e4bdf391.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241332090.13005@schroedinger.engr.sgi.com>
-	<20070424134325.f71460af.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241351400.13382@schroedinger.engr.sgi.com>
-	<20070424141826.952d2d32.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241421140.13904@schroedinger.engr.sgi.com>
-	<17967.29851.680497.648681@smtp.charter.net>
-	<Pine.LNX.4.64.0704250838360.24504@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Christoph" == Christoph Lameter <clameter@sgi.com> writes:
+On Wed, 25 Apr 2007, Pavel Machek wrote:
 
-Christoph> On Wed, 25 Apr 2007, John Stoffel wrote:
-Christoph> I use a serial console on my x86_84 box. For a while now I
-Christoph> can see all output but I cannot type any
-Christoph> characters. /dev/console broke?
->> 
->> I've sorta seen this problem too, but with gdm.  If I have my kernel
->> line setup like this:
->> 
->> ... console=tty0 console=ttyS0,9600n8
->> 
->> I have to stop and restart gdm (or switch to the XDMCP chooser and
->> back) to get keyoard access.  Wierd. 
->> 
-Christoph> Simple WAR is to ssh into the box and I was usually too
-Christoph> focused on other issues to do something about it.
->> 
->> Are you trying to access an X login prompter, or just a plain Virtual
->> Console tty?
+> Hi!
+>
+>>>> I didn't read your whole post, it's way too long, but I would like to see
+>>>> your patch in mainline as an option to swsusp.  What would make this
+>>>> infeasible?
+>>>
+>>> For one thing, Linus said not but yesterday that he doesn't want multiple
+>>> competing suspend algorithms like this in the kernel at once. (If I parsed
+>>> his message correctly, he doesn't want any in the kernel, but he's putting
+>>> up with it because it seems somewhat needed.)
+>>
+>> Would it be a feasible solution to have a very minimal and generic software
+>> suspend in the kernel, and then various userspace implementations could
+>> take care of this?
+>
+> Yes please. If you want suspend-over-nfs or whatever, just add it to
+> the userspace; we have enough support in kernel now.
+> 									Pavel
 
-Christoph> No X on the machine. And this is a serial console that
-Christoph> works fine with 2.6.21-rcX.
+That seems like a rather asinine idea to implement. I think you misread my 
+question - there are some things that have to be done at the kernel level, such 
+as when the entire memory has to be written, but are there portions of the 
+existing code, or portions of Suspend2, that could be done in userspace?
 
-Ok, no idea then.  It's working for me in 2.6.21-rc7 as long as I
-don't have more than one console= entry in my kernel boot args. 
+If so, you could have a generic suspend mechanism in the kernel, and then 
+various other things done in userspace.
 
-John
+William Heimbigner
+icxcnika@mar.tar.cc
