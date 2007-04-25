@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161845AbXDYIKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161848AbXDYIL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161845AbXDYIKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161843AbXDYIKm
+	id S1161848AbXDYIL0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161864AbXDYILZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:10:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58120 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161706AbXDYIKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:10:40 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070424193404.GA5042@tv-sign.ru> 
-References: <20070424193404.GA5042@tv-sign.ru>  <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> <16575.1177433907@redhat.com> <17966.1177438970@redhat.com> 
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
-       containers@lists.osdl.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Getting the new RxRPC patches upstream 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 25 Apr 2007 09:10:12 +0100
-Message-ID: <5461.1177488612@redhat.com>
+	Wed, 25 Apr 2007 04:11:25 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1817 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161844AbXDYILR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 04:11:17 -0400
+Date: Wed, 25 Apr 2007 08:10:51 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070425081051.GA7221@ucw.cz>
+References: <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425064137.GA25247@elte.hu> <20070425072904.GB6866@ucw.cz> <1177487338.17755.46.camel@DustPuppy.LNX.RO>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177487338.17755.46.camel@DustPuppy.LNX.RO>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@tv-sign.ru> wrote:
+Hi!
 
-> Yes sure. Note that this is documented:
+> > > userspace-driven-suspend is already in the kernel, today. So it's not 
+> > > really "two versions side by side doing the same thing", but more of:
+> > > 
+> > >            A B C + D E F G H
+> > > 
+> > > where "ABC" is used by the uswsusp code today, and "ABCDEFGH" is used by 
+> > > suspend2. So any "suspend2 merge" would largely be about adding "DEFGH". 
+> > 
+> > Actually, we have 'D H' in kernel, today. It is called swsusp...
+> > (Encryption, swapFile support and Graphical progress are missing from
+> > today's kernel.)
 > 
-> 	/*
-> 	 * Kill off a pending schedule_delayed_work().  Note that the work callback
-> 	 * function may still be running on return from cancel_delayed_work().  Run
-> 	 * flush_workqueue() or cancel_work_sync() to wait on it.
-> 	 */
+> Please stop using FUD. 
+> Graphical progress it's not in the kernel, even with suspend2.
 
-No, it isn't documented.  It says that the *work* callback may be running, but
-does not mention the timer callback.  However, just looking at the
-cancellation function source made it clear that this would wait for the timer
-handler to return first.
+It was ascii-art, but still 'graphical', last time I checked.
 
-
-However, is it worth just making cancel_delayed_work() a void function and not
-returning anything?  I'm not sure the return value is very useful.
-
-David
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
