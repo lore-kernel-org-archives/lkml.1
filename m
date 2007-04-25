@@ -1,160 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbXDYAMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbXDYAQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbXDYAMG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 20:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXDYAMG
+	id S1754350AbXDYAQd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 20:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXDYAQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 20:12:06 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:47049 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754661AbXDYAME (ORCPT
+	Tue, 24 Apr 2007 20:16:33 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37955 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754350AbXDYAQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 20:12:04 -0400
-Message-Id: <1177459922.31000.1186391425@webmail.messagingengine.com>
-X-Sasl-Enc: tcFGBwQ7XyF89EZvOmIAwScDMdKp3XNbxOXFT3TD4ngc 1177459922
-From: lkml777@123mail.org
-To: "Edward Shishkin" <edward@namesys.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>
-Cc: "Alex Zarochentsev" <zam@namesys.com>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Eric Hopper" <hopper@omnifarious.org>, "Lex Lyamin" <flx@msu.ru>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Rik van Riel" <riel@redhat.com>, "Xu CanHao" <xucanhao@gmail.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 24 Apr 2007 20:16:32 -0400
+Date: Tue, 24 Apr 2007 17:13:56 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: regression with gammu on 2.6.21-rc7
+Message-ID: <20070425001356.GB1183@kroah.com>
+References: <20070420085853.GA5594@erig.dyndns.org> <20070423054717.GB17997@kroah.com> <20070423081022.GA25694@erig.dyndns.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-   <462E17AF.7090604@namesys.com>
-Subject: Re: Question about Reiser4
-In-Reply-To: <462E17AF.7090604@namesys.com>
-Date: Tue, 24 Apr 2007 17:12:02 -0700
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070423081022.GA25694@erig.dyndns.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> <hopper@omnifarious.org> said:
+On Mon, Apr 23, 2007 at 10:10:22AM +0200, Wolfgang Erig wrote:
+> Hello Greg,
 
-> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-> benchmark showing that compressing long strings of 0s results in things
-> taking up very little space and being very fast.
+Please don't take me out of the cc:, otherwise I might mist this (as I
+did...)
 
-I think you are deliberately being stupid here.
+> On Sun, Apr 22, 2007 at 10:47:17PM -0700, Greg KH wrote:
+> > On Fri, Apr 20, 2007 at 10:58:53AM +0200, Wolfgang Erig wrote:
+> > > Hello,
+> > > 
+> > > I have a regression with 2.6.21-rc7-g80d74d51.
+> > > The utility "gammu" to talk to my mobile does not work anymore.
+> > > With 2.6.20 gammu runs fine.
+> > > 
+> > > Distribution is the latest Debian/testing
+> > > 
+> > > Wolfgang
+> > > 
+> > > $ gammu --backup backup
+> > > Press Ctrl+C to break...
+> > > I/O possible
+> the problem is here because gammu stops working.
+> Maybe a problem in gammu, but with 2.6.20 gammu works fine.
+> > > $ uname -a
+> > > Linux max 2.6.21-rc7-g80d74d51 #9 SMP Wed Apr 18 21:41:41 CEST 2007 i686 GNU/Linux
+> > > $ tail messages 
+> > > Apr 20 08:04:36 max kernel: ACPI: PCI Interrupt 0000:00:1b.0[A] -> GSI 16 (level, low) -> IRQ 16
+> > > Apr 20 08:04:36 max kernel: extern: link up, 100Mbps, full-duplex, lpa 0x45E1
+> > > Apr 20 08:04:36 max kernel: intern:  setting half-duplex.
+> > > Apr 20 08:09:02 max kernel: usb 2-2: USB disconnect, address 3
+> > > Apr 20 08:09:02 max kernel: pl2303 ttyUSB0: pl2303 converter now disconnected from ttyUSB0
+> > > Apr 20 08:09:02 max kernel: pl2303 2-2:1.0: device disconnected
+> > > Apr 20 08:10:24 max kernel: usb 2-2: new full speed USB device using uhci_hcd and address 4
+> > > Apr 20 08:10:25 max kernel: usb 2-2: configuration #1 chosen from 1 choice
+> > > Apr 20 08:10:25 max kernel: pl2303 2-2:1.0: pl2303 converter detected
+> > > Apr 20 08:10:25 max kernel: usb 2-2: pl2303 converter now attached to ttyUSB0
+> > 
+> > That looks ok, I'm guessing you yanked it out and then back in?
+> Yes.
+> This is included only to see which device is connected.
+> > Or is the problem that the device was removed?
+> No, no problem with removal.
+> I see no hint for a problem in the usb-layer.
 
-You are claiming that REISER4's good speed results when using
-compression actually has a simple explanation and THEREFORE all good
-result for the filesystem, even those results that have nothing to do
-with compression, are negated.
+I don't see any problems here.
 
-NOTHING COULD BE FURTHER FROM THE TRUTH.
-
-Your conclusion is a total travesty of logic.
-
-As I understand it, the default Reiser4 DOES NOT USE any compression at
-all, not even tail compression, but saves space by eliminating block
-alignment wastage (tail compression is an option).
-
-So lets LOSE the statistics that involve compression. The results now
-look like this:
-
-.-------------------------.
-| FILESYSTEM | TIME |DISK |
-| TYPE       |(secs)|USAGE|
-.-------------------------.
-|REISER4     | 3462 | 692 |
-|EXT2        | 4092 | 816 |
-|JFS         | 4225 | 806 |
-|EXT4        | 4408 | 816 |
-|EXT3        | 4421 | 816 |
-|XFS         | 4625 | 779 |
-|REISER3     | 6178 | 793 |
-|FAT32       |12342 | 988 |
-|NTFS-3g     |10414 | 772 |
-.-------------------------.
-
-These results are still EXTREMELY GOOD for REISER4.
-
-These results still say that Reiser4 is a truly remarkable filesystem,
-as stated in:
-
-http://linuxhelp.150m.com/resources/fs-benchmarks.htm
-http://m.domaindlx.com/LinuxHelp/fs-benchmarks.htm
-
-So why do I see an anti-Reiser religion, in all that you people say.
-
-You, concentrate on the fact that bonnie++'s use of files that are
-mainly zeroes, will make the results using compression less good than
-they are.
-
-I can't see anywhere where this has been denied.
-
-In fact the other set of statistics that you just ignore, states that in
-more realistic situations, the compression speedup is slightly negative.
-
-What is wrong here, is:
-
-You say that the Bonnie++ tests using compression are subject to
-interpretation. No argument here.
-You ignore the tests that confirm your statement. You are clearly not
-interested in the actual results or their interpretation.
-You, by some incredibly twisted "logic" the state that Reiser4 is
-therefore not good, even though it is clearly the best filesystem when
-NOT using compression.
-
-This of course is completely deceitful "logic".
-
-That the speed advantage from compression would be small is clear from
-the OTHER data that you ignore, namely:
-
-.-------------------------------------------------.
-|File         |Disk |Copy |Copy |Tar  |Unzip| Del |
-|System       |Usage|655MB|655MB|Gzip |UnTar| 2.5 |
-|Type         | (MB)| (1) | (2) |655MB|655MB| Gig |
-.-------------------------------------------------.
-|REISER4 lzo  | 278 | 138 |  56 |  80 |  34 |  84 |
-|REISER4 gzip | 213 | 148 |  68 |  83 |  48 |  70 |
-|REISER4      | 692 | 148 |  55 |  67 |  25 |  56 |
-|EXT4         | 816 | 174 |  70 |  74 |  42 |  50 |
-.-------------------------------------------------.
+If you enable debugging in the pl2303 driver, do you get any errors?
+You can do this by:
+	modprobe pl2303 debug=1
+or if the module is built in or already loaded:
+	echo 1 > /sys/modules/pl2303/parameters/debug
 
 
-> So, the speed increase with compression (on very compressible kernel sources) is slightly negative,
-> 
-> but the speed is still comparable to that of EXT4.
-> 
-> > On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> > <hopper@omnifarious.org> said:
-> >
-> > > I know that this whole effort has been put in disarray by the
-> > > prosecution of Hans Reiser, but I'm curious as to its status. Is
-> > > Reiser4 going to be going into the Linus kernel anytime soon? Is there
-> > > somewhere I should be looking to find this out without wasting bandwidth
-> > > here?
-> >
-> > There was a thread the other day, that talked about Reiser4.
-> >
-> > It took a while but I have found it (actually two)
-> >
-> > http://lkml.org/lkml/2007/4/5/360
-> > http://lkml.org/lkml/2007/4/9/4
-> >
-> > You may want to check them out.
-> 
-> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-> benchmark showing that compressing long strings of 0s results in things
-> taking up very little space and being very fast.
-> 
-> Such things will produce lots of flames and no useful information
-> whatsoever as is evinced by the half conspiracy theory, half truth the
-> thread degenerated into in the second message you linked to.
-> 
--- 
-  
-  lkml777@123mail.org
+Also, if you know how to use git, doing a 'git bisect' to try to track
+down the problem commit would be very helpful.
 
--- 
-http://www.fastmail.fm - mmm... Fastmail...
+thanks,
 
+greg k-h
