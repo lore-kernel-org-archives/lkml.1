@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161800AbXDYSLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161864AbXDYSNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161800AbXDYSLq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161864AbXDYSLq
+	id S1161864AbXDYSNK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161865AbXDYSNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:11:46 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:16834 "EHLO kernel.dk"
+	Wed, 25 Apr 2007 14:13:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:58720 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161800AbXDYSLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:11:46 -0400
-Date: Wed, 25 Apr 2007 20:08:13 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan.Brunelle@pobox.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/15] cfq-iosched: speed up rbtree handling
-Message-ID: <20070425180813.GI4730@kernel.dk>
-References: <11774025432481-git-send-email-jens.axboe@oracle.com> <11774025432403-git-send-email-jens.axboe@oracle.com> <462F7AD9.8020300@hp.com> <20070425171539.GE4730@kernel.dk> <20070425175047.GF4730@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425175047.GF4730@kernel.dk>
+	id S1161864AbXDYSNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:13:08 -0400
+Message-ID: <462F9A4E.5050905@goop.org>
+Date: Wed, 25 Apr 2007 11:13:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: [PATCH 09/25] xen: Account for time stolen by Xen
+References: <20070423215638.563901986@goop.org> <20070423215710.867690403@goop.org> <200704251115.49966.ak@suse.de>
+In-Reply-To: <200704251115.49966.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Jens Axboe wrote:
-> On Wed, Apr 25 2007, Jens Axboe wrote:
-> > On Wed, Apr 25 2007, Alan D. Brunelle wrote:
-> > > Hi Jens -
-> > > 
-> > > The attached patch speeds it up even more - I'm finding a >9% reduction 
-> > > in %system with no loss in IO performance. This just sets the cached 
-> > > element when the first is looked for.
-> > 
-> > Interesting, good thinking. It should not change the IO pattern, as the
-> > end result should be the same. Thanks Alan, will commit!
-> > 
-> > I'll give elevator.c the same treatment, should be even more beneficial.
-> > Stay tuned for a test patch.
-> 
-> Something like this, totally untested (it compiles). I initially wanted
-> to fold the cfq addon into the elevator.h provided implementation, but
-> that requires more extensive changes. Given how little code it is, I
-> think I'll keep them seperate.
+Andi Kleen wrote:
+>> +
+>> +	do {
+>> +		state_time = state->state_entry_time;
+>> +		barrier();
+>>     
+>
+> Should be likely rmb
 
-Booted, seems to work fine for me. In a null ended IO test, I get about
-a 1-2% speedup for a single queue of depth 64 using libaio. So it's
-definitely worth it, will commit.
+We discussed this, and decided that it wasn't necessary.  The state is
+always updated by the current CPU, so if it changes under our feet it
+will be because we were preempted, and so that should shoot down any
+speculated reads.
 
--- 
-Jens Axboe
+    J
 
