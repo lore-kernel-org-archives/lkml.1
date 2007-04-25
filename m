@@ -1,125 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932279AbXDYNqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030865AbXDYNrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932279AbXDYNqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932282AbXDYNqW
+	id S1030865AbXDYNrD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030877AbXDYNrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:46:22 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:46696
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932753AbXDYNqV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:46:21 -0400
-Date: Wed, 25 Apr 2007 15:49:17 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: norsk5@xmission.com, bluesmoke-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of semaphore in EDAC core
-Message-ID: <20070425134917.GL6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	norsk5@xmission.com, bluesmoke-devel@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Wed, 25 Apr 2007 09:47:03 -0400
+Received: from mail.screens.ru ([213.234.233.54]:38543 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030865AbXDYNrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:47:01 -0400
+Date: Wed, 25 Apr 2007 16:52:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, David Miller <davem@davemloft.net>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync()
+Message-ID: <20070425125214.GB94@tv-sign.ru>
+References: <20070424215034.GA5985@tv-sign.ru> <20070425130246.GA4086@ff.dom.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070425130246.GA4086@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the EDAC core code uses a semaphore as mutex. use the mutex API
-instead of the (binary) semaphore
+On 04/25, Jarek Poplawski wrote:
+>
+> On Wed, Apr 25, 2007 at 01:50:34AM +0400, Oleg Nesterov wrote:
+> > del_timer_sync() buys nothing for cancel_delayed_work(), but it is less
+> > efficient since it locks the timer unconditionally, and may wait for the
+> > completion of the delayed_work_timer_fn().
+> 
+> I'm not sure what is the main aim of this patch.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+optimization
 
---
-diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
-index 7b62230..f217750 100644
---- a/drivers/edac/edac_mc.c
-+++ b/drivers/edac/edac_mc.c
-@@ -50,7 +50,7 @@ static int panic_on_ue;
- static int poll_msec = 1000;
- 
- /* lock to memory controller's control array */
--static DECLARE_MUTEX(mem_ctls_mutex);
-+static DEFINE_MUTEX(mem_ctls_mutex);
- static struct list_head mc_devices = LIST_HEAD_INIT(mc_devices);
- 
- static struct task_struct *edac_thread;
-@@ -1489,7 +1489,7 @@ int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx)
- 		}
- 	}
- #endif
--	down(&mem_ctls_mutex);
-+	mutex_lock(&mem_ctls_mutex);
- 
- 	if (add_mc_to_global_list(mci))
- 		goto fail0;
-@@ -1507,14 +1507,14 @@ int edac_mc_add_mc(struct mem_ctl_info *mci, int mc_idx)
- 	edac_mc_printk(mci, KERN_INFO, "Giving out device to %s %s: DEV %s\n",
- 		mci->mod_name, mci->ctl_name, dev_name(mci->dev));
- 
--	up(&mem_ctls_mutex);
-+	mutex_unlock(&mem_ctls_mutex);
- 	return 0;
- 
- fail1:
- 	del_mc_from_global_list(mci);
- 
- fail0:
--	up(&mem_ctls_mutex);
-+	mutex_unlock(&mem_ctls_mutex);
- 	return 1;
- }
- EXPORT_SYMBOL_GPL(edac_mc_add_mc);
-@@ -1531,16 +1531,16 @@ struct mem_ctl_info * edac_mc_del_mc(struct device *dev)
- 	struct mem_ctl_info *mci;
- 
- 	debugf0("MC: %s()\n", __func__);
--	down(&mem_ctls_mutex);
-+	mutex_lock(&mem_ctls_mutex);
- 
- 	if ((mci = find_mci_by_dev(dev)) == NULL) {
--		up(&mem_ctls_mutex);
-+		mutex_unlock(&mem_ctls_mutex);
- 		return NULL;
- 	}
- 
- 	edac_remove_sysfs_mci_device(mci);
- 	del_mc_from_global_list(mci);
--	up(&mem_ctls_mutex);
-+	mutex_unlock(&mem_ctls_mutex);
- 	edac_printk(KERN_INFO, EDAC_MC,
- 		"Removed device %d for %s %s: DEV %s\n", mci->mc_idx,
- 		mci->mod_name, mci->ctl_name, dev_name(mci->dev));
-@@ -1877,7 +1877,7 @@ static inline void check_mc_devices(void)
- 	struct mem_ctl_info *mci;
- 
- 	debugf3("%s()\n", __func__);
--	down(&mem_ctls_mutex);
-+	mutex_lock(&mem_ctls_mutex);
- 
- 	list_for_each(item, &mc_devices) {
- 		mci = list_entry(item, struct mem_ctl_info, link);
-@@ -1886,7 +1886,7 @@ static inline void check_mc_devices(void)
- 			mci->edac_check(mci);
- 	}
- 
--	up(&mem_ctls_mutex);
-+	mutex_unlock(&mem_ctls_mutex);
- }
- 
- /*
- 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+>                                                  It seems this
+> change cannot do any harm, but anyway it could change a few
+> things, e.g. with current version of cancel_rearming_delayed_work
+> some flush_workqueue could be done needlessly, before the work
+> is queued from timer.
 
-                Don't walk behind me, I may not lead
-             Don't walk in front of me, I may not follow
-                Just walk beside me and be my friend
-                          (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+I don't think so... Could you clarify?
+
+>                       It's not a big deal here, but if anybody
+> did something like this without loop - it could matter.
+> 
+> So, probably a lot of current code should be checked, before
+> applying and I doubt the gain is worth of this. Maybe, for
+> safety, make this with new name as an alternative and
+> deprecate the current version?
+
+This change should not make any visible difference for the callers,
+otherwise it is buggy.
+
+Oleg.
+
