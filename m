@@ -1,133 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992500AbXDYJsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992536AbXDYJuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992500AbXDYJsX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992529AbXDYJsX
+	id S2992536AbXDYJuK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992533AbXDYJuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:48:23 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36759 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992500AbXDYJsX (ORCPT
+	Wed, 25 Apr 2007 05:50:10 -0400
+Received: from mfbichi12.ns.itscom.net ([219.110.2.190]:44297 "EHLO
+	mfbichi12.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992529AbXDYJuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:48:23 -0400
-Date: Wed, 25 Apr 2007 11:47:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070425094712.GP9715@kernel.dk>
-References: <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk> <17967.8536.788076.851546@notabene.brown>
+	Wed, 25 Apr 2007 05:50:07 -0400
+X-Greylist: delayed 34068 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 05:50:07 EDT
+Date: Wed, 25 Apr 2007 09:22:15 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in Sony PI driver
+Message-ID: <20070425002215.GC4146@inferi.kami.home>
+References: <20070424200235.GH6798@traven>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17967.8536.788076.851546@notabene.brown>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070424200235.GH6798@traven>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc6-mm1-4 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Neil Brown wrote:
-> On Wednesday April 25, jens.axboe@oracle.com wrote:
-> > 
-> > That's pretty close to where I think the problem is (the front merging
-> > and cfq_reposition_rq_rb()). The issue with that is that you'd only get
-> > aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
-> > here. Given that front merges are equally not very likely, I'd be
-> > surprised is something like that has ever happened.
+On Tue, Apr 24, 2007 at 10:02:35PM +0200, Matthias Kaehlcke wrote:
+> the Sony Programmable I/O Control driver uses a semaphore as
+> mutex. use the mutex API instead of the (binary) semaphore
 > 
-> Well it certainly doesn't happen very often....
-> And I can imagine a filesystem genuinely wanting to read the same
-> block twice - maybe a block that contained packed tails of two
-> different files.
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com> 
 
-But that usually happens through the page cache, so it's nicely
-serialized. You'd only ever get duplicate/alias blocks if you go raw, or
-have some layer on top of your block device (like md) that issues io on
-its own.
-
-> > BUT... That may explain while we are only seeing it on md. Would md
-> > ever be issuing such requests that trigger this condition?
-> 
-> Can someone remind me which raid level(s) was/were involved?
-> 
-> I think one was raid0 - that just passes requests on from the
-> filesystem, so md would only issue requests like that if the
-> filesystem did.
-
-Yep, one was raid0.
-
-> I guess it could happen with raid4/5/6.  A read request that was
-> properly aligned (and we do encourage proper alignment) will be passed
-> directly to the underlying device.  A concurrent write elsewhere could
-> require the same block to be read into the stripe-cache to enable a
-> parity calculation.  So you could get two reads at the same block
-> address.
-> Getting a front-merge would probably require two stripe-heads to be
-> processed in reverse-sector order, and it tends to preserve the order
-> of incoming requests (though that isn't firmly enforced).
-> 
-> raid1 is much like raid0 (with totally different code) in that the
-> request pattern seen by the underlying device matches the request
-> pattern generated by the filesystem.
-> 
-> If I read the debugging output correctly, the request which I
-> hypothesise was the subject of a front-merge is a 'sync' request.
-> raid5 does not generate sync requests to fill the stripe cache (maybe
-> it should?) so I really think it must have come directly from the
-> filesystem.
-> 
-> (just checked previous email for more detail of when it hits)
-> The fact that it hits degraded arrays more easily is interesting.
-> Maybe we try to read a block on the missing device and so schedule
-> reads for the other devices.  Then we try to read a block on a good
-> device and issue a request for exactly the same block that raid5 asked
-> for.  That still doesn't explain the 'sync' and the 'front merge'.
-> But that is quite possible, just not common maybe.
-> 
-> It doesn't help us understand the raid0 example though.  May it is
-> just a 'can happen, but only rarely' thing.
-
-It looks to be extremely rare. Aliases are extremely rare, front merges
-are rare. And you need both to happen with the details you outlined. But
-it's a large user base, and we've had 3-4 reports on this in the past
-months. So it obviously does happen. I could not make it trigger without
-doctoring the unplug code when I used aio.
-
-Here's a fix for it, confirmed.
-
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 9e37971..f965be7 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -532,6 +532,11 @@ static void cfq_add_rq_rb(struct request *rq)
+Acked-by: Mattia Dongili <malattia@linux.it>
  
- 	if (!cfq_cfqq_on_rr(cfqq))
- 		cfq_add_cfqq_rr(cfqd, cfqq);
-+
-+	/*
-+	 * check if this request is a better next-serve candidate
-+	 */
-+	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
- }
- 
- static inline void
-@@ -1639,12 +1644,6 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		cfqq->meta_pending++;
- 
- 	/*
--	 * check if this request is a better next-serve candidate)) {
--	 */
--	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
--	BUG_ON(!cfqq->next_rq);
--
--	/*
- 	 * we never wait for an async request and we don't allow preemption
- 	 * of an async request. so just return early
- 	 */
-
+> --
+> 
+> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> index 7823757..878d8d0 100644
+> --- a/drivers/char/sonypi.c
+> +++ b/drivers/char/sonypi.c
+> @@ -477,7 +477,7 @@ static struct sonypi_device {
+>  	u16 evtype_offset;
+>  	int camera_power;
+>  	int bluetooth_power;
+> -	struct semaphore lock;
+> +	struct mutex lock;
+>  	struct kfifo *fifo;
+>  	spinlock_t fifo_lock;
+>  	wait_queue_head_t fifo_proc_list;
+> @@ -884,7 +884,7 @@ int sonypi_camera_command(int command, u8 value)
+>  	if (!camera)
+>  		return -EIO;
+>  
+> -	down(&sonypi_device.lock);
+> +	mutex_lock(&sonypi_device.lock);
+>  
+>  	switch (command) {
+>  	case SONYPI_COMMAND_SETCAMERA:
+> @@ -919,7 +919,7 @@ int sonypi_camera_command(int command, u8 value)
+>  		       command);
+>  		break;
+>  	}
+> -	up(&sonypi_device.lock);
+> +	mutex_unlock(&sonypi_device.lock);
+>  	return 0;
+>  }
+>  
+> @@ -938,20 +938,20 @@ static int sonypi_misc_fasync(int fd, struct file *filp, int on)
+>  static int sonypi_misc_release(struct inode *inode, struct file *file)
+>  {
+>  	sonypi_misc_fasync(-1, file, 0);
+> -	down(&sonypi_device.lock);
+> +	mutex_lock(&sonypi_device.lock);
+>  	sonypi_device.open_count--;
+> -	up(&sonypi_device.lock);
+> +	mutex_unlock(&sonypi_device.lock);
+>  	return 0;
+>  }
+>  
+>  static int sonypi_misc_open(struct inode *inode, struct file *file)
+>  {
+> -	down(&sonypi_device.lock);
+> +	mutex_lock(&sonypi_device.lock);
+>  	/* Flush input queue on first open */
+>  	if (!sonypi_device.open_count)
+>  		kfifo_reset(sonypi_device.fifo);
+>  	sonypi_device.open_count++;
+> -	up(&sonypi_device.lock);
+> +	mutex_unlock(&sonypi_device.lock);
+>  	return 0;
+>  }
+>  
+> @@ -1001,7 +1001,7 @@ static int sonypi_misc_ioctl(struct inode *ip, struct file *fp,
+>  	u8 val8;
+>  	u16 val16;
+>  
+> -	down(&sonypi_device.lock);
+> +	mutex_lock(&sonypi_device.lock);
+>  	switch (cmd) {
+>  	case SONYPI_IOCGBRT:
+>  		if (sonypi_ec_read(SONYPI_LCD_LIGHT, &val8)) {
+> @@ -1101,7 +1101,7 @@ static int sonypi_misc_ioctl(struct inode *ip, struct file *fp,
+>  	default:
+>  		ret = -EINVAL;
+>  	}
+> -	up(&sonypi_device.lock);
+> +	mutex_unlock(&sonypi_device.lock);
+>  	return ret;
+>  }
+>  
+> @@ -1330,7 +1330,7 @@ static int __devinit sonypi_probe(struct platform_device *dev)
+>  	}
+>  
+>  	init_waitqueue_head(&sonypi_device.fifo_proc_list);
+> -	init_MUTEX(&sonypi_device.lock);
+> +	mutex_init(&sonypi_device.lock);
+>  	sonypi_device.bluetooth_power = -1;
+>  
+>  	if ((pcidev = pci_get_device(PCI_VENDOR_ID_INTEL,
+> 
+> -- 
+> Matthias Kaehlcke
+> Linux Application Developer
+> Barcelona
+> 
+>              If liberty means anything at all, it means the
+>            right to tell people what they do not want to hear
+>                             (George Orwell)
+>                                                                  .''`.
+>     using free software / Debian GNU/Linux | http://debian.org  : :'  :
+>                                                                 `. `'`
+> gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+> 
 -- 
-Jens Axboe
-
+mattia
+:wq!
