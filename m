@@ -1,56 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbXDYXHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbXDYXIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754517AbXDYXHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDYXHn
+	id S1754522AbXDYXIA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754509AbXDYXIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:07:43 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:56410 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754517AbXDYXHm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:07:42 -0400
-Date: Wed, 25 Apr 2007 16:07:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI mmconfig support for Intel 915 bridges
-Message-Id: <20070425160737.37e684cf.akpm@linux-foundation.org>
-In-Reply-To: <200704251535.17528.jesse.barnes@intel.com>
-References: <200701101853.04059.jbarnes@virtuousgeek.org>
-	<200704251535.17528.jesse.barnes@intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 19:08:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:41443 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754523AbXDYXH7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 19:07:59 -0400
+Message-ID: <462FDF6D.8050903@goop.org>
+Date: Wed, 25 Apr 2007 16:08:29 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>	<20070425044813.f83dde4e.akpm@linux-foundation.org>	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>	<462F9B64.3020107@goop.org> <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>	<462FD179.6070802@goop.org> <m1ps5sozt6.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ps5sozt6.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 15:35:15 -0700 Jesse Barnes <jesse.barnes@intel.com> wrote:
+Eric W. Biederman wrote:
+> No.  Please just remove the conditionals on the leaf pages.
+>   
 
-> I see the other mmconfig stuff is upstream now, can we get this added 
-> too?  The Asus bug Olivier mentioned also appears to be fixed, so this 
-> patch should be safe.
-> 
-> Thanks,
-> Jesse
+So, to be specific, you mean make updating the pte_t entries (and pmd_t
+entries which refer to hugepages) entries unconditional?
 
-  ^^^^^ is an evil top-poster!
+> We know exactly what we require them to be, there is minimal
+> cost and no downside to just setting the pte entries to
+> what we want them to be for the identity mapping.
+>
+> It doesn't make sense for paravirtualization or anything else to 
+> influence that.
+>
+> This may be redoing work that has been done before but it is
+> doing it all one common place.
+>   
 
-> 
-> On Wednesday, January 10, 2007 6:53 pm Jesse Barnes wrote:
-> > This is a resend of the patch I sent earlier to Oliver.  It adds
-> > support for Intel 915 bridge chips to the new PCI MMConfig detection
-> > code.  Tested and works on my sole 915 based platform (a Toshiba
-> > laptop).  I added register masking per Oliver's suggestion, and moved
-> > the __init qualifier to after the 'static const char' to match
-> > Ogawa-san's recent cleanup patches.
-> >
-> > Over time we can probably associate more PCI IDs with this routine,
-> > since i915 family contains a few other chips.  But since I didn't
-> > have platforms to test such additions on, they're left out for now.
-> >
-> > Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
-> >
+The issue is not a matter of avoiding duplicate work, but making sure
+all the pagetables are consistent from Xen's perspective.
 
-Can we have a refresh, retest and resend please?
+Specifically, you may not ever, at any time, create a writable mapping
+of a page which is currently part of an active pagetable.  This means
+that when we're creating mappings of physical memory, the pages which
+are part of the current pagetable must be mapped RO.  The easiest way I
+found to guarantee that is to copy the Xen-provided pagetable as a
+template, and only update pages which are missing.
+
+The other way I could do this is to have special-purpose init-time
+version of xen_set_pte which checks to see if it's making a RO mapping
+RW, and refuse to do it.  That would minimize the changes to mm/init.c,
+but give init-time set_pte rather unexpected hidden semantics.
+
+    J
