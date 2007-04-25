@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbXDYXfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422894AbXDYXke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbXDYXfz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXDYXfz
+	id S1422894AbXDYXke (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754597AbXDYXke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:35:55 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39256 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751549AbXDYXfy (ORCPT
+	Wed, 25 Apr 2007 19:40:34 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34566 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754524AbXDYXkd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:35:54 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
-References: <20070414204154.871250608@goop.org>
-	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
-	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
-	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
-	<m1abwwqiof.fsf@ebiederm.dsl.xmission.com> <462FC8CD.1030505@goop.org>
-	<m11wi8qflo.fsf@ebiederm.dsl.xmission.com> <462FD0EF.5050706@goop.org>
-	<m1tzv4p079.fsf@ebiederm.dsl.xmission.com> <462FDBB4.8020604@goop.org>
-Date: Wed, 25 Apr 2007 17:33:45 -0600
-In-Reply-To: <462FDBB4.8020604@goop.org> (Jeremy Fitzhardinge's message of
-	"Wed, 25 Apr 2007 15:52:36 -0700")
-Message-ID: <m14pn4owpy.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 25 Apr 2007 19:40:33 -0400
+Date: Thu, 26 Apr 2007 01:40:43 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       CIJOML <cijoml@volny.cz>, Markus Rechberger <markus.rechberger@amd.com>,
+       v4l-dvb-maintainer@linuxtv.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Takashi Iwai <tiwai@suse.de>, perex@suse.cz,
+       alsa-devel@alsa-project.org, David Miller <davem@davemloft.net>,
+       Robert Peterson <rpeterso@redhat.com>, linux-driver@qlogic.com,
+       linux-scsi@vger.kernel.org
+Subject: 2.6.21-rc7: known regressions with patches
+Message-ID: <20070425234043.GI3468@stusta.de>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+This email lists some known regressions in Linus' tree compared to 2.6.20
+with patches available.
 
-> Eric W. Biederman wrote:
->> Since you have PSE disabled for Xen my hunch is that somehow that
->> got left on for your test boot.
->
-> No.  Under Xen cpuid masks out PSE (and complains if you try to set it
-> in a pte), but when booting native it will just use a plain unadorned cpuid.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way
+possibly involved with one or more of these issues.
 
-Then why you had to allocate enough pages to cause a failure has me stumped.
-Perhaps there is some other bug?
+Due to the huge amount of recipients, please trim the Cc when answering.
 
-Eric
+
+Subject    : Oops when changing USB DVB-T adapter
+References : http://lkml.org/lkml/2007/3/9/212
+             http://lkml.org/lkml/2007/4/5/154
+Submitter  : CIJOML <cijoml@volny.cz>
+Handled-By : Markus Rechberger <markus.rechberger@amd.com>
+Status     : patches available
+
+
+Subject    : snd_intel8x0: divide error: 0000
+References : http://lkml.org/lkml/2007/3/5/252
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Handled-By : Takashi Iwai <tiwai@suse.de>
+Patch      : http://lkml.org/lkml/2007/4/20/117
+Status     : patch available
+
+
+Subject    : qla2xxx driver no longer works
+References : http://lkml.org/lkml/2007/4/16/49
+             http://lkml.org/lkml/2007/4/20/224
+Submitter  : David Miller <davem@davemloft.net>
+             Robert Peterson <rpeterso@redhat.com>
+Handled-By : David Miller <davem@davemloft.net>
+Patch      : http://lkml.org/lkml/2007/4/16/234
+Status     : patch was suggested
+
+
