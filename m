@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbXDYOGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbXDYONL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754082AbXDYOGb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 10:06:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbXDYOGb
+	id S1753875AbXDYONL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 10:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbXDYONK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 10:06:31 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:44111 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754082AbXDYOGa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 10:06:30 -0400
-Date: Wed, 25 Apr 2007 10:06:29 -0400
-To: Peer Chen <pchen@nvidia.com>
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
-Subject: Re: [PATCH] drivers/net: move the nvidia forcedeth driver from 100M group to 1000M group
-Message-ID: <20070425140629.GD5577@csclub.uwaterloo.ca>
-References: <15F501D1A78BD343BE8F4D8DB854566B130752BE@hkemmail01.nvidia.com>
+	Wed, 25 Apr 2007 10:13:10 -0400
+Received: from ns1.suse.de ([195.135.220.2]:37725 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753875AbXDYONJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 10:13:09 -0400
+To: "Ristuccia, Brian" <bristuccia@starentnetworks.com>
+Cc: <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
+References: <7CCD07160348804497EF29E9EA5560D7020F6203@exchtewks2.starentnetworks.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 25 Apr 2007 17:10:56 +0200
+In-Reply-To: <7CCD07160348804497EF29E9EA5560D7020F6203@exchtewks2.starentnetworks.com>
+Message-ID: <p73k5w032wv.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B130752BE@hkemmail01.nvidia.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 01:30:04PM +0800, Peer Chen wrote:
-> nForce ehternet is a Gigabit NIC not 100M, move it to 1000M group to
-> avoid the confusion.
+"Ristuccia, Brian" <bristuccia@starentnetworks.com> writes:
 
-The forcedeth on my nforce2 board is 100Mbit.  I think the driver
-handles both 100Mbit and GBit type devices.  Makes for an interesting
-categorization problem.  Moving it would cause confusion.  Leaving it
-where it is could cause confusion.  Moving it may confuse existing users
-more though so I would recommend leaving it alone unless you can somehow
-make it appear in both.
+> I'm seeing a problem where the kernel attempts to send packets with a
+> MSS larger than the one negotiated when the TCP connection is
+> established. Even after ICMP "can't fragment" messages arrive, the
+> kernel still attempts to increase the MSS rather aggressively. The end
+> result is extremely poor throughput when sending to a network with a
+> smaller MTU. 
+> 
+> In /proc/sys/net/ipv4:
+> ip_no_pmtu_disc:0
+> tcp_mtu_probing:0
+> 
+> The sending host (10.2.10.254) has an MTU of 9000. The destination host
+> (12.33.234.69) has an MTU of 1500. There is one router between the hosts
+> which will drop packets with the "DF" flag when they don't fit the
+> destination interface's MTU and generates the required icmp can't
+> fragment message. 
+> 
+> The dump shows the initial handshake with correct mss options sent:
+> 
+> 08:39:55.493029 IP 12.33.234.69.35026 > 10.2.10.254.22: S
+> 2768979373:2768979373(
+> 0) win 5840 <mss 1460,sackOK,timestamp 3873837730 0,nop,wscale 2>
+> 08:39:55.493119 IP 10.2.10.254.22 > 12.33.234.69.35026: S
+> 963242385:963242385(0)
+>  ack 2768979374 win 17896 <mss 8960,sackOK,timestamp 413751
 
---
-Len Sorensen
+The MSS clamp for sending to 10.2.10.254.22 is 8960. MSS is only
+one way -- each uses what the other tells it.
+
+> In the following dump, the system eventually gets in a state where it
+> oscillates between sendng undeliverable 2896 byte packets and
+> deliverable 1448 byte ones. 
+
+This should only happen on PMTU expire, which is normally ~15mins.
+Perhaps you misconfigured it manually using sysctl.
+
+-And
