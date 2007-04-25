@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993094AbXDYUvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031140AbXDYUzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993094AbXDYUvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993175AbXDYUvA
+	id S1031140AbXDYUzi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031143AbXDYUzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:51:00 -0400
-Received: from smtp.ono.com ([62.42.230.12]:43397 "EHLO resmaa06.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993094AbXDYUu7 convert rfc822-to-8bit (ORCPT
+	Wed, 25 Apr 2007 16:55:38 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:14531 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031140AbXDYUzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:50:59 -0400
-Date: Wed, 25 Apr 2007 22:50:39 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc6-mm1
-Message-ID: <20070425225039.1cf6c1ee@werewolf-wl>
-In-Reply-To: <20070424102250.ab8469bd.akpm@linux-foundation.org>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
-	<20070424101041.2fb2d9e0@werewolf-wl>
-	<20070424045801.607b30d4.akpm@linux-foundation.org>
-	<20070424154321.11c70ace@werewolf-wl>
-	<20070424102250.ab8469bd.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1cvs23 (GTK+ 2.10.11; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Apr 2007 16:55:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lTpIvO3tZnzxWpbYBqJRGtJduy1pfwSypxoUaT2zgrl8tza5CTQDIGdSh8XV9FENBSG2Lfu7oR0Ur75kmGBuXz5ph/x2NOyYz1K9zXqM/eL11Hkmi19DwB3xF97zGxyYoO5oycP/K9/KaNjHJyT0G7ZKKGYvMO0PQe3qUpHQY60=
+Message-ID: <6bffcb0e0704251355r6de26273s47ba5c857ed0f129@mail.gmail.com>
+Date: Wed, 25 Apr 2007 22:55:36 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200704252248.03243.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>
+	 <462FB8E6.9070501@googlemail.com> <462FBD44.2040103@goop.org>
+	 <200704252248.03243.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 10:22:50 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 24 Apr 2007 15:43:21 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
-> 
-> > On Tue, 24 Apr 2007 04:58:01 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > On Tue, 24 Apr 2007 10:10:41 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
-> > > 
-> > > > On Sun, 8 Apr 2007 14:35:59 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > 
-> > > > > 
-> > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
-> > > > > 
-> > > > > 
-> > > > > - Lots of x86 updates
-> > > > > 
-> > > > 
-> > > > Has somthing related with PTY's changed in this kernel ?
-> > > 
-> > > Not as far as I know, but there were some kobject_uevent changes which
-> > > might have caused udev upcalls to break.  Perhaps.
-> > > 
-> > > > I have to enable legacy PTY handling in a couple boxes to get ssh working.
-> > > > If not, I had openpty() errors and nor sshd nor virtual terminals (aterm) were
-> > > > able to get a terminal.
-> > > 
-> > > I have CONFIG_PM_LEGACY unset in at least one of my test configs and it
-> > > works OK here.
-> > > 
-> > > > User space (udev) is the same in three boxes and one works and two fail.
-> > > > I had /dev/ptmx everywhere and /dev/pts mounted
-> > > > 
-> > > > Any idea ?
-> > > 
-> > > Nope.  Can you please check 2.6.21-rc7-mm1, see if that fixed it?  If so,
-> > > it might have been the kobject_uevent thing.
-> > > 
-> > 
-> > I will, thanks.
-> > 
-> > A couple questions (as far as udev behaviour is sooooooo distro dependent):
-> > - What should I have in /dev if I don't use legacy ptys ? As I understand
-> >   it, only /dev/ptmx and /dev/pts/*, no /dev/tty* nor /dev/pty* ?
-> 
-> My FC5 CONFIG_LEGACY_PTYS=n box has no /dev/ptmx, /dev/pts/*, all of
-> /dev/tty0 through /dev/tty63 and no /dev/pty*.
-> 
-> I'm not sure where all the /dev/tty*'s came from - perhaps a static udev
-> rule?
+On 25/04/07, Andi Kleen <ak@suse.de> wrote:
+> On Wednesday 25 April 2007 22:42:44 Jeremy Fitzhardinge wrote:
+> > Michal Piotrowski wrote:
+> > > Timing information is broken
+> > >
+> >
+> > This looks like Andi's sched_clock stuff hitting: it returns an
+> > inherently per-cpu result, so using it for printk timestamps isn't very
+> > useful.
 >
+> It should actually roughly work. There can be some drift, but there shouldn't
+> be that much error. All CPUs should tick at roughly the same rate because
+> it's scaled to nanoseconds
+>
+> If the drift is a big issue it would also be possible to resync every minute
+> or so, but I haven't implemented that.
+>
+> There will be always some minor monotonicities because it won't try
+> to stop the CPU from reordering instructions.
+>
+> I don't know why it is that off in your case.
 
-Uh ?
->From the Kconfig help fot UNIX98_PTYS:
+Maybe because it's P4 HT?
 
-Linux has traditionally used the BSD-like names /dev/ptyxx for
-masters and /dev/ttyxx for slaves of pseudo terminals. This scheme
-has a number of problems. The GNU C library glibc 2.1 and later,
-however, supports the Unix98 naming standard: in order to acquire a
-pseudo terminal, a process opens /dev/ptmx; the number of the pseudo
-terminal is then made available to the process and the pseudo
-terminal slave can be accessed as /dev/pts/<number>. What was
-traditionally /dev/ttyp2 will then be /dev/pts/2, for example.
+Regards,
+Michal
 
-So if all userspace is Unix98-aware, you just would be done with
-/dev/ptmx and /dev/pts/*. In your setup it looks like you are not able
-to use Unix98 PTYs, but as udev has created tty* things work.
-Or not ?
-
-> > - If my setup, for whatever strange reasons has /dev/tty* stored anyware
-> >   (/dev/.udev, links.conf...) and they get created, I supose that opening
-> >   /dev/tty will give a ENODEV ?
-> 
-> well, /dev/tty is attached to your current tty and /dev/tty2 will get you
-> talking to the second VT.  I can't immediately thing what /dev/tty22 is
-> attached to.
-> 
-
-I supposed it was something like you always opened /dev/tty but kernel+glibc
-redirect you to /dev/ttyXX, that is your _real_ terminal.
-I will try to check docs...
-
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.20-jam10 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #4 SMP PREEMPT
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
