@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031095AbXDYPgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbXDYPhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031095AbXDYPgJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbXDYPgJ
+	id S1754166AbXDYPhL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDYPhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:36:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49732 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754099AbXDYPgI (ORCPT
+	Wed, 25 Apr 2007 11:37:11 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:49345 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbXDYPhJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:36:08 -0400
-Date: Wed, 25 Apr 2007 08:36:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <20070425113530.GX9715@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <20070425113530.GX9715@kernel.dk>
+	Wed, 25 Apr 2007 11:37:09 -0400
+Message-ID: <462F75FF.5090008@oracle.com>
+Date: Wed, 25 Apr 2007 08:38:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+CC: Richard Knutsson <ricknu-0@student.ltu.se>, Jiri Bohac <jbohac@suse.cz>,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
+References: <20070419092339.GA13569@dwarf.suse.cz> <20070419084339.418dbe69.randy.dunlap@oracle.com> <4628B5B6.90303@student.ltu.se> <20070425082028.8ece3094.randy.dunlap@oracle.com> <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
+In-Reply-To: <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007, Jens Axboe wrote:
-
-> I need this patch to actually boot the thing, or it bombs with a NULL
-> deref in page_cache_size().
-
-Yeah on 32 bit which I disabled....
-
-> It then boots, doing a little test with 8kb ext2 quickly dies though:
+John Anthony Kazos Jr. wrote:
+>>>> I think it's like it is just to be consistent with abs() in C,
+>>>> which also contains labs() and llabs().
+>>>>   
+>>> We actually had labs() before (few months ago), but since it was not 
+>>> used, and if it would it seemed better to just fix abs(), it was 
+>>> removed. So I think this is the appropriate way to go.
+>> Sounds like when someone actually needs labs() or llabs()
+>> they can submit a patch for however they would like to use it.
 > 
-> BUG: unable to handle kernel NULL pointer dereference at virtual address
-
-> EIP: [<d8149519>] 0xd8149519 SS:ESP 0068:e9049d1c
+> However they would like to use *abs()? What different ways are possible to 
+> take the arithmetic absolute value? I see record of many cases where 
+> dozens of authors have macros that then get collapsed to include files. So 
+> why not avoid that annoyance this time and -start- with it in the include 
+> files?
 > 
-> That's here:
-> 
->         page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
->                                 zonelist, ALLOC_WMARK_LOW|ALLOC_CPUSET);
-> ->     if (page)
->                 goto got_pg;
+> Can there even be any reason beyond unnecessary pedantics to have 
+> [l[l]]abs?
 
-Impossible. page is not dereferenced. Cannot cause a NULL pointer 
-deference.
+See Paragraph 1 above.  We do lots of functions in a manner that is
+like C (or libc) so that we don't confuse developers.
 
-> which doesn't look healthy. Note that this is a 32-bit machine, I
-> removed the 32-bit check (devices in this box are fine).
-
-
-> 
-> --- fs/libfs.c~	2007-04-25 13:30:50.000000000 +0200
-> +++ fs/libfs.c	2007-04-25 13:31:00.000000000 +0200
-> @@ -330,7 +330,7 @@
->  int simple_prepare_write(struct file *file, struct page *page,
->  			unsigned from, unsigned to)
->  {
-> -	unsigned int page_size = page_cache_size(file->f_mapping);
-> +	unsigned int page_size = page_cache_size(page->mapping);
-
-We do a write operation on a file that has no mapping (and thus no radix 
-tree etc etc)? Is that legit?
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
