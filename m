@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423365AbXDYSU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423374AbXDYSYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423365AbXDYSU1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423372AbXDYSU1
+	id S1423374AbXDYSYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423372AbXDYSYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:20:27 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:37806 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423363AbXDYSUY (ORCPT
+	Wed, 25 Apr 2007 14:24:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49430 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992883AbXDYSYp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:20:24 -0400
-Date: Wed, 25 Apr 2007 11:21:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, mb@bu3sch.de, linville@tuxdriver.com,
-       arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
-Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
-Message-Id: <20070425112133.4ae86399.randy.dunlap@oracle.com>
-In-Reply-To: <20070423104534.51bac974.akpm@linux-foundation.org>
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Wed, 25 Apr 2007 14:24:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
+	<20070425044813.f83dde4e.akpm@linux-foundation.org>
+	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
+	<462F9665.1090602@zytor.com>
+Date: Wed, 25 Apr 2007 12:23:18 -0600
+In-Reply-To: <462F9665.1090602@zytor.com> (H. Peter Anvin's message of "Wed,
+	25 Apr 2007 10:56:53 -0700")
+Message-ID: <m1ejm8s489.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007 10:45:34 -0700 Andrew Morton wrote:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> On Mon, 23 Apr 2007 16:11:23 +0200
-> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> 
-> > Greetings,
-> > I've added the results of the review to the Kconfig cleanup patches
-> > for s390. Patch #2 has been split, one half has all the HAS_IOMEM
-> > depends lines the other the remaining !S390 depends lines.
-> > 
-> > Andrew: I plan to add patches 1-5 to the for-andrew branch of the
-> > git390 repository if that is fine with you. The only thing that will
-> > be missing in the tree is the patch that disables wireless for s390.
-> > The code does compile but without hardware it is mute to have the
-> > config options. I'll wait until the git-wireless.patch is upstream.
-> > Patches 7-9 depend on patches found in -mm.
-> > 
-> 
-> umm, OK.  If it's Ok I think I'll duck it for now: -mm is full.
-> 
-> Over-full, really: I've been working basically continuously since Friday
-> getting the current dungpile to compile and boot, and it's still miles away
-> from that.
+> Eric W. Biederman wrote:
+>>> This patch only affects the initial page tables, which should have been
+>>> thrown out *way* long ago at this point.
+>> 
+>> Yes.  I noticed this was happening a few days ago.
+>> I must not have mentioned it loudly enough.
+>
+> You mentioned the continued use of init_mm.  This is *very* different.
+>
+> What we're seeing here is that ON PSE-CAPABLE HARDWARE, we continue to
+> not just use the init_mm page directory, but the actual page *tables*,
+> which should all have been replaced with PSE large pages to begin with.
 
-and I continue to be concerned about the amount of patch reviews
-compared to new patch material overall (not just s390).
+That is what I meant if not what I communicated.  If you read the code that
+is exactly what it is trying to do.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> Reusing the initial page tables on non-PSE-capable hardware *sort of*
+> makes sense, but his hardware should not fall in that category, I don't
+> think?  (Unless it's one of these machines that fall over if you map the
+> bottom 4 MB with PSE pages?)
+
+I agree that I don't think the current behaviour makes sense.  I think
+the code has accumulated so many small modifications that is very far
+from making sense in the corner cases.
+
+arch/i386 either needs to be frozen as a legacy only thing or
+it needs to be cleaned up so we can continue to enhance the code.
+
+Eric
