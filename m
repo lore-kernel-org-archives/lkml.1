@@ -1,171 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992895AbXDYSml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992909AbXDYSoF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992895AbXDYSml (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:42:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992897AbXDYSml
+	id S2992909AbXDYSoF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:44:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992907AbXDYSoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:42:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:30633 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992896AbXDYSmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:42:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,451,1170662400"; 
-   d="scan'208";a="79113317"
-Date: Wed, 25 Apr 2007 11:40:02 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 1/7] libata: check for AN support
-Message-Id: <20070425114002.1975da48.kristen.c.accardi@intel.com>
-In-Reply-To: <20070425004946.GA63747@dspnet.fr.eu.org>
-References: <20070424074856.005152262@intel.com>
-	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
-	<20070424090713.65657495@the-village.bc.nu>
-	<20070424102304.GA58841@dspnet.fr.eu.org>
-	<20070424084904.61932994.kristen.c.accardi@intel.com>
-	<20070424180552.GA17319@dspnet.fr.eu.org>
-	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>
-	<20070425004946.GA63747@dspnet.fr.eu.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 14:44:05 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49865 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992897AbXDYSoC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:44:02 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       viro@ftp.linux.org.uk, linuxram@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, linux-security-module@vger.kernel.org
+Subject: Re: [patch] unprivileged mounts update
+References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu>
+	<E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu>
+	<462F87EA.1000002@zytor.com>
+	<20070425172012.GA20336@sergelap.austin.ibm.com>
+	<m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com>
+	<20070425175609.GB20165@vino.hallyn.com>
+Date: Wed, 25 Apr 2007 12:41:41 -0600
+In-Reply-To: <20070425175609.GB20165@vino.hallyn.com> (Serge E. Hallyn's
+	message of "Wed, 25 Apr 2007 12:56:09 -0500")
+Message-ID: <m1647ks3dm.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check to see if an ATAPI device supports Asynchronous Notification.
-If so, enable it.
+"Serge E. Hallyn" <serge@hallyn.com> writes:
 
-Changes from last version:
-* use parens around id in ata.h
+> Quoting Eric W. Biederman (ebiederm@xmission.com):
+>> 
+>> Are there other permission checks that mount is doing that we
+>> care about.
+>
+> Not mount itself, but in looking up /share/fa/root/home/fa,
+> user fa doesn't have the rights to read /share, and by setting
+> fsuid to fa and dropping CAP_DAC_READ_SEARCH the mount action fails.
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Got it. 
 
-Index: 2.6-git/drivers/ata/libata-core.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-core.c
-+++ 2.6-git/drivers/ata/libata-core.c
-@@ -70,6 +70,7 @@ const unsigned long sata_deb_timing_long
- static unsigned int ata_dev_init_params(struct ata_device *dev,
- 					u16 heads, u16 sectors);
- static unsigned int ata_dev_set_xfermode(struct ata_device *dev);
-+static unsigned int ata_dev_set_AN(struct ata_device *dev);
- static void ata_dev_xfermask(struct ata_device *dev);
- 
- static unsigned int ata_print_id = 1;
-@@ -1744,6 +1745,22 @@ int ata_dev_configure(struct ata_device 
- 		}
- 		dev->cdb_len = (unsigned int) rc;
- 
-+		/*
-+		 * check to see if this ATAPI device supports
-+		 * Asynchronous Notification
-+		 */
-+		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id)) {
-+			int err;
-+			/* issue SET feature command to turn this on */
-+			err = ata_dev_set_AN(dev);
-+			if (err)
-+				ata_dev_printk(dev, KERN_ERR,
-+						"unable to set AN, err %x\n",
-+						err);
-+			else
-+				dev->flags |= ATA_DFLAG_AN;
-+		}
-+
- 		if (ata_id_cdb_intr(dev->id)) {
- 			dev->flags |= ATA_DFLAG_CDB_INTR;
- 			cdb_intr_string = ", CDB intr";
-@@ -3525,6 +3542,42 @@ static unsigned int ata_dev_set_xfermode
- }
- 
- /**
-+ *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
-+ *                       with sector count set to indicate
-+ *                       Asynchronous Notification feature
-+ *	@dev: Device to which command will be sent
-+ *
-+ *	Issue SET FEATURES - SATA FEATURES command to device @dev
-+ *	on port @ap.
-+ *
-+ *	LOCKING:
-+ *	PCI/etc. bus probe sem.
-+ *
-+ *	RETURNS:
-+ *	0 on success, AC_ERR_* mask otherwise.
-+ */
-+static unsigned int ata_dev_set_AN(struct ata_device *dev)
-+{
-+	struct ata_taskfile tf;
-+	unsigned int err_mask;
-+
-+	/* set up set-features taskfile */
-+	DPRINTK("set features - SATA features\n");
-+
-+	ata_tf_init(dev, &tf);
-+	tf.command = ATA_CMD_SET_FEATURES;
-+	tf.feature = SETFEATURES_SATA_ENABLE;
-+	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-+	tf.protocol = ATA_PROT_NODATA;
-+	tf.nsect = SATA_AN;
-+
-+	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-+
-+	DPRINTK("EXIT, err_mask=%x\n", err_mask);
-+	return err_mask;
-+}
-+
-+/**
-  *	ata_dev_init_params - Issue INIT DEV PARAMS command
-  *	@dev: Device to which command will be sent
-  *	@heads: Number of heads (taskfile parameter)
-Index: 2.6-git/include/linux/ata.h
-===================================================================
---- 2.6-git.orig/include/linux/ata.h
-+++ 2.6-git/include/linux/ata.h
-@@ -194,6 +194,12 @@ enum {
- 	SETFEATURES_WC_ON	= 0x02, /* Enable write cache */
- 	SETFEATURES_WC_OFF	= 0x82, /* Disable write cache */
- 
-+	SETFEATURES_SATA_ENABLE = 0x10, /* Enable use of SATA feature */
-+	SETFEATURES_SATA_DISABLE = 0x90, /* Disable use of SATA feature */
-+
-+	/* SETFEATURE Sector counts for SATA features */
-+	SATA_AN			= 0x05,  /* Asynchronous Notification */
-+
- 	/* ATAPI stuff */
- 	ATAPI_PKT_DMA		= (1 << 0),
- 	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
-@@ -299,6 +305,9 @@ struct ata_taskfile {
- #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
- #define ata_id_removeable(id)	((id)[0] & (1 << 7))
- #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
-+#define ata_id_has_AN(id)	\
-+	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
-+	  ((id)[78] & (1 << 5)) )
- #define ata_id_iordy_disable(id) ((id)[49] & (1 << 10))
- #define ata_id_has_iordy(id) ((id)[49] & (1 << 9))
- #define ata_id_u32(id,n)	\
-Index: 2.6-git/include/linux/libata.h
-===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -136,6 +136,7 @@ enum {
- 	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
- 	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
- 	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
-+	ATA_DFLAG_AN		= (1 << 5), /* device supports Async notification */
- 	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
- 
- 	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
-@@ -174,6 +175,7 @@ enum {
- 	ATA_FLAG_SETXFER_POLLING= (1 << 14), /* use polling for SETXFER */
- 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
- 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
-+	ATA_FLAG_AN		= (1 << 17), /* controller supports AN */
- 
- 	/* The following flag belongs to ap->pflags but is kept in
- 	 * ap->flags because it's referenced in many LLDs and will be
+I'm not certain this is actually a problem it may be a feature.
+But it does fly in the face of the general principle of just
+getting out of roots way so things can get done.
+
+I think we can solve your basic problem by simply doing like:
+chdir(/share); mount(.);  To simply avoid the permission problem.
+
+The practical question is how much do we care.
+
+> But the solution you outlined in your previous post would work around
+> this perfectly.
+
+If we are not using usual permissions which user do we use current->uid?
+Or do we pass that user someplace?
+
+>> > If it were really the equivalent then I could keep my capabilities :)
+>> > after changing it.
+>> 
+>> We drop all capabilities after we change the euid.
+>
+> Not if we've done prctl(PR_SET_KEEPCAPS, 1)
+
+Ah cap_clear doesn't do the obvious thing.
+
+Eric
