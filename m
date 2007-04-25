@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031090AbXDYP1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031091AbXDYP3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031090AbXDYP1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031091AbXDYP1Q
+	id S1031091AbXDYP3A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031093AbXDYP3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:27:16 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:57663 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031090AbXDYP1Q (ORCPT
+	Wed, 25 Apr 2007 11:29:00 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33839 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031091AbXDYP27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:27:16 -0400
-Date: Wed, 25 Apr 2007 11:26:49 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Richard Knutsson <ricknu-0@student.ltu.se>, Jiri Bohac <jbohac@suse.cz>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
-In-Reply-To: <20070425082028.8ece3094.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
-References: <20070419092339.GA13569@dwarf.suse.cz>
- <20070419084339.418dbe69.randy.dunlap@oracle.com> <4628B5B6.90303@student.ltu.se>
- <20070425082028.8ece3094.randy.dunlap@oracle.com>
+	Wed, 25 Apr 2007 11:28:59 -0400
+Message-ID: <462F73A0.40003@zytor.com>
+Date: Wed, 25 Apr 2007 08:28:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Zachary Amsden <zach@vmware.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org> <20070425044813.f83dde4e.akpm@linux-foundation.org>
+In-Reply-To: <20070425044813.f83dde4e.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > I think it's like it is just to be consistent with abs() in C,
-> > > which also contains labs() and llabs().
-> > >   
-> > We actually had labs() before (few months ago), but since it was not 
-> > used, and if it would it seemed better to just fix abs(), it was 
-> > removed. So I think this is the appropriate way to go.
+Andrew Morton wrote:
+
 > 
-> Sounds like when someone actually needs labs() or llabs()
-> they can submit a patch for however they would like to use it.
+> This patch causes oopses after a minute or so running LTP's
+> 
+> ./testcases/bin/growfiles -W gf16 -b -e 1 -i 0 -L 120 -u -g 4090 -T 100 -t 408990 -l -C 10 -c 1000 -S 10 -f Lgf02_
+> 
+> on everyone's favoutite Vaio, configured with
+> http://userweb.kernel.org/~akpm/config-sony.txt
+> 
 
-However they would like to use *abs()? What different ways are possible to 
-take the arithmetic absolute value? I see record of many cases where 
-dozens of authors have macros that then get collapsed to include files. So 
-why not avoid that annoyance this time and -start- with it in the include 
-files?
+*BLINK*
 
-Can there even be any reason beyond unnecessary pedantics to have 
-[l[l]]abs?
+This patch only affects the initial page tables, which should have been
+thrown out *way* long ago at this point.
+
+Yet they seem to have stuck around.  This is a very bad thing on many
+levels, especially since we should have switched the kernel 1:1 area
+over to PSE pages a long time ago.
+
+> BUG: unable to handle kernel paging request at virtual address c084fa8c
+>  printing eip:
+> c0174c46
+> *pde = 0042a027
+> *pte = 00000000
+
+Touching a non-PSE page which is zero, and quite consistent with being a
+remnant from the original page tables.
+
+Methinks this has smoked out a bug in the initial page table setup which
+probably has been a performance roadblock for quite some time.
+
+	-hpa
