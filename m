@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993074AbXDYURM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993071AbXDYUUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993074AbXDYURM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993076AbXDYURM
+	id S2993071AbXDYUUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993076AbXDYUUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:17:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:34519 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993074AbXDYURL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:17:11 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 06/25] xen: Core Xen implementation
-Date: Wed, 25 Apr 2007 22:17:06 +0200
-User-Agent: KMail/1.9.6
-Cc: Ian Pratt <ian.pratt@xensource.com>, lkml <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>, virtualization@lists.osdl.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20070423215638.563901986@goop.org> <200704252143.48363.ak@suse.de> <462FB42F.5070503@goop.org>
-In-Reply-To: <462FB42F.5070503@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 25 Apr 2007 16:20:00 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:32295 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993071AbXDYUT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:19:59 -0400
+Date: Wed, 25 Apr 2007 13:22:45 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: bbpetkov@yahoo.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [KERNEL-DOC] kill warnings when building mandocs
+Message-Id: <20070425132245.01a1c6c4.randy.dunlap@oracle.com>
+In-Reply-To: <20070420060250.GB3967@gollum.tnic>
+References: <20070413091422.GA15426@zmei.tnic>
+	<20070414091341.7665d8b0.randy.dunlap@oracle.com>
+	<20070415071050.GA4002@gollum.tnic>
+	<20070417104907.GA6155@gollum.tnic>
+	<20070418090320.3786edd6.randy.dunlap@oracle.com>
+	<20070419062059.GA3974@gollum.tnic>
+	<20070419085336.c029b87c.randy.dunlap@oracle.com>
+	<20070420060250.GB3967@gollum.tnic>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704252217.06381.ak@suse.de>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 20 Apr 2007 08:02:50 +0200 Borislav Petkov wrote:
 
-> > To summarize the outstanding issues are:
-> > - fixing sched_clock first
-> >   
+> > > > Are other people seeing these warning messages ??
+> > > Hm, is anyone building the manpages target at all?
+> > 
+> > Other than the 2 of us... I couldn't say.
 > 
-> What was the sched_clock problem?  I don't remember and outstanding
-> issues with it.  I noticed you didn't take paravirt-sched_clock.
+> By the way, can we consider the item 
+> "- clean up Documentation/DocBook/, fix warnings that occur on make *docs."  
+> from the KJ TODO list as now done?
 
-The major problem was that it didn't compile on x86-64.
-And a few uglities in there so I was not too unhappy to drop.
+OK, although a few of them may not be fixed until soon after 2.6.21
+is released and pending patches are applied.
 
--Andi
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
