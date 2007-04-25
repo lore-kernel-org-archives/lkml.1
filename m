@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992458AbXDYJdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992477AbXDYJfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992458AbXDYJdB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992477AbXDYJdA
+	id S2992477AbXDYJfg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992483AbXDYJfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:33:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35896 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992458AbXDYJc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:32:59 -0400
-Date: Wed, 25 Apr 2007 11:32:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: ray-gmail@madrabbit.org
+	Wed, 25 Apr 2007 05:35:36 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:44695 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992477AbXDYJff convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:35:35 -0400
+X-Greylist: delayed 1968 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 05:35:34 EDT
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and 
+	suspend2:hang in atomic copy)
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Pavel Machek <pavel@ucw.cz>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070425093228.GC498@elte.hu>
-References: <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <200704220959.34978.kernel@kolivas.org> <87647oblx5.fsf@pps.jussieu.fr> <alpine.LFD.0.98.0704221620310.9964@woody.linux-foundation.org> <20070423013429.GB25162@wotan.suse.de> <alpine.LFD.0.98.0704230844410.9964@woody.linux-foundation.org> <20070423191143.GA16849@elte.hu> <alpine.LFD.0.98.0704231227300.9964@woody.linux-foundation.org> <2c0942db0704240808p5b97bb31u42da4db298821809@mail.gmail.com>
+       Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20070425072350.GA6866@ucw.cz>
+References: <200704182245.24156.mail@earthworm.de> 
+	<20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> 
+	<20070418220228.GA14536@elte.hu> 
+	<1176947576.5906.21.camel@nigel.suspend2.net> 
+	<20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> 
+	<alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> 
+	<20070424212408.GD16457@elf.ucw.cz> 
+	<alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> 
+	<20070425072350.GA6866@ucw.cz>
+Content-Type: text/plain;
+	charset=utf-8
+Date: Wed, 25 Apr 2007 11:02:40 +0200
+Message-Id: <1177491760.21928.20.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c0942db0704240808p5b97bb31u42da4db298821809@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-04-25 at 07:23 +0000, Pavel Machek wrote:
+> suspend-to-disk is a workaround for
+>
+>         'suspend-to-ram eats too much power' (plus some details like
+>         being able to replace battery).
+>
 
-* Ray Lee <madrabbit@gmail.com> wrote:
+...and let me add 'suspend-to-disk' is a workaround for when s2ram does
+not work for a gazillion interacting reasons (ACPI, vga bios, drm/dri,
+you name it).
+I am quite happy with s2ram now on my AMD-based vaio, but it started to
+work with 2.6.17 kernels (Ubuntu Edgy, really), and the three years
+before that suspend-to-disk (sometime Pavel's, sometime Nigel's) 
+saved the day (yes, it's quite faster to use suspend-to-disk that doing
+shutdown, reboot, and re-open all the applications).
 
-> It would seem like there should be a penalty associated with sending 
-> those points as well, so that two processes communicating quickly with 
-> each other won't get into a mutual love-fest that'll capture the 
-> scheduler's attention.
+So, please do not dismiss suspend-to-disk as "crap". It has its place
+under the sun.
 
-it's not really "points", but "nanoseconds you are allowed to execute on 
-the CPU". And thus two processes communicating with each other quickly 
-and sending around this resource does get the attention of CFS: the 
-resource is gradually consumed because the two processes are running on 
-the CPU while they are communicating with each other. So it all works 
-out fine.
+Romano
 
-	Ingo
+--
+Romano Giannetti --- romano.giannetti@gmail.com
+Sorry for the following disclaimer, it's attached by our outgoing server
+and I cannot shut it up.
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation.
+
