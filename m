@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993111AbXDYVcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbXDYVbr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993111AbXDYVcV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 17:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993117AbXDYVcU
+	id S1754284AbXDYVbr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 17:31:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXDYVb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 17:32:20 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38127 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993076AbXDYVcR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 17:32:17 -0400
-Date: Wed, 25 Apr 2007 14:30:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, mb@bu3sch.de, linville@tuxdriver.com,
-       arnd@arndb.de, maxextreme@gmail.com, gregkh@suse.de
-Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
-Message-Id: <20070425143011.57247c1d.akpm@linux-foundation.org>
-In-Reply-To: <20070425112133.4ae86399.randy.dunlap@oracle.com>
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 17:31:26 -0400
+Received: from [212.12.190.171] ([212.12.190.171]:33143 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754276AbXDYVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 17:31:24 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Pavel Machek <pavel@ucw.cz>, William Heimbigner <icxcnika@mar.tar.cc>
+Subject: Re: Reasons to merge suspend2.
+Date: Thu, 26 Apr 2007 00:33:22 +0300
+User-Agent: KMail/1.5
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>, linux-kernel@vger.kernel.org
+References: <200704251551.38373.a1426z@gawab.com> <Pine.LNX.4.64.0704251600030.25153@server.thyself> <20070425161656.GA17253@elf.ucw.cz>
+In-Reply-To: <20070425161656.GA17253@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704260033.22378.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 11:21:33 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Pavel Machek wrote:
+> Hi!
 
-> On Mon, 23 Apr 2007 10:45:34 -0700 Andrew Morton wrote:
-> 
-> > On Mon, 23 Apr 2007 16:11:23 +0200
-> > Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-> > 
-> > > Greetings,
-> > > I've added the results of the review to the Kconfig cleanup patches
-> > > for s390. Patch #2 has been split, one half has all the HAS_IOMEM
-> > > depends lines the other the remaining !S390 depends lines.
-> > > 
-> > > Andrew: I plan to add patches 1-5 to the for-andrew branch of the
-> > > git390 repository if that is fine with you. The only thing that will
-> > > be missing in the tree is the patch that disables wireless for s390.
-> > > The code does compile but without hardware it is mute to have the
-> > > config options. I'll wait until the git-wireless.patch is upstream.
-> > > Patches 7-9 depend on patches found in -mm.
-> > > 
-> > 
-> > umm, OK.  If it's Ok I think I'll duck it for now: -mm is full.
-> > 
-> > Over-full, really: I've been working basically continuously since Friday
-> > getting the current dungpile to compile and boot, and it's still miles away
-> > from that.
-> 
-> and I continue to be concerned about the amount of patch reviews
-> compared to new patch material overall (not just s390).
-> 
+Hi!
 
-yes.  I'm increasingly reluctant to merge things which have had no visible
-review from any third party.  Nowadays I'll shove such patches into a
-pending folder and will wait a day or three to see if anyone has any
-feedback.  If they don't I have to either ignore the patches or review them
-myself.
+> > >>I didn't read your whole post, it's way too long, but I would like to
+> > >> see your patch in mainline as an option to swsusp.  What would make
+> > >> this infeasible?
+> > >
+> > >For one thing, Linus said not but yesterday that he doesn't want
+> > > multiple competing suspend algorithms like this in the kernel at once.
+> > > (If I parsed his message correctly, he doesn't want any in the kernel,
+> > > but he's putting up with it because it seems somewhat needed.)
+> >
+> > Would it be a feasible solution to have a very minimal and generic
+> > software suspend in the kernel, and then various userspace
+> > implementations could take care of this?
+>
+> Yes please. If you want suspend-over-nfs or whatever, just add it to
+> the userspace; we have enough support in kernel now.
 
-I expect (and hope) that more formal processes will come about here.  Perhaps
-up to it-won't-be-merged-without-a-Reviewed-by:.
+The only way I can think of supporting this, would probably be via an 
+initramfs trick.  But, if you think suspend-over-nfs is possible from 
+user-space, then why should there be any need for swsusp in the kernel?
 
 
-But that only applies to things which I merge.  There's heaps of stuff
-coming in via the git trees which is obviously inadequately reviewed - look
-at all the instances of open-coded kernel_thread() which were merged after
-the kthread() API was introduced, for example.
+Thanks!
 
-
-And other basic stuff like "use mutexes, not semaphores":
-
-box:/usr/src/25> grep '^+.*[    ]down[  ]*[(]' patches/git-*.patch | wc -l
-32
-
-
-
-Ever wonder where all those whitespace bugs are coming from?
-
-box:/usr/src/25> grep '^+.*[    ]if[(]' patches/git-*.patch | wc -l
-265
-box:/usr/src/25> grep '^+.*[    ]while[(]' patches/git-*.patch | wc -l  
-35
-
-
-Code which use spaces where it should be using tabs?
-
-box:/usr/src/25> grep '^+        ' patches/git-*.patch | wc -l
-1346
-
-
-Heaven knows how many more serious problems are being snuck into the tree
-via this route.
-
-What do we do?
+--
+Al
 
