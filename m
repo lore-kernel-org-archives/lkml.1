@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161858AbXDYM3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965550AbXDYMb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161858AbXDYM3h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 08:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161540AbXDYM3h
+	id S965550AbXDYMb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 08:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXDYMb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 08:29:37 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:37763 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161855AbXDYM3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 08:29:32 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: linux-mm@kvack.org
-Subject: Removing VM_LOCKED from user memory
-Date: Wed, 25 Apr 2007 14:29:17 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4270414.IHIPDGtuYs";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 25 Apr 2007 08:31:28 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:52929 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965522AbXDYMb0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 08:31:26 -0400
+Subject: Re: [PATCH 5/5] jffs2: Allow selection of compression mode via a
+	sysfs attribute
+From: David Woodhouse <dwmw2@infradead.org>
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, herbert@gondor.apana.org.au,
+       linux-mtd <linux-mtd@lists.infradead.org>, linux-crypto@vger.kernel.org
+In-Reply-To: <1172690034.16062.144.camel@localhost.localdomain>
+References: <1172690034.16062.144.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 25 Apr 2007 13:31:20 +0100
+Message-Id: <1177504280.2755.212.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704251429.26014.eike-kernel@sf-tec.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4270414.IHIPDGtuYs
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 2007-02-28 at 19:13 +0000, Richard Purdie wrote:
+> Allow selection of the compression mode for jffs2 via a sysfs 
+> attribute. This establishes a sysfs presence for jffs2 through
+> which other compression options could easily be exported too. 
 
-Hi,
+And other options like GC threshold and other allocation things. So
+perhaps put the sysfs subsystem_register() and other core bits into a
+generic (and Linux-specific) file?
 
-I need some assistance handling a large memory segment of a user process.
+-- 
+dwmw2
 
-The user calls the kernel with a address and a length of it's own memory. M=
-y=20
-driver will lock this memory using get_user_pages(). This memory is used as=
-=20
-DMA buffer directly from or to user processes.
-
-Everything works fine that far: allocating, DMA mapping, DMA transfers. But=
- I=20
-currently can't get rid of the buffer again. Which function would help me t=
-o=20
-get all pages unlocked once the buffer isn't needed anymore?
-
-Is it enough to simply call sys_munlock() from the release and cleanup=20
-functions?
-
-There are no plans to share these mappings between different processes.
-
-Greetings,
-
-Eike
-
---nextPart4270414.IHIPDGtuYs
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQBGL0mlXKSJPmm5/E4RAjdMAJ40t9quwChTbbi8dciplKENDCqUPgCfZ6t+
-toI0Psg11rZY4naPV7Bui8w=
-=QRMy
------END PGP SIGNATURE-----
-
---nextPart4270414.IHIPDGtuYs--
