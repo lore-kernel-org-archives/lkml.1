@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXDYL2N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992713AbXDYL2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992696AbXDYL2N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:28:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992713AbXDYL2M
+	id S2992713AbXDYL2v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992715AbXDYL2v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:28:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:54816 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992698AbXDYL2K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:28:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FXyxFiKwIqo6ZLXQNjAKmVQL8BYKv7azHRA2L8wL6CQiwIqswWghL8emzyZ7Qh7q5BF+dG8h/5LaSLWMRdGKA+oO5f4+1BQq60uX6oIt/1CGuVS0OYx1A9svBgbAexYCS9sLuFPIRJ9Ek9KOI1Tlo3+08QYPNjYsoTM+4BvEcR0=
-Message-ID: <2e4afe1e0704250428v30ac35cfwe499a07182464fc5@mail.gmail.com>
-Date: Wed, 25 Apr 2007 16:58:09 +0530
-From: "Karuna sagar K" <karunasagark@gmail.com>
-To: "Avishay Traeger" <atraeger@cs.sunysb.edu>
-Subject: Re: Testing framework
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1177337041.3704.4.camel@localhost>
+	Wed, 25 Apr 2007 07:28:51 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:46506 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992704AbXDYL2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 07:28:50 -0400
+Date: Wed, 25 Apr 2007 13:28:05 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
+In-Reply-To: <462F2558.5010909@aitel.hist.no>
+Message-ID: <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+ <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org>
+ <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
+ <20070412202519.GB14705@aitel.hist.no> <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
+ <462F2558.5010909@aitel.hist.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2e4afe1e0704221346u6d6baec1uab88dc273ff08de9@mail.gmail.com>
-	 <1177337041.3704.4.camel@localhost>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/23/07, Avishay Traeger <atraeger@cs.sunysb.edu> wrote:
-> On Mon, 2007-04-23 at 02:16 +0530, Karuna sagar K wrote:
-> <snip>
->
-> You may want to check out the paper "EXPLODE: A Lightweight, General
-> System for Finding Serious Storage System Errors" from OSDI 2006 (if you
-> haven't already).  The idea sounds very similar to me, although I
-> haven't read all the details of your proposal.
+On Wed, 25 Apr 2007, Helge Hafting wrote:
 
-EXPLODE is more of a generic tool i.e. it is used to find larger set
-of errors/bugs in file systems than the Test framework which focuses
-on the repair of file systems.
+> > Anyway, based on information you have provided in your later messages, 
+> > it seems that it is probably not necessairly related neither to USB 
+> > nor HID, as you are getting hangs at different stages of boot, 
+> > depending on your local configuration/kernel version used. Is vanilla 
+> > 2.6.21-rc6 ok? If so, would you have time to bisect the offending 
+> > patch?
+> I don't know about 2.6.21-rc6, but 2.6.21-rc7 (from fresh sources) is 
+> good.  It boots up without hanging, and my USB devices works too. Should 
+> I test rc7-mm1 then?
 
-The Test framework is focused towards repairability of the file
-systems, it doesnt use model checking concept, it uses replayable
-corruption mechanism and is user space implementation. Thats the
-reason why this is not similar to EXPLODE.
+That would also be useful.
 
->
-> Avishay
->
->
+But really identifying offending patch using bisection would help most. 
+And it should be pretty easy and not too much time consuming for you, as 
+the bug triggers immediately upon boot in your case.
 
-Thanks,
-Karuna
+In case you are not convenient with "bisecting by hand" Andrew's quilt 
+patchset, don't forget that it is also possible to obtain -mm tree through 
+git, which provides very convenient means for bisecting. This is what I 
+usually do.
+
+-- 
+Jiri Kosina
