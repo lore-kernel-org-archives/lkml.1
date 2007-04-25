@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031152AbXDYPxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031108AbXDYPxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031152AbXDYPxh (ORCPT <rfc822;w@1wt.eu>);
+	id S1031108AbXDYPxh (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 25 Apr 2007 11:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031108AbXDYPxf
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031147AbXDYPxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:53:35 -0400
-Received: from mx3.mail.ru ([194.67.23.149]:9395 "EHLO mx3.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031150AbXDYPxa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:53:30 -0400
-Date: Wed, 25 Apr 2007 19:50:36 +0400
+	Wed, 25 Apr 2007 11:53:33 -0400
+Received: from mx34.mail.ru ([194.67.23.200]:33308 "EHLO mx27.mail.ru"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031108AbXDYPxR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 11:53:17 -0400
+Date: Wed, 25 Apr 2007 19:50:28 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
-Subject: [PATCH 2/7] pda power driver
-Message-ID: <20070425155036.GB4117@zarina>
+Subject: [PATCH 1/7] External power framework
+Message-ID: <20070425155028.GA4117@zarina>
 References: <20070425154820.GA27300@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
@@ -24,64 +24,102 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Common power driver for PDAs and phones with one or two external
-power supplies (AC/USB) connected to main and backup batteries,
-and optional builtin charger.
+Power supplies and power supplicants.
 
-It's used to stop logic duplication through different embedded
-devices. So, power supply *logic* is here. pda_power register
-power supplies, and will take care about notifying batteries
-about power changes through external power interface.
+Supplicants (batteries so far) may ask to notify they when power supply
+arrive/gone. This framework used by battery class.
 
-AC/USB power consumption issues should be handled by platform
-code, inside set_charge function.
+It's permitted for supply to be bound to several supplicants (think main
+and backup batteries).
+
+It's also permitted for supplicants to consume power from several
+external supplies (say AC and USB).
+
+Here is how it look like from userspace:
+
+        # pwd
+        /sys/class/power_supply
+        # ls
+        ac  usb
+        # cat ac/online usb/online
+        1
+        0
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/Kconfig     |    8 ++
- drivers/power/Makefile    |    1 +
- drivers/power/pda_power.c |  239 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pda_power.h |   28 +++++
- 4 files changed, 276 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/pda_power.c
- create mode 100644 include/linux/pda_power.h
+ drivers/Kconfig                |    2 +
+ drivers/Makefile               |    1 +
+ drivers/power/Kconfig          |   13 ++
+ drivers/power/Makefile         |    1 +
+ drivers/power/external_power.c |  361 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/external_power.h |   56 ++++++
+ 6 files changed, 434 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/Kconfig
+ create mode 100644 drivers/power/Makefile
+ create mode 100644 drivers/power/external_power.c
+ create mode 100644 include/linux/external_power.h
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 17349c1..b87779e 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -10,4 +10,12 @@ config EXTERNAL_POWER
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 050323f..c546de3 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -54,6 +54,8 @@ source "drivers/spi/Kconfig"
  
- 	  This interface is mandatory for battery class support.
+ source "drivers/w1/Kconfig"
  
-+config PDA_POWER
-+	tristate "Generic PDA/phone power driver"
-+	depends on EXTERNAL_POWER
-+	help
-+	  Say Y here to enable generic power driver for PDAs and phones with
-+	  one or two external power supplies (AC/USB) connected to main and
-+	  backup batteries, and optional builtin charger.
++source "drivers/power/Kconfig"
 +
- endmenu
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index c303b45..6f084e7 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -1 +1,2 @@
- obj-$(CONFIG_EXTERNAL_POWER)  += external_power.o
-+obj-$(CONFIG_PDA_POWER)       += pda_power.o
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+ source "drivers/hwmon/Kconfig"
+ 
+ source "drivers/mfd/Kconfig"
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 3a718f5..2bdaae7 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -60,6 +60,7 @@ obj-$(CONFIG_I2O)		+= message/
+ obj-$(CONFIG_RTC_LIB)		+= rtc/
+ obj-$(CONFIG_I2C)		+= i2c/
+ obj-$(CONFIG_W1)		+= w1/
++obj-$(CONFIG_EXTERNAL_POWER)	+= power/
+ obj-$(CONFIG_HWMON)		+= hwmon/
+ obj-$(CONFIG_PHONE)		+= telephony/
+ obj-$(CONFIG_MD)		+= md/
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
 new file mode 100644
-index 0000000..2a22687
+index 0000000..17349c1
 --- /dev/null
-+++ b/drivers/power/pda_power.c
-@@ -0,0 +1,239 @@
++++ b/drivers/power/Kconfig
+@@ -0,0 +1,13 @@
++
++menu "External power support"
++
++config EXTERNAL_POWER
++	tristate "External power kernel interface"
++	help
++	  Say Y here to enable kernel external power detection interface,
++	  like AC or USB. Information also will exported to userspace via
++	  /sys/class/external_power/ directory.
++
++	  This interface is mandatory for battery class support.
++
++endmenu
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+new file mode 100644
+index 0000000..c303b45
+--- /dev/null
++++ b/drivers/power/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_EXTERNAL_POWER)  += external_power.o
+diff --git a/drivers/power/external_power.c b/drivers/power/external_power.c
+new file mode 100644
+index 0000000..94f919a
+--- /dev/null
++++ b/drivers/power/external_power.c
+@@ -0,0 +1,361 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ * Linux kernel interface for external power suppliers/supplicants
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ * Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
@@ -89,266 +127,418 @@ index 0000000..2a22687
 + */
 +
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
++#include <linux/err.h>
++#include <linux/device.h>
++#include <linux/rwsem.h>
 +#include <linux/external_power.h>
-+#include <linux/pda_power.h>
-+#include <linux/timer.h>
-+#include <linux/jiffies.h>
 +
-+static inline unsigned int get_irq_flags(struct resource *res)
-+{
-+	unsigned int flags = IRQF_DISABLED | IRQF_SHARED;
++static struct class *power_supply_class;
 +
-+	flags |= res->flags & IRQF_TRIGGER_MASK;
++static LIST_HEAD(supplicants);
++static struct rw_semaphore supplicants_sem;
 +
-+	return flags;
-+}
-+
-+static struct device *dev;
-+static struct pda_power_pdata *pdata;
-+static struct resource *ac_irq, *usb_irq;
-+static struct timer_list charger_timer;
-+static struct timer_list supply_timer;
-+
-+static int pda_power_is_ac_online(struct power_supply *psy)
-+{
-+	return pdata->is_ac_online ? pdata->is_ac_online() : 0;
-+}
-+
-+static int pda_power_is_usb_online(struct power_supply *psy)
-+{
-+	return pdata->is_usb_online ? pdata->is_usb_online() : 0;
-+}
-+
-+static char *pda_power_supplied_to[] = {
-+	"main-battery",
-+	"backup-battery",
++struct bound_supply {
++	struct power_supply *psy;
++	struct list_head node;
 +};
 +
-+static struct power_supply pda_power_supplies[] = {
-+	{
-+		.name = "ac",
-+		.type = "ac",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_ac_online,
-+	},
-+	{
-+		.name = "usb",
-+		.type = "dc",
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.is_online = pda_power_is_usb_online,
-+	},
++struct bound_supplicant {
++	struct power_supplicant *pst;
++	struct list_head node;
 +};
 +
-+static void update_charger(void)
-+{
-+	if (!pdata->set_charge)
-+		return;
-+
-+	if (pdata->is_ac_online && pdata->is_ac_online()) {
-+		dev_dbg(dev, "charger on (AC)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_AC);
-+	}
-+	else if (pdata->is_usb_online && pdata->is_usb_online()) {
-+		dev_dbg(dev, "charger on (USB)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_USB);
-+	}
-+	else {
-+		dev_dbg(dev, "charger off\n");
-+		pdata->set_charge(0);
-+	}
-+
-+	return;
-+}
-+
-+static void supply_timer_func(unsigned long irq)
-+{
-+	if (ac_irq && irq == ac_irq->start)
-+		power_supply_changed(&pda_power_supplies[0]);
-+	else if (usb_irq && irq == usb_irq->start)
-+		power_supply_changed(&pda_power_supplies[1]);
-+	return;
-+}
-+
-+static void charger_timer_func(unsigned long irq)
-+{
-+	update_charger();
-+
-+	/* Okay, charger set. Now wait a bit before notifying supplicants,
-+	 * charge power should stabilize. */
-+	supply_timer.data = irq;
-+	mod_timer(&supply_timer,
-+	          jiffies + msecs_to_jiffies(pdata->wait_for_charger));
-+	return;
-+}
-+
-+static irqreturn_t power_changed_isr(int irq, void *unused)
-+{
-+	/* Wait a bit before reading ac/usb line status and setting charger,
-+	 * because ac/usb status readings may lag from irq. */
-+	charger_timer.data = irq;
-+	mod_timer(&charger_timer,
-+	          jiffies + msecs_to_jiffies(pdata->wait_for_status));
-+	return IRQ_HANDLED;
-+}
-+
-+static int pda_power_probe(struct platform_device *pdev)
++int power_supplicant_am_i_supplied(struct power_supplicant *pst)
 +{
 +	int ret = 0;
++	struct bound_supply *bpsy;
 +
-+	dev = &pdev->dev;
++	down(&power_supply_class->sem);
++	list_for_each_entry(bpsy, &pst->bound_supplies, node) {
++		if (bpsy->psy->is_online(bpsy->psy)) {
++			ret = 1;
++			goto out;
++		}
++	}
++out:
++	up(&power_supply_class->sem);
 +
-+	if (pdev->id != -1) {
-+		dev_err(dev, "it's meaningless to register several "
-+		        "pda_powers, use id = -1\n");
-+		ret = -EINVAL;
-+		goto wrongid;
++	pr_debug("%s: %s %d\n", __FUNCTION__, pst->name, ret);
++
++	return ret;
++}
++
++static void unbind_pst_from_psys(struct power_supplicant *pst)
++{
++	struct bound_supply *bpsy, *bpsy_tmp;
++	struct bound_supplicant *bpst, *bpst_tmp;
++
++	list_for_each_entry_safe(bpsy, bpsy_tmp, &pst->bound_supplies, node) {
++		unsigned long flags;
++
++		write_lock_irqsave(&bpsy->psy->bpst_lock, flags);
++		list_for_each_entry_safe(bpst, bpst_tmp,
++		                &bpsy->psy->bound_supplicants, node) {
++			if (bpst->pst == pst) {
++				list_del(&bpst->node);
++				kfree(bpst);
++				break;
++			}
++		}
++		write_unlock_irqrestore(&bpsy->psy->bpst_lock, flags);
++
++		list_del(&bpsy->node);
++		kfree(bpsy);
 +	}
 +
-+	pdata = pdev->dev.platform_data;
++	return;
++}
 +
-+	update_charger();
++static void unbind_psy_from_psts(struct power_supply *psy)
++{
++	struct bound_supply *bpsy, *bpsy_tmp;
++	struct bound_supplicant *bpst, *bpst_tmp;
++	unsigned long flags;
 +
-+	if (!pdata->wait_for_status)
-+		pdata->wait_for_status = 500;
-+
-+	if (!pdata->wait_for_charger)
-+		pdata->wait_for_status = 500;
-+
-+	setup_timer(&charger_timer, charger_timer_func, 0);
-+	setup_timer(&supply_timer, supply_timer_func, 0);
-+
-+	ac_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "ac");
-+	usb_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "usb");
-+	if (!ac_irq && !usb_irq) {
-+		dev_err(dev, "no ac/usb irq specified\n");
-+		ret = -ENODEV;
-+		goto noirqs;
++	write_lock_irqsave(&psy->bpst_lock, flags);
++	list_for_each_entry_safe(bpst, bpst_tmp, &psy->bound_supplicants,
++	                                                              node) {
++		list_for_each_entry_safe(bpsy, bpsy_tmp,
++		                &bpst->pst->bound_supplies, node) {
++			if (bpsy->psy == psy) {
++				list_del(&bpsy->node);
++				kfree(bpsy);
++				break;
++			}
++		}
++		list_del(&bpst->node);
++		kfree(bpst);
 +	}
++	write_unlock_irqrestore(&psy->bpst_lock, flags);
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[0]);
-+	if (ret) {
-+		dev_err(dev, "failed to register %s power supply\n",
-+		        pda_power_supplies[0].name);
-+		goto supply0_failed;
-+	}
++	return;
++}
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[1]);
-+	if (ret) {
-+		dev_err(dev, "failed to register %s power supply\n",
-+		        pda_power_supplies[1].name);
-+		goto supply1_failed;
-+	}
++static int bind_pst_to_psy(struct power_supplicant *pst,
++                           struct power_supply *psy)
++{
++	struct bound_supplicant *bpst = kmalloc(sizeof(*bpst), GFP_KERNEL);
++	unsigned long flags;
 +
-+	if (ac_irq) {
-+		ret = request_irq(ac_irq->start, power_changed_isr,
-+		                  get_irq_flags(ac_irq), ac_irq->name,
-+		                  &pda_power_supplies[0]);
-+		if (ret) {
-+			dev_err(dev, "request ac irq failed\n");
-+			goto ac_irq_failed;
++	if (!bpst)
++		return -ENOMEM;
++
++	bpst->pst = pst;
++
++	write_lock_irqsave(&psy->bpst_lock, flags);
++	list_add_tail(&bpst->node, &psy->bound_supplicants);
++	write_unlock_irqrestore(&psy->bpst_lock, flags);
++
++	pr_debug("external power: bound pst %s to psy %s\n",
++	         pst->name, psy->name);
++
++	return 0;
++}
++
++static int bind_psy_to_pst(struct power_supply *psy,
++                           struct power_supplicant *pst)
++{
++	struct bound_supply *bpsy = kmalloc(sizeof(*bpsy), GFP_KERNEL);
++
++	if (!bpsy)
++		return -ENOMEM;
++
++	bpsy->psy = psy;
++	list_add_tail(&bpsy->node, &pst->bound_supplies);
++
++	pr_debug("external power: bound psy %s to pst %s\n",
++	         psy->name, pst->name);
++
++	return 0;
++}
++
++int power_supplicant_register(struct power_supplicant *pst)
++{
++	int ret = 0;
++	size_t i;
++	struct device *dev;
++	struct power_supply *psy;
++
++	INIT_LIST_HEAD(&pst->bound_supplies);
++
++	down_write(&supplicants_sem);
++	down(&power_supply_class->sem);
++
++	list_for_each_entry(dev, &power_supply_class->devices, node) {
++		psy = dev_get_drvdata(dev);
++		for (i = 0; i < psy->num_supplicants; i++) {
++			if (!strcmp(pst->name, psy->supplied_to[i])) {
++				ret = bind_pst_to_psy(pst, psy);
++				if (ret)
++					goto binding_failed;
++				ret = bind_psy_to_pst(psy, pst);
++				if (ret)
++					goto binding_failed;
++				break;
++			}
 +		}
 +	}
 +
-+	if (usb_irq) {
-+		ret = request_irq(usb_irq->start, power_changed_isr,
-+		                  get_irq_flags(usb_irq), usb_irq->name,
-+		                  &pda_power_supplies[1]);
-+		if (ret) {
-+			dev_err(dev, "request usb irq failed\n");
-+			goto usb_irq_failed;
++	list_add_tail(&pst->node, &supplicants);
++
++	goto succeed;
++
++binding_failed:
++	unbind_pst_from_psys(pst);
++succeed:
++	up(&power_supply_class->sem);
++	up_write(&supplicants_sem);
++
++	return ret;
++}
++
++void power_supplicant_unregister(struct power_supplicant *pst)
++{
++	down_write(&supplicants_sem);
++	list_del(&pst->node);
++	up_write(&supplicants_sem);
++
++	down(&power_supply_class->sem);
++	unbind_pst_from_psys(pst);
++	up(&power_supply_class->sem);
++
++	return;
++}
++
++void power_supply_changed(struct power_supply *psy)
++{
++	struct bound_supplicant *bpst;
++	unsigned long flags;
++
++	dev_dbg(psy->dev, "%s\n", __FUNCTION__);
++
++	read_lock_irqsave(&psy->bpst_lock, flags);
++	list_for_each_entry(bpst, &psy->bound_supplicants, node)
++		bpst->pst->power_supply_changed(bpst->pst, psy);
++	read_unlock_irqrestore(&psy->bpst_lock, flags);
++
++	return;
++}
++
++static ssize_t power_supply_show_online(struct device *dev,
++                                        struct device_attribute *attr,
++                                        char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%d\n", psy->is_online(psy));
++}
++
++static ssize_t power_supply_show_type(struct device *dev,
++                                      struct device_attribute *attr, char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%s\n", psy->type ? psy->type : "unknown");
++}
++
++static ssize_t power_supply_show_nominal_voltage(struct device *dev,
++                                                 struct device_attribute *attr,
++                                                 char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++
++	return sprintf(buf, "%d\n", psy->nominal_voltage);
++}
++
++static DEVICE_ATTR(online, 0444, power_supply_show_online, NULL);
++static DEVICE_ATTR(type, 0444, power_supply_show_type, NULL);
++static DEVICE_ATTR(nominal_voltage, 0444, power_supply_show_nominal_voltage,
++                   NULL);
++
++int power_supply_register(struct device *parent,
++                            struct power_supply *psy)
++{
++	int ret = 0;
++	struct power_supplicant *pst;
++	size_t i;
++
++	INIT_LIST_HEAD(&psy->bound_supplicants);
++	rwlock_init(&psy->bpst_lock);
++
++	psy->dev = device_create(power_supply_class, parent, 0, "%s",
++	                         psy->name);
++	if (IS_ERR(psy->dev)) {
++		ret = PTR_ERR(psy->dev);
++		goto dev_create_failed;
++	}
++
++	dev_set_drvdata(psy->dev, psy);
++
++	ret = device_create_file(psy->dev, &dev_attr_online);
++	if (ret)
++		goto create_online_failed;
++
++	ret = device_create_file(psy->dev, &dev_attr_type);
++	if (ret)
++		goto create_type_failed;
++
++	ret = device_create_file(psy->dev, &dev_attr_nominal_voltage);
++	if (ret)
++		goto create_nominal_voltage_failed;
++
++	down_write(&supplicants_sem);
++	list_for_each_entry(pst, &supplicants, node) {
++		for (i = 0; i < psy->num_supplicants; i++) {
++			if (!strcmp(pst->name, psy->supplied_to[i])) {
++				ret = bind_psy_to_pst(psy, pst);
++				if (ret)
++					goto binding_failed;
++				ret = bind_pst_to_psy(pst, psy);
++				if (ret)
++					goto binding_failed;
++				break;
++			}
 +		}
 +	}
++	up_write(&supplicants_sem);
++
++	/* notify supplicants that supply registred */
++	power_supply_changed(psy);
 +
 +	goto success;
 +
-+usb_irq_failed:
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+ac_irq_failed:
-+	power_supply_unregister(&pda_power_supplies[1]);
-+supply1_failed:
-+	power_supply_unregister(&pda_power_supplies[0]);
-+supply0_failed:
-+noirqs:
-+wrongid:
++binding_failed:
++	unbind_psy_from_psts(psy);
++	device_remove_file(psy->dev, &dev_attr_nominal_voltage);
++create_nominal_voltage_failed:
++	device_remove_file(psy->dev, &dev_attr_type);
++create_type_failed:
++	device_remove_file(psy->dev, &dev_attr_online);
++create_online_failed:
++	device_unregister(psy->dev);
++dev_create_failed:
 +success:
 +	return ret;
 +}
 +
-+static int pda_power_remove(struct platform_device *pdev)
++void power_supply_unregister(struct power_supply *psy)
 +{
-+	if (usb_irq)
-+		free_irq(usb_irq->start, &pda_power_supplies[1]);
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+	del_timer_sync(&charger_timer);
-+	del_timer_sync(&supply_timer);
-+	power_supply_unregister(&pda_power_supplies[1]);
-+	power_supply_unregister(&pda_power_supplies[0]);
-+	return 0;
-+}
++	down_write(&supplicants_sem);
++	unbind_psy_from_psts(psy);
++	up_write(&supplicants_sem);
 +
-+static struct platform_driver pda_power_pdrv = {
-+	.driver = {
-+		.name = "pda-power",
-+	},
-+	.probe = pda_power_probe,
-+	.remove = pda_power_remove,
-+};
++	device_remove_file(psy->dev, &dev_attr_nominal_voltage);
++	device_remove_file(psy->dev, &dev_attr_type);
++	device_remove_file(psy->dev, &dev_attr_online);
 +
-+static int __init pda_power_init(void)
-+{
-+	return platform_driver_register(&pda_power_pdrv);
-+}
++	device_unregister(psy->dev);
 +
-+static void __exit pda_power_exit(void)
-+{
-+	platform_driver_unregister(&pda_power_pdrv);
 +	return;
 +}
 +
-+module_init(pda_power_init);
-+module_exit(pda_power_exit);
++static int __init external_power_init(void)
++{
++	int ret = 0;
++
++	power_supply_class = class_create(THIS_MODULE, "power_supply");
++	if (IS_ERR(power_supply_class)) {
++		printk(KERN_ERR "external_power: failed to create "
++		       "power_supply class\n");
++		ret = PTR_ERR(power_supply_class);
++		goto class_create_failed;
++	}
++
++	init_rwsem(&supplicants_sem);
++
++	goto success;
++
++class_create_failed:
++success:
++	return ret;
++}
++
++static void __exit external_power_exit(void)
++{
++	class_destroy(power_supply_class);
++	return;
++}
++
++EXPORT_SYMBOL_GPL(power_supplicant_am_i_supplied);
++EXPORT_SYMBOL_GPL(power_supplicant_register);
++EXPORT_SYMBOL_GPL(power_supplicant_unregister);
++
++EXPORT_SYMBOL_GPL(power_supply_changed);
++EXPORT_SYMBOL_GPL(power_supply_register);
++EXPORT_SYMBOL_GPL(power_supply_unregister);
++
++subsys_initcall(external_power_init);
++module_exit(external_power_exit);
++
++MODULE_DESCRIPTION("Linux kernel interface for external power");
 +MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Anton Vorontsov <cbou@mail.ru>");
-diff --git a/include/linux/pda_power.h b/include/linux/pda_power.h
+diff --git a/include/linux/external_power.h b/include/linux/external_power.h
 new file mode 100644
-index 0000000..77e673c
+index 0000000..b635ff0
 --- /dev/null
-+++ b/include/linux/pda_power.h
-@@ -0,0 +1,28 @@
++++ b/include/linux/external_power.h
+@@ -0,0 +1,56 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ * Linux kernel interface for external power suppliers/supplicants
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ * Copyright (c) 2007  Anton Vorontsov <cbou@mail.ru>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
 +
-+#ifndef __PDA_POWER_H__
-+#define __PDA_POWER_H__
++#ifndef __EXTERNAL_POWER_H__
++#define __EXTERNAL_POWER_H__
 +
-+#define PDA_POWER_CHARGE_AC  (1 << 0)
-+#define PDA_POWER_CHARGE_USB (1 << 1)
++#include <linux/list.h>
++#include <linux/spinlock.h>
 +
-+struct pda_power_pdata {
-+	int (*is_ac_online)(void);
-+	int (*is_usb_online)(void);
-+	void (*set_charge)(int flags);
++/* kernel interface for external power suppliers, like AC or USB */
 +
-+	unsigned int wait_for_status; /* msecs, default is 500 */
-+	unsigned int wait_for_charger; /* msecs, default is 500 */
++struct power_supply {
++	char *name;
++	char *type;
++	int nominal_voltage; /* units of uV */
++	int (*is_online)(struct power_supply *psy);
++	char **supplied_to;
++	size_t num_supplicants;
++
++	/* private */
++	struct list_head bound_supplicants;
++	rwlock_t bpst_lock;
++	struct device *dev;
 +};
 +
-+#endif /* __PDA_POWER_H__ */
++extern void power_supply_changed(struct power_supply *psy);
++extern int power_supply_register(struct device *parent,
++                                 struct power_supply *psy);
++extern void power_supply_unregister(struct power_supply *psy);
++
++/* kernel interface for external power supplicants (batteries so far) */
++
++struct power_supplicant {
++	char *name;
++	/* used to notify supplicant about external power arrival/outage,
++	 * do not sleep there, this is called from irq, most probably */
++	void (*power_supply_changed)(struct power_supplicant *pst,
++	                             struct power_supply *psy);
++
++	/* private */
++	struct list_head bound_supplies;
++	struct list_head node;
++};
++
++extern int power_supplicant_am_i_supplied(struct power_supplicant *pst);
++extern int power_supplicant_register(struct power_supplicant *pst);
++extern void power_supplicant_unregister(struct power_supplicant *pst);
++
++#endif /* __EXTERNAL_POWER_H__ */
 -- 
 1.5.1.1-dirty
 
