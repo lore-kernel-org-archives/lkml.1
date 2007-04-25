@@ -1,114 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992764AbXDYN3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992763AbXDYN3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992764AbXDYN3I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992762AbXDYN3I
+	id S2992763AbXDYN3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992765AbXDYN3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:29:08 -0400
-Received: from mx0.starentnetworks.com ([12.38.223.203]:57207 "EHLO
-	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992765AbXDYN3G convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:29:06 -0400
-X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 09:29:05 EDT
-X-MessageTextProcessor: DisclaimIt (2.70.271) [Starent Networks Corp.]
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.1830
-Content-Class: urn:content-classes:message
+	Wed, 25 Apr 2007 09:29:24 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47815 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992763AbXDYN3X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:29:23 -0400
+Message-ID: <462F57AF.2040104@garzik.org>
+Date: Wed, 25 Apr 2007 09:29:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
-Date: Wed, 25 Apr 2007 08:58:04 -0400
-Message-ID: <7CCD07160348804497EF29E9EA5560D7020F6203@exchtewks2.starentnetworks.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
-thread-index: AceGqWsEy9rU2mCUTPax/uXcPISeow==
-From: "Ristuccia, Brian" <bristuccia@starentnetworks.com>
-Importance: normal
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Apr 2007 12:58:04.0230 (UTC) FILETIME=[5CBFAE60:01C78739]
+To: lkml777@123mail.org
+CC: linux-kernel@vger.kernel.org, Eric Hopper <hopper@omnifarious.org>
+Subject: Re: SOME STUFF ABOUT REISER4 To Mr Hopper
+References: <1177477555.20837.1186422725@webmail.messagingengine.com>
+In-Reply-To: <1177477555.20837.1186422725@webmail.messagingengine.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing a problem where the kernel attempts to send packets with a
-MSS larger than the one negotiated when the TCP connection is
-established. Even after ICMP "can't fragment" messages arrive, the
-kernel still attempts to increase the MSS rather aggressively. The end
-result is extremely poor throughput when sending to a network with a
-smaller MTU. 
+Please fix your caps lock key.  Thanks.
 
-In /proc/sys/net/ipv4:
-ip_no_pmtu_disc:0
-tcp_mtu_probing:0
-
-The sending host (10.2.10.254) has an MTU of 9000. The destination host
-(12.33.234.69) has an MTU of 1500. There is one router between the hosts
-which will drop packets with the "DF" flag when they don't fit the
-destination interface's MTU and generates the required icmp can't
-fragment message. 
-
-The dump shows the initial handshake with correct mss options sent:
-
-08:39:55.493029 IP 12.33.234.69.35026 > 10.2.10.254.22: S
-2768979373:2768979373(
-0) win 5840 <mss 1460,sackOK,timestamp 3873837730 0,nop,wscale 2>
-08:39:55.493119 IP 10.2.10.254.22 > 12.33.234.69.35026: S
-963242385:963242385(0)
- ack 2768979374 win 17896 <mss 8960,sackOK,timestamp 413751
-3873837730,nop,wscal
-e 5>
-
-Then I see the system send larger packets (larger than the mss),
-provoking a "can't fragment" from the router. Now I suppose it might be
-reasonable to occasionally probe a larger MSS when the current MSS is a
-result of reductions due to path mtu discovery. After all, the path
-taken could change over time. But when the current MSS is at the value
-negotiated by the MSS option during the TCP handshake, it seems like
-there's no sense in trying to send with a lager MSS. Even if there were,
-there's certainly no justification for making such an attempt every
-other packet (2.6.18) or every fourth packet (2.6.20.7). 
-
-In the following dump, the system eventually gets in a state where it
-oscillates between sendng undeliverable 2896 byte packets and
-deliverable 1448 byte ones. 
-
-08:39:55.649689 IP 10.2.10.254.22 > 12.33.234.69.35026: .
-5906:10250(4344) ack 1
-794 win 674 <nop,nop,timestamp 413790 3873837887>
-08:39:55.650532 IP 10.2.10.1 > 10.2.10.254: icmp 92: 12.33.234.69
-unreachable -
-need to frag (mtu 1500)
-08:39:55.689774 IP 12.33.234.69.35026 > 10.2.10.254.22: . ack 5906 win
-4544 <nop
-,nop,timestamp 3873837927 413790>
-08:39:55.689784 IP 10.2.10.254.22 > 12.33.234.69.35026: .
-10250:13146(2896) ack
-1794 win 674 <nop,nop,timestamp 413800 3873837927>
-08:39:55.690497 IP 10.2.10.1 > 10.2.10.254: icmp 92: 12.33.234.69
-unreachable -
-need to frag (mtu 1500)
-08:39:55.902494 IP 10.2.10.254.22 > 12.33.234.69.35026: .
-5906:7354(1448) ack 17
-94 win 674 <nop,nop,timestamp 413853 3873837927>
-
-Since any sane router will only generate can't fragment ICMP's at a
-limited rate, for two hosts on gigabit ethernet, one on a MTU 1500
-subnet and another on a MTU 9000 subnet, I can move only 40-50KB/sec
-over an affected TCP connection. 
-
-I was unable to find any reference to this problem in the kernel
-changelogs, or even any reports of anyone else having a similar problem.
-The above dumps are from 2.6.19.7. I could also reproduce the problem in
-2.6.18, although the dumps looked slightly different. I was unable to
-reproduce this problem with the 2.6.9-42.0.10.ELsmp kernel which ships
-in RHEL4. 
-
-I can send a pcap dump to anyone interested. 
-
--- 
-Brian Ristuccia
+	Jeff
 
 
-"This email message and any attachments are confidential information of Starent Networks, Corp. The information transmitted may not be used to create or change any contractual obligations of Starent Networks, Corp.  Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon this e-mail and its attachments by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify the sender immediately -- by replying to this message or by sending an email to postmaster@starentnetworks.com -- and destroy all copies of this message and any attachments without reading or disclosing their contents. Thank you."
+
