@@ -1,67 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992715AbXDYLax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992718AbXDYLeO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992715AbXDYLax (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992704AbXDYLax
+	id S2992718AbXDYLeO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:34:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992717AbXDYLeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:30:53 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33720 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992715AbXDYLaw (ORCPT
+	Wed, 25 Apr 2007 07:34:14 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:47377 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992701AbXDYLeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:30:52 -0400
-Date: Wed, 25 Apr 2007 13:31:02 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-Message-ID: <20070425113102.GU3468@stusta.de>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070423214909.GD3468@stusta.de> <20070425040605.6d6b4a82.akpm@linux-foundation.org>
+	Wed, 25 Apr 2007 07:34:12 -0400
+From: Nikita Danilov <nikita@clusterfs.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070425040605.6d6b4a82.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17967.15531.450627.972572@gargle.gargle.HOWL>
+Date: Wed, 25 Apr 2007 15:34:03 +0400
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Amit Gud <gud@cis.ksu.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, val_henson@linux.intel.com,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com,
+       gud@ksu.edu
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Newsgroups: gmane.linux.kernel,gmane.linux.file-systems
+In-Reply-To: <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>
+	<17965.6084 1.900376.524639@gargle.gargle.HOWL>
+	<Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz>
+	<17966.23512.363955.141489@gargle.gargle.HOWL>
+	<Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz>
+X-Mailer: VM 7.17 under 21.5 (patch 17) "chayote" (+CVS-20040321) XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
-> On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
->...
-> > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
-> >              workaround: CONFIG_FB_BACKLIGHT=n
-> > References : http://lkml.org/lkml/2007/3/13/3
-> > Submitter  : Dave Jones <davej@redhat.com>
-> > Caused-By  : PCI merge
-> >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
-> > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
-> >              Rafael J. Wysocki <rjw@sisk.pl>
-> >              Antonino A. Daplas <adaplas@gmail.com>
-> > Status     : unknown
-> 
-> Is this related to the problems Jeremy has been looking at?
->...
+David Lang writes:
+ > On Tue, 24 Apr 2007, Nikita Danilov wrote:
+ > 
+ > > David Lang writes:
+ > > > On Tue, 24 Apr 2007, Nikita Danilov wrote:
+ > > >
+ > > > > Amit Gud writes:
+ > > > >
+ > > > > Hello,
+ > > > >
+ > > > > >
+ > > > > > This is an initial implementation of ChunkFS technique, briefly discussed
+ > > > > > at: http://lwn.net/Articles/190222 and
+ > > > > > http://cis.ksu.edu/~gud/docs/chunkfs-hotdep-val-arjan-gud-zach.pdf
+ > > > >
+ > > > > I have a couple of questions about chunkfs repair process.
+ > > > >
+ > > > > First, as I understand it, each continuation inode is a sparse file,
+ > > > > mapping some subset of logical file blocks into block numbers. Then it
+ > > > > seems, that during "final phase" fsck has to check that these partial
+ > > > > mappings are consistent, for example, that no two different continuation
+ > > > > inodes for a given file contain a block number for the same offset. This
+ > > > > check requires scan of all chunks (rather than of only "active during
+ > > > > crash"), which seems to return us back to the scalability problem
+ > > > > chunkfs tries to address.
+ > > >
+ > > > not quite.
+ > > >
+ > > > this checking is a O(n^2) or worse problem, and it can eat a lot of memory in
+ > > > the process. with chunkfs you divide the problem by a large constant (100 or
+ > > > more) for the checks of individual chunks. after those are done then the final
+ > > > pass checking the cross-chunk links doesn't have to keep track of everything, it
+ > > > only needs to check those links and what they point to
+ > >
+ > > Maybe I failed to describe the problem presicely.
+ > >
+ > > Suppose that all chunks have been checked. After that, for every inode
+ > > I0 having continuations I1, I2, ... In, one has to check that every
+ > > logical block is presented in at most one of these inodes. For this one
+ > > has to read I0, with all its indirect (double-indirect, triple-indirect)
+ > > blocks, then read I1 with all its indirect blocks, etc. And to repeat
+ > > this for every inode with continuations.
+ > >
+ > > In the worst case (every inode has a continuation in every chunk) this
+ > > obviously is as bad as un-chunked fsck. But even in the average case,
+ > > total amount of io necessary for this operation is proportional to the
+ > > _total_ file system size, rather than to the chunk size.
+ > 
+ > actually, it should be proportional to the number of continuation nodes. The 
+ > expectation (and design) is that they are rare.
 
-Dave and Jeremy hran into similar looking but most likely different 
-problems.
+Indeed, but total size of meta-data pertaining to all continuation
+inodes is still proportional to the total file system size, and so is
+fsck time: O(total_file_system_size).
 
-For Jeremy -rc7 is working fine, but for Dave it doesn't.
+What is more important, design puts (as far as I can see) no upper limit
+on the number of continuation inodes, and hence, even if _average_ fsck
+time is greatly reduced, occasionally it can take more time than ext2 of
+the same size. This is clearly unacceptable in many situations (HA,
+etc.).
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Nikita.
