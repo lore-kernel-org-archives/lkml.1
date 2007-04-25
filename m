@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423307AbXDYImt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423301AbXDYIrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423307AbXDYImt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423298AbXDYImt
+	id S1423301AbXDYIrY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423310AbXDYIrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:42:49 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:2933 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423304AbXDYImr (ORCPT
+	Wed, 25 Apr 2007 04:47:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31625 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423301AbXDYIrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:42:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rG2rc8KQ/jNE4PyDKTqYbi5kMRlisCvysg8ePHxLhj/MKScw0GenC0N4j6NsPqOdpWYug9ig4bwVRaKWvCi3kayz7NdwjQUIVHIpXdg3HeEq18zZOlWFzApd9fumVqZ5ryb1QEeNsEb9Or8TbbSWq7J0qwe+khDgo7sOuf/X4Js=
-Message-ID: <462F1481.8010807@gmail.com>
-Date: Wed, 25 Apr 2007 17:42:41 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 25 Apr 2007 04:47:23 -0400
+Date: Wed, 25 Apr 2007 10:46:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+Message-ID: <20070425084607.GM9715@kernel.dk>
+References: <46220339.9080205@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Berck E. Nash" <flyboy@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm1 BUG at kernel/sched-clock.c:175 init_sched_clock()
-References: <462E4C4D.9020806@gmail.com> <20070425011654.222a2b4b.akpm@linux-foundation.org>
-In-Reply-To: <20070425011654.222a2b4b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17967.4734.783140.512857@notabene.brown>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> [    2.953862] RIP: 0010:[<ffffffff803ae98b>]  [<ffffffff803ae98b>] scsi_schedule_eh+0xa/0x57
->> [    3.058672]  [<ffffffff803e1e01>] ata_port_schedule_eh+0x4c/0x50
->> [    3.064725]  [<ffffffff803e1ea7>] ata_port_abort+0xa2/0xae
->> [    3.070248]  [<ffffffff803e1ef9>] ata_port_freeze+0x46/0x57
->> [    3.075853]  [<ffffffff803e4c39>] ahci_interrupt+0x300/0x47a
->> [    3.081552]  [<ffffffff8020eb83>] handle_IRQ_event+0x27/0x57
->> [    3.087253]  [<ffffffff8029a021>] handle_edge_irq+0xee/0x133
->> [    3.092960]  [<ffffffff8025f4e1>] do_IRQ+0x6d/0xd5
->> [    3.097793]  [<ffffffff80255071>] ret_from_intr+0x0/0xa
->> [    3.103059]  [<ffffffff8024e88b>] mwait_idle+0x46/0x4b
->> [    3.108231]  [<ffffffff802422f4>] cpu_idle+0x87/0xaa
->> [    3.113227]  [<ffffffff8025c988>] rest_init+0x49/0x4b
->> [    3.118322]  [<ffffffff805dca5d>] start_kernel+0x291/0x29c
->> [    3.123837]  [<ffffffff805dc13a>] _sinittext+0x13a/0x141
->>
+On Wed, Apr 25 2007, Neil Brown wrote:
+> On Tuesday April 24, brad@wasp.net.au wrote:
+> > [105449.653682] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
+> > lkml@vger.kernel.org
+> > [105449.683646] cfq: busy=1,drv=0,timer=0
+> > [105449.694871] cfq rr_list:
+> > [105449.702715]   3108: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
+> > [105449.720693] cfq busy_list:
+> > [105449.729054] cfq idle_list:
+> > [105449.737418] cfq cur_rr:
 > 
-> So we took an AHCI interrupt when ata_port.scsi_host was still NULL.
+> Ok, I have a theory.
 > 
-> It appears that ATA is presently requesting its IRQ before allocating all
-> the resources which are needed to handle an interrupt.  Does this
-> (resource-leaky) patch fix things?
+> An ELEVATOR_FRONT_MERGE occurs which changes req->sector and calls
+> ->elevator_merged_fn which is cfq_merged_request.
+> 
+> At this time there is already a request in cfq with the same sector
+> number, and that request is the only other request on the queue.
+> 
+> cfq_merged_request calls cfq_reposition_rq_rb which removes the
+> req from ->sortlist and then calls cfq_add_rq_rb to add it back (at
+> the new location because ->sector has changed).
+> 
+> cfq_add_rq_rb finds there is already a request with the same sector
+> number and so elv_rb_add returns an __alias which is passed to
+> cfq_dispatch_insert. 
+> This calls cfq_remove_request and as that is the only request present,
+> ->next_rq gets set to NULL.
+> The old request with the new sector number is then added to the
+> ->sortlist, but ->next_rq is never set - it remains NULL.
+> 
+> How likely it would be to get two requests with the same sector number
+> I don't know.  I wouldn't expect it to ever happen - I have seen it
+> before, but it was due to a bug in ext3.  Maybe XFS does it
+> intentionally some times?
+> 
+> You could test this theory by putting a
+>    WARN_ON(cfqq->next_rq == NULL);
+> at the end of cfq_reposition_rq_rb, just after the cfq_add_rq_rb call.
+> 
+> I will leave the development of a suitable fix up to Jens if he agrees
+> that this is possible.
 
-No, that would break host probing.  The port is in frozen (controller
-initialized and IRQs masked off) state, so it's not allowed to take
-interrupt.  If interrupt triggers at this point, it's low level driver
-bug.  Berck, how reliably can you reproduce this problem?  Can you post
-the result of 'lspci -nn'?
+That's pretty close to where I think the problem is (the front merging
+and cfq_reposition_rq_rb()). The issue with that is that you'd only get
+aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
+here. Given that front merges are equally not very likely, I'd be
+surprised is something like that has ever happened.
+
+BUT... That may explain while we are only seeing it on md. Would md
+ever be issuing such requests that trigger this condition?
+
+I'll try and concoct a test case.
 
 -- 
-tejun
+Jens Axboe
+
