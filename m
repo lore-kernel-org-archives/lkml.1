@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030865AbXDYNrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030877AbXDYNtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030865AbXDYNrD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030877AbXDYNrD
+	id S1030877AbXDYNtn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030929AbXDYNtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:47:03 -0400
-Received: from mail.screens.ru ([213.234.233.54]:38543 "EHLO mail.screens.ru"
+	Wed, 25 Apr 2007 09:49:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55698 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030865AbXDYNrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:47:01 -0400
-Date: Wed, 25 Apr 2007 16:52:14 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync()
-Message-ID: <20070425125214.GB94@tv-sign.ru>
-References: <20070424215034.GA5985@tv-sign.ru> <20070425130246.GA4086@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425130246.GA4086@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	id S1030877AbXDYNtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:49:41 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070420.015838.83621529.davem@davemloft.net> 
+References: <20070420.015838.83621529.davem@davemloft.net>  <29341.1176975158@redhat.com> <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> 
+To: David Miller <davem@davemloft.net>
+Cc: ebiederm@xmission.com, akpm@osdl.org, containers@lists.osdl.org,
+       oleg@tv-sign.ru, hch@infradead.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 25 Apr 2007 14:48:39 +0100
+Message-ID: <13634.1177508919@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/25, Jarek Poplawski wrote:
->
-> On Wed, Apr 25, 2007 at 01:50:34AM +0400, Oleg Nesterov wrote:
-> > del_timer_sync() buys nothing for cancel_delayed_work(), but it is less
-> > efficient since it locks the timer unconditionally, and may wait for the
-> > completion of the delayed_work_timer_fn().
-> 
-> I'm not sure what is the main aim of this patch.
 
-optimization
+David Miller <davem@davemloft.net> wrote:
 
->                                                  It seems this
-> change cannot do any harm, but anyway it could change a few
-> things, e.g. with current version of cancel_rearming_delayed_work
-> some flush_workqueue could be done needlessly, before the work
-> is queued from timer.
+> Is it possible for your changes to be purely networking
+> and not need those changes outside of the networking?
 
-I don't think so... Could you clarify?
+See my latest patchset release.  I've reduced the dependencies on
+non-networking changes to:
 
->                       It's not a big deal here, but if anybody
-> did something like this without loop - it could matter.
-> 
-> So, probably a lot of current code should be checked, before
-> applying and I doubt the gain is worth of this. Maybe, for
-> safety, make this with new name as an alternative and
-> deprecate the current version?
+ (1) Oleg Nesterov's patch to change cancel_delayed_work() to use del_timer()
+     rather than del_timer_sync() [patch 02/16].
 
-This change should not make any visible difference for the callers,
-otherwise it is buggy.
+     This patch can be discarded without compilation failure at the expense of
+     making AFS slightly less efficient. It also makes AF_RXRPC slightly less
+     efficient, but only in the rmmod path.
 
-Oleg.
+ (2) A symbol export in the keyring stuff plus a proliferation of the types
+     available in the struct key::type_data union [patch 03/16].  This does
+     not conflict with any other patches that I know about.
 
+ (3) A symbol export in the timer stuff [patch 04/16].
+
+Everything else that remains after the reduction is confined to the AF_RXRPC
+or AFS code, save for a couple of networking patches in my patchset that you
+already have and I just need to make the thing compile.
+
+I'm not sure that I can make the AF_RXRPC patches totally independent of the
+AFS patches as the two sets need to interleave since the last AF_RXRPC patch
+deletes the old RxRPC code - which the old AFS code depends on.
+
+David
