@@ -1,110 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030879AbXDYNFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992735AbXDYNMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030879AbXDYNFs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030881AbXDYNFs
+	id S2992735AbXDYNMK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992737AbXDYNMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:05:48 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:53141
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030879AbXDYNFr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:05:47 -0400
-Date: Wed, 25 Apr 2007 15:08:43 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of semaphore in RocketPort driver v2
-Message-ID: <20070425130843.GK6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	linux-kernel@vger.kernel.org
+	Wed, 25 Apr 2007 09:12:10 -0400
+Received: from mail.suse.de ([195.135.220.2]:33106 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992735AbXDYNMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:12:08 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Fernando Luis =?iso-8859-15?q?V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+Subject: Re: [PATCH 2/10] safe_apic_wait_icr_idle - x86_64
+Date: Wed, 25 Apr 2007 15:11:59 +0200
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, horms@verge.net.au,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       vgoyal@in.ibm.com, mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
+       akpm@linux-foundation.org
+References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp> <200704251426.14398.ak@suse.de> <1177505712.19745.18.camel@sebastian.intellilink.co.jp>
+In-Reply-To: <1177505712.19745.18.camel@sebastian.intellilink.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704251511.59495.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the RocketPort driver uses a semaphore as mutex. use the mutex API
-instead of the (binary) semaphore
+On Wednesday 25 April 2007 14:55:12 Fernando Luis Vázquez Cao wrote:
+> On Wed, 2007-04-25 at 14:26 +0200, Andi Kleen wrote:
+> > >  static __inline__ void apic_wait_icr_idle(void)
+> > >  {
+> > > -	while (apic_read( APIC_ICR ) & APIC_ICR_BUSY)
+> > > +	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+> > >  		cpu_relax();
+> > >  }
+> > >  
+> > > +static __inline__ unsigned int safe_apic_wait_icr_idle(void)
+> > 
+> > This should be probably not inline -- too large
+> Hello Andi,
+> 
+> Thank you for reviewing the patches. Do you want me to resend the whole
+> patch or should I cook a new one that un-inlines the function instead?
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+I already did that.
 
---
+Also will apply Keith's suggestion.
 
-diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
-index 76357c8..7d23790 100644
---- a/drivers/char/rocket.c
-+++ b/drivers/char/rocket.c
-@@ -702,7 +702,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
- 		}
- 	}
- 	spin_lock_init(&info->slock);
--	sema_init(&info->write_sem, 1);
-+	mutex_init(&info->write_mtx);
- 	rp_table[line] = info;
- 	if (pci_dev)
- 		tty_register_device(rocket_driver, line, &pci_dev->dev);
-@@ -1662,7 +1662,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
- 		return;
- 
- 	/*  Grab the port write semaphore, locking out other processes that try to write to this port */
--	down(&info->write_sem);
-+	mutex_lock(&info->write_mtx);
- 
- #ifdef ROCKET_DEBUG_WRITE
- 	printk(KERN_INFO "rp_put_char %c...", ch);
-@@ -1684,7 +1684,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
- 		info->xmit_fifo_room--;
- 	}
- 	spin_unlock_irqrestore(&info->slock, flags);
--	up(&info->write_sem);
-+	mutex_unlock(&info->write_mtx);
- }
- 
- /*
-@@ -1706,7 +1706,8 @@ static int rp_write(struct tty_struct *tty,
- 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
- 		return 0;
- 
--	down_interruptible(&info->write_sem);
-+	if(mutex_lock_interruptible(&info->write_mtx))
-+		return -EINTR;
- 
- #ifdef ROCKET_DEBUG_WRITE
- 	printk(KERN_INFO "rp_write %d chars...", count);
-@@ -1777,7 +1778,7 @@ end:
- 		wake_up_interruptible(&tty->poll_wait);
- #endif
- 	}
--	up(&info->write_sem);
-+	mutex_unlock(&info->write_mtx);
- 	return retval;
- }
- 
-diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
-index 3a8bcc8..04bcf61 100644
---- a/drivers/char/rocket_int.h
-+++ b/drivers/char/rocket_int.h
-@@ -1171,7 +1171,7 @@ struct r_port {
- 	struct wait_queue *close_wait;
- #endif
- 	spinlock_t slock;
--	struct semaphore write_sem;
-+	struct mutex write_mtx;
- };
- 
- #define RPORT_MAGIC 0x525001
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+-Andi
 
 
-   Usually when people are sad, they don't do anything. They just cry over
-     their condition. But when they get angry, they bring about a change
-                              (Malcolm X)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+
