@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992663AbXDYLNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbXDYLPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992663AbXDYLNb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992687AbXDYLNb
+	id S932185AbXDYLPT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992578AbXDYLPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:13:31 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47136 "EHLO
+	Wed, 25 Apr 2007 07:15:18 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:47146 "EHLO
 	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992663AbXDYLN3 (ORCPT
+	with ESMTP id S932185AbXDYLPR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:13:29 -0400
-Subject: [PATCH 1/10] safe_apic_wait_icr_idle - i386
+	Wed, 25 Apr 2007 07:15:17 -0400
+Subject: [PATCH 2/10] safe_apic_wait_icr_idle - x86_64
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -22,8 +22,8 @@ In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 Content-Type: text/plain; charset=UTF-8
 Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 20:13:28 +0900
-Message-Id: <1177499608.17974.9.camel@sebastian.intellilink.co.jp>
+Date: Wed, 25 Apr 2007 20:15:15 +0900
+Message-Id: <1177499715.17974.12.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 8bit
@@ -73,9 +73,9 @@ mechanism and that can be used to solve the aforementioned problem.
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urNp linux-2.6.21-rc7-orig/include/asm-i386/apic.h linux-2.6.21-rc7/include/asm-i386/apic.h
---- linux-2.6.21-rc7-orig/include/asm-i386/apic.h	2007-04-18 15:27:50.000000000 +0900
-+++ linux-2.6.21-rc7/include/asm-i386/apic.h	2007-04-18 15:28:36.000000000 +0900
+diff -urNp linux-2.6.21-rc7-orig/include/asm-x86_64/apic.h linux-2.6.21-rc7/include/asm-x86_64/apic.h
+--- linux-2.6.21-rc7-orig/include/asm-x86_64/apic.h	2007-04-18 13:47:06.000000000 +0900
++++ linux-2.6.21-rc7/include/asm-x86_64/apic.h	2007-04-18 15:24:30.000000000 +0900
 @@ -2,6 +2,7 @@
  #define __ASM_APIC_H
  
@@ -83,19 +83,19 @@ diff -urNp linux-2.6.21-rc7-orig/include/asm-i386/apic.h linux-2.6.21-rc7/includ
 +#include <linux/delay.h>
  #include <asm/fixmap.h>
  #include <asm/apicdef.h>
- #include <asm/processor.h>
-@@ -66,10 +67,24 @@ static __inline fastcall unsigned long n
+ #include <asm/system.h>
+@@ -49,10 +50,24 @@ static __inline unsigned int apic_read(u
  
  static __inline__ void apic_wait_icr_idle(void)
  {
--	while ( apic_read( APIC_ICR ) & APIC_ICR_BUSY )
+-	while (apic_read( APIC_ICR ) & APIC_ICR_BUSY)
 +	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
  		cpu_relax();
  }
  
-+static __inline__ unsigned long safe_apic_wait_icr_idle(void)
++static __inline__ unsigned int safe_apic_wait_icr_idle(void)
 +{
-+	unsigned long send_status;
++	unsigned int send_status;
 +	int timeout;
 +
 +	timeout = 0;
@@ -107,8 +107,8 @@ diff -urNp linux-2.6.21-rc7-orig/include/asm-i386/apic.h linux-2.6.21-rc7/includ
 +	return send_status;
 +}
 +
- int get_physical_broadcast(void);
- 
- #ifdef CONFIG_X86_GOOD_APIC
+ static inline void ack_APIC_irq(void)
+ {
+ 	/*
 
 
