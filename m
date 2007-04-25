@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423216AbXDYGUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423222AbXDYGWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423216AbXDYGUU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 02:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423222AbXDYGUU
+	id S1423222AbXDYGWt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 02:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423227AbXDYGWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 02:20:20 -0400
-Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:3249 "EHLO
-	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423216AbXDYGUS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 02:20:18 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=j2lDz82CGKKwOwMJTZv/DnJtfIFni31WiORGVPn2/0FCk3T/xh0Oca93gvoH+PQSgVy7F0M2cuysXfp2k6v7R514hZ52CCQ6OogymYOij0CxXB24r8mlA+62qr5iEAWo;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.14,449,1170630000"; 
-   d="scan'208";a="72576079"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 25 Apr 2007 02:22:49 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:44484 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423222AbXDYGWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 02:22:48 -0400
+Message-ID: <462EF3B0.7010700@zytor.com>
+Date: Tue, 24 Apr 2007 23:22:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: NonExecutable Bit in 32Bit
-Date: Wed, 25 Apr 2007 08:19:39 +0200
-Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530256E@ABGEX01E.abg.fsc.net>
-In-Reply-To: <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: NonExecutable Bit in 32Bit
-Thread-Index: AceGRJsNAkIdjxq3R/m7aDKbChm4nAAvM0vg
-References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net> <Pine.LNX.4.64.0704240640470.25153@server.thyself> <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
-From: "Cestonaro, Thilo \(external\)" 
-	<Thilo.Cestonaro.external@fujitsu-siemens.com>
-To: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Apr 2007 06:20:03.0310 (UTC) FILETIME=[C29C78E0:01C78701]
+To: Peer Chen <pchen@nvidia.com>
+CC: linux-kernel@vger.kernel.org, akpm@osdl.org, torvalds@osdl.org
+Subject: Re: [PATCH] drivers/net: move the nvidia forcedeth driver from 100M
+ group to 1000M group
+References: <15F501D1A78BD343BE8F4D8DB854566B130752BE@hkemmail01.nvidia.com>
+In-Reply-To: <15F501D1A78BD343BE8F4D8DB854566B130752BE@hkemmail01.nvidia.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+Peer Chen wrote:
+> nForce ehternet is a Gigabit NIC not 100M, move it to 1000M group to
+> avoid the confusion.
 
-> CONFIG_HIGHMEM64G=y
-> CONFIG_HIGHMEM=y
-> CONFIG_X86_PAE=y
+Overall, maybe the 100 Mbps vs 1000 Mbps distinction is getting less
+useful and it would be better to have a single list.  There are a *lot*
+of chipsets on the market now which have the same core and the only
+difference is that one has a 100M PHY and the other has a 1000M PHY.
+For example, there are 100M versions of sky2 and r8169.
 
-Ok in highmem it's active, whats about lowmem?
-x86-64 is NX active for lowmem too AFAIK.
-
-
-Ciao Thilo
+	-hpa
