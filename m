@@ -1,30 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031136AbXDYVoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423363AbXDYVqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031136AbXDYVoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 17:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031139AbXDYVoh
+	id S1423363AbXDYVqX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 17:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422769AbXDYVqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 17:44:37 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:34988 "EHLO amd.ucw.cz"
+	Wed, 25 Apr 2007 17:46:23 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35002 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031136AbXDYVog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 17:44:36 -0400
-Date: Wed, 25 Apr 2007 23:44:20 +0200
+	id S1423363AbXDYVqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 17:46:22 -0400
+Date: Wed, 25 Apr 2007 23:46:01 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
        Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Arjan van de Ven <arjan@infradead.org>
 Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425214420.GG17387@elf.ucw.cz>
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+Message-ID: <20070425214601.GH17387@elf.ucw.cz>
+References: <20070419070437.GA25211@elte.hu> <alpine.LFD.0.98.0704251323000.9964@woody.linux-foundation.org> <20070425213049.GF17387@elf.ucw.cz> <200704252340.20378.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+In-Reply-To: <200704252340.20378.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,81 +35,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> > Can I get you on IRC somewhere? No, I do not think I'm a moron, and
-> > yes, I need to suspend^Wsnapshot the devices before, so I have that in
-> > the snapshot. Of course, I'll need to resume^Wrestore the devices
-> > before writing snapshot. That's okay, it does not take long.
+> > > And no, "three different implementations" doesn't cut it. Even _two_ is 
+> > > too much. We need to get *rid* of something, not add more.
+> > 
+> > swsusp can be dropped. It is nice -- self contained, extremely easy to
+> > setup, Andrew likes it. uswsusp has all the features, and pretty
+> > elegant design. With klibc (or some way to ship userland code with
+> > kernel, and put it into initramfs or something) we can reasonably drop
+> > swsusp.
 > 
-> You do NOT need to "suspend" the devices, and that's the whole point.
+> Well, I think we still need it and will need it in the future, at least for
+> debugging.  Moreover, I think there are many users of it.
 > 
-> You may want to save the device info somewhere, BUT THAT IS SOMETHING 
-> TOTALLY DIFFERENT!
-> 
-> This is *exactly* the confusion I'm talking about. The STD and STR 
-> codepaths try to use the same function for two TOTALLY DIFFERENT things.
-> 
-> STR actually wants to "suspend".
-> 
-> STD actually wants to "atomic snapshot", and it must not allow allocations 
-> or anything like that, because the whole snapshot image should be done 
-> atomically as one event. But it should *not* suspend, because that device 
-> may actually be needed afterwards. 
-> 
-> So not the same thing at all.
+> Let's not drop things that are helping us. :-)
 
-Not the same... but they are still related. "freeze" (for atomic
-snapshot) is actually subset of "suspend"... freeze needs DMAs off and
-saved state, and you need DMAs off and saved state for "suspend".
-
-So it is actually correct to do "suspend" when you want "freeze"; it
-is just slow. That's why they only differ in parameter these days.
-
-> So here's what "suspend()" wants:
->  - suspend() - preparatory work, can error our, can delay, can park the 
->    disk, etc etc.
->  - suspend_late() - called late, with interrupts disabled, should actually
->    suspend if the early suspend didn't do it already
-> 
-> And here is what "snapshot()" wants:
->  - prepare_to_snapshot() (for memory allocation)
-
-Lets call this "freeze"?
-
->  - snapshot() - called late, with interrupts disabled, save state.
-
-> and there is absolutely _zero_ overlap between them. There just isn't 
-> anything in common. Yes, both are two-phase (for the simple reason that 
-> both want an "atomic" part), but there's really no real overlap.
-
-As I tried to explain, you can use suspend() to stop DMAs and save
-state, and that's enough to get sane snapshot. (You do cli() before
-doing snapshot, that helps with irqs).
-
-> Just trying to *make* them be the same operations is just going to 
-> introduce flags that then cause them to be totally different *and* 
-> confusing and generate bugs. It also means that people do one of them, and 
-> "it works" for that case, and the other case is totally broken, but it's 
-> not obvious, because doing one means that the system _thinks_ that you did 
-> both!
-> 
-> In the very unlikely case that some driver actually *wants* to use the 
-> same function for snapshots and suspending, that driver could just go 
-> ahead and _use_ the same function pointer. But now, as things are set up, 
-> we force a total confusion on drivers by calling them through the same 
-> interface for two totally different things.
-
-Ok ok, we can do
-
-suspend(PMSG_SUSPEND) -> suspend()
-suspend(PMSG_FREEZE) -> freeze()
-
-. We'll need to do big search&replace over the kernel etc. But if you
-think it helps with confusion...
-
-I'd still like to keep people using same method for both. It means
-suspend path gets more testing, even when some stuff it does is not
-strictly neccessary for freeze.
-								Pavel
+Yes, it is very nice for debugging. But if I _had_ to choose, I'd
+rather remove swsusp than uswsusp.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
