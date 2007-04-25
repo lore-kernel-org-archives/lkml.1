@@ -1,49 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161835AbXDYHvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161837AbXDYHzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161835AbXDYHvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 03:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161836AbXDYHvq
+	id S1161837AbXDYHzQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 03:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161838AbXDYHzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 03:51:46 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:19715 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161835AbXDYHvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 03:51:45 -0400
-From: Vasily Tarasov <vtaras@openvz.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Cc: OVZDL <devel@openvz.org>
-References: <1177422791.435404.4031.nullmailer@me> <20070425065822.GG9715@kernel.dk>
-In-Reply-To: <20070425065822.GG9715@kernel.dk>
-Subject: Re: [PATCH] cfq: get rid of cfqq hash
-Date: Wed, 25 Apr 2007 15:50:27 +0400
-Message-Id: <1177501827.988228.3870.nullmailer@me>
+	Wed, 25 Apr 2007 03:55:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:42877 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161837AbXDYHzN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 03:55:13 -0400
+Date: Wed, 25 Apr 2007 16:55:45 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
+Subject: Re: [RFC][PATCH] syctl for selecting global zonelist[] order
+Message-Id: <20070425165545.2d614ccd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070425004214.e21da2d8.akpm@linux-foundation.org>
+References: <20070425121946.9eb27a79.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070425004214.e21da2d8.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> @@ -1806,7 +1765,11 @@ static int cfq_may_queue(request_queue_t
->>  	 * so just lookup a possibly existing queue, or return 'may queue'
->>  	 * if that fails
->>  	 */
->> -	cfqq = cfq_find_cfq_hash(cfqd, key, tsk->ioprio);
->> +	cic = cfq_get_io_context_noalloc(cfqd, tsk);
->> +	if (!cic)
->> +		return ELV_MQUEUE_MAY; 
->> +
->> +	cfqq = cic->cfqq[rw & REQ_RW_SYNC];
->>  	if (cfqq) {
->>  		cfq_init_prio_data(cfqq);
->>  		cfq_prio_boost(cfqq);
+On Wed, 25 Apr 2007 00:42:14 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 25 Apr 2007 12:19:46 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> Ahem, how well did you test this patch?
+> > Make zonelist policy selectable from sysctl.
+> > 
+> > Assume 2 node NUMA, only node(0) has ZONE_DMA (ZONE_DMA32).
+> > 
+> > In this case, default (node0's) zonelist order is
+> > 
+> > Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
+> > 
+> > This means Node(0)'s DMA is used before Node(1)'s NORMAL.
+> > 
+> > In some server, some application uses large memory allcation.
+> > This exhaust memory in the above order.
+> > Then....sometimes OOM_KILL will occur when 32bit device requires memory.
+> > 
+> > This patch adds sysctl for rebuilding zonelist after boot and doesn't change
+> > default zonelist order.
+> 
+> hm.  Why don't we use that ordering all the time?  Does the present ordering have
+> any advantage?
+> 
+I don't know ;) maybe some high-end NUMA hardware has IOMMU and
+zoning by memory address has no meaning.
 
-Ugh, again: bio_sync() returns not only 0/1
-Sorry for giving so much trouble...
+> > command:
+> > %echo 0 > /proc/sys/vm/better_locality
+> 
+> Who could resist having better locality? ;)
+> 
 
-BTW, what tests do you use to check patches?
-I'll run them on our nodes each time when sending it to you.
-At the moment I use some self made tests and a bit fio scripts.
+how about changing this name to strict_zone_order and
+
+if strict_zone_order = 1
+	Node(0)'NORMAL -> Node(1)'Normal -> Node(0)'DMA
+if strict_zone_order = 0
+	Node(0)'NORMAL -> Node(0)'DMA -> Node(1)'NORMAL
+
+If someone thinks of better name, please teach me.
+
+
+
+> >  extern int percpu_pagelist_fraction;
+> >  extern int compat_log;
+> > +#ifdef CONFIG_NUMA
+> > +extern int sysctl_better_locality;
+> > +#endif
+> 
+> The ifdef isn't needed here.  If something went wrong, we'll find out at
+> link-time.
+>   
+Okay.
+
+> >  /* this is needed for the proc_dointvec_minmax for [fs_]overflow UID and GID */
+> >  static int maxolduid = 65535;
+> > @@ -845,6 +848,15 @@ static ctl_table vm_table[] = {
+> >  		.extra1		= &zero,
+> >  		.extra2		= &one_hundred,
+> >  	},
+> > +	{
+> > +		.ctl_name	= VM_BETTER_LOCALITY,
+> 
+> Please don't add new sysctls: use CTL_UNNUMBERED here.
+> 
+Oh, I didn't know about CTL_UNNUMBERED. looks useful. I'll try.
+
+
+> > +static void build_zonelists(pg_data_t *pgdat)
+> > +{
+> > +	if (sysctl_better_locality) {
+> > +		build_zonelists_locality_aware(pgdat);
+> > +	} else {
+> > +		build_zonelists_zone_aware(pgdat);
+> > +	}
+> 
+> Remove all the braces please.
+
+Okay.
 
 > 
-> -- 
-> Jens Axboe
+> > @@ -207,6 +207,7 @@ enum
+> >  	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
+> >  	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
+> >  	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
+> > +	VM_BETTER_LOCALITY=36,	 /* create locality-preference zonelist */
+> 
+> This can go away.
+> 
+Okay.
+
+I'll wait for other replies and post updated one tomorrow.
+
+Thank you,
+
+-Kame
+
