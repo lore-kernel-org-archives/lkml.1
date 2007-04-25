@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992954AbXDYTLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992959AbXDYTMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992954AbXDYTLG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992958AbXDYTLG
+	id S2992959AbXDYTMq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992958AbXDYTMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:11:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33199 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992954AbXDYTLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:11:05 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Dave Jones <davej@redhat.com>
-Subject: Re: pgprot_writecombine() and PATs on x86
-Date: Wed, 25 Apr 2007 21:10:49 +0200
-User-Agent: KMail/1.9.6
-Cc: Roland Dreier <rdreier@cisco.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, mst@mellanox.co.il, jackm@mellanox.co.il
-References: <ada1wi8xrgt.fsf@cisco.com> <200704252019.28017.ak@suse.de> <20070425184108.GB23721@redhat.com>
-In-Reply-To: <20070425184108.GB23721@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 25 Apr 2007 15:12:46 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44345 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992959AbXDYTMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 15:12:45 -0400
+Date: Wed, 25 Apr 2007 12:12:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
+Message-Id: <20070425121242.52698643.akpm@linux-foundation.org>
+In-Reply-To: <1177512596.4856.17.camel@daplas>
+References: <1177512596.4856.17.camel@daplas>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704252110.49603.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007 20:41:08 Dave Jones wrote:
-> On Wed, Apr 25, 2007 at 08:19:27PM +0200, Andi Kleen wrote:
->  > On Wednesday 25 April 2007 20:02:26 Roland Dreier wrote:
->  > > Hi Eric,
->  > > 
->  > > Where do your patches to add an implementation of
->  > > pgprot_writecombine() using PATs on x86 stand?  
->  > 
->  > It's on my todo list.
+On Wed, 25 Apr 2007 22:49:56 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+
+> The Gnome desktop does not finish launching.  And I get this tracing,
+> all coming from Gnome apps.
 > 
-> Whats the status on the code at ftp://ftp.firstfloor.org/pub/ak/pat/patches ?
-> I've not given it much more than a quick skim, so I'm not sure what
-> it's capable of/what its missing etc..
+> Tony
+> 
+> BUG: unable to handle kernel paging request at virtual address c0a74000
 
-That code has a couple of problems and is relatively broken
+This might have been caused by the now-dropped
+mm-only-i386-for-debugging-make-the-initial-page-table-setup-less-forgiving.patch
 
--Andi
+
+>  printing eip:
+> c014c469
+> *pde = 005f3027
+> *pte = 00000000
+> Oops: 0002 [#1]
+> Modules linked in: xt_pkttype xt_tcpudp ipt_LOG xt_limit nfsd exportfs
+> lockd nfs_acl sunrpc snd_pcm_oss snd_mixer_oss snd_seq button battery ac
+> ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter
+> ip6table_filter nf_conntrack_ipv4 nf_conntrack ip_tables ip6_tables
+> x_tables nls_iso8859_1 nls_cp437 vfat fat nls_utf8 ntfs reiserfs loop
+> usblp snd_via82xx snd_ac97_codec ac97_bus snd_pcm ide_cd cdrom snd_timer
+> snd_page_alloc snd_mpu401_uart rtc_cmos snd_rawmidi rtc_core
+> snd_seq_device rtc_lib snd soundcore via_rhine ehci_hcd uhci_hcd usbcore
+> sc92031 via_agp 8139too i2c_viapro ext3 mbcache jbd edd fan thermal
+> processor via82cxxx ide_disk ide_core
+> CPU:    0
+> EIP:    0060:[<c014c469>]    Tainted: G      D VLI
+
+For some reason all oopses (and boy there are a lot of them) are being
+described as tainted.
+
