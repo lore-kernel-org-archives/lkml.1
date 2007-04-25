@@ -1,129 +1,478 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423209AbXDYBXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423019AbXDYBXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423209AbXDYBXU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 21:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423019AbXDYBW7
+	id S1423019AbXDYBXe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 21:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161830AbXDYBWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 21:22:59 -0400
-Received: from mga09.intel.com ([134.134.136.24]:8996 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161832AbXDYBW4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 21:22:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,448,1170662400"; 
-   d="scan'208";a="78656951"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [REPORT] cfs-v4 vs sd-0.44
-Date: Tue, 24 Apr 2007 18:22:53 -0700
-Message-ID: <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070424212717.GR31925@holomorphy.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [REPORT] cfs-v4 vs sd-0.44
-Thread-Index: AceGt02nA9Q8ceu3RyiA5oqJvUJogQAA6iaQ
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: "William Lee Irwin III" <wli@holomorphy.com>
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, "Nick Piggin" <npiggin@suse.de>,
-       "Juliusz Chroboczek" <jch@pps.jussieu.fr>,
-       "Con Kolivas" <kernel@kolivas.org>, "ck list" <ck@vds.kolivas.org>,
-       "Bill Davidsen" <davidsen@tmr.com>, "Willy Tarreau" <w@1wt.eu>,
-       <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>, <caglar@pardus.org.tr>,
-       "Gene Heskett" <gene.heskett@gmail.com>
-X-OriginalArrivalTime: 25 Apr 2007 01:22:55.0728 (UTC) FILETIME=[408B5700:01C786D8]
+	Tue, 24 Apr 2007 21:22:55 -0400
+Received: from [63.64.152.142] ([63.64.152.142]:1888 "EHLO gitlost.site"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161829AbXDYBWv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 21:22:51 -0400
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Subject: [PATCH 2/2] NET: [UPDATED] Multiqueue network device support implementation.
+Date: Tue, 24 Apr 2007 18:39:19 -0700
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       cramerj@intel.com, auke-jan.h.kok@intel.com,
+       christopher.leech@intel.com
+Message-Id: <20070425013919.6010.96300.stgit@gitlost.site>
+In-Reply-To: <20070425013331.6010.38587.stgit@gitlost.site>
+References: <20070425013331.6010.38587.stgit@gitlost.site>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Could you explain for the audience the technical definition of
-fairness
-> and what sorts of error metrics are commonly used? There seems to be
-> some disagreement, and you're neutral enough of an observer that your
-> statement would help.
+From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
 
-The definition for proportional fairness assumes that each thread has a
-weight, which, for example, can be specified by the user, or sth. mapped
-from thread priorities, nice values, etc. A scheduler achieves ideal
-proportional fairness if (1) it is work-conserving, i.e., it never
-leaves a processor idle if there are runnable threads, and (2) for any
-two threads, i and j, in any time interval, the ratio of their CPU time
-is greater than or equal to the ratio of their weights, assuming that
-thread i is continuously runnable in the entire interval and both
-threads have fixed weights throughout the interval. A corollary of this
-is that if both threads i and j are continuously runnable with fixed
-weights in the time interval, then the ratio of their CPU time should be
-equal to the ratio of their weights. This definition is pretty
-restrictive since it requires the properties to hold for any thread in
-any interval, which is not feasible. In practice, all algorithms try to
-approximate this ideal scheduler (often referred to as Generalized
-Processor Scheduling or GPS). Two error metrics are often used: 
+Update: Fixed band2queue mapping logic - it was reveresed with prio2band.
+Added support in the PRIO qdisc to allow tc to turn on multiqueue behavior,
+while keeping original PRIO behavior by default.  Fixed where
+skb->queue_mapping is being reset (prior to q->enqueue() ).
 
-(1) lag(t): for any interval [t1, t2], the lag of a thread at time t \in
-[t1, t2] is S'(t1, t) - S(t1, t), where S' is the CPU time the thread
-would receive in the interval [t1, t] under the ideal scheduler and S is
-the actual CPU time it receives under the scheduler being evaluated.
+Added an API and associated supporting routines for multiqueue network devices.
+This allows network devices supporting multiple TX queues to configure each
+queue within the netdevice and manage each queue independantly.  Changes to the
+PRIO Qdisc also allow a user to map multiple flows to individual TX queues,
+taking advantage of each queue on the device.
 
-(2) The second metric doesn't really have an agreed-upon name. Some call
-it fairness measure and some call it sth else. Anyway, different from
-lag, which is kind of an absolute measure for one thread, this metric
-(call it F) defines a relative measure between two threads over any time
-interval:
+Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+---
 
-F(t1, t2) = S_i(t1, t2) / w_i - S_j(t1, t2) / w_j,
+ include/linux/etherdevice.h |    3 +-
+ include/linux/netdevice.h   |   66 ++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/pkt_sched.h   |    1 +
+ include/linux/skbuff.h      |    2 +
+ net/core/dev.c              |   28 +++++++++++++++---
+ net/core/skbuff.c           |    3 ++
+ net/ethernet/eth.c          |    9 +++---
+ net/sched/sch_generic.c     |    4 +--
+ net/sched/sch_prio.c        |   66 +++++++++++++++++++++++++++++++++++++++----
+ 9 files changed, 162 insertions(+), 20 deletions(-)
 
-where S_i and S_j are the CPU time the two threads receive in the
-interval [t1, t2] and w_i and w_j are their weights, assuming both
-weights don't change throughout the interval.
+diff --git a/include/linux/etherdevice.h b/include/linux/etherdevice.h
+index 745c988..446de39 100644
+--- a/include/linux/etherdevice.h
++++ b/include/linux/etherdevice.h
+@@ -39,7 +39,8 @@ extern void		eth_header_cache_update(struct hh_cache *hh, struct net_device *dev
+ extern int		eth_header_cache(struct neighbour *neigh,
+ 					 struct hh_cache *hh);
+ 
+-extern struct net_device *alloc_etherdev(int sizeof_priv);
++extern struct net_device *alloc_etherdev_mq(int sizeof_priv, int queue_count);
++#define alloc_etherdev(sizeof_priv) alloc_etherdev_mq(sizeof_priv, 1)
+ static inline void eth_copy_and_sum (struct sk_buff *dest, 
+ 				     const unsigned char *src, 
+ 				     int len, int base)
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 584c199..6829880 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -108,6 +108,14 @@ struct wireless_dev;
+ #define MAX_HEADER (LL_MAX_HEADER + 48)
+ #endif
+ 
++struct net_device_subqueue
++{
++	/* Give a control state for each queue.  This struct may contain
++	 * per-queue locks in the future.
++	 */
++	unsigned long	state;
++};
++
+ /*
+  *	Network device statistics. Akin to the 2.0 ether stats but
+  *	with byte counters.
+@@ -326,6 +334,7 @@ struct net_device
+ #define NETIF_F_GSO		2048	/* Enable software GSO. */
+ #define NETIF_F_LLTX		4096	/* LockLess TX */
+ #define NETIF_F_INTERNAL_STATS	8192	/* Use stats structure in net_device */
++#define NETIF_F_MULTI_QUEUE	16384	/* Has multiple TX/RX queues */
+ 
+ 	/* Segmentation offload features */
+ #define NETIF_F_GSO_SHIFT	16
+@@ -538,6 +547,14 @@ struct net_device
+ 	struct device		dev;
+ 	/* space for optional statistics and wireless sysfs groups */
+ 	struct attribute_group  *sysfs_groups[3];
++
++	/* To retrieve statistics per subqueue - FOR FUTURE USE */
++	struct net_device_stats* (*get_subqueue_stats)(struct net_device *dev,
++							int queue_index);
++
++	/* The TX queue control structures */
++	struct net_device_subqueue	*egress_subqueue;
++	int				egress_subqueue_count;
+ };
+ #define to_net_dev(d) container_of(d, struct net_device, dev)
+ 
+@@ -679,6 +696,48 @@ static inline int netif_running(const struct net_device *dev)
+ 	return test_bit(__LINK_STATE_START, &dev->state);
+ }
+ 
++/*
++ * Routines to manage the subqueues on a device.  We only need start
++ * stop, and a check if it's stopped.  All other device management is
++ * done at the overall netdevice level.
++ * Also test the device if we're multiqueue.
++ */
++static inline void netif_start_subqueue(struct net_device *dev, u16 queue_index)
++{
++	clear_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
++}
++
++static inline void netif_stop_subqueue(struct net_device *dev, u16 queue_index)
++{
++#ifdef CONFIG_NETPOLL_TRAP
++	if (netpoll_trap())
++		return;
++#endif
++	set_bit(__LINK_STATE_XOFF, &dev->egress_subqueue[queue_index].state);
++}
++
++static inline int netif_subqueue_stopped(const struct net_device *dev,
++                                         u16 queue_index)
++{
++	return test_bit(__LINK_STATE_XOFF,
++	                &dev->egress_subqueue[queue_index].state);
++}
++
++static inline void netif_wake_subqueue(struct net_device *dev, u16 queue_index)
++{
++#ifdef CONFIG_NETPOLL_TRAP
++	if (netpoll_trap())
++		return;
++#endif
++	if (test_and_clear_bit(__LINK_STATE_XOFF,
++	                       &dev->egress_subqueue[queue_index].state))
++		__netif_schedule(dev);
++}
++
++static inline int netif_is_multiqueue(const struct net_device *dev)
++{
++	return (!!(NETIF_F_MULTI_QUEUE & dev->features));
++}
+ 
+ /* Use this variant when it is known for sure that it
+  * is executing from interrupt context.
+@@ -972,8 +1031,11 @@ static inline void netif_tx_disable(struct net_device *dev)
+ extern void		ether_setup(struct net_device *dev);
+ 
+ /* Support for loadable net-drivers */
+-extern struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+-				       void (*setup)(struct net_device *));
++extern struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
++					  void (*setup)(struct net_device *),
++					  int queue_count);
++#define alloc_netdev(sizeof_priv, name, setup) \
++	alloc_netdev_mq(sizeof_priv, name, setup, 1)
+ extern int		register_netdev(struct net_device *dev);
+ extern void		unregister_netdev(struct net_device *dev);
+ /* Functions used for multicast support */
+diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
+index d10f353..ff49afe 100644
+--- a/include/linux/pkt_sched.h
++++ b/include/linux/pkt_sched.h
+@@ -99,6 +99,7 @@ struct tc_prio_qopt
+ {
+ 	int	bands;			/* Number of bands */
+ 	__u8	priomap[TC_PRIO_MAX+1];	/* Map: logical priority -> PRIO band */
++	unsigned short multiqueue;	/* 0 for non-mq, 1 for mq */
+ };
+ 
+ /* TBF section */
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 2694cb3..87a73c2 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -215,6 +215,7 @@ typedef unsigned char *sk_buff_data_t;
+  *	@pkt_type: Packet class
+  *	@fclone: skbuff clone status
+  *	@ip_summed: Driver fed us an IP checksum
++ *	@queue_mapping: Queue mapping for multiqueue devices
+  *	@priority: Packet queueing priority
+  *	@users: User count - see {datagram,tcp}.c
+  *	@protocol: Packet protocol from driver
+@@ -269,6 +270,7 @@ struct sk_buff {
+ 			__u16	csum_offset;
+ 		};
+ 	};
++	__u16			queue_mapping;
+ 	__u32			priority;
+ 	__u8			local_df:1,
+ 				cloned:1,
+diff --git a/net/core/dev.c b/net/core/dev.c
+index d82d00f..ebef097 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1464,6 +1464,8 @@ gso:
+ 		spin_lock(&dev->queue_lock);
+ 		q = dev->qdisc;
+ 		if (q->enqueue) {
++			/* reset queue_mapping to zero */
++			skb->queue_mapping = 0;
+ 			rc = q->enqueue(skb, q);
+ 			qdisc_run(dev);
+ 			spin_unlock(&dev->queue_lock);
+@@ -3291,16 +3293,18 @@ static struct net_device_stats *maybe_internal_stats(struct net_device *dev)
+ }
+ 
+ /**
+- *	alloc_netdev - allocate network device
++ *	alloc_netdev_mq - allocate network device
+  *	@sizeof_priv:	size of private data to allocate space for
+  *	@name:		device name format string
+  *	@setup:		callback to initialize device
++ *	@queue_count:	the number of subqueues to allocate
+  *
+  *	Allocates a struct net_device with private data area for driver use
+- *	and performs basic initialization.
++ *	and performs basic initialization.  Also allocates subqueue structs
++ *	for each queue on the device.
+  */
+-struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+-		void (*setup)(struct net_device *))
++struct net_device *alloc_netdev_mq(int sizeof_priv, const char *name,
++		void (*setup)(struct net_device *), int queue_count)
+ {
+ 	void *p;
+ 	struct net_device *dev;
+@@ -3325,12 +3329,24 @@ struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+ 	if (sizeof_priv)
+ 		dev->priv = netdev_priv(dev);
+ 
++ 	alloc_size = (sizeof(struct net_device_subqueue) * queue_count);
++ 
++ 	p = kzalloc(alloc_size, GFP_KERNEL);
++ 	if (!p) {
++ 		printk(KERN_ERR "alloc_netdev: Unable to allocate queues.\n");
++		kfree((char *)dev - dev->padded);
++ 		return NULL;
++ 	}
++ 
++ 	dev->egress_subqueue = p;
++ 	dev->egress_subqueue_count = queue_count;
++
+ 	dev->get_stats = maybe_internal_stats;
+ 	setup(dev);
+ 	strcpy(dev->name, name);
+ 	return dev;
+ }
+-EXPORT_SYMBOL(alloc_netdev);
++EXPORT_SYMBOL(alloc_netdev_mq);
+ 
+ /**
+  *	free_netdev - free network device
+@@ -3344,6 +3360,7 @@ void free_netdev(struct net_device *dev)
+ {
+ #ifdef CONFIG_SYSFS
+ 	/*  Compatibility with error handling in drivers */
++	kfree(dev->egress_subqueue);
+ 	if (dev->reg_state == NETREG_UNINITIALIZED) {
+ 		kfree((char *)dev - dev->padded);
+ 		return;
+@@ -3355,6 +3372,7 @@ void free_netdev(struct net_device *dev)
+ 	/* will free via device release */
+ 	put_device(&dev->dev);
+ #else
++	kfree(dev->egress_subqueue);
+ 	kfree((char *)dev - dev->padded);
+ #endif
+ }
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 1422573..0528cf3 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -418,6 +418,7 @@ struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t gfp_mask)
+ 	n->nohdr = 0;
+ 	C(pkt_type);
+ 	C(ip_summed);
++	C(queue_mapping);
+ 	C(priority);
+ #if defined(CONFIG_IP_VS) || defined(CONFIG_IP_VS_MODULE)
+ 	C(ipvs_property);
+@@ -459,6 +460,7 @@ static void copy_skb_header(struct sk_buff *new, const struct sk_buff *old)
+ #endif
+ 	new->sk		= NULL;
+ 	new->dev	= old->dev;
++	new->queue_mapping = old->queue_mapping;
+ 	new->priority	= old->priority;
+ 	new->protocol	= old->protocol;
+ 	new->dst	= dst_clone(old->dst);
+@@ -1926,6 +1928,7 @@ struct sk_buff *skb_segment(struct sk_buff *skb, int features)
+ 		tail = nskb;
+ 
+ 		nskb->dev = skb->dev;
++		nskb->queue_mapping = skb->queue_mapping;
+ 		nskb->priority = skb->priority;
+ 		nskb->protocol = skb->protocol;
+ 		nskb->dst = dst_clone(skb->dst);
+diff --git a/net/ethernet/eth.c b/net/ethernet/eth.c
+index 0ac2524..87a509c 100644
+--- a/net/ethernet/eth.c
++++ b/net/ethernet/eth.c
+@@ -316,9 +316,10 @@ void ether_setup(struct net_device *dev)
+ EXPORT_SYMBOL(ether_setup);
+ 
+ /**
+- * alloc_etherdev - Allocates and sets up an Ethernet device
++ * alloc_etherdev_mq - Allocates and sets up an Ethernet device
+  * @sizeof_priv: Size of additional driver-private structure to be allocated
+  *	for this Ethernet device
++ * @queue_count: The number of queues this device has.
+  *
+  * Fill in the fields of the device structure with Ethernet-generic
+  * values. Basically does everything except registering the device.
+@@ -328,8 +329,8 @@ EXPORT_SYMBOL(ether_setup);
+  * this private data area.
+  */
+ 
+-struct net_device *alloc_etherdev(int sizeof_priv)
++struct net_device *alloc_etherdev_mq(int sizeof_priv, int queue_count)
+ {
+-	return alloc_netdev(sizeof_priv, "eth%d", ether_setup);
++	return alloc_netdev_mq(sizeof_priv, "eth%d", ether_setup, queue_count);
+ }
+-EXPORT_SYMBOL(alloc_etherdev);
++EXPORT_SYMBOL(alloc_etherdev_mq);
+diff --git a/net/sched/sch_generic.c b/net/sched/sch_generic.c
+index 3385ee5..329e60c 100644
+--- a/net/sched/sch_generic.c
++++ b/net/sched/sch_generic.c
+@@ -126,7 +126,8 @@ static inline int qdisc_restart(struct net_device *dev)
+ 			/* And release queue */
+ 			spin_unlock(&dev->queue_lock);
+ 
+-			if (!netif_queue_stopped(dev)) {
++			if (!netif_queue_stopped(dev) &&
++			    !netif_subqueue_stopped(dev, skb->queue_mapping)) {
+ 				int ret;
+ 
+ 				ret = dev_hard_start_xmit(skb, dev);
+@@ -142,7 +143,6 @@ static inline int qdisc_restart(struct net_device *dev)
+ 					goto collision;
+ 				}
+ 			}
+-
+ 			/* NETDEV_TX_BUSY - we need to requeue */
+ 			/* Release the driver */
+ 			if (!nolock) {
+diff --git a/net/sched/sch_prio.c b/net/sched/sch_prio.c
+index 269a6e1..428db25 100644
+--- a/net/sched/sch_prio.c
++++ b/net/sched/sch_prio.c
+@@ -43,6 +43,8 @@ struct prio_sched_data
+ 	struct tcf_proto *filter_list;
+ 	u8  prio2band[TC_PRIO_MAX+1];
+ 	struct Qdisc *queues[TCQ_PRIO_BANDS];
++	u16 band2queue[TC_PRIO_MAX + 1];
++	u8 multiqueue;
+ };
+ 
+ 
+@@ -70,13 +72,20 @@ prio_classify(struct sk_buff *skb, struct Qdisc *sch, int *qerr)
+ #endif
+ 			if (TC_H_MAJ(band))
+ 				band = 0;
++ 			skb->queue_mapping =
++ 				  q->band2queue[q->prio2band[band&TC_PRIO_MAX]];
++
+ 			return q->queues[q->prio2band[band&TC_PRIO_MAX]];
+ 		}
+ 		band = res.classid;
+ 	}
+ 	band = TC_H_MIN(band) - 1;
+-	if (band > q->bands)
++	if (band > q->bands) {
++ 		skb->queue_mapping = q->band2queue[q->prio2band[0]];
+ 		return q->queues[q->prio2band[0]];
++	}
++
++ 	skb->queue_mapping = q->band2queue[band];
+ 
+ 	return q->queues[band];
+ }
+@@ -144,11 +153,17 @@ prio_dequeue(struct Qdisc* sch)
+ 	struct Qdisc *qdisc;
+ 
+ 	for (prio = 0; prio < q->bands; prio++) {
+-		qdisc = q->queues[prio];
+-		skb = qdisc->dequeue(qdisc);
+-		if (skb) {
+-			sch->q.qlen--;
+-			return skb;
++		/* Check if the target subqueue is available before
++		 * pulling an skb.  This way we avoid excessive requeues
++		 * for slower queues.
++		 */
++		if (!netif_subqueue_stopped(sch->dev, q->band2queue[prio])) {
++			qdisc = q->queues[prio];
++			skb = qdisc->dequeue(qdisc);
++			if (skb) {
++				sch->q.qlen--;
++				return skb;
++			}
+ 		}
+ 	}
+ 	return NULL;
+@@ -200,6 +215,10 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+ 	struct prio_sched_data *q = qdisc_priv(sch);
+ 	struct tc_prio_qopt *qopt = RTA_DATA(opt);
+ 	int i;
++	int queue;
++	int qmapoffset;
++	int offset;
++	int mod;
+ 
+ 	if (opt->rta_len < RTA_LENGTH(sizeof(*qopt)))
+ 		return -EINVAL;
+@@ -242,6 +261,40 @@ static int prio_tune(struct Qdisc *sch, struct rtattr *opt)
+ 			}
+ 		}
+ 	}
++	/* setup queue to band mapping - default to queue 0 if multiqueue has
++	 * not been enabled via tc.
++	 */
++	if (qopt->multiqueue) {
++		if (q->bands < sch->dev->egress_subqueue_count) {
++			qmapoffset = 1;
++			mod = sch->dev->egress_subqueue_count;
++		} else {
++			mod = q->bands % sch->dev->egress_subqueue_count;
++			qmapoffset = q->bands / sch->dev->egress_subqueue_count
++					+ ((mod) ? 1 : 0);
++		}
++	} else {
++		/* force all bands to map into queue 0 */
++		qmapoffset = 0;
++		mod = 0;
++	}
++	q->multiqueue = qopt->multiqueue;
++
++	queue = 0;
++	offset = 0;
++	for (i = 0; i < q->bands; i++) {
++		q->band2queue[i] = queue;
++		if ( ((i + 1) - offset) == qmapoffset) {
++			queue++;
++			offset += qmapoffset;
++			if (mod)
++				mod--;
++			qmapoffset = q->bands /
++				sch->dev->egress_subqueue_count +
++				((mod) ? 1 : 0);
++		}
++	}
++
+ 	return 0;
+ }
+ 
+@@ -271,6 +324,7 @@ static int prio_dump(struct Qdisc *sch, struct sk_buff *skb)
+ 	struct tc_prio_qopt opt;
+ 
+ 	opt.bands = q->bands;
++	opt.multiqueue = q->multiqueue;
+ 	memcpy(&opt.priomap, q->prio2band, TC_PRIO_MAX+1);
+ 	RTA_PUT(skb, TCA_OPTIONS, sizeof(opt), &opt);
+ 	return skb->len;
 
-The goal of a proportional-share scheduling algorithm is to minimize the
-above metrics. If the lag function is bounded by a constant for any
-thread in any time interval, then the algorithm is considered to be
-fair. You may notice that the second metric is actually weaker than
-first. In fact, if an algorithm achieves a constant lag bound, it must
-also achieve a constant bound for the second metric, but the reverse is
-not necessarily true. But in some settings, people have focused on the
-second metric and still consider an algorithm to be fair as long as the
-second metric is bounded by a constant.
-
-> 
-> On Mon, Apr 23, 2007 at 05:59:06PM -0700, Li, Tong N wrote:
-> > I understand that via experiments we can show a design is reasonably
-> > fair in the common case, but IMHO, to claim that a design is fair,
-there
-> > needs to be some kind of formal analysis on the fairness bound, and
-this
-> > bound should be proven to be constant. Even if the bound is not
-> > constant, at least this analysis can help us better understand and
-> > predict the degree of fairness that users would experience (e.g.,
-would
-> > the system be less fair if the number of threads increases? What
-happens
-> > if a large number of threads dynamically join and leave the
-system?).
-> 
-> Carrying out this sort of analysis on various policies would help, but
-> I'd expect most of them to be difficult to analyze. cfs' current
-> ->fair_key computation should be simple enough to analyze, at least
-> ignoring nice numbers, though I've done nothing rigorous in this area.
-> 
-
-If we can derive some invariants from the algorithm, it'd help the
-analysis. An example is the deficit round-robin (DRR) algorithm in
-networking. Its analysis utilizes the fact that the round each flow (in
-this case, it'd be thread) goes through in any time interval differs by
-at most one.
-
-Hope you didn't get bored by all of this. :)
-
-  tong
