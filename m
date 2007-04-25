@@ -1,81 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161609AbXDYFFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161613AbXDYFF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161609AbXDYFFa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 01:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161611AbXDYFFa
+	id S1161613AbXDYFF5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 01:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423210AbXDYFF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 01:05:30 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:6988 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161609AbXDYFF3 (ORCPT
+	Wed, 25 Apr 2007 01:05:57 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:46780 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161613AbXDYFF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 01:05:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=S0Yd1lWcedxYkuGVYBVs6H2WFC096a5KxjEAYGlxsWBlFN6Du6VQxBz2KP6U1OZrG
-	iiYQUpWJKjbwyB9simI8g==
-Message-ID: <6599ad830704242204n75e6340cn280999122c54530f@mail.gmail.com>
-Date: Tue, 24 Apr 2007 22:04:53 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
-Subject: Re: [ckrm-tech] [PATCH 0/7] Containers (V8): Generic Process Containers
-Cc: vatsa@in.ibm.com, sekharan@us.ibm.com, ckrm-tech@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, xemul@sw.ru, dev@sw.ru,
-       rohitseth@google.com, ebiederm@xmission.com, mbligh@google.com,
-       containers@lists.osdl.org, serue@us.ibm.com, akpm@linux-foundation.org,
-       devel@openvz.org
-In-Reply-To: <462C9375.5030901@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 01:05:56 -0400
+Message-Id: <1177477555.20837.1186422725@webmail.messagingengine.com>
+X-Sasl-Enc: 6qsMxOFHBNfmxPu1OKbtRqEYpecFuowaYMGqg4c/TYyx 1177477555
+From: lkml777@123mail.org
+To: linux-kernel@vger.kernel.org
+Cc: "Eric Hopper" <hopper@omnifarious.org>
 Content-Disposition: inline
-References: <20070406233221.989528000@menage.corp.google.com>
-	 <462C9375.5030901@linux.vnet.ibm.com>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+Subject: SOME STUFF ABOUT REISER4 To Mr Hopper
+Date: Tue, 24 Apr 2007 22:05:55 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/23/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
-> Hi Paul,
->
-> In [patch 3/7] Containers (V8): Add generic multi-subsystem API to
-> containers, you have forcefully enabled interrupt in
-> container_init_subsys() with spin_unlock_irq() which breaks on PPC64.
->
->
-> > +static void container_init_subsys(struct container_subsys *ss) {
-> > +     int retval;
-> > +     struct list_head *l;
-> > +     printk(KERN_ERR "Initializing container subsys %s\n",
-> > ss->name);
-> > +
-> > +     /* Create the top container state for this subsystem */
-> > +     ss->root = &rootnode;
-> > +     retval = ss->create(ss, dummytop);
-> > +     BUG_ON(retval);
-> > +     init_container_css(ss, dummytop);
-> > +
-> > +     /* Update all container groups to contain a subsys
-> > +      * pointer to this state - since the subsystem is
-> > +      * newly registered, all tasks and hence all container
-> > +      * groups are in the subsystem's top container. */
-> > +     spin_lock_irq(&container_group_lock);
-> > +     l = &init_container_group.list;
-> > +     do {
-> > +             struct container_group *cg =
-> > +                     list_entry(l, struct container_group, list);
-> > +             cg->subsys[ss->subsys_id] =
-> > dummytop->subsys[ss->subsys_id];
-> > +             l = l->next;
-> > +     } while (l != &init_container_group.list);
-> > +     spin_unlock_irq(&container_group_lock);
->
-> Interrupt gets enabled here and on PPC64, the kernel takes a pending
-> decrementer and crashes because it is too early to handle them.
->
-> Use of irqsave and restore routines would fix the problem.
+Seems I did not answer the correct thread.
 
-OK, thanks. I'll add that change.
+On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
+> <hopper@omnifarious.org> said:
 
-Paul
+> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
+> benchmark showing that compressing long strings of 0s results in things
+> taking up very little space and being very fast.
+
+I think you are deliberately being stupid here.
+
+You are claiming that REISER4's good speed results when using
+compression actually has a simple explanation and THEREFORE all good
+results for the filesystem, even those results that have nothing to do
+with compression, are negated.
+
+NOTHING COULD BE FURTHER FROM THE TRUTH.
+
+Your conclusion is a total travesty of logic.
+
+As I understand it, the default Reiser4 DOES NOT USE any compression at
+all, not even tail compression, but saves space by eliminating block
+alignment wastage (tail compression is an option).
+
+So lets LOSE the statistics that involve compression. The results now
+look like this:
+
+.-------------------------.
+| FILESYSTEM | TIME |DISK |
+| TYPE       |(secs)|USAGE|
+.-------------------------.
+|REISER4     | 3462 | 692 |
+|EXT2        | 4092 | 816 |
+|JFS         | 4225 | 806 |
+|EXT4        | 4408 | 816 |
+|EXT3        | 4421 | 816 |
+|XFS         | 4625 | 779 |
+|REISER3     | 6178 | 793 |
+|FAT32       |12342 | 988 |
+|NTFS-3g     |10414 | 772 |
+.-------------------------.
+
+
+These results are still EXTREMELY GOOD for REISER4.
+
+These results still say that Reiser4 is a truly remarkable filesystem,
+as stated in:
+
+http://linuxhelp.150m.com/resources/fs-benchmarks.htm
+http://m.domaindlx.com/LinuxHelp/fs-benchmarks.htm
+
+So why do I see an anti-Reiser religion, in all that you people say.
+
+You, concentrate on the fact that bonnie++'s use of files that are
+mainly zeroes, will make the results using compression less good than
+they are.
+
+I can't see anywhere where this has been denied.
+
+In fact the other set of statistics that you just ignore, states that in
+more realistic situations, the compression speedup is slightly negative.
+
+What is wrong here, is:
+
+You say that the Bonnie++ tests using compression are subject to
+interpretation. No argument here.
+You ignore the tests that confirm your statement. You are clearly not
+interested in the actual results or their interpretation.
+You, by some incredibly twisted "logic" then state that Reiser4 is
+therefore not good, even though it is clearly the best filesystem when
+NOT using compression.
+
+This of course is completely deceitful "logic".
+
+That the speed advantage from compression would be small is clear from
+the OTHER data that you ignore, namely:
+
+.-------------------------------------------------.
+|File         |Disk |Copy |Copy |Tar  |Unzip| Del |
+|System       |Usage|655MB|655MB|Gzip |UnTar| 2.5 |
+|Type         | (MB)| (1) | (2) |655MB|655MB| Gig |
+.-------------------------------------------------.
+|REISER4 lzo  | 278 | 138 |  56 |  80 |  34 |  84 |
+|REISER4 gzip | 213 | 148 |  68 |  83 |  48 |  70 |
+|REISER4      | 692 | 148 |  55 |  67 |  25 |  56 |
+|EXT4         | 816 | 174 |  70 |  74 |  42 |  50 |
+.-------------------------------------------------.
+
+
+> 
+> > On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
+> > <hopper@omnifarious.org> said:
+> >
+> > > I know that this whole effort has been put in disarray by the
+> > > prosecution of Hans Reiser, but I'm curious as to its status. Is
+> > > Reiser4 going to be going into the Linus kernel anytime soon? Is there
+> > > somewhere I should be looking to find this out without wasting bandwidth
+> > > here?
+> >
+> > There was a thread the other day, that talked about Reiser4.
+> >
+> > It took a while but I have found it (actually two)
+> >
+> > http://lkml.org/lkml/2007/4/5/360
+> > http://lkml.org/lkml/2007/4/9/4
+> >
+> > You may want to check them out.
+> 
+> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
+> benchmark showing that compressing long strings of 0s results in things
+> taking up very little space and being very fast.
+> 
+> Such things will produce lots of flames and no useful information
+> whatsoever as is evinced by the half conspiracy theory, half truth the
+> thread degenerated into in the second message you linked to.
+> 
+-- 
+  
+  lkml777@123mail.org
+
+-- 
+http://www.fastmail.fm - Accessible with your email software
+                          or over the web
+
