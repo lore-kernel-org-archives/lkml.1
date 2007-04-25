@@ -1,122 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993128AbXDYViX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993130AbXDYVkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993128AbXDYViX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 17:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993129AbXDYViX
+	id S2993130AbXDYVkG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 17:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993129AbXDYVkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 17:38:23 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58017 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993128AbXDYViW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 17:38:22 -0400
-Date: Thu, 26 Apr 2007 03:07:25 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miles Lane <miles.lane@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm1 + sysfs-oops-workaround.patch -- software suspend failed (1 tasks refusing to freeze)
-Message-ID: <20070425213725.GG15134@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <a44ae5cd0704242227x14986fe3v5c2fc3a5bceedc89@mail.gmail.com> <20070424224137.0ccf7874.akpm@linux-foundation.org> <a44ae5cd0704242249i210ba860i659c230b5dbb211c@mail.gmail.com> <20070424225429.544075c8.akpm@linux-foundation.org> <a44ae5cd0704242341n4c8d9eaaw4516759ff79e8cd5@mail.gmail.com> <20070425000735.130ec3e7.akpm@linux-foundation.org> <a44ae5cd0704250048i474d7249l7d5b27f6adaf2742@mail.gmail.com> <20070425011902.714d85d6.akpm@linux-foundation.org> <a44ae5cd0704251300o2804e71dwebeda266415b691b@mail.gmail.com> <20070425141245.1bb29930.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425141245.1bb29930.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Wed, 25 Apr 2007 17:40:05 -0400
+Received: from smtp.ono.com ([62.42.230.12]:32302 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2993130AbXDYVkD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 17:40:03 -0400
+Date: Wed, 25 Apr 2007 23:39:54 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: start_udev and devpts [Re: 2.6.21-rc6-mm1]
+Message-ID: <20070425233954.1c8601da@werewolf-wl>
+In-Reply-To: <20070425225039.1cf6c1ee@werewolf-wl>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+	<20070424101041.2fb2d9e0@werewolf-wl>
+	<20070424045801.607b30d4.akpm@linux-foundation.org>
+	<20070424154321.11c70ace@werewolf-wl>
+	<20070424102250.ab8469bd.akpm@linux-foundation.org>
+	<20070425225039.1cf6c1ee@werewolf-wl>
+X-Mailer: Claws Mail 2.9.1cvs23 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On Wed, 25 Apr 2007 22:50:39 +0200, "J.A. Magallón" <jamagallon@ono.com> wrote:
 
-Looks like we went off-list :)
+> On Tue, 24 Apr 2007 10:22:50 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Tue, 24 Apr 2007 15:43:21 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
+> > 
+> > > On Tue, 24 Apr 2007 04:58:01 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Tue, 24 Apr 2007 10:10:41 +0200 "J.A. Magallón" <jamagallon@ono.com> wrote:
+> > > > 
+> > > > > On Sun, 8 Apr 2007 14:35:59 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > > 
+> > > > > > 
+> > > > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc6/2.6.21-rc6-mm1/
+> > > > > > 
+> > > > > > 
+> > > > > > - Lots of x86 updates
+> > > > > > 
+> > > > > 
+> > > > > Has somthing related with PTY's changed in this kernel ?
+> > > > 
+> > > > Not as far as I know, but there were some kobject_uevent changes which
+> > > > might have caused udev upcalls to break.  Perhaps.
+> > > > 
+> > > > > I have to enable legacy PTY handling in a couple boxes to get ssh working.
+> > > > > If not, I had openpty() errors and nor sshd nor virtual terminals (aterm) were
+> > > > > able to get a terminal.
+> > > > 
+> > > > I have CONFIG_PM_LEGACY unset in at least one of my test configs and it
+> > > > works OK here.
+> > > > 
+> > > > > User space (udev) is the same in three boxes and one works and two fail.
+> > > > > I had /dev/ptmx everywhere and /dev/pts mounted
+> > > > > 
+> > > > > Any idea ?
+> > > > 
+> > > > Nope.  Can you please check 2.6.21-rc7-mm1, see if that fixed it?  If so,
+> > > > it might have been the kobject_uevent thing.
+> > > > 
+> > > 
+> > > I will, thanks.
+> > > 
+> > > A couple questions (as far as udev behaviour is sooooooo distro dependent):
+> > > - What should I have in /dev if I don't use legacy ptys ? As I understand
+> > >   it, only /dev/ptmx and /dev/pts/*, no /dev/tty* nor /dev/pty* ?
+> > 
+> > My FC5 CONFIG_LEGACY_PTYS=n box has no /dev/ptmx, /dev/pts/*, all of
+> > /dev/tty0 through /dev/tty63 and no /dev/pty*.
+> > 
+> > I'm not sure where all the /dev/tty*'s came from - perhaps a static udev
+> > rule?
+> >
+> 
+> Uh ?
+> From the Kconfig help fot UNIX98_PTYS:
+> 
+> Linux has traditionally used the BSD-like names /dev/ptyxx for
+> masters and /dev/ttyxx for slaves of pseudo terminals. This scheme
+> has a number of problems. The GNU C library glibc 2.1 and later,
+> however, supports the Unix98 naming standard: in order to acquire a
+> pseudo terminal, a process opens /dev/ptmx; the number of the pseudo
+> terminal is then made available to the process and the pseudo
+> terminal slave can be accessed as /dev/pts/<number>. What was
+> traditionally /dev/ttyp2 will then be /dev/pts/2, for example.
+> 
+> So if all userspace is Unix98-aware, you just would be done with
+> /dev/ptmx and /dev/pts/*. In your setup it looks like you are not able
+> to use Unix98 PTYs, but as udev has created tty* things work.
+> Or not ?
+> 
+> > > - If my setup, for whatever strange reasons has /dev/tty* stored anyware
+> > >   (/dev/.udev, links.conf...) and they get created, I supose that opening
+> > >   /dev/tty will give a ENODEV ?
+> > 
+> > well, /dev/tty is attached to your current tty and /dev/tty2 will get you
+> > talking to the second VT.  I can't immediately thing what /dev/tty22 is
+> > attached to.
+> > 
+> 
+> I supposed it was something like you always opened /dev/tty but kernel+glibc
+> redirect you to /dev/ttyXX, that is your _real_ terminal.
+> I will try to check docs...
+> 
 
-On Wed, Apr 25, 2007 at 02:12:45PM -0700, Andrew Morton wrote:
-> On Wed, 25 Apr 2007 13:00:01 -0700
-> "Miles Lane" <miles.lane@gmail.com> wrote:
-> 
-> > SysRq : Show State
-> 
-> OK.  Your freezer failure is caused by lots of breakage with networking's
-> rtnl_lock.
-> 
-> My usual first step with these traces is to search for " D ":
-> 
-> avahi-daemon  D 000003D0     0  2853      1 (NOTLB)
->        c32e1c80 00000092 a4206282 000003d0 00000000 00000046 a4206282 000003d0
->        c1ca35e4 c03b9b54 c30fc2f0 c1ca34d0 c036f520 c32e1cb0 c036f4e0 00000246
->        c32e1cd0 c0299cc7 00000000 00000002 c0299dfe 00000246 00000202 c1f7f060
-> Call Trace:
->  [__mutex_lock_slowpath+330/610] __mutex_lock_slowpath+0x14a/0x262
->  [mutex_lock+31/35] mutex_lock+0x1f/0x23
->  [rtnl_lock+16/18] rtnl_lock+0x10/0x12
->  [ip_mc_leave_group+24/170] ip_mc_leave_group+0x18/0xaa
->  [ip_setsockopt+1608/2365] ip_setsockopt+0x648/0x93d
->  [udp_setsockopt+67/74] udp_setsockopt+0x43/0x4a
->  [sock_common_setsockopt+30/37] sock_common_setsockopt+0x1e/0x25
->  [sys_setsockopt+105/133] sys_setsockopt+0x69/0x85
->  [sys_socketcall+488/577] sys_socketcall+0x1e8/0x241
->  [sysenter_past_esp+95/153] sysenter_past_esp+0x5f/0x99
-> 
-> and
-> 
-> multiload-app D 000003D0     0  4159      1 (NOTLB)
->        c733ee10 00200092 aa7df471 000003d0 00000000 00200046 aa7df471 000003d0
->        c7277624 c03b9b54 c72fea98 00000000 c036f520 c733ee40 c036f4e0 00200246
->        c733ee60 c0299cc7 00000000 00000002 c0299dfe 00200246 00000000 00000000
-> Call Trace:
->  [__mutex_lock_slowpath+330/610] __mutex_lock_slowpath+0x14a/0x262
->  [mutex_lock+31/35] mutex_lock+0x1f/0x23
->  [rtnl_lock+16/18] rtnl_lock+0x10/0x12
->  [dev_ioctl+1066/1134] dev_ioctl+0x42a/0x46e
->  [sock_ioctl+446/458] sock_ioctl+0x1be/0x1ca
->  [do_ioctl+34/104] do_ioctl+0x22/0x68
->  [vfs_ioctl+575/594] vfs_ioctl+0x23f/0x252
->  [sys_ioctl+49/74] sys_ioctl+0x31/0x4a
->  [sysenter_past_esp+95/153] sysenter_past_esp+0x5f/0x99
-> 
-> 
-> and
-> 
-> wpa_supplican D 000003D0     0  6511      1 (NOTLB)
->        c724cc50 00200092 a33ddada 000003d0 00000000 00200046 a33ddada 000003d0
->        c7191624 c03b9b54 c72fe330 c46c64d0 c036f520 c724cc80 c036f4e0 00200246
->        c724cca0 c0299cc7 00000000 00000002 c0299dfe 00200046 00000000 00000000
-> Call Trace:
->  [__mutex_lock_slowpath+330/610] __mutex_lock_slowpath+0x14a/0x262
->  [mutex_lock+31/35] mutex_lock+0x1f/0x23
->  [rtnetlink_rcv+26/68] rtnetlink_rcv+0x1a/0x44
->  [netlink_data_ready+21/85] netlink_data_ready+0x15/0x55
->  [netlink_sendskb+34/83] netlink_sendskb+0x22/0x53
->  [netlink_unicast+443/469] netlink_unicast+0x1bb/0x1d5
->  [netlink_sendmsg+582/594] netlink_sendmsg+0x246/0x252
->  [sock_sendmsg+204/229] sock_sendmsg+0xcc/0xe5
->  [sys_sendto+204/236] sys_sendto+0xcc/0xec
->  [sys_send+54/56] sys_send+0x36/0x38
->  [sys_socketcall+318/577] sys_socketcall+0x13e/0x241
->  [sysenter_past_esp+95/153] sysenter_past_esp+0x5f/0x99
-> 
-> and lots more of the same.
-> 
-> 
-> There is something seriously scrogged with networking locking in -mm.  We
-> know there's one locking bug which manifests in the bare net-2.6.22 tree,
-> and I'm suspecting that there are other (albeit perhaps related) locking
-> bugs triggered by something else in -mm.  Something which precedes
-> git-net.patch in the series file (ie: another subsystem tree).
-> 
-> So for now, we should assume that there's no freezer-related problem being
-> demonstrated here.
+Oops, no, /dev/tty?? are for virtual consoles.
 
-Doesn't look like it ATM. 
+But I think I found the problem.
+In short, in /dev/pts is mounted before /dev. I remounted it and ssh worked
+fine again.
+I'll dig mandrivas rc's to check this...
 
-> 
+Anyways, I see no plain 'mount' command in /sbin/start_udev, all are 
+'mount --move' commands. So I think it supposes is already mounted and
+tries to move it.
 
-Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.20-jam10 (gcc 4.1.2 20070302 (prerelease) (4.1.2-1mdv2007.1)) #4 SMP PREEMPT
