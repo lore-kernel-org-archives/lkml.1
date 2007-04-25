@@ -1,58 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992728AbXDYLio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992726AbXDYLj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992728AbXDYLio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992726AbXDYLio
+	id S2992726AbXDYLj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992717AbXDYLj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:38:44 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:40038 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992728AbXDYLim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:38:42 -0400
-Date: Wed, 25 Apr 2007 17:13:18 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch] CFS scheduler, -v5
-Message-ID: <20070425114318.GA7328@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423051659.GA3929@gentoox2.trippelsdorf.de> <20070423052728.GB3929@gentoox2.trippelsdorf.de> <20070423062116.GB4518@elte.hu>
+	Wed, 25 Apr 2007 07:39:57 -0400
+Received: from ns.oss.ntt.co.jp ([222.151.198.98]:47228 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992730AbXDYLj4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 07:39:56 -0400
+Subject: [PATCH 8/10] __send_IPI_dest_field - x86_64
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: horms@verge.net.au, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, ak@suse.de, vgoyal@in.ibm.com,
+       mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
+       akpm@linux-foundation.org
+In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
+References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Wed, 25 Apr 2007 20:39:55 +0900
+Message-Id: <1177501195.17974.42.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070423062116.GB4518@elte.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 08:21:16AM +0200, Ingo Molnar wrote:
-> > Changing sys_yield_to to sys_sched_yield_to in 
-> > include/asm-x86_64/unistd.h fixes the problem.
-> 
-> thanks. I edited the -v5 patch so new downloads should have the fix. (i 
-> also test-booted x86_64 with this patch)
+Implement __send_IPI_dest_field which can be used to send IPIs when the
+"destination shorthand" field of the ICR is set to 00 (destination
+field). Use it whenever possible.
 
-I downloaded -v5 and noticed this:
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
---- linux.orig/include/asm-x86_64/unistd.h
-+++ linux/include/asm-x86_64/unistd.h
-@@ -619,8 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync
- __SYSCALL(__NR_vmsplice, sys_vmsplice)
- #define __NR_move_pages                279
- __SYSCALL(__NR_move_pages, sys_move_pages)
-+#define __NR_yield_to          280
-+__SYSCALL(__NR_move_pages, sys_sched_yield_to)
+diff -urNp linux-2.6.21-rc7-orig/arch/x86_64/kernel/genapic_flat.c linux-2.6.21-rc7/arch/x86_64/kernel/genapic_flat.c
+--- linux-2.6.21-rc7-orig/arch/x86_64/kernel/genapic_flat.c	2007-02-05 03:44:54.000000000 +0900
++++ linux-2.6.21-rc7/arch/x86_64/kernel/genapic_flat.c	2007-04-23 17:19:14.000000000 +0900
+@@ -60,31 +60,10 @@ static void flat_init_apic_ldr(void)
+ static void flat_send_IPI_mask(cpumask_t cpumask, int vector)
+ {
+ 	unsigned long mask = cpus_addr(cpumask)[0];
+-	unsigned long cfg;
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
+-
+-	/*
+-	 * Wait for idle.
+-	 */
+-	apic_wait_icr_idle();
+-
+-	/*
+-	 * prepare target chip field
+-	 */
+-	cfg = __prepare_ICR2(mask);
+-	apic_write(APIC_ICR2, cfg);
+-
+-	/*
+-	 * program the ICR
+-	 */
+-	cfg = __prepare_ICR(0, vector, APIC_DEST_LOGICAL);
+-
+-	/*
+-	 * Send the IPI. The write to APIC_ICR fires this off.
+-	 */
+-	apic_write(APIC_ICR, cfg);
++	__send_IPI_dest_field(mask, vector, APIC_DEST_LOGICAL);
+ 	local_irq_restore(flags);
+ }
+ 
+diff -urNp linux-2.6.21-rc7-orig/include/asm-x86_64/ipi.h linux-2.6.21-rc7/include/asm-x86_64/ipi.h
+--- linux-2.6.21-rc7-orig/include/asm-x86_64/ipi.h	2007-02-05 03:44:54.000000000 +0900
++++ linux-2.6.21-rc7/include/asm-x86_64/ipi.h	2007-04-23 17:11:04.000000000 +0900
+@@ -76,10 +76,39 @@ static inline void __send_IPI_shortcut(u
+ 	apic_write(APIC_ICR, cfg);
+ }
+ 
++/*
++ * This is used to send an IPI with no shorthand notation (the destination is
++ * specified in bits 56 to 63 of the ICR).
++ */
++static inline void __send_IPI_dest_field(unsigned int mask, int vector, unsigned int dest)
++{
++	unsigned long cfg;
++
++	/*
++	 * Wait for idle.
++	 */
++	apic_wait_icr_idle();
++
++	/*
++	 * prepare target chip field
++	 */
++	cfg = __prepare_ICR2(mask);
++	apic_write(APIC_ICR2, cfg);
++
++	/*
++	 * program the ICR
++	 */
++	cfg = __prepare_ICR(0, vector, dest);
++
++	/*
++	 * Send the IPI. The write to APIC_ICR fires this off.
++	 */
++	apic_write(APIC_ICR, cfg);
++}
+ 
+ static inline void send_IPI_mask_sequence(cpumask_t mask, int vector)
+ {
+-	unsigned long cfg, flags;
++	unsigned long flags;
+ 	unsigned long query_cpu;
+ 
+ 	/*
+@@ -88,28 +117,9 @@ static inline void send_IPI_mask_sequenc
+ 	 * - mbligh
+ 	 */
+ 	local_irq_save(flags);
+-
+ 	for_each_cpu_mask(query_cpu, mask) {
+-		/*
+-		 * Wait for idle.
+-		 */
+-		apic_wait_icr_idle();
+-
+-		/*
+-		 * prepare target chip field
+-		 */
+-		cfg = __prepare_ICR2(x86_cpu_to_apicid[query_cpu]);
+-		apic_write(APIC_ICR2, cfg);
+-
+-		/*
+-		 * program the ICR
+-		 */
+-		cfg = __prepare_ICR(0, vector, APIC_DEST_PHYSICAL);
+-
+-		/*
+-		 * Send the IPI. The write to APIC_ICR fires this off.
+-		 */
+-		apic_write(APIC_ICR, cfg);
++		__send_IPI_dest_field(x86_cpu_to_apicid[query_cpu],
++				      vector, APIC_DEST_PHYSICAL);
+ 	}
+ 	local_irq_restore(flags);
+ }
 
-s/__NR_move_pages/__NR_yield_to in the above line?
 
--- 
-Regards,
-vatsa
