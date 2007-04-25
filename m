@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXDZHSr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXDZHSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXDZHSr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:18:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXDZHSq
+	id S933230AbXDZHSs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933247AbXDZHSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:18:46 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:57825 "EHLO
+	Thu, 26 Apr 2007 03:18:47 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:57826 "EHLO
 	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933232AbXDZHSp (ORCPT
+	with ESMTP id S933238AbXDZHSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Apr 2007 03:18:45 -0400
 Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
 	hang in atomic copy)
 From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Reply-To: nigel@nigel.suspend2.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
+       Ingo Molnar <mingo@elte.hu>, Christian Hesse <mail@earthworm.de>,
        Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
        Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.0.98.0704251847310.9964@woody.linux-foundation.org>
+In-Reply-To: <20070425213049.GF17387@elf.ucw.cz>
 References: <20070419070437.GA25211@elte.hu>
-	 <20070424202336.GC16503@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070424212408.GD16457@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-	 <20070425072350.GA6866@ucw.cz>
-	 <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
-	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
-	 <20070425202741.GC17387@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
-	 <20070425214420.GG17387@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-	 <1177540027.5025.87.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
-	 <1177551601.5025.131.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0704251847310.9964@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vK5cjDr/MbNozpucR6zy"
-Date: Thu, 26 Apr 2007 12:31:51 +1000
-Message-Id: <1177554711.5025.168.camel@nigel.suspend2.net>
+	 <20070425192512.GZ3468@stusta.de>
+	 <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
+	 <200704252220.57792.rjw@sisk.pl>
+	 <alpine.LFD.0.98.0704251323000.9964@woody.linux-foundation.org>
+	 <20070425213049.GF17387@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mSIa20EZD0y/Kar652Fw"
+Date: Thu, 26 Apr 2007 08:22:49 +1000
+Message-Id: <1177539769.5025.82.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-vK5cjDr/MbNozpucR6zy
+--=-mSIa20EZD0y/Kar652Fw
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi.
+Hello.
 
-Hmm. Perhaps I should have added to that last reply that recognising
-that they store similar information doesn't mean I think they need the
-same high-level routine for both state transitions.
+On Wed, 2007-04-25 at 23:30 +0200, Pavel Machek wrote:
+> Hi!
+>=20
+> > > Please ask anyone who's worked with me if he's had any problem with t=
+hat.
+> > > If anyone say I'm unable to work with anybody else, I'd say you're ri=
+ght.  Till
+> > > then, I feel offended.
+> >=20
+> > I'll apologise (and virtually kiss your hairy feet) if you could actual=
+ly=20
+> > show me a single implementation that people can agree on.
+> >=20
+> > But until then, I claim that the suspend-to-disk people cannot work wit=
+h=20
+> > each other.
+>=20
+> It is not Rafael's fault. Actually it is quite hard to work with
+> Nigel, because he implements every feature someone asks for, and wants
+> to merge them all :-(. I don't expect to ever agree with Nigel on
+> anything important, sorry.
 
-I'd really like to see each driver have some sort of state machine
-controlling its power management, into which these calls were just
-another input (an important one, but just another alongside information
-about policy, whether we're on battery (UPS or laptop) or AC, whether
-the device is actually being used and so on.
+I'm sorry that you feel that way, Pavel.
+
+I can agree that I implement features that people ask for, but I think
+saying "every feature someone asks for" is going a bit far (I won't ask
+you to prove that). My desire is to provide Linux with hibernation
+support that does more than just the bare minimum. Different people have
+different usage scenarios, and this has led to me implementing more and
+different features.
+
+As to wanting to merge them all, this is true. No one wants to put time
+into something only to have it left out. But I don't see why you think
+this is a bad thing. Many kernel guys claim the thing follows an
+evolutionary model. Well, here's software that has been developed out of
+tree - evolved if you like - and which many people would consider more
+mature ('evolved'?) than [u]swsusp. If evolutionary theory is to be
+followed, let the fittest survive!
 
 Nigel
 
---=-vK5cjDr/MbNozpucR6zy
+--=-mSIa20EZD0y/Kar652Fw
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGMA8XN0y+n1M3mo0RAn5LAKDqKVwMbZajkGhEmGcdcAAteFJu8ACgpkoQ
-awCfbfReRpPTFpIyHmr4ZUA=
-=kBjp
+iD8DBQBGL9S5N0y+n1M3mo0RAmmXAKC3AiTSQi9UgLht83zGgRP0vpQZbgCg4C/W
+J3zjzKvNhmZNV9n57Qmz5GY=
+=u4VS
 -----END PGP SIGNATURE-----
 
---=-vK5cjDr/MbNozpucR6zy--
+--=-mSIa20EZD0y/Kar652Fw--
 
