@@ -1,195 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030988AbXDYNvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031014AbXDYNwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030988AbXDYNvE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031000AbXDYNvD
+	id S1031014AbXDYNwn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031024AbXDYNwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:51:03 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:57338
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1030988AbXDYNvB (ORCPT
+	Wed, 25 Apr 2007 09:52:42 -0400
+Received: from ag-out-0708.google.com ([72.14.246.249]:13086 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031014AbXDYNwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:51:01 -0400
-Date: Wed, 25 Apr 2007 15:53:57 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: rlove@rlove.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] use mutex instead of semaphore in hdaps driver
-Message-ID: <20070425135357.GM6798@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	rlove@rlove.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 25 Apr 2007 09:52:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=rkdhef/lByCmmFz5xLkv7TVQmyaJPU+l0hxEuKt5sLelVbtZEHXmZ9Djfb2A02/PmsKlRj98cXhqFQRbczDbDIC6yVf7V3DdGfm6CgGWj1JC3a3uGvNRLAsH8jN467kBjAE7uCKnz/OXXDvsrxLoAbroDvJyyZ2Ir/zF7vsY7Nk=
+Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Dave Jones <davej@redhat.com>
+Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Richard Purdie <rpurdie@rpsys.net>
+In-Reply-To: <1177509014.29878.12.camel@daplas>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
+	 <20070423214909.GD3468@stusta.de>
+	 <20070425040605.6d6b4a82.akpm@linux-foundation.org>
+	 <20070425113102.GU3468@stusta.de>  <20070425130102.GA10141@redhat.com>
+	 <1177509014.29878.12.camel@daplas>
+Content-Type: text/plain
+Date: Wed, 25 Apr 2007 21:52:16 +0800
+Message-Id: <1177509136.29878.14.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the hdaps driver uses a semaphore as mutex. use the mutex API
-instead of the (binary) semaphore
+Forgot to add Richard, sorry for the double post.
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+On Wed, 2007-04-25 at 21:50 +0800, Antonino A. Daplas wrote:
+> On Wed, 2007-04-25 at 09:01 -0400, Dave Jones wrote:
+> > On Wed, Apr 25, 2007 at 01:31:02PM +0200, Adrian Bunk wrote:
+> >  > On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
+> >  > > On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+> >  > >...
+> >  > > > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+> >  > > >              workaround: CONFIG_FB_BACKLIGHT=n
+> >  > > > References : http://lkml.org/lkml/2007/3/13/3
+> >  > > > Submitter  : Dave Jones <davej@redhat.com>
+> >  > > > Caused-By  : PCI merge
+> >  > > >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+> >  > > > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+> >  > > >              Rafael J. Wysocki <rjw@sisk.pl>
+> >  > > >              Antonino A. Daplas <adaplas@gmail.com>
+> >  > > > Status     : unknown
+> >  > > 
+> >  > > Is this related to the problems Jeremy has been looking at?
+> >  > >...
+> >  > 
+> >  > Dave and Jeremy hran into similar looking but most likely different 
+> >  > problems.
+> >  > 
+> >  > For Jeremy -rc7 is working fine, but for Dave it doesn't.
+> > 
+> > I think this was due to Jeremy not having CONFIG_FB_BACKLIGHT=y in his config.
+> 
+> This is really weird, as CONFIG_FB_BACKLIGHT just selects
+> BACKLIGHT_CLASS and LCD_CLASS, and adds an entry (bl_curve)
+> under /sys/class/backlight/*/. ACPI_IBM which is set (presumably) in
+> Dave's kconfig, also selects the BACKLIGHT_CLASS. And the only possible
+> framebuffer drivers in the thinkpad are vesafb and intelfb, none of
+> which has a backlight driver.
+> 
+> I'm still at a loss how this happens.  Dave, can you post your config?
+> And have you tried the following settings:
+> 
+> FB_BACKLIGHT=y
+> ACPI_IBM=n
+> ACPI_VIDEO=n
+> 
+> I'm also adding Richard Purdie to the CC list.
+> 
+> Tony 
+> 
+> PS: I also get a blank display on resume with a Toshiba laptop.  But
+> cycling through the Fn keys brings it back.  I don't know if this is a
+> regression, I will have to try older kernels.
+> 
 
---
-diff --git a/drivers/hwmon/hdaps.c b/drivers/hwmon/hdaps.c
-index bf759ea..f8e4952 100644
---- a/drivers/hwmon/hdaps.c
-+++ b/drivers/hwmon/hdaps.c
-@@ -71,10 +71,10 @@ static u8 km_activity;
- static int rest_x;
- static int rest_y;
- 
--static DECLARE_MUTEX(hdaps_sem);
-+static DEFINE_MUTEX(hdaps_mtx);
- 
- /*
-- * __get_latch - Get the value from a given port.  Callers must hold hdaps_sem.
-+ * __get_latch - Get the value from a given port.  Callers must hold hdaps_mtx.
-  */
- static inline u8 __get_latch(u16 port)
- {
-@@ -83,7 +83,7 @@ static inline u8 __get_latch(u16 port)
- 
- /*
-  * __check_latch - Check a port latch for a given value.  Returns zero if the
-- * port contains the given value.  Callers must hold hdaps_sem.
-+ * port contains the given value.  Callers must hold hdaps_mtx.
-  */
- static inline int __check_latch(u16 port, u8 val)
- {
-@@ -94,7 +94,7 @@ static inline int __check_latch(u16 port, u8 val)
- 
- /*
-  * __wait_latch - Wait up to 100us for a port latch to get a certain value,
-- * returning zero if the value is obtained.  Callers must hold hdaps_sem.
-+ * returning zero if the value is obtained.  Callers must hold hdaps_mtx.
-  */
- static int __wait_latch(u16 port, u8 val)
- {
-@@ -111,7 +111,7 @@ static int __wait_latch(u16 port, u8 val)
- 
- /*
-  * __device_refresh - request a refresh from the accelerometer.  Does not wait
-- * for refresh to complete.  Callers must hold hdaps_sem.
-+ * for refresh to complete.  Callers must hold hdaps_mtx.
-  */
- static void __device_refresh(void)
- {
-@@ -125,7 +125,7 @@ static void __device_refresh(void)
- /*
-  * __device_refresh_sync - request a synchronous refresh from the
-  * accelerometer.  We wait for the refresh to complete.  Returns zero if
-- * successful and nonzero on error.  Callers must hold hdaps_sem.
-+ * successful and nonzero on error.  Callers must hold hdaps_mtx.
-  */
- static int __device_refresh_sync(void)
- {
-@@ -135,7 +135,7 @@ static int __device_refresh_sync(void)
- 
- /*
-  * __device_complete - indicate to the accelerometer that we are done reading
-- * data, and then initiate an async refresh.  Callers must hold hdaps_sem.
-+ * data, and then initiate an async refresh.  Callers must hold hdaps_mtx.
-  */
- static inline void __device_complete(void)
- {
-@@ -153,7 +153,7 @@ static int hdaps_readb_one(unsigned int port, u8 *val)
- {
- 	int ret;
- 
--	down(&hdaps_sem);
-+	mutex_lock(&hdaps_mtx);
- 
- 	/* do a sync refresh -- we need to be sure that we read fresh data */
- 	ret = __device_refresh_sync();
-@@ -164,7 +164,7 @@ static int hdaps_readb_one(unsigned int port, u8 *val)
- 	__device_complete();
- 
- out:
--	up(&hdaps_sem);
-+	mutex_unlock(&hdaps_mtx);
- 	return ret;
- }
- 
-@@ -199,9 +199,9 @@ static int hdaps_read_pair(unsigned int port1, unsigned int port2,
- {
- 	int ret;
- 
--	down(&hdaps_sem);
-+	mutex_lock(&hdaps_mtx);
- 	ret = __hdaps_read_pair(port1, port2, val1, val2);
--	up(&hdaps_sem);
-+	mutex_unlock(&hdaps_mtx);
- 
- 	return ret;
- }
-@@ -214,7 +214,7 @@ static int hdaps_device_init(void)
- {
- 	int total, ret = -ENXIO;
- 
--	down(&hdaps_sem);
-+	mutex_lock(&hdaps_mtx);
- 
- 	outb(0x13, 0x1610);
- 	outb(0x01, 0x161f);
-@@ -280,7 +280,7 @@ static int hdaps_device_init(void)
- 	}
- 
- out:
--	up(&hdaps_sem);
-+	mutex_unlock(&hdaps_mtx);
- 	return ret;
- }
- 
-@@ -314,7 +314,7 @@ static struct platform_driver hdaps_driver = {
- };
- 
- /*
-- * hdaps_calibrate - Set our "resting" values.  Callers must hold hdaps_sem.
-+ * hdaps_calibrate - Set our "resting" values.  Callers must hold hdaps_mtx.
-  */
- static void hdaps_calibrate(void)
- {
-@@ -326,7 +326,7 @@ static void hdaps_mousedev_poll(unsigned long unused)
- 	int x, y;
- 
- 	/* Cannot sleep.  Try nonblockingly.  If we fail, try again later. */
--	if (down_trylock(&hdaps_sem)) {
-+	if (mutex_trylock(&hdaps_mtx)) {
- 		mod_timer(&hdaps_timer,jiffies + HDAPS_POLL_PERIOD);
- 		return;
- 	}
-@@ -341,7 +341,7 @@ static void hdaps_mousedev_poll(unsigned long unused)
- 	mod_timer(&hdaps_timer, jiffies + HDAPS_POLL_PERIOD);
- 
- out:
--	up(&hdaps_sem);
-+	mutex_unlock(&hdaps_mtx);
- }
- 
- 
-@@ -421,9 +421,9 @@ static ssize_t hdaps_calibrate_store(struct device *dev,
- 				     struct device_attribute *attr,
- 				     const char *buf, size_t count)
- {
--	down(&hdaps_sem);
-+	mutex_lock(&hdaps_mtx);
- 	hdaps_calibrate();
--	up(&hdaps_sem);
-+	mutex_unlock(&hdaps_mtx);
- 
- 	return count;
- }
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-
-  The salvation of mankind lies only in making everything the concern of all
-                         (Alexander Solzhenitsyn)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
