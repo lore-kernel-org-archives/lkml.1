@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750930AbXDYKRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030829AbXDYKSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750930AbXDYKRZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXDYKRZ
+	id S1030829AbXDYKSX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXDYKSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:17:25 -0400
-Received: from lizzard.sbs.de ([194.138.37.39]:19451 "EHLO lizzard.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750844AbXDYKRX convert rfc822-to-8bit (ORCPT
+	Wed, 25 Apr 2007 06:18:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40108 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751042AbXDYKSV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:17:23 -0400
-X-Greylist: delayed 2882 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 06:17:23 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Date: Wed, 25 Apr 2007 11:27:09 +0200
-Message-ID: <D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
-In-Reply-To: <44c9a2b88950e3848d2c4e457641eb9b@kernel.crashing.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Thread-Index: AceF7Dxw1HG7Z+0/Q922AExek2MqSwBLNw6A
-From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-To: <linux-pcmcia@lists.infradead.org>
-Cc: "lkml" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 25 Apr 2007 09:26:35.0392 (UTC) FILETIME=[D19CA800:01C7871B]
+	Wed, 25 Apr 2007 06:18:21 -0400
+Date: Wed, 25 Apr 2007 11:21:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm1 BUG at kernel/sched-clock.c:175
+ init_sched_clock()
+Message-ID: <20070425112146.16d076c0@the-village.bc.nu>
+In-Reply-To: <20070425085432.GD17130@htj.dyndns.org>
+References: <462E4C4D.9020806@gmail.com>
+	<20070425011654.222a2b4b.akpm@linux-foundation.org>
+	<462F1481.8010807@gmail.com>
+	<20070425085432.GD17130@htj.dyndns.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Without the following patch, the kernel does not automatically detect
-2GB CompactFlash cards from Transcend.
+>  static void ahci_freeze(struct ata_port *ap)
+>  {
+> +	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
+>  	void __iomem *port_mmio = ahci_port_base(ap);
+>  
+>  	/* turn IRQ off */
+>  	writel(0, port_mmio + PORT_IRQ_MASK);
+> +
+> +	/* clear IRQ pending bit */
+> +	writel(1 << ap->port_no, mmio + HOST_IRQ_STAT);
 
-I'm not sure which correct values must be assigned to the 3th and 4th
-parameters (here: 0x709b1bf1, 0xf54a91c8). Anyway, the patch is working
-with these values. Tested on arch=mips.
 
-Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
-
-===================================================================
---- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c     2007-04-15
-21:08:02.000000000 +0200
-+++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c  2007-04-25
-10:53:53.000000000 +0200
-@@ -64,6 +64,7 @@
- 
- #define INT_MODULE_PARM(n, v) static int n = v; module_param(n, int, 0)
- 
-+#define PCMCIA_DEBUG 1
- #ifdef PCMCIA_DEBUG
- INT_MODULE_PARM(pc_debug, PCMCIA_DEBUG);
- #define DEBUG(n, args...) if (pc_debug>(n)) printk(KERN_DEBUG args)
-@@ -399,6 +400,7 @@
-        PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
-0x3489e003),
-        PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
-        PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
-0x2a54d4b1),
-+       PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
-0xf54a91c8),
-        PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
-0xf54a91c8),
-        PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
-        PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
-0x212bb918),
+Neither of those two are going to help in all cases. They are PCI writes
+to mmio so they are posted. You don't know they hit the device until a
+read cycle coming back has completed, so you need to read something after
+doing this to be sure.
