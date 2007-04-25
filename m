@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423300AbXDYImY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423307AbXDYImt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423300AbXDYImY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:42:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423301AbXDYImX
+	id S1423307AbXDYImt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423298AbXDYImt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:42:23 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:50529 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423300AbXDYImW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:42:22 -0400
-Date: Wed, 25 Apr 2007 10:42:20 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Big reserved mappings on x86_64
-Message-ID: <Pine.LNX.4.61.0704251035480.19711@yvahk01.tjqt.qr>
+	Wed, 25 Apr 2007 04:42:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:2933 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423304AbXDYImr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 04:42:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=rG2rc8KQ/jNE4PyDKTqYbi5kMRlisCvysg8ePHxLhj/MKScw0GenC0N4j6NsPqOdpWYug9ig4bwVRaKWvCi3kayz7NdwjQUIVHIpXdg3HeEq18zZOlWFzApd9fumVqZ5ryb1QEeNsEb9Or8TbbSWq7J0qwe+khDgo7sOuf/X4Js=
+Message-ID: <462F1481.8010807@gmail.com>
+Date: Wed, 25 Apr 2007 17:42:41 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "Berck E. Nash" <flyboy@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm1 BUG at kernel/sched-clock.c:175 init_sched_clock()
+References: <462E4C4D.9020806@gmail.com> <20070425011654.222a2b4b.akpm@linux-foundation.org>
+In-Reply-To: <20070425011654.222a2b4b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Andrew Morton wrote:
+>> [    2.953862] RIP: 0010:[<ffffffff803ae98b>]  [<ffffffff803ae98b>] scsi_schedule_eh+0xa/0x57
+>> [    3.058672]  [<ffffffff803e1e01>] ata_port_schedule_eh+0x4c/0x50
+>> [    3.064725]  [<ffffffff803e1ea7>] ata_port_abort+0xa2/0xae
+>> [    3.070248]  [<ffffffff803e1ef9>] ata_port_freeze+0x46/0x57
+>> [    3.075853]  [<ffffffff803e4c39>] ahci_interrupt+0x300/0x47a
+>> [    3.081552]  [<ffffffff8020eb83>] handle_IRQ_event+0x27/0x57
+>> [    3.087253]  [<ffffffff8029a021>] handle_edge_irq+0xee/0x133
+>> [    3.092960]  [<ffffffff8025f4e1>] do_IRQ+0x6d/0xd5
+>> [    3.097793]  [<ffffffff80255071>] ret_from_intr+0x0/0xa
+>> [    3.103059]  [<ffffffff8024e88b>] mwait_idle+0x46/0x4b
+>> [    3.108231]  [<ffffffff802422f4>] cpu_idle+0x87/0xaa
+>> [    3.113227]  [<ffffffff8025c988>] rest_init+0x49/0x4b
+>> [    3.118322]  [<ffffffff805dca5d>] start_kernel+0x291/0x29c
+>> [    3.123837]  [<ffffffff805dc13a>] _sinittext+0x13a/0x141
+>>
+> 
+> So we took an AHCI interrupt when ata_port.scsi_host was still NULL.
+> 
+> It appears that ATA is presently requesting its IRQ before allocating all
+> the resources which are needed to handle an interrupt.  Does this
+> (resource-leaky) patch fix things?
 
+No, that would break host probing.  The port is in frozen (controller
+initialized and IRQs masked off) state, so it's not allowed to take
+interrupt.  If interrupt triggers at this point, it's low level driver
+bug.  Berck, how reliably can you reproduce this problem?  Can you post
+the result of 'lspci -nn'?
 
-I noticed that on x86_64, the VSZ indicator (`ps u $$`) is quite high, 
-compared to i386 or sparc64.
-
-10:32 ichi:~ > ps u $$ # i686
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-jengelh   4950  0.2  0.2   4776  2112 pts/4    Ss   10:32   0:00 -bash
-10:36 sun:~ > ps u $$ # sparc64
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-jengelh  17842  0.0  0.0   6320  1960 pts/0    Ss   10:36   0:00 -bash
-10:36 opteron:~ > ps u $$ # x86_64
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-jengelh   4403  0.0  0.2  23808  2632 pts/3    Ss   10:27   0:00 -bash
-
-I actually took a look at `pmap $$`, which reveals that a lot of shared 
-libraries map 2044K or 2048K unreadable-unwritable-private 
-mappings...for _what_ purpose?
-
-10:37 opteron:~ > pmap $$
-4403: bash
-START       SIZE     RSS   DIRTY PERM MAPPING
-2ae6cca70000    212K    172K      0K r-xp /lib64/libreadline.so.5.2
-2ae6ccaa5000   2044K      0K      0K ---p /lib64/libreadline.so.5.2 <--
-2ae6ccca4000      4K      4K      4K r--p /lib64/libreadline.so.5.2
-2ae6ccca5000     28K     28K     28K rw-p /lib64/libreadline.so.5.2
-2ae6cccac000      8K      8K      8K rw-p [anon]
-2ae6cccae000     28K     16K      0K r-xp /lib64/libhistory.so.5.2
-2ae6cccb5000   2048K      0K      0K ---p /lib64/libhistory.so.5.2 <--
-2ae6cceb5000      8K      8K      8K rw-p /lib64/libhistory.so.5.2
-2ae6cceb7000    320K    208K      0K r-xp /lib64/libncurses.so.5.5
-2ae6ccf07000   2048K      0K      0K ---p /lib64/libncurses.so.5.5 <--
-2ae6cd107000     48K     48K     48K r--p /lib64/libncurses.so.5.5
-2ae6cd113000     28K     28K     28K rw-p /lib64/libncurses.so.5.5
-[...]
-
-What could these ominous mappings be? Does anyone else see that - 
-perhaps someone with x86_64 && !(opensuse 10.2)?
-
-
-Jan
 -- 
+tejun
