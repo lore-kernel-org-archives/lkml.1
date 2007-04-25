@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031022AbXDYPSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031052AbXDYPSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031022AbXDYPSR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031038AbXDYPSR
+	id S1031052AbXDYPSp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031062AbXDYPSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:18:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33915 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031022AbXDYPSP (ORCPT
+	Wed, 25 Apr 2007 11:18:45 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34880 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031052AbXDYPSo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:18:15 -0400
-Date: Wed, 25 Apr 2007 17:18:25 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-Message-ID: <20070425151825.GW3468@stusta.de>
-References: <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070425072350.GA6866@ucw.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 25 Apr 2007 11:18:44 -0400
+Date: Wed, 25 Apr 2007 08:20:28 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: Jiri Bohac <jbohac@suse.cz>, akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
+Message-Id: <20070425082028.8ece3094.randy.dunlap@oracle.com>
+In-Reply-To: <4628B5B6.90303@student.ltu.se>
+References: <20070419092339.GA13569@dwarf.suse.cz>
+	<20070419084339.418dbe69.randy.dunlap@oracle.com>
+	<4628B5B6.90303@student.ltu.se>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 07:23:50AM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > This is why there's a lot to be said for
-> > 
-> > 	echo mem > /sys/power/state
-> > 
-> > and being able to follow the path through _one_ object (the kernel) over 
-> > trying to figure out the interaction between many different parts with 
-> > different versions.
-> 
-> The 'promise' is 'if you can get echo disk > /sys/power/state working,
-> uswsusp will work. too'. IOW it should be ok to debug the in-kernel
-> parts, only.
-> 
-> Even I am running in-kernel swsusp, but my managers were pretty clear
-> they want graphical progress bar hiding all the 'ugly' swsusp
-> messages... and in the end the same uswsusp enables compression, too.
-> 
-> > I absolutely detest all suspend-to-disk crap. Quite frankly, I hate the 
-> > whole thing. I think they've _all_ caused problems for the "true" suspend 
-> > (suspend-to-ram), and the last thing I want to see is three or four 
-> 
-> Well, it is a bit more complex than that.
-> 
-> suspend-to-disk is a workaround for
-> 
-> 	'suspend-to-ram eats too much power' (plus some details like
-> 	being able to replace battery).
->...
+On Fri, 20 Apr 2007 14:44:38 +0200 Richard Knutsson wrote:
 
-Why does everyone think suspend-to-disk was a laptop-only thing?
+> Randy Dunlap wrote:
+> > On Thu, 19 Apr 2007 11:23:39 +0200 Jiri Bohac wrote:
+> >
+> >   
+> >> Hi,
+> >>
+> >> is there any reason to use an explicit int instead of a typeof in
+> >> the abs() macro? The current implementation will return bogus
+> >> results when used with longs.
+> >>     
+> >
+> > I think it's like it is just to be consistent with abs() in C,
+> > which also contains labs() and llabs().
+> >   
+> We actually had labs() before (few months ago), but since it was not 
+> used, and if it would it seemed better to just fix abs(), it was 
+> removed. So I think this is the appropriate way to go.
 
-My personal usage of suspend-to-disk is for turning the computer off in 
-the evening and getting the complete FVWM with all programs running, 
-open browser tabs,... back the next morning.
+Sounds like when someone actually needs labs() or llabs()
+they can submit a patch for however they would like to use it.
 
-All I need for suspending is:
-- echo "disk" > /sys/power/state
+> >> How about changing the int to a typeof like this?:
+> >>
+> >>
+> >>
+> >> Fix the abs() macro to work with wider types than int.
+> >>
+> >> Signed-off-by: Jiri Bohac <jbohac@suse.cz>
+> >>
+> >> --- linux-2.6.21-rc5.orig/include/linux/kernel.h
+> >> +++ linux-2.6.21-rc5/include/linux/kernel.h
+> >> @@ -89,7 +89,7 @@ extern int cond_resched(void);
+> >>  #define might_sleep_if(cond) do { if (cond) might_sleep(); } while (0)
+> >>  
+> >>  #define abs(x) ({				\
+> >> -		int __x = (x);			\
+> >> +		typeof(x) __x = (x);			\
+> >>  		(__x < 0) ? -__x : __x;		\
+> >>  	})
 
-All I need for getting a running and usable system back is:
-- turn on the power at the socket my computer is connected at
-- swapoff -a; swapon -a       [1]
-- wait a bit until the above commands finished
 
-That's much more convenient than a cold boot.
-
-And it's working with a plain 2.6.16 kernel and zero userspace support.
-
-> 							Pavel
-
-cu
-Adrian
-
-[1] required step: working with 1 or 2 GB swapped out is horrible
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
