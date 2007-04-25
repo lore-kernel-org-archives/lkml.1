@@ -1,20 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161819AbXDYAa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXDYAdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161819AbXDYAa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 20:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161823AbXDYAa7
+	id S1030419AbXDYAdE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 20:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDYAdE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 20:30:59 -0400
-Received: from vms044pub.verizon.net ([206.46.252.44]:42860 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161819AbXDYAa6 (ORCPT
+	Tue, 24 Apr 2007 20:33:04 -0400
+Received: from ik-out-1112.google.com ([66.249.90.179]:2806 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030419AbXDYAdB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 20:30:58 -0400
-Date: Tue, 24 Apr 2007 20:30:47 -0400
+	Tue, 24 Apr 2007 20:33:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=XxCP/eHEHJuZRZ1OEdE15EMc1snjo3LjJpt6ffyljLch/Mi/HFK2n9PDRSgWaRW88Aumb6m1UnGpl4WwuPiaTgSIPxANL350d35Qltt1OfK5C0reMiwyJs4iGPLLjvqB/s9emdQWBCclIWXOE7EmX2BoqAKXxIZiz5cQjpvOjxY=
 From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-In-reply-to: <20070424174445.GA31270@1wt.eu>
+Organization: Organization? very little
 To: Willy Tarreau <w@1wt.eu>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+User-Agent: KMail/1.9.6
 Cc: Ingo Molnar <mingo@elte.hu>, David Lang <david.lang@digitalinsight.com>,
        Peter Williams <pwil3058@bigpond.net.au>,
        Arjan van de Ven <arjan@infradead.org>,
@@ -26,15 +30,15 @@ Cc: Ingo Molnar <mingo@elte.hu>, David Lang <david.lang@digitalinsight.com>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
        caglar@pardus.org.tr
-Message-id: <200704242030.48071.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200704220959.34978.kernel@kolivas.org>
- <200704241038.32766.gene.heskett@gmail.com> <20070424174445.GA31270@1wt.eu>
-User-Agent: KMail/1.9.6
+References: <200704220959.34978.kernel@kolivas.org> <200704241038.32766.gene.heskett@gmail.com> <20070424174445.GA31270@1wt.eu>
+In-Reply-To: <20070424174445.GA31270@1wt.eu>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Tue, 24 Apr 2007 20:32:54 -0400
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704242032.54753.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
