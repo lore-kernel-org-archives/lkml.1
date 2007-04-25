@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993048AbXDYUJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993052AbXDYUKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993048AbXDYUJF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993050AbXDYUJF
+	id S2993052AbXDYUKG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993050AbXDYUKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:09:05 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37906 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2993048AbXDYUJB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:09:01 -0400
-Date: Wed, 25 Apr 2007 13:08:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kenneth Crudup <kenny@panix.com>
-cc: Pavel Machek <pavel@ucw.cz>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
-Message-ID: <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
-References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu>
- <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu>
- <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu>
- <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz>
- <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+	Wed, 25 Apr 2007 16:10:06 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:4281 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993052AbXDYUKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:10:03 -0400
+Date: Wed, 25 Apr 2007 22:09:56 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Brownell <david-b@pacbell.net>, linux-pm@lists.linux-foundation.org,
+       pavel@suse.cz, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [linux-pm] Linux 2.6.21-rc6
+Message-ID: <20070425200956.GA10758@melchior.yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	David Brownell <david-b@pacbell.net>,
+	linux-pm@lists.linux-foundation.org, pavel@suse.cz,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>, linux-pm@lists.osdl.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Adrian Bunk <bunk@stusta.de>
+References: <Pine.LNX.4.64.0704051944230.6730@woody.linux-foundation.org> <200704152154.09212.rjw@sisk.pl> <20070425171409.GA9990@melchior.yamamaya.is-a-geek.org> <200704252136.58470.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200704252136.58470.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Apr 2007, Kenneth Crudup wrote:
+Rafael J. Wysocki wrote:
+> On Wednesday, 25 April 2007 19:14, Tobias Diedrich wrote:
+> > Rafael J. Wysocki wrote:
+> > > On Sunday, 15 April 2007 21:40, Tobias Diedrich wrote:
+> > > > Rafael J. Wysocki wrote:
+> > > > > On Sunday, 15 April 2007 17:14, David Brownell wrote:
+> > > > > > On Sunday 15 April 2007 4:16 am, Rafael J. Wysocki wrote:
+> > > > > > > On Sunday, 15 April 2007 10:02, Tobias Diedrich wrote:
+> > > > > > > I think using the 'shutdown' mode of suspend would be better.  There's a little
+> > > > > > > point in using 'platform' on desktop systems anyway.
+> > > > > > > 
+> > > > > > > Frankly, I don't know what to do about it.  If we move platform_finish() after
+> > > > > > > device_resume(), some systems may be broken ...
+> > > > > > 
+> > > > > > What I'm curious about is exactly why the patch matters.  What ACPI
+> > > > > > magic is being invoked to confuse, or unconfuse, those controllers?
+> > > > > 
+> > > > > I think the patch helps, because it makes the ACPI magic be done while the
+> > > > > i8042's .resume() is being executed.
+> > > > > 
+> > > > > Which makes me think the following patch might help:
+> > > > 
+> > > > Unfortunately not, I tried this before disabling CONFIG_SERIO_I8042.
+> > > 
+> > > Well, this means i8042 can be ruled out, so the problem probably is related
+> > > to the ACPI resume which makes it _much_ more difficult to debug.
+> > > 
+> > > Can you compile the ACPI drivers: processor, thermal, fan, battery, etc. as
+> > > modules, boot the kernel with init=/bin/bash and see if the problem is still
+> > > present (please keep CONFIG_SERIO_I8042 unset just in case)?
+> > > 
+> > > Rafael
+> > 
+> > I first tried it with acpi+cpufreq completely disabled (works).
+> > Then I tried it with acpi enabled, but everything as modules and
+> > those not loaded (init=/bin/bash, hangs at second suspend).
 > 
-> Any working suspend-to-disk method takes care of that for me.  (I'm
-> really not sure why Linus hates S2D so much, though. Back in the day
-> there was a lot more BIOS support, but that's been years now.)
+> Have you tried with ACPI and without cpufreq?
 
-The really sad part is that APM actually did this better.. 
+Yes, the second one was with ACPI enabled and cpufreq disabled
+(CONFIG_X86_ACPI_CPUFREQ is not set).
 
-It's not often you can say that, and APM didn't do diddly-squat for 
-run-time power management, but when it comes to suspend-to-disk, APM 
-actually did ok.
-
-I think you could do STD right too, but:
-
- - if you think it's about suspending devices, you are immediately 
-   disqualified. If you call the device driver "suspend" or "resume" 
-   functions, you are doing something wrong.
-
- - "suspend" is: snapshot memory, and anything you do *after* the snapshot 
-   is totally irrelevant. You MUST NOT suspend devices before, since 
-   devices are what that snapshot should be written out to, and you MUST 
-   NOT suspend devices afterwards either, because that shows that you are 
-   a moron who didn't understand the "machine will be turned off" part.
-
- - "resume" is basically: get image into memory, turn *off* every device, 
-   put image into its proper location, and call the "startup" function. If 
-   you call a device "resume()" function, you again show that you are a 
-   moron, because you're not resuming anything at all, you're resetting 
-   the device from scratch. You _reinitialize_ the device. You don't 
-   resume it, and somebody may hve (and indeed, *WILL HAVE* used the 
-   device in between). There should be absolutely zero shared code, and 
-   the *last* thing you should do is to call the device with the same 
-   function, and give it a flag to tell it to do one thing or the other.
-
-The important thing to take away from this is that it has nothing to do 
-with "suspend" or "resume" at any level what-so-ever. Not at a device 
-level, not at a system level, and not even when it comes to hardware. But 
-for completely idiotic and wrong reasons, it is currently intimately 
-involved in suspend/resume, and calls the same device management functions 
-as a suspend/resume thing does, and shares a lot of the code.
-
-And THAT is why I hate the kernel STD. It is fundamentally confused. In 
-ways that APM was not, I'd like to point out.
-
-I'd love to get it fixed. But the first fix is to not call it "suspend", 
-because language *does* matter, and using that term is what I'm convinced 
-has confused so many people.
-
-If it had been called "snapshot + restore", I suspect a lot of people 
-wouldn't have been so confused about what it does and how it needs to do 
-it, and wouldn't have tried to shoehorn it into the same corner of the 
-kernel as "suspend-to-ram" (where you really *can* do things like 
-"suspend" devices, and while they might certainly lose power in between, 
-they also really might not, and they certainly won't be *doing* things in 
-between).
-
-			Linus
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
