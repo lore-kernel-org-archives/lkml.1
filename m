@@ -1,61 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992959AbXDYTMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992958AbXDYTOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992959AbXDYTMq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992958AbXDYTMq
+	id S2992958AbXDYTOD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992960AbXDYTOC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:12:46 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992959AbXDYTMp (ORCPT
+	Wed, 25 Apr 2007 15:14:02 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43158 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992958AbXDYTOA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:12:45 -0400
-Date: Wed, 25 Apr 2007 12:12:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm1: Oops and Gnome desktop freezes
-Message-Id: <20070425121242.52698643.akpm@linux-foundation.org>
-In-Reply-To: <1177512596.4856.17.camel@daplas>
-References: <1177512596.4856.17.camel@daplas>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 25 Apr 2007 15:14:00 -0400
+Date: Wed, 25 Apr 2007 20:13:59 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in tty_io.c
+Message-ID: <20070425191359.GA13241@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <20070425154934.GP6798@traven>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425154934.GP6798@traven>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 22:49:56 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+On Wed, Apr 25, 2007 at 05:49:34PM +0200, Matthias Kaehlcke wrote:
+> drivers/char/tty_io.c uses a semaphore as mutex. use the mutex API
+> instead of the (binary) semaphore
 
-> The Gnome desktop does not finish launching.  And I get this tracing,
-> all coming from Gnome apps.
-> 
-> Tony
-> 
-> BUG: unable to handle kernel paging request at virtual address c0a74000
+This looks like it should be a spinlock:
 
-This might have been caused by the now-dropped
-mm-only-i386-for-debugging-make-the-initial-page-table-setup-less-forgiving.patch
+> -		down(&allocated_ptys_lock);
+> +		mutex_lock(&allocated_ptys_lock);
+>  		idr_remove(&allocated_ptys, idx);
+> -		up(&allocated_ptys_lock);
+> +		mutex_unlock(&allocated_ptys_lock);
 
+idr_remove is a quick operation that doesn't sleep.
 
->  printing eip:
-> c014c469
-> *pde = 005f3027
-> *pte = 00000000
-> Oops: 0002 [#1]
-> Modules linked in: xt_pkttype xt_tcpudp ipt_LOG xt_limit nfsd exportfs
-> lockd nfs_acl sunrpc snd_pcm_oss snd_mixer_oss snd_seq button battery ac
-> ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat iptable_filter
-> ip6table_filter nf_conntrack_ipv4 nf_conntrack ip_tables ip6_tables
-> x_tables nls_iso8859_1 nls_cp437 vfat fat nls_utf8 ntfs reiserfs loop
-> usblp snd_via82xx snd_ac97_codec ac97_bus snd_pcm ide_cd cdrom snd_timer
-> snd_page_alloc snd_mpu401_uart rtc_cmos snd_rawmidi rtc_core
-> snd_seq_device rtc_lib snd soundcore via_rhine ehci_hcd uhci_hcd usbcore
-> sc92031 via_agp 8139too i2c_viapro ext3 mbcache jbd edd fan thermal
-> processor via82cxxx ide_disk ide_core
-> CPU:    0
-> EIP:    0060:[<c014c469>]    Tainted: G      D VLI
+> @@ -2639,24 +2639,24 @@ static int ptmx_open(struct inode * inode, struct file * filp)
+>  	nonseekable_open(inode, filp);
+>  
+>  	/* find a device that is not in use. */
+> -	down(&allocated_ptys_lock);
+> +	mutex_lock(&allocated_ptys_lock);
+>  	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+> -		up(&allocated_ptys_lock);
 
-For some reason all oopses (and boy there are a lot of them) are being
-described as tainted.
+The idr_pre_get should be moved out of the lock, that's the whole
+point for it's existance..
+
+> +		mutex_unlock(&allocated_ptys_lock);
+>  		return -ENOMEM;
+>  	}
+>  	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+>  	if (idr_ret < 0) {
+> -		up(&allocated_ptys_lock);
+> +		mutex_unlock(&allocated_ptys_lock);
+>  		if (idr_ret == -EAGAIN)
+>  			return -ENOMEM;
+>  		return -EIO;
+>  	}
+>  	if (index >= pty_limit) {
+>  		idr_remove(&allocated_ptys, index);
+> -		up(&allocated_ptys_lock);
+> +		mutex_unlock(&allocated_ptys_lock);
+>  		return -EIO;
+>  	}
+> -	up(&allocated_ptys_lock);
+> +	mutex_unlock(&allocated_ptys_lock);
+
+And idr_get_new is another quick, non-blocking operation.
 
