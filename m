@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbXDYPhL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031069AbXDYPjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbXDYPhL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:37:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbXDYPhL
+	id S1031069AbXDYPjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031093AbXDYPjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:37:11 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:49345 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754166AbXDYPhJ (ORCPT
+	Wed, 25 Apr 2007 11:39:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44034 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031069AbXDYPjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:37:09 -0400
-Message-ID: <462F75FF.5090008@oracle.com>
-Date: Wed, 25 Apr 2007 08:38:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 25 Apr 2007 11:39:17 -0400
+Date: Wed, 25 Apr 2007 08:39:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: John Stoffel <john@stoffel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: Serial console problem in 2.6.21-rc7-mm1 and earlier
+In-Reply-To: <17967.29851.680497.648681@smtp.charter.net>
+Message-ID: <Pine.LNX.4.64.0704250838360.24504@schroedinger.engr.sgi.com>
+References: <20070424130601.4ab89d54.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241320540.13005@schroedinger.engr.sgi.com>
+ <20070424132740.e4bdf391.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241332090.13005@schroedinger.engr.sgi.com>
+ <20070424134325.f71460af.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241351400.13382@schroedinger.engr.sgi.com>
+ <20070424141826.952d2d32.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704241421140.13904@schroedinger.engr.sgi.com>
+ <17967.29851.680497.648681@smtp.charter.net>
 MIME-Version: 1.0
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-CC: Richard Knutsson <ricknu-0@student.ltu.se>, Jiri Bohac <jbohac@suse.cz>,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] fix abs() macro to work with types wider than int
-References: <20070419092339.GA13569@dwarf.suse.cz> <20070419084339.418dbe69.randy.dunlap@oracle.com> <4628B5B6.90303@student.ltu.se> <20070425082028.8ece3094.randy.dunlap@oracle.com> <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
-In-Reply-To: <alpine.DEB.0.98.0704251123370.19149@sigma.j-a-k-j.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Anthony Kazos Jr. wrote:
->>>> I think it's like it is just to be consistent with abs() in C,
->>>> which also contains labs() and llabs().
->>>>   
->>> We actually had labs() before (few months ago), but since it was not 
->>> used, and if it would it seemed better to just fix abs(), it was 
->>> removed. So I think this is the appropriate way to go.
->> Sounds like when someone actually needs labs() or llabs()
->> they can submit a patch for however they would like to use it.
-> 
-> However they would like to use *abs()? What different ways are possible to 
-> take the arithmetic absolute value? I see record of many cases where 
-> dozens of authors have macros that then get collapsed to include files. So 
-> why not avoid that annoyance this time and -start- with it in the include 
-> files?
-> 
-> Can there even be any reason beyond unnecessary pedantics to have 
-> [l[l]]abs?
+On Wed, 25 Apr 2007, John Stoffel wrote:
 
-See Paragraph 1 above.  We do lots of functions in a manner that is
-like C (or libc) so that we don't confuse developers.
+> Christoph> I use a serial console on my x86_84 box. For a while now I
+> Christoph> can see all output but I cannot type any
+> Christoph> characters. /dev/console broke?
+> 
+> I've sorta seen this problem too, but with gdm.  If I have my kernel
+> line setup like this:
+> 
+> 	... console=tty0 console=ttyS0,9600n8
+> 
+> I have to stop and restart gdm (or switch to the XDMCP chooser and
+> back) to get keyoard access.  Wierd. 
+> 
+> Christoph> Simple WAR is to ssh into the box and I was usually too
+> Christoph> focused on other issues to do something about it.
+> 
+> Are you trying to access an X login prompter, or just a plain Virtual
+> Console tty?
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+No X on the machine. And this is a serial console that works fine with 
+2.6.21-rcX.
+
