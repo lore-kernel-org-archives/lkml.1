@@ -1,111 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992567AbXDYK2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992565AbXDYK32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992567AbXDYK2w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXDYK2w
+	id S2992565AbXDYK32 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXDYK32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:28:52 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53934 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992567AbXDYK2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:28:51 -0400
-Date: Wed, 25 Apr 2007 12:27:49 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Vasily Tarasov <vtaras@openvz.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, OVZDL <devel@openvz.org>
-Subject: Re: [PATCH] cfq: get rid of cfqq hash
-Message-ID: <20070425102748.GT9715@kernel.dk>
-References: <1177422791.435404.4031.nullmailer@me> <20070425065822.GG9715@kernel.dk> <1177501827.988228.3870.nullmailer@me> <20070425075725.GK9715@kernel.dk>
+	Wed, 25 Apr 2007 06:29:28 -0400
+Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:9380 "EHLO
+	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992565AbXDYK30 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 06:29:26 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=CDmUGp0Ycv2VNCbLoMEkscpNr5nDx2ko84caDXci0XX9N+3CYfySJT+MLQUAe4pLB4efS7b/tijEpLjnXKlf4Z0rkvIHLUzGzlTs883nX/lKxB7P9ojeDAnIgmjHHAPL;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.14,450,1170630000"; 
+   d="scan'208";a="72617841"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425075725.GK9715@kernel.dk>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: NonExecutable Bit in 32Bit
+Date: Wed, 25 Apr 2007 12:28:51 +0200
+Message-ID: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF05302A20@ABGEX01E.abg.fsc.net>
+In-Reply-To: <698310e10704250241k755c5438q93db6647181061e1@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: NonExecutable Bit in 32Bit
+Thread-Index: AceHHfFxDkg05DvxTz6n0+0N/ftJmwABddpw
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net> <Pine.LNX.4.64.0704240640470.25153@server.thyself> <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530256E@ABGEX01E.abg.fsc.net> <4ac8254d0704242333g17972a7q2106015af946ea5@mail.gmail.com> <4ac8254d0704242337m518d87c3y8a26df66632ea6e4@mail.gmail.com> <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530264B@ABGEX01E.abg.fsc.net> <698310e10704250241k755c5438q93db6647181061e1@mail.gmail.com>
+From: "Cestonaro, Thilo \(external\)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+To: "Marat Buharov" <marat.buharov@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 25 Apr 2007 10:29:24.0580 (UTC) FILETIME=[98391A40:01C78724]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Jens Axboe wrote:
-> On Wed, Apr 25 2007, Vasily Tarasov wrote:
-> > >> @@ -1806,7 +1765,11 @@ static int cfq_may_queue(request_queue_t
-> > >>  	 * so just lookup a possibly existing queue, or return 'may queue'
-> > >>  	 * if that fails
-> > >>  	 */
-> > >> -	cfqq = cfq_find_cfq_hash(cfqd, key, tsk->ioprio);
-> > >> +	cic = cfq_get_io_context_noalloc(cfqd, tsk);
-> > >> +	if (!cic)
-> > >> +		return ELV_MQUEUE_MAY; 
-> > >> +
-> > >> +	cfqq = cic->cfqq[rw & REQ_RW_SYNC];
-> > >>  	if (cfqq) {
-> > >>  		cfq_init_prio_data(cfqq);
-> > >>  		cfq_prio_boost(cfqq);
-> > > 
-> > > Ahem, how well did you test this patch?
-> > 
-> > Ugh, again: bio_sync() returns not only 0/1
-> > Sorry for giving so much trouble...
-> 
-> Right, and REQ_RW_SYNC isn't 1 either, so it returns a large number if
-> set.
+> > And this prevents the lowmemory to be secured by NX?
+> What do you mean, when you say "lowmemory"?
 
-This is also needed, you can't just rely on bio_sync(), a check for a
-READ is needed as well.
+I mean EF-Segments. Cause we got a kernel oops as we accidentally used ioremap_nocache on a EF-Segment address.
+Before that usage the EF-Segments weren't secured, afterwards they were.
+We use now ioremap which does the high low mem check, but I was a bit confused that NX was not active before.
+But I can't provide any further informations about the system, cause it was more or less support for a customer.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 17e4660..b793817 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -215,6 +215,18 @@ static inline void cic_set_cfqq(struct cfq_io_context *cic,
- }
- 
- /*
-+ * We regard a request as SYNC, if it's either a read or has the SYNC bit
-+ * set (in which case it could also be direct WRITE).
-+ */
-+static inline int cfq_bio_sync(struct bio *bio)
-+{
-+	if (bio_data_dir(bio) == READ || bio_sync(bio))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+/*
-  * scheduler run of queue, if there are requests pending and no one in the
-  * driver that will restart queueing
-  */
-@@ -594,7 +606,7 @@ cfq_find_rq_fmerge(struct cfq_data *cfqd, struct bio *bio)
- 	if (!cic)
- 		return NULL;
- 
--	cfqq =  cic_to_cfqq(cic, bio_sync(bio));
-+	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
- 	if (cfqq) {
- 		sector_t sector = bio->bi_sector + bio_sectors(bio);
- 
-@@ -694,7 +706,7 @@ static int cfq_allow_merge(request_queue_t *q, struct request *rq,
- 	/*
- 	 * Disallow merge of a sync bio into an async request.
- 	 */
--	if ((bio_data_dir(bio) == READ || bio_sync(bio)) && !rq_is_sync(rq))
-+	if (cfq_bio_sync(bio) && !rq_is_sync(rq))
- 		return 0;
- 
- 	/*
-@@ -705,7 +717,7 @@ static int cfq_allow_merge(request_queue_t *q, struct request *rq,
- 	if (!cic)
- 		return 0;
- 
--	cfqq = cic_to_cfqq(cic, bio_sync(bio));
-+	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
- 	if (cfqq == RQ_CFQQ(rq))
- 		return 1;
- 
-
--- 
-Jens Axboe
-
+Ciao Thilo
