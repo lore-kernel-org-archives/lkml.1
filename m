@@ -1,43 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423378AbXDYT5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423376AbXDYT54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423378AbXDYT5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423371AbXDYT5x
+	id S1423376AbXDYT54 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423375AbXDYT5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Apr 2007 15:57:54 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:35640
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1423363AbXDYT5x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Apr 2007 15:57:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55083 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422747AbXDYT5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:57:51 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070425.124354.55506567.davem@davemloft.net> 
-References: <20070425.124354.55506567.davem@davemloft.net>  <20070425041514.bb770377.akpm@linux-foundation.org> <20070425105036.10872.48596.stgit@warthog.cambridge.redhat.com> <13484.1177508312@redhat.com> 
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 00/16] AF_RXRPC socket family and AFS rewrite [try #3] 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 25 Apr 2007 20:56:47 +0100
-Message-ID: <32075.1177531007@redhat.com>
+Date: Wed, 25 Apr 2007 22:00:48 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use spinlock instead of semaphore in tty_io.c
+Message-ID: <20070425200048.GB3280@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> wrote:
+drivers/char/tty_io.c uses a semaphore to protect quick non-blocking
+operations. use a spinlock instead of the (binary) semaphore
 
-> Then please generate your patches against my net-2.6.21 GIT
-> tree.  Most of your initial patches in the series (the SKB
-> routine one for example) are already in my tree.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Signed-off-by: Christoph Hellwig <hch@infradead.org>
 
-Do you mean your net-2.6.22 GIT tree?
+--
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 7a32df5..ff27587 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -137,7 +137,7 @@ EXPORT_SYMBOL(tty_mutex);
+ extern struct tty_driver *ptm_driver;	/* Unix98 pty masters; for /dev/ptmx */
+ extern int pty_limit;		/* Config limit on Unix98 ptys */
+ static DEFINE_IDR(allocated_ptys);
+-static DECLARE_MUTEX(allocated_ptys_lock);
++static DEFINE_SPINLOCK(allocated_ptys_lock);
+ static int ptmx_open(struct inode *, struct file *);
+ #endif
+ 
+@@ -2471,9 +2471,9 @@ static void release_dev(struct file * filp)
+ #ifdef CONFIG_UNIX98_PTYS
+ 	/* Make this pty number available for reallocation */
+ 	if (devpts) {
+-		down(&allocated_ptys_lock);
++		spin_lock(&allocated_ptys_lock);
+ 		idr_remove(&allocated_ptys, idx);
+-		up(&allocated_ptys_lock);
++		spin_unlock(&allocated_ptys_lock);
+ 	}
+ #endif
+ 
+@@ -2639,24 +2639,24 @@ static int ptmx_open(struct inode * inode, struct file * filp)
+ 	nonseekable_open(inode, filp);
+ 
+ 	/* find a device that is not in use. */
+-	down(&allocated_ptys_lock);
+-	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+-		up(&allocated_ptys_lock);
++	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL))
+ 		return -ENOMEM;
+-	}
++
++	spin_lock(&allocated_ptys_lock);
++
+ 	idr_ret = idr_get_new(&allocated_ptys, NULL, &index);
+ 	if (idr_ret < 0) {
+-		up(&allocated_ptys_lock);
++		spin_unlock(&allocated_ptys_lock);
+ 		if (idr_ret == -EAGAIN)
+ 			return -ENOMEM;
+ 		return -EIO;
+ 	}
+ 	if (index >= pty_limit) {
+ 		idr_remove(&allocated_ptys, index);
+-		up(&allocated_ptys_lock);
++		spin_unlock(&allocated_ptys_lock);
+ 		return -EIO;
+ 	}
+-	up(&allocated_ptys_lock);
++	spin_unlock(&allocated_ptys_lock);
+ 
+ 	mutex_lock(&tty_mutex);
+ 	retval = init_dev(ptm_driver, index, &tty);
+@@ -2681,9 +2681,9 @@ out1:
+ 	release_dev(filp);
+ 	return retval;
+ out:
+-	down(&allocated_ptys_lock);
++	spin_lock(&allocated_ptys_lock);
+ 	idr_remove(&allocated_ptys, index);
+-	up(&allocated_ptys_lock);
++	spin_unlock(&allocated_ptys_lock);
+ 	return retval;
+ }
+ #endif
 
-Do you want me to make it available as a GIT tree for you to pull?  Or would
-you prefer patches?
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-David
+              You can't separate peace from freedom because no
+               one can be at peace unless he has his freedom
+                              (Malcolm X)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
