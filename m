@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbXDYXGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754517AbXDYXHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbXDYXGx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXDYXGx
+	id S1754517AbXDYXHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXDYXHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:06:53 -0400
-Received: from mga07.intel.com ([143.182.124.22]:8193 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754508AbXDYXGv (ORCPT
+	Wed, 25 Apr 2007 19:07:43 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56410 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754517AbXDYXHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:06:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,452,1170662400"; 
-   d="scan'208";a="219421182"
-Date: Wed, 25 Apr 2007 16:06:49 -0700
-From: Valerie Henson <val_henson@linux.intel.com>
-To: David Chinner <dgc@sgi.com>, Amit Gud <gud@ksu.edu>,
-       Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070425230648.GD16129@nifty>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425113834.GT5967@schatzie.adilger.int>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425113834.GT5967@schatzie.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 25 Apr 2007 19:07:42 -0400
+Date: Wed, 25 Apr 2007 16:07:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Olivier Galibert <galibert@pobox.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI mmconfig support for Intel 915 bridges
+Message-Id: <20070425160737.37e684cf.akpm@linux-foundation.org>
+In-Reply-To: <200704251535.17528.jesse.barnes@intel.com>
+References: <200701101853.04059.jbarnes@virtuousgeek.org>
+	<200704251535.17528.jesse.barnes@intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 05:38:34AM -0600, Andreas Dilger wrote:
+On Wed, 25 Apr 2007 15:35:15 -0700 Jesse Barnes <jesse.barnes@intel.com> wrote:
+
+> I see the other mmconfig stuff is upstream now, can we get this added 
+> too?  The Asus bug Olivier mentioned also appears to be fixed, so this 
+> patch should be safe.
 > 
-> The case where only a fsck of the corrupt chunk is done would not find the
-> cnode references.  Maybe there needs to be per-chunk info which contains
-> a list/bitmap of other chunks that have cnodes shared with each chunk?
+> Thanks,
+> Jesse
 
-Yes, exactly.  One might almost think you had solved this problem
-before. :):):)
+  ^^^^^ is an evil top-poster!
 
--VAL
+> 
+> On Wednesday, January 10, 2007 6:53 pm Jesse Barnes wrote:
+> > This is a resend of the patch I sent earlier to Oliver.  It adds
+> > support for Intel 915 bridge chips to the new PCI MMConfig detection
+> > code.  Tested and works on my sole 915 based platform (a Toshiba
+> > laptop).  I added register masking per Oliver's suggestion, and moved
+> > the __init qualifier to after the 'static const char' to match
+> > Ogawa-san's recent cleanup patches.
+> >
+> > Over time we can probably associate more PCI IDs with this routine,
+> > since i915 family contains a few other chips.  But since I didn't
+> > have platforms to test such additions on, they're left out for now.
+> >
+> > Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
+> >
+
+Can we have a refresh, retest and resend please?
