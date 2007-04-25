@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031014AbXDYNwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031026AbXDYNyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031014AbXDYNwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031024AbXDYNwm
+	id S1031026AbXDYNyb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031038AbXDYNyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:52:42 -0400
-Received: from ag-out-0708.google.com ([72.14.246.249]:13086 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031014AbXDYNwl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:52:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rkdhef/lByCmmFz5xLkv7TVQmyaJPU+l0hxEuKt5sLelVbtZEHXmZ9Djfb2A02/PmsKlRj98cXhqFQRbczDbDIC6yVf7V3DdGfm6CgGWj1JC3a3uGvNRLAsH8jN467kBjAE7uCKnz/OXXDvsrxLoAbroDvJyyZ2Ir/zF7vsY7Nk=
-Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-In-Reply-To: <1177509014.29878.12.camel@daplas>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org>
-	 <20070423214909.GD3468@stusta.de>
-	 <20070425040605.6d6b4a82.akpm@linux-foundation.org>
-	 <20070425113102.GU3468@stusta.de>  <20070425130102.GA10141@redhat.com>
-	 <1177509014.29878.12.camel@daplas>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 21:52:16 +0800
-Message-Id: <1177509136.29878.14.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 25 Apr 2007 09:54:31 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:41361 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031026AbXDYNya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:54:30 -0400
+Message-ID: <462F5D9C.9050706@gmail.com>
+Date: Wed, 25 Apr 2007 15:54:36 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver v2
+References: <20070425130843.GK6798@traven>
+In-Reply-To: <20070425130843.GK6798@traven>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Muni-Spam-TestIP: 147.251.48.3
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 25 Apr 2007 15:54:27 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to add Richard, sorry for the double post.
+Matthias Kaehlcke napsal(a):
+> the RocketPort driver uses a semaphore as mutex. use the mutex API
+> instead of the (binary) semaphore
+> 
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> 
+> --
+> 
+> diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
+> index 76357c8..7d23790 100644
+> --- a/drivers/char/rocket.c
+> +++ b/drivers/char/rocket.c
+> @@ -702,7 +702,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
+>  		}
+>  	}
+>  	spin_lock_init(&info->slock);
+> -	sema_init(&info->write_sem, 1);
+> +	mutex_init(&info->write_mtx);
+>  	rp_table[line] = info;
+>  	if (pci_dev)
+>  		tty_register_device(rocket_driver, line, &pci_dev->dev);
+> @@ -1662,7 +1662,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+>  		return;
+>  
+>  	/*  Grab the port write semaphore, locking out other processes that try to write to this port */
+> -	down(&info->write_sem);
+> +	mutex_lock(&info->write_mtx);
+>  
+>  #ifdef ROCKET_DEBUG_WRITE
+>  	printk(KERN_INFO "rp_put_char %c...", ch);
+> @@ -1684,7 +1684,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+>  		info->xmit_fifo_room--;
+>  	}
+>  	spin_unlock_irqrestore(&info->slock, flags);
+> -	up(&info->write_sem);
+> +	mutex_unlock(&info->write_mtx);
+>  }
+>  
+>  /*
+> @@ -1706,7 +1706,8 @@ static int rp_write(struct tty_struct *tty,
+>  	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+>  		return 0;
+>  
+> -	down_interruptible(&info->write_sem);
+> +	if(mutex_lock_interruptible(&info->write_mtx))
+> +		return -EINTR;
 
-On Wed, 2007-04-25 at 21:50 +0800, Antonino A. Daplas wrote:
-> On Wed, 2007-04-25 at 09:01 -0400, Dave Jones wrote:
-> > On Wed, Apr 25, 2007 at 01:31:02PM +0200, Adrian Bunk wrote:
-> >  > On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
-> >  > > On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
-> >  > >...
-> >  > > > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
-> >  > > >              workaround: CONFIG_FB_BACKLIGHT=n
-> >  > > > References : http://lkml.org/lkml/2007/3/13/3
-> >  > > > Submitter  : Dave Jones <davej@redhat.com>
-> >  > > > Caused-By  : PCI merge
-> >  > > >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
-> >  > > > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
-> >  > > >              Rafael J. Wysocki <rjw@sisk.pl>
-> >  > > >              Antonino A. Daplas <adaplas@gmail.com>
-> >  > > > Status     : unknown
-> >  > > 
-> >  > > Is this related to the problems Jeremy has been looking at?
-> >  > >...
-> >  > 
-> >  > Dave and Jeremy hran into similar looking but most likely different 
-> >  > problems.
-> >  > 
-> >  > For Jeremy -rc7 is working fine, but for Dave it doesn't.
-> > 
-> > I think this was due to Jeremy not having CONFIG_FB_BACKLIGHT=y in his config.
-> 
-> This is really weird, as CONFIG_FB_BACKLIGHT just selects
-> BACKLIGHT_CLASS and LCD_CLASS, and adds an entry (bl_curve)
-> under /sys/class/backlight/*/. ACPI_IBM which is set (presumably) in
-> Dave's kconfig, also selects the BACKLIGHT_CLASS. And the only possible
-> framebuffer drivers in the thinkpad are vesafb and intelfb, none of
-> which has a backlight driver.
-> 
-> I'm still at a loss how this happens.  Dave, can you post your config?
-> And have you tried the following settings:
-> 
-> FB_BACKLIGHT=y
-> ACPI_IBM=n
-> ACPI_VIDEO=n
-> 
-> I'm also adding Richard Purdie to the CC list.
-> 
-> Tony 
-> 
-> PS: I also get a blank display on resume with a Toshiba laptop.  But
-> cycling through the Fn keys brings it back.  I don't know if this is a
-> regression, I will have to try older kernels.
-> 
+I think that ERESTARTSYS is appropriate here.
 
+reagrds,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
