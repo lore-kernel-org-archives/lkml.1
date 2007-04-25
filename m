@@ -1,41 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030930AbXDYUqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031032AbXDYUsN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030930AbXDYUqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993094AbXDYUqU
+	id S1031032AbXDYUsN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:48:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031131AbXDYUsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:46:20 -0400
-Received: from foo.birdnet.se ([213.88.146.6]:39433 "EHLO foo.birdnet.se"
+	Wed, 25 Apr 2007 16:48:12 -0400
+Received: from ns.suse.de ([195.135.220.2]:36892 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030930AbXDYUqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:46:20 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 16:46:19 EDT
-Message-ID: <20070425203937.11718.qmail@cdy.org>
-Date: Wed, 25 Apr 2007 22:39:37 +0200
-From: Peter Stuge <stuge-linux-pcmcia@cdy.org>
-To: linux-pcmcia@lists.infradead.org
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Mail-Followup-To: linux-pcmcia@lists.infradead.org,
-	lkml <linux-kernel@vger.kernel.org>
-References: <44c9a2b88950e3848d2c4e457641eb9b@kernel.crashing.org> <D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1031032AbXDYUsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:48:10 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Date: Wed, 25 Apr 2007 22:48:03 +0200
+User-Agent: KMail/1.9.6
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <462FB8E6.9070501@googlemail.com> <462FBD44.2040103@goop.org>
+In-Reply-To: <462FBD44.2040103@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
+Message-Id: <200704252248.03243.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 11:27:09AM +0200, Aeschbacher, Fabrice wrote:
-> I'm not sure which correct values must be assigned to the 3th and
-> 4th parameters (here: 0x709b1bf1, 0xf54a91c8). Anyway, the patch is
-> working with these values. Tested on arch=mips.
+On Wednesday 25 April 2007 22:42:44 Jeremy Fitzhardinge wrote:
+> Michal Piotrowski wrote:
+> > Timing information is broken
+> >   
 > 
-> +       PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
-> 0xf54a91c8),
+> This looks like Andi's sched_clock stuff hitting: it returns an
+> inherently per-cpu result, so using it for printk timestamps isn't very
+> useful.
 
-According to /usr/src/linux/Documentation/pcmcia/devicetable.txt and
-crc32hash.c the 4th parameter should be 0x969aa4f2.
+It should actually roughly work. There can be some drift, but there shouldn't
+be that much error. All CPUs should tick at roughly the same rate because
+it's scaled to nanoseconds
+
+If the drift is a big issue it would also be possible to resync every minute
+or so, but I haven't implemented that.
+
+There will be always some minor monotonicities because it won't try
+to stop the CPU from reordering instructions.
+
+I don't know why it is that off in your case.
+
+ 
+> > [4294667.511000] BUG: at arch/i386/kernel/sched-clock.c:175 init_sched_clock()
+> > [4294667.511000]  [<c01052e0>] dump_trace+0x63/0x1eb
+> > [4294667.511000]  [<c0105482>] show_trace_log_lvl+0x1a/0x30
+> > [4294667.511000]  [<c01060c4>] show_trace+0x12/0x14
+> > [4294667.511000]  [<c0106161>] dump_stack+0x16/0x18
+> > [4294667.511000]  [<c04fd968>] init_sched_clock+0x6d/0xcc
+> > [4294667.512000]  [<c04f8505>] kernel_init+0x14e/0x2bf
+> > [4294667.512000]  [<c0104ec3>] kernel_thread_helper+0x7/0x10
+> > [4294667.512000]  =======================
+> 
+> This also seems to be the sched_clock change; the WARN_ON is asserting
+> that it got initialized early enough, but it isn't. 
+
+That's already fixed.
+
+-Andi
 
 
-//Peter
