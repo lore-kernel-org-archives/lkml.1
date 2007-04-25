@@ -1,93 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992490AbXDYJf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992483AbXDYJhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992490AbXDYJf4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992500AbXDYJf4
+	id S2992483AbXDYJhs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:37:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992486AbXDYJhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:35:56 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:30554 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992490AbXDYJfz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:35:55 -0400
-Date: Wed, 25 Apr 2007 11:34:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
+	Wed, 25 Apr 2007 05:37:47 -0400
+Received: from ns.suse.de ([195.135.220.2]:47180 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992483AbXDYJhq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:37:46 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Date: Wed, 25 Apr 2007 19:37:28 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17967.8536.788076.851546@notabene.brown>
 Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
        lkml <linux-kernel@vger.kernel.org>
 Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070425093425.GO9715@kernel.dk>
-References: <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425084607.GM9715@kernel.dk>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: message from Jens Axboe on Wednesday April 25
+References: <46220339.9080205@wasp.net.au>
+	<4623FB29.1000603@redhat.com>
+	<17956.22235.574867.179016@notabene.brown>
+	<20070418123757.GC3796@kernel.dk>
+	<46261ACE.1050407@wasp.net.au>
+	<20070418132157.GC3720@kernel.dk>
+	<462B10C3.1030906@wasp.net.au>
+	<20070423073543.GE5311@kernel.dk>
+	<462E5D38.5000801@wasp.net.au>
+	<17967.4734.783140.512857@notabene.brown>
+	<20070425084607.GM9715@kernel.dk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Jens Axboe wrote:
-> On Wed, Apr 25 2007, Neil Brown wrote:
-> > On Tuesday April 24, brad@wasp.net.au wrote:
-> > > [105449.653682] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-> > > lkml@vger.kernel.org
-> > > [105449.683646] cfq: busy=1,drv=0,timer=0
-> > > [105449.694871] cfq rr_list:
-> > > [105449.702715]   3108: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
-> > > [105449.720693] cfq busy_list:
-> > > [105449.729054] cfq idle_list:
-> > > [105449.737418] cfq cur_rr:
-> > 
-> > Ok, I have a theory.
-> > 
-> > An ELEVATOR_FRONT_MERGE occurs which changes req->sector and calls
-> > ->elevator_merged_fn which is cfq_merged_request.
-> > 
-> > At this time there is already a request in cfq with the same sector
-> > number, and that request is the only other request on the queue.
-> > 
-> > cfq_merged_request calls cfq_reposition_rq_rb which removes the
-> > req from ->sortlist and then calls cfq_add_rq_rb to add it back (at
-> > the new location because ->sector has changed).
-> > 
-> > cfq_add_rq_rb finds there is already a request with the same sector
-> > number and so elv_rb_add returns an __alias which is passed to
-> > cfq_dispatch_insert. 
-> > This calls cfq_remove_request and as that is the only request present,
-> > ->next_rq gets set to NULL.
-> > The old request with the new sector number is then added to the
-> > ->sortlist, but ->next_rq is never set - it remains NULL.
-> > 
-> > How likely it would be to get two requests with the same sector number
-> > I don't know.  I wouldn't expect it to ever happen - I have seen it
-> > before, but it was due to a bug in ext3.  Maybe XFS does it
-> > intentionally some times?
-> > 
-> > You could test this theory by putting a
-> >    WARN_ON(cfqq->next_rq == NULL);
-> > at the end of cfq_reposition_rq_rb, just after the cfq_add_rq_rb call.
-> > 
-> > I will leave the development of a suitable fix up to Jens if he agrees
-> > that this is possible.
+On Wednesday April 25, jens.axboe@oracle.com wrote:
 > 
 > That's pretty close to where I think the problem is (the front merging
 > and cfq_reposition_rq_rb()). The issue with that is that you'd only get
 > aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
 > here. Given that front merges are equally not very likely, I'd be
 > surprised is something like that has ever happened.
+
+Well it certainly doesn't happen very often....
+And I can imagine a filesystem genuinely wanting to read the same
+block twice - maybe a block that contained packed tails of two
+different files.
 > 
 > BUT... That may explain while we are only seeing it on md. Would md
 > ever be issuing such requests that trigger this condition?
-> 
-> I'll try and concoct a test case.
 
-I made a test case and reproduced it, this is indeed what is happening.
-md must be issuing direct requests in such a manner, that you do get a
-front merge and then an alias to an existing request. Will test a fix!
+Can someone remind me which raid level(s) was/were involved?
 
--- 
-Jens Axboe
+I think one was raid0 - that just passes requests on from the
+filesystem, so md would only issue requests like that if the
+filesystem did.
+I guess it could happen with raid4/5/6.  A read request that was
+properly aligned (and we do encourage proper alignment) will be passed
+directly to the underlying device.  A concurrent write elsewhere could
+require the same block to be read into the stripe-cache to enable a
+parity calculation.  So you could get two reads at the same block
+address.
+Getting a front-merge would probably require two stripe-heads to be
+processed in reverse-sector order, and it tends to preserve the order
+of incoming requests (though that isn't firmly enforced).
 
+raid1 is much like raid0 (with totally different code) in that the
+request pattern seen by the underlying device matches the request
+pattern generated by the filesystem.
+
+If I read the debugging output correctly, the request which I
+hypothesise was the subject of a front-merge is a 'sync' request.
+raid5 does not generate sync requests to fill the stripe cache (maybe
+it should?) so I really think it must have come directly from the
+filesystem.
+
+(just checked previous email for more detail of when it hits)
+The fact that it hits degraded arrays more easily is interesting.
+Maybe we try to read a block on the missing device and so schedule
+reads for the other devices.  Then we try to read a block on a good
+device and issue a request for exactly the same block that raid5 asked
+for.  That still doesn't explain the 'sync' and the 'front merge'.
+But that is quite possible, just not common maybe.
+
+It doesn't help us understand the raid0 example though.  May it is
+just a 'can happen, but only rarely' thing.
+
+NeilBrown
