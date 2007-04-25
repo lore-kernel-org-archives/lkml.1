@@ -1,69 +1,477 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992599AbXDYKrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992614AbXDYKuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992599AbXDYKrH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992609AbXDYKrG
+	id S2992614AbXDYKuv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992589AbXDYKuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:47:06 -0400
-Received: from vsmtp1.tin.it ([212.216.176.141]:59744 "EHLO vsmtp1.tin.it"
+	Wed, 25 Apr 2007 06:50:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52015 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992589AbXDYKrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:47:05 -0400
-X-Greylist: delayed 348 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 06:47:05 EDT
-Message-ID: <462F3E87.BAA51761@tin.it>
-Date: Wed, 25 Apr 2007 11:41:59 +0000
-From: "A.D.F." <adefacc@tin.it>
-Reply-To: adefacc@tin.it
-Organization: Private
-X-Mailer: Mozilla 4.8 [en] (X11; U; Linux 2.2.26 i686)
-X-Accept-Language: en
+	id S2992588AbXDYKut (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 06:50:49 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 01/16] AF_RXRPC: Move generic skbuff stuff from XFRM code to
+	generic code [try #3]
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 25 Apr 2007 11:50:42 +0100
+Message-ID: <20070425105042.10872.10004.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070425105036.10872.48596.stgit@warthog.cambridge.redhat.com>
+References: <20070425105036.10872.48596.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: sendfile to nonblocking socket
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Answer to Alex Vorona (I'm not subscribed to linux kernel list so CC me).
+Move generic skbuff stuff from XFRM code to generic code so that AF_RXRPC can
+use it too.
 
-Serious answers to an almost troll question (no offence here :-).
+The kdoc comments I've attached to the functions needs to be checked by whoever
+wrote them as I had to make some guesses about the workings of these functions.
 
-1) The possibility that sendfiles blocks,
-   when it has to wait for disk reads / pages,
-   has been repeatedly mentioned (and thus known) for ages by everybody
-   (including Linus) since kernel 2.2.x;
-   if you search the archives (mailing lists, etc.)
-   or just google "sendfile blocking" you'll find a lot of stuff about this
-issue.
+Signed-Off-By: David Howells <dhowells@redhat.com>
+---
 
-2) A possible answer, to your implicit request to add real asynchronous
-support
-   to sendfile, is to wait for the general asynchronous support for all
-blocking
-   syscalls (search the kernel archives in the last 3 months).
+ include/linux/skbuff.h |    6 ++
+ include/net/esp.h      |    2 -
+ net/core/skbuff.c      |  188 ++++++++++++++++++++++++++++++++++++++++++++++++
+ net/xfrm/xfrm_algo.c   |  169 -------------------------------------------
+ 4 files changed, 194 insertions(+), 171 deletions(-)
 
-3) The simplest solution (that works with every OS) is to just pass
-   a small (*) amount of data to each sendfile() call,
-   (*) i.e. between 64 KB (very slow disk with DMA disabled)
-       and 1024 KB (very fast disk).
+diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+index 5992f65..c905d42 100644
+--- a/include/linux/skbuff.h
++++ b/include/linux/skbuff.h
+@@ -83,6 +83,7 @@
+  */
  
-   Of course, if files to be sent are not in page cache and
-   there are more than 10 - 100 parallel downloads of different files,
-   you'll see noticeable latencies (because of disk seeks, etc.);
-   in any case you may want to add a parameter to this nginx thing
-   to let the tuning of chunk size.
+ struct net_device;
++struct scatterlist;
+ 
+ #ifdef CONFIG_NETFILTER
+ struct nf_conntrack {
+@@ -361,6 +362,11 @@ extern struct sk_buff *skb_realloc_headroom(struct sk_buff *skb,
+ extern struct sk_buff *skb_copy_expand(const struct sk_buff *skb,
+ 				       int newheadroom, int newtailroom,
+ 				       gfp_t priority);
++extern int	       skb_to_sgvec(struct sk_buff *skb,
++				    struct scatterlist *sg, int offset,
++				    int len);
++extern int	       skb_cow_data(struct sk_buff *skb, int tailbits,
++				    struct sk_buff **trailer);
+ extern int	       skb_pad(struct sk_buff *skb, int pad);
+ #define dev_kfree_skb(a)	kfree_skb(a)
+ extern void	      skb_over_panic(struct sk_buff *skb, int len,
+diff --git a/include/net/esp.h b/include/net/esp.h
+index 713d039..d05d8d2 100644
+--- a/include/net/esp.h
++++ b/include/net/esp.h
+@@ -40,8 +40,6 @@ struct esp_data
+ 	} auth;
+ };
+ 
+-extern int skb_to_sgvec(struct sk_buff *skb, struct scatterlist *sg, int offset, int len);
+-extern int skb_cow_data(struct sk_buff *skb, int tailbits, struct sk_buff **trailer);
+ extern void *pskb_put(struct sk_buff *skb, struct sk_buff *tail, int len);
+ 
+ static inline int esp_mac_digest(struct esp_data *esp, struct sk_buff *skb,
+diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+index 336958f..aa02bd4 100644
+--- a/net/core/skbuff.c
++++ b/net/core/skbuff.c
+@@ -55,6 +55,7 @@
+ #include <linux/cache.h>
+ #include <linux/rtnetlink.h>
+ #include <linux/init.h>
++#include <linux/scatterlist.h>
+ 
+ #include <net/protocol.h>
+ #include <net/dst.h>
+@@ -2005,6 +2006,190 @@ void __init skb_init(void)
+ 						NULL, NULL);
+ }
+ 
++/**
++ *	skb_to_sgvec - Fill a scatter-gather list from a socket buffer
++ *	@skb: Socket buffer containing the buffers to be mapped
++ *	@sg: The scatter-gather list to map into
++ *	@offset: The offset into the buffer's contents to start mapping
++ *	@len: Length of buffer space to be mapped
++ *
++ *	Fill the specified scatter-gather list with mappings/pointers into a
++ *	region of the buffer space attached to a socket buffer.
++ */
++int
++skb_to_sgvec(struct sk_buff *skb, struct scatterlist *sg, int offset, int len)
++{
++	int start = skb_headlen(skb);
++	int i, copy = start - offset;
++	int elt = 0;
++
++	if (copy > 0) {
++		if (copy > len)
++			copy = len;
++		sg[elt].page = virt_to_page(skb->data + offset);
++		sg[elt].offset = (unsigned long)(skb->data + offset) % PAGE_SIZE;
++		sg[elt].length = copy;
++		elt++;
++		if ((len -= copy) == 0)
++			return elt;
++		offset += copy;
++	}
++
++	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
++		int end;
++
++		BUG_TRAP(start <= offset + len);
++
++		end = start + skb_shinfo(skb)->frags[i].size;
++		if ((copy = end - offset) > 0) {
++			skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
++
++			if (copy > len)
++				copy = len;
++			sg[elt].page = frag->page;
++			sg[elt].offset = frag->page_offset+offset-start;
++			sg[elt].length = copy;
++			elt++;
++			if (!(len -= copy))
++				return elt;
++			offset += copy;
++		}
++		start = end;
++	}
++
++	if (skb_shinfo(skb)->frag_list) {
++		struct sk_buff *list = skb_shinfo(skb)->frag_list;
++
++		for (; list; list = list->next) {
++			int end;
++
++			BUG_TRAP(start <= offset + len);
++
++			end = start + list->len;
++			if ((copy = end - offset) > 0) {
++				if (copy > len)
++					copy = len;
++				elt += skb_to_sgvec(list, sg+elt, offset - start, copy);
++				if ((len -= copy) == 0)
++					return elt;
++				offset += copy;
++			}
++			start = end;
++		}
++	}
++	BUG_ON(len);
++	return elt;
++}
++
++/**
++ *	skb_cow_data - Check that a socket buffer's data buffers are writable
++ *	@skb: The socket buffer to check.
++ *	@tailbits: Amount of trailing space to be added
++ *	@trailer: Returned pointer to the skb where the @tailbits space begins
++ *
++ *	Make sure that the data buffers attached to a socket buffer are
++ *	writable. If they are not, private copies are made of the data buffers
++ *	and the socket buffer is set to use these instead.
++ *
++ *	If @tailbits is given, make sure that there is space to write @tailbits
++ *	bytes of data beyond current end of socket buffer.  @trailer will be
++ *	set to point to the skb in which this space begins.
++ *
++ *	The number of scatterlist elements required to completely map the
++ *	COW'd and extended socket buffer will be returned.
++ */
++int skb_cow_data(struct sk_buff *skb, int tailbits, struct sk_buff **trailer)
++{
++	int copyflag;
++	int elt;
++	struct sk_buff *skb1, **skb_p;
++
++	/* If skb is cloned or its head is paged, reallocate
++	 * head pulling out all the pages (pages are considered not writable
++	 * at the moment even if they are anonymous).
++	 */
++	if ((skb_cloned(skb) || skb_shinfo(skb)->nr_frags) &&
++	    __pskb_pull_tail(skb, skb_pagelen(skb)-skb_headlen(skb)) == NULL)
++		return -ENOMEM;
++
++	/* Easy case. Most of packets will go this way. */
++	if (!skb_shinfo(skb)->frag_list) {
++		/* A little of trouble, not enough of space for trailer.
++		 * This should not happen, when stack is tuned to generate
++		 * good frames. OK, on miss we reallocate and reserve even more
++		 * space, 128 bytes is fair. */
++
++		if (skb_tailroom(skb) < tailbits &&
++		    pskb_expand_head(skb, 0, tailbits-skb_tailroom(skb)+128, GFP_ATOMIC))
++			return -ENOMEM;
++
++		/* Voila! */
++		*trailer = skb;
++		return 1;
++	}
++
++	/* Misery. We are in troubles, going to mincer fragments... */
++
++	elt = 1;
++	skb_p = &skb_shinfo(skb)->frag_list;
++	copyflag = 0;
++
++	while ((skb1 = *skb_p) != NULL) {
++		int ntail = 0;
++
++		/* The fragment is partially pulled by someone,
++		 * this can happen on input. Copy it and everything
++		 * after it. */
++
++		if (skb_shared(skb1))
++			copyflag = 1;
++
++		/* If the skb is the last, worry about trailer. */
++
++		if (skb1->next == NULL && tailbits) {
++			if (skb_shinfo(skb1)->nr_frags ||
++			    skb_shinfo(skb1)->frag_list ||
++			    skb_tailroom(skb1) < tailbits)
++				ntail = tailbits + 128;
++		}
++
++		if (copyflag ||
++		    skb_cloned(skb1) ||
++		    ntail ||
++		    skb_shinfo(skb1)->nr_frags ||
++		    skb_shinfo(skb1)->frag_list) {
++			struct sk_buff *skb2;
++
++			/* Fuck, we are miserable poor guys... */
++			if (ntail == 0)
++				skb2 = skb_copy(skb1, GFP_ATOMIC);
++			else
++				skb2 = skb_copy_expand(skb1,
++						       skb_headroom(skb1),
++						       ntail,
++						       GFP_ATOMIC);
++			if (unlikely(skb2 == NULL))
++				return -ENOMEM;
++
++			if (skb1->sk)
++				skb_set_owner_w(skb2, skb1->sk);
++
++			/* Looking around. Are we still alive?
++			 * OK, link new skb, drop old one */
++
++			skb2->next = skb1->next;
++			*skb_p = skb2;
++			kfree_skb(skb1);
++			skb1 = skb2;
++		}
++		elt++;
++		*trailer = skb1;
++		skb_p = &skb1->next;
++	}
++
++	return elt;
++}
++
+ EXPORT_SYMBOL(___pskb_trim);
+ EXPORT_SYMBOL(__kfree_skb);
+ EXPORT_SYMBOL(kfree_skb);
+@@ -2039,3 +2224,6 @@ EXPORT_SYMBOL(skb_seq_read);
+ EXPORT_SYMBOL(skb_abort_seq_read);
+ EXPORT_SYMBOL(skb_find_text);
+ EXPORT_SYMBOL(skb_append_datato_frags);
++
++EXPORT_SYMBOL_GPL(skb_to_sgvec);
++EXPORT_SYMBOL_GPL(skb_cow_data);
+diff --git a/net/xfrm/xfrm_algo.c b/net/xfrm/xfrm_algo.c
+index f373a8a..6249a94 100644
+--- a/net/xfrm/xfrm_algo.c
++++ b/net/xfrm/xfrm_algo.c
+@@ -612,175 +612,6 @@ EXPORT_SYMBOL_GPL(skb_icv_walk);
+ 
+ #if defined(CONFIG_INET_ESP) || defined(CONFIG_INET_ESP_MODULE) || defined(CONFIG_INET6_ESP) || defined(CONFIG_INET6_ESP_MODULE)
+ 
+-/* Looking generic it is not used in another places. */
+-
+-int
+-skb_to_sgvec(struct sk_buff *skb, struct scatterlist *sg, int offset, int len)
+-{
+-	int start = skb_headlen(skb);
+-	int i, copy = start - offset;
+-	int elt = 0;
+-
+-	if (copy > 0) {
+-		if (copy > len)
+-			copy = len;
+-		sg[elt].page = virt_to_page(skb->data + offset);
+-		sg[elt].offset = (unsigned long)(skb->data + offset) % PAGE_SIZE;
+-		sg[elt].length = copy;
+-		elt++;
+-		if ((len -= copy) == 0)
+-			return elt;
+-		offset += copy;
+-	}
+-
+-	for (i = 0; i < skb_shinfo(skb)->nr_frags; i++) {
+-		int end;
+-
+-		BUG_TRAP(start <= offset + len);
+-
+-		end = start + skb_shinfo(skb)->frags[i].size;
+-		if ((copy = end - offset) > 0) {
+-			skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
+-
+-			if (copy > len)
+-				copy = len;
+-			sg[elt].page = frag->page;
+-			sg[elt].offset = frag->page_offset+offset-start;
+-			sg[elt].length = copy;
+-			elt++;
+-			if (!(len -= copy))
+-				return elt;
+-			offset += copy;
+-		}
+-		start = end;
+-	}
+-
+-	if (skb_shinfo(skb)->frag_list) {
+-		struct sk_buff *list = skb_shinfo(skb)->frag_list;
+-
+-		for (; list; list = list->next) {
+-			int end;
+-
+-			BUG_TRAP(start <= offset + len);
+-
+-			end = start + list->len;
+-			if ((copy = end - offset) > 0) {
+-				if (copy > len)
+-					copy = len;
+-				elt += skb_to_sgvec(list, sg+elt, offset - start, copy);
+-				if ((len -= copy) == 0)
+-					return elt;
+-				offset += copy;
+-			}
+-			start = end;
+-		}
+-	}
+-	BUG_ON(len);
+-	return elt;
+-}
+-EXPORT_SYMBOL_GPL(skb_to_sgvec);
+-
+-/* Check that skb data bits are writable. If they are not, copy data
+- * to newly created private area. If "tailbits" is given, make sure that
+- * tailbits bytes beyond current end of skb are writable.
+- *
+- * Returns amount of elements of scatterlist to load for subsequent
+- * transformations and pointer to writable trailer skb.
+- */
+-
+-int skb_cow_data(struct sk_buff *skb, int tailbits, struct sk_buff **trailer)
+-{
+-	int copyflag;
+-	int elt;
+-	struct sk_buff *skb1, **skb_p;
+-
+-	/* If skb is cloned or its head is paged, reallocate
+-	 * head pulling out all the pages (pages are considered not writable
+-	 * at the moment even if they are anonymous).
+-	 */
+-	if ((skb_cloned(skb) || skb_shinfo(skb)->nr_frags) &&
+-	    __pskb_pull_tail(skb, skb_pagelen(skb)-skb_headlen(skb)) == NULL)
+-		return -ENOMEM;
+-
+-	/* Easy case. Most of packets will go this way. */
+-	if (!skb_shinfo(skb)->frag_list) {
+-		/* A little of trouble, not enough of space for trailer.
+-		 * This should not happen, when stack is tuned to generate
+-		 * good frames. OK, on miss we reallocate and reserve even more
+-		 * space, 128 bytes is fair. */
+-
+-		if (skb_tailroom(skb) < tailbits &&
+-		    pskb_expand_head(skb, 0, tailbits-skb_tailroom(skb)+128, GFP_ATOMIC))
+-			return -ENOMEM;
+-
+-		/* Voila! */
+-		*trailer = skb;
+-		return 1;
+-	}
+-
+-	/* Misery. We are in troubles, going to mincer fragments... */
+-
+-	elt = 1;
+-	skb_p = &skb_shinfo(skb)->frag_list;
+-	copyflag = 0;
+-
+-	while ((skb1 = *skb_p) != NULL) {
+-		int ntail = 0;
+-
+-		/* The fragment is partially pulled by someone,
+-		 * this can happen on input. Copy it and everything
+-		 * after it. */
+-
+-		if (skb_shared(skb1))
+-			copyflag = 1;
+-
+-		/* If the skb is the last, worry about trailer. */
+-
+-		if (skb1->next == NULL && tailbits) {
+-			if (skb_shinfo(skb1)->nr_frags ||
+-			    skb_shinfo(skb1)->frag_list ||
+-			    skb_tailroom(skb1) < tailbits)
+-				ntail = tailbits + 128;
+-		}
+-
+-		if (copyflag ||
+-		    skb_cloned(skb1) ||
+-		    ntail ||
+-		    skb_shinfo(skb1)->nr_frags ||
+-		    skb_shinfo(skb1)->frag_list) {
+-			struct sk_buff *skb2;
+-
+-			/* Fuck, we are miserable poor guys... */
+-			if (ntail == 0)
+-				skb2 = skb_copy(skb1, GFP_ATOMIC);
+-			else
+-				skb2 = skb_copy_expand(skb1,
+-						       skb_headroom(skb1),
+-						       ntail,
+-						       GFP_ATOMIC);
+-			if (unlikely(skb2 == NULL))
+-				return -ENOMEM;
+-
+-			if (skb1->sk)
+-				skb_set_owner_w(skb2, skb1->sk);
+-
+-			/* Looking around. Are we still alive?
+-			 * OK, link new skb, drop old one */
+-
+-			skb2->next = skb1->next;
+-			*skb_p = skb2;
+-			kfree_skb(skb1);
+-			skb1 = skb2;
+-		}
+-		elt++;
+-		*trailer = skb1;
+-		skb_p = &skb1->next;
+-	}
+-
+-	return elt;
+-}
+-EXPORT_SYMBOL_GPL(skb_cow_data);
+-
+ void *pskb_put(struct sk_buff *skb, struct sk_buff *tail, int len)
+ {
+ 	if (tail != skb) {
 
-4) As it has already been mentioned by others, there are many good solutions
-   that can be used right now to allow the required scalability target:
-    - using threads;
-    - using asynchronous I/O;
-    - etc.
-
-5) If you want to use some other Web Server that just works,
-   look for the alternatives (including lighttpd or even Apache).
-
--- 
-Nick Name:     A.D.F.
-E-Mail:        <adefacc () tin ! it>
---
