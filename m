@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161024AbXDYA3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161819AbXDYAa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161024AbXDYA3v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 20:29:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXDYA3v
+	id S1161819AbXDYAa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 20:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161823AbXDYAa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 20:29:51 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:33415 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030419AbXDYA3u (ORCPT
+	Tue, 24 Apr 2007 20:30:59 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:42860 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161819AbXDYAa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 20:29:50 -0400
-Date: Wed, 25 Apr 2007 02:29:58 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Wolfgang Erig <Wolfgang.Erig@gmx.de>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [1/3] 2.6.21-rc7: known regressions (v2)
-Message-ID: <20070425002958.GR3468@stusta.de>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070423214847.GB3468@stusta.de> <20070423221819.GA7218@kroah.com> <20070424093253.GA1075@erig.dyndns.org> <20070425001428.GA1366@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070425001428.GA1366@kroah.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 24 Apr 2007 20:30:58 -0400
+Date: Tue, 24 Apr 2007 20:30:47 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+In-reply-to: <20070424174445.GA31270@1wt.eu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Ingo Molnar <mingo@elte.hu>, David Lang <david.lang@digitalinsight.com>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Davidsen <davidsen@tmr.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       caglar@pardus.org.tr
+Message-id: <200704242030.48071.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200704220959.34978.kernel@kolivas.org>
+ <200704241038.32766.gene.heskett@gmail.com> <20070424174445.GA31270@1wt.eu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 24, 2007 at 05:14:28PM -0700, Greg KH wrote:
-> On Tue, Apr 24, 2007 at 11:32:53AM +0200, Wolfgang Erig wrote:
-> > On Mon, Apr 23, 2007 at 03:18:19PM -0700, Greg KH wrote:
-> > > On Mon, Apr 23, 2007 at 11:48:47PM +0200, Adrian Bunk wrote:
-> > > > This email lists some known regressions in Linus' tree compared to 2.6.20.
-> > > > 
-> > > > If you find your name in the Cc header, you are either submitter of one
-> > > > of the bugs, maintainer of an affectected subsystem or driver, a patch
-> > > > of you caused a breakage or I'm considering you in any other way
-> > > > possibly involved with one or more of these issues.
-> > > > 
-> > > > Due to the huge amount of recipients, please trim the Cc when answering.
-> > > > 
-> > > > 
-> > > > Subject    : gammu no longer works
-> > > > References : http://lkml.org/lkml/2007/4/20/84
-> > > > Submitter  : Wolfgang Erig <Wolfgang.Erig@gmx.de>
-> > > > Status     : unknown
-> > > 
-> > > I've asked for more information about this, and so far am not sure it's
-> > > a real problem.
-> > 
-> > It is a real problem for me.
-> > I tried this on 2 different boxes with the same behaviour.
-> > No sync between my Nokia mobile and Linux with the latest kernel :(
-> 
-> Sorry, I didn't see your response, have followed up on lkml now.
+On Tuesday 24 April 2007, Willy Tarreau wrote:
+>On Tue, Apr 24, 2007 at 10:38:32AM -0400, Gene Heskett wrote:
+>> On Tuesday 24 April 2007, Ingo Molnar wrote:
+>> >* David Lang <david.lang@digitalinsight.com> wrote:
+>> >> > (Btw., to protect against such mishaps in the future i have changed
+>> >> > the SysRq-N [SysRq-Nice] implementation in my tree to not only
+>> >> > change real-time tasks to SCHED_OTHER, but to also renice negative
+>> >> > nice levels back to 0 - this will show up in -v6. That way you'd
+>> >> > only have had to hit SysRq-N to get the system out of the wedge.)
+>> >>
+>> >> if you are trying to unwedge a system it may be a good idea to renice
+>> >> all tasks to 0, it could be that a task at +19 is holding a lock that
+>> >> something else is waiting for.
+>> >
+>> >Yeah, that's possible too, but +19 tasks are getting a small but
+>> >guaranteed share of the CPU so eventually it ought to release it. It's
+>> >still a possibility, but i think i'll wait for a specific incident to
+>> >happen first, and then react to that incident :-)
+>> >
+>> >	Ingo
+>>
+>> In the instance I created, even the SysRq+b was ignored, and ISTR thats
+>> supposed to initiate a reboot is it not?  So it was well and truly wedged.
+>
+>On many machines I use this on, I have to release Alt while still holding B.
+>Don't know why, but it works like this.
+>
+>Willy
 
-It turned out this was actually a bug in Gammu that will be fixed in 
-the next release of Gammu.
+Yeah, Willy, and pardon a slight bit of sarcasm here but that's how we get the 
+reputation for needing virgins to sacrifice, regular experienced girls just 
+wouldn't do.
 
-> thanks,
-> 
-> greg k-h
-
-cu
-Adrian
+This isn't APL running on an IBM 5120, so it should Just Work(TM) and not need 
+a sceance or something to conjure up the right spell.  Besides, the reset 
+button is only about 6 feet away...  I get some execsize that way by getting 
+up to push it. :)
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+It is so soon that I am done for, I wonder what I was begun for.
+		-- Epitaph, Cheltenham Churchyard
