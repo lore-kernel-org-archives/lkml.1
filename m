@@ -1,108 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992449AbXDYJTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992463AbXDYJYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992449AbXDYJTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 05:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992452AbXDYJTO
+	id S2992463AbXDYJYy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 05:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992464AbXDYJYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 05:19:14 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:58654 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992449AbXDYJTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 05:19:13 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Christian Hesse <mail@earthworm.de>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1177492072.30284.48.camel@frg-rhel40-em64t-04>
-References: <200704182245.24156.mail@earthworm.de>
-	 <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de>
-	 <20070418220228.GA14536@elte.hu>
-	 <1176947576.5906.21.camel@nigel.suspend2.net>
-	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070424212408.GD16457@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-	 <20070425072350.GA6866@ucw.cz>
-	 <1177490913.30284.38.camel@frg-rhel40-em64t-04>
-	 <1177491047.3857.32.camel@nigel.suspend2.net>
-	 <1177492072.30284.48.camel@frg-rhel40-em64t-04>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-af8UkB2autnwajxUCfHQ"
-Date: Wed, 25 Apr 2007 19:19:11 +1000
-Message-Id: <1177492751.3857.43.camel@nigel.suspend2.net>
+	Wed, 25 Apr 2007 05:24:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52112 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992463AbXDYJYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 05:24:52 -0400
+Date: Wed, 25 Apr 2007 11:23:56 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, ebiederm@xmission.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [patch 0/8]  mount ownership and unprivileged mount syscall (v4)
+Message-ID: <20070425092356.GJ14086@petra.dvoda.cz>
+References: <20070420102532.385211890@szeredi.hu> <20070425000414.GH14086@petra.dvoda.cz> <E1Hgblk-00045y-00@dorka.pomaz.szeredi.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Hgblk-00045y-00@dorka.pomaz.szeredi.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Apr 25, 2007 at 09:18:28AM +0200, Miklos Szeredi wrote:
+> > > The following extra security measures are taken for unprivileged
+> > > mounts:
+> > > 
+> > >  - usermounts are limited by a sysctl tunable
+> > >  - force "nosuid,nodev" mount options on the created mount
+> > 
+> >  The original userspace "user=" solution also implies the "noexec"
+> >  option by default (you can override the default by "exec" option).
+> 
+> Unlike "nosuid" and "nodev", I don't think "noexec" has real security
+> benefits.
 
---=-af8UkB2autnwajxUCfHQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+ Yes. I agree. 
 
-Hi.
+> >  It means the kernel based solution is not fully compatible ;-(
+> 
+> Oh, I don't think that matters.  For traditional /etc/fstab based user
+> mounts, mount(8) will have to remain suid-root, the kernel can't
+> replace the fstab check.
 
-On Wed, 2007-04-25 at 11:07 +0200, Xavier Bestel wrote:
-> On Wed, 2007-04-25 at 18:50 +1000, Nigel Cunningham wrote:
-> > > (And guess what, it uses APM and suspend is really faster and way mor=
-e
-> > > reliable than each kernel implementation I could try).
-> >=20
-> > If you tried Suspend2 and had problems with reliability, please send me
-> > logs. I'll do all I can to help. (I have to qualify it a bit, because
-> > I'm not able to fix drivers, but if it's a Suspend2 issue, tell me and
-> > I'll fix it).
->=20
-> Does suspend2 work with APM ? After much trying, I think now the ACPI
-> implementation of my laptop (a vintage Compaq Armada 1700) is busted,
-> only APM works.
+ Ok, it makes sense. You're right that for the mount(8) is more
+ important the fstab check. 
+ 
+ Please, prepare a mount(8) patch -- with the patch it will be more
+ clear.
 
-It should do. If you set the powerdown method to 0, it will use
-machine_power_off() instead of trying to use acpi, fall back to
-machine_halt() if that fails and lastly (should not be needed) a
-while(1) cpu_relax() loop.
+> We could add a new "nosubmount" or similar flag, to prevent
+> submounting, but that again would go against the simplicity of the
+> current approach, so I'm not sure it's worth it.
 
-> AFAIR the problem with suspend2 was that it didn't poweroff some parts
-> of the laptop (the led of the wifi pcmcia card was on, and the lcd light
-> was on too), but that was last year. Kernel's suspend kind of worked but
-> didn't resume (no reaction on button press). As I tried all this last
-> year, I may have forgotten some things.
+ The "nosubmount" is probably good idea.
+ 
+ The patches seem much better in v4. I'm fun for the feature in the
+ kernel (and also for every change that makes mtab more and more
+ obsolete :-).
 
-The code to poweroff those parts will be dependent on the drivers
-(assuming I'm making the right calls). If it's something where swsusp
-works and suspend2 doesn't, it will be because I'm doing something
-wrong. If they both don't do the right thing, then it's probably the
-driver.
+    Karel
 
-> Honestly, I like this laptop when it works flawlessly, so I don't see
-> many reasons to try *susp* again. I'll do it when I'm bored, just not
-> today.
 
-Okay :) Just let me know if I can help.
 
-Nigel
+> 
+> Miklos
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
---=-af8UkB2autnwajxUCfHQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGLx0PN0y+n1M3mo0RArAzAKCinb2O66hPQnGewE53d1aQ7z5/swCeJFvj
-niwS3AsEJ3IjFY5mEE/gdwc=
-=Jn5d
------END PGP SIGNATURE-----
-
---=-af8UkB2autnwajxUCfHQ--
-
+-- 
+ Karel Zak  <kzak@redhat.com>
+ 
+ Red Hat Czech s.r.o.
+ Purkynova 99/71, 612 45 Brno, Czech Republic
+ Reg.id: CZ27690016
