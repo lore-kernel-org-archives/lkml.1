@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423362AbXDYR62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161794AbXDYSC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423362AbXDYR62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423356AbXDYR62
+	id S1161794AbXDYSC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161798AbXDYSC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:58:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:28674 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423354AbXDYR6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:58:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,451,1170662400"; 
-   d="scan'208";a="233896144"
-Date: Wed, 25 Apr 2007 10:55:53 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Olivier Galibert <galibert@pobox.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com
-Subject: Re: [patch 1/7] libata: check for AN support
-Message-Id: <20070425105553.eee16f00.kristen.c.accardi@intel.com>
-In-Reply-To: <20070425004946.GA63747@dspnet.fr.eu.org>
-References: <20070424074856.005152262@intel.com>
-	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
-	<20070424090713.65657495@the-village.bc.nu>
-	<20070424102304.GA58841@dspnet.fr.eu.org>
-	<20070424084904.61932994.kristen.c.accardi@intel.com>
-	<20070424180552.GA17319@dspnet.fr.eu.org>
-	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>
-	<20070425004946.GA63747@dspnet.fr.eu.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 14:02:29 -0400
+Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:43203 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161794AbXDYSC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 14:02:28 -0400
+X-IronPort-AV: i="4.14,451,1170662400"; 
+   d="scan'208"; a="770736886:sNHT45075016"
+To: ebiederm@xmission.com (Eric W. Biederman), linux-kernel@vger.kernel.org
+Cc: mst@mellanox.co.il, jackm@mellanox.co.il, ak@suse.de
+Subject: pgprot_writecombine() and PATs on x86
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 25 Apr 2007 11:02:26 -0700
+Message-ID: <ada1wi8xrgt.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 25 Apr 2007 18:02:26.0657 (UTC) FILETIME=[E200E510:01C78763]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 02:49:46 +0200
-Olivier Galibert <galibert@pobox.com> wrote:
+Hi Eric,
 
-> On Tue, Apr 24, 2007 at 01:53:27PM -0700, Kristen Carlson Accardi wrote:
-> > Check to see if an ATAPI device supports Asynchronous Notification.
-> > If so, enable it.
-> > 
-> > changes from last version: 
-> > * fix typo in ata_id_has_AN and make word 76 test more clear
-> > * If we fail to set the AN feature, just print a warning and continue
-> >  
-> > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > 
-> > @@ -299,6 +305,8 @@ struct ata_taskfile {
-> >  #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
-> >  #define ata_id_removeable(id)	((id)[0] & (1 << 7))
-> >  #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
-> > +#define ata_id_has_AN(id)	\
-> > +	(((id[76] != 0x0000) && (id[76] != 0xffff)) && ((id)[78] & (1 << 5)))
-> 
-> (id)[76] I guess ?  Sorry for being a pain :/
-> 
->   OG.
-> 
+Where do your patches to add an implementation of
+pgprot_writecombine() using PATs on x86 stand?  The mlx4 driver I'm
+planning on merging for 2.6.22 would really like writecombining, and
+I'm interested in doing the work to finally get the PAT stuff merged
+(probably for 2.6.23 I guess).
 
-Ok - I'll fix that.  Thank you for being a pain :), I really appreciate
-the time you are taking to review my patches.
+Just to give a little background on my motivation: the mlx4 hardware
+allows a page in its PCI space to be mapped, where the driver can write
+descriptors and payloads directly, instead of ringing a doorbell and
+having the HW fetch the descriptor from system memory, for better latency.
+
+The driver allows this page to be mapped to userspace and used
+directly from latency sensitive stuff like MPI applications.  I added
+a hacked up version of the PAT stuff to map the page into userspace
+with pgprot_writecombine(), and that lowered the measured MPI latency
+by 450 nsecs, which doesn't seem like much until I tell you that the
+latency when from ~1.85 usec to ~1.4 usec.  So copying the descriptor
+is a huge part of the total latency and users are definitely going to
+want that 25% improvement.
+
+Anyway as I said I want to get the PAT stuff upstream, so I'm posting
+this to find out the latest state and avoid duplicating work.
+
+Thanks,
+  Roland
