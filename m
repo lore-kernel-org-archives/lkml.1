@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992713AbXDYL2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992715AbXDYLax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992713AbXDYL2v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992715AbXDYL2v
+	id S2992715AbXDYLax (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992704AbXDYLax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:28:51 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:46506 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992704AbXDYL2u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:28:50 -0400
-Date: Wed, 25 Apr 2007 13:28:05 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Helge Hafting <helge.hafting@aitel.hist.no>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-In-Reply-To: <462F2558.5010909@aitel.hist.no>
-Message-ID: <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
- <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org>
- <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
- <20070412202519.GB14705@aitel.hist.no> <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
- <462F2558.5010909@aitel.hist.no>
+	Wed, 25 Apr 2007 07:30:53 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33720 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992715AbXDYLaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 07:30:52 -0400
+Date: Wed, 25 Apr 2007 13:31:02 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
+       linux-pm@lists.linux-foundation.org, Dave Jones <davej@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
+       linux-pci@atrey.karlin.mff.cuni.cz,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
+Message-ID: <20070425113102.GU3468@stusta.de>
+References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070423214909.GD3468@stusta.de> <20070425040605.6d6b4a82.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070425040605.6d6b4a82.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007, Helge Hafting wrote:
+On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
+> On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
+>...
+> > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
+> >              workaround: CONFIG_FB_BACKLIGHT=n
+> > References : http://lkml.org/lkml/2007/3/13/3
+> > Submitter  : Dave Jones <davej@redhat.com>
+> > Caused-By  : PCI merge
+> >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
+> > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
+> >              Rafael J. Wysocki <rjw@sisk.pl>
+> >              Antonino A. Daplas <adaplas@gmail.com>
+> > Status     : unknown
+> 
+> Is this related to the problems Jeremy has been looking at?
+>...
 
-> > Anyway, based on information you have provided in your later messages, 
-> > it seems that it is probably not necessairly related neither to USB 
-> > nor HID, as you are getting hangs at different stages of boot, 
-> > depending on your local configuration/kernel version used. Is vanilla 
-> > 2.6.21-rc6 ok? If so, would you have time to bisect the offending 
-> > patch?
-> I don't know about 2.6.21-rc6, but 2.6.21-rc7 (from fresh sources) is 
-> good.  It boots up without hanging, and my USB devices works too. Should 
-> I test rc7-mm1 then?
+Dave and Jeremy hran into similar looking but most likely different 
+problems.
 
-That would also be useful.
+For Jeremy -rc7 is working fine, but for Dave it doesn't.
 
-But really identifying offending patch using bisection would help most. 
-And it should be pretty easy and not too much time consuming for you, as 
-the bug triggers immediately upon boot in your case.
-
-In case you are not convenient with "bisecting by hand" Andrew's quilt 
-patchset, don't forget that it is also possible to obtain -mm tree through 
-git, which provides very convenient means for bisecting. This is what I 
-usually do.
+cu
+Adrian
 
 -- 
-Jiri Kosina
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
