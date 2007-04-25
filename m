@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992553AbXDYKCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992557AbXDYKE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992553AbXDYKCk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992561AbXDYKCj
+	id S2992557AbXDYKE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992561AbXDYKE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:02:39 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:47307 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S2992557AbXDYKCi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:02:38 -0400
-Message-ID: <462F2558.5010909@aitel.hist.no>
-Date: Wed, 25 Apr 2007 11:54:32 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Jiri Kosina <jikos@jikos.cz>
-CC: Helge Hafting <helgehaf@aitel.hist.no>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang
-References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz> <20070412202519.GB14705@aitel.hist.no> <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 06:04:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33943 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992557AbXDYKE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 06:04:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070424215034.GA5985@tv-sign.ru> 
+References: <20070424215034.GA5985@tv-sign.ru> 
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Jarek Poplawski <jarkao2@o2.pl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync() 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 25 Apr 2007 11:04:03 +0100
+Message-ID: <23525.1177495443@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-[...]
-> So I guess you are operating on some broken version of 2.6.21-rc6-mm1 
-> codebase if you are getting rejects on this trivial patch.
->   
-Didn't think of that - the codebase might be wrong.
->
-> Anyway, based on information you have provided in your later messages, it 
-> seems that it is probably not necessairly related neither to USB nor HID, 
-> as you are getting hangs at different stages of boot, depending on your 
-> local configuration/kernel version used.
->
-> Is vanilla 2.6.21-rc6 ok? If so, would you have time to bisect the 
-> offending patch?
->   
-I don't know about 2.6.21-rc6, but 2.6.21-rc7
- (from fresh sources) is good.  It boots up without hanging,
-and my USB devices works too.
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-Should I test rc7-mm1 then?
+> del_timer_sync() buys nothing for cancel_delayed_work(), but it is less
+> efficient since it locks the timer unconditionally, and may wait for the
+> completion of the delayed_work_timer_fn().
 
-Helge Hafting
+Okay, this patch seems to work for me, though I'm not using any of the other
+related patches that are in the -mm tree (I modified this patch to compile
+directly on top of Linus's vanilla tree).
 
+Acked-By: David Howells <dhowells@redhat.com>
