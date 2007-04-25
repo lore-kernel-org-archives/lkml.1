@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031128AbXDYPwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031145AbXDYPw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031128AbXDYPwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161765AbXDYPw2
+	id S1031145AbXDYPw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161764AbXDYPwZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:52:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48175 "EHLO mx1.redhat.com"
+	Wed, 25 Apr 2007 11:52:25 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:27352 "EHLO mx33.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031110AbXDYPuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:50:35 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 10/16] AFS: Handle multiple mounts of an AFS superblock
-	correctly [try #4]
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 25 Apr 2007 16:49:48 +0100
-Message-ID: <20070425154948.26581.96033.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
-References: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	id S1031108AbXDYPvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 11:51:14 -0400
+Date: Wed, 25 Apr 2007 19:48:20 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
+Subject: [PATCH 0/7] Battery class, external power framework, ds2760 battery
+Message-ID: <20070425154820.GA27300@zarina>
+Reply-To: cbou@mail.ru
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Handle multiple mounts of an AFS superblock correctly, checking to see whether
-the superblock is already initialised after calling sget() rather than just
-unconditionally stamping all over it.
+Hi all,
 
-Also delete the "silent" parameter to afs_fill_super() as it's not used and
-can, in any case, be obtained from sb->s_flags.
+I believe most battery issues elaborated and settled, and battery
+class has grown up for the -mm merge. Also, I hope that current
+battery stuff will make everyone happy at some grade.
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+This patchset accumulated ideas and suggestions from reviews by
+David Brownell, Evgeniy Polyakov, Greg KH, Henrique de Moraes Holschuh,
+Ian Molton, Matt Reimer, Matthew Garrett, Ondrej Zajicek,
+Paul Sokolovsky, Pavel Machek, Randy Dunlap, Russell King and
+Shem Multinymous.
 
- fs/afs/super.c |   26 ++++++++++++++++----------
- 1 files changed, 16 insertions(+), 10 deletions(-)
+Thanks for the time you spent reviewing these patches!
 
-diff --git a/fs/afs/super.c b/fs/afs/super.c
-index efc4fe6..77e6875 100644
---- a/fs/afs/super.c
-+++ b/fs/afs/super.c
-@@ -212,7 +212,7 @@ static int afs_test_super(struct super_block *sb, void *data)
- /*
-  * fill in the superblock
-  */
--static int afs_fill_super(struct super_block *sb, void *data, int silent)
-+static int afs_fill_super(struct super_block *sb, void *data)
- {
- 	struct afs_mount_params *params = data;
- 	struct afs_super_info *as = NULL;
-@@ -319,17 +319,23 @@ static int afs_get_sb(struct file_system_type *fs_type,
- 		goto error;
- 	}
- 
--	sb->s_flags = flags;
--
--	ret = afs_fill_super(sb, &params, flags & MS_SILENT ? 1 : 0);
--	if (ret < 0) {
--		up_write(&sb->s_umount);
--		deactivate_super(sb);
--		goto error;
-+	if (!sb->s_root) {
-+		/* initial superblock/root creation */
-+		_debug("create");
-+		sb->s_flags = flags;
-+		ret = afs_fill_super(sb, &params);
-+		if (ret < 0) {
-+			up_write(&sb->s_umount);
-+			deactivate_super(sb);
-+			goto error;
-+		}
-+		sb->s_flags |= MS_ACTIVE;
-+	} else {
-+		_debug("reuse");
-+		ASSERTCMP(sb->s_flags, &, MS_ACTIVE);
- 	}
--	sb->s_flags |= MS_ACTIVE;
--	simple_set_mnt(mnt, sb);
- 
-+	simple_set_mnt(mnt, sb);
- 	afs_put_volume(params.volume);
- 	afs_put_cell(params.default_cell);
- 	_leave(" = 0 [%p]", sb);
+On Tue, Apr 24, 2007 at 10:41:08PM +0200, Pavel Machek wrote:
+> > > > Signed-off-by: Anton Vorontsov <cbou@mail.ru>
+> > >
+> > > Yes please. Generic battery support is badly needed.
+> >
+> > I'm glad you like it, thanks for the review!
+> >
+> > Also I've done some code split. It removes all #ifdefs from battery.c,
+> > and also separates core from sysfs and leds.
+> >
+> > If there will no objections, I'll send this version when patch window
+> > will opened.
+>
+> Actually, you probably want to add some changelogs, and send it to
+> akpm _now_. He'll merge it to -mm tree, and hopefully send it upstream
+> in the next window. Merging directly to linus is for bigger projects
+> with git trees etc.
 
+Andrew, would you please merge these patches into -mm? They're against
+today's Linus git tree.
+
+I hope it isn't too late for the merge. If it is, please tell me when I
+should come back.
+
+References:
+http://lkml.org/lkml/2007/4/11/392
+http://lkml.org/lkml/2007/4/11/393
+http://lkml.org/lkml/2007/4/11/397
+http://lkml.org/lkml/2007/4/11/398
+http://lkml.org/lkml/2007/4/20/154
+
+Thanks,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
