@@ -1,88 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423301AbXDYIrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423305AbXDYIsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423301AbXDYIrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423310AbXDYIrY
+	id S1423305AbXDYIsv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423306AbXDYIsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:47:24 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31625 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423301AbXDYIrX (ORCPT
+	Wed, 25 Apr 2007 04:48:51 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:46872 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423305AbXDYIsu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:47:23 -0400
-Date: Wed, 25 Apr 2007 10:46:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070425084607.GM9715@kernel.dk>
-References: <46220339.9080205@wasp.net.au> <4623FB29.1000603@redhat.com> <17956.22235.574867.179016@notabene.brown> <20070418123757.GC3796@kernel.dk> <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17967.4734.783140.512857@notabene.brown>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 25 Apr 2007 04:48:50 -0400
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <20070425072904.GB6866@ucw.cz>
+References: <20070418211632.GA7610@elte.hu>
+	 <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu>
+	 <1176947576.5906.21.camel@nigel.suspend2.net>
+	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	 <20070424212408.GD16457@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+	 <20070425064137.GA25247@elte.hu>  <20070425072904.GB6866@ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-jRXaRF8mZBLCkKDZkJ7E"
+Date: Wed, 25 Apr 2007 18:48:48 +1000
+Message-Id: <1177490928.3857.27.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Neil Brown wrote:
-> On Tuesday April 24, brad@wasp.net.au wrote:
-> > [105449.653682] cfq: rbroot not empty, but ->next_rq == NULL! Fixing up, report the issue to 
-> > lkml@vger.kernel.org
-> > [105449.683646] cfq: busy=1,drv=0,timer=0
-> > [105449.694871] cfq rr_list:
-> > [105449.702715]   3108: sort=0,next=00000000,q=0/1,a=1/0,d=0/0,f=69
-> > [105449.720693] cfq busy_list:
-> > [105449.729054] cfq idle_list:
-> > [105449.737418] cfq cur_rr:
-> 
-> Ok, I have a theory.
-> 
-> An ELEVATOR_FRONT_MERGE occurs which changes req->sector and calls
-> ->elevator_merged_fn which is cfq_merged_request.
-> 
-> At this time there is already a request in cfq with the same sector
-> number, and that request is the only other request on the queue.
-> 
-> cfq_merged_request calls cfq_reposition_rq_rb which removes the
-> req from ->sortlist and then calls cfq_add_rq_rb to add it back (at
-> the new location because ->sector has changed).
-> 
-> cfq_add_rq_rb finds there is already a request with the same sector
-> number and so elv_rb_add returns an __alias which is passed to
-> cfq_dispatch_insert. 
-> This calls cfq_remove_request and as that is the only request present,
-> ->next_rq gets set to NULL.
-> The old request with the new sector number is then added to the
-> ->sortlist, but ->next_rq is never set - it remains NULL.
-> 
-> How likely it would be to get two requests with the same sector number
-> I don't know.  I wouldn't expect it to ever happen - I have seen it
-> before, but it was due to a bug in ext3.  Maybe XFS does it
-> intentionally some times?
-> 
-> You could test this theory by putting a
->    WARN_ON(cfqq->next_rq == NULL);
-> at the end of cfq_reposition_rq_rb, just after the cfq_add_rq_rb call.
-> 
-> I will leave the development of a suitable fix up to Jens if he agrees
-> that this is possible.
 
-That's pretty close to where I think the problem is (the front merging
-and cfq_reposition_rq_rb()). The issue with that is that you'd only get
-aliases for O_DIRECT and/or raw IO, and that doesn't seem to be the case
-here. Given that front merges are equally not very likely, I'd be
-surprised is something like that has ever happened.
+--=-jRXaRF8mZBLCkKDZkJ7E
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-BUT... That may explain while we are only seeing it on md. Would md
-ever be issuing such requests that trigger this condition?
+Hi.
 
-I'll try and concoct a test case.
+On Wed, 2007-04-25 at 07:29 +0000, Pavel Machek wrote:
+> Hi!
+>=20
+> > > I absolutely detest all suspend-to-disk crap. Quite frankly, I hate=20
+> > > the whole thing. I think they've _all_ caused problems for the "true"=
+=20
+> > > suspend (suspend-to-ram), and the last thing I want to see is three o=
+r=20
+> > > four different suspend-to-disk implementations.  So unlike Ingo, I=20
+> > > don't think "let's just integrate them all side-by-side and maintain=20
+> > > them and look who wins" is really a good idea.
+> > >
+> > > How many different magic ioctl's does the thing introduce? Is it=20
+> > > really just *two* entry-points (and how simple are they,=20
+> > > interface-wise), and nothing else?
+> >=20
+> > userspace-driven-suspend is already in the kernel, today. So it's not=20
+> > really "two versions side by side doing the same thing", but more of:
+> >=20
+> >            A B C + D E F G H
+> >=20
+> > where "ABC" is used by the uswsusp code today, and "ABCDEFGH" is used b=
+y=20
+> > suspend2. So any "suspend2 merge" would largely be about adding "DEFGH"=
+.=20
+>=20
+> Actually, we have 'D H' in kernel, today. It is called swsusp...
+> (Encryption, swapFile support and Graphical progress are missing from
+> today's kernel.)
 
--- 
-Jens Axboe
+Along with a lot of other things (see my "Reasons to merge Suspend2"
+email from earlier in the day).
+
+> > My original mail was about the following thing: i tried the suspend2=20
+> > patch (which just makes "echo disk > /sys/power/state" work as expected=
+,=20
+> > as long as you give the booting up kernel image an idea about where the=
+=20
+>=20
+> ..and it means that 'echo disk > ...' should work w/o suspend2 patch,
+> too. (Just try it). You'll miss compression part, but that provides
+> only small speedup.
+
+Please don't spread misinformation to support your case. LZF compression
+(which is what all Suspend2 users use AFAIK) generally doubles the speed
+of your cycle.
+
+Nigel
+
+--=-jRXaRF8mZBLCkKDZkJ7E
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGLxXwN0y+n1M3mo0RApjAAKCddO2xyHvaLsZFvDevimuucjKPnACfchvf
+LbIgKQgPKny886GffooCap0=
+=R5pH
+-----END PGP SIGNATURE-----
+
+--=-jRXaRF8mZBLCkKDZkJ7E--
 
