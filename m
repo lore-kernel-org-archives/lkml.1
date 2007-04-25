@@ -1,122 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423339AbXDYRaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161781AbXDYRel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423339AbXDYRaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXDYRaW
+	id S1161781AbXDYRel (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:34:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXDYRel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:30:22 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:59700 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422721AbXDYRaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:30:20 -0400
-Date: Wed, 25 Apr 2007 12:30:09 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       serue@us.ibm.com, viro@ftp.linux.org.uk, linuxram@us.ibm.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch] unprivileged mounts update
-Message-ID: <20070425173009.GA30587@sergelap.austin.ibm.com>
-References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu> <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <m1r6q8s735.fsf@ebiederm.dsl.xmission.com>
+	Wed, 25 Apr 2007 13:34:41 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43423 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161781AbXDYRel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:34:41 -0400
+Date: Wed, 25 Apr 2007 19:34:05 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070425173405.GE17074@elf.ucw.cz>
+References: <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1r6q8s735.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070425151825.GW3468@stusta.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
-> Miklos Szeredi <miklos@szeredi.hu> writes:
-> 
-> >> From: Miklos Szeredi <mszeredi@suse.cz>
-> >> 
-> >> - refine adding "nosuid" and "nodev" flags for unprivileged mounts:
-> >>     o add "nosuid", only if mounter doesn't have CAP_SETUID capability
-> >>     o add "nodev", only if mounter doesn't have CAP_MKNOD capability
-> >> 
-> >> - allow unprivileged forced unmount, but only for FS_SAFE filesystems
-> >> 
-> >> - allow mounting over special files, but not symlinks
-> >> 
-> >> - for mounting and umounting check "fsuid" instead of "ruid"
-> >
-> > Andrew, please skip this patch, for now.
-> >
-> > Serge found a problem with the fsuid approach: setfsuid(nonzero) will
-> > remove filesystem related capabilities.  So even if root is trying to
-> > set the "user=UID" flag on a mount, access to the target (and in case
-> > of bind, the source) is checked with user privileges.
-> 
-> I do have a major problem with this patchset though.  We still have
-> the unnecessary concept of user mounts.  That seems only needed now
-> for the /proc/mounts output.
-> 
-> All mounts should have an owner.  Prior to the unprivileged mount work
-> root owns all mounts.
-> 
-> > Root should be able to set this flag on any mountpoint, _regardless_
-> > of permissions.
-> 
-> We don't need a flag, and thinking of it in the context of a flag
-> is clearly the wrong thing.  Yes if we have the proper capability we
-> should be able to explicitly specify  the owner of the mount
-> 
-> > It is possible to restore filesystem capabilities after setting fsuid,
-> > but the interfaces are rather horrible at all levels.  mount(8) can
-> > probably live with these, but I'm not sure that using "fsuid" over
-> > "ruid" has enough advantages to force this.
-> >
-> > Why did we want to use fsuid, exactly?
-> 
-> - Because ruid is completely the wrong thing we want mounts owned
->   by whomever's permissions we are using to perform the mount.
-> 
-> 
-> There are two basic cases.
-> - Mounting a filesystem as who we are.
->   This can use fsuid with no problems.  If we are suid to root to perform
->   the mount by default we want root to own the mount so that is correct.
-> 
-> - Mounting a filesystem as another user.
->   This is the tricky case rare case needed in setup.  If we aren't
->   jumping through to many hoops to make it work when using fsuid it
->   sounds like the right thing here as well.
-> 
->   How hard is it to set fsuid to a different value?  I.e. What hoops
->   does root have to jump through.
-> 
-> Further when using fsuid we don't need an extra flag to mount.
-> 
-> Plus things are a little more consistent with the rest of the
-> linux/unix interface.
-> 
-> Now I can see doing something like using a special flag and not using
-> fsuid for the one case where we explicitly want to mount a filesystem
-> as someone else.  However if only user space has to special case this
-> (as it does anyway) and we don't have to special case it in the
-> kernel.  So much the better. 
+Hi!
 
-Yes, what you describe (or my reading of it :) would simplify the
-implementation, and solve the capability problem.
+> > Even I am running in-kernel swsusp, but my managers were pretty clear
+> > they want graphical progress bar hiding all the 'ugly' swsusp
+> > messages... and in the end the same uswsusp enables compression, too.
+> > 
+> > > I absolutely detest all suspend-to-disk crap. Quite frankly, I hate the 
+> > > whole thing. I think they've _all_ caused problems for the "true" suspend 
+> > > (suspend-to-ram), and the last thing I want to see is three or four 
+> > 
+> > Well, it is a bit more complex than that.
+> > 
+> > suspend-to-disk is a workaround for
+> > 
+> > 	'suspend-to-ram eats too much power' (plus some details like
+> > 	being able to replace battery).
+> >...
+> 
+> Why does everyone think suspend-to-disk was a laptop-only thing?
+> 
+> My personal usage of suspend-to-disk is for turning the computer off in 
+> the evening and getting the complete FVWM with all programs running, 
+> open browser tabs,... back the next morning.
 
-So in general, when you mount something, the mount is owned by you.
+Ok ok ok, suspend-to-disk has some other uses, too.
 
-To mount something as you, either the mountpoint's mount is owned by
-you, or you have some capability, maybe CAP_SYS_ADMIN.
+But ... you are really using suspend-to-disk as a workaround for "my
+desktop takes too much power when idle". Imagine pressing "lock
+screensaver" combination, and your machine going to low power mode
+(3W?), immediately. (Quiet, too; you can't generate much noise for
+3W). In the morning, you'd just press any key, machine would power up,
+immediately... ok, you'd have to ifconfig eth0 down, so that spurious
+packets on the local net would wake your machine, with all its fans
+etc.
+								Pavel
 
-So, before any non-root user can do a mount, root must mount an ancestor
-mount in the name of that user.  This would be a new mount flag, so
-
-	mount -o user=some_user /share/$USER/home/$USER /share/$USER/home/$USER
-
-as root.  Mount does not change the fsuid, it simply passes the user=
-flag into do_loopback(), which sets the mnt->user flag.  And now, even
-though i have /share as chmod 000, root didn't have to setfsuid so we
-have the necessary caps.
-
-(clearly, -o user requires CAP_SYS_ADMIN or something)
-
--serge
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
