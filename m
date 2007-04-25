@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXDYKhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992584AbXDYKm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992456AbXDYKhs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 06:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXDYKhs
+	id S2992584AbXDYKm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 06:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992530AbXDYKm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 06:37:48 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:18765 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992456AbXDYKhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 06:37:47 -0400
-Date: Wed, 25 Apr 2007 12:36:25 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Neil Brown <neilb@suse.de>
-Cc: Brad Campbell <brad@wasp.net.au>, Chuck Ebbert <cebbert@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
-Message-ID: <20070425103625.GU9715@kernel.dk>
-References: <46261ACE.1050407@wasp.net.au> <20070418132157.GC3720@kernel.dk> <462B10C3.1030906@wasp.net.au> <20070423073543.GE5311@kernel.dk> <462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown> <20070425084607.GM9715@kernel.dk> <17967.8536.788076.851546@notabene.brown> <20070425094712.GP9715@kernel.dk> <17967.11414.227668.186113@notabene.brown>
-MIME-Version: 1.0
+	Wed, 25 Apr 2007 06:42:27 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46493 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992572AbXDYKm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 06:42:26 -0400
+Date: Wed, 25 Apr 2007 14:41:45 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, ebiederm@xmission.com,
+       containers@lists.osdl.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Getting the new RxRPC patches upstream
+Message-ID: <20070425104145.GA83@tv-sign.ru>
+References: <2969.1176992303@redhat.com> <1101.1177056127@redhat.com> <4713.1177065706@redhat.com> <20070420113805.c4877dc8.akpm@linux-foundation.org> <1355.1177317176@redhat.com> <9767.1177421824@redhat.com> <15160.1177429867@redhat.com> <16575.1177433907@redhat.com> <17966.1177438970@redhat.com> <5461.1177488612@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17967.11414.227668.186113@notabene.brown>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <5461.1177488612@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Neil Brown wrote:
-> On Wednesday April 25, jens.axboe@oracle.com wrote:
-> > 
-> > Here's a fix for it, confirmed.
-> > 
+On 04/25, David Howells wrote:
+>
+> Oleg Nesterov <oleg@tv-sign.ru> wrote:
 > 
-> Patch looks good to me.
+> > Yes sure. Note that this is documented:
+> > 
+> > 	/*
+> > 	 * Kill off a pending schedule_delayed_work().  Note that the work callback
+> > 	 * function may still be running on return from cancel_delayed_work().  Run
+> > 	 * flush_workqueue() or cancel_work_sync() to wait on it.
+> > 	 */
+> 
+> No, it isn't documented.  It says that the *work* callback may be running, but
+> does not mention the timer callback.  However, just looking at the
+> cancellation function source made it clear that this would wait for the timer
+> handler to return first.
 
-Good! And thanks for taking the time to look at this bug btw, it's had
-me puzzled a bit this week. I should not have ruled out the aliases I
-guess, they must be coming elsewhere than from O_DIRECT.
+Ah yes, it says nothing about what the returned value means...
 
-> Hopefully Brad can still wait for the WARN_ON to fire - it might give
-> useful clues to why this is happening.  It might be interesting.
+> However, is it worth just making cancel_delayed_work() a void function and not
+> returning anything?  I'm not sure the return value is very useful.
 
-But he did and reported it about an hour ago, so all should be well.
+cancel_rearming_delayed_work() needs this, tty_io.c, probably somebody else.
 
--- 
-Jens Axboe
+Oleg.
 
