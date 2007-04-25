@@ -1,76 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992732AbXDYNER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030879AbXDYNFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992732AbXDYNER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992737AbXDYNER
+	id S1030879AbXDYNFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030881AbXDYNFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:04:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41833 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992731AbXDYNEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:04:16 -0400
-Date: Wed, 25 Apr 2007 09:01:02 -0400
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz,
-       linux-pm@lists.linux-foundation.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
-       linux-pci@atrey.karlin.mff.cuni.cz,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [3/3] 2.6.21-rc7: known regressions (v2)
-Message-ID: <20070425130102.GA10141@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@stusta.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	James Simmons <jsimmons@infradead.org>, gregkh@suse.de,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Jeremy Fitzhardinge <jeremy@goop.org>
-References: <Pine.LNX.4.64.0704151659570.5473@woody.linux-foundation.org> <20070423214909.GD3468@stusta.de> <20070425040605.6d6b4a82.akpm@linux-foundation.org> <20070425113102.GU3468@stusta.de>
-Mime-Version: 1.0
+	Wed, 25 Apr 2007 09:05:48 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:53141
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030879AbXDYNFr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:05:47 -0400
+Date: Wed, 25 Apr 2007 15:08:43 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in RocketPort driver v2
+Message-ID: <20070425130843.GK6798@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070425113102.GU3468@stusta.de>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 01:31:02PM +0200, Adrian Bunk wrote:
- > On Wed, Apr 25, 2007 at 04:06:05AM -0700, Andrew Morton wrote:
- > > On Mon, 23 Apr 2007 23:49:09 +0200 Adrian Bunk <bunk@stusta.de> wrote:
- > >...
- > > > Subject    : ThinkPad X60: resume no longer works  (PCI related?)
- > > >              workaround: CONFIG_FB_BACKLIGHT=n
- > > > References : http://lkml.org/lkml/2007/3/13/3
- > > > Submitter  : Dave Jones <davej@redhat.com>
- > > > Caused-By  : PCI merge
- > > >              commit 78149df6d565c36675463352d0bfe0000b02b7a7
- > > > Handled-By : Eric W. Biederman <ebiederm@xmission.com>
- > > >              Rafael J. Wysocki <rjw@sisk.pl>
- > > >              Antonino A. Daplas <adaplas@gmail.com>
- > > > Status     : unknown
- > > 
- > > Is this related to the problems Jeremy has been looking at?
- > >...
- > 
- > Dave and Jeremy hran into similar looking but most likely different 
- > problems.
- > 
- > For Jeremy -rc7 is working fine, but for Dave it doesn't.
+the RocketPort driver uses a semaphore as mutex. use the mutex API
+instead of the (binary) semaphore
 
-I think this was due to Jeremy not having CONFIG_FB_BACKLIGHT=y in his config.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-	Dave
+--
+
+diff --git a/drivers/char/rocket.c b/drivers/char/rocket.c
+index 76357c8..7d23790 100644
+--- a/drivers/char/rocket.c
++++ b/drivers/char/rocket.c
+@@ -702,7 +702,7 @@ static void init_r_port(int board, int aiop, int chan, struct pci_dev *pci_dev)
+ 		}
+ 	}
+ 	spin_lock_init(&info->slock);
+-	sema_init(&info->write_sem, 1);
++	mutex_init(&info->write_mtx);
+ 	rp_table[line] = info;
+ 	if (pci_dev)
+ 		tty_register_device(rocket_driver, line, &pci_dev->dev);
+@@ -1662,7 +1662,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+ 		return;
+ 
+ 	/*  Grab the port write semaphore, locking out other processes that try to write to this port */
+-	down(&info->write_sem);
++	mutex_lock(&info->write_mtx);
+ 
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_put_char %c...", ch);
+@@ -1684,7 +1684,7 @@ static void rp_put_char(struct tty_struct *tty, unsigned char ch)
+ 		info->xmit_fifo_room--;
+ 	}
+ 	spin_unlock_irqrestore(&info->slock, flags);
+-	up(&info->write_sem);
++	mutex_unlock(&info->write_mtx);
+ }
+ 
+ /*
+@@ -1706,7 +1706,8 @@ static int rp_write(struct tty_struct *tty,
+ 	if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+ 		return 0;
+ 
+-	down_interruptible(&info->write_sem);
++	if(mutex_lock_interruptible(&info->write_mtx))
++		return -EINTR;
+ 
+ #ifdef ROCKET_DEBUG_WRITE
+ 	printk(KERN_INFO "rp_write %d chars...", count);
+@@ -1777,7 +1778,7 @@ end:
+ 		wake_up_interruptible(&tty->poll_wait);
+ #endif
+ 	}
+-	up(&info->write_sem);
++	mutex_unlock(&info->write_mtx);
+ 	return retval;
+ }
+ 
+diff --git a/drivers/char/rocket_int.h b/drivers/char/rocket_int.h
+index 3a8bcc8..04bcf61 100644
+--- a/drivers/char/rocket_int.h
++++ b/drivers/char/rocket_int.h
+@@ -1171,7 +1171,7 @@ struct r_port {
+ 	struct wait_queue *close_wait;
+ #endif
+ 	spinlock_t slock;
+-	struct semaphore write_sem;
++	struct mutex write_mtx;
+ };
+ 
+ #define RPORT_MAGIC 0x525001
 
 -- 
-http://www.codemonkey.org.uk
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+
+   Usually when people are sad, they don't do anything. They just cry over
+     their condition. But when they get angry, they bring about a change
+                              (Malcolm X)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
