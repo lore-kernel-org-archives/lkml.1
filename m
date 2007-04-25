@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992987AbXDYTX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992944AbXDYTZI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992987AbXDYTX0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992985AbXDYTX0
+	id S2992944AbXDYTZI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:25:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992984AbXDYTZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:23:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40728 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992980AbXDYTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:23:25 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 2.6.21-rc5-git] make /proc/acpi/wakeup more useful
-Date: Wed, 25 Apr 2007 15:22:04 -0400
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linux ACPI list <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200704031741.42273.david-b@pacbell.net>
-In-Reply-To: <200704031741.42273.david-b@pacbell.net>
+	Wed, 25 Apr 2007 15:25:07 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34225 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992944AbXDYTZF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 15:25:05 -0400
+Date: Wed, 25 Apr 2007 21:25:12 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+Message-ID: <20070425192512.GZ3468@stusta.de>
+References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de> <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de> <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704251522.04303.lenb@kernel.org>
+In-Reply-To: <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Applied,
-and thanks for turning over the rocks in sysfs to see what wiggled out:-)
+On Wed, Apr 25, 2007 at 11:50:45AM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 25 Apr 2007, Adrian Bunk wrote:
+> > 
+> > 3W for the complete system? In CPU state S1? [1]
+> 
+> In STR, 3W is quite realistic. The CPU is off, all (or most - up to you) 
+> the devices are off, but the motherboard and memory is powered.
 
-thanks,
--Len
+As far as I understand it, the CPU isn't off in S1.
 
-On Tuesday 03 April 2007 20:41, David Brownell wrote:
-> This updates /proc/acpi/wakeup to be more informative, primarily by showing
-> the sysfs node associated with each wakeup-enabled device.  Example:
+> > And even 3W would still be a waste of energy.
 > 
-> 	Device	S-state	  Status   Sysfs node
-> 	PCI0	  S4	 disabled  no-bus:pci0000:00
-> 	PS2M	  S4	 disabled  pnp:00:05
-> 	PS2K	  S4	 disabled  pnp:00:06
-> 	UAR1	  S4	 disabled  pnp:00:08
-> 	USB1	  S3	 disabled  pci:0000:00:03.0
-> 	USB2	  S3	 disabled  pci:0000:00:03.1
-> 	USB3	  S3	 disabled  
-> 	USB4	  S3	 disabled  pci:0000:00:03.3
-> 	S139	  S4	 disabled  
-> 	LAN	  S4	 disabled  pci:0000:00:04.0
-> 	MDM	  S4	 disabled  
-> 	AUD	  S4	 disabled  pci:0000:00:02.7
-> 	SLPB	  S4	*enabled   
-> 
-> Eventually this file should be removed, but until then it's almost the only
-> way we have to tell how the relevant ACPI tables are broken (and cope).  In
-> that example, two devices don't actually exist (USB3, S139), one can't issue
-> wakeup events (PCI0), and two seem harmlessly (?) confused (MDM and AUD are
-> the same PCI device, but it's the _modem_ that does wake-on-ring).  
-> 
-> In particular, we need to be sure driver model nodes are properly hooked
-> up before we can get rid of this ACPI-only interface for wakeup events.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> --- g26.orig/drivers/acpi/sleep/proc.c	2007-04-03 16:27:22.000000000 -0700
-> +++ g26/drivers/acpi/sleep/proc.c	2007-04-03 16:43:26.000000000 -0700
-> @@ -360,21 +360,31 @@ acpi_system_wakeup_device_seq_show(struc
->  {
->  	struct list_head *node, *next;
->  
-> -	seq_printf(seq, "Device	Sleep state	Status\n");
-> +	seq_printf(seq, "Device\tS-state\t  Status   Sysfs node\n");
->  
->  	spin_lock(&acpi_device_lock);
->  	list_for_each_safe(node, next, &acpi_wakeup_device_list) {
->  		struct acpi_device *dev =
->  		    container_of(node, struct acpi_device, wakeup_list);
-> +		struct device *ldev;
->  
->  		if (!dev->wakeup.flags.valid)
->  			continue;
->  		spin_unlock(&acpi_device_lock);
-> -		seq_printf(seq, "%4s	%4d		%s%8s\n",
-> +
-> +		ldev = acpi_get_physical_device(dev->handle);
-> +		seq_printf(seq, "%s\t  S%d\t%c%-8s  ",
->  			   dev->pnp.bus_id,
->  			   (u32) dev->wakeup.sleep_state,
-> -			   dev->wakeup.flags.run_wake ? "*" : "",
-> +			   dev->wakeup.flags.run_wake ? '*' : ' ',
->  			   dev->wakeup.state.enabled ? "enabled" : "disabled");
-> +		if (ldev)
-> +			seq_printf(seq, "%s:%s",
-> +				ldev->bus ? ldev->bus->name : "no-bus",
-> +				ldev->bus_id);
-> +		seq_printf(seq, "\n");
-> +		put_device(ldev);
-> +
->  		spin_lock(&acpi_device_lock);
->  	}
->  	spin_unlock(&acpi_device_lock);
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> .. but if the alternative is a feature that just isn't worth it, and 
+> likely to not only have its own bugs, but cause bugs elsewhere? (And yes, 
+> I believe STD is both of those. There's a reason it's called "STD". Go 
+> to google and type "STD" and press "I'm feeling lucky". Google is God).
+
+Is there really no use case for STD?
+
+No worries if power is completely lost.
+Some people might boot Windows between suspending and resuming.
+...
+
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
