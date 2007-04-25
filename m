@@ -1,76 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXDYG1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423126AbXDYGdO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423229AbXDYG1t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 02:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423230AbXDYG1t
+	id S1423126AbXDYGdO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 02:33:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423177AbXDYGdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 02:27:49 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48901 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423229AbXDYG1s (ORCPT
+	Wed, 25 Apr 2007 02:33:14 -0400
+Received: from wr-out-0506.google.com ([64.233.184.237]:55298 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423126AbXDYGdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 02:27:48 -0400
-Date: Tue, 24 Apr 2007 23:27:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [08/17] Define functions for page cache handling
-In-Reply-To: <462E8C1E.6070204@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0704242324520.21125@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <20070424222306.289124159@sgi.com>
- <462E8C1E.6070204@cosmosbay.com>
+	Wed, 25 Apr 2007 02:33:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AkMP8TQPMOYBpTsiIyTRsj4bfLjMXFICXMVrsjUcRRXmH90RFWkYYNVSJOjxNymU38T/yIkdY/D6I3SiSPs9/G5kPhrVfrZulo17ijvdxBkGyYbuQNCqMXDz1iCwURuGgCF1qphx332bBXGNsMlF/JvLjqBzeIqAx53CzDlx6yI=
+Message-ID: <4ac8254d0704242333g17972a7q2106015af946ea5@mail.gmail.com>
+Date: Wed, 25 Apr 2007 08:33:10 +0200
+From: "Tuncer Ayaz" <tuncer.ayaz@gmail.com>
+To: "Cestonaro, Thilo (external)" 
+	<Thilo.Cestonaro.external@fujitsu-siemens.com>
+Subject: Re: NonExecutable Bit in 32Bit
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530256E@ABGEX01E.abg.fsc.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <F7F9B0BE3E9BD449B110D0B1CEF6CAEF052CFB78@ABGEX01E.abg.fsc.net>
+	 <Pine.LNX.4.64.0704240640470.25153@server.thyself>
+	 <4ac8254d0704240046s23b2d349m2e0f0caa7eb95a91@mail.gmail.com>
+	 <F7F9B0BE3E9BD449B110D0B1CEF6CAEF0530256E@ABGEX01E.abg.fsc.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007, Eric Dumazet wrote:
+On 4/25/07, Cestonaro, Thilo (external)
+<Thilo.Cestonaro.external@fujitsu-siemens.com> wrote:
+> Hey,
+>
+> > CONFIG_HIGHMEM64G=y
+> > CONFIG_HIGHMEM=y
+> > CONFIG_X86_PAE=y
+>
+> Ok in highmem it's active, whats about lowmem?
+> x86-64 is NX active for lowmem too AFAIK.
 
-> >  	struct radix_tree_root	page_tree;	/* radix tree of all pages */
-> >  	rwlock_t		tree_lock;	/* and rwlock protecting it */
-> > +#ifdef CONFIG_LARGE_BLOCKSIZE
-> > +	unsigned int		order;		/* Page order of the pages in
-> > here */
-> > +	unsigned int		shift;		/* Shift of index */
-> > +	loff_t			offset_mask;	/* Mask to get to offset bits
-> > */
-> > +#endif
-> >  	unsigned int		i_mmap_writable;/* count VM_SHARED mappings */
-> >  	struct prio_tree_root	i_mmap;		/* tree of private and shared
-> > mappings */
-> >  	struct list_head	i_mmap_nonlinear;/*list VM_NONLINEAR mappings
-> > */
-> 
-> Some comments about this :
-> 
-> 1) not optimal placement on 64bits arches (it creates one hole before
-> i_mmap_writeable)
+It's more of an issue of having PAE enabled.
+Without PAE you are not able to use the the NX bit.
+That's the way the CPU works, not Linux.
 
-loff_t is a 64 bit long. We could put shift behind offset_mask.
-
-> 2) sizeof(struct address_space) is an issue, given it is included in every
-> inode, even sockets or pipes.
-
-Right. I had an earlier implementation that just used an order field. See 
-V2 of this patchset. That did a lot of shifting instead of lookups.
- 
-> -> 2.1) Do we really need 32 bits for 'order' and 'shift'
-
-No. u8 would be sufficient. If you can stuff in other stuff in between 
-then I can switch it.
-
-> -> 2.2) Do we really need a 64bits offset_mask since it's a trivial arithmetic
-> from 'shift' (or 'order') ?
-
-It simplifies the generated asm code significantly.
-
-> BTW, I presume splice() is not yet supported ? If yes, each pipe could hold 16
-> 'big pages' so we probably can hit some DOS condition sooner...
-
-Not yet. I'd be glad if you could come up with a patch that converts it.
-
+Hope this helps.
