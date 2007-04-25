@@ -1,41 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992874AbXDYRTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992877AbXDYRUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992874AbXDYRTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992864AbXDYRTN
+	id S2992877AbXDYRUO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992876AbXDYRUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:19:13 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:25682 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992866AbXDYRTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:19:12 -0400
-Date: Wed, 25 Apr 2007 19:15:40 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan.Brunelle@pobox.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/15] cfq-iosched: speed up rbtree handling
-Message-ID: <20070425171539.GE4730@kernel.dk>
-References: <11774025432481-git-send-email-jens.axboe@oracle.com> <11774025432403-git-send-email-jens.axboe@oracle.com> <462F7AD9.8020300@hp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <462F7AD9.8020300@hp.com>
+	Wed, 25 Apr 2007 13:20:14 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:3804 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992864AbXDYRUN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:20:13 -0400
+Message-ID: <462F8DCA.2070404@xs4all.nl>
+Date: Wed, 25 Apr 2007 19:20:10 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Found this in my logs
+References: <462F7637.3080506@xs4all.nl>
+In-Reply-To: <462F7637.3080506@xs4all.nl>
+X-Enigmail-Version: 0.95.0
+OpenPGP: id=8300CC02
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25 2007, Alan D. Brunelle wrote:
-> Hi Jens -
-> 
-> The attached patch speeds it up even more - I'm finding a >9% reduction 
-> in %system with no loss in IO performance. This just sets the cached 
-> element when the first is looked for.
+Udo van den Heuvel wrote:
+> Apr 25 17:28:18 epia kernel: [ INFO: possible circular locking
+> dependency detected ]
+> Apr 25 17:28:18 epia kernel: 2.6.20.1 #8
+[cut]
 
-Interesting, good thinking. It should not change the IO pattern, as the
-end result should be the same. Thanks Alan, will commit!
-
-I'll give elevator.c the same treatment, should be even more beneficial.
-Stay tuned for a test patch.
-
--- 
-Jens Axboe
+I think I was copying a not so large file to my windoze box. The cp took
+relatively long and afterwards I noticed the logged things.
+Do I need to post this in bugzilla?
 
