@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423345AbXDYRv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423348AbXDYRxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423345AbXDYRv5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423348AbXDYRv5
+	id S1423348AbXDYRxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423351AbXDYRxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:51:57 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38891 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423350AbXDYRv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:51:56 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Zachary Amsden <zach@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: For debugging, make the initial page table setup less forgiving.
-References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
-	<20070425044813.f83dde4e.akpm@linux-foundation.org>
-	<462F73A0.40003@zytor.com>
-Date: Wed, 25 Apr 2007 11:50:53 -0600
-In-Reply-To: <462F73A0.40003@zytor.com> (H. Peter Anvin's message of "Wed, 25
-	Apr 2007 08:28:32 -0700")
-Message-ID: <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 25 Apr 2007 13:53:50 -0400
+Received: from smtp2.cc.ksu.edu ([129.130.7.16]:40972 "EHLO smtp2.cc.ksu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423350AbXDYRxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:53:49 -0400
+Message-ID: <462F9559.3050403@ksu.edu>
+Date: Wed, 25 Apr 2007 12:52:25 -0500
+From: Amit Gud <gud@ksu.edu>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: David Chinner <dgc@sgi.com>, Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       val_henson@linux.intel.com, riel@surriel.com, zab@zabbo.net,
+       arjan@infradead.org, suparna@in.ibm.com, brandon@ifup.org,
+       karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425113834.GT5967@schatzie.adilger.int>
+In-Reply-To: <20070425113834.GT5967@schatzie.adilger.int>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Andreas Dilger wrote:
+>> How do you recover if fsfuzzer takes out a cnode in the chain? The
+>> chunk is marked clean, but clearly corrupted and needs fixing and
+>> you don't know what it was pointing at.  Hence you have a pointer to
+>> a trashed cnode *somewhere* that you need to find and fix, and a
+>> bunch of orphaned cnodes that nobody points to *somewhere else* in
+>> the filesystem that you have to find. That's a full scan fsck case,
+>> isn't?
+> 
+> Presumably, the cnodes in the other chunks contain forward and back
+> references.  Those need to contain at minimum inode + generation + chunk
+> to avoid problem of pointing to a _different_ inode after such corruption
+> caused the old inode to be deleted and a new one allocated in its place.
+> 
+> If the cnode in each chunk is more than just a singly-linked list, the
+> file as a whole could survive multiple chunk corruptions, though there
+> would now be holes in the file.
+> 
+>> It seems that any sort of damage to the underlying storage (e.g.
+>> media error, I/O error or user brain explosion) results in the need
+>> to do a full fsck and hence chunkfs gives you no benefit in this
+>> case.
+> 
 
-> Andrew Morton wrote:
->
->> 
->> This patch causes oopses after a minute or so running LTP's
->> 
->> ./testcases/bin/growfiles -W gf16 -b -e 1 -i 0 -L 120 -u -g 4090 -T 100 -t
-> 408990 -l -C 10 -c 1000 -S 10 -f Lgf02_
->> 
->> on everyone's favoutite Vaio, configured with
->> http://userweb.kernel.org/~akpm/config-sony.txt
->> 
->
-> *BLINK*
->
-> This patch only affects the initial page tables, which should have been
-> thrown out *way* long ago at this point.
+Yes, what originated from discussions on #linuxfs is that redundancy is 
+required for cnodes, in order to avoid checking the entire file system 
+in search of a dangling cnode reference or for "parent" of a cnode.
 
-Yes.  I noticed this was happening a few days ago.
-I must not have mentioned it loudly enough.
+If corruption, due to any reason, occurs in any other part of the file 
+system, it would be localized for that chunk. Even if entire fsck is 
+needed, chances of which are rare, full fsck of chunked file system is 
+no worse than fsck of non-chunked file system. Passes 3, 4, and 5 of 
+fsck take only 10-15% of total fsck run time and almost no-I/O Pass 6 
+for chunkfs wouldn't add whole lot.
 
-> Yet they seem to have stuck around.  This is a very bad thing on many
-> levels, especially since we should have switched the kernel 1:1 area
-> over to PSE pages a long time ago.
 
-Yep.  We don't continue to use the early page table pages if you
-enable PAE, but otherwise we do.
+AG
+-- 
+May the source be with you.
+http://www.cis.ksu.edu/~gud
 
-Which also gives us potential permission issues with the initial page
-tables.
-
->> BUG: unable to handle kernel paging request at virtual address c084fa8c
->>  printing eip:
->> c0174c46
->> *pde = 0042a027
->> *pte = 00000000
->
-> Touching a non-PSE page which is zero, and quite consistent with being a
-> remnant from the original page tables.
->
-> Methinks this has smoked out a bug in the initial page table setup which
-> probably has been a performance roadblock for quite some time.
-
-Yes our initial page table setup on arch/i386 is full of issues.
-
-I'm halfway through putting together a patchset to address a
-bunch of these.
-
-I haven't yet resolved how I want to allocate the pages for the
-identity mapping of the page table yet.  I can't use the bootmem
-allocate as it exists because that assumes the page is mapped
-into the address space already.
-
-Eric
