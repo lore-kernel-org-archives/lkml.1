@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423302AbXDYI47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423333AbXDYI5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423302AbXDYI47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423324AbXDYI47
+	id S1423333AbXDYI5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423331AbXDYI5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:56:59 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:46985 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423302AbXDYI46 (ORCPT
+	Wed, 25 Apr 2007 04:57:21 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:29856 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423329AbXDYI5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:56:58 -0400
-Subject: Re: [PATCH] mm: PageLRU can be non-atomic bit operation
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Andi Kleen <ak@suse.de>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <200704241622.30773.ak@suse.de>
-References: <6.0.0.20.2.20070423193641.0457f700@172.19.0.2>
-	 <6.0.0.20.2.20070424100507.049670d0@172.19.0.2>
-	 <Pine.LNX.4.64.0704241410040.26223@blonde.wat.veritas.com>
-	 <200704241622.30773.ak@suse.de>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 17:56:56 +0900
-Message-Id: <1177491416.15618.7.camel@sebastian.intellilink.co.jp>
+	Wed, 25 Apr 2007 04:57:19 -0400
+Date: Wed, 25 Apr 2007 11:00:05 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+Message-ID: <20070425110005.304d3087@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <Pine.LNX.4.44L0.0704241501170.2647-100000@iolanthe.rowland.org>
+References: <20070422174051.GA21680@kroah.com>
+	<Pine.LNX.4.44L0.0704241501170.2647-100000@iolanthe.rowland.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.8.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-04-24 at 16:22 +0200, Andi Kleen wrote:
-> > Why would you need any kind of lock when just changing a single bit,
-> > if it didn't affect other bits of the same word?  Just as you don't
-> > need a lock when simply assigning a word, setting a bit to 0 or 1
-> > is simple in itself (it doesn't matter if it was 0 or 1 before).
-> > 
-> > > But, I think that concurrent bit operation on different bits
-> > > is just like OR operation , so lock prefix is not needed.
-> > 
-> > I firmly believe that it is; but I'm not a processor expert.
-> 
-> Think of the CPU cache like the page cache. The VFS cannot change
-> anything directly on disk - it always has to read a page (or block);
-> change it there even if it's only a single bit and back.
-> 
-> Now imagine multiple independent kernels to that disk doing this in parallel
-> without any locking. You will lose data on simple changes because
-> of data races.
-> 
-> The CPU is similar. The memory is the disk; the protocol talking to 
-> the memory only knows cache lines.  There are multiple CPUs talking
-> to that memory. The CPUs cannot change anything 
-> without reading  a full cache line first and then later writing it back. 
-> There is "just do OR operation" when talking to memory, just like
-> disks don't have such a operation; just read and write.
-> 
-> [there are some special cases with uncached mappings, but they are not
-> relevant here]
-> 
-> With lock the CPU ensures the read-modify-write cycle is atomic, 
-> without it doesn't.
->  
-> The CPU also guarantees you that multiple writes don't get lost
-> even when they hit the same cache line (otherwise you would need lock
-> for anything in the same cache line), but it doesn't guarantee that
-> for a word. The details for that vary by architecture; on x86 it is 
-> any memory access, on others it can be only guaranteed for long stores.
-> 
-> The exact rules for all this can be quite complicated (and also vary
-> by architecture), this is a simplification but should be enough as a rough 
-> guide.
+On Tue, 24 Apr 2007 15:38:12 -0400 (EDT),
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Intel 80386 Reference Programmer's Manual reads:
+> We ought to make it explicitly clear that _all_ subsystems should behave
+> this way.  Maybe it isn't necessary to go as far as having device_del()
+> call itself recursively; doing that would open up lots of possible races.  
+> But I think it would be a good idea to add a WARN_ON in device_del, right
+> after the call to bus_remove_device(), that would be triggered if the
+> device still had any children.
 
-" When accessing a bit in memory, the processor may access four bytes
-starting from the memory address given by:
+If we decide that this should be policy, WARN_ON may be the least
+invasive option.
 
-   Effective Address + (4 * (BitOffset DIV 32))
-for a 32-bit operand size, or two bytes starting from the memory address
-given by: 
-   Effective Address + (2 * (BitOffset DIV 16))
-for a 16-bit operand size. It may do this even when only a single byte
-needs to be accessed in order to get at the given bit. "
+Should it be a possible option to move children to a different parent,
+so that the requirement wouldn't be "unregister all children", but "no
+children remain after remove() returns"?
 
-This seems to imply that we need the lock prefix even when updating
-different bits within the same long (not just the same byte). Is this
-interpretation correct?
+> It would also be good to document (but where?) some lifetime rules for 
+> device drivers.
 
- - Fernando
+Documentation/driver-model/lifetime-rules.txt?
 
+> Something like this:
+> 
+> 	When a driver's remove() method returns, the driver must no
+> 	longer try to use the device it was just unbound from.  The
+> 	device may be physically gone, or a different driver may be
+> 	bound to it.  Most importantly, remove() should unregister
+> 	all child devices created by the driver.
+
+s/should/must/, if we agree on the policy above.
+
+The remove() method must also unset driver_data.
+
+> 	To accomplish all this safely, the driver should allocate a
+> 	private data structure containing at least a "gone" flag and 
+> 	a mutex or spinlock for synchronization.  Each time the driver
+> 	needs to use the device, it should first lock the mutex or 
+> 	spinlock and check the "gone" flag.
+
+How should a driver make the device -> private data transition if it
+may no longer have private data attached to the device?
+
+> 	Ideally remove() should release all of the driver's references
+> 	to the device, in accord with the "Immediate Detach" principle.
+> 	However it is acceptable for the driver to retain a reference,
+> 	provided it meets the following conditions:
+> 
+> 		The reference must be dropped in a timely manner,
+> 		such as when the release() methods for all child
+> 		devices have run.
+> 
+> 		The driver must also retain a module reference to
+> 		the owner of the device.  In practice this means the
+> 		driver must contain static code references to the
+> 		subsystem which created the device, since struct
+> 		device doesn't have an "owner" field.
+
+Uhm. This would imply that a driver may never create a device itself.
+However, the kobject->owner and module refcounting stuff should remove
+this restriction.
+
+> 		The driver must restrict itself to reading (not
+> 		writing!) the fields in the device structure.  The
+> 		only exception is that the driver may lock/unlock
+> 		dev->sem.
+
+And it may decrease the reference count, of course :)
+
+> How does that sound?
+
+Yes, we should have some documentation like that.
