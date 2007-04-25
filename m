@@ -1,71 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031032AbXDYUsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031131AbXDYUu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031032AbXDYUsN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031131AbXDYUsM
+	id S1031131AbXDYUu0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031133AbXDYUu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:48:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:36892 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031032AbXDYUsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:48:10 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
-Date: Wed, 25 Apr 2007 22:48:03 +0200
-User-Agent: KMail/1.9.6
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <462FB8E6.9070501@googlemail.com> <462FBD44.2040103@goop.org>
-In-Reply-To: <462FBD44.2040103@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Wed, 25 Apr 2007 16:50:26 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:34305 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031131AbXDYUuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:50:25 -0400
+Subject: Re: [ofa-general] [PATCH 6/6] [RFC]mlx4 build system stuff
+From: Steve Wise <swise@opengridcomputing.com>
+To: Roland Dreier <rolandd@cisco.com>
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20074201532.jhCN1hLvxaAengJm@cisco.com>
+References: <20074201532.jhCN1hLvxaAengJm@cisco.com>
+Content-Type: text/plain
+Date: Wed, 25 Apr 2007 15:50:19 -0500
+Message-Id: <1177534219.29222.0.camel@stevo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704252248.03243.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007 22:42:44 Jeremy Fitzhardinge wrote:
-> Michal Piotrowski wrote:
-> > Timing information is broken
-> >   
+On Fri, 2007-04-20 at 15:32 -0700, Roland Dreier wrote:
+> Hook up mlx4_core and mlx4_ib drivers to Kconfig and Makefiles.
 > 
-> This looks like Andi's sched_clock stuff hitting: it returns an
-> inherently per-cpu result, so using it for printk timestamps isn't very
-> useful.
-
-It should actually roughly work. There can be some drift, but there shouldn't
-be that much error. All CPUs should tick at roughly the same rate because
-it's scaled to nanoseconds
-
-If the drift is a big issue it would also be possible to resync every minute
-or so, but I haven't implemented that.
-
-There will be always some minor monotonicities because it won't try
-to stop the CPU from reordering instructions.
-
-I don't know why it is that off in your case.
-
- 
-> > [4294667.511000] BUG: at arch/i386/kernel/sched-clock.c:175 init_sched_clock()
-> > [4294667.511000]  [<c01052e0>] dump_trace+0x63/0x1eb
-> > [4294667.511000]  [<c0105482>] show_trace_log_lvl+0x1a/0x30
-> > [4294667.511000]  [<c01060c4>] show_trace+0x12/0x14
-> > [4294667.511000]  [<c0106161>] dump_stack+0x16/0x18
-> > [4294667.511000]  [<c04fd968>] init_sched_clock+0x6d/0xcc
-> > [4294667.512000]  [<c04f8505>] kernel_init+0x14e/0x2bf
-> > [4294667.512000]  [<c0104ec3>] kernel_thread_helper+0x7/0x10
-> > [4294667.512000]  =======================
+> Signed-off-by: Roland Dreier <rolandd@cisco.com>
 > 
-> This also seems to be the sched_clock change; the WARN_ON is asserting
-> that it got initialized early enough, but it isn't. 
+> ---
+> 
+>  infiniband/Kconfig          |    2 ++
+>  infiniband/Makefile         |    1 +
+>  infiniband/hw/mlx4/Kconfig  |    9 +++++++++
+>  infiniband/hw/mlx4/Makefile |    3 +++
+>  net/Kconfig                 |   14 ++++++++++++++
+>  net/Makefile                |    1 +
+>  net/mlx4/Makefile           |    4 ++++
+>  7 files changed, 34 insertions(+)
+> 
+> diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
+> index 82afba5..37deaae 100644
+> --- a/drivers/infiniband/Kconfig
+> +++ b/drivers/infiniband/Kconfig
+> @@ -45,6 +45,8 @@ source "drivers/infiniband/hw/ehca/Kconfig"
+>  source "drivers/infiniband/hw/amso1100/Kconfig"
+>  source "drivers/infiniband/hw/cxgb3/Kconfig"
+>  
+> +source "drivers/infiniband/hw/mlx4/Kconfig"
+> +
+>  source "drivers/infiniband/ulp/ipoib/Kconfig"
+>  
+>  source "drivers/infiniband/ulp/srp/Kconfig"
+> diff --git a/drivers/infiniband/Makefile b/drivers/infiniband/Makefile
+> index da2066c..75f325e 100644
+> --- a/drivers/infiniband/Makefile
+> +++ b/drivers/infiniband/Makefile
+> @@ -4,6 +4,7 @@ obj-$(CONFIG_INFINIBAND_IPATH)		+= hw/ipath/
+>  obj-$(CONFIG_INFINIBAND_EHCA)		+= hw/ehca/
+>  obj-$(CONFIG_INFINIBAND_AMSO1100)	+= hw/amso1100/
+>  obj-$(CONFIG_INFINIBAND_CXGB3)		+= hw/cxgb3/
+> +obj-$(CONFIG_MLX4_INFINIBAND)		+= hw/mlx4/
+>  obj-$(CONFIG_INFINIBAND_IPOIB)		+= ulp/ipoib/
+>  obj-$(CONFIG_INFINIBAND_SRP)		+= ulp/srp/
+>  obj-$(CONFIG_INFINIBAND_ISER)		+= ulp/iser/
+> diff --git a/drivers/infiniband/hw/mlx4/Kconfig b/drivers/infiniband/hw/mlx4/Kconfig
+> new file mode 100644
+> index 0000000..b8912cd
+> --- /dev/null
+> +++ b/drivers/infiniband/hw/mlx4/Kconfig
+> @@ -0,0 +1,9 @@
+> +config MLX4_INFINIBAND
+> +	tristate "Mellanox ConnectX HCA support"
+> +	depends on INFINIBAND
+> +	select MLX4_CORE
+> +	---help---
+> +	  This driver provides low-level InfiniBand support for
+> +	  Mellanox ConnectX PCI Express host channel adapters (HCAs).
+> +	  This is required to use InfiniBand protocols such as
+> +	  IP-over-IB or SRP with these devices.
+> diff --git a/drivers/infiniband/hw/mlx4/Makefile b/drivers/infiniband/hw/mlx4/Makefile
+> new file mode 100644
+> index 0000000..70f09c7
+> --- /dev/null
+> +++ b/drivers/infiniband/hw/mlx4/Makefile
+> @@ -0,0 +1,3 @@
+> +obj-$(CONFIG_MLX4_INFINIBAND)	+= mlx4_ib.o
+> +
+> +mlx4_ib-y :=	ah.o cq.o doorbell.o mad.o main.o mr.o qp.o srq.o
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index c3f9f59..842f020 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
+> @@ -2493,6 +2493,20 @@ config PASEMI_MAC
+>  	  This driver supports the on-chip 1/10Gbit Ethernet controller on
+>  	  PA Semi's PWRficient line of chips.
+>  
+> +config MLX4_CORE
+> +	tristate
+> +	depends on PCI
+> +	default n
+> +
 
-That's already fixed.
+No help menu for the core module?
 
--Andi
 
+> +config MLX4_DEBUG
+> +	bool "Verbose debugging output" if (MLX4_CORE && EMBEDDED)
+> +	default y
+> +	---help---
+> +	  This option causes debugging code to be compiled into the
+> +	  mlx4_core driver.  The output can be turned on via the
+> +	  debug_level module parameter (which can also be set after
+> +	  the driver is loaded through sysfs).
+> +
+>  endmenu
+>  
+>  source "drivers/net/tokenring/Kconfig"
+> diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+> index 33af833..1604e1a 100644
+> --- a/drivers/net/Makefile
+> +++ b/drivers/net/Makefile
+> @@ -197,6 +197,7 @@ obj-$(CONFIG_SMC911X) += smc911x.o
+>  obj-$(CONFIG_DM9000) += dm9000.o
+>  obj-$(CONFIG_FEC_8XX) += fec_8xx/
+>  obj-$(CONFIG_PASEMI_MAC) += pasemi_mac.o
+> +obj-$(CONFIG_MLX4_CORE) += mlx4/
+>  
+>  obj-$(CONFIG_MACB) += macb.o
+>  
+> diff --git a/drivers/net/mlx4/Makefile b/drivers/net/mlx4/Makefile
+> new file mode 100644
+> index 0000000..4f18889
+> --- /dev/null
+> +++ b/drivers/net/mlx4/Makefile
+> @@ -0,0 +1,4 @@
+> +obj-$(CONFIG_MLX4_CORE)		+= mlx4_core.o
+> +
+> +mlx4_core-y :=	alloc.o cmd.o cq.o eq.o fw.o icm.o intf.o main.o mcg.o mr.o \
+> +		pd.o profile.o qp.o reset.o srq.o
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> 
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
 
