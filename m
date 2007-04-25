@@ -1,95 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993139AbXDYXqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993133AbXDYXqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993139AbXDYXqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993140AbXDYXqM
+	id S2993133AbXDYXqO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993140AbXDYXqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 25 Apr 2007 19:46:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55851 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2993133AbXDYXqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Apr 2007 19:46:12 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53256 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993139AbXDYXqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:46:10 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Zachary Amsden <zach@vmware.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: For debugging, make the initial page table setup less forgiving.
-References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>
-	<20070425044813.f83dde4e.akpm@linux-foundation.org>
-	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>
-	<462F9B64.3020107@goop.org> <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>
-	<462FD179.6070802@goop.org> <m1ps5sozt6.fsf@ebiederm.dsl.xmission.com>
-	<462FDF6D.8050903@goop.org>
-Date: Wed, 25 Apr 2007 17:45:07 -0600
-In-Reply-To: <462FDF6D.8050903@goop.org> (Jeremy Fitzhardinge's message of
-	"Wed, 25 Apr 2007 16:08:29 -0700")
-Message-ID: <m13b2oow70.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Date: Thu, 26 Apr 2007 01:45:49 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070425234549.GM17387@elf.ucw.cz>
+References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <1177540027.5025.87.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org> <20070425231319.GK17387@elf.ucw.cz> <alpine.LFD.0.98.0704251621530.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704251621530.9964@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Hi!
 
-> Eric W. Biederman wrote:
->> No.  Please just remove the conditionals on the leaf pages.
->>   
->
-> So, to be specific, you mean make updating the pte_t entries (and pmd_t
-> entries which refer to hugepages) entries unconditional?
+> > Current design is:
+> 
+> Broken. Yes. I've tried to tell you.
 
-I mean make updating pte_t and pmd_t entries that refer to identity
-mapped physical pages unconditional.
+Ok.
 
->> We know exactly what we require them to be, there is minimal
->> cost and no downside to just setting the pte entries to
->> what we want them to be for the identity mapping.
->>
->> It doesn't make sense for paravirtualization or anything else to 
->> influence that.
->>
->> This may be redoing work that has been done before but it is
->> doing it all one common place.
->>   
->
-> The issue is not a matter of avoiding duplicate work, but making sure
-> all the pagetables are consistent from Xen's perspective.
->
-> Specifically, you may not ever, at any time, create a writable mapping
-> of a page which is currently part of an active pagetable.  This means
-> that when we're creating mappings of physical memory, the pages which
-> are part of the current pagetable must be mapped RO.  The easiest way I
-> found to guarantee that is to copy the Xen-provided pagetable as a
-> template, and only update pages which are missing.
+...
 
-Hmm.  I now see your problem.
+> It's worse than just confusing, it's *idiotic*.
+> 
+> It _can_ work in practice, but
+>  - we have pretty damn solid evidence that it doesn't work all that often 
+>    in practice
+>  - the fact that something *can* be done the stupid way is in no way an 
+>    argument that it *should* be done the stupid way.
+> 
+> I claim that the current STD is *stupid*. Yes, it can work. But that 
+> doesn't make it less stupid.
 
-> The other way I could do this is to have special-purpose init-time
-> version of xen_set_pte which checks to see if it's making a RO mapping
-> RW, and refuse to do it.  That would minimize the changes to mm/init.c,
-> but give init-time set_pte rather unexpected hidden semantics.
+Good. So you understand how it works.
 
-Yes.  However how do we handle attempting to create this kind
-of mapping when mmap /dev/mem?  or /dev/kmem?
+> What's your argument? Your argument seems to be that it's not stupid, 
+> because it can work. Can't you see that that simply isn't an
+> argument at 
 
-I'm pretty certain there are other paths through the kernel where
-we can get page table mapping.
+I tried keeping module_init/thaw/resume similar code, so that driver
+authors can debug suspend-to-disk, cross their fingers, and have
+suspend-to-ram work, too.
 
-Right now by leaving things read-only you are hiding from the kernel 
-what you are really trying to do.  That makes me distinctly
-uncomfortable.  In general when things get swept under the rug
-we can never handle the properly.  Although this issue may be small
-enough it doesn't matter.
-
-I suspect what we want to do is come up with a function to call
-to test to see if a page should be read-only and map such pages
-_PAGE_KERNEL_RO, or _PAGE_KERNEL_RO_EXEC if it's code.
-
-Speaking of things what are paravirt_alloc_pd and parafirt_alloc_pd 
-supposed to do?
-
-Eric
+Now, perhaps enough people do std/str these days so this is not
+important any longer... lets hope so.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
