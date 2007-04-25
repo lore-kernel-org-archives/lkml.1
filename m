@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754089AbXDYPdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031095AbXDYPgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754089AbXDYPdY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbXDYPdY
+	id S1031095AbXDYPgJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbXDYPgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:33:24 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:37667 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754089AbXDYPdX (ORCPT
+	Wed, 25 Apr 2007 11:36:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49732 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754099AbXDYPgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:33:23 -0400
+	Wed, 25 Apr 2007 11:36:08 -0400
+Date: Wed, 25 Apr 2007 08:36:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <20070425113530.GX9715@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0704250833240.24452@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070425113530.GX9715@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17967.29851.680497.648681@smtp.charter.net>
-Date: Wed, 25 Apr 2007 11:32:43 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: Serial console problem in 2.6.21-rc7-mm1 and earlier
-In-Reply-To: <Pine.LNX.4.64.0704241421140.13904@schroedinger.engr.sgi.com>
-References: <20070424130601.4ab89d54.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241320540.13005@schroedinger.engr.sgi.com>
-	<20070424132740.e4bdf391.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241332090.13005@schroedinger.engr.sgi.com>
-	<20070424134325.f71460af.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241351400.13382@schroedinger.engr.sgi.com>
-	<20070424141826.952d2d32.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704241421140.13904@schroedinger.engr.sgi.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 25 Apr 2007, Jens Axboe wrote:
 
-Christoph> On Tue, 24 Apr 2007, Andrew Morton wrote:
->> > Nothing special apart from 
->> > the usual problem with serial not accepting characters that we had for 
->> > awhile now.
->> 
->> I wasn't aware of that one.
+> I need this patch to actually boot the thing, or it bombs with a NULL
+> deref in page_cache_size().
 
-Christoph> I use a serial console on my x86_84 box. For a while now I
-Christoph> can see all output but I cannot type any
-Christoph> characters. /dev/console broke?
+Yeah on 32 bit which I disabled....
 
-I've sorta seen this problem too, but with gdm.  If I have my kernel
-line setup like this:
+> It then boots, doing a little test with 8kb ext2 quickly dies though:
+> 
+> BUG: unable to handle kernel NULL pointer dereference at virtual address
 
-	... console=tty0 console=ttyS0,9600n8
+> EIP: [<d8149519>] 0xd8149519 SS:ESP 0068:e9049d1c
+> 
+> That's here:
+> 
+>         page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, order,
+>                                 zonelist, ALLOC_WMARK_LOW|ALLOC_CPUSET);
+> ->     if (page)
+>                 goto got_pg;
 
-I have to stop and restart gdm (or switch to the XDMCP chooser and
-back) to get keyoard access.  Wierd. 
+Impossible. page is not dereferenced. Cannot cause a NULL pointer 
+deference.
 
-Christoph> Simple WAR is to ssh into the box and I was usually too
-Christoph> focused on other issues to do something about it.
+> which doesn't look healthy. Note that this is a 32-bit machine, I
+> removed the 32-bit check (devices in this box are fine).
 
-Are you trying to access an X login prompter, or just a plain Virtual
-Console tty?
 
-John
+> 
+> --- fs/libfs.c~	2007-04-25 13:30:50.000000000 +0200
+> +++ fs/libfs.c	2007-04-25 13:31:00.000000000 +0200
+> @@ -330,7 +330,7 @@
+>  int simple_prepare_write(struct file *file, struct page *page,
+>  			unsigned from, unsigned to)
+>  {
+> -	unsigned int page_size = page_cache_size(file->f_mapping);
+> +	unsigned int page_size = page_cache_size(page->mapping);
+
+We do a write operation on a file that has no mapping (and thus no radix 
+tree etc etc)? Is that legit?
