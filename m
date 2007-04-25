@@ -1,16 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992648AbXDYLVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992680AbXDYL01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992648AbXDYLVQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992628AbXDYLVQ
+	id S2992680AbXDYL01 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 07:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992691AbXDYL01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:21:16 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47169 "EHLO
+	Wed, 25 Apr 2007 07:26:27 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47180 "EHLO
 	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992648AbXDYLVP (ORCPT
+	with ESMTP id S2992680AbXDYL00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:21:15 -0400
-Subject: [PATCH 4/10] smpboot: use safe_apic_wait_icr_idle - x86_64
+	Wed, 25 Apr 2007 07:26:26 -0400
+Subject: [PATCH 5/10] __inquire_remote_apic: use safe_apic_wait_icr_idle -
+	i386
 From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
 	<fernando@oss.ntt.co.jp>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
@@ -22,76 +23,44 @@ In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
 Content-Type: text/plain
 Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 20:21:13 +0900
-Message-Id: <1177500073.17974.21.camel@sebastian.intellilink.co.jp>
+Date: Wed, 25 Apr 2007 20:26:25 +0900
+Message-Id: <1177500385.17974.28.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The functionality provided by the new safe_apic_wait_icr_idle is being
-open-coded all over "kernel/smpboot.c". Use safe_apic_wait_icr_idle
-instead to consolidate code and ease maintenance.
+__inquire_remote_apic is used for APIC debugging, so use
+safe_apic_wait_icr_idle  instead of apic_wait_icr_idle to avoid possible
+lockups when APIC delivery fails.
 
 Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 ---
 
-diff -urNp linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c
---- linux-2.6.21-rc7-orig/arch/x86_64/kernel/smpboot.c	2007-04-18 15:27:48.000000000 +0900
-+++ linux-2.6.21-rc7/arch/x86_64/kernel/smpboot.c	2007-04-18 15:52:08.000000000 +0900
-@@ -430,8 +430,8 @@ static void inquire_remote_apic(int apic
-  */
- static int __cpuinit wakeup_secondary_via_INIT(int phys_apicid, unsigned int start_rip)
+diff -urNp linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c linux-2.6.21-rc7/arch/i386/kernel/smpboot.c
+--- linux-2.6.21-rc7-orig/arch/i386/kernel/smpboot.c	2007-04-18 15:49:33.000000000 +0900
++++ linux-2.6.21-rc7/arch/i386/kernel/smpboot.c	2007-04-18 16:36:27.000000000 +0900
+@@ -526,7 +526,8 @@ static inline void __inquire_remote_apic
  {
--	unsigned long send_status = 0, accept_status = 0;
--	int maxlvt, timeout, num_starts, j;
-+	unsigned long send_status, accept_status = 0;
-+	int maxlvt, num_starts, j;
+ 	int i, regs[] = { APIC_ID >> 4, APIC_LVR >> 4, APIC_SPIV >> 4 };
+ 	char *names[] = { "ID", "VERSION", "SPIV" };
+-	int timeout, status;
++	int timeout;
++	unsigned long status;
  
- 	Dprintk("Asserting INIT.\n");
+ 	printk("Inquiring remote APIC #%d...\n", apicid);
  
-@@ -447,12 +447,7 @@ static int __cpuinit wakeup_secondary_vi
- 				| APIC_DM_INIT);
- 
- 	Dprintk("Waiting for send to finish...\n");
--	timeout = 0;
--	do {
--		Dprintk("+");
--		udelay(100);
--		send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
--	} while (send_status && (timeout++ < 1000));
-+	send_status = safe_apic_wait_icr_idle();
- 
- 	mdelay(10);
- 
-@@ -465,12 +460,7 @@ static int __cpuinit wakeup_secondary_vi
- 	apic_write(APIC_ICR, APIC_INT_LEVELTRIG | APIC_DM_INIT);
- 
- 	Dprintk("Waiting for send to finish...\n");
--	timeout = 0;
--	do {
--		Dprintk("+");
--		udelay(100);
--		send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
--	} while (send_status && (timeout++ < 1000));
-+	send_status = safe_apic_wait_icr_idle();
- 
- 	mb();
- 	atomic_set(&init_deasserted, 1);
-@@ -509,12 +499,7 @@ static int __cpuinit wakeup_secondary_vi
- 		Dprintk("Startup point 1.\n");
- 
- 		Dprintk("Waiting for send to finish...\n");
--		timeout = 0;
--		do {
--			Dprintk("+");
--			udelay(100);
--			send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
--		} while (send_status && (timeout++ < 1000));
-+		send_status = safe_apic_wait_icr_idle();
- 
+@@ -536,7 +537,9 @@ static inline void __inquire_remote_apic
  		/*
- 		 * Give the other CPU some time to accept the IPI.
+ 		 * Wait for idle.
+ 		 */
+-		apic_wait_icr_idle();
++		status = safe_apic_wait_icr_idle();
++		if (status)
++			printk("a previous APIC delivery may have failed\n");
+ 
+ 		apic_write_around(APIC_ICR2, SET_APIC_DEST_FIELD(apicid));
+ 		apic_write_around(APIC_ICR, APIC_DM_REMRD | regs[i]);
 
 
