@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992956AbXDYTHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992954AbXDYTLG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992956AbXDYTHj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 15:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992954AbXDYTHj
+	id S2992954AbXDYTLG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 15:11:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992958AbXDYTLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 15:07:39 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44328 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992956AbXDYTHj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 15:07:39 -0400
-Date: Wed, 25 Apr 2007 12:07:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Sunil Naidu" <akula2.shark@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: menuconfig issue (checklist) in 2.6.20.7 & 2.6.21-rc7 ?
-Message-Id: <20070425120730.4c267c15.akpm@linux-foundation.org>
-In-Reply-To: <8355959a0704250724g3614d293h2dd08833a6ef473b@mail.gmail.com>
-References: <8355959a0704250724g3614d293h2dd08833a6ef473b@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 15:11:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33199 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992954AbXDYTLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 15:11:05 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Dave Jones <davej@redhat.com>
+Subject: Re: pgprot_writecombine() and PATs on x86
+Date: Wed, 25 Apr 2007 21:10:49 +0200
+User-Agent: KMail/1.9.6
+Cc: Roland Dreier <rdreier@cisco.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, mst@mellanox.co.il, jackm@mellanox.co.il
+References: <ada1wi8xrgt.fsf@cisco.com> <200704252019.28017.ak@suse.de> <20070425184108.GB23721@redhat.com>
+In-Reply-To: <20070425184108.GB23721@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704252110.49603.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 19:54:14 +0530 "Sunil Naidu" <akula2.shark@gmail.com> wrote:
-
-> I was trying to compile those kernels with make menuconfig. I am
-> getting the error in scripts/kconfig/lxdialog/checklist.o. Here is the
-> output:
+On Wednesday 25 April 2007 20:41:08 Dave Jones wrote:
+> On Wed, Apr 25, 2007 at 08:19:27PM +0200, Andi Kleen wrote:
+>  > On Wednesday 25 April 2007 20:02:26 Roland Dreier wrote:
+>  > > Hi Eric,
+>  > > 
+>  > > Where do your patches to add an implementation of
+>  > > pgprot_writecombine() using PATs on x86 stand?  
+>  > 
+>  > It's on my todo list.
 > 
-> [sukhoi@Akula2 linux-2.6.20.7]$ sudo make menuconfig
->   HOSTCC  scripts/kconfig/lxdialog/checklist.o
-> In file included from scripts/kconfig/lxdialog/checklist.c:24:
-> scripts/kconfig/lxdialog/dialog.h:32:20: error: curses.h: No such file
-> or directory
+> Whats the status on the code at ftp://ftp.firstfloor.org/pub/ak/pat/patches ?
+> I've not given it much more than a quick skim, so I'm not sure what
+> it's capable of/what its missing etc..
 
-I guess you need to install the curses development package.  Here it's called
-ncurses-devel.
+That code has a couple of problems and is relatively broken
+
+-Andi
