@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbXDYWNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422776AbXDYWP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbXDYWNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXDYWNR
+	id S1422776AbXDYWP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422778AbXDYWP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:13:17 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:22830 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbXDYWNQ (ORCPT
+	Wed, 25 Apr 2007 18:15:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:50929 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422776AbXDYWPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:13:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=irIUc28Y7wbnlgk8NShhc4EF7Ykc2+a4ha93jcTexkSyMMrrL2NhaBhY1DcEIQQZCqvBk0FUGPBi+tz8nLBJudaXE6QDL/89/DXcs54KKnqjGaTLQmtLv8Gcm74EyHmnFTKoQkH0yJdLQYepKqpm1+DjN0X/OKFUFl00MbcRTpY=
-From: Sergey Yanovich <ynvich@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Sergey Yanovich <ynvich@gmail.com>
-Subject: [PATCH] [mmc] [tifm] Reduces delay in card insert/removal
-Date: Thu, 26 Apr 2007 01:13:16 +0300
-Message-Id: <11775391961930-git-send-email-ynvich@gmail.com>
-X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: 200704200056.33866.arnd@arndb.de
-References: 200704200056.33866.arnd@arndb.de
-Message-Id: <033d5e9dede8853d54e81bc9c1435a2b7915518b.1177536863.git.ynvich@gmail.com>
-In-Reply-To: <5e03dd4e0b14c8155162a5b5b1cea4ed7e04cea3.1177536862.git.ynvich@gmail.com>
-References: <5e03dd4e0b14c8155162a5b5b1cea4ed7e04cea3.1177536862.git.ynvich@gmail.com>
+	Wed, 25 Apr 2007 18:15:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sergey Yanovich <ynvich@gmail.com>
+Subject: Re: [PATCH] [mmc] Removes custom debug macro
+Date: Thu, 26 Apr 2007 00:15:12 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx
+References: <11775383653672-git-send-email-ynvich@gmail.com>
+In-Reply-To: <11775383653672-git-send-email-ynvich@gmail.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704260015.13060.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/jpwdo3BoyHqYvDoXoN+DguyTr+aUCK6W0pu9
+ i3QE5VeeoDIPl2fHEcY/9X4EnfHS5HIaITLCn8gONsj1F96NCd
+ yYnpko/a7VxCsXMyxFQkA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, I tried to replace 'mdelay' with 'msleep' and put it after
-'unlock'. It gives a certain oops.
+On Wednesday 25 April 2007, Sergey Yanovich wrote:
+> Signed-off-by: Sergey Yanovich <ynvich@gmail.com>
 
-With the delay of 50 msec driver remains stable. It has something
-to do with hardware initialization, so this value should not be
-affected by CPU speed. I hope so.
-
-Signed-off-by: Sergey Yanovich <ynvich@gmail.com>
----
- drivers/mmc/tifm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mmc/tifm.c b/drivers/mmc/tifm.c
-index 30cab30..310f07c 100644
---- a/drivers/mmc/tifm.c
-+++ b/drivers/mmc/tifm.c
-@@ -361,7 +361,7 @@ mmc_tifm_irq_chip(unsigned long param)
- 		socket->state = READY;
- 		tasklet_schedule(&socket->cmd_end);
- 	}
--	mdelay(100);
-+	mdelay(50);
- 	spin_unlock_irqrestore(&socket->lock, flags);
- 	mmc_detect_change(mmc, 0);
- }
--- 
-1.5.1.2
-
+Acked-by: Arnd Bergmann <arnd@arndb.de>
