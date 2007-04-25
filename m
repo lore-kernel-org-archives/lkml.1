@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422799AbXDYWTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422800AbXDYWTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422799AbXDYWTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422800AbXDYWTN
+	id S1422800AbXDYWTh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXDYWTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:19:13 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36767 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422799AbXDYWTK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:19:10 -0400
-Date: Wed, 25 Apr 2007 15:18:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+	Wed, 25 Apr 2007 18:19:37 -0400
+Received: from mail3.panix.com ([166.84.1.74]:50976 "EHLO mail3.panix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422800AbXDYWTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:19:31 -0400
+Date: Wed, 25 Apr 2007 15:19:26 -0700 (PDT)
+From: Kenneth Crudup <kenny@panix.com>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
        Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
        Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>
 Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
  hang in atomic copy)
-In-Reply-To: <20070425214420.GG17387@elf.ucw.cz>
-Message-ID: <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
- <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+In-Reply-To: <20070425202336.GC3468@stusta.de>
+Message-ID: <Pine.LNX.4.64.0704251515330.8406@vaio.localdomain>
+References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
  <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
- <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
- <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
- <20070425214420.GG17387@elf.ucw.cz>
+ <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
+ <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de>
+ <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
+ <20070425192512.GZ3468@stusta.de> <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
+ <20070425202336.GC3468@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Wed, 25 Apr 2007, Adrian Bunk wrote:
 
-On Wed, 25 Apr 2007, Pavel Machek wrote:
-> 
-> Not the same... but they are still related. "freeze" (for atomic
-> snapshot) is actually subset of "suspend"... freeze needs DMAs off and
-> saved state, and you need DMAs off and saved state for "suspend".
+> For me it was a serious regression if STD was removed without any
+> replacement.
 
-THEY HAVE ABSOLUTELY NOTHING IN COMMON!
+Amen. I have even made material donations to the SS2 effort to give the
+developer what he'd needed to fix an issue with a certain configuration
+and will do so again if need be, as that expense would be minor compared
+to the productivity (== billing) loss that arises from having to start
+over from scratch from each of the 3+ times per day I have to shutdown
+and physically relocate my machine from place-to-place or client-to-client.
 
-Nobody in their right mind thinks that "disable DMA" and "suspend" are 
-similar operations. 
+	-Kenny
 
-> So it is actually correct to do "suspend" when you want "freeze"; it
-> is just slow. That's why they only differ in parameter these days.
-
-It is *not* correct to "suspend" when you want "freeze".
-
-I don't understand how you can even *claim* something like that.
-
-Here's a trivial example:
- - SCSI disk
-
-Tell me, what does "suspend" do, and what does "freeze" (snapshot) do?
-
-And name *one* thing that have in common.
-
-I'll tell you: Nada. Zero. Zilch. Nothing.
-
-"Freeze" for a disk is a total no-op. There is no DMA, there is no 
-nothing. In contrast, "suspend" for a disk is a totally valid operation.
-
-Anybody who claims that these two operations are "related" is a moron.
-
-I'm sorry Pavel, but that's exactly how it is.
-
-		Linus
+-- 
+Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
+O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
