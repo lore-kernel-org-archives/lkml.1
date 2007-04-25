@@ -1,122 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422821AbXDYW2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751576AbXDYWfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422821AbXDYW2j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422857AbXDYW2i
+	id S1751576AbXDYWfA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXDYWfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:28:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:38539 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422821AbXDYW2h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:28:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=OJjM/gA29vd05Hd+SPol3HC8jrDm1hFLPujzBio9ZaaUxikFN5ugD27xKlza0hXPcZ9/T9P3FI48hi6cvXktmTP9gGdx8gFE3GHCeTOmLt0P9Nzdy/BeYxWhSUh0Hy+b7qBqpUDHU2nAXNUnjjUv8uN6JTkl0PHta5YqCrxnX8E=
-From: Sergey Yanovich <ynvich@gmail.com>
-To: arnd@arndb.de
-Cc: linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx,
-       Sergey Yanovich <ynvich@gmail.com>
-Subject: [PATCH] [mmc] Removes custom debug macro
-Date: Thu, 26 Apr 2007 00:44:13 +0300
-Message-Id: <1177537454195-git-send-email-ynvich@gmail.com>
-X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: 200704200056.33866.arnd@arndb.de
-References: 200704200056.33866.arnd@arndb.de
-Message-Id: <5e03dd4e0b14c8155162a5b5b1cea4ed7e04cea3.1177536862.git.ynvich@gmail.com>
-In-Reply-To: <200704200056.33866.arnd@arndb.de>
-References: <200704200056.33866.arnd@arndb.de>
+	Wed, 25 Apr 2007 18:35:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:25944 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751576AbXDYWe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:34:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,452,1170662400"; 
+   d="scan'208";a="219407733"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Olivier Galibert <galibert@pobox.com>
+Subject: Re: [PATCH] PCI mmconfig support for Intel 915 bridges
+Date: Wed, 25 Apr 2007 15:35:15 -0700
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
+References: <200701101853.04059.jbarnes@virtuousgeek.org>
+In-Reply-To: <200701101853.04059.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704251535.17528.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I see the other mmconfig stuff is upstream now, can we get this added 
+too?  The Asus bug Olivier mentioned also appears to be fixed, so this 
+patch should be safe.
 
-Signed-off-by: Sergey Yanovich <ynvich@gmail.com>
----
- drivers/mmc/tifm.c |   22 ++++++----------------
- 1 files changed, 6 insertions(+), 16 deletions(-)
+Thanks,
+Jesse
 
-diff --git a/drivers/mmc/tifm.c b/drivers/mmc/tifm.c
-index 5410e66..30cab30 100644
---- a/drivers/mmc/tifm.c
-+++ b/drivers/mmc/tifm.c
-@@ -28,15 +28,6 @@
- #define DRIVER_NAME "tifm"
- #define DRIVER_VERSION "0.7"
- 
--/*#define CONFIG_MMC_DEBUG*/
--#ifdef CONFIG_MMC_DEBUG
--#define DBG(f,arg...) \
--	printk(KERN_DEBUG DRIVER_NAME ": " f,##arg)
--#else /* CONFIG_MMC_DEBUG */
--#define DBG(f,arg...) \
--	do { } while (0)
--#endif /* CONFIG_MMC_DEBUG */
--
- static int no_dma = 0;
- 
- struct tifm_chip;
-@@ -594,7 +585,6 @@ mmc_tifm_irq(int irq, void *dev_id)
- 		if(card_status && chip->socket[cnt])
- 			mmc_tifm_irq_card(chip->socket[cnt],card_status);
- 	}
--	/*DBG("got irq status 0x%08x\n", irq_status);*/
- 	spin_unlock(&chip->lock);
- 	return IRQ_HANDLED;
- }
-@@ -611,7 +601,7 @@ mmc_tifm_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 	struct mmc_data *data = mrq->cmd->data;
- 
- 	spin_lock_irqsave(&socket->lock, flags);
--	DBG("executing opcode %u\n",mrq->cmd->opcode);
-+	dev_dbg(socket->chip->pdev,"executing opcode %u\n",mrq->cmd->opcode);
- 	if(!(socket->flags & POWER_ON)){
- 		spin_unlock_irqrestore(&socket->lock, flags);
- 		goto err_out;
-@@ -665,7 +655,7 @@ mmc_tifm_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	int cnt;
- 
- 	spin_lock_irqsave(&socket->lock, flags);
--	DBG("setting io for socket %u\n",socket->index);
-+	dev_dbg(socket->chip->pdev,"setting io for socket %u\n",socket->index);
- 
- 	if(!(socket->flags & MEDIA_MMC)){
- 		writel(0,socket->addr + SOCK_MMCSD_INT_ENABLE);
-@@ -808,7 +798,7 @@ mmc_tifm_suspend(struct pci_dev *pdev, pm_message_t state)
- 		spin_unlock_irqrestore(chip->socket[cnt]->lock,flags);
- 		mmc=container_of((void*)chip->socket[cnt],
- 				struct mmc_host,private);
--		DBG(" ... socket %u\n",cnt);
-+		dev_dbg(chip->pdev," ... socket %u\n",cnt);
- 		mmc_suspend_host(mmc,state);
- 		spin_lock_irqsave(chip->socket[cnt]->lock,flags);
- 		chip->socket[cnt]->flags = 0;
-@@ -889,14 +879,14 @@ mmc_tifm_probe_socket(struct tifm_chip *chip, int num)
- 	mmc->max_req_size = mmc->max_blk_size * mmc->max_blk_count;
- 	mmc->max_seg_size = mmc->max_req_size;
- 
--	DBG("initing tasklets for socket %u\n",num);
-+	dev_dbg(chip->pdev,"initing tasklets for socket %u\n",num);
- 	tasklet_init(&socket->irq_chip,mmc_tifm_irq_chip,(unsigned long)socket);
- 	tasklet_init(&socket->cmd_end,mmc_tifm_cmd_end,(unsigned long)socket);
- 	setup_timer(&socket->timer,mmc_tifm_timer,(unsigned long)socket);
- 	chip->socket[num] = socket;
- 	tifm_socket_event(chip,num,1);
- 
--	DBG("adding mmc host for socket %u\n",num);
-+	dev_dbg(chip->pdev,"adding mmc host for socket %u\n",num);
- 	mmc_add_host(mmc);
- 	
- 	return rc;
-@@ -983,7 +973,7 @@ mmc_tifm_probe(struct pci_dev *pdev, const struct pci_device_id *dev_id)
- 		else
- 			break;
- 	}
--	DBG("created %u socket(s)\n",sockets-cnt-1);
-+	dev_dbg(chip->pdev,"created %u socket(s)\n",sockets-cnt-1);
- 	if(rc)
- 		goto err_out_unmap;
- 	return 0;
--- 
-1.5.1.2
-
+On Wednesday, January 10, 2007 6:53 pm Jesse Barnes wrote:
+> This is a resend of the patch I sent earlier to Oliver.  It adds
+> support for Intel 915 bridge chips to the new PCI MMConfig detection
+> code.  Tested and works on my sole 915 based platform (a Toshiba
+> laptop).  I added register masking per Oliver's suggestion, and moved
+> the __init qualifier to after the 'static const char' to match
+> Ogawa-san's recent cleanup patches.
+>
+> Over time we can probably associate more PCI IDs with this routine,
+> since i915 family contains a few other chips.  But since I didn't
+> have platforms to test such additions on, they're left out for now.
+>
+> Signed-off-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
+>
+> Thanks,
+> Jesse
+>
+> diff -Napur -X /home/jbarnes/dontdiff
+> linux-2.6.19-mmconfig.orig/arch/i386/pci/mmconfig-shared.c
+> linux-2.6.19-mmconfig/arch/i386/pci/mmconfig-shared.c ---
+> linux-2.6.19-mmconfig.orig/arch/i386/pci/mmconfig-shared.c	2007-01-07
+> 10:10:29.000000000 -0800 +++
+> linux-2.6.19-mmconfig/arch/i386/pci/mmconfig-shared.c	2007-01-10
+> 18:46:46.000000000 -0800 @@ -71,6 +71,26 @@ static __init const char
+> *pci_mmcfg_e752
+>  	return "Intel Corporation E7520 Memory Controller Hub";
+>  }
+>
+> +static const char __init *pci_mmcfg_intel_915(void)
+> +{
+> +	u32 pciexbar, len = 0;
+> +
+> +	pci_conf1_read(0, 0, PCI_DEVFN(0,0), 0x48, 4, &pciexbar);
+> +
+> +	/* No enable bit or size field, so assume 256M range is enabled. */
+> +	len = 0x10000000U;
+> +	pci_mmcfg_config_num = 1;
+> +	pciexbar &= 0xe0000000; /* mask out potentially bogus bits */
+> +
+> +	pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]),
+> GFP_KERNEL); +	pci_mmcfg_config[0].base_address = pciexbar;
+> +	pci_mmcfg_config[0].pci_segment_group_number = 0;
+> +	pci_mmcfg_config[0].start_bus_number = 0;
+> +	pci_mmcfg_config[0].end_bus_number = (len >> 20) - 1;
+> +
+> +	return "Intel Corporation 915PM/GM/GMS Express Memory Controller
+> Hub"; +}
+> +
+>  static __init const char *pci_mmcfg_intel_945(void)
+>  {
+>  	u32 pciexbar, mask = 0, len = 0;
+> @@ -126,6 +146,7 @@ struct pci_mmcfg_hostbridge_probe {
+>
+>  static __initdata struct pci_mmcfg_hostbridge_probe
+> pci_mmcfg_probes[] = { { PCI_VENDOR_ID_INTEL,
+> PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 }, +	{
+> PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82915GM_HB,
+> pci_mmcfg_intel_915 }, { PCI_VENDOR_ID_INTEL,
+> PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 }, };
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe
+> linux-kernel" in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
