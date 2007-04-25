@@ -1,151 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161613AbXDYFF5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423210AbXDYFGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161613AbXDYFF5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 01:05:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423210AbXDYFF5
+	id S1423210AbXDYFGk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 01:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423214AbXDYFGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 01:05:57 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:46780 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161613AbXDYFF4 (ORCPT
+	Wed, 25 Apr 2007 01:06:40 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:21918 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423210AbXDYFGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 01:05:56 -0400
-Message-Id: <1177477555.20837.1186422725@webmail.messagingengine.com>
-X-Sasl-Enc: 6qsMxOFHBNfmxPu1OKbtRqEYpecFuowaYMGqg4c/TYyx 1177477555
-From: lkml777@123mail.org
-To: linux-kernel@vger.kernel.org
-Cc: "Eric Hopper" <hopper@omnifarious.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed, 25 Apr 2007 01:06:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Y6XbGNgPHy2gv4JsjmuUf5eEzkQIPB+SamBKqtlOGmvDJwUfs//AJXrVVfWQB4GoZ8qxJ5ENChN1HxId843hfedSJ+jXVg1/XYtvlW5L2/ZkczZv927/VvAIPWIfB2yCP5vEjz/SilnvvczleKoOp95e3Owe4vwhwR2lzsdZRkU=
+Message-ID: <a781481a0704242206i569e4768oe4b34272181f1ce@mail.gmail.com>
+Date: Wed, 25 Apr 2007 10:36:38 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: [PATCH] use mutex instead of semaphore in RocketPort driver
+Cc: "Matthias Kaehlcke" <matthias.kaehlcke@gmail.com>,
+       "Oliver Neukum" <oneukum@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <462E9885.1010605@shaw.ca>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: SOME STUFF ABOUT REISER4 To Mr Hopper
-Date: Tue, 24 Apr 2007 22:05:55 -0700
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <fa.CH+7gvaumSAVtl/1QOSoYPsXewg@ifi.uio.no>
+	 <fa.NPDKv3GAx73J43g63faobz7IZVo@ifi.uio.no>
+	 <fa.ZWnvY4ypIcIOxuu79yJn6cBDr8M@ifi.uio.no> <462E9885.1010605@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems I did not answer the correct thread.
+Hi Matthias,
 
-On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> <hopper@omnifarious.org> said:
-
-> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-> benchmark showing that compressing long strings of 0s results in things
-> taking up very little space and being very fast.
-
-I think you are deliberately being stupid here.
-
-You are claiming that REISER4's good speed results when using
-compression actually has a simple explanation and THEREFORE all good
-results for the filesystem, even those results that have nothing to do
-with compression, are negated.
-
-NOTHING COULD BE FURTHER FROM THE TRUTH.
-
-Your conclusion is a total travesty of logic.
-
-As I understand it, the default Reiser4 DOES NOT USE any compression at
-all, not even tail compression, but saves space by eliminating block
-alignment wastage (tail compression is an option).
-
-So lets LOSE the statistics that involve compression. The results now
-look like this:
-
-.-------------------------.
-| FILESYSTEM | TIME |DISK |
-| TYPE       |(secs)|USAGE|
-.-------------------------.
-|REISER4     | 3462 | 692 |
-|EXT2        | 4092 | 816 |
-|JFS         | 4225 | 806 |
-|EXT4        | 4408 | 816 |
-|EXT3        | 4421 | 816 |
-|XFS         | 4625 | 779 |
-|REISER3     | 6178 | 793 |
-|FAT32       |12342 | 988 |
-|NTFS-3g     |10414 | 772 |
-.-------------------------.
-
-
-These results are still EXTREMELY GOOD for REISER4.
-
-These results still say that Reiser4 is a truly remarkable filesystem,
-as stated in:
-
-http://linuxhelp.150m.com/resources/fs-benchmarks.htm
-http://m.domaindlx.com/LinuxHelp/fs-benchmarks.htm
-
-So why do I see an anti-Reiser religion, in all that you people say.
-
-You, concentrate on the fact that bonnie++'s use of files that are
-mainly zeroes, will make the results using compression less good than
-they are.
-
-I can't see anywhere where this has been denied.
-
-In fact the other set of statistics that you just ignore, states that in
-more realistic situations, the compression speedup is slightly negative.
-
-What is wrong here, is:
-
-You say that the Bonnie++ tests using compression are subject to
-interpretation. No argument here.
-You ignore the tests that confirm your statement. You are clearly not
-interested in the actual results or their interpretation.
-You, by some incredibly twisted "logic" then state that Reiser4 is
-therefore not good, even though it is clearly the best filesystem when
-NOT using compression.
-
-This of course is completely deceitful "logic".
-
-That the speed advantage from compression would be small is clear from
-the OTHER data that you ignore, namely:
-
-.-------------------------------------------------.
-|File         |Disk |Copy |Copy |Tar  |Unzip| Del |
-|System       |Usage|655MB|655MB|Gzip |UnTar| 2.5 |
-|Type         | (MB)| (1) | (2) |655MB|655MB| Gig |
-.-------------------------------------------------.
-|REISER4 lzo  | 278 | 138 |  56 |  80 |  34 |  84 |
-|REISER4 gzip | 213 | 148 |  68 |  83 |  48 |  70 |
-|REISER4      | 692 | 148 |  55 |  67 |  25 |  56 |
-|EXT4         | 816 | 174 |  70 |  74 |  42 |  50 |
-.-------------------------------------------------.
-
-
-> 
-> > On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-> > <hopper@omnifarious.org> said:
+On 4/25/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> Matthias Kaehlcke wrote:
+> > El Tue, Apr 24, 2007 at 07:53:04PM +0200 Oliver Neukum ha dit:
 > >
-> > > I know that this whole effort has been put in disarray by the
-> > > prosecution of Hans Reiser, but I'm curious as to its status. Is
-> > > Reiser4 going to be going into the Linus kernel anytime soon? Is there
-> > > somewhere I should be looking to find this out without wasting bandwidth
-> > > here?
-> >
-> > There was a thread the other day, that talked about Reiser4.
-> >
-> > It took a while but I have found it (actually two)
-> >
-> > http://lkml.org/lkml/2007/4/5/360
-> > http://lkml.org/lkml/2007/4/9/4
-> >
-> > You may want to check them out.
-> 
-> I did.  That whole thread is some guy spouting off a ludicrous Bonnie++
-> benchmark showing that compressing long strings of 0s results in things
-> taking up very little space and being very fast.
-> 
-> Such things will produce lots of flames and no useful information
-> whatsoever as is evinced by the half conspiracy theory, half truth the
-> thread degenerated into in the second message you linked to.
-> 
--- 
-  
-  lkml777@123mail.org
+> >> Am Dienstag, 24. April 2007 19:49 schrieb Matthias Kaehlcke:
+> >>> @@ -1706,7 +1706,7 @@ static int rp_write(struct tty_struct *tty,
+> >>>         if (count <= 0 || rocket_paranoia_check(info, "rp_write"))
+> >>>                 return 0;
+> >>>
+> >>> -       down_interruptible(&info->write_sem);
+> >>> +       mutex_lock_interruptible(&info->write_mtx);
+> >> This is a bug. It is also present in the current code, but nevertheless
+> >> it is a bug. If you use an interruptible lock, you must be ready to deal
+> >> with interrupts, which are ignored by this code.
+> > [...]
+> > i'm a bit confused now about the interruptible locks, i thought using
+> > them means that the process will be waked up when receiving a
+> > signal. what role are playing interrupts when using interruptible locks?
+>
+> You are correct, interrupts aren't involved. However if the wait is
+> interrupted by a signal, mutex_lock_interruptible will return a nonzero
+> return code which needs to be checked for (and likely -ERESTARTSYS or
+> -EINTR returned), otherwise the code will blindly continue as though it
+> has locked the mutex even though it has not.
 
--- 
-http://www.fastmail.fm - Accessible with your email software
-                          or over the web
+Think I'll elaborate Robert's explanation for your benefit :-) Unlike
+mutex_lock() and down() that put the task to TASK_UNINTERRUPTIBLE
+sleep if the lock can't be acquired immediately,
+mutex_lock_interruptible() and down_interruptible() sleep in
+TASK_INTERRUPTIBLE state. So the task _can_ be woken up (without even
+acquiring the lock) by incoming signals. When that happens, we can't
+just blindly go on ... so the return values of the _interruptible()
+versions of the locking functions *must* be checked for success and if
+not, the task should return with error.
 
+Use -ERESTARTSYS if a previous intermediate caller checks this return
+value and tries and restarts the whole operation. If no such previous
+caller exists (and/or introducing it would involve a change in kernel
+behaviour as seen from userspace), you can safely use -EINTR. The goal
+is that userspace must not get to see -ERESTARTSYS.
