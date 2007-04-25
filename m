@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161781AbXDYRel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161784AbXDYRoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161781AbXDYRel (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 13:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422740AbXDYRel
+	id S1161784AbXDYRoi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 13:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161786AbXDYRoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 13:34:41 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43423 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161781AbXDYRel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 13:34:41 -0400
-Date: Wed, 25 Apr 2007 19:34:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425173405.GE17074@elf.ucw.cz>
-References: <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
+	Wed, 25 Apr 2007 13:44:38 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:39418 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161784AbXDYRoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 13:44:37 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425151825.GW3468@stusta.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Transfer-Encoding: 7bit
+Message-ID: <17967.37755.283517.56557@smtp.charter.net>
+Date: Wed, 25 Apr 2007 13:44:27 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: John Stoffel <john@stoffel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: Serial console problem in 2.6.21-rc7-mm1 and earlier
+In-Reply-To: <Pine.LNX.4.64.0704250923290.26666@schroedinger.engr.sgi.com>
+References: <20070424130601.4ab89d54.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241320540.13005@schroedinger.engr.sgi.com>
+	<20070424132740.e4bdf391.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241332090.13005@schroedinger.engr.sgi.com>
+	<20070424134325.f71460af.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241351400.13382@schroedinger.engr.sgi.com>
+	<20070424141826.952d2d32.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704241421140.13904@schroedinger.engr.sgi.com>
+	<17967.29851.680497.648681@smtp.charter.net>
+	<Pine.LNX.4.64.0704250838360.24504@schroedinger.engr.sgi.com>
+	<17967.32856.616216.761311@smtp.charter.net>
+	<Pine.LNX.4.64.0704250923290.26666@schroedinger.engr.sgi.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > Even I am running in-kernel swsusp, but my managers were pretty clear
-> > they want graphical progress bar hiding all the 'ugly' swsusp
-> > messages... and in the end the same uswsusp enables compression, too.
-> > 
-> > > I absolutely detest all suspend-to-disk crap. Quite frankly, I hate the 
-> > > whole thing. I think they've _all_ caused problems for the "true" suspend 
-> > > (suspend-to-ram), and the last thing I want to see is three or four 
-> > 
-> > Well, it is a bit more complex than that.
-> > 
-> > suspend-to-disk is a workaround for
-> > 
-> > 	'suspend-to-ram eats too much power' (plus some details like
-> > 	being able to replace battery).
-> >...
-> 
-> Why does everyone think suspend-to-disk was a laptop-only thing?
-> 
-> My personal usage of suspend-to-disk is for turning the computer off in 
-> the evening and getting the complete FVWM with all programs running, 
-> open browser tabs,... back the next morning.
+Christoph> On Wed, 25 Apr 2007, John Stoffel wrote:
+>> Ok, no idea then.  It's working for me in 2.6.21-rc7 as long as I
+>> don't have more than one console= entry in my kernel boot args. 
 
-Ok ok ok, suspend-to-disk has some other uses, too.
+Christoph> 2.6.21-rc7 is working fine here too. mm is the problem.
 
-But ... you are really using suspend-to-disk as a workaround for "my
-desktop takes too much power when idle". Imagine pressing "lock
-screensaver" combination, and your machine going to low power mode
-(3W?), immediately. (Quiet, too; you can't generate much noise for
-3W). In the morning, you'd just press any key, machine would power up,
-immediately... ok, you'd have to ifconfig eth0 down, so that spurious
-packets on the local net would wake your machine, with all its fans
-etc.
-								Pavel
+Ah ok.  My issue must be something else then, but I haven't had the
+time to chase it down properly.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+John
