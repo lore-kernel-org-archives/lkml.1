@@ -1,99 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161596AbXDYEF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161607AbXDYFAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161596AbXDYEF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 00:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161591AbXDYEF1
+	id S1161607AbXDYFAF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 01:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161608AbXDYFAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 00:05:27 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:37412 "EHLO smtp.osdl.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161590AbXDYEF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 00:05:26 -0400
-Message-ID: <462ED398.5080405@linux-foundation.org>
-Date: Tue, 24 Apr 2007 21:05:44 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Organization: Linux Foundation
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 25 Apr 2007 01:00:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5735 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161607AbXDYFAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 01:00:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=LgBEXWH7WUsSsOiyNn45e0vMJYm0HCAeJIbTHvf23xACUVnXzXImi3MXNvZqbNKtO
+	GSMMUYKmp9Jz+s/DheErg==
+Message-ID: <6599ad830704242159k6f889c51v104aeb863b04d5e3@mail.gmail.com>
+Date: Tue, 24 Apr 2007 21:59:40 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/7] Containers (V8): Cpusets hooked into containers
+Cc: akpm@linux-foundation.org, sekharan@us.ibm.com, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, mbligh@google.com, rohitseth@google.com,
+       devel@openvz.org
+In-Reply-To: <462C9001.7060403@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, jgarzik@pobox.com,
-       cramerj@intel.com, auke-jan.h.kok@intel.com,
-       christopher.leech@intel.com, davem@davemloft.net
-Subject: Re: [PATCH] IPROUTE: Modify tc for new PRIO multiqueue behavior
-References: <20070425013920.6031.30149.stgit@gitlost.site>
-In-Reply-To: <20070425013920.6031.30149.stgit@gitlost.site>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070406233221.989528000@menage.corp.google.com>
+	 <20070407001324.090764000@menage.corp.google.com>
+	 <462C9001.7060403@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter P Waskiewicz Jr wrote:
-> From: Peter P Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
+On 4/23/07, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com> wrote:
+> >
+> >  config CONTAINERS
+> > -     bool "Container support"
+> > -     help
+> > -       This option will let you create and manage process containers,
+> > -       which can be used to aggregate multiple processes, e.g. for
+> > -       the purposes of resource tracking.
+> > -
+> > -       Say N if unsure
+> > +     bool
 >
-> Modified tc so PRIO can now have a multiqueue parameter passed to it.  This
-> will turn on multiqueue behavior if a device has more than 1 queue.  Also,
-> running tc qdisc ls dev <dev> will display if multiqueue is on or off.
+> Hi Paul,
 >
-> Signed-off-by: Peter P. Waskiewicz Jr <peter.p.waskiewicz.jr@intel.com>
-> ---
->
->  include/linux/pkt_sched.h |    1 +
->  tc/q_prio.c               |    9 ++++++---
->  2 files changed, 7 insertions(+), 3 deletions(-)
->
-> diff --git a/include/linux/pkt_sched.h b/include/linux/pkt_sched.h
-> index d10f353..bab0b9e 100644
-> --- a/include/linux/pkt_sched.h
-> +++ b/include/linux/pkt_sched.h
-> @@ -99,6 +99,7 @@ struct tc_prio_qopt
->  {
->  	int	bands;			/* Number of bands */
->  	__u8	priomap[TC_PRIO_MAX+1];	/* Map: logical priority -> PRIO band */
-> +	unsigned short multiqueue;	/* 0 for no mq, 1 for mq */
->  };
->  
->  /* TBF section */
-> diff --git a/tc/q_prio.c b/tc/q_prio.c
-> index d696e1b..55cb207 100644
-> --- a/tc/q_prio.c
-> +++ b/tc/q_prio.c
-> @@ -29,7 +29,7 @@
->  
->  static void explain(void)
->  {
-> -	fprintf(stderr, "Usage: ... prio bands NUMBER priomap P1 P2...\n");
-> +	fprintf(stderr, "Usage: ... prio [multiqueue] bands NUMBER priomap P1 P2...\n");
->  }
->  
->  #define usage() return(-1)
-> @@ -39,7 +39,7 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
->  	int ok=0;
->  	int pmap_mode = 0;
->  	int idx = 0;
-> -	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 }};
-> +	struct tc_prio_qopt opt={3,{ 1, 2, 2, 2, 1, 2, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1 },0};
->  
->  	while (argc > 0) {
->  		if (strcmp(*argv, "bands") == 0) {
-> @@ -57,7 +57,9 @@ static int prio_parse_opt(struct qdisc_util *qu, int argc, char **argv, struct n
->  				return -1;
->  			}
->  			pmap_mode = 1;
-> -		} else if (strcmp(*argv, "help") == 0) {
-> +		} else if (strcmp(*argv, "multiqueue") == 0)
-> +			opt.multiqueue = 1;
-> +		else if (strcmp(*argv, "help") == 0) {
->  			explain();
->  			return -1;
->  		} else {
-> @@ -105,6 +107,7 @@ int prio_print_opt(struct qdisc_util *qu, FILE *f, struct rtattr *opt)
->  	if (RTA_PAYLOAD(opt)  < sizeof(*qopt))
->  		return -1;
->  	qopt = RTA_DATA(opt);
-> +	fprintf(f, "multiqueue %s  ", qopt->multiqueue ? "on" : "off");
->  	fprintf(f, "bands %u priomap ", qopt->bands);
->  	for (i=0; i<=TC_PRIO_MAX; i++)
->  		fprintf(f, " %d", qopt->priomap[i]);
->
->   
-Only if this binary compatiable with older kernels.
+> This looks like some patch generation error.  Description for
+> containers should not be removed after applying this patch.
+
+No, this is intentional - in the first patch in the series,
+CONFIG_CONTAINER was a user-selectable option so it had a description;
+in the second it becomes an option that's only selected if other
+selected systems (e.g. cpusets) depend on it. So it no longer needs
+help text.
+
+Cheers,
+
+Paul
