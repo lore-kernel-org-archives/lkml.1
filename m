@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423289AbXDYIti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423313AbXDYIui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423289AbXDYIti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423306AbXDYIti
+	id S1423313AbXDYIui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423317AbXDYIui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:49:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42348 "EHLO mx1.redhat.com"
+	Wed, 25 Apr 2007 04:50:38 -0400
+Received: from wasp.net.au ([203.190.192.17]:48157 "EHLO wasp.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423313AbXDYItg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:49:36 -0400
-Date: Wed, 25 Apr 2007 04:49:31 -0400
-From: Jakub Jelinek <jakub@redhat.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Big reserved mappings on x86_64
-Message-ID: <20070425084931.GC355@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <Pine.LNX.4.61.0704251035480.19711@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0704251035480.19711@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.1i
+	id S1423313AbXDYIuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 04:50:37 -0400
+Message-ID: <462F1653.9040602@wasp.net.au>
+Date: Wed, 25 Apr 2007 12:50:27 +0400
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Neil Brown <neilb@suse.de>
+CC: Jens Axboe <jens.axboe@oracle.com>, Chuck Ebbert <cebbert@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [OOPS] 2.6.21-rc6-git5 in cfq_dispatch_insert
+References: <4621FAF0.7000705@wasp.net.au>	<46220339.9080205@wasp.net.au>	<4623FB29.1000603@redhat.com>	<17956.22235.574867.179016@notabene.brown>	<20070418123757.GC3796@kernel.dk>	<46261ACE.1050407@wasp.net.au>	<20070418132157.GC3720@kernel.dk>	<462B10C3.1030906@wasp.net.au>	<20070423073543.GE5311@kernel.dk>	<462E5D38.5000801@wasp.net.au> <17967.4734.783140.512857@notabene.brown>
+In-Reply-To: <17967.4734.783140.512857@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 10:42:20AM +0200, Jan Engelhardt wrote:
-> I actually took a look at `pmap $$`, which reveals that a lot of shared 
-> libraries map 2044K or 2048K unreadable-unwritable-private 
-> mappings...for _what_ purpose?
-> 
-> 10:37 opteron:~ > pmap $$
-> 4403: bash
-> START       SIZE     RSS   DIRTY PERM MAPPING
-> 2ae6cca70000    212K    172K      0K r-xp /lib64/libreadline.so.5.2
-> 2ae6ccaa5000   2044K      0K      0K ---p /lib64/libreadline.so.5.2 <--
-> 2ae6ccca4000      4K      4K      4K r--p /lib64/libreadline.so.5.2
-> 2ae6ccca5000     28K     28K     28K rw-p /lib64/libreadline.so.5.2
-> 2ae6cccac000      8K      8K      8K rw-p [anon]
-> 2ae6cccae000     28K     16K      0K r-xp /lib64/libhistory.so.5.2
-> 2ae6cccb5000   2048K      0K      0K ---p /lib64/libhistory.so.5.2 <--
-> 2ae6cceb5000      8K      8K      8K rw-p /lib64/libhistory.so.5.2
-> 2ae6cceb7000    320K    208K      0K r-xp /lib64/libncurses.so.5.5
-> 2ae6ccf07000   2048K      0K      0K ---p /lib64/libncurses.so.5.5 <--
-> 2ae6cd107000     48K     48K     48K r--p /lib64/libncurses.so.5.5
-> 2ae6cd113000     28K     28K     28K rw-p /lib64/libncurses.so.5.5
-> [...]
-> 
-> What could these ominous mappings be? Does anyone else see that - 
-> perhaps someone with x86_64 && !(opensuse 10.2)?
+Neil Brown wrote:
 
-While i386 only supports 4KB pages, x86_64 ELF objects ought to support
-up to 2MB pages.  The gap between read-only/executable and writable segments
-is intentionally mapped PROT_NONE, so that other things aren't mapped in
-between the segments.
+> How likely it would be to get two requests with the same sector number
+> I don't know.  I wouldn't expect it to ever happen - I have seen it
+> before, but it was due to a bug in ext3.  Maybe XFS does it
+> intentionally some times?
 
-	Jakub
+It certainly sounds like an odd thing to occur.
+
+Even stranger that it's easier to hit on a degraded array or an array being checked.
+
+I *am* using ext3 on this box (and all my boxes in fact)
+
+> You could test this theory by putting a
+>    WARN_ON(cfqq->next_rq == NULL);
+> at the end of cfq_reposition_rq_rb, just after the cfq_add_rq_rb call.
+
+I've done that.. now to wait for it to hit again.
+
+Brad
+-- 
+"Human beings, who are almost unique in having the ability
+to learn from the experience of others, are also remarkable
+for their apparent disinclination to do so." -- Douglas Adams
