@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993102AbXDYUcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993109AbXDYUhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993102AbXDYUcR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 16:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993106AbXDYUcR
+	id S2993109AbXDYUhV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 16:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993111AbXDYUhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 16:32:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:54207 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993102AbXDYUcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 16:32:16 -0400
-Date: Wed, 25 Apr 2007 22:31:50 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425203150.GD17387@elf.ucw.cz>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org> <20070425200836.GB17387@elf.ucw.cz> <200704252233.25296.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704252233.25296.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 25 Apr 2007 16:37:21 -0400
+Received: from mga01.intel.com ([192.55.52.88]:60081 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993109AbXDYUhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 16:37:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,451,1170662400"; 
+   d="scan'208";a="236734792"
+Date: Wed, 25 Apr 2007 13:34:47 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Matt Sealey <matt@genesi-usa.com>
+Cc: Olivier Galibert <galibert@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       jeff@garzik.org, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org, htejun@gmail.com
+Subject: Re: [patch 1/7] libata: check for AN support
+Message-Id: <20070425133447.ca9000b3.kristen.c.accardi@intel.com>
+In-Reply-To: <462FA923.5000301@genesi-usa.com>
+References: <20070424074856.005152262@intel.com>
+	<20070423165943.0cc67bc5.kristen.c.accardi@intel.com>
+	<20070424090713.65657495@the-village.bc.nu>
+	<20070424102304.GA58841@dspnet.fr.eu.org>
+	<20070424084904.61932994.kristen.c.accardi@intel.com>
+	<20070424180552.GA17319@dspnet.fr.eu.org>
+	<20070424135327.8fe0b0ba.kristen.c.accardi@intel.com>
+	<20070425004946.GA63747@dspnet.fr.eu.org>
+	<20070425114002.1975da48.kristen.c.accardi@intel.com>
+	<462FA923.5000301@genesi-usa.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 25 Apr 2007 20:16:51 +0100
+Matt Sealey <matt@genesi-usa.com> wrote:
 
-> > > > > .. but if the alternative is a feature that just isn't worth it, and 
-> > > > > likely to not only have its own bugs, but cause bugs elsewhere? (And yes, 
-> > > > > I believe STD is both of those. There's a reason it's called "STD". Go 
-> > > > > to google and type "STD" and press "I'm feeling lucky". Google is God).
-> > > > 
-> > > > Is there really no use case for STD?
+> > +#define ata_id_has_AN(id)	\
+> > +	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
+> > +	  ((id)[78] & (1 << 5)) )
 > 
-> [--snip--]
-> > > So my objections to STD have nothing to do with saving state and shutting 
-> > > down. They have everything to do with the fact that it is not - and will 
-> > > never be - a "suspend", and it shouldn't affect suspend.
-> > 
-> > STD needs to snapshot system, and then it needs devices to be
-> > suspended so that snapshot is consistent.
+> ??
 > 
-> Not suspended.  _Frozen_.  In fact don't want any DMA transfers or interrupts
-> to take place when we're creating the image.  That's all and that's what we're
-> doing (or rather, trying to do).
+> > --- 2.6-git.orig/include/linux/libata.h
+> > +++ 2.6-git/include/linux/libata.h
+> > @@ -136,6 +136,7 @@ enum {
+> >  	ATA_DFLAG_CDB_INTR	= (1 << 2), /* device asserts INTRQ when ready for CDB */
+> >  	ATA_DFLAG_NCQ		= (1 << 3), /* device supports NCQ */
+> >  	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
+> > +	ATA_DFLAG_AN		= (1 << 5), /* device supports Async notification */
+> >  	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
+> 
+> Why don't the macros use the enums? It makes the code hard to read without
+> painful cross-reference doesn't it? Surely (id)[76] & (ATA_DFLAG_AN) is a
+> lot more readable than 1 << 5 - even if the flag is obviously that, a lot
+> of values and registers can have 1 << 5 as a flag and mean a lot of different
+> things.
 
-Yep, _frozen_. That's the right word.
-
-> So, the "suspend" and "resume" for the functions being called for that are
-> wrong, but then we call them with PMSG_FREEZE. ;-)  Still, we could add
-> .freeze() and .thaw() callbacks for hibernation just fine.  This wouldn't even
-> be that difficult ...
-
-It would be ugly big patch I'm afraid.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It's really just a coincidence that the ATA_DFLAG_AN bit is the same as the bit
+in the identify device word, so this would not be appropriate.
