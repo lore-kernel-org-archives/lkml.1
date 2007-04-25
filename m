@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422800AbXDYWTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422786AbXDYWUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422800AbXDYWTh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:19:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXDYWTh
+	id S1422786AbXDYWUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422801AbXDYWUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:19:37 -0400
-Received: from mail3.panix.com ([166.84.1.74]:50976 "EHLO mail3.panix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422800AbXDYWTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:19:31 -0400
-Date: Wed, 25 Apr 2007 15:19:26 -0700 (PDT)
-From: Kenneth Crudup <kenny@panix.com>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <20070425202336.GC3468@stusta.de>
-Message-ID: <Pine.LNX.4.64.0704251515330.8406@vaio.localdomain>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
- <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de>
- <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
- <20070425192512.GZ3468@stusta.de> <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
- <20070425202336.GC3468@stusta.de>
+	Wed, 25 Apr 2007 18:20:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36872 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422786AbXDYWUi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:20:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem mappings
+References: <20070414204154.871250608@goop.org>
+	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>
+	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>
+	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>
+	<m1abwwqiof.fsf@ebiederm.dsl.xmission.com> <462FC8CD.1030505@goop.org>
+	<m11wi8qflo.fsf@ebiederm.dsl.xmission.com> <462FD0EF.5050706@goop.org>
+Date: Wed, 25 Apr 2007 16:18:34 -0600
+In-Reply-To: <462FD0EF.5050706@goop.org> (Jeremy Fitzhardinge's message of
+	"Wed, 25 Apr 2007 15:06:39 -0700")
+Message-ID: <m1tzv4p079.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-On Wed, 25 Apr 2007, Adrian Bunk wrote:
+> Eric W. Biederman wrote:
+>> And it just occurred to me PSE disabled, otherwise you would not have
+>> needed more than 4 pages.  I supposed you were testing the Xen case.
+>>   
 
-> For me it was a serious regression if STD was removed without any
-> replacement.
+>
+> No, actually, I wasn't.  It was booting native (the Xen boot path
+> doesn't go that way), and it should have booted like a normal native
+> kernel despite having Xen compiled in.  Hm, not sure why it wouldn't be
+> using the PSE path.
 
-Amen. I have even made material donations to the SS2 effort to give the
-developer what he'd needed to fix an issue with a certain configuration
-and will do so again if need be, as that expense would be minor compared
-to the productivity (== billing) loss that arises from having to start
-over from scratch from each of the 3+ times per day I have to shutdown
-and physically relocate my machine from place-to-place or client-to-client.
+Since you have PSE disabled for Xen my hunch is that somehow that
+got left on for your test boot.
 
-	-Kenny
-
--- 
-Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
-O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
+Eric
