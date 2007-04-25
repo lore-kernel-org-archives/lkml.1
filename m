@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbXDYABa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbXDYAEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbXDYABa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Apr 2007 20:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbXDYABa
+	id S1754565AbXDYAEK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Apr 2007 20:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbXDYAEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Apr 2007 20:01:30 -0400
-Received: from hu-out-0506.google.com ([72.14.214.233]:20827 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754556AbXDYAB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Apr 2007 20:01:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WxIIEMODXYiNZSr59GKzkzWr+YIK4OSpGkTKyFYkkWgfs4stwpF3VT4BjomclqER/i2V9qFD4UIYO58SbZYkm16Eo3X9ySnoScru8lDV/qzY5WJUn4e9PJLe0ic+LKDKAnurezKgH+jvwrQ5c3gTvOIWjXaw88jHvOQF/AoKD5Y=
-Message-ID: <f4e013870704241701y748cd32esfd8dd79658797320@mail.gmail.com>
-Date: Tue, 24 Apr 2007 17:01:24 -0700
-From: "Mark Hull-Richter" <mhullrich@gmail.com>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-Subject: Re: Kernel traces coming back with trash/clutter
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.0.98.0704241944270.26721@sigma.j-a-k-j.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Apr 2007 20:04:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50362 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754565AbXDYAEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Apr 2007 20:04:09 -0400
+Date: Tue, 24 Apr 2007 20:03:27 -0400
+From: Dave Jones <davej@redhat.com>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: William Heimbigner <icxcnika@mar.tar.cc>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+Message-ID: <20070425000327.GG22267@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Nish Aravamudan <nish.aravamudan@gmail.com>,
+	William Heimbigner <icxcnika@mar.tar.cc>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself> <20070424211253.GG23598@redhat.com> <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <f4e013870704241640q5a723664l2fda780a24f9b40e@mail.gmail.com>
-	 <alpine.DEB.0.98.0704241944270.26721@sigma.j-a-k-j.com>
+In-Reply-To: <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/24/07, John Anthony Kazos Jr. <jakj@j-a-k-j.com> wrote:
-> >
-> > I am getting this odd content in the trace log (dmesg), and I cannot
-> > figure out what it is or why it is there.
-> >
-> > <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> > <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> > <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> > <7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7><7>
-> > <7><7><7><7><7>__bio_add_page: 2x ph 88>=128 || hw 88>=88 || 360448>max
-> > ffffffff802525d8 generic_make_request(bio 000001017c745300) 50729472, 704
->
-> "<7>" is KERN_DEBUG in <include/linux/kernel.h>, used with printk. Are you
-> using printk in the following forms?
->
-> printk(KERN_DEBUG "A debug message.\n");
->
-Yes, exclusively.
+On Tue, Apr 24, 2007 at 03:05:36PM -0700, Nish Aravamudan wrote:
+ > On 4/24/07, Dave Jones <davej@redhat.com> wrote:
+ > > On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
+ > >  > The following patches should allow selection of conservative, powersave, and
+ > >  > ondemand in the kernel configuration.
+ > >
+ > > This has been rejected several times already.
+ > > Ondemand and conservative isn't a viable governor for all cpufreq
+ > > implementations (ie, ones with high switching latencies).
+ > 
+ > This piques my curiosity -- some governors don't work with some
+ > cpufreq implementations. Are those implementations in the kernel or in
+ > userspace? If in the kernel, then perhaps there should be some
+ > dependency expressed there in Kconfig between cpufreq implementation
+ > and the available governors
 
-> Perhaps you have something looping that's outputting KERN_DEBUG with a
-> null message? Or one of your diagnostic printk statements includes
-> KERN_DEBUG with no actual message?
->
-No, they are all KERN_DEBUG<space>"some string here", almost all with
-some formatted output as well.  Could I be overloading the printk
-output buffer, as in possibly too tightly repeated/looped code to be
-able to output it all?
+it can't be solved that easily. powernow-k8 for example is fine to
+use with ondemand on newer systems, where the latency is low.
+On older models however, it isn't.
 
-> Remember, if you have a string in a variable without a KERN_*
-> prependation, you can do this.
->
-> printk(KERN_DEBUG "%s\n", debug_message);
->
-Haven't tried that one - they're all of the form above.
+ > > Also, see the
+ > > comment in the Kconfig a few lines above where you are adding this.
+ > 
+ > Are these governors unfixable? If
 
-Thanks again.
+tbh, I've forgotten the original issues that caused the comment
+to be placed there. Dominik ?
+
+ > Just looking for more info -- feel free to just point me at the archives.
+
+cpufreq-list archives are at http://lists.linux.org.uk/mailman/listinfo/cpufreq
+(though only available to list members)
+
+	Dave
 
 -- 
-Mark Hull-Richter, Linux Kernel Engineer
-DATAllegro (www.datallegro.com)
-85 Enterprise, Second Floor, Aliso Viejo, CA  92656
-949-680-3082 - Office     949-330-7691 - fax
-[This message is NOT SPAM and is sent in strict accordance with
-Google, Yahoo, AOL, Netscape and Earthlink Terms of Service.  If you
-are NOT receiving this through a group and do not want any more emails
-from me, please reply to me and let me know.  If you are receiving
-this second-hand, this sender disclaims all responsibility for your
-response.]
+http://www.codemonkey.org.uk
