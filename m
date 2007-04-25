@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965583AbXDYMwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965656AbXDYMxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965583AbXDYMwj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 08:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965620AbXDYMwi
+	id S965656AbXDYMxJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 08:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965655AbXDYMxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 08:52:38 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:47290 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965583AbXDYMwh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 08:52:37 -0400
-Subject: Re: [PATCH 10/10] Use safe_apic_wait_icr_idle in
-	__send_IPI_dest_field - x86_64
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Andi Kleen <ak@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, horms@verge.net.au,
-       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       vgoyal@in.ibm.com, mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
-       akpm@linux-foundation.org
-In-Reply-To: <200704251433.40302.ak@suse.de>
-References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-	 <1177501872.17974.56.camel@sebastian.intellilink.co.jp>
-	 <200704251433.40302.ak@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 21:52:36 +0900
-Message-Id: <1177505556.19745.16.camel@sebastian.intellilink.co.jp>
+	Wed, 25 Apr 2007 08:53:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51921 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965650AbXDYMxH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 08:53:07 -0400
+Date: Wed, 25 Apr 2007 14:51:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch] CFS scheduler, -v5
+Message-ID: <20070425125104.GA11914@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <20070423011229.GA20367@elte.hu> <20070423051659.GA3929@gentoox2.trippelsdorf.de> <20070423052728.GB3929@gentoox2.trippelsdorf.de> <20070423062116.GB4518@elte.hu> <20070425114318.GA7328@in.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425114318.GA7328@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 14:33 +0200, Andi Kleen wrote:
-> On Wednesday 25 April 2007 13:51:12 Fernando Luis Vázquez Cao wrote:
-> > Use safe_apic_wait_icr_idle to check ICR idle bit if the vector is
-> > NMI_VECTOR to avoid potential hangups in the event of crash when kdump
-> > tries to stop the other CPUs.
+
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+
+> +#define __NR_yield_to          280
+> +__SYSCALL(__NR_move_pages, sys_sched_yield_to)
 > 
-> But what happens then when this fails? Won't this give another hang?
-> Have you tested this?
-In kdump the crashing CPU (i.e. the CPU that called crash_kexec) is the
-one in charge of rebooting into and executing the dump capture kernel.
-But before doing this it attempts to stop the other CPUs sending a IPI
-using NMI_VECTOR as the vector. The problem is that sometimes delivery
-seems to fail and the crashing CPU gets stuck waiting for the ICR status
-bit to be cleared, which will never happen. 
+> s/__NR_move_pages/__NR_yield_to in the above line?
 
-With this patch, when safe_apic_wait_icr_idle times out the CPU will
-continue executing and try to hand over control to the dump capture
-kernel as usual. After applying this patch I have not seen hangs in the
-reboot path to second kernel showing the symptoms mentioned before, but
-perhaps I am just being lucky and there is something else going on.
+yeah, thanks.
 
+	Ingo
