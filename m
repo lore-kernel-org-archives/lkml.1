@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbXDYWGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXDYWH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbXDYWGH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 18:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbXDYWGH
+	id S1754397AbXDYWH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 18:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbXDYWH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 18:06:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:33922 "EHLO mail.goop.org"
+	Wed, 25 Apr 2007 18:07:27 -0400
+Received: from ns2.suse.de ([195.135.220.15]:43922 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754472AbXDYWGE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 18:06:04 -0400
-Message-ID: <462FD0EF.5050706@goop.org>
-Date: Wed, 25 Apr 2007 15:06:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1754397AbXDYWH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 18:07:26 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Date: Thu, 26 Apr 2007 00:07:12 +0200
+User-Agent: KMail/1.9.6
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <200704252257.41950.ak@suse.de> <6bffcb0e0704251440l6149b50creafd4845c131be09@mail.gmail.com>
+In-Reply-To: <6bffcb0e0704251440l6149b50creafd4845c131be09@mail.gmail.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
- mappings
-References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>	<m1abwwqiof.fsf@ebiederm.dsl.xmission.com> <462FC8CD.1030505@goop.org> <m11wi8qflo.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m11wi8qflo.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704260007.12843.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> And it just occurred to me PSE disabled, otherwise you would not have
-> needed more than 4 pages.  I supposed you were testing the Xen case.
->   
+On Wednesday 25 April 2007 23:40:51 Michal Piotrowski wrote:
+> On 25/04/07, Andi Kleen <ak@suse.de> wrote:
+> >
+> > > Maybe because it's P4 HT?
+> >
+> > Shouldn't make a difference.
+> >
+> > Can you please: apply the latest patch from
+> >
+> > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
+> >
+> > to a 2.6.21-rc7 kernel and then send me a full boot log?
+> 
+> Now everything looks OK
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-04-25-02-49/git-dmesg
 
-No, actually, I wasn't.  It was booting native (the Xen boot path
-doesn't go that way), and it should have booted like a normal native
-kernel despite having Xen compiled in.  Hm, not sure why it wouldn't be
-using the PSE path.
+Does it also work when you revert the sched-clock-share patch in Andrew's broken-out
+directory from mm and then apply my patch? (just to check there is not a bad interaction
+with other mm changes)
 
-    J
+
+Thanks,
+-Andi
