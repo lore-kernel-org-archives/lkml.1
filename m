@@ -1,58 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031102AbXDYPrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031096AbXDYPtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031102AbXDYPrp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 11:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031096AbXDYPro
+	id S1031096AbXDYPtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 11:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031106AbXDYPtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 11:47:44 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46207 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031102AbXDYPro (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 11:47:44 -0400
-Date: Wed, 25 Apr 2007 08:45:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Shani Moideen <shani.moideen@wipro.com>, linux-kernel@vger.kernel.org,
-       kernel-janitors@lists.osdl.org
-Subject: Re: [PATCH]:Replacing current->state with set_current_state in
- kernel/signal.c
-In-Reply-To: <20070425091724.6f2c212b.dada1@cosmosbay.com>
-Message-ID: <alpine.LFD.0.98.0704250843300.9964@woody.linux-foundation.org>
-References: <1177483138.27118.25.camel@shani-win>
- <20070425091724.6f2c212b.dada1@cosmosbay.com>
+	Wed, 25 Apr 2007 11:49:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47844 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031096AbXDYPti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 11:49:38 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/16] AF_RXRPC socket family and AFS rewrite [try #4]
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 25 Apr 2007 16:48:54 +0100
+Message-ID: <20070425154854.26581.97692.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+The first of these patches together provide secure client-side RxRPC
+connectivity as a Linux kernel socket family.  Only the RxRPC transport/session
+side is supplied - the presentation side (marshalling the data) is left to the
+client.  Copies of the patches can be found here:
 
-On Wed, 25 Apr 2007, Eric Dumazet wrote:
-> 
-> Either you think you corrected a BUG, so please state it clearly in 
-> Changelog so that Linus immediatly apply your patch for 2.6.21 :)
+	http://people.redhat.com/~dhowells/rxrpc/series
+	http://people.redhat.com/~dhowells/rxrpc/01-move-skb-generic.diff
+	http://people.redhat.com/~dhowells/rxrpc/02-cancel_delayed_work.diff
+	http://people.redhat.com/~dhowells/rxrpc/03-keys.diff
+	http://people.redhat.com/~dhowells/rxrpc/04-timer-exports.diff
+	http://people.redhat.com/~dhowells/rxrpc/05-af_rxrpc.diff
 
-It's not a bug.
+Further patches make the in-kernel AFS filesystem use AF_RXRPC and delete the
+old RxRPC implementation:
 
-Setting current state manually is fine _iff_ you don't actually test a 
-condition value. It's only if you do
+	http://people.redhat.com/~dhowells/rxrpc/06-afs-cleanup.diff
+	http://people.redhat.com/~dhowells/rxrpc/07-af_rxrpc-kernel.diff
+	http://people.redhat.com/~dhowells/rxrpc/08-af_rxrpc-afs.diff
+	http://people.redhat.com/~dhowells/rxrpc/09-af_rxrpc-delete-old.diff
 
-	/* This has a race, and is bad! */
-	current->state = TASK_INTERRUPTIBLE;
-	if (some_condition)
-		schedule();
+And then the rest of the patches extend AFS to provide automatic unmounting of
+automount trees, security support and directory-level write support (create,
+mkdir, etc.):
 
-that you have a race: the CPU (or the compiler, for that matter) can move 
-the "some_condition" check up to before setting TASK_INTERRUPTIBLE, and if 
-another CPU comes in and wakes you up, you might lose the wakeup.
+	http://people.redhat.com/~dhowells/rxrpc/10-afs-multimount.diff
+	http://people.redhat.com/~dhowells/rxrpc/11-afs-security.diff
+	http://people.redhat.com/~dhowells/rxrpc/12-afs-doc.diff
+	http://people.redhat.com/~dhowells/rxrpc/13-netlink-support-MSG_TRUNC.diff
+	http://people.redhat.com/~dhowells/rxrpc/14-afs-get-capabilities.diff
+	http://people.redhat.com/~dhowells/rxrpc/15-afs-initcallbackstate3.diff
+	http://people.redhat.com/~dhowells/rxrpc/16-afs-dir-write-support.diff
 
-But doing
+Note that file-level write support is not yet complete and so is not included
+in this patch set.
 
-	/* This is fine */
-	current->state = TASK_INTERRUPTIBLE;
-	schedule();
 
-is fine.
+The userspace access methods make use of the control data passed to/by
+sendmsg() and recvmsg().  See the three simple test programs:
 
-		Linus
+	http://people.redhat.com/~dhowells/rxrpc/klog.c
+	http://people.redhat.com/~dhowells/rxrpc/rxrpc.c
+	http://people.redhat.com/~dhowells/rxrpc/listen.c
+
+The klog program is provided to go and get a Kerberos IV key from the AFS
+kaserver.  Currently it must be edited before compiling to note the right
+server IP address and the appropriate credentials.
+
+These programs can be compiled by:
+
+	make klog rxrpc listen CFLAGS="-Wall -g" LDLIBS="-lcrypto -lcrypt -lkrb4 -lkeyutils"
+
+Then a ticket can be obtained by:
+
+	./klog
+
+If a security key is acquired in this way, then all subsequent AFS operations -
+including VL lookups and mounts - performed with that session keyring will be
+authenticated using that key.  The key can be viewed like so:
+
+	[root@andromeda ~]# keyctl show
+	Session Keyring
+	       -3 --alswrv      0     0  keyring: _ses.3268
+		2 --alswrv      0     0   \_ keyring: _uid.0
+	111416553 --als--v      0     0   \_ rxrpc: afs@CAMBRIDGE.REDHAT.COM
+
+TODO:
+
+ (*) Make certain parameters (such as connection timeouts) userspace
+     configurable.
+
+ (*) Make userspace utilities use it; librxrpc.
+
+ (*) Userspace documentation.
+
+ (*) KerberosV security.
+
+Changes:
+
+ (*) SOCK_RPC has been removed.  SOCK_DGRAM is now used instead.
+
+ (*) I've add a facility whereby calls can be made to destinations other than
+     the connect() address of a client socket by making use of msg_name in the
+     msghdr struct when using sendmsg() to send the first data packet of a
+     call.  Indeed, a client socket need not be connected before being used
+     so.
+
+ (*) I've also added a facility whereby client calls may also be made on
+     server sockets, again by using msg_name in the msghdr struct.  In such a
+     case, the server's local transport endpoint is used.
+
+ (*) I've made the write buffer space check available to various callers
+     (sk_write_space) and implemented poll support.
+
+ (*) Rewrote rxrpc_recvmsg().  It now concatenates adjacent data messages from
+     the same call when delivering them.
+
+ (*) Updated the documentation to include notes on recvmsg, cover control
+     messages and cover SOL_RXRPC-level socket options.
+
+ (*) Provided an in-kernel interface to give in-kernel utilities easier access
+     to the facility.
+
+ (*) Made fs/afs/ use it.
+
+ (*) Deleted the old contents of net/rxrpc/.
+
+ (*) Use the scatterlist interface to the crypto API for now.  The patch that
+     added the direct access interface conflicts with patches Herbert Xu is
+     producing, so I've dropped it for the moment.
+
+ (*) Moved a bug fix to make secure connection reuse work from the
+     af_rxrpc-kernel patch to the af_rxrpc main patch.
+
+ (*) Make RxRPC use its own private work queues rather than keventd's to avoid
+     deadlocks when AFS tries to use keventd too.  This also puts encryption
+     in the private work queue rather than keventd's queue as that might take
+     a relatively long time to process.
+
+ (*) Shorten the dead call timeout to 2 seconds.  Without this, each completed
+     call sits around eating up resources for 10 seconds.  The calls need to
+     hang around for a little while in case duplicate packets appear, but 10
+     seconds is excessive.
+
+ (*) Decrement the number of available calls on a connection when a new call is
+     allocated for a connection that doesn't have any calls in progress.
+
+ (*) Rename header files with uppercase names to lowercase names.
+
+ (*) Make sure include/keys/rxrpc-type.h is included.
+
+David
