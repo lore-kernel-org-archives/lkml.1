@@ -1,159 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992750AbXDYN2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992764AbXDYN3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992750AbXDYN2M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992762AbXDYN2M
+	id S2992764AbXDYN3I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992762AbXDYN3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:28:12 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:39741 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992750AbXDYN2K (ORCPT
+	Wed, 25 Apr 2007 09:29:08 -0400
+Received: from mx0.starentnetworks.com ([12.38.223.203]:57207 "EHLO
+	mx0.starentnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992765AbXDYN3G convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:28:10 -0400
-Date: Wed, 25 Apr 2007 14:28:07 +0100
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070425132807.GI19942@skynet.ie>
-References: <20070424222105.883597089@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070424222105.883597089@sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Wed, 25 Apr 2007 09:29:06 -0400
+X-Greylist: delayed 1855 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 09:29:05 EDT
+X-MessageTextProcessor: DisclaimIt (2.70.271) [Starent Networks Corp.]
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.1830
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
+Date: Wed, 25 Apr 2007 08:58:04 -0400
+Message-ID: <7CCD07160348804497EF29E9EA5560D7020F6203@exchtewks2.starentnetworks.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: 2.6.20.7 mss negotiation and path mtu discovery mostly broken?
+thread-index: AceGqWsEy9rU2mCUTPax/uXcPISeow==
+From: "Ristuccia, Brian" <bristuccia@starentnetworks.com>
+Importance: normal
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 25 Apr 2007 12:58:04.0230 (UTC) FILETIME=[5CBFAE60:01C78739]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nuts. Didn't spot V3 before I started V2, ah well.
+I'm seeing a problem where the kernel attempts to send packets with a
+MSS larger than the one negotiated when the TCP connection is
+established. Even after ICMP "can't fragment" messages arrive, the
+kernel still attempts to increase the MSS rather aggressively. The end
+result is extremely poor throughput when sending to a network with a
+smaller MTU. 
 
-On (24/04/07 15:21), clameter@sgi.com didst pronounce:
-> V2->V3
-> - More restructuring
-> - It actually works!
-> - Add XFS support
-> - Fix up UP support
-> - Work out the direct I/O issues
-> - Add CONFIG_LARGE_BLOCKSIZE. Off by default which makes the inlines revert
->   back to constants. Disabled for 32bit and HIGHMEM configurations.
+In /proc/sys/net/ipv4:
+ip_no_pmtu_disc:0
+tcp_mtu_probing:0
 
-HIGHMEM I can understand because I suppose the kmap() issue is still in
-there, but why 32 bit? Is this temporary or do you expect to see it
-fixed up later?
+The sending host (10.2.10.254) has an MTU of 9000. The destination host
+(12.33.234.69) has an MTU of 1500. There is one router between the hosts
+which will drop packets with the "DF" flag when they don't fit the
+destination interface's MTU and generates the required icmp can't
+fragment message. 
 
->   This also allows a gradual migration to the new page cache
->   inline functions. LARGE_BLOCKSIZE capabilities can be
->   added gradually and if there is a problem then we can disable
->   a subsystem.
-> 
-> V1->V2
-> - Some ext2 support
-> - Some block layer, fs layer support etc.
-> - Better page cache macros
-> - Use macros to clean up code.
-> 
-> This patchset modifies the Linux kernel so that larger block sizes than
-> page size can be supported. Larger block sizes are handled by using
-> compound pages of an arbitrary order for the page cache instead of
-> single pages with order 0.
-> 
-> Rationales:
-> 
-> 1. We have problems supporting devices with a higher blocksize than
->    page size. This is for example important to support CD and DVDs that
->    can only read and write 32k or 64k blocks. We currently have a shim
->    layer in there to deal with this situation which limits the speed
->    of I/O. The developers are currently looking for ways to completely
->    bypass the page cache because of this deficiency.
-> 
-> 2. 32/64k blocksize is also used in flash devices. Same issues.
-> 
-> 3. Future harddisks will support bigger block sizes that Linux cannot
->    support since we are limited to PAGE_SIZE. Ok the on board cache
->    may buffer this for us but what is the point of handling smaller
->    page sizes than what the drive supports?
-> 
-> 4. Reduce fsck times. Larger block sizes mean faster file system checking.
-> 
-> 5. Performance. If we look at IA64 vs. x86_64 then it seems that the
->    faster interrupt handling on x86_64 compensate for the speed loss due to
->    a smaller page size (4k vs 16k on IA64). Supporting larger block sizes
->    sizes on all allows a significant reduction in I/O overhead and increases
->    the size of I/O that can be performed by hardware in a single request
->    since the number of scatter gather entries are typically limited for
->    one request. This is going to become increasingly important to support
->    the ever growing memory sizes since we may have to handle excessively
->    large amounts of 4k requests for data sizes that may become common
->    soon. For example to write a 1 terabyte file the kernel would have to
->    handle 256 million 4k chunks.
-> 
-> 6. Cross arch compatibility: It is currently not possible to mount
->    an 16k blocksize ext2 filesystem created on IA64 on an x86_64 system.
->    With this patch this becoems possible.
-> 
-> The support here is currently only for buffered I/O. Modifications for
-> three filesystems are included:
-> 
-> A. XFS
-> B. Ext2
-> C. ramfs
-> 
-> Unsupported
-> - Mmapping blocks larger than page size
-> 
-> Issues:
-> - There are numerous places where the kernel can no longer assume that the
->   page cache consists of PAGE_SIZE pages that have not been fixed yet.
-> - Defrag warning: The patch set can fragment memory very fast.
+The dump shows the initial handshake with correct mss options sent:
 
-I bet they do.
+08:39:55.493029 IP 12.33.234.69.35026 > 10.2.10.254.22: S
+2768979373:2768979373(
+0) win 5840 <mss 1460,sackOK,timestamp 3873837730 0,nop,wscale 2>
+08:39:55.493119 IP 10.2.10.254.22 > 12.33.234.69.35026: S
+963242385:963242385(0)
+ ack 2768979374 win 17896 <mss 8960,sackOK,timestamp 413751
+3873837730,nop,wscal
+e 5>
 
->   It is likely that Mel Gorman's anti-frag patches and some more
->   work by him on defragmentation may be needed if one wants to use
->   super sized pages.
+Then I see the system send larger packets (larger than the mss),
+provoking a "can't fragment" from the router. Now I suppose it might be
+reasonable to occasionally probe a larger MSS when the current MSS is a
+result of reductions due to path mtu discovery. After all, the path
+taken could change over time. But when the current MSS is at the value
+negotiated by the MSS option during the TCP handshake, it seems like
+there's no sense in trying to send with a lager MSS. Even if there were,
+there's certainly no justification for making such an attempt every
+other packet (2.6.18) or every fourth packet (2.6.20.7). 
 
-Very likely.
+In the following dump, the system eventually gets in a state where it
+oscillates between sendng undeliverable 2896 byte packets and
+deliverable 1448 byte ones. 
 
->   If you run a 2.6.21 kernel with this patch and start a kernel compile
->   on a 4k volume with a concurrent copy operation to a 64k volume on
->   a system with only 1 Gig then you will go boom (ummm no ... OOM) fast.
+08:39:55.649689 IP 10.2.10.254.22 > 12.33.234.69.35026: .
+5906:10250(4344) ack 1
+794 win 674 <nop,nop,timestamp 413790 3873837887>
+08:39:55.650532 IP 10.2.10.1 > 10.2.10.254: icmp 92: 12.33.234.69
+unreachable -
+need to frag (mtu 1500)
+08:39:55.689774 IP 12.33.234.69.35026 > 10.2.10.254.22: . ack 5906 win
+4544 <nop
+,nop,timestamp 3873837927 413790>
+08:39:55.689784 IP 10.2.10.254.22 > 12.33.234.69.35026: .
+10250:13146(2896) ack
+1794 win 674 <nop,nop,timestamp 413800 3873837927>
+08:39:55.690497 IP 10.2.10.1 > 10.2.10.254: icmp 92: 12.33.234.69
+unreachable -
+need to frag (mtu 1500)
+08:39:55.902494 IP 10.2.10.254.22 > 12.33.234.69.35026: .
+5906:7354(1448) ack 17
+94 win 674 <nop,nop,timestamp 413853 3873837927>
 
-On systems with larger amounts of memory, it'll go boom eventually. More
-memory does not magically avoid fragmentation problems.
+Since any sane router will only generate can't fragment ICMP's at a
+limited rate, for two hosts on gigabit ethernet, one on a MTU 1500
+subnet and another on a MTU 9000 subnet, I can move only 40-50KB/sec
+over an affected TCP connection. 
 
->   How well Mel's antifrag/defrag methods address this issue still has to
->   be seen.
-> 
+I was unable to find any reference to this problem in the kernel
+changelogs, or even any reports of anyone else having a similar problem.
+The above dumps are from 2.6.19.7. I could also reproduce the problem in
+2.6.18, although the dumps looked slightly different. I was unable to
+reproduce this problem with the 2.6.9-42.0.10.ELsmp kernel which ships
+in RHEL4. 
 
-The grouping pages by mobility should hold up for ext2 and XFS because
-their page cache pages are reclaimable/movable and will get grouped with
-other pages that are reclaimable/movable. ramfs may be a problem if it was
-heavily used but lets see how things pan out.
-
-> Future:
-> - Mmap support could be done in a way that makes the mmap page size
->   independent from the page cache order. It is okay to map a 4k section
->   of a larger page cache page via a pte. 4k mmap semantics can be completely
->   preserved even for larger page sizes.
-> - Maybe people could perform benchmarks to see how much of a difference
->   there is between 4k size I/O and 64k? Andrew surely would like to know.
-> - If there is a chance for inclusion then I will diff this against mm,
->   do a complete scan over the kernel to find all page cache == PAGE_SIZE
->   assumptions and then try to get it upstream for 2.6.23.
-> 
-> How to make this work:
-> 
-> 1. Apply this patchset to 2.6.21-rc7
-> 2. Configure LARGE_BLOCKSIZE Support
-> 3. compile kernel
-> 
-> --
+I can send a pcap dump to anyone interested. 
 
 -- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Brian Ristuccia
+
+
+"This email message and any attachments are confidential information of Starent Networks, Corp. The information transmitted may not be used to create or change any contractual obligations of Starent Networks, Corp.  Any review, retransmission, dissemination or other use of, or taking of any action in reliance upon this e-mail and its attachments by persons or entities other than the intended recipient is prohibited. If you are not the intended recipient, please notify the sender immediately -- by replying to this message or by sending an email to postmaster@starentnetworks.com -- and destroy all copies of this message and any attachments without reading or disclosing their contents. Thank you."
