@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993136AbXDYXwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423406AbXDYXyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993136AbXDYXwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 19:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993135AbXDYXww
+	id S1423406AbXDYXyo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 19:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423407AbXDYXyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 19:52:52 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40211 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993136AbXDYXwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 19:52:51 -0400
-Date: Thu, 26 Apr 2007 01:52:35 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070425235235.GN17387@elf.ucw.cz>
-References: <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
+	Wed, 25 Apr 2007 19:54:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47409 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423406AbXDYXym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 19:54:42 -0400
+Date: Wed, 25 Apr 2007 16:52:10 -0700
+From: Greg KH <gregkh@suse.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.20.8
+Message-ID: <20070425235210.GA26888@suse.de>
+References: <20070425212225.GA21200@kroah.com> <20070425.162944.26532464.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070425.162944.26532464.davem@davemloft.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > Both of them have to ensure you can make a consistent snapshot.
+On Wed, Apr 25, 2007 at 04:29:44PM -0700, David Miller wrote:
+> From: Greg KH <gregkh@suse.de>
+> Date: Wed, 25 Apr 2007 14:22:25 -0700
 > 
-> Bzzt. Wrong again. Very much so.
+> > We (the -stable team) are announcing the release of the 2.6.20.8 kernel.
+> > This release has a security bugfix so any users of kernels older than
+> > 2.6.20.7 are highly encouraged to upgrade as soon as possible.
 > 
-> STR does not need to "ensure that you have a consistent snapshot".
+> Greg, Yoshifuji sent you an ipv6 security fix of nearly
+> equally severity yesterday.
 > 
-> Why? Becuase there is no _room_ for inconsistency. There's nothing to be 
-> "inconsistent with", since any changes to memory (by things like DMA or 
-> other setup that happens while the suspend process is going on) is by 
-> _definition_ consistent with the resume image (becasue there is no 
-> separate image).
+> Why did you leave that out?
 
-Do you propose to keep DMAs running while suspending-to-RAM? That
-sounds really unsafe; we are shutting down our PCI controllers at that
-time; doing that while DMAs are running sounds bad.
+Because I haven't been applying any network-related patches unless you
+forward them to me, based on what happened the last time I did that
+without asking :)
 
-> That's TOTALLY DIFFERENT from "suspend to disk". In suspend to disk, you 
-> need a completely different kind of mindset, namely you need a single 
-> consistent image, where the image is consistent not only with memory, but 
-> with all the devices.
-> 
-> For example, the whole myth that "freeze" needs to shut off DMA is a total 
-> and utter *myth*. It needs nothing of the sort at all. Rather than shut 
-> off DMA and try to make the hardware be wevy wevy quiet while it's hunting 
-> wabbits, it's a lot easier to just do nothing at all on "freeze",
+So, sorry, I didn't realize this was a big issue, can you forward the
+needed patches to me?  I'll do a new release with them in it after I get
+back from dinner.
 
-No. Sorry, you are wrong here. 
+thanks,
 
-Remember that during resume we run
+greg k-h
 
-freeze()
-copy old data into memory
-thaw()
-
-. Now, if the old kernel left DMAs running, it could be overwriting
-the data we are copying in. It is not about DMA tables. While
-resuming, CPU needs to be alone, without interference from DMA engines
-(or other CPUs), because copying back old image means writing to
-memory that was not properly alocated.
-
-(Now, we could add one more hook, turn_off_dmas_for_copyback(), but
-that looks like way too many hooks to me. And I'm not comfortable with
-DMA engines running while I'm trying to copy image. They may be
-overwriting data I'm trying to copy...) 
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
