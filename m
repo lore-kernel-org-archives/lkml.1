@@ -1,60 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161616AbXDYGlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423236AbXDYGlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161616AbXDYGlU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 02:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161618AbXDYGlT
+	id S1423236AbXDYGlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 02:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423238AbXDYGlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 02:41:19 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:33471 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161616AbXDYGlS (ORCPT
+	Wed, 25 Apr 2007 02:41:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:51516 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423237AbXDYGld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 02:41:18 -0400
-Date: Tue, 24 Apr 2007 23:41:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm1 + sysfs patch -- RTNL: assertion failed at
- net/ipv6/addrconf.c (2123)
-Message-Id: <20070424234115.6c6bc7c3.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0704242335n637b1b5cwd027a3d253820f91@mail.gmail.com>
-References: <a44ae5cd0704242335n637b1b5cwd027a3d253820f91@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 02:41:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Hjhwh1yqdBVmkMXTnApQG2jYUzYeXbhQnxFv9cqURF8K8KCxdSbbABHO+vouByJCvza4Pn045QznwxXNjGWakS9QZPcUVUM/Sw+FycBIb3ZD0OgmvjmXxn2HYGp27uSUTS9rGvbfqnhpFcXmVwTxcwBze4BVUPV7S+oBBJvTSkI=
+Message-ID: <a44ae5cd0704242341n4c8d9eaaw4516759ff79e8cd5@mail.gmail.com>
+Date: Tue, 24 Apr 2007 23:41:32 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc7-mm1 + sysfs-oops-workaround.patch -- software suspend failed (1 tasks refusing to freeze)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Oleg Nesterov" <oleg@tv-sign.ru>
+In-Reply-To: <20070424225429.544075c8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a44ae5cd0704242227x14986fe3v5c2fc3a5bceedc89@mail.gmail.com>
+	 <20070424224137.0ccf7874.akpm@linux-foundation.org>
+	 <a44ae5cd0704242249i210ba860i659c230b5dbb211c@mail.gmail.com>
+	 <20070424225429.544075c8.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 23:35:37 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+On 4/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 24 Apr 2007 22:49:48 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+>
+> > On 4/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > On Tue, 24 Apr 2007 22:27:44 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+> > >
+> > > > [ 1251.506964] PM: Preparing system for mem sleep
+> > > > [ 1251.514790] Stopping tasks ...
+> > > > [ 1271.456065] Stopping user space processes timed out after 20
+> > > > seconds (1 tasks refusing to freeze):
+> > > > [ 1271.456243]  multiload-apple
+> > > > [ 1271.456291] Restarting tasks ... done.
+> > > >
+> > > > This isn't happening under earlier builds I've tested.  How can I debug this?
+> > > >
+> > >
+> > > hm, that's multiload-applet, some gnome thing.
+> > >
+> > > sysrq-T, perhaps?  Perhaps the process is sleeping in the kernel somewhere.
+> >
+> > Should I wait for the next patch from Tejun before retesting?  Perhaps
+> > this suspend problem is a side effect of the locking problem he
+> > mentioned.
+>
+> It's unlikely to be related to Tejun's sysfs changes.
+>
+I tried to reproduce this, but this time when I tried to suspend, the
+machine just hung with a message showing saying the system was
+suspending.  When I touched my Synaptics mousepad after about ten
+seconds of waiting, the system suddenly suspended.  Upon resuming, I
+checked dmesg and found the time seems to be totally out of whack:
 
-> And then this:
-> [  278.835674] RTNL: assertion failed at net/ipv6/addrconf.c (2123)
-> [  278.835684]  [<c0104e0f>] show_trace_log_lvl+0x1a/0x30
-> [  278.835701]  [<c0105a26>] show_trace+0x12/0x14
-> [  278.835713]  [<c0105ab3>] dump_stack+0x16/0x18
-> [  278.835723]  [<f95c660a>] addrconf_notify+0x5dd/0x7d0 [ipv6]
-> [  278.835795]  [<c0125572>] notifier_call_chain+0x2b/0x4a
-> [  278.835809]  [<c01255be>] __raw_notifier_call_chain+0x19/0x1f
-> [  278.835822]  [<c01255de>] raw_notifier_call_chain+0x1a/0x1c
-> [  278.835834]  [<c025041e>] netdev_state_change+0x23/0x35
-> [  278.835849]  [<c0258e76>] rtnl_setlink+0x34f/0x3ef
-> [  278.835861]  [<c025845e>] rtnetlink_rcv_msg+0x198/0x1b2
-> [  278.835873]  [<c025f4b3>] netlink_run_queue+0x6f/0xe1
-> [  278.835885]  [<c0258277>] rtnetlink_rcv+0x29/0x44
-> [  278.835896]  [<c025f82c>] netlink_data_ready+0x15/0x55
-> [  278.835907]  [<c025e877>] netlink_sendskb+0x22/0x53
-> [  278.835918]  [<c025f1f0>] netlink_unicast+0x1bb/0x1d5
-> [  278.835929]  [<c025f80b>] netlink_sendmsg+0x246/0x252
-> [  278.835940]  [<c02472e6>] sock_sendmsg+0xcc/0xe5
-> [  278.835951]  [<c0247beb>] sys_sendto+0xcc/0xec
-> [  278.835961]  [<c0247c41>] sys_send+0x36/0x38
-> [  278.835971]  [<c02483f6>] sys_socketcall+0x13e/0x241
-> [  278.835982]  [<c0103e66>] sysenter_past_esp+0x5f/0x99
-> [  278.835993]  =======================
-
-yes, that's the one I mentioned in the release notes.  It appears
-to be harmless.
-
-Dave has identified some fishiness in the netlink code which
-might have caused this.
+[ 1334.589074] pci 0000:00:1f.6: LATE suspend
+[ 1334.589080] Intel ICH 0000:00:1f.5: LATE suspend
+[ 1334.589085] pci 0000:00:1f.3: LATE suspend
+[ 1334.589091] pci 0000:00:1f.0: LATE suspend
+[ 1334.589096] pci 0000:00:1e.0: LATE suspend, may wakeup
+[ 1334.589102] pci 0000:00:02.1: LATE suspend
+[ 1334.589108] pci 0000:00:02.0: LATE suspend
+[ 1334.589113] pci 0000:00:00.3: LATE suspend
+[ 1334.589118] pci 0000:00:00.1: LATE suspend
+[ 1334.589124] agpgart-intel 0000:00:00.0: LATE suspend
+[ 1334.589733]  hwsleep-0323 [03] enter_sleep_state     : Entering
+sleep state [S3]
+[18014527.889728] Intel machine check architecture supported.
+[18014527.889749] Intel machine check reporting enabled on CPU#0.
+[18014527.889783] Back to C!
+[18014527.889783] agpgart-intel 0000:00:00.0: EARLY resume
+[18014527.889783] PCI: Calling quirk c01c94b2 for 0000:00:00.0
