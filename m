@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992922AbXDYSxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992917AbXDYSyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992922AbXDYSxI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 14:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992927AbXDYSxH
+	id S2992917AbXDYSyO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 14:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992927AbXDYSyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 14:53:07 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:48645 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992922AbXDYSxF (ORCPT
+	Wed, 25 Apr 2007 14:54:14 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:57938 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992917AbXDYSyN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 14:53:05 -0400
-Date: Wed, 25 Apr 2007 11:50:45 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <20070425183934.GX3468@stusta.de>
-Message-ID: <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org>
-References: <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net>
- <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
- <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
- <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de>
- <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de>
+	Wed, 25 Apr 2007 14:54:13 -0400
+Message-ID: <462FA3B9.5080008@freescale.com>
+Date: Wed, 25 Apr 2007 13:53:45 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.7.10) Gecko/20050909 Red Hat/1.7.10-1.1.3.2
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+CC: Olof Johansson <olof@lixom.net>, Jean Delvare <khali@linux-fr.org>,
+       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC][POWERPC] i2c: adds support for i2c bus on 8xx
+References: <20070420082714.4f10f186@localhost.localdomain>	<20070423025709.GA28805@lixom.net> <462F8953.1020201@kernel.crashing.org>
+In-Reply-To: <462F8953.1020201@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Apr 2007, Adrian Bunk wrote:
+Vitaly Bordug wrote:
+> i2c && 8xx combo never work with 2.6 at least in mainstream. That's why 
+> related stuff were scheduled to removal by Jean even,
+> before I came up with this stuff.
+[snip]
+>> This could all be done with an of_platform driver instead, and avoid 
+>> the above.
+>> (Someone else already suggested that I believe).
+>>
+>>   
 > 
-> 3W for the complete system? In CPU state S1? [1]
+> I know i know. But it was decided, while both ppc/ and powerpc/ wander 
+> around, platform devices way is preferrable.
 
-In STR, 3W is quite realistic. The CPU is off, all (or most - up to you) 
-the devices are off, but the motherboard and memory is powered.
+The idea is to avoid regressions in arch/ppc; maintaining feature parity 
+isn't necessary.  If, as you say above, 8xx i2c was already broken in 
+2.6 (even in arch/ppc), then I see no reason not to go to an of_device 
+right away.
 
-> And even 3W would still be a waste of energy.
+> It is apparent why - so far only mpc885 is alive in arch/powerpc, and it 
+> is not going to change soon for 8xx. 
 
-.. but if the alternative is a feature that just isn't worth it, and 
-likely to not only have its own bugs, but cause bugs elsewhere? (And yes, 
-I believe STD is both of those. There's a reason it's called "STD". Go 
-to google and type "STD" and press "I'm feeling lucky". Google is God).
+Actually, I plan to do some arch/powerpc 8xx work over the next couple 
+months, so hopefully it will change soon. :-)
 
-		Linus
+-Scott
