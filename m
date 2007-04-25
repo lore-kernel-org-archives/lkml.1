@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbXDYL74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965337AbXDYMOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbXDYL74 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 07:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbXDYL74
+	id S965337AbXDYMOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 08:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXDYMOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 07:59:56 -0400
-Received: from holomorphy.com ([66.93.40.71]:36323 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753191AbXDYL7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 07:59:55 -0400
-Date: Wed, 25 Apr 2007 04:58:40 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Li, Tong N" <tong.n.li@intel.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
-       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
-       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [REPORT] cfs-v4 vs sd-0.44
-Message-ID: <20070425115840.GT31925@holomorphy.com>
-References: <20070424212717.GR31925@holomorphy.com> <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com> <20070425094403.GA3290@elte.hu>
-MIME-Version: 1.0
+	Wed, 25 Apr 2007 08:14:51 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:36718 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965337AbXDYMOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 08:14:50 -0400
+Date: Wed, 25 Apr 2007 14:20:38 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070425122038.GE1613@ff.dom.local>
+References: <20070419002548.72689f0e.akpm@linux-foundation.org> <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070425094403.GA3290@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070424185537.GA5029@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Li, Tong N <tong.n.li@intel.com> wrote:
->> [...] A corollary of this is that if both threads i and j are 
->> continuously runnable with fixed weights in the time interval, then 
->> the ratio of their CPU time should be equal to the ratio of their 
->> weights. This definition is pretty restrictive since it requires the 
->> properties to hold for any thread in any interval, which is not 
->> feasible. [...]
+2 cents more...
 
-On Wed, Apr 25, 2007 at 11:44:03AM +0200, Ingo Molnar wrote:
-> yes, it's a pretty strong definition, but also note that while it is 
-> definitely not easy to implement, the solution is nevertheless feasible 
-> in my opinion and there exists a scheduler that implements it: CFS.
+On Tue, Apr 24, 2007 at 10:55:37PM +0400, Oleg Nesterov wrote:
+...
+> --- OLD/kernel/workqueue.c~1_CRDW	2007-04-13 17:43:23.000000000 +0400
+> +++ OLD/kernel/workqueue.c	2007-04-24 22:41:15.000000000 +0400
+> @@ -242,11 +242,11 @@ static void run_workqueue(struct cpu_wor
+...
+>  
+> +static void needs_a_good_name(struct workqueue_struct *wq,
 
-The feasibility comment refers to the unimplementability of schedulers
-with infinitesimal timeslices/quanta/sched_granularity_ns. It's no
-failing of cfs (or any other scheduler) if, say, the ratios are not
-exact within a time interval of one nanosecond or one picosecond.
+If you don't prefer something original, I think this
+could be something like:
 
-One of the reasons you get the results you do is that what you use for
-->fair_key is very close to the definition of lag, which is used as a
-metric of fairness. It differs is in a couple of ways, but how it's
-computed and used for queueing can be altered to more precisely match.
+wait_on_work_[on_each | each_cpu | per_cpu] etc.
 
-The basic concept you appear to be trying to implement is a greedy
-algorithm: run the task with the largest lag first. As far as I can
-tell, this is sound enough, though I have no formal proof. So with the
-lag computation and queueing adjusted appropriately, it should work out.
+...
+>  /**
+> @@ -532,22 +534,34 @@ EXPORT_SYMBOL(flush_scheduled_work);
+>  /**
+>   * cancel_rearming_delayed_work - kill off a delayed work whose handler rearms the delayed work.
+>   * @dwork: the delayed work struct
+> - *
+> - * Note that the work callback function may still be running on return from
+> - * cancel_delayed_work(). Run flush_workqueue() or cancel_work_sync() to wait
+> - * on it.
 
-Adjustments to the lag computation for for arrivals and departures
-during execution are among the missing pieces. Some algorithmic devices
-are also needed to account for the varying growth rates of lags of tasks
-waiting to run, which arise from differing priorities/weights.
+Probably there should be added a few words about changes.
 
-There are no mysteries.
+>   */
+>  void cancel_rearming_delayed_work(struct delayed_work *dwork)
+>  {
+> -	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
+> -
+> -	/* Was it ever queued ? */
+> -	if (cwq != NULL) {
+> -		struct workqueue_struct *wq = cwq->wq;
+> -
+> -		while (!cancel_delayed_work(dwork))
+> -			flush_workqueue(wq);
+> -	}
+> +	struct work_struct *work = &dwork->work;
+> +	struct cpu_workqueue_struct *cwq = get_wq_data(work);
+> +	int retry;
+> +
+> +	if (!cwq)
+> +		return;
+> +
+> +	do {
+> +		retry = 1;
+> +		spin_lock_irq(&cwq->lock);
+> +		/* CPU_DEAD in progress may change cwq */
+> +		if (likely(cwq == get_wq_data(work))) {
+> +			list_del_init(&work->entry);
+> +			__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> +			retry = try_to_del_timer_sync(&dwork->timer) < 0;
+> +		}
 
+		else
+			retry = 0;
 
--- wli
+> +		spin_unlock_irq(&cwq->lock);
+> +	} while (unlikely(retry));
+...
+
+Cheers,
+Jarek P.
