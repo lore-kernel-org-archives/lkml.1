@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992765AbXDYNcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXDYNiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992765AbXDYNcs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 09:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161728AbXDYNcs
+	id S1751672AbXDYNiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 09:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161126AbXDYNix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 09:32:48 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:47330 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161742AbXDYNcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 09:32:47 -0400
-Subject: Re: [PATCH 2/10] safe_apic_wait_icr_idle - x86_64
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Andi Kleen <ak@suse.de>
-Cc: vgoyal@in.ibm.com, kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
-       horms@verge.net.au, "Eric W. Biederman" <ebiederm@xmission.com>,
-       mbligh@google.com, Keith Owens <kaos@ocs.com.au>,
-       akpm@linux-foundation.org
-In-Reply-To: <200704251511.59495.ak@suse.de>
-References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-	 <200704251426.14398.ak@suse.de>
-	 <1177505712.19745.18.camel@sebastian.intellilink.co.jp>
-	 <200704251511.59495.ak@suse.de>
-Content-Type: text/plain; charset=utf-8
-Organization: NTT Open Source Software Center
-Date: Wed, 25 Apr 2007 22:32:46 +0900
-Message-Id: <1177507966.19745.24.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 8bit
+	Wed, 25 Apr 2007 09:38:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52163 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751672AbXDYNiw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 09:38:52 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070425041514.bb770377.akpm@linux-foundation.org> 
+References: <20070425041514.bb770377.akpm@linux-foundation.org>  <20070425105036.10872.48596.stgit@warthog.cambridge.redhat.com> 
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/16] AF_RXRPC socket family and AFS rewrite [try #3] 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 25 Apr 2007 14:38:32 +0100
+Message-ID: <13484.1177508312@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 15:11 +0200, Andi Kleen wrote:
-> On Wednesday 25 April 2007 14:55:12 Fernando Luis Vázquez Cao wrote:
-> > On Wed, 2007-04-25 at 14:26 +0200, Andi Kleen wrote:
-> > > >  static __inline__ void apic_wait_icr_idle(void)
-> > > >  {
-> > > > -	while (apic_read( APIC_ICR ) & APIC_ICR_BUSY)
-> > > > +	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-> > > >  		cpu_relax();
-> > > >  }
-> > > >  
-> > > > +static __inline__ unsigned int safe_apic_wait_icr_idle(void)
-> > > 
-> > > This should be probably not inline -- too large
-> > Hello Andi,
-> > 
-> > Thank you for reviewing the patches. Do you want me to resend the whole
-> > patch or should I cook a new one that un-inlines the function instead?
-> 
-> I already did that.
-> 
-> Also will apply Keith's suggestion.
-Thank you Andi. Sorry for the trouble.
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
+> I'm ducking all feature and cleanup patches now, and probably shall
+> continue to do so for some weeks.  The priority (which I believe to be
+> increasingly urgent) is to fix the 2.6.21 regressions and to stabilise
+> the things which we presently have queued for 2.6.22.  Not to
+> mention the 1000ish unaddressed bug reports in bugzilla and elsewhere.
+
+Fair enough.  I think the idea is for them (or at least some of them) to go
+through one of DaveM's net git trees anyway.
+
+David
