@@ -1,113 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161664AbXDYHm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161699AbXDYHrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161664AbXDYHm2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 03:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161667AbXDYHm2
+	id S1161699AbXDYHrL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 03:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161695AbXDYHrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 03:42:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59114 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161664AbXDYHm1 (ORCPT
+	Wed, 25 Apr 2007 03:47:10 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:39819 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161699AbXDYHrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 03:42:27 -0400
-Date: Wed, 25 Apr 2007 00:42:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
-       GOTO <y-goto@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] syctl for selecting global zonelist[] order
-Message-Id: <20070425004214.e21da2d8.akpm@linux-foundation.org>
-In-Reply-To: <20070425121946.9eb27a79.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070425121946.9eb27a79.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Apr 2007 03:47:09 -0400
+To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, ebiederm@xmission.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: [patch] unprivileged mounts update
+Message-Id: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 25 Apr 2007 09:45:31 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 12:19:46 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-> Make zonelist policy selectable from sysctl.
-> 
-> Assume 2 node NUMA, only node(0) has ZONE_DMA (ZONE_DMA32).
-> 
-> In this case, default (node0's) zonelist order is
-> 
-> Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
-> 
-> This means Node(0)'s DMA is used before Node(1)'s NORMAL.
-> 
-> In some server, some application uses large memory allcation.
-> This exhaust memory in the above order.
-> Then....sometimes OOM_KILL will occur when 32bit device requires memory.
-> 
-> This patch adds sysctl for rebuilding zonelist after boot and doesn't change
-> default zonelist order.
+- refine adding "nosuid" and "nodev" flags for unprivileged mounts:
+    o add "nosuid", only if mounter doesn't have CAP_SETUID capability
+    o add "nodev", only if mounter doesn't have CAP_MKNOD capability
 
-hm.  Why don't we use that ordering all the time?  Does the present ordering have
-any advantage?
+- allow unprivileged forced unmount, but only for FS_SAFE filesystems
 
-> command:
-> %echo 0 > /proc/sys/vm/better_locality
+- allow mounting over special files, but not symlinks
 
-Who could resist having better locality? ;)
+- for mounting and umounting check "fsuid" instead of "ruid"
 
-> Will rebuild zonelist in following order.
-> 
-> Node(0)'s NORMAL -> Node(1)'s NORMAL -> Node(0)'s DMA.
-> 
-> if set better_locality == 1 (default), zonelist is
-> Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)'s NORMAL.
-> 
-> Maybe useful in some users with heavy memory pressure and mlocks.
-> 
-> ...
->
->  extern int percpu_pagelist_fraction;
->  extern int compat_log;
-> +#ifdef CONFIG_NUMA
-> +extern int sysctl_better_locality;
-> +#endif
+Thanks to everyone for the comments, with special thanks to Serge
+Hallyn and Eric Biederman.
 
-The ifdef isn't needed here.  If something went wrong, we'll find out at
-link-time.
-  
->  /* this is needed for the proc_dointvec_minmax for [fs_]overflow UID and GID */
->  static int maxolduid = 65535;
-> @@ -845,6 +848,15 @@ static ctl_table vm_table[] = {
->  		.extra1		= &zero,
->  		.extra2		= &one_hundred,
->  	},
-> +	{
-> +		.ctl_name	= VM_BETTER_LOCALITY,
+For testing the new functionality provided by this patchset a simple
+tool similar in syntax to mount(8) is available from:
 
-Please don't add new sysctls: use CTL_UNNUMBERED here.
+  http://www.kernel.org/pub/linux/kernel/people/mszeredi/mmount
 
-> +		.procname	= "better_locality",
-> +		.data		= &sysctl_better_locality,
-> +		.maxlen		= sizeof(sysctl_better_locality),
-> +		.mode		= 0644,
-> +		.proc_handler	= &sysctl_better_locality_handler,
-> +		.strategy	= &sysctl_intvec,
-> +	},
->
-> ..
->
-> +static void build_zonelists(pg_data_t *pgdat)
-> +{
-> +	if (sysctl_better_locality) {
-> +		build_zonelists_locality_aware(pgdat);
-> +	} else {
-> +		build_zonelists_zone_aware(pgdat);
-> +	}
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-Remove all the braces please.
-
-> @@ -207,6 +207,7 @@ enum
->  	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
->  	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
->  	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-> +	VM_BETTER_LOCALITY=36,	 /* create locality-preference zonelist */
-
-This can go away.
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-04-22 17:48:18.000000000 +0200
++++ linux/fs/namespace.c	2007-04-22 18:19:51.000000000 +0200
+@@ -252,10 +252,12 @@ static int reserve_user_mount(void)
+ static void __set_mnt_user(struct vfsmount *mnt)
+ {
+ 	BUG_ON(mnt->mnt_flags & MNT_USER);
+-	mnt->mnt_uid = current->uid;
++	mnt->mnt_uid = current->fsuid;
+ 	mnt->mnt_flags |= MNT_USER;
+-	if (!capable(CAP_SYS_ADMIN))
+-		mnt->mnt_flags |= MNT_NOSUID | MNT_NODEV;
++	if (!capable(CAP_SETUID))
++		mnt->mnt_flags |= MNT_NOSUID;
++	if (!capable(CAP_MKNOD))
++		mnt->mnt_flags |= MNT_NODEV;
+ }
+ 
+ static void set_mnt_user(struct vfsmount *mnt)
+@@ -725,10 +727,10 @@ static bool permit_umount(struct vfsmoun
+ 	if (!(mnt->mnt_flags & MNT_USER))
+ 		return false;
+ 
+-	if (flags & MNT_FORCE)
++	if ((flags & MNT_FORCE) && !(mnt->mnt_sb->s_type->fs_flags & FS_SAFE))
+ 		return false;
+ 
+-	return mnt->mnt_uid == current->uid;
++	return mnt->mnt_uid == current->fsuid;
+ }
+ 
+ /*
+@@ -792,13 +794,13 @@ static bool permit_mount(struct nameidat
+ 	if (type && !(type->fs_flags & FS_SAFE))
+ 		return false;
+ 
+-	if (!S_ISDIR(inode->i_mode) && !S_ISREG(inode->i_mode))
++	if (S_ISLNK(inode->i_mode))
+ 		return false;
+ 
+ 	if (!(nd->mnt->mnt_flags & MNT_USER))
+ 		return false;
+ 
+-	if (nd->mnt->mnt_uid != current->uid)
++	if (nd->mnt->mnt_uid != current->fsuid)
+ 		return false;
+ 
+ 	*flags |= MS_SETUSER;
