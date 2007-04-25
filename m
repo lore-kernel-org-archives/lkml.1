@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423287AbXDYIYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423290AbXDYIYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423287AbXDYIYA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 04:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423288AbXDYIXx
+	id S1423290AbXDYIYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 04:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423289AbXDYIYS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 04:23:53 -0400
-Received: from mbx.ines.ro ([80.86.96.25]:59504 "EHLO mailbox.ines.ro"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423285AbXDYIXv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 04:23:51 -0400
-X-Greylist: delayed 2013 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Apr 2007 04:23:51 EDT
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Dumitru Ciobarcianu <Dumitru.Ciobarcianu@iNES.RO>
+	Wed, 25 Apr 2007 04:24:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58244 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423285AbXDYIYQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 04:24:16 -0400
+Date: Wed, 25 Apr 2007 10:22:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Ingo Molnar <mingo@elte.hu>,
+Cc: Mark Lord <lkml@rtr.ca>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Con Kolivas <kernel@kolivas.org>, Willy Tarreau <w@1wt.eu>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
        Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070425081051.GA7221@ucw.cz>
-References: <20070418220228.GA14536@elte.hu>
-	 <1176947576.5906.21.camel@nigel.suspend2.net>
-	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070424212408.GD16457@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-	 <20070425064137.GA25247@elte.hu> <20070425072904.GB6866@ucw.cz>
-	 <1177487338.17755.46.camel@DustPuppy.LNX.RO> <20070425081051.GA7221@ucw.cz>
-Content-Type: text/plain
-Organization: iNES Group
-Date: Wed, 25 Apr 2007 11:22:21 +0300
-Message-Id: <1177489341.17755.49.camel@DustPuppy.LNX.RO>
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070425082247.GA21546@elte.hu>
+References: <20070420140457.GA14017@elte.hu> <20070421121235.GA2044@1wt.eu> <200704220155.20856.kernel@kolivas.org> <20070421160008.GA28783@elte.hu> <Pine.LNX.4.61.0704211913130.9989@yvahk01.tjqt.qr> <20070421190026.GA25720@elte.hu> <462B60A1.1020407@rtr.ca> <20070422132732.GB18471@elte.hu> <20070425081602.GA7255@ucw.cz>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0 (2.10.0-1) 
-Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Clean, Agent: BitDefender Milter 1.6.2 on MailBox.iNES.RO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425081602.GA7255@ucw.cz>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 08:10 +0000, Pavel Machek wrote:
-> Hi!
+
+* Pavel Machek <pavel@ucw.cz> wrote:
+
+> > it into some xorg.conf field. (It also makes sure that X isnt 
+> > preempted by other userspace stuff while it does timing-sensitive 
+> > operations like setting the video modes up or switching video modes, 
+> > etc.)
 > 
-> > > > userspace-driven-suspend is already in the kernel, today. So it's not 
-> > > > really "two versions side by side doing the same thing", but more of:
-> > > > 
-> > > >            A B C + D E F G H
-> > > > 
-> > > > where "ABC" is used by the uswsusp code today, and "ABCDEFGH" is used by 
-> > > > suspend2. So any "suspend2 merge" would largely be about adding "DEFGH". 
-> > > 
-> > > Actually, we have 'D H' in kernel, today. It is called swsusp...
-> > > (Encryption, swapFile support and Graphical progress are missing from
-> > > today's kernel.)
-> > 
-> > Please stop using FUD. 
-> > Graphical progress it's not in the kernel, even with suspend2.
-> 
-> It was ascii-art, but still 'graphical', last time I checked.
+> X is priviledged. It can just cli around the critical section.
 
-That would be suspend2ui_text , an userspace app.
-It also works without it.
+yes, that is a tool that can be used too (and is used by most drivers) - 
+my point was rather that besides the disadvantages, not preempting X can 
+be an advantage too - not that there are no other (and often more 
+suitable) tools to do the same.
 
--- 
-Cioby
-
-
+	Ingo
