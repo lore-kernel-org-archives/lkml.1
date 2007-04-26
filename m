@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932764AbXDZECm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXDZEH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932764AbXDZECm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbXDZECm
+	id S932819AbXDZEH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 00:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXDZEH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:02:42 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:34723 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754695AbXDZECl (ORCPT
+	Thu, 26 Apr 2007 00:07:57 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34699 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932819AbXDZEH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:02:41 -0400
-Message-ID: <4630243C.4010402@bx.jp.nec.com>
-Date: Thu, 26 Apr 2007 13:02:04 +0900
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Thu, 26 Apr 2007 00:07:56 -0400
+Date: Thu, 26 Apr 2007 06:08:06 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426040806.GJ3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
-References: <462605DC.2080804@bx.jp.nec.com>	<462609D1.50300@bx.jp.nec.com>	<20070419210813.a599c54f.akpm@linux-foundation.org>	<46288D11.4000801@bx.jp.nec.com>	<20070420111526.01ad7f4c.akpm@linux-foundation.org>	<462DBC64.9070102@bx.jp.nec.com>	<20070424012902.1089bc02.akpm@linux-foundation.org> <20070424082117.354341d3@oldman>
-In-Reply-To: <20070424082117.354341d3@oldman>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> Well..  before you can finish this work we need to decide upon what the
->>>> interface to userspace will be.
->>>>
->>>> - The miscdev isn't appropriate
->>>>
->>> Why isn't miscdev appropriate? 
->>> We just shouldn't use miscdev for networking conventionally?
->>>
->> Yes it's rather odd, especially for networking.
->>
->> What does the miscdev _do_ anyway?  Is it purely a target for the ioctls?
+On Wed, Apr 25, 2007 at 08:29:28PM -0700, Linus Torvalds wrote:
+>...
+> So it's been over two and a half months, and while it's certainly not the 
+> longest release cycle ever, it still dragged out a bit longer than I'd 
+> have hoped for and it should have. As usual, I'd like to thank Adrian (and 
+> the people who jumped on the entries Adrian had) for keeping everybody on 
+> their toes with the regression list - there's a few entries there still, 
+> but it got to the point where we didn't even know if they were real 
+> regressions, and delaying things further just wasn't going to help.
+>...
 
-Yes, I purely use miscdev for the ioctls.
 
-I want to use sysfs and ioctl to implement the dynamic configurabillity.
-The sysfs shows/changes netconsole configurations(IP address, port and so on).
-A userland application using the ioctl adds/removes netconsole port.
+Number of different known regressions compared to 2.6.20 at the time
+of the 2.6.21 release:
+14
 
-I thought that the dynamic configurability could be realized without a 
-userland application. in the kernel only.
-(e.g. only sysfs, no userland application)
-But I think we need the function to automatically resolve the destination 
-MAC address from IP address because of the resolving cost and 
-I should implement a userland application, not netconsole kernel module.
-The netconsle will become more useful by implementing the above function.
+Number of different known regressions compared to 2.6.20 at the time
+of the 2.6.21 release that were first reported in March or earlier:
+8
 
-> Some other speculations:
-> 1. Would it be possible to add ioctl's to /dev/console? This would be more in
->     keeping with older Unix style model.
-> 
-> 2. Using sysfs makes sense if there is a device object that exists to
->    add the sysfs attributes to.
-> 
-> 3. Procfs is handy for summary type tables.
-> 
-> 4. Netlink does feel like overkill for this. Although newer generic netlink
->    makes it easier.
+Number of different known regressions compared to 2.6.20 at the time
+of the 2.6.21 release with patches available at the time of the 2.6.21 
+release [1]:
+3
 
-If I use sysfs, Is it proper location that adds each attributes of netconsole 
-port in "/sys/class/misc/netconsole/port[0-9]*", or another locations in /sys/?
+What I will NOT do:
+Waste my time with tracking 2.6.22-rc regressions.
 
-Stephen Hemminger said "The configuration of netconsole's looks like the 
-configuration of routes".
-I think so too.
-So I think ioctl commands for adding/removing port and the following userland 
-application like route(8) command by using the ioctl.
 
-e.g.
-1. add port
-# netconfig add 192.168.0.10 6666
+We have an astonishing amount of -rc testers, but obviously not the 
+developer manpower for handling them.
 
-2. remove port
-# netconfig remove 1
+If we would take "no regressions" seriously, it might take 4 or 5 months 
+between releases due to the lack of developer manpower for handling 
+regressions. But that should be considered OK if avoiding regressions 
+was considered more important than getting as quick as possible to the 
+next two week regression-merge window.
 
-3. show port info
-# netconfig
-id status  Source IP   Source Port Destination IP Destination Port Destination MAC
-1  enable  192.168.0.1 6665        192.168.0.10   6666             00:11:22:33:44:55
-2  disable 192.168.0.1 6665        192.168.0.20   6666             00:11:22:33:44:66
+But releasing with so many known regressions is insulting for the many 
+people who spent their time testing -rc kernels.
 
-route(8) command uses ioctl for Netlink.
-But, I'm going to implement ioctl's to /dev/console because of the above comments.
 
-Thank you for your comments.
-Any comments very welcome.
+cu
+Adrian
+
+[1] http://lkml.org/lkml/2007/4/25/496
+
 -- 
-Keiichi KII
-NEC Corporation OSS Promotion Center
-E-mail: k-keiichi@bx.jp.nec.com
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
