@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031426AbXDZSgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031430AbXDZShU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031426AbXDZSgd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031430AbXDZSgd
+	id S1031430AbXDZShU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031429AbXDZShU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:36:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51049 "EHLO ogre.sisk.pl"
+	Thu, 26 Apr 2007 14:37:20 -0400
+Received: from khc.piap.pl ([195.187.100.11]:45741 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031426AbXDZSgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:36:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Date: Thu, 26 Apr 2007 20:40:30 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-References: <20070425072350.GA6866@ucw.cz> <20070426113005.GU17387@elf.ucw.cz> <1177605074.6814.93.camel@johannes.berg>
-In-Reply-To: <1177605074.6814.93.camel@johannes.berg>
+	id S1031423AbXDZShR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:37:17 -0400
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+	<20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de>
+	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+	<20070426165950.GO3468@stusta.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 26 Apr 2007 20:37:14 +0200
+In-Reply-To: <20070426165950.GO3468@stusta.de> (Adrian Bunk's message of "Thu, 26 Apr 2007 18:59:50 +0200")
+Message-ID: <m3d51rhtid.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704262040.31760.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 April 2007 18:31, Johannes Berg wrote:
-> On Thu, 2007-04-26 at 13:30 +0200, Pavel Machek wrote:
-> 
-> > > From looking at pm_ops which I was recently working with a lot, it seems
-> > > that it was designed by somebody who was reading the ACPI documentation
-> > > and was otherwise pretty clueless, even at that level std tries to look
-> > > like suspend. IMHO that is one of the first things that should be ripped
-> > > out, no pm_ops for STD, it's a pain to work with.
-> > 
-> > That code goes back to Patrick, AFAICT. (And yes, ACPI S3 and ACPI S4
-> > low-level enter is pretty similar).
-> > 
-> > Patches would be welcome
-> 
-> That was easier than I thought. This applies on top of a patch that
-> makes kernel/power/user.c optional since I had no idea how to fix it,
-> problems I see:
->  * it surfaces kernel implementation details about pm_ops and thus makes
->    the whole thing very fragile
+Adrian Bunk <bunk@stusta.de> writes:
 
-Can you elaborate?
+> Look at the facts:
+> 8 out of 14 regressions in my current list were reported in March or earlier.
+> And for many regressions fixed it took several weeks until debugging 
+> by a kernel developer was started.
+>
+> We do not lack testers for getting bug reports quickly.
+> We lack developer manpower for debugging the many regression reports.
 
->  * it has yet another interface (yuck) to determine whether to reboot,
->    shut down etc, doesn't use /sys/power/disk
+Quite possible, given the (very) limited range of the bugs. Most people
+just can't debug them.
 
-Yes.  In fact it was meant as a replacement for /sys/power/disk at one point.
+This isn't IMHO fundamentally wrong, and releasing a ".0" kernel with
+known problems isn't fundamentally wrong either.
 
->  * I generally had no idea wtf it is doing in some places
+What is missing is easily accessible KNOWN_PROBLEMS information for
+released kernels. While I think your work documenting etc. known
+regressions is a very good thing, publishing it with the released
+kernels (certainly .0 and next stable releases, perhaps "quite stable"
+rc versions as well) would be ideal.
 
-I could have told you if you had asked. :-)
+A pressure for fixing the bugs is, obviously, the other very good thing.
 
-> Anyway, this patch is only compile tested, it
->  * introduces include/linux/hibernate.h with hibernate_ops and
->    a new hibernate() function to hibernate the system
+>> 2.6.20 was actually really good. Yes, it had some regressions, but I do 
+>> believe that it was one of the least buggy releases we've had. The process 
+>> _worked_.
 
-Do we need hibernate_ops at all?  There's only one user anyway and I'm not
-sure there will be more of them in the future.
+I the process worked with 2.6.21 as well. Obviously no two releases
+are equal, one has to be better than the other.
 
->  * rips apart a lot of the suspend code and puts it back together using
->    the hibernate_ops
->  * switches ACPI to hibernate_ops (the only user of pm_ops.pm_disk_mode)
->  * might apply/compile against -mm, I have all my and some of Rafael's
->    suspend/hibernate work in my tree.
->  * breaks user suspend as I noted above
->  * is incomplete, somewhere pm_suspend_disk() is still defined iirc
+>> > I'm not satisfied with the result, and the world won't stop turning when 
+>> > I'm not tracking 2.6.22-rc regressions.
 
-I think I can fix it up, just give me some time.
+Anyway, I and many others are satisfied with the result. I think it's
+one of the few "quite recent" things which are a great improvements.
+Other such things are using that weird git thing :-) and perhaps the
+most important - the length of devel cycle under control (I mean the
+lack of "2.5 series" thing).
 
-The idea is good, I think we should do someting like this.
+> But I am not happy with the current state of released kernels.
 
-Greetings,
-Rafael
+We've got stable series.
+With KNOWN_PROBLEMS information, sysadmins can decide if they can
+safely upgrade to .0 or if they have to wait for .123. Pressing
+the responsible people to fix the problems in .123 (would) help
+it greatly.
+-- 
+Krzysztof Halasa
