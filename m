@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXDZKOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXDZKRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030323AbXDZKOE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030565AbXDZKOE
+	id S1030339AbXDZKRy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030505AbXDZKRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:14:04 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:43654 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030505AbXDZKOD (ORCPT
+	Thu, 26 Apr 2007 06:17:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:10465 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030339AbXDZKRx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:14:03 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070424212408.GD16457@elf.ucw.cz>
-References: <20070413202100.GA9957@elte.hu>
-	 <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu>
-	 <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu>
-	 <1176947576.5906.21.camel@nigel.suspend2.net>
-	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070424212408.GD16457@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xduRuLbubfga36TRMMV1"
-Date: Thu, 26 Apr 2007 12:17:12 +0200
-Message-Id: <1177582633.6814.29.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Thu, 26 Apr 2007 06:17:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sXU/karJkdi5tkXk5Xv27Yy45R5FIvR5y7j/D9LBmDL8trBBP1C4nISZFoG9yav0dhyCAbTpTtzgj6ah0AqrfhVHCYJK0RRmjkzQoLnTMZFD2GhilZe/ZjSeZL6SfyLgdMEpPt15csF+qrqTFxtPa2i7Imoe4CjxgCjx93lMfYI=
+Message-ID: <9a8748490704260317u211c244au3c5478ac02c12c43@mail.gmail.com>
+Date: Thu, 26 Apr 2007 12:17:47 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "David Chinner" <dgc@sgi.com>
+Subject: Re: 2.6.20.3 - possible recursive locking detected - in XFS
+Cc: linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       viro@zeniv.linux.org.uk
+In-Reply-To: <20070425233345.GN48531920@melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200704251116.57737.jesper.juhl@gmail.com>
+	 <20070425233345.GN48531920@melbourne.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 26/04/07, David Chinner <dgc@sgi.com> wrote:
+> On Wed, Apr 25, 2007 at 11:16:57AM +0200, Jesper Juhl wrote:
+> >
+> > Hi,
+> >
+> > For your information :
+> >
+> > Once in a while I see the message below after I've just created a new XFS filesystem, mount it and then start copying data to it.
+>
+> .....
+>
+> > =============================================
+> > [ INFO: possible recursive locking detected ]
+> > 2.6.20.3generic #1
+> > ---------------------------------------------
+> > xfs_fsr/6117 is trying to acquire lock:
+> >  (&(&ip->i_lock)->mr_lock){----}, at: [<f929422d>] xfs_ilock+0x7d/0xa0 [xfs]
+> >
+> > but task is already holding lock:
+> >  (&(&ip->i_lock)->mr_lock){----}, at: [<f929422d>] xfs_ilock+0x7d/0xa0 [xfs]
+>
+> Known false positive - XFS doesn't have the annotations needed for
+> this yet; we've got a patch that will probably make it's way into 6.5.22 that
+> should fix most of these issues.
+>
+Ok. Thanks for the feedback.
 
---=-xduRuLbubfga36TRMMV1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2007-04-24 at 23:24 +0200, Pavel Machek wrote:
-
-> I believe uswsusp user/kernel separation is clean enough. Kernel
-> provides "snapshot image" and "resume image". (Thanks go to Rafael for
-> very clean interface).
-
-The interface isn't even 64/32-bit compatible...
-
-johannes
-
---=-xduRuLbubfga36TRMMV1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMHwo/ETPhpq3jKURAv1BAKC4ngBgpIa2yfhU5QM0Qi8zbOb3egCgtmCC
-uyPsdVTNRM0JZsHZoeZV18s=
-=FRGP
------END PGP SIGNATURE-----
-
---=-xduRuLbubfga36TRMMV1--
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
