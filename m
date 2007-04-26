@@ -1,105 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031284AbXDZPim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031187AbXDZPkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031284AbXDZPim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031287AbXDZPim
+	id S1031187AbXDZPkH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:40:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031193AbXDZPkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:38:42 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:25298 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1031284AbXDZPil (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:38:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=WHL1fwWPdtWNsVRxiqWuL5hG+2smWJpB2YngG2emj8QBiuy8PlrBO0NhHV9wZ2cuVZKKppkzXT85VwY8MummiFiiTcudMmMDEKzLje6ujMEWDkdfwPjp//KeCyyzbvKifLiXp/3k9hn+OT4BDgi8o8hY/GjUQo4GTXjETqXWoUs=  ;
-X-YMail-OSG: dZmf1JsVM1nnFq7Psouep1TzRhVTbDRNOrmOd_AiBano4cwsuVF2rdLiNudKHUU7PK49IofesQ--
-Message-ID: <4630C776.9000804@yahoo.com.au>
-Date: Fri, 27 Apr 2007 01:38:30 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 26 Apr 2007 11:40:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:14334 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031187AbXDZPkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:40:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,455,1170662400"; 
+   d="scan'208";a="219793010"
+Message-ID: <4630C7D0.8030901@intel.com>
+Date: Thu, 26 Apr 2007 08:40:00 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <m1k5vzmoo7.fsf@ebiederm.dsl.xmission.com> <20070426135033.GU65285596@melbourne.sgi.com>
-In-Reply-To: <20070426135033.GU65285596@melbourne.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>
+CC: Lennert Buytenhek <buytenh@wantstofly.org>,
+       David Acker <dacker@roinet.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFT] e100 driver on ARM
+References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com> <20070426135013.GA12154@xi.wantstofly.org> <4630C159.1060707@garzik.org>
+In-Reply-To: <4630C159.1060707@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Apr 2007 15:40:00.0596 (UTC) FILETIME=[26913940:01C78819]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Thu, Apr 26, 2007 at 04:10:32AM -0600, Eric W. Biederman wrote:
->>Ok.  Now why are high end hardware manufacturers building crippled
->>hardware?  Or is there only an 8bit field in SCSI for describing
->>scatter gather entries?  Although I would think this would be
->>move of a controller ranter than a drive issue.
+Jeff Garzik wrote:
+> Lennert Buytenhek wrote:
+>> This is all a while ago now, but wasn't the e100 S-bit patch originally
+>> written by Intel people in response to the very same quote by Russell
+>> King that you've quoted above?
 > 
+> Correct.
 > 
-> scsi.h:
-> 
-> /*
->  *      The maximum sg list length SCSI can cope with
->  *      (currently must be a power of 2 between 32 and 256)
->  */
-> #define SCSI_MAX_PHYS_SEGMENTS  MAX_PHYS_SEGMENTS
-> 
-> And from blkdev.h:
-> 
-> #define MAX_PHYS_SEGMENTS 128
-> #define MAX_HW_SEGMENTS 128
-> 
-> So currentlt on SCSI we are limited to 128 s/g entries, and the
-> maximum is 256.  So I'd say we've got good grounds for needing
-> contiguous pages to go beyond 1MB I/O size on x86_64.
+> I just wanted to make sure it didn't kill any boxes.
 
-Or good grounds to increase the sg limit and push for io controller
-manufacturers to do the same. If we have a hack in the kernel that
-mostly works, they won't.
+Neither did we. On top of that we didn't have the equipment to test on ARM on 
+until recently, and the system that I got recently will not even load the kernel 
+with an e100 NIC in the PCI slot (way way way before e100.ko loads, e1000 works 
+just fine). that doesn't help either.
 
-Page colouring was always rejected, and lots of people who knew
-better got upset because it was the only way the hardware would go
-fast...
+Meanwhile we've not sat still and jesse wrote a patch to have e100 use IO 
+optionally for plagued platforms which seems to fix some of these issues, and 
+Jeff Kirsher has been actively tracking a e100 IPMI issue on a very specific 
+platform.
 
+Jeff, I think I should just push the IO patch and the sbit code to Andrew and 
+have it sit there. That is a vastly larger test resource than we currently can 
+generate for this. If needed we just let is sit there for a whole release cycle 
+before moving it to #upstream.
 
->>>And what do we do for arches that can't do multiple page sizes, only
->>>only have a limited and mostly useless set of page sizes to choose
->>>from?
->>
->>You have HW_PAGE_SIZE != PAGE_SIZE.
-> 
-> 
-> That's rather wasteful, though. Better to only use the large pages
-> when the filesystem needs them rather than penalise all filesystems.
+seems like a good idea, right?
 
-But 16k pages are fine for ia64. While you're talking about special
-casing stuff, surely a bigger page size could be the config option
-instead of higher order pagecache.
-
-
->>That is you hide the fact from
->>the bulk of the kernel struct page manges 2 or more real hardware pages.
->>But you expose it to the handful of places that actually care.
->>Partly this is a path you are starting down in your patches, with
->>larger page cache support.
-> 
-> 
-> Right, exactly. So apart from the contiguous allocation issue, you think
-> we are doing the right thing?
-
-You could put it that way. Or that it is wrong because of the
-fragmenatation problem. Realise that it is somewhat fundamental
-considering that it is basically an unsolvable problem with our
-current kernel assumptions of unconstrained kernel allocations and
-a 1:1 kernel mapping.
-
--- 
-SUSE Labs, Novell Inc.
+Auke
