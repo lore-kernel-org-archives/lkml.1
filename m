@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031503AbXDZUq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031509AbXDZUsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031503AbXDZUq4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031506AbXDZUq4
+	id S1031509AbXDZUsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031510AbXDZUsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:46:56 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:15762 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031503AbXDZUqz (ORCPT
+	Thu, 26 Apr 2007 16:48:35 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53133 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031509AbXDZUse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:46:55 -0400
-Date: Thu, 26 Apr 2007 13:46:31 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       Timur Tabi <timur@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.21-rc7-mm2
-Message-Id: <20070426134631.7a78b946.randy.dunlap@oracle.com>
-In-Reply-To: <20070426133720.25085207.akpm@linux-foundation.org>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<46309142.2010907@googlemail.com>
-	<20070426133720.25085207.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 26 Apr 2007 16:48:34 -0400
+Date: Thu, 26 Apr 2007 21:50:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426215015.003f6196@the-village.bc.nu>
+In-Reply-To: <20070426165950.GO3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+	<20070426040806.GJ3468@stusta.de>
+	<20070426125802.GL3468@stusta.de>
+	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+	<20070426165950.GO3468@stusta.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 13:37:20 -0700 Andrew Morton wrote:
+> They get frustrated because they focussed on developing new features 
+> instead of fixing regressions, and now it takes longer until their new 
+> features get merged because noone fixed the regressions...
 
-> On Thu, 26 Apr 2007 13:47:14 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-> 
-> > Andrew Morton wrote:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/
-> > >
-> > >
-> > > - this has everything which is in 2.6.21.  Plus more!
-> > >
-> > > - a number of nasty bugs were fixed.  This should be (a lot) more stable
-> > >   than 2.6.21-rc7-mm1.
-> > >
-> > >   
-> > 
-> > I get this warning here :
-> > 
-> > 
-> > drivers/net/Kconfig:2327:warning: 'select' used by config symbol 
-> > 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
-> 
-> Yes, we get so many of those that I tend to ignore them, assuming that
-> someone will pick it up and fix it.
-> 
-> This one was added by git-powerpc, presumably
-> 7d776cb596994219584257eb5956b87628e5deaf "QE: automatically select QE
-> options"
+I would disagree: They get frustrated because they are blocked on some
+small regression which is stopping a ton of other fixed including
+features people need (like new hardware support) from being released.
 
-There was a similar problem with PS3_xyz (don't recall exactly
-which PS3_option it was) that was "solved" by introducing an
-intermediate config symbol IIRC.  Maybe that trick^W fix can be
-done here also...
+The "no regressions" model doesn't really work when you ask about the
+greater good of the userbase.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+The goal of no regressions is great and the regression lists for ATA were
+certainly very helpful but the greater good comes first.
+
+Alan
