@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031220AbXDZM4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031211AbXDZM5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031220AbXDZM4G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 08:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031211AbXDZM4G
+	id S1031211AbXDZM5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 08:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031219AbXDZM5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 08:56:06 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:2065 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031220AbXDZM4E (ORCPT
+	Thu, 26 Apr 2007 08:57:52 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35191 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031211AbXDZM5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 08:56:04 -0400
-Date: Thu, 26 Apr 2007 14:56:34 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Jordan Crouse" <jordan.crouse@amd.com>
-Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
-       "David Brownell" <david-b@pacbell.net>,
-       "Bryan Wu" <bryan.wu@analog.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Deepak Saxena" <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
-       "Christer Weinigel" <wingel@nano-system.com>
-Subject: Re: Bitbanging i2c bus driver using the GPIO API
-Message-ID: <20070426145634.3ac2b7a3@hyperion.delvare>
-In-Reply-To: <20070423144710.GD1372@cosmic.amd.com>
-References: <11765554074106-git-send-email-hskinnemoen@atmel.com>
-	<20070414163418.20490fe2@dhcp-252-105.norway.atmel.com>
-	<20070414192807.60bdf84b@hyperion.delvare>
-	<20070418174256.GB5577@csclub.uwaterloo.ca>
-	<20070419085413.1520feef@hyperion.delvare>
-	<20070419205942.GC5577@csclub.uwaterloo.ca>
-	<20070420194933.0813a359@hyperion.delvare>
-	<20070422154151.GJ5575@csclub.uwaterloo.ca>
-	<20070423114254.71787844@hyperion.delvare>
-	<20070423144710.GD1372@cosmic.amd.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 08:57:51 -0400
+Date: Thu, 26 Apr 2007 14:58:02 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426125802.GL3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070426040806.GJ3468@stusta.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Apr 2007 08:47:10 -0600, Jordan Crouse wrote:
-> On 23/04/07 11:42 +0200, Jean Delvare wrote:
-> > I seem to remember there has been a patch floating around to
-> > auto-detect the right ports back in June 2006, but it seems to have
-> > been lost somehow. Jordan, do you remember?
-> 
-> I don't remember that, and Google isn't helping, either.  Regardless,
-> randomly hitting ISA ports seems scary to me.  I know its a pain to use
-> the module params all the time, but thats really probably the cleanest way
-> to to it without carrying around a special patch for your system.
+A clarification:
 
-After digging some more, I finally managed to get my hands back on it:
-http://lists.lm-sensors.org/pipermail/lm-sensors/2006-April/016009.html
-http://lists.lm-sensors.org/pipermail/lm-sensors/2006-May/016053.html
+I am aware that my work had some effect, and I am aware that my work 
+gets appreciated - there's no need for everyone to repeat this.
 
-This isn't "randomly hitting ISA ports", this is reading the base I/O
-addresses from LPC configuration space. That's much better than letting
-the user set the addresses using module parameters.
+The point is: I'm not satisfied with the result.
 
-Lennart, can you please provide the output of the following commands on
-your system?
+Linus said 2.6.20 was a stable kernel. My impression was that at least 
+two of the regressions from my 2.6.20 regressions list should have been 
+fixed before 2.6.20.
 
-isadump 0x2e 0x2f 5
-isadump 0x2e 0x2f 6
-isadump 0x4e 0x4f 5
-isadump 0x4e 0x4f 6
+They have both been fixed through -stable, but I also remember a quite 
+experienced kernel maintainer running into one of them after 2.6.20 was 
+released and spending half a day tracking it down - and my answer was
+"known unfixed regression, first reported more than a month ago".
 
-(isadump is part of the lm_sensors package.)
+There is a conflict between Linus trying to release kernels every
+2 months and releasing with few regressions.
+
+Trying to avoid regressions might in the worst case result in an -rc12 
+and 4 months between releases. If the focus is on avoiding regressions 
+this has to be accepted.
+
+And a serious delay of the next regression-merge window due to unfixed 
+regressions might even have the positive side effect of more developers 
+becoming interested in fixing the current regressions for getting their 
+shiny new regressions^Wfeatures faster into Linus' tree.
+
+0 regressions is never realistic (especially since many regressions 
+might not be reported during -rc), but IMHO we could do much better than 
+what happened in 2.6.20 and 2.6.21.
+
+These are just my personal opinions, and other people consider the 
+resulting 2.6.20 and 2.6.21 kernels OK.
+
+I'm not satisfied with the result, and the world won't stop turning when 
+I'm not tracking 2.6.22-rc regressions.
+
+cu
+Adrian
 
 -- 
-Jean Delvare
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
