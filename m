@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031224AbXDZNEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031180AbXDZNHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031224AbXDZNEZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031223AbXDZNEZ
+	id S1031180AbXDZNHe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:07:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031216AbXDZNHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:04:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:36440 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031224AbXDZNEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:04:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=Xx/lt1vKsqXpqZGW8ccTEdWOPXg1/2oNOVWdY7UWHLtrPpyM3rPnOhhcm+htZLAK1gasznXAQuhCfUg/ZN4UC7hfqkOAI4OcOOgYeLttQzlpCWoAx0zTp71ZDSmJlzTR2NXa5Axy8Hp6kVQgXfXx7nuC3wX48U+ov3bxRUp/mCY=
-Date: Thu, 26 Apr 2007 15:03:39 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Sunil Naidu <akula2.shark@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: Linux 2.6.21 - something wrong with dmesg.
-Message-ID: <20070426130339.GB16833@slug>
-References: <8355959a0704260514s39afa1ecj3e7e077e482769a8@mail.gmail.com>
-MIME-Version: 1.0
+	Thu, 26 Apr 2007 09:07:34 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:41390 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031180AbXDZNHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 09:07:33 -0400
+Date: Thu, 26 Apr 2007 15:13:11 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070426131311.GD3145@ff.dom.local>
+References: <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local> <20070425124714.GA94@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <8355959a0704260514s39afa1ecj3e7e077e482769a8@mail.gmail.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <20070425124714.GA94@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 05:44:40PM +0530, Sunil Naidu wrote:
-> Hello,
+On Wed, Apr 25, 2007 at 04:47:14PM +0400, Oleg Nesterov wrote:
+> On 04/25, Jarek Poplawski wrote:
+...
+> > > > +		spin_lock_irq(&cwq->lock);
+> > > > +		/* CPU_DEAD in progress may change cwq */
+> > > > +		if (likely(cwq == get_wq_data(work))) {
+> > > > +			list_del_init(&work->entry);
+> > > > +			__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> > > > +			retry = try_to_del_timer_sync(&dwork->timer) < 0;
+> > > > +		}
+> > > > +		spin_unlock_irq(&cwq->lock);
+> > > > +	} while (unlikely(retry));
 > 
-> I did compile the kernel, boots good ;-) BTW, does anyone (on P-III)
-> facing a memory check skip or sort of? Not getting RAM info in the
-> dmesg.  Unable to get dmseg from the start of the gcc check! Any clue?
-> Here is the dmesg I get on my box:
-Don't you need to increase CONFIG_LOG_BUF_SHIFT ?
-Regards,
-Frederik
+> >  1. If delayed_work_timer_fn of this work is fired and is waiting
+> >  on the above spin_lock then, after above spin_unlock, the work
+> >  will be queued.
+> 
+> No, in that case try_to_del_timer_sync() returns -1.
+
+Yes. But I think it's safe only after moving work_clear_pending
+in run_workqueue under a lock; probably otherwise there is a
+possibility this flag could be cleared, after above unlock.  
+
+Jarek P.
