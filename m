@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031324AbXDZQOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031328AbXDZQQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031324AbXDZQOo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031325AbXDZQOo
+	id S1031328AbXDZQQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031331AbXDZQQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:14:44 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:58062 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031324AbXDZQOn (ORCPT
+	Thu, 26 Apr 2007 12:16:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59154 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031330AbXDZQQm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:14:43 -0400
-Message-ID: <4630CFE6.1050702@nortel.com>
-Date: Thu, 26 Apr 2007 10:14:30 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg> <20070426103051.GP17387@elf.ucw.cz> <20070426104052.GA19072@elf.ucw.cz> <1177585897.6814.49.camel@johannes.berg> <20070426111645.GR17387@elf.ucw.cz> <1177586850.6814.52.camel@johannes.berg> <20070426112641.GS17387@elf.ucw.cz> <1177587308.6814.57.camel@johannes.berg>
-In-Reply-To: <1177587308.6814.57.camel@johannes.berg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Apr 2007 16:14:35.0435 (UTC) FILETIME=[FB4487B0:01C7881D]
+	Thu, 26 Apr 2007 12:16:42 -0400
+Date: Thu, 26 Apr 2007 17:16:30 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426161629.GA21039@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+	Mel Gorman <mel@skynet.ie>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <20070426155855.GA16337@infradead.org> <20070426160507.GC2017@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426160507.GC2017@kernel.dk>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Berg wrote:
+On Thu, Apr 26, 2007 at 06:05:07PM +0200, Jens Axboe wrote:
+> Agree. I don't know why we are arguing the merrits of this, it's an
+> obvious win. The problem is more if it's doable this way or not due to
+> fragmentation, but that's a different discussion and should be kept
+> seperate.
 
-> Judging from experience with the wext 32/64 bit fiasco it seems to be
-> rather uncommon to use 32-bit userspace on 64-bit machines.
+Btw, another bit I really like about the patches is that it make
+the page cache size notation actually useful.  People used PAGE_SIZE
+and PAGE_CACHE_SIZE totally interchangeable before and created a total
+mess.  Getting rid of PAGE_CACHE_SIZE and only use the per-mapping
+macros would be a nice cleanup all by iself even without putting the
+rest in for now.
 
-I disagree...it's quite common.  I think its the standard way of doing 
-things for ppc64, for instance.
-
-Chris
