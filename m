@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXDZQIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031303AbXDZQIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754818AbXDZQIM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXDZQIL
+	id S1031303AbXDZQIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031306AbXDZQIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:08:11 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:53564 "EHLO
-	vitb.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754818AbXDZQIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:08:06 -0400
-Date: Thu, 26 Apr 2007 20:07:32 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070426200732.529eddc7@vitb.ru.mvista.com>
-In-Reply-To: <20070426175438.391157a1@hyperion.delvare>
-References: <20070420082714.4f10f186@localhost.localdomain>
-	<20070421095707.6b42a312@hyperion.delvare>
-	<20070422152937.7332fc31@localhost.localdomain>
-	<20070423111950.129856eb@hyperion.delvare>
-	<462F8A82.40604@kernel.crashing.org>
-	<20070426175438.391157a1@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.0.0cvs8 (GTK+ 2.6.10; i686-redhat-linux-gnu)
+	Thu, 26 Apr 2007 12:08:49 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4283 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031303AbXDZQIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:08:48 -0400
+Date: Thu, 26 Apr 2007 18:05:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426160507.GC2017@kernel.dk>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <20070426155855.GA16337@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426155855.GA16337@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 17:54:38 +0200
-Jean Delvare <khali@linux-fr.org> wrote:
-
-> Hi Vitaly,
+On Thu, Apr 26 2007, Christoph Hellwig wrote:
+> On Thu, Apr 26, 2007 at 04:38:54PM +1000, Nick Piggin wrote:
+> > Hardware is built to handle many small pages efficintly, and I don't
+> > understand how it could be an SGI-only issue. Sure, you may have an
+> > order of magnitude or more memory than anyone else, but even my lowly
+> > desktop _already_ has orders of magnitude more pages than it has TLB
+> > entries or cache -- if a workload is cache-nice for me, it probably
+> > will be on a 1TB machine as well, and if it is bad for the 1TB machine,
+> > it is also bad on mine.
 > 
-> On Wed, 25 Apr 2007 21:06:10 +0400, Vitaly Bordug wrote:
-> > Jean Delvare wrote:
-> > >>>> +/* Structure for a device driver */
-> > >>>> +static struct device_driver i2c_rpx_driver = {
-> > >>>> +	.name = "fsl-i2c-cpm",
-> > >>>> +	.bus = &platform_bus_type,
-> > >>>> +	.probe = i2c_rpx_probe,
-> > >>>> +	.remove = i2c_rpx_remove,
-> > >>>> +};
-> > >>>>         
-> > >>> Why don't you declare it as a struct platform_driver, register it with
-> > >>> platform_driver_register() and unregister it with
-> > >>> platform_driver_unregister()?
-> > >>>       
-> > >> Well. This stuff belongs to CPM1, of the mpc8xx family, but the
-> > >> target boards are different, and they may/should provide board
-> > >> specific inits and filling of platform data. With
-> > >> platform_driver_register we may end up with ifdef stuff here
-> > >> (which is evil).
-> > >>     
-> > >
-> > > I don't follow you here, sorry. Platform devices are declared by
-> > > board-specific code which can include all the needed initialization.
-> > > And device-specific data can be carried to the platform driver for
-> > > further use. The platform device/driver infrastructure is meant to
-> > > handle that kind of situation, so there really is no excuse that I can
-> > > see not to use it. i2c-omap and i2c-mpc use it. As a matter of fact you
-> > > _are_ declaring a platform driver (.bus = &platform_bus_type), just not
-> > > using the standard way.
-> > >
-> > >   
-> > Standard way here - platform devices got registered from elsewhere - 
-> > from arch/ppc/ppc_sys.c if arch/ppc or from 
-> > arch/powerpc/sysdev/fsl_soc.c if powerpc.
-> > Every way (powerpc is more flexible since is pulling the information 
-> > from the firmware-passed device tree) fills in the resources and 
-> > platform data, and
-> > is capable with device/drive bound you are talking about.
-> 
-> This doesn't explain why you can't use platform_driver_register(),
-> which is the right way to register a platform driver.
+> It's not an SGI-only issue, but apparently SGI are the only ones
+> that actually care about real highend linux setups to work on these
+> issues.  The Problem is not on the CPU hardware side.  It's on
+> the Software side and Storage hardware side, or rather a combination
+> of the two.
 
-Ahm, I clearly confused myself (with device/driver stuff), sorry.
-
-Anyway I think we'll look at of_device for this, to reduce extract from OF->insert platform device overhead.
-
+Agree. I don't know why we are arguing the merrits of this, it's an
+obvious win. The problem is more if it's doable this way or not due to
+fragmentation, but that's a different discussion and should be kept
+seperate.
 
 -- 
-Sincerely, 
-Vitaly
+Jens Axboe
+
