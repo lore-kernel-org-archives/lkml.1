@@ -1,111 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031389AbXDZSfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031411AbXDZSgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031389AbXDZSfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031411AbXDZSfx
+	id S1031411AbXDZSgB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031423AbXDZSgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:35:53 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35548 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031389AbXDZSfw (ORCPT
+	Thu, 26 Apr 2007 14:36:00 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55225 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031411AbXDZSf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:35:52 -0400
-Date: Thu, 26 Apr 2007 20:36:02 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426183602.GT3468@stusta.de>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org>
+	Thu, 26 Apr 2007 14:35:59 -0400
+Date: Thu, 26 Apr 2007 11:35:58 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <20070426182945.GJ2017@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0704261134080.3656@schroedinger.engr.sgi.com>
+References: <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com>
+ <46304B9E.5070604@yahoo.com.au> <20070426161152.GC16337@infradead.org>
+ <m1mz0vkoux.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704261059500.3263@schroedinger.engr.sgi.com>
+ <20070426180358.GG2017@kernel.dk> <20070426180932.GA10642@infradead.org>
+ <20070426181249.GH2017@kernel.dk> <Pine.LNX.4.64.0704261127550.3560@schroedinger.engr.sgi.com>
+ <20070426182945.GJ2017@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4630E9C8.5060000@garzik.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 02:04:56PM -0400, Jeff Garzik wrote:
-> IMO, the closer you look, the more warts you find.  Before you starting 
-> doing your work with kernel regressions, no one was really tracking it.  I 
-> bet you have helped cut down on the regressions, but I have no good way to 
-> quantify my gut feeling.
->
-> Additional comments on developers and fixing regressions:
->
-> * Sometimes seeing a long list, peoples' eyes glaze over.  Its just human 
-> nature.  A long list also gives us no idea of scale, or severity.  I bet a 
-> weekly "top 10 bugs and regressions" email would help focus developer 
-> attention.
+On Thu, 26 Apr 2007, Jens Axboe wrote:
 
-Top 10 ordered by what?
+> On Thu, Apr 26 2007, Christoph Lameter wrote:
+> > On Thu, 26 Apr 2007, Jens Axboe wrote:
+> > 
+> > > The above can be implemented fairly cleanly, and on a need-to-have
+> > > basis. It's not something that'll break drivers.
+> > 
+> > But its also not going to fix the hacks that we have in the kernel 
+> > to deal with > PAGE_SIZE i/o.
+> 
+> No, but that's a _seperate_ issue! Don't keep mixing up the two.
 
-I always tried to put the most mysterious ones like "kwin dies silently" 
-or "gammu no longer works" at the top of my lists hoping some developer 
-might become interested in getting clues about them.
-
-But when there were 15 outstanding suspend regressions, these were also 
-important.
-
-And how to order the rtl8139 netdriver regression reported one month ago 
-against the snd_hda_intel regression reported one month ago?
-
-Both are "only" drivers no longer working for some users, but there 
-might be many more users for whom they don't work in 2.6.21 because the 
-maintainers didn't bother to debug and fix them.
-
-Ideally, maintainers should debug and fix regressions (and other bugs) 
-without requiring weekly regression lists.
-
-If bug reports and weekly reminders aren't enough, I don't think 
-increasing the level of babysitting would make sense.
-
-> * To be effective, lists, either long or top-10, must be pruned if you get 
-> a sense that only one user is affected.  [With oopses and BUGs as a clear 
-> exception,] many problems benefit from at least two users reporting a bug.
-
-First of all we had several cases where one report by one user resulted 
-in a serious bug being fixed. There might be only one -rc tester with a 
-strange workload or some unusual hardware.
-
-A bigger point is that "at least two users reporting a bug" assumes you 
-always know whether two bug reports are for the same bug.
-Some examples for problems:
-- during early 2.6.21-rc, it was not unusual for users to run into
-  three unrelated suspend related regressions on one computer
-- during 2.6.20-rc, we had 4 similar looking reports, 3 for one
-  regression, and the forth for a completely different regression
-- during 2.6.21-rc, it turned out the following reports were caused
-  by the same regression:
-    kwin dies silently
-    KDE problem if a sound is played while the display is suspended
-
-> * It gets a bit tiresome to field the large number of driver bug reports 
-> that eventually turn out to be related to broken interrupt handling 
-> somehow.  I think we developers need to get better at showing users how to 
-> isolate driver vs. PCI/ACPI/core bugs.  Maybe drivers need to start 
-> introducing interrupt delivery tests into their probe code.  Overall, 
-> broken interrupt handling manifests in several ways, most of which 
-> initially appear symptomatic of a broken driver.
-
-Regressions have the advantage of being able to compare with a 
-known-good kernel.
-
-If a driver works with 2.6.20 but doesn't work with 2.6.21-rc, ask the 
-submitter for dmesg's from both and diff them. In my experience that 
-usually gives a good indication whether or not it's an interrupt related 
-ACPI/PCI issue.
-
-> 	Jeff
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Yes I understand that you want it to be a separate issue so we get get 
+more rationales for the hacks that we do to avoid the large 
+order allocations.
