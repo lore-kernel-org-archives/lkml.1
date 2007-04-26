@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXDZTEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031381AbXDZTGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbXDZTEE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXDZTEE
+	id S1031381AbXDZTGx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031446AbXDZTGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:04:04 -0400
-Received: from mail.tmr.com ([64.65.253.246]:47955 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754934AbXDZTEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:04:00 -0400
-Message-ID: <4630F7A6.3080609@tmr.com>
-Date: Thu, 26 Apr 2007 15:04:06 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Thu, 26 Apr 2007 15:06:53 -0400
+Received: from mail1.vetienne.net ([87.98.219.23]:3926 "EHLO
+	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031381AbXDZTGv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:06:51 -0400
+X-Greylist: delayed 496 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 15:06:51 EDT
+From: Vincent ETIENNE <ve@vetienne.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
+Date: Thu, 26 Apr 2007 20:58:32 +0200
+User-Agent: KMail/1.9.6
+Cc: fubar@us.ibm.com, bonding-devel@lists.sourceforge.net
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424205416.GA23032@elte.hu> <20070424212956.GE16457@elf.ucw.cz> <20070425214156.GI11166@waste.org>
-In-Reply-To: <20070425214156.GI11166@waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704262058.33087.ve@vetienne.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Tue, Apr 24, 2007 at 11:29:56PM +0200, Pavel Machek wrote:
->> We do not want to fragment the testing base, and suspend2 does not
->> really have any interesting features over uswsusp.
-> 
-> The testing base is already fragmented!
-> 
-> What the current situation means is that you simply never hear from
-> the people who get fed up with suspend but who manage to get suspend2
-> working.
-> 
-I have to feel that having a *working resume* capability is "any 
-interesting features" enough. What you say about "simply never hear 
-from" is unfortunately true.
+Hi,
+ 
+ Summary :
+	Got this trace when one network interface come down or up in a 2
+	interfaces bonding.	So far, system seems to survive to this problem
+	and works fine.
 
-On 04/25/2007 05:30 PM EDT, Pavel Machek wrote:
+ Full description
+ 
+	During testing of bonding of 2 interfaces, i have seen this from
+	time to time in my log file ( the problem doesn't arrive each
+	time but one in 3 or 4 try ). 
 
- >It is not Rafael's fault. Actually it is quite hard to work with
- >Nigel, because he implements every feature someone asks for, and wants
- >to merge them all  :-( . I don't expect to ever agree with Nigel on
- >anything important, sorry.
+	SYSTEM :	 2 NIC card bond on interface bond0 : 
+				intel PRO/1000 (e1000 )
+				Broadcomm ( tg3 )
+	I have also try a 2.6.20 and 2.6.19 vanilla kernel ( identical problem but in 
+	onecase the system doesn't survive : that the reason the problem catch my 
+	attention )
+ 
+	Keywords	; network, bonding
+ 
+	Version : Linux version 2.6.21-rc6-mm1 (root@jupiter2) (gcc version 4.1.1
+	(Gentoo 4.1.1-r3)) #3 SMP Thu Apr 26 08:45:06 CEST 2007
+ 
+	Output of /var/log/messages
+ 
+		Apr 26 11:09:34 jupiter2 e1000: eth0: e1000_watchdog_task: NIC Link
+		is Down Apr 26 11:09:34 jupiter2 bonding: bond0: link status
+		definitely down for interface eth0, disabling it
+		Apr 26 11:09:34 jupiter2 bonding: bond0: making interface eth1 the new
+		active one.
+		Apr 26 11:09:34 jupiter2 RTNL: assertion failed at net/ipv4/devinet.c
+		(1055) Apr 26 11:09:34 jupiter2
+		Apr 26 11:09:34 jupiter2 Call Trace:
+		Apr 26 11:09:34 jupiter2 <IRQ>  [<ffffffff8049b49e>] 
+inetdev_event+0x48/0x283
+		Apr 26 11:09:34 jupiter2 [<ffffffff804c8731>] _spin_lock_bh+0x9/0x19
+		Apr 26 11:09:34 jupiter2 [<ffffffff80473df1>] rt_run_flush+0x7e/0xaf
+		Apr 26 11:09:34 jupiter2 [<ffffffff8022bdd0>] notifier_call_chain+0x29/0x56 
+		Apr 26 11:09:34 jupiter2 [<ffffffff804560cc>] dev_set_mac_address+0x53/0x59 			
+		Apr 26 11:09:34 jupiter2 [<ffffffff88006d8d>] 
+bonding:alb_set_slave_mac_addr+0x41/0x6c
+		Apr 26 11:09:34 jupiter2 [<ffffffff88007215>] 
+bonding:alb_swap_mac_addr+0x91/0x165
+		Apr 26 11:09:34 jupiter2 [<ffffffff88002029>] 
+bonding:bond_change_active_slave+0x227/0x382
+		Apr 26 11:09:34 jupiter2 [<ffffffff880024c9>]
+		bonding:bond_select_active_slave+0xb7/0xe5
+		Apr 26 11:09:34 jupiter2 [<ffffffff88004182>] 
+bonding:bond_mii_monitor+0x3cd/0x41e
+		Apr 26 11:09:34 jupiter2 [<ffffffff88003db5>] 
+bonding:bond_mii_monitor+0x0/0x41e
+		Apr 26 11:09:34 jupiter2 [<ffffffff80228714>]
+ run_timer_softirq+0x130/0x19f
+		Apr 26 11:09:34 jupiter2[<ffffffff8022618a>] __do_softirq+0x55/0xc4 
+		Apr 26 11:09:34 jupiter2 [<ffffffff8020a5ac>] call_softirq+0x1c/0x28
+		Apr 26 11:09:34 jupiter2 [<ffffffff8020bead>] do_softirq+0x2c/0x7d
+		Apr 26 11:09:34 jupiter2 [<ffffffff80213b2a>] 
+smp_apic_timer_interrupt+0x49/0x5f
+		 Apr 26 11:09:34 jupiter2 [<ffffffff802088a3>] mwait_idle+0x0/0x45
+		Apr 26 11:09:34 jupiter2 [<ffffffff8020a056>] apic_timer_interrupt+0x66/0x70
+		 Apr 26 11:09:34 jupiter2 <EOI>  [<ffffffff802088e5>] mwait_idle+0x42/0x45 
+		Apr 26 11:09:34 jupiter2 [<ffffffff8020883f>] cpu_idle+0x51/0x70 
+		Apr 26 11:09:34 jupiter2 [<ffffffff806369bd>] start_kernel+0x242/0x24e
+		Apr 26 11:09:34 jupiter2 [<ffffffff80636146>] _sinittext+0x146/0x14a
+ 
+ 
+other  informations (ver_linux, lspci, ...  ) available at 
+http://mail1.vetienne.net/linux
 
-The fact that Pavel thinks giving the users what they want is a problem 
-certainly defines the difference between them, the populist "give them 
-what they want" and the elitist "let's them make do with what I think 
-they should have."
+I'm a bit worried by the message so any help will be greatly appreciated
 
-I do respect Pavel for all the stuff he has done and is doing, I wish I 
-could have found a nicer way to say that.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+	Vincent
