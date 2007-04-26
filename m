@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbXDZOEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbXDZOLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754805AbXDZOEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXDZOEz
+	id S1754820AbXDZOLq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754821AbXDZOLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:04:55 -0400
-Received: from rtr.ca ([64.26.128.89]:4542 "EHLO mail.rtr.ca"
+	Thu, 26 Apr 2007 10:11:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:36227 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754805AbXDZOEy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:04:54 -0400
-Message-ID: <4630B183.1000905@rtr.ca>
-Date: Thu, 26 Apr 2007 10:04:51 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S1754820AbXDZOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:11:46 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Mel Gorman <mel@skynet.ie>
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error
+Date: Thu, 26 Apr 2007 16:11:28 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630980D.7010904@shadowen.org> <20070426132736.GA16909@skynet.ie>
+In-Reply-To: <20070426132736.GA16909@skynet.ie>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <20070425072350.GA6866@ucw.cz> <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070426012454.3495b5d8@the-village.bc.nu> <alpine.LFD.0.98.0704251808150.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704251808150.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704261611.29121.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> See? Two *totally* different cases. They have *nothing* in common. Not the 
-> call sequence, not the logic, not *anything*.
+On Thursday 26 April 2007 15:27:36 Mel Gorman wrote:
+> On (26/04/07 13:16), Andy Whitcroft didst pronounce:
+> > Getting the following on an x86_64 numa box:
+> > 
+> >   CC      arch/x86_64/vdso/vclock_gettime.o
+> > arch/x86_64/vdso/vclock_gettime.c:1: error: code model `small' not
+> > supported in the 32 bit mode
 
-Except that both methods cannot rely upon hot-pluggable devices
-still being present on resume/restore.  It is exceptionally common
-to unplug all USB/firewire cables, mouse, keyboard, docking cables etc..
-after a machine is in S2R state.
+32bit mode?  Something must be confused.
 
-Cheers
+What gcc/binutils is that?
+
+Can you post V=1 output for that line please?
+
+It works for me with gcc 4.1 and 3.3
+
+-Andi
