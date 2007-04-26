@@ -1,62 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbXDZTAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751750AbXDZTA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751749AbXDZTAn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbXDZTAn
+	id S1751750AbXDZTA4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbXDZTAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:00:43 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33132 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbXDZTAm (ORCPT
+	Thu, 26 Apr 2007 15:00:55 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:64909 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbXDZTAy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:00:42 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <m1abwvofke.fsf@ebiederm.dsl.xmission.com>
-	<463048FE.5000600@yahoo.com.au>
-	<Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
-	<46304D50.1040706@yahoo.com.au>
-	<Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com>
-	<46305327.2000206@yahoo.com.au>
-	<Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com>
-	<4630593C.8070905@yahoo.com.au>
-	<20070426092014.GT65285596@melbourne.sgi.com>
-	<4630C326.2030906@yahoo.com.au> <20070426174254.GD2017@kernel.dk>
-Date: Thu, 26 Apr 2007 12:59:20 -0600
-In-Reply-To: <20070426174254.GD2017@kernel.dk> (Jens Axboe's message of "Thu,
-	26 Apr 2007 19:42:54 +0200")
-Message-ID: <m1vefjj71z.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 26 Apr 2007 15:00:54 -0400
+Message-ID: <4630F6D2.8040407@linux.vnet.ibm.com>
+Date: Fri, 27 Apr 2007 00:30:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Pavel Emelianov <xemul@sw.ru>
+CC: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] RSS container, fix freeing of active pages
+Content-Type: multipart/mixed;
+ boundary="------------010907030000030808010309"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+This is a multi-part message in MIME format.
+--------------010907030000030808010309
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> On Fri, Apr 27 2007, Nick Piggin wrote:
->> Why do we limit drivers to 128 sg entries?
->
-> No particular reason, except than to avoid 2^bigger order allocations.
-> 2MiB requests would require 3 contig pages to setup the sg list, which
-> is (probably) a little troublesome especially since it's sometimes
-> atomically allocated.
->
-> Larger pages are by no means a prerequisite to getting larger requests,
-> assuming your hardware can handle the bigger sglist. There are other
-> ways of doing that, I've contemplated doing chained sglists and adding
-> sg_for_each_segment() macros for iterating these things. Drivers that
-> want larger sglists would then be required to update their sg mapping
-> loop to use the provided macros. It wouldn't be too hard.
+Hi, Pavel,
 
-Thanks.  At least in the long term supporting larger scatter gather lists
-in the kernel looks like something we need to do assuming bandwidth
-goes up exponentially but I/O device latency remains high.
+I missed you on the list and the patch did not make it to lkml.
+I am resending the patch.
 
-Eric
+
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
+
+--------------010907030000030808010309
+Content-Type: text/x-patch;
+ name="rss-fix-free-of-active-pages.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="rss-fix-free-of-active-pages.patch"
+
+
+
+This patch fixes the bad_page() warning seen while freeing a container page.
+By default all container pages are added to the active list on the
+container. This patch lazily moves pages to the right list, so that a page
+on the active list of the zone LRU and the inactive list of the container
+does not get freed. If that happens, we see a warning from bad_page().
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ linux/rss_container.h |    0 
+ mm/rss_container.c    |   30 ++++++++++++++++++++++--------
+ 2 files changed, 22 insertions(+), 8 deletions(-)
+
+diff -puN mm/rss_container.c~rss-fix-free-of-active-pages mm/rss_container.c
+--- linux-2.6.20/mm/rss_container.c~rss-fix-free-of-active-pages	2007-04-25 22:05:54.000000000 +0530
++++ linux-2.6.20-balbir/mm/rss_container.c	2007-04-25 23:12:35.000000000 +0530
+@@ -119,18 +119,36 @@ void container_rss_move_lists(struct pag
+ }
+ 
+ static unsigned long isolate_container_pages(unsigned long nr_to_scan,
+-		struct list_head *src, struct list_head *dst,
+-		unsigned long *scanned, struct zone *zone)
++		struct rss_container *rss, struct list_head *dst,
++		unsigned long *scanned, struct zone *zone, bool active)
+ {
+ 	unsigned long nr_taken = 0;
+ 	struct page *page;
+ 	struct page_container *pc;
+ 	unsigned long scan;
++	struct list_head *src;
+ 	LIST_HEAD(pc_list);
+ 
++	src = active ? &rss->active_list : &rss->inactive_list;
++
+ 	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+ 		pc = list_entry(src->prev, struct page_container, list);
+ 		page = pc->page;
++
++		/*
++		 * We might have got our active, inactive lists
++		 * incorrect, fix it here
++		 */
++		if (active && !PageActive(page)) {
++			list_move(&pc->list, &rss->inactive_list);
++			scan--;
++			continue;
++		} else if (!active && PageActive(page)) {
++			list_move(&pc->list, &rss->active_list);
++			scan--;
++			continue;
++		}
++
+ 		if (page_zone(page) != zone)
+ 			continue;
+ 
+@@ -158,12 +176,8 @@ unsigned long isolate_pages_in_container
+ 	unsigned long ret;
+ 
+ 	spin_lock(&rss->res.lock);
+-	if (active)
+-		ret = isolate_container_pages(nr_to_scan, &rss->active_list,
+-				dst, scanned, zone);
+-	else
+-		ret = isolate_container_pages(nr_to_scan, &rss->inactive_list,
+-				dst, scanned, zone);
++	ret = isolate_container_pages(nr_to_scan, rss, dst, scanned, zone,
++					active);
+ 	spin_unlock(&rss->res.lock);
+ 	return ret;
+ }
+diff -puN include/linux/rss_container.h~rss-fix-free-of-active-pages include/linux/rss_container.h
+_
+
+--------------010907030000030808010309--
