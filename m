@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031239AbXDZO5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031247AbXDZO6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031239AbXDZO5y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031242AbXDZO5y
+	id S1031247AbXDZO6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031249AbXDZO6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:57:54 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:47659 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031239AbXDZO5x (ORCPT
+	Thu, 26 Apr 2007 10:58:49 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55353 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1031247AbXDZO6r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:57:53 -0400
-Message-ID: <4630BD61.2050006@gmail.com>
-Date: Thu, 26 Apr 2007 16:55:29 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
+	Thu, 26 Apr 2007 10:58:47 -0400
+Date: Thu, 26 Apr 2007 10:58:45 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Greg KH <greg@kroah.com>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com> <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com> <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de>
-In-Reply-To: <20070426135426.GM3468@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH RFD] alternative kobject release wait mechanism
+In-Reply-To: <20070426102151.0da2e928@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0704261040440.3552-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26/2007 03:54 PM, Adrian Bunk wrote:
+On Thu, 26 Apr 2007, Cornelia Huck wrote:
 
-> Let me try to summarize the points:
-> - you think MODULE_AUTHOR without MODULE_MAINTAINER confuses users
+> On Wed, 25 Apr 2007 16:13:12 -0400 (EDT),
+> Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > > Documentation/driver-model/lifetime-rules.txt?
+> > 
+> > When (if) such a file is added, it should contain more than just these few 
+> > paragraphs.
+> 
+> This file may be a good idea in general. I'll see if I can come up with
+> something useful.
 
-Yes, and the frustration of composing lengthy emails to bouncing (or worse 
-still, silent) email adresses is severe if you just decided to for once not 
-shrug about it but submit a bugreport. If it happens to an address from 
-MAINTAINERS (and an LKML savvy user) the address can at least be deleted but 
-you can't delete a MODULE_AUTHOR tag.
+Good.
 
-Without something like a MODULE_MAINTAINER I have no way of saying "ignore 
-those MODULE_AUTHORs please, I want the bugreport".
+> > > The remove() method must also unset driver_data.
+> > 
+> > It doesn't really have to.  The driver core could do it.
+> 
+> I think it is more consistent if the driver takes care of the fields
+> specifically designed for its usage.
 
-> - Alan wants MODULE_AUTHOR to stay for easing showing authorship of code
->   to people
-> - I (and others) think MODULE_MAINTAINER wouldn't make sense
+Yes.  However if the driver forgets to clear the field it shouldn't cause
+a warning.  After all, there won't be any harm; the next driver to bind 
+to the device will just overwrite the driver_data anyway.
 
-Had a few Ays as well. But note, since you suggested removing MODULE_AUTHOR 
-I actually agree that made more sense. It's just that iff that can't happen, 
-I feel I need a place to override MODULE_AUTHOR for the use that I'm 
-interested in and which is acting as the contact for a driver.
+> > If every driver follows this rule, we may not need the kobject->owner 
+> > stuff.  Although it wouldn't hurt to keep it for safety's sake.
+> 
+> I'm still concerned about that problem. It is that there is simply no
+> guarantee that everybody released their reference before the module's
+> exit function returned (the driver itself can and must assure that it
+> drops its last reference before it finishes exit, but it just can't
+> control who else holds a reference). I'm much in favour of adding a bit
+> of code than to risk oopses about which the driver can't do anything
+> itself (plus, the race exists now, but the immediate disconnect will
+> involve auditing all drivers).
 
-> Is there any good solution for this?
-> E.g. modinfo could be changed to no longer defaulting to show the author?
+I agree.
 
-Tie Alan to his chair and take away his keyboard while we submit patches 
-removing MODULE_AUTHOR? Or just apply a trivial two line, optional, non 
-mandatory, patch introducing a MODULE_MAINTAINER? You pick... :-)
+> > > > 		The driver must restrict itself to reading (not
+> > > > 		writing!) the fields in the device structure.  The
+> > > > 		only exception is that the driver may lock/unlock
+> > > > 		dev->sem.
+> > > 
+> > > And it may decrease the reference count, of course :)
+> > 
+> > :-)  Actually this should be a little more general, since the device will 
+> > generally be embedded in a larger structure created by the subsystem.  The 
+> > driver should also be able to acquire and release locks in that larger 
+> > structure.
+> 
+> Yes. Especially since the "gone"-field may be contained in that
+> embedding structure if the subsystem controls it.
 
-Rene.
+No, no!  The "gone" flag must be in the private data structure.  If it 
+were in a container of the device structure, then it could be overwritten 
+when a different driver binds to the device.
+
+Alan Stern
 
