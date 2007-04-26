@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbXDZKDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXDZKG4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbXDZKDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbXDZKDy
+	id S1751131AbXDZKG4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:06:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbXDZKG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:03:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:33158 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754387AbXDZKDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:03:53 -0400
-Subject: Re: MODULE_MAINTAINER
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070425181856.42fcfeb4.akpm@linux-foundation.org>
-References: <46138B4C.2050409@gmail.com>
-	 <20070404123311.GA18552@infradead.org> <1175698135.5815.447.camel@violet>
-	 <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com>
-	 <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com>
-	 <462C7D74.60003@gmail.com>
-	 <1177327476.17026.75.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
-	 <462CA764.5080401@gmail.com>
-	 <20070425181856.42fcfeb4.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 20:03:28 +1000
-Message-Id: <1177581808.30071.50.camel@localhost.localdomain>
+	Thu, 26 Apr 2007 06:06:56 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33022 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbXDZKGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 06:06:55 -0400
+Date: Thu, 26 Apr 2007 11:06:52 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426100652.GB27620@skynet.ie>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 18:18 -0700, Andrew Morton wrote:
-> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com> wrote:
+On (25/04/07 23:46), Christoph Lameter didst pronounce:
+> On Thu, 26 Apr 2007, Nick Piggin wrote:
 > 
-> > Provide MODULE_MAINTAINER() as a convenient place to stick a name and email 
+> > Yeah. IMO anti-fragmentation and defragmentation is the hack, and we
+> > should stay away from higher order allocations whenever possible.
 > 
-> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
-> end up having to maintain the same info in two places.
+> Right and we need to create series of other approaches that we then label 
+> "non-hack" to replace it. 
+> 
 
-I don't think MAINTAINERS should cover most modules.  But I don't really
-mind.
+To date, there hasn't been a credible alternative to dealing with
+fragmentation. Breaking the 1:1 virtual:physical mapping and defragmenting
+would incur a serious performance hit.
 
-Rusty.
+> > Hardware is built to handle many small pages efficintly, and I don't
+> > understand how it could be an SGI-only issue. Sure, you may have an
+> > order of magnitude or more memory than anyone else, but even my lowly
+> > desktop _already_ has orders of magnitude more pages than it has TLB
+> > entries or cache -- if a workload is cache-nice for me, it probably
+> > will be on a 1TB machine as well, and if it is bad for the 1TB machine,
+> > it is also bad on mine.
+> 
+> There have been numbers of people that have argued the same point. Just 
+> because we have developed a way of thinking to defend our traditional 4k 
+> values does not make them right.
+> 
+> > If this is instead an issue of io path or reclaim efficiency, then it
+> > would be really nice to see numbers... but I don't think making these
+> > fundamental paths more complex and slower is a nice way to fix it
+> > (larger PAGE_SIZE would be, though).
+> 
+> The code paths can stay the same. You can switch CONFIG_LARGE pages off
+> if you do not want it and it is as it was.
+> 
 
+It may not even need that that much effort. The most stressful use of the
+high order allocation paths here require the creation of a filesystem and
+is a deliberate action by the user.
 
+> If you would have a look the patches: The code is significantly cleanup 
+> and easier to read.
+
+It is easier to read all right and may be worth doing anyway.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
