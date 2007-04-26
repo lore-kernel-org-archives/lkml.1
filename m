@@ -1,50 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXDZX1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbXDZX1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbXDZX1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXDZX1f
+	id S1755218AbXDZX1h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXDZX1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Apr 2007 19:27:37 -0400
+Received: from holomorphy.com ([66.93.40.71]:37535 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755220AbXDZX1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Apr 2007 19:27:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50862 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755210AbXDZX1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:27:34 -0400
-Date: Fri, 27 Apr 2007 01:27:24 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: David Lang <david.lang@digitalinsight.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-Message-ID: <20070426232724.GL21695@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <20070426224256.GB21926@elf.ucw.cz> <Pine.LNX.4.63.0704261520350.9674@qynat.qvtvafvgr.pbz> <20070426231228.GI21695@elf.ucw.cz> <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
+Date: Thu, 26 Apr 2007 16:26:41 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: "Li, Tong N" <tong.n.li@intel.com>
+Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Juliusz Chroboczek <jch@pps.jussieu.fr>,
+       Con Kolivas <kernel@kolivas.org>, ck list <ck@vds.kolivas.org>,
+       Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Gene Heskett <gene.heskett@gmail.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+Subject: Re: [REPORT] cfs-v4 vs sd-0.44
+Message-ID: <20070426232641.GJ19966@holomorphy.com>
+References: <20070424212717.GR31925@holomorphy.com> <5FD5754DDBA0B1499B5A0B4BB5419485F72D3C@fmsmsx411.amr.corp.intel.com> <20070425094403.GA3290@elte.hu> <20070425115840.GT31925@holomorphy.com> <20070425201309.GA5646@1wt.eu> <1177610268.3360.35.camel@tongli.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <1177610268.3360.35.camel@tongli.jf.intel.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, Apr 25, 2007 at 04:58:40AM -0700, William Lee Irwin III wrote:
+>>> Adjustments to the lag computation for for arrivals and departures
+>>> during execution are among the missing pieces. Some algorithmic devices
+>>> are also needed to account for the varying growth rates of lags of tasks
+>>> waiting to run, which arise from differing priorities/weights.
 
-> >That's a feature. If you are booting from live CD, you _want_ to erase
-> >any hibernation image.
-> 
-> why?
-> 
-> it's been stated that doing a std and booting another OS (including 
-> windows) is a valid and common useage. saying that if you boot another OS 
-> you trash your suspended image doesn't sound reasonable.
+On Wed, 2007-04-25 at 22:13 +0200, Willy Tarreau wrote:
+>> that was the principle of my proposal of sorting tasks by expected completion
+>> time and using +/- credit to compensate for too large/too short slice used.
 
-If you hibernate your machine, boot from live cd, and change anything
-on any filesystem, you are pretty likely to loose that filesystem.
+On Thu, Apr 26, 2007 at 10:57:48AM -0700, Li, Tong N wrote:
+> Yeah, it's a good algorithm. It's a variant of earliest deadline first
+> (EDF). There are also similar ones in the literature such as earliest
+> eligible virtual deadline first (EEVDF) and biased virtual finishing
+> time (BVFT). Based on wli's explanation, I think Ingo's approach would
+> also fall into this category. With careful design, all such algorithms
+> that order tasks based on some notion of time can achieve good fairness.
+> There are some subtle differences. Some algorithms of this type can
+> achieve a constant lag bound, but some only have a constant positive lag
+> bound, but O(N) negative lag bound, meaning some tasks could receive
+> much more CPU time than it would under ideal fairness when the number of
+> tasks is high.
 
-Doing that with Windows is okay as Windows do not usually write to
-ext3 partitions.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The algorithm is in a bit of flux, but the virtual deadline computation
+is rather readable. You may be able to tell whether cfs is affected by
+the negative lag issue better than I. For the most part all I can smoke
+out is that it's not apparent to me whether load balancing is done the
+way it needs to be.
+
+
+On Thu, Apr 26, 2007 at 10:57:48AM -0700, Li, Tong N wrote:
+> On the other hand, the log(N) complexity of this type of algorithms has
+> been a concern in the research community. This motivated O(1)
+> round-robin based algorithms such as deficit round-robin (DRR) and
+> smoothed round-robin (SRR) in networking, and virtual-time round-robin
+> (VTRR), group ratio round-robin (GP3) and grouped distributed queues
+> (GDQ) in OS scheduling, as well as the distributed weighted round-robin
+> (DWRR) one I posted earlier.
+
+I'm going to make a bold statement: I don't think O(lg(n)) is bad at
+all. In real systems there are constraints related to per-task memory
+footprints that severely restrict the domain of the performance metric,
+rendering O(lg(n)) bounded by a rather reasonable constant.
+
+A larger concern to me is whether this affair actually achieves its
+design goals and, to a lesser extent, in what contexts those design
+goals are truly crucial or dominant as opposed to others, such as,
+say, interactivity. It is clear, regardless of general applicability,
+that the predictability of behavior with regard to strict fairness
+is going to be useful in certain contexts.
+
+Another concern which is in favor of the virtual deadline design is
+that virtual deadlines can very effectively emulate a broad spectrum
+of algorithms. For instance, the mainline "O(1) scheduler" can be
+emulated using such a queueing mechanism. Even if the particular
+policy cfs now implemented is dumped, radically different policies
+can be expressed with its queueing mechanism. This has maintainence
+implications which are quite beneficial. That said, it's far from
+an unqualified endorsement. I'd still like to see much done differently.
+
+
+-- wli
