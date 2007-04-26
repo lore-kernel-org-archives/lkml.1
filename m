@@ -1,148 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031480AbXDZUIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031492AbXDZUIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031480AbXDZUIH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031490AbXDZUIG
+	id S1031492AbXDZUIa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031495AbXDZUIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:08:06 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:46087 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031480AbXDZUID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:08:03 -0400
-Subject: Re: Back to the future.
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
+	Thu, 26 Apr 2007 16:08:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51499 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031492AbXDZUIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 16:08:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Xavier Bestel <xavier.bestel@free.fr>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-	 <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
-	 <1177573348.5025.224.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-	 <1177607026.30284.197.camel@frg-rhel40-em64t-04>
-	 <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-brzrIl+bq3hWgwp+p2Pq"
-Date: Fri, 27 Apr 2007 06:08:01 +1000
-Message-Id: <1177618081.4737.42.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Date: Thu, 26 Apr 2007 22:12:26 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org> <alpine.LFD.0.98.0704251706200.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704251706200.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704262212.27535.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 26 April 2007 02:34, Linus Torvalds wrote:
+> 
+> On Wed, 25 Apr 2007, Linus Torvalds wrote:
+> > 
+> > The *thaw* needs to happen with devices quiescent. 
+> 
+> Btw, I sure as hell hope you didn't use "suspend()" for that. You're 
+> (again) much better off having a totally separate function that just 
+> freezes stuff.
+> 
+> So in the "snapshot+shutdown" path, you should have:
+> 
+>  - prepare_to_snapshot() - allocate memory, and possibly return errors
+> 
+>    We can skip this, if we just make the rule be that any devices that 
+>    want to support snapshotting must always have the memory required for 
+>    snapshotting pre-allocated. Most devices really do allocate memory for 
+>    their state anyway, and the only real reason for the "prepare" stage 
+>    here is becasue the final snapshot has to happen with interrupts off, 
+>    obviously. So *if* we don't need to allocate any memory, and if we 
+>    don't expect to want to accept some early error case, this is likely 
+>    useless.
 
---=-brzrIl+bq3hWgwp+p2Pq
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I think we need this.  Apparently, some device drivers need as much as 30 meg
+of RAM at later stages (I don't know why and what for).
 
-Hi.
+>  - snapshot() - actually save device state that is consistent with the 
+>    memory image at the time. Called with interrupts off, but the device 
+>    has to be usable both before and afterwards!
+> 
+> And I would seriously suggest that "snapshot()" be documented to not rely 
+> on any DMA memory, exactly because the device has to be accessible both 
+> before and after (before - because we're running and allocating memory, 
+> and after - because we'll be writing thigns out). But see later:
 
-On Thu, 2007-04-26 at 10:34 -0700, Linus Torvalds wrote:
->=20
-> On Thu, 26 Apr 2007, Xavier Bestel wrote:
-> >=20
-> > Won't there be problems if e.g. X tries to write something to its
-> > logfile after snapshot ?
->=20
-> Sure. But that's a user-level issue.
->=20
-> You do have to allow writing after snapshotting, since at a minimum, you'=
-d=20
-> want the snapshot itself to be written. So the kernel has to be fully=20
-> running, and support full user space. No "degraded mode" like now.
+Please note that some drivers are compiled as modules and they may deal with
+uninitialized hardware (or worse, with the hardware initialized by the BIOS in
+a crazy way) after restart_snapshot().  It may be better for them to actually
+quiesce the devices here too to avoid problems after restart_snapshot() .
 
-It doesn't need a fully functional userspace (unless you want to write
-to a fuse device, and even then that could be worked around - make it
-like uswsusp or userui).... can I deverge for a second and say that from
-this point of view, fuse is the lamest idea ever invented. Guaranteed to
-break your ability to suspend^Wsnapshot.... Anyhow, if the kernel has
-bmapped the pages it's going to write to beforehand, it knows where the
-image needs to go. No need for userspace at all.
+> For the "resume snapshot" path, I would suggest having 
+> 
+>  - freeze(): quiesce the device. This literally just does the absolute 
+>    minimum to make sure that the device doesn't do anything surprising (no 
+>    interrupts, no DMA, no nothing). For many devices, it's a no-op, even 
+>    if they can do DMA (eg most disk controllers will do DMA, but only as 
+>    an actual result of a request, and upper layers will be quiescent 
+>    anyway, so they do *not* need to disable DMA)
+> 
+>    NOTE! The "freeze()" gets called from the *old* kernel just _before_ a
+>    snapshot unpacking!!
 
-> So when I said "fully running user mode", I really meant it from the=20
-> perspective of the kernel - not necessarily from the perspective of the=20
-> "user". You do want to limit _what_ user mode does, but you must not limi=
-t=20
-> it by making the kernel less capable.
->=20
-> Remounting mounted filesystems read-only sounds like a good idea, for=20
-> example. We can do that. We have the technology. But we shouldn't limit=20
-> user space from doing other things (for example, it might want to actuall=
-y=20
-> *mount* a new filesystem for writing the snapshot image).
+Yes, and usually the majority of modules is not loaded at that time.
 
-We tried that. It would need some work. IIRC remounting filesystems
-read-only makes files become marked read-only. Perfectly sensible,
-except that if you then remount the filesystem rw at resume time, all
-those files are still marked ro and userspace crashes and burns. Not
-unfixable, I'll agree, but there is more work to do there.
+>  - restart_snapshot() - actually restart the snapshot (and usually this 
+>    would involve re-setting the device, not so much trying to restore all 
+>    the saved state. IOW, it's easier to just re-initialize the DMA command 
+>    queues than to try to make them "atomic" in the snapshot).
+> 
+>    NOTE! This gets called by the *new* kernel _after_ the snapshot resume!
 
-As to the example, mounting a new filesystem for writing the snapshot
-image should probably be done before we do the snapshot. Then it won't
-be in danger of triggering anything that might require one of the other
-fses to be rw (eg syslog).
+I think devices _should_ be resetted in restart_snapshot(), unless it's
+possible to check if they have already been initialized by the "old" kernel -
+but this information would have to be available from the device itself.
 
-> For example, right now we try to "fix" that with the whole process freeze=
-r=20
-> thing. And that code has *caused* more problems than it fixed, since it=20
-> tries to freeze all the kernel threads etc, and you simply don't have a=20
-> truly *working*system*.
+> And if you *want* to, I can see that you might want to actually do a 
+> "unfreeze()" thing too, and make the actual shapshotting be:
 
-Yes, it has been difficult. But so is bringing up a child.
+What unfreeze() would be needed for in that case?
 
-> I think it's fine to freeze processes if that is what you want to do (for=
-=20
-> example, send them SIGSTOP), but we freeze them *too*much* right now, and=
-=20
-> the suspend stuff has taken over policy way too much. We don't actually=20
-> leave the system in a runnable state. I can almost guarantee that you'd b=
-e=20
-> *better* off having the snapshot taking thing do a
->=20
-> 	kill(-1, SIGSTOP);
->=20
-> in user space than our current broken process freezer. At least that=20
-> wouldn't have screwed up those kernel threads as badly as swsusp did.
+> 	/* We may not even need this.. */
+> 	for_each_device() {
+> 		err = prepare_to_snapshot();
+> 		if (err)
+> 			return err;
+> 	}
 
-I don't think it's fair to blame swsusp there. Maybe cpu hotplugging...
+We need to free as much memory as we'll need for the image creation at this
+point.
 
-> And no, I'm not saying that my suggestion is the only way to do it. Go=20
-> wild. But the *current* situation is just broken. Three different things,=
-=20
-> none of which people can agree on. I'd *much* rather see a conceptually=20
-> simpler approach that then required, but even more important is that righ=
-t=20
-> now people aren't even discussing alternatives, they're just pushing one=20
-> of the three existing things, and that's simply not viable. Because I'm=20
-> not merging another one.
->=20
-> In fact, I personally feel that I shouldn't even have merged=20
-> userspace-swsusp, but if Andrew thinks it needs to be merged, my personal=
-=20
-> feelings simply don't matter that much. I have to trust people. But yes,=20
-> as far as *I* am personally concerned, I think it was a mistake to merge=20
-> it.
+> 	/* This is the real work for snapshotting */
+> 	cli();
+> 	for_each_device()
+> 		freeze(dev);
 
-Perhaps you should try to make an alternative yourself instead of
-pushing us into making something we don't believe will work (my case) or
-have already done but in a way you don't like (Rafael). Don't talk about
-Pavel cutting code. He's just acking/nacking what Rafael sends him.
+You've added freeze() here, but it's not on your list above?
 
-Nigel
+> 	for_each_device()
+> 		snapshot(dev);
+> 	.. snapshot current memory image ..
+> 	for_each_device_depth_first()
+> 		unfreeze(dev);
+> 	sti();
+> 
+> and maybe it's worth it, but I would almost suggest that you just make the 
+> rule be that any DMA etc just *has* to be re-initialized by 
+> "restart_snapshot()", in which case it's not even necessary to 
+> freeze/unfreeze over the device, and "snapshot()" itself only needs to 
+> make sure any non-DMA data is safe.
+>
+> But adding the freeze/unfreeze (which is a no-op for most hardware anyway) 
+> might make things easier to think about, so I would certainly not *object* 
+> to it, even if I suspect it's not necessary.
 
---=-brzrIl+bq3hWgwp+p2Pq
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I think it's not necessary.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> Anyway, the restore_snapshot() sequence should be:
+> 
+> 	/* Old kernel.. Normal boot, load snapshot image */
+> 	cli()
+> 	for_each_device()
+> 		freeze(dev);
+> 	restore_snapshot_image();
+> 	restore_regs_and_jump_to_image();
+> 	/* noreturn */
+> 
+> 
+> 	/* New kernel, gets called at the snapshot restore address
+> 	 * with interrupts off and devices frozen, and memory image
+> 	 * constsntent with what it was at "snapshot()" time
+> 	 */
+> 	for_each_dev_depth_first()
+> 		restore_snapshot(dev);
+> 	/* And if you want to, just to be "symmetric"
+> 
+> 		for_each_dev_depth_first()
+> 			unfreeze(dev)
+> 
+> 	   although I think you could just make "restore_snapshot()" 
+> 	   implicitly unfreeze it too..
 
-iD8DBQBGMQahN0y+n1M3mo0RAjntAKDsUYXr66/y/VhHxD/WkgWmtaW5lwCg9kUx
-di0ap8JCupvhKVRZ1ohRrSg=
-=DhGo
------END PGP SIGNATURE-----
+Agreed.
 
---=-brzrIl+bq3hWgwp+p2Pq--
+> 	 */
+> 	sti();
+> 	/* We're up */
+> 
+> and notice how *different* this is from what happens for s2ram. There 
+> really isn't anything in common here. Exactly because s2ram simply doesn't 
+> _have_ any of the issues with atomic memory images.
 
+Agreed again.
+
+Moreover, in the s2ram case there are no problems with device drivers compiled
+as modules.
+
+Greetings,
+Rafael
