@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933278AbXDZHHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933287AbXDZHIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933278AbXDZHHz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbXDZHHz
+	id S933287AbXDZHIo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933297AbXDZHIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:07:55 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37155 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933278AbXDZHHy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:07:54 -0400
-Date: Thu, 26 Apr 2007 00:07:53 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <46304C74.9040304@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
- <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
- <46304C74.9040304@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Apr 2007 03:08:44 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:42138
+	"EHLO gwia-smtp.id2.novell.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933287AbXDZHIo convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 03:08:44 -0400
+Message-Id: <46306C51.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Thu, 26 Apr 2007 08:09:37 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Haruo Tomita" <haruo.tomita@toshiba.co.jp>
+Cc: <prarit@redhat.com>, "lkml" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 2/2]  Fixed typo Intel RNG driver for2.6.21-rc7-mm1
+References: <BF571719A4041A478005EF3F08EA6DF0043323E0@pcsmail03.pcs.pc.ome.toshiba.co.jp>
+In-Reply-To: <BF571719A4041A478005EF3F08EA6DF0043323E0@pcsmail03.pcs.pc.ome.toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Nick Piggin wrote:
+>>> "Tomita, Haruo" <haruo.tomita@toshiba.co.jp> 26.04.07 08:56 >>>
+>> But why do you remove the printk()?
+>
+>I think that FWH connected to LPC of ICHx are not only Intel products.
+>For example, sst... etc.
+>Does rng address differ in except Intel products? 
 
-> > > I am working now and again on some code to do this, it is a big job but
-> > > I think it is the right way to do it. But it would take a long time to
-> > > get stable and supported by filesystems...
-> > Ummm... We already have a radix tree for this???? What more is needed? You
-> > just need to go through all filesystems and make them use extends.
-> 
-> I'm talking about block size > page size in the buffer layer.
+I am not aware of non-Intel FWHs supporting the same RNG interface.
 
-I fail to see the point of adding another layer when you already have a 
-mapping through the radix tree. You just need to change the way the 
-filesystem looks up pages.
+>I think that this driver is targeting Intel FWH.
+>Therefore, printk() was removed.
 
-What are the exact requirement you are trying to address?
+If you're worried about people thinking their box being reported to have no
+FWH when it does, then just make the message say so (i.e. add 82802 or
+alike).
 
-You fundamentally cannot address the large blocksize requirements with 4k 
-pages since you simply must have larger contiguous memory.
+># Do you think that a "FWH not detected" message is noisy?
 
-Large blocksize means that the device can do I/O on blocks of that size.
+No, I think it helps understanding why there's no RNG device in the system.
 
-What can be done is to create some kind of fake linearity. At one level 
-the radix tree and the address space already provide that. The radix tree 
-allows you to find the next page etc. Another approach would be to create 
-a virtual address space that fakes linearity even for the processor.
-
-Then there are ways with I/O mmus to avoid the issues again.
-
-However, you still have not addressed the underlying problem of the device 
-not being able to do I/O to a larger block of memory.
-
+Jan
 
