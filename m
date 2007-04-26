@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbXDZVCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbXDZVCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755076AbXDZVCZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbXDZVCZ
+	id S1755095AbXDZVCq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbXDZVCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:02:25 -0400
-Received: from vms048pub.verizon.net ([206.46.252.48]:46981 "EHLO
-	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755077AbXDZVCX (ORCPT
+	Thu, 26 Apr 2007 17:02:46 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:48575 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752702AbXDZVCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:02:23 -0400
-Date: Thu, 26 Apr 2007 17:02:21 -0400
+	Thu, 26 Apr 2007 17:02:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=qPtIG9/+rn3eoZvBlFN6lobnf6QoEIUKRMzN2KrvqwoEr4tUpwcdhKvoYLDUscDDeUrFDSC0ehJQLzZXK1wLhAQtvbl/0pcpQ+1mTxhRPmLbEmbSeEo5i0Va/qjdz0UTTC/Lr4AXC3iVhgjFyIzrS09trXa0NJPFZYHApIEoTw0=
 From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Linux 2.6.21
-In-reply-to: <4630FA27.1090203@seclark.us>
-To: Stephen.Clark@seclark.us
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <200704261702.21789.gene.heskett@gmail.com>
 Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
- <4630E9C8.5060000@garzik.org> <4630FA27.1090203@seclark.us>
+To: Stephen.Clark@seclark.us
+Subject: Re: Linux 2.6.21
 User-Agent: KMail/1.9.6
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <4630E9C8.5060000@garzik.org> <4630FA27.1090203@seclark.us>
+In-Reply-To: <4630FA27.1090203@seclark.us>
+MIME-Version: 1.0
+Content-Disposition: inline
+Date: Thu, 26 Apr 2007 17:02:41 -0400
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704261702.41714.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
