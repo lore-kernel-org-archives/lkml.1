@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031407AbXDZSOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751130AbXDZSPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031407AbXDZSOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031415AbXDZSOU
+	id S1751130AbXDZSPJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbXDZSPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:14:20 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2121 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031407AbXDZSOS (ORCPT
+	Thu, 26 Apr 2007 14:15:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53116 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751130AbXDZSPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:14:18 -0400
-Message-ID: <4630EBFA.9000207@shadowen.org>
-Date: Thu, 26 Apr 2007 19:14:18 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Thu, 26 Apr 2007 14:15:06 -0400
+Date: Thu, 26 Apr 2007 11:10:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: David Chinner <dgc@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <46305894.3050403@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0704261108500.3263@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+ <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
+ <46304C74.9040304@yahoo.com.au> <20070426070454.GF32602149@melbourne.sgi.com>
+ <46304FAF.7020700@yahoo.com.au> <Pine.LNX.4.64.0704260011140.30731@schroedinger.engr.sgi.com>
+ <46305222.60502@yahoo.com.au> <Pine.LNX.4.64.0704260022570.31003@schroedinger.engr.sgi.com>
+ <46305894.3050403@yahoo.com.au>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>
-CC: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630A662.8090502@shadowen.org> <4630ABF2.1040305@shadowen.org>
-In-Reply-To: <4630ABF2.1040305@shadowen.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Whitcroft wrote:
-> Andy Whitcroft wrote:
->> Getting a link failure on a ppc64 system:
->>
->>   LD      .tmp_vmlinux1
->> init/built-in.o(.init.text+0x32e4): In function `.rd_load_image':
->> : undefined reference to `.__kmalloc_size_too_large'
->> fs/built-in.o(.text+0xa6fe0): In function `.ext3_fill_super':
->> : undefined reference to `.__kmalloc_size_too_large'
->> fs/built-in.o(.text+0xc1fe0): In function `.ext2_fill_super':
->> : undefined reference to `.__kmalloc_size_too_large'
->> fs/built-in.o(.text+0xf6a1c): In function `.nfs4_proc_lookup':
->> : undefined reference to `.__kmalloc_size_too_large'
->> fs/built-in.o(.text+0x104104): In function `.nfs_idmap_new':
->> : undefined reference to `.__kmalloc_size_too_large'
->> fs/built-in.o(.text+0x105520): more undefined references to
->> `.__kmalloc_size_too_large' follow
->> make: *** [.tmp_vmlinux1] Error 1
+On Thu, 26 Apr 2007, Nick Piggin wrote:
+
+> Christoph Lameter wrote:
+> > On Thu, 26 Apr 2007, Nick Piggin wrote:
+> > 
+> > 
+> > > But I maintain that the end result is better than the fragmentation
+> > > based approach. A lot of people don't actually want a bigger page
+> > > cache size, because they want efficient internal fragmentation as
+> > > well, so your radix-tree based approach isn't really comparable.
+> > 
+> > 
+> > Me? Radix tree based approach? That approach is in the kernel. Do not create
+> > a solution where there is no problem. If we do not want to support large
+> > blocksizes then lets be honest and say so instead of redefining what a block
+> > is. The current approach is fine if one is satisfied with scatter gather and
+> > the VM overhead coming with handling these pages. I fail to see what any of
+> > what you are proposing would add to that.
 > 
-> Ok, this is a SLUB related link failure.  Am investigating if PPC simply
-> needs larger allocs and needs CONFIG_LARGE_ALLOCS, of if this is an
-> inlining issue.
+> I'm not just making this up. Fragmentation. OK?
 
-Ok this is confirmed as an inlining issue.  With the compiler below on
-ppc64 we get the above link failure:
+Yes you are. If you want to avoid fragmentation by restricting the OS to 
+4k alone then the radix tree is sufficient to establish the order of pages 
+in a mapping. The only problem is to get an array of pointers to a 
+sequence of pages together by reading through the radix tree. I do not 
+know what else would be needed.
 
-  gcc version 3.3.3 (SuSE Linux)
-
-What seems to happen is that although the optimiser is capable of
-collapsing the kmalloc_index() call it then fails to collapse
-kmalloc_slab().  This leads to the never used reference to
-__kmalloc_size_too_large() and the link failure.  From my testing this
-seems to occur at sizes >= 32k.  At 16k all of the code collapses
-correctly, at 32k it does not.  I am not entirely sure what to think at
-this point, it is cirtainly not at all clear why the 32k version fails
-and the 16k succeeds they are almost identical.
-
-Either way it seems to me that assuming the optimiser will remove the
-code is perhaps over optimistic.  Perhaps it would make more sense to
-put a BUG() in here.  Though that points out the anomaly that the
-kmalloc() for constants has different semantics to that for variable values?
-
-Comments?
-
--apw
