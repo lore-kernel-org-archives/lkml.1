@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031468AbXDZTgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbXDZTiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031468AbXDZTgu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031466AbXDZTgt
+	id S1751905AbXDZTiF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754963AbXDZTiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:36:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59355 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Apr 2007 15:38:05 -0400
+Received: from khc.piap.pl ([195.187.100.11]:59307 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031468AbXDZTgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:36:48 -0400
-Date: Thu, 26 Apr 2007 21:35:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	id S1751905AbXDZTiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:38:02 -0400
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Rene Herman <rene.herman@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070426193544.GA18512@elte.hu>
-References: <20070425214704.GA32572@elte.hu> <1177615646.25960.42.camel@localhost.localdomain>
-Mime-Version: 1.0
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+References: <20070404170016.453d26f1@the-village.bc.nu>
+	<4613D492.2070404@gmail.com> <462C7D74.60003@gmail.com>
+	<1177327476.17026.75.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
+	<462CA764.5080401@gmail.com>
+	<20070425181856.42fcfeb4.akpm@linux-foundation.org>
+	<463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de>
+	<20070426084143.1d973c71.randy.dunlap@oracle.com>
+	<20070426155205.GN3468@stusta.de>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Thu, 26 Apr 2007 21:37:59 +0200
+In-Reply-To: <20070426155205.GN3468@stusta.de> (Adrian Bunk's message of "Thu, 26 Apr 2007 17:52:06 +0200")
+Message-ID: <m38xcfhqp4.fsf@maximus.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177615646.25960.42.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adrian Bunk <bunk@stusta.de> writes:
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+> I don't think we want to expose maintainership information to users at 
+> all:
+> - duplicates information in MAINTAINERS
+> - maintainers sometimes disappear
+> - the 3 year old kernel of your distribution would contain 3 year old
+>   maintainership information
 
-> On Wed, 2007-04-25 at 23:47 +0200, Ingo Molnar wrote:
-> > i got lots of -v5 feedback (thanks and please keep the reports coming!) 
-> 
-> You asked for it :)
-> 
-> CFS breaks the PI support for futexes. Fix below.
+Right. Summary: adding maintainer info to source code and/or
+compiled modules doesn't seem to make any sense.
 
-thanks, applied! :-) (Did you manage to test whether PI works?)
+> IMHO the default should be that users report problems with distribution 
+> kernels to their distribution and problems with ftp.kernel.org kernels 
+> to either linux-kernel or the kernel Bugzilla.
 
-	Ingo
+Yep. But it's really easy to miss something in lkml and/or in
+more specific lists, and the Bugzilla isn't email. That means
+we need a WWW-browseable database, with:
+a) maintainers registrations with a simple email verification or
+   something like that
+b) possibility for registered people to declare they now maintain
+   (or not) specific portions of the kernel
+c) possibility for anyone to retrieve this information.
+
+Other options?
+-- 
+Krzysztof Halasa
