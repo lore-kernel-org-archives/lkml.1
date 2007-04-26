@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXDZV0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbXDZV34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbXDZV0N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbXDZV0M
+	id S1755144AbXDZV34 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXDZV34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:26:12 -0400
-Received: from smtp2-g19.free.fr ([212.27.42.28]:60082 "EHLO smtp2-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755135AbXDZV0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:26:10 -0400
-Message-ID: <463118E7.3030902@tremplin-utc.net>
-Date: Thu, 26 Apr 2007 23:25:59 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.3) Gecko/20070423 Mandriva/2.0.0.0-1mdv2008.0 (2008.0) Thunderbird/2.0.0.0 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mitr@volny.cz,
-       Ivo van Doorn <ivdoorn@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/5] wistron_btns: add led support
-References: <200704260716.l3Q7Gb9U023608@shell0.pdx.osdl.net> <d120d5000704260850m788af054pba2117a002694210@mail.gmail.com>
-In-Reply-To: <d120d5000704260850m788af054pba2117a002694210@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Thu, 26 Apr 2007 17:29:56 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53023 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752449AbXDZV3v (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 17:29:51 -0400
+Date: Thu, 26 Apr 2007 14:28:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: 2.6.21-rc7-mm2 -- gnome-power-manager always shows the power as
+ coming from AC
+Message-Id: <20070426142824.9da91feb.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
+References: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[re-CC'ing lkml as it's back to the original topic]
-26.04.2007 17:50, Dmitry Torokhov wrote/a écrit:
-> On 4/26/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
->> From: Eric Piel <eric.piel@tremplin-utc.net>
->>
->> Add support to wistron_btns for leds that comes with the multimedia keys.
->> Mail and wifi leds are supported, on laptops which have them.  
->> Depending on
->> the laptop, wifi subsystem may control just the led, or both the led and
->> the wifi card.  Wifi led interface is activated only for the former 
->> type of
->> laptops, as the latter type is already managed.  Leds are controled by 
->> the
->> interface in /sys/class/leds.
+On Thu, 26 Apr 2007 12:13:00 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+
+> One possible issue is that /proc/acpi/power_resource/ is an empty directory.
+> Otherwise, the ACPI information seems to be fine:
 > 
-> I am not sure if we want to allow controlling WIFI state via leds. I'd
-> rather plug it into RFkill infrastructure once it is merged and have
-> leds only reflect state of the corresponding switch.
+> # cat /proc/acpi/ac_adapter/ACAD/state
+> state:                   on-line
+> # cat /proc/acpi/ac_adapter/ACAD/state
+> state:                   off-line
 > 
-Sorry if I wasn't clear. This is basically what does the driver. At 
-least, the led interface _do not_ control the WIFI state :-)
+> # cat /proc/acpi/battery/BAT0/state
+> present:                 yes
+> capacity state:          ok
+> charging state:          discharging
+> present rate:            0 mA
+> remaining capacity:      7072 mAh
+> present voltage:         12487 mV
+> 
+> When I unplug the power cable, /proc/acpi/battery/BAT0/state (present
+> rate) shows that current flowing from the battery.
+> 
+> # cat /proc/acpi/button/lid/LID0/state
+> state:      closed
+> # cat /proc/acpi/button/lid/LID0/state
+> state:      open
 
-What I meant is that there are two kinds of laptops:
-A - the one where wifi led _only_ is controlled by the wistron hardware. 
-Wifi card is controlled completely independently (pcmcia).
-B - the one where wifi card _and_ wifi led are controlled by the wistron 
-hardware (they are completely bound).
+hm, I'm looking suspiciously at "ACPI: Cache battery status instead of
+re-evaluating AML".
 
-So far, only B laptops were handled, à la RFkill: the button directly 
-modifies the wifi state and wifi led with no userspace involvement. My 
-patch adds wifi led interface only to A laptops, only the led is 
-controlled. So wifi state is never modified by led interface.
-
-I hope I cleared up what does this patch and that it's ok with you. If 
-not, just let me know which behaviour you think would be more 
-appropriate and I'll hack a new patch :-)
-
-See you,
-Eric
+What sort of machine is this?
