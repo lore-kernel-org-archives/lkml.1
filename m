@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbXDZNa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbXDZNcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbXDZNa4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbXDZNa4
+	id S1754779AbXDZNcN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXDZNcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:30:56 -0400
-Received: from mail.screens.ru ([213.234.233.54]:44875 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbXDZNaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:30:55 -0400
-Date: Thu, 26 Apr 2007 16:36:09 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH -mm] Move frozen_process() to kernel/power/process.c
-Message-ID: <20070426123609.GA1076@tv-sign.ru>
-References: <20070419120131.GB13435@in.ibm.com> <20070420180208.GA721@tv-sign.ru> <20070423102618.GA25144@in.ibm.com> <200704260044.03975.rjw@sisk.pl> <20070425231638.GH15134@in.ibm.com> <20070425163409.4f8476c4.akpm@linux-foundation.org> <20070426060608.GA12892@in.ibm.com> <20070425231232.302a83f0.akpm@linux-foundation.org> <20070426131155.GE12892@in.ibm.com>
-Mime-Version: 1.0
+	Thu, 26 Apr 2007 09:32:13 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:44871 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbXDZNcL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 09:32:11 -0400
+Date: Thu, 26 Apr 2007 15:30:54 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426133054.GZ3640@kernel.dk>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <20070426142846.45ee23af@the-village.bc.nu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070426131155.GE12892@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070426142846.45ee23af@the-village.bc.nu>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26, Gautham R Shenoy wrote:
+On Thu, Apr 26 2007, Alan Cox wrote:
+> > > Oh we have scores of these hacks around. Look at the dvd/cd layer. The 
+> > > point is to get rid of those.
+> > 
+> > Perhaps this is just a matter of cleaning them up so they are no
+> > longer hacks?
 > 
-> Other than refrigerator, no one else calls frozen_process(). So move it from
-> include/linux/freezer.h to kernel/power/process.c.
+> CD and DVD media support various non power-of-two block sizes. Supporting
+> more block sizes would also be useful as we could then read older smart
+> media (256byte/sector) without the SCSI layer objecting and the like.
 
-Could you also remove this
+I think Christoph is referring to the packet writing stuff, where we use
+32kb or 64kb block sizes. Those aren't implemented as page cache hacks
+currently though, the issue is worked around at the block layer level by
+doing software RMW.
 
-	static inline void frozen_process(struct task_struct *p) { BUG(); }
+Supporting larger page cache blocks would allow pktcdvd to be reduced to
+almost nothing.
 
-from freezer.h ?
-
-Oleg.
+-- 
+Jens Axboe
 
