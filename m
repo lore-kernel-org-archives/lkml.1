@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXDZPnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXDZPpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753179AbXDZPnv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbXDZPnv
+	id S1750893AbXDZPpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750827AbXDZPpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:43:51 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:41874 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753179AbXDZPnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:43:50 -0400
-Date: Thu, 26 Apr 2007 17:43:48 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: vgoyal@in.ibm.com
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-rc7-mm2 "irqpoll" seems to be broken
-Message-ID: <20070426154348.GA20350@suse.de>
-Mail-Followup-To: vgoyal@in.ibm.com,
-	linux kernel mailing list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20070426093620.GB2626@in.ibm.com> <20070426082405.67a0fdd2.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
+	Thu, 26 Apr 2007 11:45:22 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:56081 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbXDZPpV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:45:21 -0400
+Date: Thu, 26 Apr 2007 16:45:18 +0100
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error II
+Message-ID: <20070426154518.GG16909@skynet.ie>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426143902.GD16909@skynet.ie> <20070426152039.GF16909@skynet.ie> <200704261724.46027.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070426082405.67a0fdd2.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200704261724.46027.ak@suse.de>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On (26/04/07 17:24), Andi Kleen didst pronounce:
+> 
+> > --- build/arch/x86_64/vdso/vdso.lds-orig	2007-04-26 08:18:19.000000000 -0700
+> > +++ build/arch/x86_64/vdso/vdso.lds	2007-04-26 08:18:23.000000000 -0700
+> > @@ -33,7 +33,7 @@
+> >       For the layouts to match, we need to skip more than enough
+> >       space for the dynamic symbol table et al.  If this amount
+> >       is insufficient, ld -shared will barf.  Just increase it here.  */
+> > -  . = 0xffffffffff700000 + 0x500;
+> > +  . = 0xffffffffff700000 + 0x400;
+> 
+> Hmm, you must have an old version of the patch. in my copy it looks like
+> 
+>   . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
+> 
 
---gBBFr7Ir9EOA20Yy
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That's vdso.lds.S, not vdso.lds. The VDSO_TEXT_OFFSET is still 0x400.
+This is what I should have posted the last time
 
-* Andrew Morton <akpm@linux-foundation.org> [2007-04-26 17:24]:
->=20
-> hm.  I'd be suspecting
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/=
-2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-common-code.patch
-> and
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/=
-2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-on-x86_64.patch
+--- build/arch/x86_64/vdso/voffset.h.orig	2007-04-26 08:43:31.523739878 -0700
++++ build/arch/x86_64/vdso/voffset.h	2007-04-26 08:43:38.839579356 -0700
+@@ -1 +1 @@
+-#define VDSO_TEXT_OFFSET 0x500
++#define VDSO_TEXT_OFFSET 0x400
 
-I aggree that it's likely that the patches cause the problem. However,
-Vivek, could you try without the patches if the problem is really in
-theses patches?
-
-
-Thanks,
-   Bernhard
---=20
-SUSE LINUX Products GmbH          Tel. +49 (911) 74053-0
-Maxfeldstr. 5                     GF: Markus Rex
-90409 N=FCrnberg, Germany           HRB 16746 (AG N=FCrnberg)
-OpenPGP DDAF6454: F61F 34CC 09CA FB82 C9F6  BA4B 8865 3696 DDAF 6454
-
---gBBFr7Ir9EOA20Yy
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFGMMi0iGU2lt2vZFQRAuJ9AJ0ZUCBKQ38MRDs50U7eSzjR7KEtFACfTvB6
-j3wSZ6NycLT1QLsV5MRS+rY=
-=BZj7
------END PGP SIGNATURE-----
-
---gBBFr7Ir9EOA20Yy--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
