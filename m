@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031045AbXDZOj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXDZOlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031045AbXDZOj6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXDZOj6
+	id S1752549AbXDZOlK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbXDZOlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:39:58 -0400
-Received: from holomorphy.com ([66.93.40.71]:59695 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754811AbXDZOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:39:57 -0400
-Date: Thu, 26 Apr 2007 07:40:17 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426144017.GF19966@holomorphy.com>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <m1k5vzmoo7.fsf@ebiederm.dsl.xmission.com> <20070426135033.GU65285596@melbourne.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426135033.GU65285596@melbourne.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 26 Apr 2007 10:41:10 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:55851 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbXDZOlI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:41:08 -0400
+Date: Thu, 26 Apr 2007 10:41:04 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+In-reply-to: <1177596399.14496.1.camel@localhost>
+To: Redeeman <redeeman@metanurb.dk>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
+Message-id: <200704261041.04838.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070425214704.GA32572@elte.hu>
+ <1177596399.14496.1.camel@localhost>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 04:10:32AM -0600, Eric W. Biederman wrote:
->> You have HW_PAGE_SIZE != PAGE_SIZE.
+On Thursday 26 April 2007, Redeeman wrote:
+>On Wed, 2007-04-25 at 23:47 +0200, Ingo Molnar wrote:
+><snip>
+>
+>> As usual, any sort of feedback, bugreport, fix and suggestion is more
+>> than welcome,
+>
+>well, from my experiences with cfs on workstation/desktop, on amd64
+>2ghz, cfs doesent measure up to SD at all.
+>
+>audio skips easily, with or without reniced X, and games are not as
+>smooth. also it seems to be much lower throughput. vanilla seems much
+>better by comparisin.
 
-On Thu, Apr 26, 2007 at 11:50:33PM +1000, David Chinner wrote:
-> That's rather wasteful, though. Better to only use the large pages
-> when the filesystem needs them rather than penalise all filesystems.
+Well, I don't generally feel as if the few stutters I just heard in a cbs news 
+story I just played were anything but dsl glitches here. xmms, playing high 
+quality (Q7) oggs from my own drive are dead smoothly done.  nbc did want to 
+let me play anything because I have adblock enabled, and neither did abc but 
+their anims played nicely, fox news smoothly played everything I clicked on.
 
-I found less of an issue with filesystem pagecache than with internal
-fragmentation of anonymous memory when I did it. I'd expect, though,
-that 4KB is probably too small and 64KB too large, at least for some
-workloads. 16KB may do better; if not, 8KB may be worth doing just to
-compensate for the larger sizes of pointers and unsigned longs in
-struct page with respect to memory overhead so as not to regress vs.
-32-bit, which isn't critical, but does have some cache and other
-performance impacts.
+The only problem I've had so far is with a proprietary daemon from belkin, 
+which took about 10 kills and restarts after I'd booted to 2.6.21-CFS-v6 
+before it quit wanting a steady 40% of the cpu when it was running.  Now it 
+only does that when the bulldog gui is running.  That's not normal either, 
+but getting fixes out of belkin is like breeding elephants, lots of yelling 
+and screaming and it takes 22 months to get results.  My next ups will NOT be 
+a belkin.
 
-Basically I found that without some intelligent method of divvying
-out fragments of anonymous pages, pathological performance resulted.
-The naive scheme of faulting at PAGE_SIZE-aligned boundaries created
-swapstorms on memory-constrained hardware (e.g. laptops). Pagecache
-was a second-order effect. It's not necessarily all that complex to
-handle. One could easily recover the PAGE_SIZE == MMUPAGE_SIZE
-behavior by keeping partially utilized anonymous pages cached in the mm
-and handing out MMUPAGE_SIZE-sized fragments during COW/zerofill faults.
-I had some sort of trouble with tracking the state for it, though I
-don't remember what it was.
+X is not reniced here, but I did run kmail up to -5.
 
-It's also notable that the two strategies (increasing base page size
-and dealing with higher-order pages) don't clash all that much.
+Compared to mainline?  I still think this is a 100% keeper for desktop users 
+like me.
 
-
--- wli
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Two heads are more numerous than one.
