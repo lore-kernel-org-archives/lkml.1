@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031253AbXDZPYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031267AbXDZPYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031253AbXDZPYb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031267AbXDZPYb
+	id S1031267AbXDZPYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031275AbXDZPYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:24:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50214 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031253AbXDZPYa (ORCPT
+	Thu, 26 Apr 2007 11:24:34 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:38786 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031267AbXDZPYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:24:30 -0400
-Date: Thu, 26 Apr 2007 08:24:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: vgoyal@in.ibm.com
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Bernhard Walle <bwalle@suse.de>
-Subject: Re: 2.6.21-rc7-mm2 "irqpoll" seems to be broken
-Message-Id: <20070426082405.67a0fdd2.akpm@linux-foundation.org>
-In-Reply-To: <20070426093620.GB2626@in.ibm.com>
-References: <20070426093620.GB2626@in.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 11:24:33 -0400
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, serge@hallyn.com, hpa@zytor.com, linuxram@us.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       linux-security-module@vger.kernel.org, ebiederm@xmission.com,
+       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-reply-to: <20070426145733.GA10078@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch] unprivileged mounts update
+References: <E1HgcBv-00049Z-00@dorka.pomaz.szeredi.hu> <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com> <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu> <20070426145733.GA10078@sergelap.austin.ibm.com>
+Message-Id: <E1Hh5oQ-0000w1-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 26 Apr 2007 17:23:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 15:06:20 +0530 Vivek Goyal <vgoyal@in.ibm.com> wrote:
+> Quoting Miklos Szeredi (miklos@szeredi.hu):
+> > > Right, I figure if the normal action is to always do
+> > > mnt->user = current->fsuid, then for the special case we
+> > > pass a uid in someplace.  Of course...  do we not have a
+> > > place to do that?  Would it be a no-no to use 'data' for
+> > > a non-fs-specific arg?
+> > 
+> > I guess it would be OK for bind, but not for new- and remounts, where
+> > 'data' is already used.
+> > 
+> > Maybe it's best to stay with fsuid after all, and live with having to
+> > restore capabilities.  It's not so bad after all, this seems to do the
+> > trick:
+> > 
+> > 	cap_t cap = cap_get_proc();
+> > 	setfsuid(uid);
+> > 	cap_set_proc(cap);
+> > 
+> > Unfortunately these functions are not in libc, but in a separate
+> > "libcap" library.  Ugh.
+> 
+> Ok, are you still planning to nix the MS_SETUSER flag, though, as
+> Eric suggested?  I think it's cleanest - always set the mnt->user
+> field to current->fsuid, and require CAP_SYS_ADMIN if the
+> mountpoint->mnt->user != current->fsuid.
 
-> Hi,
-> 
-> I am booting 2.6.21-rc7-mm2 on x86_64 box with "irqpoll" command line option
-> and it panics. I can reproduce this problem easily on this box. Please
-> let me know if serial console output is required.
-> 
-> 2.6.21-rc7 works just fine. So problem seems to be in some -mm patch.
-> 
-> Unable to handle kernel NULL pointer dereference at 0000000000000009 RIP:
->  [<ffffffff8025bc5e>] note_interrupt+0x5d/0x21b
-> PGD 1032c5067 PUD 1032c4067 PMD 0
-> Oops: 0000 [1] SMP
-> CPU 1
-> Modules linked in:
-> Pid: 0, comm: swapper Not tainted 2.6.21-rc7-mm2 #1
-> RIP: 0010:[<ffffffff8025bc5e>]  [<ffffffff8025bc5e>] note_interrupt+0x5d/0x21b
-> RSP: 0018:ffff810100cbff08  EFLAGS: 00010002
-> RAX: 0000000000000000 RBX: ffffffff807e2d40 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: ffffffff807e2d40 RDI: 0000000000000004
-> RBP: ffffffff807e2d40 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000000010 R11: 00000000000000a0 R12: ffff810104192f40
-> R13: ffffffff807e2d84 R14: 0000000000000000 R15: 0000000000000000
-> FS:  0000000000000000(0000) GS:ffff810100854140(0000) knlGS:0000000000000000
-> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> CR2: 0000000000000009 CR3: 00000001032c6000 CR4: 00000000000006e0
-> Process swapper (pid: 0, threadinfo ffff810100cb8000, task ffff810100cb7500)
-> Stack:  0000000000000004 0000000400000000 0000000000000000 ffffffff807e2d40
->  0000000000000004 ffff810104192f40 ffffffff807e2d84 0000000000000000
->  0000000000000000 ffffffff8025c7c5 ffff810100cb9e98 ffff810100cb9e98
-> Call Trace:
->  [<ffffffff8025c7c5>] handle_edge_irq+0xf9/0x127
->  [<ffffffff8020c2f9>] do_IRQ+0xf1/0x160
->  [<ffffffff8020a141>] ret_from_intr+0x0/0xa
->  [<ffffffff80208fd9>] mwait_idle+0x42/0x45
->  [<ffffffff80208f2f>] cpu_idle+0xbd/0xe0
-> 
-> 
-> Code: f6 40 09 10 75 09 45 85 ff 0f 85 3d 01 00 00 49 c7 c4 c0 2b
-> RIP  [<ffffffff8025bc5e>] note_interrupt+0x5d/0x21b
->  RSP <ffff810100cbff08>
-> CR2: 0000000000000009
-> Kernel panic - not syncing: Aiee, killing interrupt handler!
-> 
+It would be a nice cleanup, but I think it's unworkable for the
+following reasons:
 
-hm.  I'd be suspecting
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-common-code.patch
-and
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-on-x86_64.patch
+Up till now mount(2) and umount(2) always required CAP_SYS_ADMIN, and
+we must make sure, that unless there's some explicit action by the
+sysadmin, these rules are still enfoced.
 
-But because x86_64 doesn't implement IRQ_PER_CPU it's hard to see how we
-got into note_interrupt as a result of that patch.
+For example, with just a check for mnt->mnt_uid == current->fsuid, a
+fsuid=0 process could umount or submount all the "legacy" mounts even
+without CAP_SYS_ADMIN.
 
-Adding the `noirqdebug' boot option would be interesting, perhaps.
+This is a fundamental security problem, with getting rid of MS_SETUSER
+and MNT_USER.
+
+Another, rather unlikely situation is if an existing program sets
+fsuid to non-zero before calling mount, hence unwantingly making that
+mount owned by some user after these patches.
+
+Also adding "user=0" to the options in /proc/mounts would be an
+inteface breakage, that is probably harmless, but people wouldn't like
+it.  Special casing the zero uid for this case is more ugly IMO, than
+the problem we are trying to solve.
+
+If we didn't have existing systems to deal with, then of course I'd
+agree with Eric's suggestion.
+
+Miklos
