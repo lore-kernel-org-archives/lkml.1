@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbXDZNRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751024AbXDZNSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753398AbXDZNRR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbXDZNRR
+	id S1751024AbXDZNSK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbXDZNSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:17:17 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1773 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753398AbXDZNRQ (ORCPT
+	Thu, 26 Apr 2007 09:18:09 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38201 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751024AbXDZNSG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:17:16 -0400
-Message-ID: <4630A662.8090502@shadowen.org>
-Date: Thu, 26 Apr 2007 14:17:22 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-In-Reply-To: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Apr 2007 09:18:06 -0400
+Date: Thu, 26 Apr 2007 14:21:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sworks-agp: Switch to PCI ref counting APIs
+Message-ID: <20070426142108.44988793@the-village.bc.nu>
+In-Reply-To: <20070426042019.GA11278@redhat.com>
+References: <20070423145129.1cfcd1f2@the-village.bc.nu>
+	<20070425192158.8787a248.akpm@linux-foundation.org>
+	<20070426042019.GA11278@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Getting a link failure on a ppc64 system:
+On Thu, 26 Apr 2007 00:20:19 -0400
+Dave Jones <davej@redhat.com> wrote:
 
-  LD      .tmp_vmlinux1
-init/built-in.o(.init.text+0x32e4): In function `.rd_load_image':
-: undefined reference to `.__kmalloc_size_too_large'
-fs/built-in.o(.text+0xa6fe0): In function `.ext3_fill_super':
-: undefined reference to `.__kmalloc_size_too_large'
-fs/built-in.o(.text+0xc1fe0): In function `.ext2_fill_super':
-: undefined reference to `.__kmalloc_size_too_large'
-fs/built-in.o(.text+0xf6a1c): In function `.nfs4_proc_lookup':
-: undefined reference to `.__kmalloc_size_too_large'
-fs/built-in.o(.text+0x104104): In function `.nfs_idmap_new':
-: undefined reference to `.__kmalloc_size_too_large'
-fs/built-in.o(.text+0x105520): more undefined references to
-`.__kmalloc_size_too_large' follow
-make: *** [.tmp_vmlinux1] Error 1
+> On Wed, Apr 25, 2007 at 07:21:58PM -0700, Andrew Morton wrote:
+>  > On Mon, 23 Apr 2007 14:51:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>  > 
+>  > >  {
+>  > >  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+>  > >  
+>  > > +	pci_dev_put(bridge->dev);
+>  > >  	agp_remove_bridge(bridge);
+>  > >  	agp_put_bridge(bridge);
+>  > > +	pci_dev_put(serverworks_private.svrwrks_dev)
+>  > > +	serverworks_private.svrwrks_dev = NULL;
+>  > 
+>  > err, guys?
+> 
+> ? One put for the agp bridge, one for the host bridge.
+> What am I missing?
 
-Kernel config:
-
-http://test.kernel.org/abat/85342/build/dotconfig
-
--apw
+Nothing - I assume Andrew was referring the bizarre way one of the
+devices is global and one is per structure ?
