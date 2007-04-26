@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbXDZQrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXDZQrm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905AbXDZQrJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXDZQrI
+	id S1754832AbXDZQrm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXDZQrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:47:08 -0400
-Received: from mivlgu.ru ([81.18.140.87]:36262 "EHLO mail.mivlgu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752905AbXDZQrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:47:07 -0400
-X-Greylist: delayed 1502 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 12:47:06 EDT
-Date: Thu, 26 Apr 2007 20:21:57 +0400
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: Greg KH <gregkh@suse.de>
-Cc: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: "IPV6: Disallow RH0 by default" patch looks broken (Re: Linux
- 2.6.20.9)
-Message-Id: <20070426202157.e357ece5.vsu@altlinux.ru>
-In-Reply-To: <20070426072503.GA5643@kroah.com>
-References: <20070426072441.GA5515@kroah.com>
-	<20070426072503.GA5643@kroah.com>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; i586-alt-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Apr 2007 12:47:42 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:49748 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754832AbXDZQrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:47:41 -0400
+Message-ID: <4630D724.70901@gmail.com>
+Date: Thu, 26 Apr 2007 18:45:24 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+References: <20070404150231.GE27660@stusta.de>	<4613C963.6070409@gmail.com>	<20070404170016.453d26f1@the-village.bc.nu>	<4613D492.2070404@gmail.com>	<462C7D74.60003@gmail.com>	<1177327476.17026.75.camel@localhost.localdomain>	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>	<462CA764.5080401@gmail.com>	<20070425181856.42fcfeb4.akpm@linux-foundation.org>	<463081E5.5010306@gmail.com>	<20070426135426.GM3468@stusta.de>	<4630BD61.2050006@gmail.com> <20070426170050.7b333556@the-village.bc.nu>
+In-Reply-To: <20070426170050.7b333556@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 00:25:03 -0700 Greg KH wrote:
+On 04/26/2007 06:00 PM, Alan Cox wrote:
 
-[...]
-> diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
-> index 0711f92..5fd7cf9 100644
-> --- a/net/ipv6/exthdrs.c
-> +++ b/net/ipv6/exthdrs.c
-[...]
-> @@ -378,6 +395,22 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
->  
->  	hdr = (struct ipv6_rt_hdr *) skb->h.raw;
->  
-> +	switch (hdr->type) {
-> +#ifdef CONFIG_IPV6_MIP6
-> +		break;
+>> Tie Alan to his chair and take away his keyboard while we submit patches 
+>> removing MODULE_AUTHOR? Or just apply a trivial two line, optional, non 
+>> mandatory, patch introducing a MODULE_MAINTAINER? You pick... :-)
+> 
+> MODULE_AUTHOR is extremely important for licensing enforcement. Removing
+> it should not be an option.
 
-I suppose "case IPV6_SRCRT_TYPE_2:" is missing before "break"?
+Yes, the "choice" was obviously in jest. If you say MODULE_AUTHOR must stay, 
+so must it. As said, that just leaves me wanting a way to override it as a 
+contact.
 
-The same broken patch went in 2.6.21.
+Rene.
 
-> +#endif
-> +	case IPV6_SRCRT_TYPE_0:
-> +		if (accept_source_route > 0)
-> +			break;
-> +		kfree_skb(skb);
-> +		return -1;
-> +	default:
-> +		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
-> +				 IPSTATS_MIB_INHDRERRORS);
-> +		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
-> +		return -1;
-> +	}
-> +
->  	if (ipv6_addr_is_multicast(&skb->nh.ipv6h->daddr) ||
->  	    skb->pkt_type != PACKET_HOST) {
->  		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
-[...]
