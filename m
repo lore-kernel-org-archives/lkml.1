@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbXDZFFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbXDZFF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbXDZFFd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 01:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXDZFFd
+	id S1754100AbXDZFF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXDZFFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 01:05:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37762 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754712AbXDZFFQ (ORCPT
+	Thu, 26 Apr 2007 01:05:35 -0400
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:57574 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754713AbXDZFFW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 01:05:16 -0400
-Date: Wed, 25 Apr 2007 22:02:53 -0700
-From: Greg KH <greg@kroah.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426050253.GA18335@kroah.com>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 01:05:22 -0400
+Message-Id: <1177563921.15159.1186637395@webmail.messagingengine.com>
+X-Sasl-Enc: bBbknofGbMEyg78Whr2dgRprO+xBwEcWNP7e0T9ZQi8g 1177563921
+From: lkml777@123mail.org
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
+       "William Heimbigner" <icxcnika@mar.tar.cc>,
+       "Alex Zarochentsev" <zam@namesys.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
+       "Edward Shishkin" <edward@namesys.com>
 Content-Disposition: inline
-In-Reply-To: <20070426040806.GJ3468@stusta.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
+   <462E17AF.7090604@namesys.com>
+   <20070424193921.GA17129@one.firstfloor.org>
+   <462F6717.70508@namesys.com>
+   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
+   <1177513612.18970.1186506815@webmail.messagingengine.com>
+   <b6a2187b0704250850j538d8edbm80fa07fb750703c8@mail.gmail.com>
+Subject: Re: Question about Reiser4
+In-Reply-To: <b6a2187b0704250850j538d8edbm80fa07fb750703c8@mail.gmail.com>
+Date: Wed, 25 Apr 2007 22:05:21 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 06:08:06AM +0200, Adrian Bunk wrote:
-> What I will NOT do:
-> Waste my time with tracking 2.6.22-rc regressions.
 
-I sure hope you don't do this.
+On Wed, 25 Apr 2007 23:50:22 +0800, "Jeff Chua"
+<jeff.chua.linux@gmail.com> said:
+> On 4/25/07, lkml777@123mail.org <lkml777@123mail.org> wrote:
+> 
+> > Laurent Riffard's Reiser4 patch to the default linux-2.6.20 kernel and a
+> > couple of others.
+> 
+> Thank you. Got it. Testing it now.
+> 
+> Jeff.
 
-Tracking these is tough, and I think you are doing a great job with it.
+What plugins etc are you looking at?
+-- 
+  
+  lkml777@123mail.org
 
-No release will have no regressions, there's just too many different
-combinations of hardware and sometimes people don't have the time to
-test to see if their original report is even fixed or not.
+-- 
+http://www.fastmail.fm - Email service worth paying for. Try it for free
 
-And some of them will get fixed with patches coming in the next kernel
-release, which will then be tracked down and added to the -stable
-releases.
-
-So if you can, please keep it up, if you think it's a thankless job,
-here's my hearty thanks for doing this work.  It's really needed and I
-really appreciate it.
-
-thanks,
-
-greg k-h
