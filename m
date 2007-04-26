@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbXDZCOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbXDZCU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754636AbXDZCOq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 22:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXDZCOp
+	id S1754042AbXDZCU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 22:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbXDZCU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 22:14:45 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:35825 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754636AbXDZCOp (ORCPT
+	Wed, 25 Apr 2007 22:20:27 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51469 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754042AbXDZCU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 22:14:45 -0400
-Date: Wed, 25 Apr 2007 22:14:29 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-In-reply-to: <20070425214704.GA32572@elte.hu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Message-id: <200704252214.29918.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070425214704.GA32572@elte.hu>
-User-Agent: KMail/1.9.6
+	Wed, 25 Apr 2007 22:20:26 -0400
+Date: Wed, 25 Apr 2007 19:20:20 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use mutex instead of semaphore in tty_io.c
+Message-Id: <20070425192020.aa14b08f.akpm@linux-foundation.org>
+In-Reply-To: <20070425191359.GA13241@infradead.org>
+References: <20070425154934.GP6798@traven>
+	<20070425191359.GA13241@infradead.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007, Ingo Molnar wrote:
->i'm pleased to announce release -v6 of the CFS scheduler patchset. The
->main goal of CFS is to implement "high quality desktop scheduling" as
->well as technically possible.
->
->The CFS patch against v2.6.21-rc7 or against v2.6.20.7 can be downloaded
->from the usual place:
->
->    http://redhat.com/~mingo/cfs-scheduler/
->
-It hasn't made it to this server yet, and its 22:14 EDT here.
+On Wed, 25 Apr 2007 20:13:59 +0100 Christoph Hellwig <hch@infradead.org> wrote:
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Doing gets it done.
+> On Wed, Apr 25, 2007 at 05:49:34PM +0200, Matthias Kaehlcke wrote:
+> > drivers/char/tty_io.c uses a semaphore as mutex. use the mutex API
+> > instead of the (binary) semaphore
+> 
+> This looks like it should be a spinlock:
+> 
+> > -		down(&allocated_ptys_lock);
+> > +		mutex_lock(&allocated_ptys_lock);
+> >  		idr_remove(&allocated_ptys, idx);
+> > -		up(&allocated_ptys_lock);
+> > +		mutex_unlock(&allocated_ptys_lock);
+> 
+> idr_remove is a quick operation that doesn't sleep.
+> 
+> > @@ -2639,24 +2639,24 @@ static int ptmx_open(struct inode * inode, struct file * filp)
+> >  	nonseekable_open(inode, filp);
+> >  
+> >  	/* find a device that is not in use. */
+> > -	down(&allocated_ptys_lock);
+> > +	mutex_lock(&allocated_ptys_lock);
+> >  	if (!idr_pre_get(&allocated_ptys, GFP_KERNEL)) {
+> > -		up(&allocated_ptys_lock);
+> 
+> The idr_pre_get should be moved out of the lock, that's the whole
+> point for it's existance..
+> 
+
+I think having it inside the lock makes sense:
+
+	mutex_lock()
+	idr_pre_get()
+	idr_get_new()
+	mutex_unlock()
+
+here, if idr_pre_get() succeeded, we know that idr_get_new() will succeed.
+
+otoh:
+
+try_again:
+	idr_pre_get()
+	mutex_lock()
+	if (idr_get_new() == failed) {
+		mutex_unlock()
+		goto try_again;
+	}
+	mutex_unlock()
+
+is not nice.
+
+
+the IDR api is awful.  A little project is to rip out all its internal
+locking and to implement caller-provided locking.
+
+Unfortunately the fact that the library allocates memory means that we
+might need to do awkward things like radix_tree_preload() to make it
+reliable for callers who use spinlocking.
+
