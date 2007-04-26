@@ -1,95 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031429AbXDZSkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031418AbXDZSm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031429AbXDZSkT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031433AbXDZSkT
+	id S1031418AbXDZSm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031434AbXDZSm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:40:19 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:49824 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031429AbXDZSkR (ORCPT
+	Thu, 26 Apr 2007 14:42:28 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:45794 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031418AbXDZSm1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:40:17 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200704262040.31760.rjw@sisk.pl>
-References: <20070425072350.GA6866@ucw.cz>
-	 <20070426113005.GU17387@elf.ucw.cz>
-	 <1177605074.6814.93.camel@johannes.berg>  <200704262040.31760.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lZLPfwsUVRjZkhfGFaId"
-Date: Thu, 26 Apr 2007 20:40:02 +0200
-Message-Id: <1177612802.6814.121.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Thu, 26 Apr 2007 14:42:27 -0400
+X-IronPort-AV: i="4.14,457,1170662400"; 
+   d="scan'208"; a="481754595:sNHT56566668"
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 26 Apr 2007 11:42:18 -0700
+Message-ID: <adak5vzrn91.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 26 Apr 2007 18:42:18.0742 (UTC) FILETIME=[9E35D960:01C78832]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus, please pull from
 
---=-lZLPfwsUVRjZkhfGFaId
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-On Thu, 2007-04-26 at 20:40 +0200, Rafael J. Wysocki wrote:
+This tree is also available from kernel.org mirrors at:
 
-> >  * it surfaces kernel implementation details about pm_ops and thus make=
-s
-> >    the whole thing very fragile
->=20
-> Can you elaborate?
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-Well it tells userspace about pm_ops->enter/prepare/finish etc.
-Also, it seems that it needs a "release memory now" operation instead of
-just releasing it when the fd is closed?
+This is the first batch of merges for 2.6.22 -- mostly ipath driver fixes:
 
-> >  * it has yet another interface (yuck) to determine whether to reboot,
-> >    shut down etc, doesn't use /sys/power/disk
->=20
-> Yes.  In fact it was meant as a replacement for /sys/power/disk at one po=
-int.
+Arthur Jones (2):
+      IB/ipath: Call free_irq() on chip specific initialization failure
+      IB/ipath: Force PIOAvail update entry point
 
-Heh.
+Bryan O'Sullivan (17):
+      IB/ipath: Add ability to set and clear IB local loopback
+      IB/ipath: Fix user memory region creation when IOMMU present
+      IB/ipath: Definitions of two RXE parity err bits were reversed
+      IB/ipath: Fix up some debug messages
+      IB/ipath: Change packet problems vs chip errors handling and reporting
+      IB/ipath: Fix bad argument to clear_bit()
+      IB/ipath: Fix CQ flushing when QP is modified to error state
+      IB/ipath: Remove unused ipath_read_kreg64_port()
+      IB/ipath: Fix calculation for number of kernel PIO buffers
+      IB/ipath: Discard multicast packets without a GRH
+      IB/ipath: Print better error messages if kernel is misconfigured
+      IB/ipath: Improve handling and reporting of parity errors
+      IB/ipath: On unrecoverable errors, force link down, LEDs off
+      IB/ipath: Prevent random program use of diags interface
+      IB/ipath: Disable IB link earlier in shutdown sequence
+      IB/ipath: Don't allow QPs 0 and 1 to be opened multiple times
+      IB/ipath: Fix unit selection when all CPU affinity bits set
 
-> >  * I generally had no idea wtf it is doing in some places
->=20
-> I could have told you if you had asked. :-)
+Hal Rosenstock (3):
+      IB/umad: Fix declaration of dev_map[]
+      IB/mad: Change SMI to use enums rather than magic return codes
+      IB/umad: Clarify documentation of transaction ID
 
-I was offline ;)
+Joachim Fenkes (2):
+      IB/ehca: Implement modify_port
+      IB: Set class_dev->dev in core for nice device symlink
 
-> Do we need hibernate_ops at all?  There's only one user anyway and I'm no=
-t
-> sure there will be more of them in the future.
+Mark Debbage (1):
+      IB/ipath: Allow receive ports mapped into userspace to be shared
 
-I'm pretty sure there won't be, but there's no way to do it cleanly
-without pm_ops since even acpi doesn't do this all the time but only
-when some set of conditions is true. Hence, it needs to be able to
-determine the availability of the platform mode at run time rather than
-build time (build time =3D> we could use weak symbols, arch hooks, ...)
+Michael Albaugh (1):
+      IB/ipath: Fix driver crash (in interrupt or during unload) after chip reset
 
-johannes
+Ralph Campbell (8):
+      IB/ipath: Don't initialize port memory for subports
+      IB/ipath: Fix SRQ limit event causing dropped CQ entry
+      IB/ipath: NMI cpu lockup if local loopback used
+      IB/ipath: Support larger IB_QP_MAX_DEST_RD_ATOMIC and IB_QP_MAX_QP_RD_ATOMIC
+      IB/ipath: Fix QP error completion queue entries
+      IB/ipath: Fix PSN update for RC retries
+      IB/ipath: Fix port sharing on powerpc
+      IB/ipath: Fix RDMA reads of length zero and error handling
 
---=-lZLPfwsUVRjZkhfGFaId
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Robert Walsh (4):
+      IB/ipath: Check reserved memory keys
+      IB/ipath: Remove duplicate stuff from ipath_verbs.h
+      IB/ipath: Check that a UD work request's address handle is valid
+      IB/ipath: Fix WC format drift between user and kernel space
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Roland Dreier (6):
+      IB: Remove reference to obsolete CONFIG_IPATH_CORE
+      IPoIB: Remove pointless opcode field from debugging output
+      IB/mthca: Update HCA firmware revisions
+      IB/mthca: Fix mthca_write_mtt() on HCAs with hidden memory
+      IB/mthca: Simplify CQ cleaning in mthca_free_qp()
+      IPoIB/cm: spin_lock_irqsave() -> spin_lock_irq() replacements
 
-iD8DBQBGMPIC/ETPhpq3jKURAtaIAKCuVH219VocWWLOCTcozP04ixT7NQCgs9nf
-IHsFZ7KIZkHZ9KRWkoAxMLI=
-=fvL4
------END PGP SIGNATURE-----
+Sean Hefty (5):
+      RDMA/ucma: Simplify ucma_get_event()
+      IB/ucm: Simplify ib_ucm_event()
+      IB/sa: Set src_path_bits correctly in ib_init_ah_from_path()
+      IB/ipoib: Use ib_init_ah_from_path to initialize ah_attr
+      IB/umad: Implement GRH handling for sent/received MADs
 
---=-lZLPfwsUVRjZkhfGFaId--
-
+ Documentation/infiniband/user_mad.txt         |    8 +
+ drivers/Makefile                              |    1 -
+ drivers/infiniband/core/mad.c                 |   34 +-
+ drivers/infiniband/core/sa_query.c            |   24 +-
+ drivers/infiniband/core/smi.c                 |   86 ++--
+ drivers/infiniband/core/smi.h                 |   34 +-
+ drivers/infiniband/core/sysfs.c               |    1 +
+ drivers/infiniband/core/ucm.c                 |   23 +-
+ drivers/infiniband/core/ucma.c                |   22 +-
+ drivers/infiniband/core/user_mad.c            |   20 +-
+ drivers/infiniband/hw/amso1100/c2_provider.c  |    1 -
+ drivers/infiniband/hw/cxgb3/iwch_provider.c   |    1 -
+ drivers/infiniband/hw/ehca/ehca_classes.h     |    1 +
+ drivers/infiniband/hw/ehca/ehca_hca.c         |   55 ++-
+ drivers/infiniband/hw/ehca/ehca_main.c        |    1 +
+ drivers/infiniband/hw/ehca/hcp_if.c           |   24 +
+ drivers/infiniband/hw/ehca/hcp_if.h           |    4 +
+ drivers/infiniband/hw/ipath/ipath_common.h    |   23 +-
+ drivers/infiniband/hw/ipath/ipath_cq.c        |   38 +-
+ drivers/infiniband/hw/ipath/ipath_debug.h     |    1 +
+ drivers/infiniband/hw/ipath/ipath_diag.c      |   11 +-
+ drivers/infiniband/hw/ipath/ipath_driver.c    |  123 +++--
+ drivers/infiniband/hw/ipath/ipath_eeprom.c    |    4 +
+ drivers/infiniband/hw/ipath/ipath_file_ops.c  |  287 +++++----
+ drivers/infiniband/hw/ipath/ipath_iba6110.c   |  152 +++--
+ drivers/infiniband/hw/ipath/ipath_iba6120.c   |   73 ++-
+ drivers/infiniband/hw/ipath/ipath_init_chip.c |   86 ++-
+ drivers/infiniband/hw/ipath/ipath_intr.c      |  100 ++-
+ drivers/infiniband/hw/ipath/ipath_kernel.h    |   10 +-
+ drivers/infiniband/hw/ipath/ipath_keys.c      |   14 +-
+ drivers/infiniband/hw/ipath/ipath_mr.c        |   12 +-
+ drivers/infiniband/hw/ipath/ipath_qp.c        |  133 +++--
+ drivers/infiniband/hw/ipath/ipath_rc.c        |  920 ++++++++++++++-----------
+ drivers/infiniband/hw/ipath/ipath_registers.h |   22 +-
+ drivers/infiniband/hw/ipath/ipath_ruc.c       |   63 +-
+ drivers/infiniband/hw/ipath/ipath_stats.c     |   16 +-
+ drivers/infiniband/hw/ipath/ipath_uc.c        |    6 +-
+ drivers/infiniband/hw/ipath/ipath_ud.c        |    8 +-
+ drivers/infiniband/hw/ipath/ipath_verbs.c     |   15 +-
+ drivers/infiniband/hw/ipath/ipath_verbs.h     |   57 +-
+ drivers/infiniband/hw/mthca/mthca_main.c      |   10 +-
+ drivers/infiniband/hw/mthca/mthca_mr.c        |    6 +-
+ drivers/infiniband/hw/mthca/mthca_provider.c  |    1 -
+ drivers/infiniband/hw/mthca/mthca_qp.c        |    7 +-
+ drivers/infiniband/ulp/ipoib/ipoib_cm.c       |   64 +-
+ drivers/infiniband/ulp/ipoib/ipoib_ib.c       |    8 +-
+ drivers/infiniband/ulp/ipoib/ipoib_main.c     |   12 +-
+ 47 files changed, 1620 insertions(+), 1002 deletions(-)
