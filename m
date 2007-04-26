@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750907AbXDZRft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbXDZRi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750907AbXDZRft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753903AbXDZRft
+	id S1754911AbXDZRi4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXDZRi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:35:49 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:60009 "EHLO atlrel8.hp.com"
+	Thu, 26 Apr 2007 13:38:56 -0400
+Received: from mail.tmr.com ([64.65.253.246]:47880 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750907AbXDZRfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:35:47 -0400
-Date: Thu, 26 Apr 2007 11:35:44 -0600
-From: Mike Stroyan <mike.stroyan@hp.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
-       Mike Stroyan <mike.stroyan@hp.com>, "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-Message-ID: <20070426173544.GA30744@ldl.fc.hp.com>
-References: <20070425205548.fd51b301.akpm@linux-foundation.org> <46305A8D.2080003@yahoo.com.au>
+	id S1753927AbXDZRiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:38:55 -0400
+Message-ID: <4630E3C4.20003@tmr.com>
+Date: Thu, 26 Apr 2007 13:39:16 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46305A8D.2080003@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 05:53:49PM +1000, Nick Piggin wrote:
-> I had a couple of questions which I'm hoping someone would be kind
-> enough to explain :)
-...
-> I wonder how this is different to all the other code which calls
-> lazy_mmu_prot_update() after set_pte_at(). do_swap_page, for example,
-> _could_ fault in executable code, couldn't it?
+Linus Torvalds wrote:
 
-  The do_swap_page code does look suspect.  It seems to be working on
-ia64 because a DMA transfer of data from swap to the allocated page
-is removing old lines from the icache.  If code on an anonymous page
-was swapping in without direct DMA to the page then the same problem
-could occur.  I can't think of a reasonable situation that would cause
-swapping in to not use DMA.  Swapping to/from NFS does not seem reasonable
-to me anyway.
+> In other words, there's a _reason_ we have staggered development. We have 
+> the "crazy development trees" (aka -mm and various other trees), we have 
+> the "development tree" (aka Linus' tree), and we have the -stable tree. If 
+> the stable tree has a dozen known issues that they'll have to sort out 
+> over the next two months, that's *fine*. That's kind of the point of the 
+> stable tree.
+> 
+If the result is fixing things which then don't get fixed in mainline, 
+as Adrian notes, then there is something wrong with the process, and why 
+will people bother to work on stable if they have doubts that there will 
+be long term benefit.
 
-> It is because do_swap_page uses flush_icache_page()? So why doesn't
-> the flush_icache_page() work in do_no_page as well? (It seems to look
-> like a superset of lazy_mmu_prot_update on ia64?!?).
-
-flush_icache_page() on ia64 is provided by include/asm-ia64/cacheflush.h.
-It doesn't have any effect at all.
-
-#define flush_icache_page(vma,page)             do { } while (0)
-
-  lazy_mmu_prot_update() is supposed to get icache flushes done when they
-need to be.  And it is supposed to avoid unneeded flushes when the icache
-is known to be clean for a page.
+With all the effort the regressions list takes and the stable group puts 
+into fixes, someone in charge should insist that regressions fixed in 
+stable be fixed in mainline. Since there's only one "someone in charge" 
+of policy, I think that's a reasonable commitment to the people doing 
+the work.
 
 -- 
-Mike Stroyan, mike.stroyan@hp.com
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
