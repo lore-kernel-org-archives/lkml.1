@@ -1,63 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbXDZRNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXDZRNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbXDZRNI (ORCPT <rfc822;w@1wt.eu>);
+	id S1754866AbXDZRNI (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Apr 2007 13:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXDZRMs
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbXDZQ6p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:12:48 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35450 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754860AbXDZRMb (ORCPT
+	Thu, 26 Apr 2007 12:58:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34993 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbXDZQ6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:12:31 -0400
-Date: Thu, 26 Apr 2007 19:12:42 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-Message-ID: <20070426171242.GP3468@stusta.de>
-References: <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de> <20070426084143.1d973c71.randy.dunlap@oracle.com> <20070426155205.GN3468@stusta.de> <20070426094427.6f5bfc4c.randy.dunlap@oracle.com>
+	Thu, 26 Apr 2007 12:58:25 -0400
+Date: Thu, 26 Apr 2007 09:55:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, kvm-devel@lists.sourceforge.net,
+       Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 04/33] KVM: MMU: Fix guest writes to nonpae pde
+Message-ID: <20070426165513.GE1898@kroah.com>
+References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070426094427.6f5bfc4c.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="kvm-mmu-fix-guest-writes-to-nonpae-pde.patch"
+In-Reply-To: <20070426165445.GA1898@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 09:44:27AM -0700, Randy Dunlap wrote:
->...
-> > IMHO the default should be that users report problems with distribution 
-> > kernels to their distribution and problems with ftp.kernel.org kernels 
-> > to either linux-kernel or the kernel Bugzilla.
-> 
-> s/linux-kernel/the appropriate mailing list/ please :)
->...
+-stable review patch.  If anyone has any objections, please let us know.
 
-Yes, in an ideal world.
+------------------
+From: Avi Kivity <avi@qumranet.com>
 
-But a user reporting an Oops might not even know where the problem lies.
+KVM shadow page tables are always in pae mode, regardless of the guest
+setting.  This means that a guest pde (mapping 4MB of memory) is mapped
+to two shadow pdes (mapping 2MB each).
 
-And a user reporting a networking bug to linux-kernel hasn't really done 
-any mistake. Forwarding bugs to the right people (as Andrew does and I'm 
-sometimes doing) is actually an easy part of bug handling.
+When the guest writes to a pte or pde, we intercept the write and emulate it.
+We also remove any shadowed mappings corresponding to the write.  Since the
+mmu did not account for the doubling in the number of pdes, it removed the
+wrong entry, resulting in a mismatch between shadow page tables and guest
+page tables, followed shortly by guest memory corruption.
 
-> ~Randy
+This patch fixes the problem by detecting the special case of writing to
+a non-pae pde and adjusting the address and number of shadow pdes zapped
+accordingly.
 
-cu
-Adrian
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/kvm/mmu.c |   47 +++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 35 insertions(+), 12 deletions(-)
+
+--- a/drivers/kvm/mmu.c
++++ b/drivers/kvm/mmu.c
+@@ -1093,22 +1093,40 @@ out:
+ 	return r;
+ }
+ 
++static void mmu_pre_write_zap_pte(struct kvm_vcpu *vcpu,
++				  struct kvm_mmu_page *page,
++				  u64 *spte)
++{
++	u64 pte;
++	struct kvm_mmu_page *child;
++
++	pte = *spte;
++	if (is_present_pte(pte)) {
++		if (page->role.level == PT_PAGE_TABLE_LEVEL)
++			rmap_remove(vcpu, spte);
++		else {
++			child = page_header(pte & PT64_BASE_ADDR_MASK);
++			mmu_page_remove_parent_pte(vcpu, child, spte);
++		}
++	}
++	*spte = 0;
++}
++
+ void kvm_mmu_pre_write(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes)
+ {
+ 	gfn_t gfn = gpa >> PAGE_SHIFT;
+ 	struct kvm_mmu_page *page;
+-	struct kvm_mmu_page *child;
+ 	struct hlist_node *node, *n;
+ 	struct hlist_head *bucket;
+ 	unsigned index;
+ 	u64 *spte;
+-	u64 pte;
+ 	unsigned offset = offset_in_page(gpa);
+ 	unsigned pte_size;
+ 	unsigned page_offset;
+ 	unsigned misaligned;
+ 	int level;
+ 	int flooded = 0;
++	int npte;
+ 
+ 	pgprintk("%s: gpa %llx bytes %d\n", __FUNCTION__, gpa, bytes);
+ 	if (gfn == vcpu->last_pt_write_gfn) {
+@@ -1144,22 +1162,27 @@ void kvm_mmu_pre_write(struct kvm_vcpu *
+ 		}
+ 		page_offset = offset;
+ 		level = page->role.level;
++		npte = 1;
+ 		if (page->role.glevels == PT32_ROOT_LEVEL) {
+-			page_offset <<= 1;          /* 32->64 */
++			page_offset <<= 1;	/* 32->64 */
++			/*
++			 * A 32-bit pde maps 4MB while the shadow pdes map
++			 * only 2MB.  So we need to double the offset again
++			 * and zap two pdes instead of one.
++			 */
++			if (level == PT32_ROOT_LEVEL) {
++				page_offset &= ~7; /* kill rounding error */
++				page_offset <<= 1;
++				npte = 2;
++			}
+ 			page_offset &= ~PAGE_MASK;
+ 		}
+ 		spte = __va(page->page_hpa);
+ 		spte += page_offset / sizeof(*spte);
+-		pte = *spte;
+-		if (is_present_pte(pte)) {
+-			if (level == PT_PAGE_TABLE_LEVEL)
+-				rmap_remove(vcpu, spte);
+-			else {
+-				child = page_header(pte & PT64_BASE_ADDR_MASK);
+-				mmu_page_remove_parent_pte(vcpu, child, spte);
+-			}
++		while (npte--) {
++			mmu_pre_write_zap_pte(vcpu, page, spte);
++			++spte;
+ 		}
+-		*spte = 0;
+ 	}
+ }
+ 
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
