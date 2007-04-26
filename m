@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXDZXOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbXDZXQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbXDZXOH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXDZXOG
+	id S1753569AbXDZXQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXDZXQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:14:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34676 "EHLO
+	Thu, 26 Apr 2007 19:16:48 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36052 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755186AbXDZXOD (ORCPT
+	by vger.kernel.org with ESMTP id S1753569AbXDZXQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:14:03 -0400
-Date: Thu, 26 Apr 2007 16:13:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Kosina <jikos@jikos.cz>
-Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: 2.6.21-rc6-mm1 USB related boot hang - bisection result
-Message-Id: <20070426161342.4e4dbfdf.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704270038150.20657@twin.jikos.cz>
-References: <20070408143559.f5014629.akpm@linux-foundation.org>
-	<20070411194227.GA31286@aitel.hist.no>
-	<20070411134346.d10765da.akpm@linux-foundation.org>
-	<20070411230700.GA4023@aitel.hist.no>
-	<Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
-	<20070412202519.GB14705@aitel.hist.no>
-	<Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
-	<462F2558.5010909@aitel.hist.no>
-	<Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
-	<46312787.1020702@aitel.hist.no>
-	<Pine.LNX.4.64.0704270038150.20657@twin.jikos.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 19:16:47 -0400
+Date: Thu, 26 Apr 2007 16:15:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Xavier Bestel <xavier.bestel@free.fr>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: Back to the future.
+In-Reply-To: <200704270008.19017.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.98.0704261608160.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+ <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
+ <1177618081.4737.42.camel@nigel.suspend2.net>
+ <200704270008.19017.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 00:39:19 +0200 (CEST) Jiri Kosina <jikos@jikos.cz> wrote:
 
-> On Fri, 27 Apr 2007, Helge Hafting wrote:
+
+On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
 > 
-> > 2.6.21-rc6 boots up fine.  Both rc6 and rc7 has a different problem - 
-> > the machine tends to hang after some minutes work in X.  That hang is 
-> > unusual in that moving the mouse still move the X cursor, but everything 
-> > else stops and sysrq fails me. But that is another story.
-> [...]
-> > The (first) "hanging" patch in 2.6.21-rc6-mm1 is: git-acpi.patch
+> Well, I think that much of what Linus is saying indicates that he hasn't tried
+> to write any such thing himself. ;-)
 
-linux-acpi: we have a problem.
+That's definitely true. The only interaction I ever had with "hibernation" 
+(and yes, we should just call it that) is when I was working on s2ram and 
+cleaning up the PCI device suspend/resume in particular, and trying 
+(_mostly_ successfully - I think I broke it once or twice mainly due to 
+interactions with the console, but on the whole I think it mostly worked) 
+to not break hibernation in the process without actually running it.
 
-> Hi Helge,
-> 
-> thanks for the effort. If you take stock rc6-mm1 and revert just 
-> git-acpi.patch, doesn the machine behave correctly?
-> 
+> Now that I know much more than before, I can say I agree with Linus on his
+> opinion about the separation of s2ram form the snapshot/restore functionality
+> (I'll call it 'hibernation' for simplicity from now on).
 
-It would be easier and would produce a clearer result to test just
+So my strong opinion on it literally comes from the other end (ie _not_ 
+knowing about hibernation, but trying to work with s2ram, and cursing the 
+mixups).
 
-	2.6.21-rc7
-+	2.6.21-rc7-mm2's origin.patch
-+	2.6.21-rc7-mm2's acpi.patch
+> It should be done, because it would make things simpler and cleaner.  
+> Still, it will be difficult to do without screwing users en masse and 
+> that's my main concern here.
 
-from
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/
+I do agree. It will inevitably affect a lot of devices. That's always 
+painful.
+
+> I don't agree that we don't need the tasks freezer for suspending and
+> hibernation.  We need it, because we need to be sure that the (other) tasks
+> will not get us in the way, and that also applies to kernel threads (and I
+> don't think the tasks freezer is 'screwing' them, BTW).
+
+I actually feel much less strongly about that, because just separating out 
+s2ram and hibernate entirely from each other would already really get the 
+thing _I_ care about taken care of - being able to work on one of the 
+other without fear of breaking the other one.
+
+And besides, I actually came into the whole discussion because I'm not a 
+huge fan of thinking that user-land is "better". If the thing can sanely 
+be done in kernel, I'm actually all for that. What drives me wild is 
+having three different things, and nobody driving.
+
+It needs somebody who (a) cares (b) has good taste and (c) has enough time 
+and personal karma to burn that he can actually take the (obviously) 
+inevitable heat from just doing things right, and convincing people to 
+select *one* implementation.
+
+That kind of person is really really hard to find. And if you're it, 
+you're in for some pain ;)
+
+		Linus
