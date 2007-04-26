@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932819AbXDZEH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbXDZEQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932819AbXDZEH5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXDZEH5
+	id S1754459AbXDZEQd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 00:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXDZEQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:07:57 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34699 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932819AbXDZEH4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:07:56 -0400
-Date: Thu, 26 Apr 2007 06:08:06 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426040806.GJ3468@stusta.de>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+	Thu, 26 Apr 2007 00:16:32 -0400
+Received: from holomorphy.com ([66.93.40.71]:43630 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754100AbXDZEQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 00:16:32 -0400
+Date: Wed, 25 Apr 2007 21:16:12 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070426041612.GD19966@holomorphy.com>
+References: <20070425214704.GA32572@elte.hu> <20070426032923.GB1548@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20070426032923.GB1548@wotan.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 08:29:28PM -0700, Linus Torvalds wrote:
->...
-> So it's been over two and a half months, and while it's certainly not the 
-> longest release cycle ever, it still dragged out a bit longer than I'd 
-> have hoped for and it should have. As usual, I'd like to thank Adrian (and 
-> the people who jumped on the entries Adrian had) for keeping everybody on 
-> their toes with the regression list - there's a few entries there still, 
-> but it got to the point where we didn't even know if they were real 
-> regressions, and delaying things further just wasn't going to help.
->...
+On Wed, Apr 25, 2007 at 11:47:04PM +0200, Ingo Molnar wrote:
+>>  - upstream fix: SysRq-T should show runnable tasks
+
+On Thu, Apr 26, 2007 at 05:29:27AM +0200, Nick Piggin wrote:
+> BTW. can you send this upstream? It is very annoying how it currently works,
+> and I've had more than one bug that required seeing runnable tasks in order
+> to diagnose and fix...
+
+There are other things that should go upstream separately. The
+init/main.c comment fix for one. I'd even argue that scheduler classes
+should be done separately from and prior to the specific cfs policy.
 
 
-Number of different known regressions compared to 2.6.20 at the time
-of the 2.6.21 release:
-14
-
-Number of different known regressions compared to 2.6.20 at the time
-of the 2.6.21 release that were first reported in March or earlier:
-8
-
-Number of different known regressions compared to 2.6.20 at the time
-of the 2.6.21 release with patches available at the time of the 2.6.21 
-release [1]:
-3
-
-What I will NOT do:
-Waste my time with tracking 2.6.22-rc regressions.
-
-
-We have an astonishing amount of -rc testers, but obviously not the 
-developer manpower for handling them.
-
-If we would take "no regressions" seriously, it might take 4 or 5 months 
-between releases due to the lack of developer manpower for handling 
-regressions. But that should be considered OK if avoiding regressions 
-was considered more important than getting as quick as possible to the 
-next two week regression-merge window.
-
-But releasing with so many known regressions is insulting for the many 
-people who spent their time testing -rc kernels.
-
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2007/4/25/496
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-- wli
