@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031370AbXDZRcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031373AbXDZRdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031370AbXDZRcz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031371AbXDZRcz
+	id S1031373AbXDZRdr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031371AbXDZRdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:32:55 -0400
-Received: from mx1.suse.de ([195.135.220.2]:52503 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031370AbXDZRcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:32:54 -0400
-Date: Thu, 26 Apr 2007 10:30:28 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Lang <david.lang@digitalinsight.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, cebbert@redhat.com
-Subject: Re: [patch 00/33] 2.6.20-stable review
-Message-ID: <20070426173028.GA16886@suse.de>
-References: <20070426165445.GA1898@kroah.com> <Pine.LNX.4.63.0704260945090.9674@qynat.qvtvafvgr.pbz>
+	Thu, 26 Apr 2007 13:33:47 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:36932 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031373AbXDZRdp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:33:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=tF1FF6IKwVGa6uVE4TdR8q5xWnkTemD0LuwQOgP+mraoRzoLHKMpCCtqphYNlOmgBrtLFxVqO4RsL9d9KB5pcaehIQUpcN7SuJ+/pr64U27RhSTLo2uWbcDxdxAhOKBXzOMStdi8FzPMvza6PJRsX4lOn6KT6rU3ZUXcru5AQAE=
+Message-ID: <4630E26D.2050703@gmail.com>
+Date: Fri, 27 Apr 2007 02:33:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.63.0704260945090.9674@qynat.qvtvafvgr.pbz>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Miles Lane <miles.lane@gmail.com>
+CC: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       greg@kroah.com
+Subject: Re: [PATCH] sysfs: use different lockdep subclass for s_active deactivation
+References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>	 <462EE4B7.6000708@gmail.com> <20070426145047.GF17130@htj.dyndns.org> <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
+In-Reply-To: <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 09:48:22AM -0700, David Lang wrote:
->  any idea why there are so many more -stable patches for 2.6.20? this is the 
->  10th -stable series, and most of them have been dozens of patches.
+Miles Lane wrote:
+> On 4/26/07, Tejun Heo <htejun@gmail.com> wrote:
+>> A sysfs node can delete other sysfs files when accessed.  This results
+>> in recursive s_active locking - read lock for file access, down lock
+>> of the vicitim for deactivation.  Tell lockdep that it's okay.
+>>
+>> Signed-off-by: Tejun Heo <htejun@gmail.com>
+>> ---
+>> Miles, please test this patch.  It should remove the lockdep warning.
+>> Fixes for the other two problems will soon follow.
+>>
+>> Greg, Andrew, after all the fixes are verified, I'll merge the fixes
+>> into the original patches and resend all the sysfs updates in better
+>> shape.  Sorry about all the trouble.
 > 
->  is there a new team reporting and fixing bugs? or were there just more small 
->  problems found in 2.6.20 then normal? or something else?
+> Should I test this with 2.6.21-rc7-mm2?
+> It doesn't apply cleanly.
+> 
+> # patch -p1 -l --dry-run < tejun.patch
+> patching file fs/sysfs/dir.c
+> Hunk #1 succeeded at 31 with fuzz 1 (offset -29 lines).
+> patching file fs/sysfs/sysfs.h
+> Hunk #1 succeeded at 40 (offset -1 lines).
+> Hunk #2 succeeded at 182 with fuzz 1 (offset -1 lines).
 
-I think it's entirely due to the awesome effort by Chuck Ebbert of Red
-Hat.  He has been digging through all of the applied patches to Linus's
-tree and been forwarding them on to the stable team.  Without his effort
-and help, we would not have so many patches in these releases.
+It's in the middle of gregkh patch series but you can safely ignore the
+fuzzes.
 
-I know I personally owe him at least one beer if I run into him at some
-conference, and I think all other users of the stable tree do too.
-
-thanks,
-
-greg k-h
+-- 
+tejun
