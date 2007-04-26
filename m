@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031379AbXDZRqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031378AbXDZRsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031379AbXDZRqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031378AbXDZRqi
+	id S1031378AbXDZRsj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031380AbXDZRsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:46:38 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44943 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031379AbXDZRqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:46:37 -0400
-Date: Thu, 26 Apr 2007 10:45:01 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Greg KH <gregkh@suse.de>
-Cc: David Lang <david.lang@digitalinsight.com>, linux-kernel@vger.kernel.org,
-       cebbert@redhat.com, stable@kernel.org
-Subject: Re: [stable] [patch 00/33] 2.6.20-stable review
-Message-ID: <20070426174501.GQ2819@sequoia.sous-sol.org>
-References: <20070426165445.GA1898@kroah.com> <Pine.LNX.4.63.0704260945090.9674@qynat.qvtvafvgr.pbz> <20070426173028.GA16886@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 13:48:39 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35486 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031378AbXDZRsh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:48:37 -0400
+Date: Thu, 26 Apr 2007 19:48:48 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426174848.GQ3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <20070426165950.GO3468@stusta.de> <alpine.LFD.0.98.0704261007481.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070426173028.GA16886@suse.de>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <alpine.LFD.0.98.0704261007481.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Greg KH (gregkh@suse.de) wrote:
-> On Thu, Apr 26, 2007 at 09:48:22AM -0700, David Lang wrote:
-> >  any idea why there are so many more -stable patches for 2.6.20? this is the 
-> >  10th -stable series, and most of them have been dozens of patches.
-> > 
-> >  is there a new team reporting and fixing bugs? or were there just more small 
-> >  problems found in 2.6.20 then normal? or something else?
+On Thu, Apr 26, 2007 at 10:20:46AM -0700, Linus Torvalds wrote:
+> On Thu, 26 Apr 2007, Adrian Bunk wrote:
+>...
+> > But I am not happy with the current state of released kernels.
 > 
-> I think it's entirely due to the awesome effort by Chuck Ebbert of Red
-> Hat.  He has been digging through all of the applied patches to Linus's
-> tree and been forwarding them on to the stable team.  Without his effort
-> and help, we would not have so many patches in these releases.
+> So you're going to help exactly how? By stopping to help? Or kvetching 
+> about developers that can't figure out why something regressed.
+> 
+> Sure, that makes tons of sense sense, Adrian.
+> 
+> NOT.
 
-Agreed, Chuck has been really helpful.  AFAIK, he sees it as time
-well-spent to make sure -stable is carrying patches so Fedora doesn't
-have to, great mantra.
+It is my time, and it's therefore my decision what I consider to make 
+sense spending it for.
 
-BTW, here's some stats (so it's not that far off from normal):
+Instead of continuing our discussion it makes more sense that we simply 
+accept that we disagree regarding when a kernel is ready for being 
+released instead of repeating the same arguments in a lengthy 
+discussion.
 
-[chrisw@sequoia linux-2.6-stable]$ for x in $(seq 12 20); do echo linux-2.6.$x.y $(git-rev-list
-v2.6.$x..linux-2.6.$x.y | wc -l); done
-linux-2.6.12.y 53
-linux-2.6.13.y 44
-linux-2.6.14.y 96
-linux-2.6.15.y 110
-linux-2.6.16.y 788
-linux-2.6.17.y 191
-linux-2.6.18.y 240
-linux-2.6.19.y 189
-linux-2.6.20.y 235
+> 		Linus
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
