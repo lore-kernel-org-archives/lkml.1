@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbXDZTZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbXDZT0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbXDZTZc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbXDZTZb
+	id S1754953AbXDZT0H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:26:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbXDZT0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:25:31 -0400
-Received: from www.osadl.org ([213.239.205.134]:34505 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754952AbXDZTZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:25:30 -0400
-Subject: Re: [patch] CFS scheduler, -v6
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-In-Reply-To: <20070425214704.GA32572@elte.hu>
-References: <20070425214704.GA32572@elte.hu>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 21:27:26 +0200
-Message-Id: <1177615646.25960.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 15:26:07 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:45344 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1754956AbXDZT0F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:26:05 -0400
+Date: Thu, 26 Apr 2007 11:50:59 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Chase Venters <chase.venters@clientec.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
+Message-ID: <Pine.LNX.4.63.0704261150210.9674@qynat.qvtvafvgr.pbz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com><1177573348.50
+ 25.224.camel@nigel.suspend2.net><alpine.LFD.0.98.0704260941310.9964@woody.l
+ inux-foundation.org> <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 23:47 +0200, Ingo Molnar wrote:
-> i got lots of -v5 feedback (thanks and please keep the reports coming!) 
+On Thu, 26 Apr 2007, Chase Venters wrote:
 
-You asked for it :)
+> On Thu, 26 Apr 2007, Linus Torvalds wrote:
+>
+>> 
+>> Once you have that snapshot image in user space you can do anything you
+>> want. And again: you'd hav a fully working system: not any degradation
+>> *at*all*. If you're in X, then X will continue running etc even after the
+>> snapshotting, although obviously the snapshotting will have tried to page
+>> a lot of stuff out in order to make the snapshot smaller, so you'll likely
+>> be crawling.
+>> 
+>
+> In fact... If you're just paging out to make a smaller snapshot (ie, not
+> to free up memory), couldn't you just swap it out (if it's not backed by a
+> file) then mark it as "half-released"... ie, the snapshot writing code
+> ignores it knowing that it will be available on disk at resume, but then
+> when the snapshot is complete it's still available in physical RAM,
+> preventing user-space from crawling due to the necessity of paging it all
+> back in?
 
-CFS breaks the PI support for futexes. Fix below.
+your swap space may end up being re-used before you restore with std
 
-	tglx
-
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -3234,6 +3234,12 @@ void rt_mutex_setprio(struct task_struct
- 	on_rq = p->on_rq;
- 	if (on_rq)
- 		dequeue_task(rq, p, 0);
-+
-+	if (rt_prio(prio))
-+		p->sched_class = &rt_sched_class;
-+	else
-+		p->sched_class = &fair_sched_class;
-+
- 	p->prio = prio;
- 
- 	if (on_rq) {
-
-
+David Lang
