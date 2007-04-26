@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031304AbXDZQJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031298AbXDZQKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031304AbXDZQJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031295AbXDZQJu
+	id S1031298AbXDZQKe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031318AbXDZQKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:09:50 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59025 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031304AbXDZQJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:09:49 -0400
-Message-ID: <4630CEA9.6050100@garzik.org>
-Date: Thu, 26 Apr 2007 12:09:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 26 Apr 2007 12:10:34 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34932 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031298AbXDZQKc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:10:32 -0400
+To: rjw@sisk.pl
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+X-IlohaMail-Blah: penberg@cs.helsinki.fi
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.12+pk-11 (On: iloha.cs.Helsinki.FI)
+In-Reply-To: <200704261648.25189.rjw@sisk.pl>
+Message-ID: <qlG9V8pP.1177603830.8836760.penberg@cs.helsinki.fi>
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+CC: "Pavel Machek" <pavel@ucw.cz>,
+       "Dumitru Ciobarcianu" <Dumitru.Ciobarcianu@ines.ro>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Christian Hesse" <mail@earthworm.de>, "Nick Piggin" <npiggin@suse.de>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Con Kolivas" <kernel@kolivas.org>,
+       "suspend2-devel@lists.suspend2.net" 
+	<suspend2-devel@lists.suspend2.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Arjan van de Ven" <arjan@infradead.org>
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@osdl.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Lennert Buytenhek <buytenh@wantstofly.org>,
-       David Acker <dacker@roinet.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com> <20070426135013.GA12154@xi.wantstofly.org> <4630C159.1060707@garzik.org> <4630C7D0.8030901@intel.com>
-In-Reply-To: <4630C7D0.8030901@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Date: Thu, 26 Apr 2007 19:10:30 +0300 (EEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Jeff Garzik wrote:
->> Lennert Buytenhek wrote:
->>> This is all a while ago now, but wasn't the e100 S-bit patch originally
->>> written by Intel people in response to the very same quote by Russell
->>> King that you've quoted above?
->>
->> Correct.
->>
->> I just wanted to make sure it didn't kill any boxes.
-> 
-> Neither did we. On top of that we didn't have the equipment to test on 
-> ARM on until recently, and the system that I got recently will not even 
-> load the kernel with an e100 NIC in the PCI slot (way way way before 
-> e100.ko loads, e1000 works just fine). that doesn't help either.
-> 
-> Meanwhile we've not sat still and jesse wrote a patch to have e100 use 
-> IO optionally for plagued platforms which seems to fix some of these 
-> issues, and Jeff Kirsher has been actively tracking a e100 IPMI issue on 
-> a very specific platform.
-> 
-> Jeff, I think I should just push the IO patch and the sbit code to 
-> Andrew and have it sit there. That is a vastly larger test resource than 
-> we currently can generate for this. If needed we just let is sit there 
-> for a whole release cycle before moving it to #upstream.
 
-The sbit code has been in -mm via netdev-2.6.git#ALL for many months 
-now.  I am certainly open to adding any number of "for -mm only" style 
-patches that you wish to pass along, for /any/ driver: e100, e1000, ixgb.
+On 4/26/2007, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> In principle, we could add suspend2 as an alternative (in analogy with the I/O
+> schedulers, for example), but I think for this purpose it should be reviewed
+> properly.
 
-	Jeff
+Yeah, this makes sense.
 
+On 4/26/2007, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> There also is a real problem with how it uses the LRU pages.  It _seems_ to
+> work, but at least to me it seems to be potentially dangerous.
 
+I am new to suspend2 so can you please explain what exactly is dangerous
+about it?
 
+                                     Pekka
