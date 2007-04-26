@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbXDZQ3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXDZQ3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752205AbXDZQ3W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:29:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXDZQ3W
+	id S1752308AbXDZQ3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXDZQ3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:29:22 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46576 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752159AbXDZQ3V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:29:21 -0400
-Date: Thu, 26 Apr 2007 09:27:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <4630CFE6.1050702@nortel.com>
-Message-ID: <alpine.LFD.0.98.0704260924590.9964@woody.linux-foundation.org>
-References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
- <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
- <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg>
- <20070426103051.GP17387@elf.ucw.cz> <20070426104052.GA19072@elf.ucw.cz>
- <1177585897.6814.49.camel@johannes.berg> <20070426111645.GR17387@elf.ucw.cz>
- <1177586850.6814.52.camel@johannes.berg> <20070426112641.GS17387@elf.ucw.cz>
- <1177587308.6814.57.camel@johannes.berg> <4630CFE6.1050702@nortel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 26 Apr 2007 12:29:39 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:37700 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752308AbXDZQ3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:29:38 -0400
+Subject: Re: [PATCH] change global zonelist order on NUMA v3
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, ak@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <Pine.LNX.4.64.0704260904190.1655@schroedinger.engr.sgi.com>
+References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
+	 <200704261147.44413.ak@suse.de>
+	 <20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20070426195348.6a4e5652.kamezawa.hiroyu@jp.fujitsu.com>
+	 <1177603203.5705.36.camel@localhost>
+	 <Pine.LNX.4.64.0704260904190.1655@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 26 Apr 2007 12:29:22 -0400
+Message-Id: <1177604962.5705.55.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Apr 2007, Chris Friesen wrote:
+On Thu, 2007-04-26 at 09:06 -0700, Christoph Lameter wrote:
+> Hmmmm... One additional easy way to fix this would be to create a DMA 
+> node and place it very distant to other nodes. This would make it a 
+> precious system resource that is only used for
 > 
-> I disagree...it's quite common.  I think its the standard way of doing things
-> for ppc64, for instance.
+> 1. GFP_DMA allocations
+> 
+> 2. If the memory on the other nodes is exhausted.
+> 
 
-It is, although most x86-64 installations seem to be 64-bit user space 
-*if*you*install*from*scatch*.
+This would solve the problem for "100% CLM" configurations where the
+only thing in the interleaved pseudo-node is DMA zone.  However, we can
+configure any %-age of CLM between 0% [fully interleaved, pseudo-SMP]
+and "100%" [which is not really, as I've mentioned].  Interestingly,
+older revs of our firmware set the SLIT distance for the interleaved
+pseudo-node to 255 [or such], so it was always last.  Then someone
+decided that the interleaved node was effectively closer than other
+nodes...
 
-Of course, at least some users (yeah, I've done it) started with a 32-bit 
-CD they had lying around, and upgraded just the kernel. And I'm sure some 
-distro out there just defaults to 32-bit binaries just because (in 
-practice, you have to use a 32-bit firefox anyway if you want flash etc, 
-so you need all the 32-bit libraries, so the argument might go that you 
-might as well use 32-bit stuff for all the common stuff, and only 64-bit 
-binaries when actually needed).
+I have been considering an HP-platform-specific boot option [handled by
+a new ia64 machine vec op] to re-distance the interleaved node, but for
+other platforms, such as Kame's, I think we still need the ability to
+move the DMA zones last in the Normal zone lists.  Or, exclude them
+altogether?
 
-		Linus
+Lee
+
