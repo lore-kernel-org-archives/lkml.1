@@ -1,51 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031180AbXDZNHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031216AbXDZNJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031180AbXDZNHe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031216AbXDZNHe
+	id S1031216AbXDZNJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031223AbXDZNJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:07:34 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:41390 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031180AbXDZNHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:07:33 -0400
-Date: Thu, 26 Apr 2007 15:13:11 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070426131311.GD3145@ff.dom.local>
-References: <20070419102122.GA93@tv-sign.ru> <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local> <20070425124714.GA94@tv-sign.ru>
+	Thu, 26 Apr 2007 09:09:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48202 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031216AbXDZNJh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 09:09:37 -0400
+Date: Thu, 26 Apr 2007 14:13:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: davej@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sworks-agp: Switch to PCI ref counting APIs
+Message-ID: <20070426141306.59a954d8@the-village.bc.nu>
+In-Reply-To: <20070425192158.8787a248.akpm@linux-foundation.org>
+References: <20070423145129.1cfcd1f2@the-village.bc.nu>
+	<20070425192158.8787a248.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425124714.GA94@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 04:47:14PM +0400, Oleg Nesterov wrote:
-> On 04/25, Jarek Poplawski wrote:
-...
-> > > > +		spin_lock_irq(&cwq->lock);
-> > > > +		/* CPU_DEAD in progress may change cwq */
-> > > > +		if (likely(cwq == get_wq_data(work))) {
-> > > > +			list_del_init(&work->entry);
-> > > > +			__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
-> > > > +			retry = try_to_del_timer_sync(&dwork->timer) < 0;
-> > > > +		}
-> > > > +		spin_unlock_irq(&cwq->lock);
-> > > > +	} while (unlikely(retry));
-> 
-> >  1. If delayed_work_timer_fn of this work is fired and is waiting
-> >  on the above spin_lock then, after above spin_unlock, the work
-> >  will be queued.
-> 
-> No, in that case try_to_del_timer_sync() returns -1.
+On Wed, 25 Apr 2007 19:21:58 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yes. But I think it's safe only after moving work_clear_pending
-in run_workqueue under a lock; probably otherwise there is a
-possibility this flag could be cleared, after above unlock.  
+> On Mon, 23 Apr 2007 14:51:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> >  {
+> >  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> >  
+> > +	pci_dev_put(bridge->dev);
+> >  	agp_remove_bridge(bridge);
+> >  	agp_put_bridge(bridge);
+> > +	pci_dev_put(serverworks_private.svrwrks_dev)
+> > +	serverworks_private.svrwrks_dev = NULL;
+> 
+> err, guys?
 
-Jarek P.
+I merely fixed the code to refcount, the actual code itself is complete
+bollocks and does exactly what that implies. It also explodes if you ever
+use the hotplug testing code to simulate a plug or replug and goes
+completely bonkers if you put two of them in a qemu simulator 8)
+
+Alan
