@@ -1,228 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbXDZU7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbXDZVAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755072AbXDZU7B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXDZU7B
+	id S1755074AbXDZVAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbXDZVAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:59:01 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3491 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755072AbXDZU67 (ORCPT
+	Thu, 26 Apr 2007 17:00:43 -0400
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:52303 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbXDZVAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:58:59 -0400
-Date: Thu, 26 Apr 2007 21:58:47 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Corey Minyard <minyard@acm.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-serial@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] serial 8250: move push calls out of lock
-Message-ID: <20070426205847.GB11735@flint.arm.linux.org.uk>
-Mail-Followup-To: Corey Minyard <minyard@acm.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-serial@vger.kernel.org,
-	Andrew Morton <akpm@osdl.org>
-References: <20070426205103.GA28569@localdomain>
-Mime-Version: 1.0
+	Thu, 26 Apr 2007 17:00:43 -0400
+Date: Thu, 26 Apr 2007 23:01:25 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Reg Clemens <reg@dwf.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com, reg@deneb.dwf.com
+Message-ID: <20070426210125.GA11092@enneenne.com>
+References: <20070321074121.GA13843@enneenne.com> <200703211655.l2LGtwWl017848@deneb.dwf.com> <20070321203647.GD4539@enneenne.com> <200703212235.l2LMZMQ4005361@deneb.dwf.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070426205103.GA28569@localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200703212235.l2LMZMQ4005361@deneb.dwf.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [LinuxPPS] [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 03:51:03PM -0500, Corey Minyard wrote:
-> This time to lkml...
+On Wed, Mar 21, 2007 at 04:35:22PM -0600, Reg Clemens wrote:
+> > On Wed, Mar 21, 2007 at 10:55:58AM -0600, Reg Clemens wrote:
+> > > 
+> > > Just one point with your patch.
+> > > A couple of years ago there was a long discussion on the Linux Kernel mailing 
+> > > list
+> > > as to how USER codes were not supposed to use KERNEL include files.  Now I 
+> > > still
+> > > see __KERNEL__ all over the place in the linux=source includes so mabe this
+> > > never went anywhere, but you MIGHT have to provide a separate patch (addition)
+> > > to the Linux (as opposed to Linux-kernel) include files with timepps.h
+> > 
+> > Do you mean I should separate file timepps.h into two files? One for
+> > the kernel and one for the userland?
+> > 
+> Well, Im sure you are dealing with some of the Linux Kernel people, so its
+> whatever they want.  But dont be surprised if they ask for a *.h file thats 
+> ONLY
+> for Kernel use.  And I have NO idea how you would get the USER version into
+> the Linux distribution itself.
 
-NAK.  Did you read your own patch, let alone try to build it?  It's
-also utterly broken.  See comments below.
+According to this suggestion I've modified the LinuxPPS code. Please
+refere to the GIT repository and the LinuxPPS wiki for further info.
 
-> Subject: serial 8250: move push calls out of lock
-> 
-> Due to previous changes in the 8250 driver, the call to
-> tty_flip_buffer_push is now done with interrupts disabled.  Not really
-> a huge deal, but sub-optimal.
-> 
-> This patch moves all of the "wake up, you have data" operations out of
-> the lock.  This will run a little faster by avoiding dropping and
-> retaking the lock in the receive handler and will make the polled
-> serial code (which I am working on) easier to do.
-> 
-> >From Alan Cox:
-> 
-> This is actually a very good idea as it means you don't have to deal with
-> the problems with low_latency causing re-entry into the driver under the
-> lock so its conceptually much easier to follow the locking
-> 
-> 
-> Signed-off-by: Corey Minyard <minyard@acm.org>
-> Acked-by: Alan Cox <alan@redhat.com>
-> 
->  drivers/serial/8250.c |   53 +++++++++++++++++++++++++++++++-------------------
->  1 file changed, 33 insertions(+), 20 deletions(-)
-> 
-> Index: linux-2.6.21/drivers/serial/8250.c
-> ===================================================================
-> --- linux-2.6.21.orig/drivers/serial/8250.c
-> +++ linux-2.6.21/drivers/serial/8250.c
-> @@ -1146,7 +1146,7 @@ static void serial8250_stop_tx(struct ua
->  	}
->  }
->  
-> -static void transmit_chars(struct uart_8250_port *up);
-> +static int transmit_chars(struct uart_8250_port *up);
->  
->  static void serial8250_start_tx(struct uart_port *port)
->  {
-> @@ -1195,10 +1195,8 @@ static void serial8250_enable_ms(struct 
->  	serial_out(up, UART_IER, up->ier);
->  }
->  
-> -static void
-> -receive_chars(struct uart_8250_port *up, unsigned int *status)
-> +static int receive_chars(struct uart_8250_port *up, unsigned int *status)
->  {
-> -	struct tty_struct *tty = up->port.info->tty;
->  	unsigned char ch, lsr = *status;
->  	int max_count = 256;
->  	char flag;
-> @@ -1262,30 +1260,30 @@ receive_chars(struct uart_8250_port *up,
->  	ignore_char:
->  		lsr = serial_inp(up, UART_LSR);
->  	} while ((lsr & UART_LSR_DR) && (max_count-- > 0));
-> -	spin_unlock(&up->port.lock);
-> -	tty_flip_buffer_push(tty);
-> -	spin_lock(&up->port.lock);
->  	*status = lsr;
-> +
-> +	return 1;
->  }
->  
-> -static void transmit_chars(struct uart_8250_port *up)
-> +static int transmit_chars(struct uart_8250_port *up)
->  {
->  	struct circ_buf *xmit = &up->port.info->xmit;
->  	int count;
-> +	int xmit_ready = 0;
->  
->  	if (up->port.x_char) {
->  		serial_outp(up, UART_TX, up->port.x_char);
->  		up->port.icount.tx++;
->  		up->port.x_char = 0;
-> -		return;
-> +		return 0;
->  	}
->  	if (uart_tx_stopped(&up->port)) {
->  		serial8250_stop_tx(&up->port);
-> -		return;
-> +		return 0;
->  	}
->  	if (uart_circ_empty(xmit)) {
->  		__stop_tx(up);
-> -		return;
-> +		return 0;
->  	}
->  
->  	count = up->tx_loadsz;
-> @@ -1298,18 +1296,22 @@ static void transmit_chars(struct uart_8
->  	} while (--count > 0);
->  
->  	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
-> -		uart_write_wakeup(&up->port);
-> +		xmit_ready = 1;
->  
->  	DEBUG_INTR("THRE...");
->  
->  	if (uart_circ_empty(xmit))
->  		__stop_tx(up);
-> +
-> +	return xmit_ready;
->  }
->  
-> -static unsigned int check_modem_status(struct uart_8250_port *up)
-> +static int check_modem_status(struct uart_8250_port *up, unsigned int *rstatus)
->  {
->  	unsigned int status = serial_in(up, UART_MSR);
->  
-> +	if (rstatus)
-> +		*rstatus = status;
->  	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
->  	    up->port.info != NULL) {
->  		if (status & UART_MSR_TERI)
-> @@ -1320,11 +1322,10 @@ static unsigned int check_modem_status(s
->  			uart_handle_dcd_change(&up->port, status & UART_MSR_DCD);
->  		if (status & UART_MSR_DCTS)
->  			uart_handle_cts_change(&up->port, status & UART_MSR_CTS);
-> -
-> -		wake_up_interruptible(&up->port.info->delta_msr_wait);
-> +		return 1;
->  	}
->  
-> -	return status;
-> +	return 0;
->  }
->  
->  /*
-> @@ -1334,6 +1335,9 @@ static inline void
->  serial8250_handle_port(struct uart_8250_port *up)
->  {
->  	unsigned int status;
-> +	int xmit_ready = 0;
-> +	int recv_ready = 0;
-> +	int msr_ready = 0;
->  	unsigned long flags;
->  
->  	spin_lock_irqsave(&up->port.lock, flags);
-> @@ -1343,12 +1347,21 @@ serial8250_handle_port(struct uart_8250_
->  	DEBUG_INTR("status = %x...", status);
->  
->  	if (status & UART_LSR_DR)
-> -		receive_chars(up, &status);
-> -	check_modem_status(up);
-> +		recv_ready = receive_chars(up, &status);
-> +	msr_ready = check_modem_status(up, NULL);
->  	if (status & UART_LSR_THRE)
-> -		transmit_chars(up);
-> +		xmit_ready = transmit_chars(up);
->  
->  	spin_unlock_irqrestore(&up->port.lock, flags);
-> +
-> +	if (recv_ready)
-> +		tty_flip_buffer_push(up->port.info->tty);
-> +
-> +	if (msr_ready)
-> +		wake_up_interruptible(&up->port.info->delta_msr_wait);
+Now I hope LinuxPPS can be ready for the Linux source tree! :)
 
-wake_up_interruptible doesn't take any locks.
+Ciao,
 
-> +
-> +	if (xmit_ready)
-> +		uart_write_wakeup(&up->port);
-
-NAK.  uart_write_wakeup() is specifically designed not to take any locks.
-It's also called from the depths of uart_handle_cts_change().  So this
-buys us just additional unnecessary complexity.
-
->  }
->  
->  /*
-> @@ -1551,7 +1564,7 @@ static unsigned int serial8250_get_mctrl
->  	unsigned int status;
->  	unsigned int ret;
->  
-> -	status = check_modem_status(up);
-> +	check_modem_status(up, &status);
->  
->  	ret = 0;
->  	if (status & UART_MSR_DCD)
-
-Use of an uninitialised variable.  The reason we use check_modem_status
-to return the current status here is because reading the MSR _clears_
-interrupts.  So, repeatedly calling get_mctrl via an ioctl is a great
-way to introduce a hardware race condition if you just read the MSR and
-never act on it.
+Rodolfo
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
