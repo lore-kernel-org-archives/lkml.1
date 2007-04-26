@@ -1,130 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbXDZJQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbXDZJRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933699AbXDZJQg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:16:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933753AbXDZJQg
+	id S932247AbXDZJRj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933740AbXDZJRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:16:36 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:46672 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933699AbXDZJQf (ORCPT
+	Thu, 26 Apr 2007 05:17:39 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:46089
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932247AbXDZJRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:16:35 -0400
-Date: Thu, 26 Apr 2007 10:16:33 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426091632.GA27620@skynet.ie>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252328340.30340@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 26 Apr 2007 05:17:38 -0400
+Date: Thu, 26 Apr 2007 11:20:32 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: bzolnier@gmail.com, linux-ide@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in IDE driver
+Message-ID: <20070426092032.GB6468@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	bzolnier@gmail.com, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704252328340.30340@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (25/04/07 23:37), Christoph Lameter didst pronounce:
-> On Wed, 25 Apr 2007, Eric W. Biederman wrote:
-> 
-> > You are trying to couple something that has no business being coupled
-> > as it reduces the system usability when you couple them.
-> 
-> What I am coupling? The approach solves a series of issues as far as I can 
-> tell.
-> 
-> > > But that is due to the VM (at least Linus tree) having no defrag methods.
-> > > mm has Mel's antifrag methods and can do it.
-> > 
-> > This is fundamental.  Fragmentation when you multiple chunk sizes
-> > cannot be solved without a the ability to move things in memory,
-> > whereas it doesn't exist when you only have a single chunk size.
-> 
-> We have that ability (although in a limited form) right now.
->  
+the IDE driver uses a semaphore as mutex. use the mutex API instead of
+the (binary) semaphore
 
-And grouping pages by mobility works best when the majority of memory is
-used as page cache and other movable/reclaimable allocations which it be
-for the majority of workloads that care about larger blocksizes. If a 
-failure case is found, the memory partitioning is there to give hard
-guarantees until I figure out what went wrong.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-> > > Yes you get lots of small request *because* we do not support defrag and 
-> > > cannot large contiguous allocations.
-> > 
-> > Lots of small requests are fundamental.  If lots of small requests were
-> > not fundamental we would gets large requests scatter gather requests.
-> 
-> That is a statement of faith in small requests? Small requests are 
-> fundamental so we want them?
-> 
-> > > Ummm the other arches read 16k blocks of contigous memory. That is not 
-> > > supported on 4k platforms right now. I guess you you move those to vmalloc 
-> > > areas? Want to hack the filesystems for this?
-> > 
-> > Freak no.  You teach the code how to have a block in multiple physical
-> > pages. 
-> 
-> This aint gonna work without something that stores the information about 
-> how the pieces come together. Teach the code.... More hacks.
->  
-> > > There are multiple scaling issues in the kernel. What you propose is to 
-> > > add hack over hack into the VM to avoid having to deal with 
-> > > defragmentation. That in turn will cause churn with hardware etc
-> > > etc.
-> > 
-> > No. I propose to avoid all designs that have the concept of
-> > fragmentation.
-> 
-> There are such designs? You can limit fragmentation but not avoid it.
-> 
-
-Indeed, it can't be eliminated unless all memory is movable which isn't.
-That's why grouping pages by mobility keeps migratable+reclaimable memory
-in one set of blocks and reclaimable (mainly slab) in a second set on the
-knowledge that truely unmovable allocations are rare.
-
-Heuristic it might be, but I expect it'll work well in practice. This sort
-of patchset will put the fragmentation avoidance under more pressure than I
-was expecting so problems will be found sooner rather than later. It's also
-worth bearing in mind that the high-order allocations looked for here are
-in the order 3 or 4 level instead of the order-9 and order-10 allocations
-that I normally test with and get reasonably high success rates for.
-
-Besides, we've seen that with the normal kernel that order-3 allocations
-(e1000 jumbo frames) work longer than one would expect without fragmentation
-avoidance and they are atomic allocations as well as everything else.  With
-fragmentation avoidance, we should be able to handle it although I'll admit
-that jumbo frame allocations are nowhere near as long lived. If I'm wrong,
-the allocation failure bug reports will roll in in a very obvious manner.
-
-> > There is an argument for having struct page control more than 4K
-> > of memory even when the hardware page size is 4K.  But that is a
-> > separate problem.  And by only having one size we still don't
-> > get fragmentation.
-> 
-> We have fragmentation because we cannot limit our allocation sizes to 4k. 
-> The stack is already 8k and there are subsystems that need more (f.e. 
-> for jumbo frames). Then there is the huge page subsystem that is used to 
-> avoid the TLB pressure that comes with small pages.
-> 
-> I think we are doing our typical community thing of running away from the 
-> problem and developing ways to explain why our traditional approaches are 
-> right.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 8f15c23..34f79a5 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1025,7 +1025,7 @@ static int init_irq (ide_hwif_t *hwif)
+ 	BUG_ON(irqs_disabled());	
+ 	BUG_ON(hwif == NULL);
+ 
+-	down(&ide_cfg_sem);
++	mutex_lock(&ide_cfg_mtx);
+ 	hwif->hwgroup = NULL;
+ #if MAX_HWIFS > 1
+ 	/*
+@@ -1154,7 +1154,7 @@ static int init_irq (ide_hwif_t *hwif)
+ 		printk(" (%sed with %s)",
+ 			hwif->sharing_irq ? "shar" : "serializ", match->name);
+ 	printk("\n");
+-	up(&ide_cfg_sem);
++	mutex_unlock(&ide_cfg_mtx);
+ 	return 0;
+ out_unlink:
+ 	spin_lock_irq(&ide_lock);
+@@ -1177,7 +1177,7 @@ out_unlink:
+ 	}
+ 	spin_unlock_irq(&ide_lock);
+ out_up:
+-	up(&ide_cfg_sem);
++	mutex_unlock(&ide_cfg_mtx);
+ 	return 1;
+ }
+ 
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index ae5bf2b..0a05799 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -170,7 +170,7 @@ static int idebus_parameter;	/* holds the "idebus=" parameter */
+ static int system_bus_speed;	/* holds what we think is VESA/PCI bus speed */
+ static int initializing;	/* set while initializing built-in drivers */
+ 
+-DECLARE_MUTEX(ide_cfg_sem);
++DEFINE_MUTEX(ide_cfg_mtx);
+  __cacheline_aligned_in_smp DEFINE_SPINLOCK(ide_lock);
+ 
+ #ifdef CONFIG_BLK_DEV_IDEPCI
+@@ -573,7 +573,7 @@ void ide_unregister(unsigned int index)
+ {
+ 	ide_drive_t *drive;
+ 	ide_hwif_t *hwif, *g;
+-	static ide_hwif_t tmp_hwif; /* protected by ide_cfg_sem */
++	static ide_hwif_t tmp_hwif; /* protected by ide_cfg_mtx */
+ 	ide_hwgroup_t *hwgroup;
+ 	int irq_count = 0, unit;
+ 
+@@ -581,7 +581,7 @@ void ide_unregister(unsigned int index)
+ 
+ 	BUG_ON(in_interrupt());
+ 	BUG_ON(irqs_disabled());
+-	down(&ide_cfg_sem);
++	mutex_lock(&ide_cfg_mtx);
+ 	spin_lock_irq(&ide_lock);
+ 	hwif = &ide_hwifs[index];
+ 	if (!hwif->present)
+@@ -688,7 +688,7 @@ void ide_unregister(unsigned int index)
+ 
+ abort:
+ 	spin_unlock_irq(&ide_lock);
+-	up(&ide_cfg_sem);
++	mutex_unlock(&ide_cfg_mtx);
+ }
+ 
+ EXPORT_SYMBOL(ide_unregister);
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index d3bbc71..aeac9f1 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1378,11 +1378,11 @@ extern const ide_pio_timings_t ide_pio_timings[6];
+ 
+ 
+ extern spinlock_t ide_lock;
+-extern struct semaphore ide_cfg_sem;
++extern struct mutex ide_cfg_mtx;
+ /*
+  * Structure locking:
+  *
+- * ide_cfg_sem and ide_lock together protect changes to
++ * ide_cfg_mtx and ide_lock together protect changes to
+  * ide_hwif_t->{next,hwgroup}
+  * ide_drive_t->next
+  *
 
 -- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+               If sharing a thing in no way diminishes it,
+               it is not rightly owned if it is not shared
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
