@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXDZWac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbXDZWgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753508AbXDZWac (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 18:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXDZWac
+	id S1753253AbXDZWgw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 18:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbXDZWgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 18:30:32 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50547 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755139AbXDZWaZ (ORCPT
+	Thu, 26 Apr 2007 18:36:51 -0400
+Received: from embla.aitel.hist.no ([158.38.50.22]:51559 "HELO
+	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753253AbXDZWgu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 18:30:25 -0400
-Message-ID: <46312779.4060405@gmail.com>
-Date: Fri, 27 Apr 2007 00:28:09 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 26 Apr 2007 18:36:50 -0400
+Message-ID: <46312787.1020702@aitel.hist.no>
+Date: Fri, 27 Apr 2007 00:28:23 +0200
+From: Helge Hafting <helge.hafting@aitel.hist.no>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de> <20070426084143.1d973c71.randy.dunlap@oracle.com> <20070426155205.GN3468@stusta.de> <m38xcfhqp4.fsf@maximus.localdomain> <20070426194316.GY3468@stusta.de> <m3ps5qhpk4.fsf@maximus.localdomain> <20070426202436.GZ3468@stusta.de>
-In-Reply-To: <20070426202436.GZ3468@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang - bisection result
+References: <20070408143559.f5014629.akpm@linux-foundation.org> <20070411194227.GA31286@aitel.hist.no> <20070411134346.d10765da.akpm@linux-foundation.org> <20070411230700.GA4023@aitel.hist.no> <Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz> <20070412202519.GB14705@aitel.hist.no> <Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz> <462F2558.5010909@aitel.hist.no> <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26/2007 10:24 PM, Adrian Bunk wrote:
+Jiri Kosina wrote:
+> On Wed, 25 Apr 2007, Helge Hafting wrote:
+>   
+>>
+>> I don't know about 2.6.21-rc6, but 2.6.21-rc7 (from fresh sources) is 
+>> good.  It boots up without hanging, and my USB devices works too. Should 
+>> I test rc7-mm1 then?
+>>     
+>
+> That would also be useful.
+>
+> But really identifying offending patch using bisection would help most. 
+> And it should be pretty easy and not too much time consuming for you, as 
+> the bug triggers immediately upon boot in your case.
+>   
+2.6.21-rc6 boots up fine.  Both rc6 and rc7 has a different problem - the
+machine tends to hang after some minutes work in X.  That hang is
+unusual in that moving the mouse still move the X cursor, but
+everything else stops and sysrq fails me. But that is another story.
 
-> The problem with such a database would be the same as with the 
-> MAINTAINERS file: The information becomes outdated, and someone has to 
-> maintain it.
-> 
-> Sending a patch against MAINTAINERS is easy - I don't see a 
-> WWW-browseable database being in any respect better than the MAINTAINERS
-> file.
+rc6 boots, rc6-mm1 hangs at the "usbcore registered hiddev" message.
+Bisection:
+1, 2, 3: the three first hangs at "usbcore registered hiddev"
+4, 5, 6: the next three hangs at a message about ACPI  PCI[A]->IRQ17
+I decided to keep bisecting these hangers as "bad", I don't really know
+if this could be the same thing or completely different issues.  If they are
+different, then one problem will mask the other anyway, so
+calling every hanging kernel "bad" will at least find the first broken 
+patch.
+7: boots up ok!
+8,9,10: hangs at the aboce mentioned ACPI message
+The (first) "hanging" patch in 2.6.21-rc6-mm1 is: git-acpi.patch
 
-Well, in fact, the database could _be_ (a parsed version of) the current 
-MAINTAINERS file; it's already in a strict, parseable format. I know that 
-MAINTAINERS itself is not very good at staying up to date, but making more 
-intensive use of it like that might in fact improve that...
+Helge Hafting
 
-Being able to have "modinfo module" then point at a specific link would 
-require a bit more though. It could be agreed upon to, say, have a module 
-that the kernel installs as
 
-	/lib/modules/$(uname -r)/kernel/drivers/cdrom/mitsumi.ko
 
-have a maintainer page at
 
-	http://www.kernel.org/maintainer/driver/cdrom/mitsumi.html
 
-but to generate that page, the maintainer file would then need to grow a way 
-to associate the "MITSUMI CDROM DRIVER" entry (don't bother, it's not there) 
-in the MAINTAINERS file with that page (and simply listing that install path 
-in the entry isn't good -- I believe you would wan't to pin down a structure 
-like that).
 
-Anyways -- might all also be a bit of overkill anyway. If I can get those 
-email adresses from MODULE_AUTHOR out of the way, I'm mostly happy.
 
-Rene.
 
