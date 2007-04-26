@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXDZGxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXDZGzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbXDZGxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 02:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXDZGxv
+	id S933115AbXDZGzS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 02:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXDZGzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 02:53:51 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:39879 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933133AbXDZGxt (ORCPT
+	Thu, 26 Apr 2007 02:55:18 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:8531 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933115AbXDZGzQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 02:53:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=Yd4CXk8/jE/8gthKRuwYNvkpOk9fjic2vyoCNs2VqhlEdxtHGUGYIOEtBtrsksnYFBG7B9bQtu8NUzKYuyOtYmpBfF6OzsJnSkodLbxrP3s/67aEo7CZDwaFHpH+C1vd4DxmOLDw/6O/RLmQ2mxpuvVOw5OIZfBveDXi2czhUSs=  ;
-X-YMail-OSG: OCdgNe8VM1kKgFj3V8p3Iwxp5hQXjFSn37Z4zEEUegMlv70imGagzMBNM9hOj9t6GHGWgNm1nA--
-Message-ID: <46304C74.9040304@yahoo.com.au>
-Date: Thu, 26 Apr 2007 16:53:40 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 26 Apr 2007 02:55:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qGzVIvjA3rpMX+sdeIbJJtql0VaPxXI1T0XQPk1HaFyuoIJs5wrDwR8RJNX1MgvTSxpoggF4kvbWdLky9uYdTauWuS0dONFEM2iVgB7htxtD1GhyZSFjjvJt+DrgqUT2+UBuy+HCFdJgtiCROxYzfEGcxHs0kX/qNncrgP+pCKA=
+Message-ID: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
+Date: Thu, 26 Apr 2007 16:55:14 +1000
+From: "Dave Airlie" <airlied@gmail.com>
+To: "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: [RFC] [PATCH] DRM TTM Memory Manager patch
+Cc: "=?ISO-8859-1?Q?Thomas_Hellstr=F6m?=" <thomas@tungstengraphics.com>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Eric Anholt" <eric@anholt.net>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 26 Apr 2007, Nick Piggin wrote:
-> 
-> 
->>>The page cache has no problems supporting things with a block
->>>size larger then page size.  Now the block device layer may not
->>>have the code to do the scatter gather into small pages and it
->>>may not handle buffer heads whose data is split between multiple
->>>pages. 
->>
->>Yeah, this patch is not really large blocksize support (which we normally
->>think of as block size > page cache size).
-> 
-> 
-> No? It depends on how you define block size. This patch definitely allows
-> a set blocksize function call with a size larger than 4k.
+Hi,
 
-Yeah because it is still <= page cache page size. Anyway, that's just
-semantics, it doesn't matter.
+The patch is too big to fit on the list and I've no idea how we could
+break it down further, it just happens to be a lot of new code..
+
+http://people.freedesktop.org/~airlied/ttm/0001-drm-Implement-TTM-Memory-manager-core-functionality.txt
+
+The patch header and diffstat are below,
+
+This isn't for integration yet but we'd like an initial review by
+anyone with the spare time and inclination, there is a lot stuff
+relying on getting this code bet into shape and into the kernel but
+any cleanups people can suggest now especially to the user interfaces
+would be appreciated as once we set that stuff in stone it'll be a
+pain to change... also it doesn't have any driver side code, this is
+just the generic pieces. I'll post the intel 915 side code later but
+there isn't that much to it..
+
+It applies on top of my drm-2.6 git tree drm-mm branch....
+
+-----------------------------------------------------------------------------------------------------
+
+This patch brings in the TTM (Translation Table Maps) memory management
+system from Thomas Hellstrom at Tungsten Graphics.
+
+This patch only covers the core functionality and changes to the drm core.
+
+The TTM memory manager enables dynamic mapping of memory objects in and
+out of the graphic card accessible memory (e.g. AGP), this implements
+the AGP backend for TTM to be used by the i915 driver.
 
 
->>>I suspect what needs to be fixed is the page cache block device
->>>interface so that we have helper functions that know how to stuff
->>>a single block into several pages.
->>
->>I am working now and again on some code to do this, it is a big job but
->>I think it is the right way to do it. But it would take a long time to
->>get stable and supported by filesystems...
-> 
-> 
-> Ummm... We already have a radix tree for this???? What more is needed? You 
-> just need to go through all filesystems and make them use extends.
-
-I'm talking about block size > page size in the buffer layer.
-
--- 
-SUSE Labs, Novell Inc.
+ drivers/char/drm/Makefile         |    3 +-
+ drivers/char/drm/drm.h            |  238 ++++-
+ drivers/char/drm/drmP.h           |  153 +++-
+ drivers/char/drm/drm_agpsupport.c |  160 +++
+ drivers/char/drm/drm_bo.c         | 2329 ++++++++++++++++++++++++++++++++++++
+ drivers/char/drm/drm_bo_move.c    |  395 +++++++
+ drivers/char/drm/drm_bufs.c       |    2 +
+ drivers/char/drm/drm_drv.c        |   46 +-
+ drivers/char/drm/drm_fence.c      |  661 +++++++++++
+ drivers/char/drm/drm_fops.c       |   75 ++-
+ drivers/char/drm/drm_memory.c     |   69 ++
+ drivers/char/drm/drm_mm.c         |   13 +-
+ drivers/char/drm/drm_object.c     |  293 +++++
+ drivers/char/drm/drm_objects.h    |  464 ++++++++
+ drivers/char/drm/drm_proc.c       |   90 ++
+ drivers/char/drm/drm_stub.c       |   24 +-
+ drivers/char/drm/drm_ttm.c        |  337 ++++++
+ drivers/char/drm/drm_vm.c         |  193 +++-
+ 18 files changed, 5503 insertions(+), 42 deletions(-)
