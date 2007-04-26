@@ -1,106 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031165AbXDZKoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031162AbXDZKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031165AbXDZKoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031164AbXDZKoS
+	id S1031162AbXDZKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031164AbXDZKo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:44:18 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:50790 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031162AbXDZKoQ (ORCPT
+	Thu, 26 Apr 2007 06:44:28 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:9867 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031162AbXDZKo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:44:16 -0400
-Message-ID: <463081E5.5010306@gmail.com>
-Date: Thu, 26 Apr 2007 12:41:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 26 Apr 2007 06:44:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=flSFTAEWX0vxcS4fZ1xhWXuKKkJWfSFQixEPjMEXFt5ThNCsK6SvlqvzNvZ2wRNPVM5Mztdo6bllG6EMfFVo3bXTl3SSIYSF6OHxVRXcN1jNYYwZ7VxnIimwbzi87JE1UxtPUeRg9rsb43eDLQxmk3qh2UkcESQABnrQrB6yhtU=
+Message-ID: <9a8748490704260344y72551a9w97609ca44f242019@mail.gmail.com>
+Date: Thu, 26 Apr 2007 12:44:25 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: Linux 2.6.21
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070426040806.GJ3468@stusta.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Adrian Bunk <bunk@stusta.de>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <46138B4C.2050409@gmail.com>	<20070404123311.GA18552@infradead.org>	<1175698135.5815.447.camel@violet>	<20070404150231.GE27660@stusta.de>	<4613C963.6070409@gmail.com>	<20070404170016.453d26f1@the-village.bc.nu>	<4613D492.2070404@gmail.com>	<462C7D74.60003@gmail.com>	<1177327476.17026.75.camel@localhost.localdomain>	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>	<462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org>
-In-Reply-To: <20070425181856.42fcfeb4.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+	 <20070426040806.GJ3468@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26/2007 03:18 AM, Andrew Morton wrote:
+On 26/04/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Wed, Apr 25, 2007 at 08:29:28PM -0700, Linus Torvalds wrote:
+> >...
+> > So it's been over two and a half months, and while it's certainly not the
+> > longest release cycle ever, it still dragged out a bit longer than I'd
+> > have hoped for and it should have. As usual, I'd like to thank Adrian (and
+> > the people who jumped on the entries Adrian had) for keeping everybody on
+> > their toes with the regression list - there's a few entries there still,
+> > but it got to the point where we didn't even know if they were real
+> > regressions, and delaying things further just wasn't going to help.
+> >...
+>
+>
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release:
+> 14
+>
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release that were first reported in March or earlier:
+> 8
+>
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release with patches available at the time of the 2.6.21
+> release [1]:
+> 3
+>
+> What I will NOT do:
+> Waste my time with tracking 2.6.22-rc regressions.
+>
+>
+> We have an astonishing amount of -rc testers, but obviously not the
+> developer manpower for handling them.
+>
+> If we would take "no regressions" seriously, it might take 4 or 5 months
+> between releases due to the lack of developer manpower for handling
+> regressions. But that should be considered OK if avoiding regressions
+> was considered more important than getting as quick as possible to the
+> next two week regression-merge window.
+>
+> But releasing with so many known regressions is insulting for the many
+> people who spent their time testing -rc kernels.
+>
 
-> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com>
-> wrote:
-> 
->> Provide MODULE_MAINTAINER() as a convenient place to stick a name and
->> email address both for drivers having multiple (current and
->> non-current) authors and for when someone who wants to maintain a
->> driver isn't so much an author.
+Many people have already said this, but it needs saying again.
+You are doing a great job that really helps, both with the regression
+lists and the trivial patch monkey stuff. Please keep up the good
+work, you are really helping the kernel.
 
-[ snip ]
-
-> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
-> end up having to maintain the same info in two places.
-
-joe@user:~$ less ./MAINTAINERS
-./MAINTAINERS: No such file or directory
-
-MAINTAINERS is a developers thing, not users, yet a maintainer is someone 
-who other than by developers wants to be contacted by users of a particular 
-driver. Right now, a module exports a set of name and email addresses 
-through the MODULE_AUTHOR tag but given multiple current and non-current 
-authors, completely or largely orphaned drivers (I have a lot of junk PC 
-hardware so I come across those relatively often) and people who might be 
-interested in taking care of a driver but who do not consider themselves an 
-author for (upto now) having done a s/, struct pt_regs// on it, that tag 
-only confuses the issue of whom to contact.
-
-And it in fact even does so when Joe does know about a MAINTAINERS file and 
-does happen to have a kernel source tree lying around somewhere. With one 
-set of addresses displayed prominently inside the sourcecode of the very 
-driver and another one of in a MAINTAINERS file, the first one wins. Joe 
-would have to be very new to Linux to trust something in the tree that's not 
-actually compiled over something that is.
-
-As the first response in this thread Cristoph Hellwig stated that 
-MODULE_AUTHOR serves no purpose other than what MODULE_MAINTAINER would be 
-serving. Others agreed and Adrian Bunk suggested deleting MODULE_AUTHOR 
-outright.
-
-That would actually also serve my purposes; if there's no MODULE_AUTHOR 
-confusing the issue, I don't so much need a MODULE_MAINTAINER to fix it 
-again. I believe having "modinfo" (optionally!) display a contact address 
-for a driver might be a user advantage, but with all the wrong addresses 
-gone, I don't really care deeply; MODULE_AUTHOR doesn't serve the purpose 
-today and with it gone the user at least knows he needs to look elsewhere. 
-MODULE_AUTHOR is also a credits issue but the information can be transferred 
-to copyright headers. It would obviously also fix any possible maintenance 
-issues.
-
-Alan Cox believes that having author information embedded in the module 
-serves a legal purpose though and objects to removal.
-
-So, if MODULE_AUTHOR is going to stay I'd like to have MODULE_MAINTAINER to 
-fix the message it sends. Some of it could be fixed by just deleting the 
-email addresses from the MODULE_AUTHOR tag but that's probably not a good 
-solution _either_. Those possible legal purposes are then the only 
-conceivable use of the tag meaning that it should either be deleted outright 
-if people don't agree on the legal angle or should retain the address as a 
-contact point for legal issues/questions if people do.
-
-The purpose I want MODULE_MAINTAINER for would not introduce any significant 
-maintenance issues. It's not a "whole tree or nothing" thing. I want it for 
-a few ISA crap drivers that have outlived their authors but list their names 
-and email addresses in the source and binary through the MODULE_AUTHOR tag; 
-  simply going around deleting MODULE_AUTHOR tags is not something us random 
-kernelnewbie wannabee driver hackers can do. It's something "the community" 
-could do but if noone is going to, we don't have a good way to override the 
-information from MODULE_AUTHOR.
-
-Rene.
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
