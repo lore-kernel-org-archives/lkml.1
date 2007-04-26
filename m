@@ -1,110 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755000AbXDZUds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031505AbXDZUfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755000AbXDZUds (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbXDZUds
+	id S1031505AbXDZUfM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031502AbXDZUfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:33:48 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51620 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755022AbXDZUdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:33:45 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@nigel.suspend2.net
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Date: Thu, 26 Apr 2007 22:37:31 +0200
-User-Agent: KMail/1.9.5
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Pavel Machek <pavel@ucw.cz>,
-       Dumitru Ciobarcianu <Dumitru.Ciobarcianu@ines.ro>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>,
-       "suspend2-devel@lists.suspend2.net" 
-	<suspend2-devel@lists.suspend2.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <qlG9V8pP.1177603830.8836760.penberg@cs.helsinki.fi> <200704262128.31547.rjw@sisk.pl> <1177618612.4737.50.camel@nigel.suspend2.net>
-In-Reply-To: <1177618612.4737.50.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704262237.32665.rjw@sisk.pl>
+	Thu, 26 Apr 2007 16:35:12 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:60797 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031498AbXDZUfJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 16:35:09 -0400
+Date: Thu, 26 Apr 2007 13:36:56 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, maxextreme@gmail.com, gregkh@suse.de
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+Message-Id: <20070426133656.ab02d68a.randy.dunlap@oracle.com>
+In-Reply-To: <20070426013059.ce948f50.akpm@linux-foundation.org>
+References: <20070423141123.GA21174@skybase>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<200704260232.06909.arnd@arndb.de>
+	<20070426013059.ce948f50.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 April 2007 22:16, Nigel Cunningham wrote:
-> Hi.
+On Thu, 26 Apr 2007 01:30:59 -0700 Andrew Morton wrote:
+
+> On Thu, 26 Apr 2007 02:32:06 +0200 Arnd Bergmann <arnd@arndb.de> wrote:
 > 
-> On Thu, 2007-04-26 at 21:28 +0200, Rafael J. Wysocki wrote:
-> > On Thursday, 26 April 2007 18:10, Pekka Enberg wrote:
-> > > 
-> > > On 4/26/2007, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > In principle, we could add suspend2 as an alternative (in analogy with the I/O
-> > > > schedulers, for example), but I think for this purpose it should be reviewed
-> > > > properly.
-> > > 
-> > > Yeah, this makes sense.
-> > > 
-> > > On 4/26/2007, "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > > There also is a real problem with how it uses the LRU pages.  It _seems_ to
-> > > > work, but at least to me it seems to be potentially dangerous.
-> > > 
-> > > I am new to suspend2 so can you please explain what exactly is dangerous
-> > > about it?
+> > On Thursday 26 April 2007, Andrew Morton wrote:
+> > > It would be neat if someone could create and maintain a new
+> > > scripts/spot-common-mistakes.  Feed it a unified diff and it would complain
+> > > about newly-added code (and only newly-added code) which has busted
+> > > whitespace, adds new semaphores, adds new kernel_thread calls, etc, etc.
 > > 
-> > After freezing tasks, it first saves the contents of the LRU pages, freezes
-> > devices and then uses the LRU pages for storing the suspend image (if more
-> > memory is needed, it's allocated, but that's irrelevant here).  Now, we have no
-> > warranty that the LRU pages are not updated after we've saved their contents
-> > (first potential problem here).
-> > 
-> > After the image has been created, we have to unfreeze devices and save the
-> > image.  Now, we have no warranty that no one will be writing to the LRU pages
-> > that we have used to store the image, for whatever reasons known to him, so the
-> > image can potentially get corrupted while it's being saved.
-> > 
-> > In principle, device drivers can do this and there are some kernel threads that
-> > also can do this (we don't freeze them, because they're needed for the image
-> > saving).
-> > 
-> > The design is conceptually really really complicated and it makes strong
-> > assumptions about the behavior of different subsystems.  While these
-> > assumptions _may_ be satisfied right now, we'd have to ensure the satisfaction
-> > of them in the future if suspend2 were merged.
+> > http://patchstylecheck.googlecode.com/svn/trunk/patchstylecheckemail.pl
+> > Might serve as a starting point for this. It doesn't have any semantic
+> > checks right now, but I guess they can be added.
 > 
-> That's a good description of the issue, although I think _may_ and
-> _seems_ are stating things a bit more pessimistically than is
-> necessary. 
+> oh man, every patch I review, every bug I fix, I dream of this.
 
-I've used them to express my personal concerns.
+singing?
 
-> You see, we need to remember that the pages which are saved separately
-> are LRU pages. Because userspace is frozen, their contents are going to
-> be static. The only possibilities for modifying them come from timer
-> routines, improperly frozen filesystems and device drivers.
 
-And kernel threads that we don't freeze deliberately.  Currently, these are
-all worker threads, dm-related kernel threads and some others.
-
-> We have code to check that the LRU isn't changing, and I've only seen
-> one report of modifications to about 20 LRU pages. I haven't had the
-> time yet to chase down the cause, but hope to do so soon.
-
-I didn't say that would be common.  If it had been, you'd have seen problems
-with it.  To me the problem is the lack of warranty that it won't happen.
-
-> The general scheme has been working for four or five years - if there
-> was a fundamental issue, we would have found it by now.
+> Wishlist:
 > 
-> The scheme isn't complicated.
+> - wire it up to a robot which monitors all Linux mailing lists and sends
+>   machine-review comments back to originators.  This will be a huge win by
+>   eliminating so much stupid crap.  
+> 
+> - auto-detect wordwrapped and tab-replaced emails (oh glory)
+> 
+> - auto-detect code wider than 80-cols (swoon)
+> 
+> - auto-detect missing Signed-off-by:
+> 
+> - auto-check patch format and protocol, as per
+>   http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt and
+>   http://linux.yyz.us/patch-format.html
+> 
+> - teach it about semantics:
+> 
+>   - kthread instead of kernel_thread
+> 
+>   - mutexes instead of semaphores
+> 
+>   - the whole plethora of whitespace uckfuppednesses
+> 
+>   - needlessly-initialised-to-zero-static-variables
+> 
+>   - extern-decls-in-C
+> 
+>   - EXPORT_SYMBOL(foo) is placed immediately after foo()'s closing
+>     brace
+> 
+>     Hard to do?  Could just whine about all EXPORT_SYMBOL's which
+>     aren't immediately preceded by ^}$ or by ;$
+> 
+>   - new typedefs
+> 
+>   - use of uint32_t and friends
+> 
+>   - use of BUG_ON and BUG, frankly.  The thing's a damn pest.  Suggest
+>     WARN_ON+recover-from-it.
+> 
+>   - use of `if ((var = expr()))' and similar
+> 
+>   - large inlined functions?
+> 
+>   - braces around single statements (advanced topic ;))
+> 
+>   - StudlyCaps?
+> 
+>   - anything called "tmp" or "temp"
+> 
+>   - old-style struct initialisers
+> 
+>   - non-ascii characters(?)
+> 
+>   - lots more to come, I'm sure.
 
-Conceptually, it is complicated just because you're using the LRU.
+I made a short list last night, but yours is better/longer.
+Here are a few more items:
 
-Greetings,
-Rafael
+- check for new docs and/or kernel-doc
+- storage class should be first
+- don't use deprecated APIs
+- no floating point
+- no MIN/MAX
+- printk wants KERN_* levels
+- limit on new /proc files
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
