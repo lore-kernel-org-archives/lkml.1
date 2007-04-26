@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXDZRGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXDZRGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbXDZRGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbXDZRBK
+	id S1753205AbXDZRGT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbXDZRBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39592 "EHLO
+	Thu, 26 Apr 2007 13:01:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39606 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbXDZRAQ (ORCPT
+	with ESMTP id S1754885AbXDZRAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:00:16 -0400
-Date: Thu, 26 Apr 2007 09:56:27 -0700
+	Thu, 26 Apr 2007 13:00:22 -0400
+Date: Thu, 26 Apr 2007 09:56:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 19/33] NFS: Fix an Oops in nfs_setattr()
-Message-ID: <20070426165627.GT1898@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@suse.de>,
+       Zwane Mwaikambo <zwane@infradead.org>
+Subject: [patch 20/33] x86: Dont probe for DDC on VBE1.2
+Message-ID: <20070426165631.GU1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nfs-fix-an-oops-in-nfs_setattr.patch"
+Content-Disposition: inline; filename="x86-don-t-probe-for-ddc-on-vbe1.2.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,49 +37,110 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Zwane Mwaikambo <zwane@infradead.org>
 
-NFS: Fix an Oops in nfs_setattr()
+[PATCH] x86: Don't probe for DDC on VBE1.2
 
-It looks like nfs_setattr() and nfs_rename() also need to test whether the
-target is a regular file before calling nfs_wb_all()...
+VBE1.2 doesn't support function 15h (DDC) resulting in a 'hang' whilst
+uncompressing kernel with some video cards. Make sure we check VBE version
+before fiddling around with DDC.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+http://bugzilla.kernel.org/show_bug.cgi?id=1458
+
+Opened: 2003-10-30 09:12 Last update: 2007-02-13 22:03
+
+Much thanks to Tobias Hain for help in testing and investigating the bug.
+Tested on;
+
+i386, Chips & Technologies 65548 VESA VBE 1.2
+CONFIG_VIDEO_SELECT=Y
+CONFIG_FIRMWARE_EDID=Y
+
+Untested on x86_64.
+
+Signed-off-by: Zwane Mwaikambo <zwane@infradead.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
 Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/dir.c   |    3 ++-
- fs/nfs/inode.c |    6 ++++--
- 2 files changed, 6 insertions(+), 3 deletions(-)
+ arch/i386/boot/video.S   |   14 ++++++++++++++
+ arch/x86_64/boot/video.S |   14 ++++++++++++++
+ 2 files changed, 28 insertions(+)
 
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1659,7 +1659,8 @@ go_ahead:
- 	 * ... prune child dentries and writebacks if needed.
- 	 */
- 	if (atomic_read(&old_dentry->d_count) > 1) {
--		nfs_wb_all(old_inode);
-+		if (S_ISREG(old_inode->i_mode))
-+			nfs_wb_all(old_inode);
- 		shrink_dcache_parent(old_dentry);
- 	}
- 	nfs_inode_return_delegation(old_inode);
---- a/fs/nfs/inode.c
-+++ b/fs/nfs/inode.c
-@@ -334,8 +334,10 @@ nfs_setattr(struct dentry *dentry, struc
- 	lock_kernel();
- 	nfs_begin_data_update(inode);
- 	/* Write all dirty data */
--	filemap_write_and_wait(inode->i_mapping);
--	nfs_wb_all(inode);
-+	if (S_ISREG(inode->i_mode)) {
-+		filemap_write_and_wait(inode->i_mapping);
-+		nfs_wb_all(inode);
-+	}
- 	/*
- 	 * Return any delegations if we're going to change ACLs
- 	 */
+--- a/arch/i386/boot/video.S
++++ b/arch/i386/boot/video.S
+@@ -571,6 +571,16 @@ setr1:	lodsw
+ 	jmp	_m_s
+ 
+ check_vesa:
++#ifdef CONFIG_FIRMWARE_EDID
++	leaw	modelist+1024, %di
++	movw	$0x4f00, %ax
++	int	$0x10
++	cmpw	$0x004f, %ax
++	jnz	setbad
++
++	movw	4(%di), %ax
++	movw	%ax, vbe_version
++#endif
+ 	leaw	modelist+1024, %di
+ 	subb	$VIDEO_FIRST_VESA>>8, %bh
+ 	movw	%bx, %cx			# Get mode information structure
+@@ -1945,6 +1955,9 @@ store_edid:
+ 	rep
+ 	stosl
+ 
++	cmpw	$0x0200, vbe_version		# only do EDID on >= VBE2.0
++	jl	no_edid
++
+ 	pushw   %es				# save ES
+ 	xorw    %di, %di                        # Report Capability
+ 	pushw   %di
+@@ -1987,6 +2000,7 @@ do_restore:	.byte	0	# Screen contents al
+ svga_prefix:	.byte	VIDEO_FIRST_BIOS>>8	# Default prefix for BIOS modes
+ graphic_mode:	.byte	0	# Graphic mode with a linear frame buffer
+ dac_size:	.byte	6	# DAC bit depth
++vbe_version:	.word	0	# VBE bios version
+ 
+ # Status messages
+ keymsg:		.ascii	"Press <RETURN> to see video modes available, "
+--- a/arch/x86_64/boot/video.S
++++ b/arch/x86_64/boot/video.S
+@@ -571,6 +571,16 @@ setr1:	lodsw
+ 	jmp	_m_s
+ 
+ check_vesa:
++#ifdef CONFIG_FIRMWARE_EDID
++	leaw	modelist+1024, %di
++	movw	$0x4f00, %ax
++	int	$0x10
++	cmpw	$0x004f, %ax
++	jnz	setbad
++
++	movw	4(%di), %ax
++	movw	%ax, vbe_version
++#endif
+ 	leaw	modelist+1024, %di
+ 	subb	$VIDEO_FIRST_VESA>>8, %bh
+ 	movw	%bx, %cx			# Get mode information structure
+@@ -1945,6 +1955,9 @@ store_edid:
+ 	rep
+ 	stosl
+ 
++	cmpw	$0x0200, vbe_version		# only do EDID on >= VBE2.0
++	jl	no_edid
++
+ 	pushw   %es				# save ES
+ 	xorw    %di, %di                        # Report Capability
+ 	pushw   %di
+@@ -1987,6 +2000,7 @@ do_restore:	.byte	0	# Screen contents al
+ svga_prefix:	.byte	VIDEO_FIRST_BIOS>>8	# Default prefix for BIOS modes
+ graphic_mode:	.byte	0	# Graphic mode with a linear frame buffer
+ dac_size:	.byte	6	# DAC bit depth
++vbe_version:	.word	0	# VBE bios version
+ 
+ # Status messages
+ keymsg:		.ascii	"Press <RETURN> to see video modes available, "
 
 -- 
