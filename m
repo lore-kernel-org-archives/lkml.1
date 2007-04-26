@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbXDZRVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031365AbXDZRXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbXDZRVs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbXDZRVs
+	id S1031365AbXDZRXK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031362AbXDZRXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:21:48 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:27684 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754870AbXDZRVq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:21:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jqMNlnyVQRmci9FNHTjxC9PyT8UVGAbW9Z7KyMJJNcs7ohud4ssOUgJyKICpAAX2uHS1YkjTs7jq81PIRJJMn1UtRNuiagPQi8mNomqiPcD43IfVQB4fHtfDEeFoQs6fstpeLn1degRS8NLCVMVbrVifjZidvn06q76UBJnsd5w=
-Message-ID: <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
-Date: Thu, 26 Apr 2007 10:21:43 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] sysfs: use different lockdep subclass for s_active deactivation
-Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       greg@kroah.com
-In-Reply-To: <20070426145047.GF17130@htj.dyndns.org>
+	Thu, 26 Apr 2007 13:23:10 -0400
+Received: from mail.tmr.com ([64.65.253.246]:47868 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031369AbXDZRXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:23:07 -0400
+Message-ID: <4630E00B.3090502@tmr.com>
+Date: Thu, 26 Apr 2007 13:23:23 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
+In-Reply-To: <20070426040806.GJ3468@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>
-	 <462EE4B7.6000708@gmail.com> <20070426145047.GF17130@htj.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/26/07, Tejun Heo <htejun@gmail.com> wrote:
-> A sysfs node can delete other sysfs files when accessed.  This results
-> in recursive s_active locking - read lock for file access, down lock
-> of the vicitim for deactivation.  Tell lockdep that it's okay.
->
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> ---
-> Miles, please test this patch.  It should remove the lockdep warning.
-> Fixes for the other two problems will soon follow.
->
-> Greg, Andrew, after all the fixes are verified, I'll merge the fixes
-> into the original patches and resend all the sysfs updates in better
-> shape.  Sorry about all the trouble.
+Adrian Bunk wrote:
+> On Wed, Apr 25, 2007 at 08:29:28PM -0700, Linus Torvalds wrote:
+>> ...
+>> So it's been over two and a half months, and while it's certainly not the 
+>> longest release cycle ever, it still dragged out a bit longer than I'd 
+>> have hoped for and it should have. As usual, I'd like to thank Adrian (and 
+>> the people who jumped on the entries Adrian had) for keeping everybody on 
+>> their toes with the regression list - there's a few entries there still, 
+>> but it got to the point where we didn't even know if they were real 
+>> regressions, and delaying things further just wasn't going to help.
+>> ...
+> 
+> 
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release:
+> 14
+> 
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release that were first reported in March or earlier:
+> 8
+> 
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release with patches available at the time of the 2.6.21 
+> release [1]:
+> 3
+> 
+> What I will NOT do:
+> Waste my time with tracking 2.6.22-rc regressions.
+> 
+> 
+> We have an astonishing amount of -rc testers, but obviously not the 
+> developer manpower for handling them.
+> 
+> If we would take "no regressions" seriously, it might take 4 or 5 months 
+> between releases due to the lack of developer manpower for handling 
+> regressions. But that should be considered OK if avoiding regressions 
+> was considered more important than getting as quick as possible to the 
+> next two week regression-merge window.
+> 
+> But releasing with so many known regressions is insulting for the many 
+> people who spent their time testing -rc kernels.
+> 
+Without someone holding Linus feet to the fire the next release may be a 
+real POS. I think you have done the perfect job, identifying the show 
+stoppers, quantifying the obscure and minor regressions, and serving to 
+give testing targets as purported fixes are applied.
 
-Should I test this with 2.6.21-rc7-mm2?
-It doesn't apply cleanly.
+I don't think you should judge your work by leaving some targets for 
+-stable and 2.6.22, but rather from the number of problems you detected, 
+documented, and caused to be addressed.
 
-# patch -p1 -l --dry-run < tejun.patch
-patching file fs/sysfs/dir.c
-Hunk #1 succeeded at 31 with fuzz 1 (offset -29 lines).
-patching file fs/sysfs/sysfs.h
-Hunk #1 succeeded at 40 (offset -1 lines).
-Hunk #2 succeeded at 182 with fuzz 1 (offset -1 lines).
+If it were my week to be God, I would insist that the rcN to final step 
+was regressions-only, and that all regressions be classified as (a) 
+acceptable results of changes to fix other problems, (b) must be fixed 
+before release, or (c) obscure enough to tolerate for a short time, must 
+be fixed in stable and mainline before N+1 release.
+
+Measuring releases or your own value against perfection is thankless!
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
