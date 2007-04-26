@@ -1,61 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbXDZH1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbXDZH15@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbXDZH1b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXDZH1b
+	id S933331AbXDZH15 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:27:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933404AbXDZH15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:27:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48610 "EHLO
+	Thu, 26 Apr 2007 03:27:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48613 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933367AbXDZH1a (ORCPT
+	with ESMTP id S933372AbXDZH1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:27:30 -0400
-Date: Thu, 26 Apr 2007 00:24:41 -0700
+	Thu, 26 Apr 2007 03:27:34 -0400
+Date: Thu, 26 Apr 2007 00:25:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.20.9
-Message-ID: <20070426072441.GA5515@kroah.com>
+Subject: Re: Linux 2.6.20.9
+Message-ID: <20070426072503.GA5643@kroah.com>
+References: <20070426072441.GA5515@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070426072441.GA5515@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We (the -stable team) are announcing the release of the 2.6.20.9 kernel.
-This release has a security bugfix so any users of kernels older than
-2.6.20.8 that have ipv6 enabled are highly encouraged to upgrade as soon
-as possible.
-
-The diffstat and short summary of the fixes are below.
-
-I'll also be replying to this message with a copy of the patch between
-2.6.20.8 and 2.6.20.9.
-
-The updated 2.6.20.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
-and can be browsed at the normal kernel.org git web browser:
-        www.kernel.org/git/
-
-thanks,
-
-greg k-h
-
---------
- Documentation/networking/ip-sysctl.txt |    9 +++++++
- Makefile                               |    2 -
- include/linux/ipv6.h                   |    3 ++
- include/linux/sysctl.h                 |    1 
- net/ipv6/addrconf.c                    |   11 +++++++++
- net/ipv6/exthdrs.c                     |   40 ++++++++++++++++++++++++++++-----
- 6 files changed, 59 insertions(+), 7 deletions(-)
-
-Summary of changes from v2.6.20.8 to v2.6.20.9
-==============================================
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.20.9
-
-YOSHIFUJI Hideaki (1):
-      IPV6: Disallow RH0 by default.
+diff --git a/Documentation/networking/ip-sysctl.txt b/Documentation/networking/ip-sysctl.txt
+index a0f6842..713c283 100644
+--- a/Documentation/networking/ip-sysctl.txt
++++ b/Documentation/networking/ip-sysctl.txt
+@@ -825,6 +825,15 @@ accept_redirects - BOOLEAN
+ 	Functional default: enabled if local forwarding is disabled.
+ 			    disabled if local forwarding is enabled.
+ 
++accept_source_route - INTEGER
++	Accept source routing (routing extension header).
++
++	> 0: Accept routing header.
++	= 0: Accept only routing header type 2.
++	< 0: Do not accept routing header.
++
++	Default: 0
++
+ autoconf - BOOLEAN
+ 	Autoconfigure addresses using Prefix Information in Router 
+ 	Advertisements.
+diff --git a/Makefile b/Makefile
+index f3539e8..3e7e6c7 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 20
+-EXTRAVERSION = .8
++EXTRAVERSION = .9
+ NAME = Homicidal Dwarf Hamster
+ 
+ # *DOCUMENTATION*
+diff --git a/include/linux/ipv6.h b/include/linux/ipv6.h
+index f824113..713eb5e 100644
+--- a/include/linux/ipv6.h
++++ b/include/linux/ipv6.h
+@@ -177,6 +177,7 @@ struct ipv6_devconf {
+ #endif
+ #endif
+ 	__s32		proxy_ndp;
++	__s32		accept_source_route;
+ 	void		*sysctl;
+ };
+ 
+@@ -205,6 +206,8 @@ enum {
+ 	DEVCONF_RTR_PROBE_INTERVAL,
+ 	DEVCONF_ACCEPT_RA_RT_INFO_MAX_PLEN,
+ 	DEVCONF_PROXY_NDP,
++	__DEVCONF_OPTIMISTIC_DAD,
++	DEVCONF_ACCEPT_SOURCE_ROUTE,
+ 	DEVCONF_MAX
+ };
+ 
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 81480e6..6f34622 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -570,6 +570,7 @@ enum {
+ 	NET_IPV6_RTR_PROBE_INTERVAL=21,
+ 	NET_IPV6_ACCEPT_RA_RT_INFO_MAX_PLEN=22,
+ 	NET_IPV6_PROXY_NDP=23,
++	NET_IPV6_ACCEPT_SOURCE_ROUTE=25,
+ 	__NET_IPV6_MAX
+ };
+ 
+diff --git a/net/ipv6/addrconf.c b/net/ipv6/addrconf.c
+index 58cb669..f5af4ca 100644
+--- a/net/ipv6/addrconf.c
++++ b/net/ipv6/addrconf.c
+@@ -173,6 +173,7 @@ struct ipv6_devconf ipv6_devconf __read_mostly = {
+ #endif
+ #endif
+ 	.proxy_ndp		= 0,
++	.accept_source_route	= 0,	/* we do not accept RH0 by default. */
+ };
+ 
+ static struct ipv6_devconf ipv6_devconf_dflt __read_mostly = {
+@@ -204,6 +205,7 @@ static struct ipv6_devconf ipv6_devconf_dflt __read_mostly = {
+ #endif
+ #endif
+ 	.proxy_ndp		= 0,
++	.accept_source_route	= 0,	/* we do not accept RH0 by default. */
+ };
+ 
+ /* IPv6 Wildcard Address and Loopback Address defined by RFC2553 */
+@@ -3400,6 +3402,7 @@ static void inline ipv6_store_devconf(struct ipv6_devconf *cnf,
+ #endif
+ #endif
+ 	array[DEVCONF_PROXY_NDP] = cnf->proxy_ndp;
++	array[DEVCONF_ACCEPT_SOURCE_ROUTE] = cnf->accept_source_route;
+ }
+ 
+ static inline size_t inet6_if_nlmsg_size(void)
+@@ -3920,6 +3923,14 @@ static struct addrconf_sysctl_table
+ 			.proc_handler	=	&proc_dointvec,
+ 		},
+ 		{
++			.ctl_name	=	NET_IPV6_ACCEPT_SOURCE_ROUTE,
++			.procname	=	"accept_source_route",
++			.data		=	&ipv6_devconf.accept_source_route,
++			.maxlen		=	sizeof(int),
++			.mode		=	0644,
++			.proc_handler	=	&proc_dointvec,
++		},
++		{
+ 			.ctl_name	=	0,	/* sentinel */
+ 		}
+ 	},
+diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
+index 0711f92..5fd7cf9 100644
+--- a/net/ipv6/exthdrs.c
++++ b/net/ipv6/exthdrs.c
+@@ -363,10 +363,27 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
+ 	struct inet6_skb_parm *opt = IP6CB(skb);
+ 	struct in6_addr *addr = NULL;
+ 	struct in6_addr daddr;
++	struct inet6_dev *idev;
+ 	int n, i;
+-
+ 	struct ipv6_rt_hdr *hdr;
+ 	struct rt0_hdr *rthdr;
++	int accept_source_route = ipv6_devconf.accept_source_route;
++
++	if (accept_source_route < 0 ||
++	    ((idev = in6_dev_get(skb->dev)) == NULL)) {
++		kfree_skb(skb);
++		return -1;
++	}
++	if (idev->cnf.accept_source_route < 0) {
++		in6_dev_put(idev);
++		kfree_skb(skb);
++		return -1;
++	}
++
++	if (accept_source_route > idev->cnf.accept_source_route)
++		accept_source_route = idev->cnf.accept_source_route;
++
++	in6_dev_put(idev);
+ 
+ 	if (!pskb_may_pull(skb, (skb->h.raw-skb->data)+8) ||
+ 	    !pskb_may_pull(skb, (skb->h.raw-skb->data)+((skb->h.raw[1]+1)<<3))) {
+@@ -378,6 +395,22 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
+ 
+ 	hdr = (struct ipv6_rt_hdr *) skb->h.raw;
+ 
++	switch (hdr->type) {
++#ifdef CONFIG_IPV6_MIP6
++		break;
++#endif
++	case IPV6_SRCRT_TYPE_0:
++		if (accept_source_route > 0)
++			break;
++		kfree_skb(skb);
++		return -1;
++	default:
++		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
++				 IPSTATS_MIB_INHDRERRORS);
++		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
++		return -1;
++	}
++
+ 	if (ipv6_addr_is_multicast(&skb->nh.ipv6h->daddr) ||
+ 	    skb->pkt_type != PACKET_HOST) {
+ 		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+@@ -435,11 +468,6 @@ looped_back:
+ 		}
+ 		break;
+ #endif
+-	default:
+-		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+-				 IPSTATS_MIB_INHDRERRORS);
+-		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
+-		return -1;
+ 	}
+ 
+ 	/*
