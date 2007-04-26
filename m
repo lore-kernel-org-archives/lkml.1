@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXDZEpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbXDZEwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbXDZEpt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXDZEpt
+	id S1754390AbXDZEwe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 00:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbXDZEwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:45:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48304
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754704AbXDZEps (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:45:48 -0400
-Date: Wed, 25 Apr 2007 21:45:55 -0700 (PDT)
-Message-Id: <20070425.214555.13770473.davem@davemloft.net>
-To: k-keiichi@bx.jp.nec.com
-Cc: shemminger@linux-foundation.org, akpm@linux-foundation.org,
-       mpm@selenic.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4630243C.4010402@bx.jp.nec.com>
-References: <20070424012902.1089bc02.akpm@linux-foundation.org>
-	<20070424082117.354341d3@oldman>
-	<4630243C.4010402@bx.jp.nec.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 26 Apr 2007 00:52:34 -0400
+Received: from 1wt.eu ([62.212.114.60]:2276 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754368AbXDZEwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 00:52:34 -0400
+Date: Thu, 26 Apr 2007 06:52:27 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Brian Maly <bmaly@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.4.35-pre4] fix 'pc_keyb: controller jammed (0xA7)' error on systems with KVM
+Message-ID: <20070426045223.GS943@1wt.eu>
+References: <462FA849.7090901@redhat.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <462FA849.7090901@redhat.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Keiichi KII <k-keiichi@bx.jp.nec.com>
-Date: Thu, 26 Apr 2007 13:02:04 +0900
+Hi Brian,
 
-> Stephen Hemminger said "The configuration of netconsole's looks like the 
-> configuration of routes".
-> I think so too.
-> So I think ioctl commands for adding/removing port and the following userland 
-> application like route(8) command by using the ioctl.
+On Wed, Apr 25, 2007 at 03:13:13PM -0400, Brian Maly wrote:
+> Ive had a few requests for this patch, so Im posting it against 
+> linux-2.4.35-pre4 kernel.
 
-Like the route command itself, the route changing ioctl()s are
-old deprecated BSD compatible functionality.
+OK, does not look too intrusive, and seems fair enough. Will merge it.
+Thanks !
 
-All current routing configuration is done using netlink and the 'ip'
-utility.
+Willy
 
