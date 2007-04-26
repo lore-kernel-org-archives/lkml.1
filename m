@@ -1,135 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbXDZRHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbXDZRHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbXDZRHF (ORCPT <rfc822;w@1wt.eu>);
+	id S1754902AbXDZRHF (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Apr 2007 13:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbXDZRBD
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXDZRBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:03 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39685 "EHLO
+	Thu, 26 Apr 2007 13:01:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39627 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754880AbXDZRAz (ORCPT
+	with ESMTP id S1754886AbXDZRA3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:00:55 -0400
-Date: Thu, 26 Apr 2007 09:56:55 -0700
+	Thu, 26 Apr 2007 13:00:29 -0400
+Date: Thu, 26 Apr 2007 09:56:35 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       izumi2005@soft.fujitsu.com, rmk@arm.linux.org.uk,
-       kaneshige.kenji@jp.fujitsu.com
-Subject: [patch 25/33] Fix possible NULL pointer access in 8250 serial
-	driver
-Message-ID: <20070426165655.GZ1898@kroah.com>
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Antonino Daplas <adaplas@pol.net>,
+       Michal Januszewski <spock@gentoo.org>
+Subject: [patch 21/33] vt: fix potential race in VT_WAITACTIVE handler
+Message-ID: <20070426165635.GV1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-possible-null-pointer-access-in-8250-serial-driver.patch"
+Content-Disposition: inline; filename="vt-fix-potential-race-in-vt_waitactive-handler.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Taku Izumi <izumi2005@soft.fujitsu.com>
+From: Michal Januszewski <spock@gentoo.org>
 
-I encountered the following kernel panic.  The cause of this problem was
-NULL pointer access in check_modem_status() in 8250.c.  I confirmed this
-problem is fixed by the attached patch, but I don't know this is the
-correct fix.
+[PATCH] vt: fix potential race in VT_WAITACTIVE handler
 
-sadc[4378]: NaT consumption 2216203124768 [1]
-Modules linked in: binfmt_misc dm_mirror dm_mod thermal processor fan
-container button sg e100 eepro100 mii ehci_hcd ohci_hcd
+On a multiprocessor machine the VT_WAITACTIVE ioctl call may return 0 if
+fg_console has already been updated in redraw_screen() but the console
+switch itself hasn't been completed.  Fix this by checking fg_console in
+vt_waitactive() with the console sem held.
 
-Pid: 4378, CPU 0, comm: sadc
-psr : 00001210085a2010 ifs : 8000000000000289 ip : [<a000000100482071>]
-Not tainted
-ip is at check_modem_status+0xf1/0x360
-unat: 0000000000000000 pfs : 0000000000000289 rsc : 0000000000000003
-rnat: 800000000000cc18 bsps: 0000000000000000 pr : 0000000000aa6a99
-ldrs: 0000000000000000 ccv : 0000000000000000 fpsr: 0009804c8a70033f
-csd : 0000000000000000 ssd : 0000000000000000
-b0 : a000000100481fb0 b6 : a0000001004822e0 b7 : a000000100477f20
-f6 : 1003e2222222222222222 f7 : 0ffdba200000000000000
-f8 : 100018000000000000000 f9 : 10002a000000000000000
-f10 : 0fffdccccccccc8c00000 f11 : 1003e0000000000000000
-r1 : a000000100b9af40 r2 : 0000000000000008 r3 : a000000100ad4e21
-r8 : 00000000000000bb r9 : 0000000000000001 r10 : 0000000000000000
-r11 : a000000100ad4d58 r12 : e0000000037b7df0 r13 : e0000000037b0000
-r14 : 0000000000000001 r15 : 0000000000000018 r16 : a000000100ad4d6c
-r17 : 0000000000000000 r18 : 0000000000000000 r19 : 0000000000000000
-r20 : a00000010099bc88 r21 : 00000000000000bb r22 : 00000000000000bb
-r23 : c003fffffc0ff3fe r24 : c003fffffc000000 r25 : 00000000000ff3fe
-r26 : a0000001009b7ad0 r27 : 0000000000000001 r28 : a0000001009b7ad8
-r29 : 0000000000000000 r30 : a0000001009b7ad0 r31 : a0000001009b7ad0
-
-Call Trace:
-[<a000000100013940>] show_stack+0x40/0xa0
-sp=e0000000037b7810 bsp=e0000000037b1118
-[<a0000001000145a0>] show_regs+0x840/0x880
-sp=e0000000037b79e0 bsp=e0000000037b10c0
-[<a0000001000368e0>] die+0x1c0/0x2c0
-sp=e0000000037b79e0 bsp=e0000000037b1078
-[<a000000100036a30>] die_if_kernel+0x50/0x80
-sp=e0000000037b7a00 bsp=e0000000037b1048
-[<a000000100037c40>] ia64_fault+0x11e0/0x1300
-sp=e0000000037b7a00 bsp=e0000000037b0fe8
-[<a00000010000bdc0>] ia64_leave_kernel+0x0/0x280
-sp=e0000000037b7c20 bsp=e0000000037b0fe8
-[<a000000100482070>] check_modem_status+0xf0/0x360
-sp=e0000000037b7df0 bsp=e0000000037b0fa0
-[<a000000100482300>] serial8250_get_mctrl+0x20/0xa0
-sp=e0000000037b7df0 bsp=e0000000037b0f80
-[<a000000100478170>] uart_read_proc+0x250/0x860
-sp=e0000000037b7df0 bsp=e0000000037b0ee0
-[<a0000001001c16d0>] proc_file_read+0x1d0/0x4c0
-sp=e0000000037b7e10 bsp=e0000000037b0e80
-[<a0000001001394b0>] vfs_read+0x1b0/0x300
-sp=e0000000037b7e20 bsp=e0000000037b0e30
-[<a000000100139cd0>] sys_read+0x70/0xe0
-sp=e0000000037b7e20 bsp=e0000000037b0db0
-[<a00000010000bc20>] ia64_ret_from_syscall+0x0/0x20
-sp=e0000000037b7e30 bsp=e0000000037b0db0
-[<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
-sp=e0000000037b8000 bsp=e0000000037b0db0
-
-
-Fix the possible NULL pointer access in check_modem_status() in 8250.c.  The
-check_modem_status() would access 'info' member of uart_port structure, but it
-is not initialized before uart_open() is called.  The check_modem_status() can
-be called through /proc/tty/driver/serial before uart_open() is called.
-
-Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Signed-off-by: Taku Izumi <izumi2005@soft.fujitsu.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Acked-by: Antonino Daplas <adaplas@pol.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/char/vt_ioctl.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -1289,7 +1289,8 @@ static unsigned int check_modem_status(s
- {
- 	unsigned int status = serial_in(up, UART_MSR);
+--- a/drivers/char/vt_ioctl.c
++++ b/drivers/char/vt_ioctl.c
+@@ -1038,10 +1038,22 @@ int vt_waitactive(int vt)
  
--	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI) {
-+	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
-+	    up->port.info != NULL) {
- 		if (status & UART_MSR_TERI)
- 			up->port.icount.rng++;
- 		if (status & UART_MSR_DDSR)
+ 	add_wait_queue(&vt_activate_queue, &wait);
+ 	for (;;) {
+-		set_current_state(TASK_INTERRUPTIBLE);
+ 		retval = 0;
+-		if (vt == fg_console)
++
++		/*
++		 * Synchronize with redraw_screen(). By acquiring the console
++		 * semaphore we make sure that the console switch is completed
++		 * before we return. If we didn't wait for the semaphore, we
++		 * could return at a point where fg_console has already been
++		 * updated, but the console switch hasn't been completed.
++		 */
++		acquire_console_sem();
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (vt == fg_console) {
++			release_console_sem();
+ 			break;
++		}
++		release_console_sem();
+ 		retval = -EINTR;
+ 		if (signal_pending(current))
+ 			break;
 
 -- 
