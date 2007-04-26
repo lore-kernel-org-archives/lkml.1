@@ -1,194 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031448AbXDZSvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031449AbXDZSvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031448AbXDZSvY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031450AbXDZSvY
+	id S1031449AbXDZSvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031450AbXDZSvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:51:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:55529 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031448AbXDZSvW (ORCPT
+	Thu, 26 Apr 2007 14:51:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:27084 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031449AbXDZSvX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:51:22 -0400
+	Thu, 26 Apr 2007 14:51:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=AY7TyrEsnb9XriJavSOVVaUUZHLjQ7xiSvPRQnEk6XW7OEbR+BfsO/7JVSMjQRaREq772lW8DASOIArCnGMu46A2fNMQHEJGOWhmOooVAoQAe7/i05mgKz80aoc56VyIo6Yox2nUPzqsv5lJxL5L+LdHgFCXWk/Db5E+LxS9Vx8=
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: clameter@sgi.com
-Subject: Re: [00/17] Large Blocksize Support V3
-Date: Thu, 26 Apr 2007 21:50:17 +0300
-User-Agent: KMail/1.9.4
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>
-References: <20070424222105.883597089@sgi.com>
-In-Reply-To: <20070424222105.883597089@sgi.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TI4q6iz64DcEqn+5nyzj6SufJY49w4QbZbf/8rDb9lNGplgTvDD5pvG/7ikyN7hME+MZm7Ao6G6/qJHpNsUXVpJG/N/R6TICtUf9rEDSkI/szSikZJv8BvTAmuGf0BdFNu05KnSNJYewpKecqu4fsK6jsWsj1GElHTMI3JI8+To=
+Message-ID: <a44ae5cd0704261151m99bc14ai18a01d1de5c49184@mail.gmail.com>
+Date: Thu, 26 Apr 2007 11:51:22 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] sysfs: use different lockdep subclass for s_active deactivation
+Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       greg@kroah.com
+In-Reply-To: <4630E26D.2050703@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704262150.18748.maximlevitsky@gmail.com>
+References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>
+	 <462EE4B7.6000708@gmail.com> <20070426145047.GF17130@htj.dyndns.org>
+	 <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
+	 <4630E26D.2050703@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 April 2007 01:21, clameter@sgi.com wrote:
-> V2->V3
-> - More restructuring
-> - It actually works!
-> - Add XFS support
-> - Fix up UP support
-> - Work out the direct I/O issues
-> - Add CONFIG_LARGE_BLOCKSIZE. Off by default which makes the inlines revert
->   back to constants. Disabled for 32bit and HIGHMEM configurations.
->   This also allows a gradual migration to the new page cache
->   inline functions. LARGE_BLOCKSIZE capabilities can be
->   added gradually and if there is a problem then we can disable
->   a subsystem.
+On 4/26/07, Tejun Heo <htejun@gmail.com> wrote:
+> Miles Lane wrote:
+> > On 4/26/07, Tejun Heo <htejun@gmail.com> wrote:
+> >> A sysfs node can delete other sysfs files when accessed.  This results
+> >> in recursive s_active locking - read lock for file access, down lock
+> >> of the vicitim for deactivation.  Tell lockdep that it's okay.
+> >>
+> >> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> >> ---
+> >> Miles, please test this patch.  It should remove the lockdep warning.
+> >> Fixes for the other two problems will soon follow.
+> >>
+> >> Greg, Andrew, after all the fixes are verified, I'll merge the fixes
+> >> into the original patches and resend all the sysfs updates in better
+> >> shape.  Sorry about all the trouble.
+> >
+> > Should I test this with 2.6.21-rc7-mm2?
+> > It doesn't apply cleanly.
+> >
+> > # patch -p1 -l --dry-run < tejun.patch
+> > patching file fs/sysfs/dir.c
+> > Hunk #1 succeeded at 31 with fuzz 1 (offset -29 lines).
+> > patching file fs/sysfs/sysfs.h
+> > Hunk #1 succeeded at 40 (offset -1 lines).
+> > Hunk #2 succeeded at 182 with fuzz 1 (offset -1 lines).
 >
-> V1->V2
-> - Some ext2 support
-> - Some block layer, fs layer support etc.
-> - Better page cache macros
-> - Use macros to clean up code.
->
-> This patchset modifies the Linux kernel so that larger block sizes than
-> page size can be supported. Larger block sizes are handled by using
-> compound pages of an arbitrary order for the page cache instead of
-> single pages with order 0.
->
-> Rationales:
->
-> 1. We have problems supporting devices with a higher blocksize than
->    page size. This is for example important to support CD and DVDs that
->    can only read and write 32k or 64k blocks. We currently have a shim
->    layer in there to deal with this situation which limits the speed
->    of I/O. The developers are currently looking for ways to completely
->    bypass the page cache because of this deficiency.
->
-> 2. 32/64k blocksize is also used in flash devices. Same issues.
->
-> 3. Future harddisks will support bigger block sizes that Linux cannot
->    support since we are limited to PAGE_SIZE. Ok the on board cache
->    may buffer this for us but what is the point of handling smaller
->    page sizes than what the drive supports?
->
-> 4. Reduce fsck times. Larger block sizes mean faster file system checking.
->
-> 5. Performance. If we look at IA64 vs. x86_64 then it seems that the
->    faster interrupt handling on x86_64 compensate for the speed loss due to
->    a smaller page size (4k vs 16k on IA64). Supporting larger block sizes
->    sizes on all allows a significant reduction in I/O overhead and
-> increases the size of I/O that can be performed by hardware in a single
-> request since the number of scatter gather entries are typically limited
-> for one request. This is going to become increasingly important to support
-> the ever growing memory sizes since we may have to handle excessively large
-> amounts of 4k requests for data sizes that may become common soon. For
-> example to write a 1 terabyte file the kernel would have to handle 256
-> million 4k chunks.
->
-> 6. Cross arch compatibility: It is currently not possible to mount
->    an 16k blocksize ext2 filesystem created on IA64 on an x86_64 system.
->    With this patch this becoems possible.
->
-> The support here is currently only for buffered I/O. Modifications for
-> three filesystems are included:
->
-> A. XFS
-> B. Ext2
-> C. ramfs
->
-> Unsupported
-> - Mmapping blocks larger than page size
->
-> Issues:
-> - There are numerous places where the kernel can no longer assume that the
->   page cache consists of PAGE_SIZE pages that have not been fixed yet.
-> - Defrag warning: The patch set can fragment memory very fast.
->   It is likely that Mel Gorman's anti-frag patches and some more
->   work by him on defragmentation may be needed if one wants to use
->   super sized pages.
->   If you run a 2.6.21 kernel with this patch and start a kernel compile
->   on a 4k volume with a concurrent copy operation to a 64k volume on
->   a system with only 1 Gig then you will go boom (ummm no ... OOM) fast.
->   How well Mel's antifrag/defrag methods address this issue still has to
->   be seen.
->
-> Future:
-> - Mmap support could be done in a way that makes the mmap page size
->   independent from the page cache order. It is okay to map a 4k section
->   of a larger page cache page via a pte. 4k mmap semantics can be
-> completely preserved even for larger page sizes.
-> - Maybe people could perform benchmarks to see how much of a difference
->   there is between 4k size I/O and 64k? Andrew surely would like to know.
-> - If there is a chance for inclusion then I will diff this against mm,
->   do a complete scan over the kernel to find all page cache == PAGE_SIZE
->   assumptions and then try to get it upstream for 2.6.23.
->
-> How to make this work:
->
-> 1. Apply this patchset to 2.6.21-rc7
-> 2. Configure LARGE_BLOCKSIZE Support
-> 3. compile kernel
->
-> --
+> It's in the middle of gregkh patch series but you can safely ignore the
+> fuzzes.
 
-Hi,
-	I really like the idea of block size > page size
+WIth this patch applied to 2.6.21-rc7-mm2, I am not seeing any of the
+problems I reported against 2.6.21-mm1, except for one.  The first
+time I tried to suspend from the Gnome Quit dialog, I heard the pop
+associated with unloading the sound module, but all the buttons stayed
+lit up until I touched the Synaptics mousepad.  Then the machine
+entered the suspend state.  Subsequent attempts to suspend worked
+without a hitch (no mousepad events required).  Another problem I
+noticed is that the lib switch is not triggering a suspend.  I tried
+repeatedly.
 
-I just want to suggest mine ideas about how to implement it (I can't do that 
-since it is too compicated for me and I don't have time now)
-
-
-I visualized this like that:
-
-For size <= 4K , page still holds a 1 or more blocks.
-
-For size > 4K:
-
-A page holds a fraction of block, and its ->buffer_head also holds info about 
-that fraction.
-
-But that ->bh contains a ->next pointer (or a list_head) that combines 
-all fractions of block in single one.
-
-
-
-This will minimize changes in fs code.
-
-Today fs blindly uses bh retured by block code.
-A modifed filesystem will also read from linked ->next bhs to get all parts of 
-block. 
-
-For blocksizes <= 4k that ->next will be null indicating that that bh 
-contatins whole block. 
-
-Then inplementation of block address_space opertions should not change a lot 
-too.
-
-They will be just aware that that page can be linked with other pages of same 
-block and do that right thing. 
-
-For example:
-
-->readpage will not only read _that_ page but also will read all sibling pages
-->writepage will magicly write not only that page but siblings too.
-
-
-buffer_head alredy has pointer to page so it is easy to get page from buffer 
-head:
-
-page -> private -> next -> page -> private ...
-
-andf so on (sorry, but I did a study (for myself, trying to improve 
-packet-writing) on that a half year ago, so I don't remember now much about 
-that)
-
-
-What about that ?
-
-
-Best regards,
-	Maxim Levitsky
+Thanks,
+           Miles
