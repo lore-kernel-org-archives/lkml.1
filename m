@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755035AbXDZUqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031503AbXDZUq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755035AbXDZUqF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbXDZUqF
+	id S1031503AbXDZUq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031506AbXDZUq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:46:05 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60484 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755041AbXDZUqC (ORCPT
+	Thu, 26 Apr 2007 16:46:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:15762 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031503AbXDZUqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:46:02 -0400
-Date: Thu, 26 Apr 2007 13:45:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Xavier Bestel <xavier.bestel@free.fr>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <1177618081.4737.42.camel@nigel.suspend2.net>
-Message-ID: <alpine.LFD.0.98.0704261343150.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> 
- <1177573348.5025.224.camel@nigel.suspend2.net> 
- <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> 
- <1177607026.30284.197.camel@frg-rhel40-em64t-04> 
- <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
- <1177618081.4737.42.camel@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 26 Apr 2007 16:46:55 -0400
+Date: Thu, 26 Apr 2007 13:46:31 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       Timur Tabi <timur@freescale.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: 2.6.21-rc7-mm2
+Message-Id: <20070426134631.7a78b946.randy.dunlap@oracle.com>
+In-Reply-To: <20070426133720.25085207.akpm@linux-foundation.org>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<46309142.2010907@googlemail.com>
+	<20070426133720.25085207.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Apr 2007 13:37:20 -0700 Andrew Morton wrote:
 
-
-On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> On Thu, 26 Apr 2007 13:47:14 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
 > 
-> Perhaps you should try to make an alternative yourself instead of
-> pushing us into making something we don't believe will work (my case) or
-> have already done but in a way you don't like (Rafael). Don't talk about
-> Pavel cutting code. He's just acking/nacking what Rafael sends him.
+> > Andrew Morton wrote:
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/
+> > >
+> > >
+> > > - this has everything which is in 2.6.21.  Plus more!
+> > >
+> > > - a number of nasty bugs were fixed.  This should be (a lot) more stable
+> > >   than 2.6.21-rc7-mm1.
+> > >
+> > >   
+> > 
+> > I get this warning here :
+> > 
+> > 
+> > drivers/net/Kconfig:2327:warning: 'select' used by config symbol 
+> > 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
+> 
+> Yes, we get so many of those that I tend to ignore them, assuming that
+> someone will pick it up and fix it.
+> 
+> This one was added by git-powerpc, presumably
+> 7d776cb596994219584257eb5956b87628e5deaf "QE: automatically select QE
+> options"
 
-I've done that in the past (USB, PCMCIA - screw the maintainers, redo 
-it basically from scratch). But the thing is, I'm totally uninterested 
-personally in the whole disk-snapshotting, so I'm not likely to do it 
-there.
+There was a similar problem with PS3_xyz (don't recall exactly
+which PS3_option it was) that was "solved" by introducing an
+intermediate config symbol IIRC.  Maybe that trick^W fix can be
+done here also...
 
-But yes, I'm actually hoping that some new person will come in with a new 
-idea. The current people seem to be too set in "their" corners, and I 
-don't expect that to really change.
-
-Quite honestly, I don't foresee any of the current tree approaches really 
-doing something new and obviously better, unless somebody new steps in.
-
-			Linus
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
