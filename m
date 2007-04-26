@@ -1,72 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754548AbXDZOoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031222AbXDZOq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754548AbXDZOoX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031222AbXDZOoX
+	id S1031222AbXDZOq0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031230AbXDZOq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:44:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50111 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754548AbXDZOoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:44:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Date: Thu, 26 Apr 2007 16:48:23 +0200
-User-Agent: KMail/1.9.5
-Cc: "Pavel Machek" <pavel@ucw.cz>,
-       "Dumitru Ciobarcianu" <Dumitru.Ciobarcianu@ines.ro>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Christian Hesse" <mail@earthworm.de>, "Nick Piggin" <npiggin@suse.de>,
-       "Mike Galbraith" <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       "Con Kolivas" <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Arjan van de Ven" <arjan@infradead.org>
-References: <20070418220228.GA14536@elte.hu> <20070425081051.GA7221@ucw.cz> <84144f020704260412t56b6db08h9d0d2961158e33fd@mail.gmail.com>
-In-Reply-To: <84144f020704260412t56b6db08h9d0d2961158e33fd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 10:46:26 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:44622 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031222AbXDZOqZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:46:25 -0400
+Date: Thu, 26 Apr 2007 15:46:22 +0100
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 blade hard hangs
+Message-ID: <20070426144622.GE16909@skynet.ie>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46309B59.4090701@shadowen.org> <p73fy6n2qhg.fsf@bingen.suse.de> <20070426133344.GB16909@skynet.ie>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Message-Id: <200704261648.25189.rjw@sisk.pl>
+In-Reply-To: <20070426133344.GB16909@skynet.ie>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 April 2007 13:12, Pekka Enberg wrote:
-> On 4/25/07, Pavel Machek <pavel@ucw.cz> wrote:
-> > > Please stop using FUD.
-> > > Graphical progress it's not in the kernel, even with suspend2.
-> >
-> > It was ascii-art, but still 'graphical', last time I checked.
+On (26/04/07 14:33), Mel Gorman didst pronounce:
+> On (26/04/07 15:51), Andi Kleen didst pronounce:
+> > Andy Whitcroft <apw@shadowen.org> writes:
+> > 
+> > > Getting hard boot failures before any kernel output on an x86_64 blade:
+> > > 
+> > > root (hd0,0)
+> > >  Filesystem type is ext2fs, partition type 0x83
+> > > kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
+> > > console=tty0 console=ttyS1,19200 selinux=no autobench_args:
+> > > root=30726124 ABAT:1177507960 profile=2
+> > >    [Linux-bzImage, setup=0x1e00, size=0x21fe48]
+> > > initrd /initrd-autobench.img
+> > >    [Linux-initrd @ 0x37e5f000, 0x190984 bytes]
+> > > [silence]
+> > > 
+> > > Kernel config is here:
+> > > 
+> > > http://test.kernel.org/abat/85082/build/dotconfig
+> > 
+> > You should boot with earlyprintk=serial,ttyS1,19200
+> > 
 > 
-> Suspend2 talks to an userspace client via netlink. While I find the
-> name of the message ("redraw UI") rather appaling, there's nothing
-> wrong in principle that userspace starts the suspend process and the
-> kernel keeps feeding back progress information ("I froze all processes
-> now") so it can display a graphical progress bar.
+> Here is the console log. Haven't taken a closer look yet in case it's
+> blindingly obvious to you.
 > 
-> The real question here is what to do with compression and encryption.
-> However, if you settle for one compression algorithm (such as LZF in
-> the case of suspend2) and use the _existing_ in-kernel crypto API for
-> encryption, suddenly the benefits of userspace suspend are not clear.
+> kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
+> console=tty0 co
+> nsole=ttyS1,19200 selinux=no autobench_args: root=30726124
+> ABAT:1177594149 logl
+> evel=8 earlyprintk=serial,ttyS1,19200 
+>    [Linux-bzImage, setup=0x1e00, size=0x220da8]
+> initrd /initrd-autobench.img
+>    [Linux-initrd @ 0x37e5f000, 0x190982 bytes]
+> Linux version 2.6.21-rc7-mm2-autokern1 (root@bl6-13.ltc.austin.ibm.com)
+> (gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Thu Apr 26
+> 08:16:37 CDT 2007
+> Command line: ro root=/dev/VolGroup00/LogVol00 rhgb console=tty0
+> console=ttyS1,19200 selinux=no autobench_args: root=30726124
+> ABAT:1177594149 loglevel=8 earlyprintk=serial,ttyS1,19200 
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009d400 (usable)
+>  BIOS-e820: 000000000009d400 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000003ffcddc0 (usable)
+>  BIOS-e820: 000000003ffcddc0 - 000000003ffd0000 (ACPI data)
+>  BIOS-e820: 000000003ffd0000 - 0000000040000000 (reserved)
+>  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+> end_pfn_map = 1048576
+> kernel direct mapping tables up to 100000000 @ 8000-d000
+> DMI 2.3 present.
+> ACPI: RSDP 000FDFC0, 0014 (r0 IBM   )
+> ACPI: RSDT 3FFCFF80, 0034 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+> ACPI: FACP 3FFCFEC0, 0084 (r2 IBM    SERBLADE     1000 IBM  45444F43)
+> ACPI: DSDT 3FFCDDC0, 1EA6 (r1 IBM    SERBLADE     1000 INTL  2002025)
+> ACPI: FACS 3FFCFCC0, 0040
+> ACPI: APIC 3FFCFE00, 009C (r1 IBM    SERBLADE     1000 IBM  45444F43)
+> ACPI: SRAT 3FFCFD40, 0098 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+> ACPI: HPET 3FFCFD00, 0038 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+> SRAT: PXM 0 -> APIC 0 -> Node 0
+> SRAT: PXM 0 -> APIC 1 -> Node 0
+> SRAT: PXM 1 -> APIC 2 -> Node 1
+> SRAT: PXM 1 -> APIC 3 -> Node 1
+> SRAT: Node 0 PXM 0 0-40000000
+> PANIC: early exception rip ffffffff808a7e83 error 0 cr2 5cf0
+> Call Trace:
+>  [<ffffffff808a7e83>] reserve_bootmem_node+0x0/0xc
+>  [<ffffffff808a3a8c>] reserve_bootmem_generic+0x6d/0x99
+>  [<ffffffff8089cc00>] setup_arch+0x2f7/0x469
+>  [<ffffffff80896510>] start_kernel+0x64/0x2aa
+>  [<ffffffff80896148>] _sinittext+0x148/0x14c
+> RIP reserve_bootmem_node+0x0/0xc
 > 
-> As you and Rafael seem to be mostly interested in uswsusp, why don't
-> we replace the old in-kernel implementation with suspend2?
 
-It has a lot of common code with uswsusp.  Practically, the saving of the image
-is the only part of it that could be removed, but this is simple and _really_
-helps with debugging.
+When I looked closer, nothing seemed to make sense so here is another
+log with stack unwinder, frame pointer etc etc
 
-In principle, we could add suspend2 as an alternative (in analogy with the I/O
-schedulers, for example), but I think for this purpose it should be reviewed
-properly.
+PANIC: early exception rip ffffffff8095a873 error 0 cr2 5cf0
 
-There also is a real problem with how it uses the LRU pages.  It _seems_ to
-work, but at least to me it seems to be potentially dangerous.
+Call Trace:
+ [<ffffffff8020b174>] dump_trace+0xb6/0x3d8
+ [<ffffffff8020b4d2>] show_trace+0x3c/0x52
+ [<ffffffff8020b4fd>] dump_stack+0x15/0x17
+ [<ffffffff802001e7>]
+DWARF2 unwinder stuck at 0xffffffff802001e7
+Leftover inexact backtrace:
+ [<ffffffff8095a873>] reserve_bootmem_node+0x1/0x12
+ [<ffffffff8096114f>] acpi_table_parse+0x4f/0x69
+ [<ffffffff80955f91>] reserve_bootmem_generic+0x73/0x9e
+ [<ffffffff8094edd3>] setup_arch+0x301/0x49c
+ [<ffffffff8094855f>] start_kernel+0x6c/0x30b
+ [<ffffffff80948144>] _sinittext+0x144/0x14b
 
-Greetings,
-Rafael
+RIP reserve_bootmem_node+0x1/0x12
+
+Will keep kicking.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
