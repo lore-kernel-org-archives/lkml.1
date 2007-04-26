@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbXDZSQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031404AbXDZSR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbXDZSQq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031418AbXDZSQp
+	id S1031404AbXDZSR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031419AbXDZSR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:16:45 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5631 "EHLO kernel.dk"
+	Thu, 26 Apr 2007 14:17:28 -0400
+Received: from main.gmane.org ([80.91.229.2]:56778 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754923AbXDZSQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:16:35 -0400
-Date: Thu, 26 Apr 2007 20:12:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426181249.GH2017@kernel.dk>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <46304B9E.5070604@yahoo.com.au> <20070426161152.GC16337@infradead.org> <m1mz0vkoux.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704261059500.3263@schroedinger.engr.sgi.com> <20070426180358.GG2017@kernel.dk> <20070426180932.GA10642@infradead.org>
+	id S1031404AbXDZSR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:17:26 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+   hang in atomic copy)
+Date: Thu, 26 Apr 2007 14:18:28 -0400
+Message-ID: <4630ECF4.6040702@tmr.com>
+References: <200704182245.24156.mail@earthworm.de>	 <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de>	 <20070418220228.GA14536@elte.hu>	 <1176947576.5906.21.camel@nigel.suspend2.net>	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>	 <20070424212408.GD16457@elf.ucw.cz>	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>	 <20070425072350.GA6866@ucw.cz>	 <1177490913.30284.38.camel@frg-rhel40-em64t-04>	 <1177491047.3857.32.camel@nigel.suspend2.net> <1177492072.30284.48.camel@frg-rhel40-em64t-04>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426180932.GA10642@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <1177492072.30284.48.camel@frg-rhel40-em64t-04>
+Cc: suspend2-devel@lists.suspend2.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26 2007, Christoph Hellwig wrote:
-> On Thu, Apr 26, 2007 at 08:03:58PM +0200, Jens Axboe wrote:
-> > On Thu, Apr 26 2007, Christoph Lameter wrote:
-> > > > Iff we really the larger physical page size to support the hardware
-> > > > then it makes sense to go down a path of larger pages.  But it doesn't.
-> > > 
-> > > You are redefining the problem. We need larger physical sizes to support 
-> > > the hardware. Yes. We can dodge the issue with shim layers and hacks. It 
-> > > is obvious from the kernel sources that this is needed.
-> > 
-> > We definitely don't. Larger sizes are ONE way to solve the problem, they
-> > are definitely not the only one. If the larger pages become unfeasible
-> > for some reason (be it fragmentation, or just because the design isn't
-> > good), then we can solve it differently.
+Xavier Bestel wrote:
+> On Wed, 2007-04-25 at 18:50 +1000, Nigel Cunningham wrote:
+>>> (And guess what, it uses APM and suspend is really faster and way more
+>>> reliable than each kernel implementation I could try).
+>> If you tried Suspend2 and had problems with reliability, please send me
+>> logs. I'll do all I can to help. (I have to qualify it a bit, because
+>> I'm not able to fix drivers, but if it's a Suspend2 issue, tell me and
+>> I'll fix it).
 > 
-> Exactly.  But the only counter-proposal we have so far seems far worse :)
-
-Lets look at some numbers. I'll just concentrate on the scatterlist,
-since the bio_vec is smaller. On x86 32-bit, the scatterlist is 20 bytes
-long. If we accept that 2^1 allocations are ok (they should be), then we
-can support ~1.6mb ios just like that.
-
-My approach would be to support scatterlist chaining. Essentially you'd
-have the last element of the sglist pointing to the next array of
-entries. We can then stick to 128 entry arrays which fit nicely in a
-single page allocation and easily support >> 2mb ios. The only caveat is
-that you'd need to update the drivers to get there, since a regular
-iteration over the array isn't enough. My plan was to add an sglist
-iterator helper that hides this from the drivers, if they need to loop
-over the scatterlist. Things like {dma/pci}_map_sg() would of course be
-updated.
-
-The above can be implemented fairly cleanly, and on a need-to-have
-basis. It's not something that'll break drivers.
-
-What do you think?
+> Does suspend2 work with APM ? After much trying, I think now the ACPI
+> implementation of my laptop (a vintage Compaq Armada 1700) is busted,
+> only APM works.
+> 
+> AFAIR the problem with suspend2 was that it didn't poweroff some parts
+> of the laptop (the led of the wifi pcmcia card was on, and the lcd light
+> was on too), but that was last year. Kernel's suspend kind of worked but
+> didn't resume (no reaction on button press). As I tried all this last
+> year, I may have forgotten some things.
+> Honestly, I like this laptop when it works flawlessly, so I don't see
+> many reasons to try *susp* again. I'll do it when I'm bored, just not
+> today.
+> 
+Actually on some old laptops I just use the apm command, with -s (or -S, 
+I forget by now), and that works.
 
 -- 
-Jens Axboe
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
