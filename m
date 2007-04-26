@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbXDZCIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXDZCJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754349AbXDZCIM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 22:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXDZCIM
+	id S1754041AbXDZCJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 22:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXDZCJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 22:08:12 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51158 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754041AbXDZCIL (ORCPT
+	Wed, 25 Apr 2007 22:09:38 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34631 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754343AbXDZCJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 22:08:11 -0400
-Date: Wed, 25 Apr 2007 19:07:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-Cc: "lkml" <linux-kernel@vger.kernel.org>, linux-mips@linux-mips.org
-Subject: Re: pcmcia - failed to initialize IDE interface
-Message-Id: <20070425190753.fb8c272d.akpm@linux-foundation.org>
-In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D5E5F@stgw002a.ww002.siemens.net>
-References: <D7810733513F4840B4EBAAFA64D9C6A4012D5E5F@stgw002a.ww002.siemens.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Apr 2007 22:09:37 -0400
+Message-ID: <463008A2.9020301@zytor.com>
+Date: Wed, 25 Apr 2007 19:04:18 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org> <20070426001414.GO17387@elf.ucw.cz> <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 15:27:26 +0200 "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com> wrote:
-
-> Hi,
+Linus Torvalds wrote:
 > 
-> [kernel 2.6.20.7, arch=mips, processor=amd au1550]
+> On Thu, 26 Apr 2007, Pavel Machek wrote:
+>> Ok, I guess I'll have nightmares of DMA controllers doing DMAs from
+>> chips that are no longer there tonight.
 > 
-> I'm trying to install a 2.6 kernel on an Alchemy au1550, and having
-> problem with the pcmcia socket, where I plugged a CompactFlash card. The
-> card seems to be recognized by the kernel, appears in
-> /sys/bus/pcmcia/devices, but not in /proc/bus/pccard, and I can't access
-> the device (/dev/hda).
-> 
-> The relevant console messages:
-> ----------------------------------------------------------------
-> pccard: PCMCIA card inserted into slot 0
-> pcmcia: registering new device pcmcia0.0
-> hda: SanDisk SDCFB-64, CFA DISK drive
-> ide0: Disabled unable to get IRQ 35.
-> ide0: failed to initialize IDE interface
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide0: I/O resource 0x10200E-0x10200E not free.
-> ide0: ports already in use, skipping probe
-> ide-cs: ide_register() at 0x102000 & 0x10200e, irq 35 failed
-> ----------------------------------------------------------------
-> 
-> Here is the relevant part of the kernel config:
-> CONFIG_IDE=y
-> CONFIG_IDE_GENERIC=y
-> CONFIG_BLK_DEV_IDE=y
-> CONFIG_BLK_DEV_IDECS=y
-> CONFIG_PCCARD=y
-> CONFIG_PCMCIA_DEBUG=y
-> CONFIG_PCMCIA=y
-> CONFIG_PCMCIA_AU1X00=y
+> Umm. Welcome to the 21st century: we don't do that "separate DMA 
+> controller" thing any more. All devices do their own DMA.
 > 
 
-(cc'ed linux-mips)
+That was the 1990s.  On a brand new server system:
 
-Perhaps /proc/ioports will tell us where the conflict lies.
+00:08.0 System peripheral: Intel Corporation 5000 Series Chipset DMA
+Engine (rev b1)
 
-The output of `dmesg -s 1000000' might also be needed.
+For better or worse, slave DMA seems to be making a comeback of sorts.
+Not to mention all kinds of embedded crap^Whardware with optimized DMA
+engines which look nothing like PCI at all.
+
+	-hpa
