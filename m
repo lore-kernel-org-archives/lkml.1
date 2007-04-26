@@ -1,207 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754720AbXDZFMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754714AbXDZFhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754720AbXDZFMi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 01:12:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbXDZFL7
+	id S1754714AbXDZFhr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754727AbXDZFhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 01:11:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59447 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754713AbXDZFJf (ORCPT
+	Thu, 26 Apr 2007 01:37:47 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:31667 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754714AbXDZFhq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 01:09:35 -0400
-Message-Id: <20070426050934.716067781@sgi.com>
-References: <20070426050743.867613938@sgi.com>
-User-Agent: quilt/0.45-1
-Date: Wed, 25 Apr 2007 22:07:49 -0700
-From: clameter@sgi.com
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 6/7] SLUB: Free slabs and sort partial slab lists in kmem_cache_shrink
-Content-Disposition: inline; filename=slab_shrink_cache
+	Thu, 26 Apr 2007 01:37:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=gl2w+O5HjMyTXkm36TicpA4F0i2VtYDeIlvOuktdyJxE+cNVn5fXqkzvWzaecWTylMRa9G8DzUSm8ux90jBf0QHplli42eb4Raoh9Z3oiqFhN3kv2KKABulmkz9Gi4PGl4wkdZaeraZh89sMQz/2b2fJvdVW4mlMkGfKvBUsRQ8=  ;
+Message-ID: <46303A98.9000605@yahoo.com.au>
+Date: Thu, 26 Apr 2007 15:37:28 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: clameter@sgi.com, linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At kmem_cache_shrink check if we have any empty slabs on the partial
-if so then remove them.
+Eric W. Biederman wrote:
+> clameter@sgi.com writes:
+> 
+> 
+>>V2->V3
+>>- More restructuring
+>>- It actually works!
+>>- Add XFS support
+>>- Fix up UP support
+>>- Work out the direct I/O issues
+>>- Add CONFIG_LARGE_BLOCKSIZE. Off by default which makes the inlines revert
+>>  back to constants. Disabled for 32bit and HIGHMEM configurations.
+>>  This also allows a gradual migration to the new page cache
+>>  inline functions. LARGE_BLOCKSIZE capabilities can be
+>>  added gradually and if there is a problem then we can disable
+>>  a subsystem.
+>>
+>>V1->V2
+>>- Some ext2 support
+>>- Some block layer, fs layer support etc.
+>>- Better page cache macros
+>>- Use macros to clean up code.
+>>
+>>This patchset modifies the Linux kernel so that larger block sizes than
+>>page size can be supported. Larger block sizes are handled by using
+>>compound pages of an arbitrary order for the page cache instead of
+>>single pages with order 0.
+> 
+> 
+> Huh?
+> 
+> You seem to be mixing two very different concepts.
+> 
+> The page cache has no problems supporting things with a block
+> size larger then page size.  Now the block device layer may not
+> have the code to do the scatter gather into small pages and it
+> may not handle buffer heads whose data is split between multiple
+> pages. 
 
-Also--as an anti-fragmentation measure--sort the partial slabs so that
-the most fully allocated ones come first and the least allocated last.
+Yeah, this patch is not really large blocksize support (which we normally
+think of as block size > page cache size).
 
-The next allocations may fill up the nearly full slabs. Having the
-least allocated slabs last gives them the maximum chance that their
-remaining objects may be freed. Thus we can hopefully minimize the
-partial slabs.
 
-I think this is the best one can do in terms antifragmentation
-measures. Real defragmentation (meaning moving objects out of slabs with
-the least free objects to those that are almost full) can be implemted
-by reverse scanning through the list produced here but that would mean
-that we need to provide a callback at slab cache creation that allows
-the deletion or moving of an object. This will involve slab API
-changes so defer for now.
+> But this is not a page cache issue.
+> 
+> And generally larger physical pages are a mistake to use.
+> Especially as it looks from some of the later comment you don't
+> date test on 32bit because the memory fragments faster.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+I actually completely agree with this, and I'm concerned in general about
+using higher order pages. I think it is fundamentally the wrong approach
+because of fragmentation and defragmentation costs (similarly to Linus's
+take on page colouring).
 
----
- mm/slub.c |  118 ++++++++++++++++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 104 insertions(+), 14 deletions(-)
+I think starting with the assumption that we _want_ to use higher order
+allocations, and then creating all this complexity around that is not a
+good one, and if we start introducing things that _require_ significant
+higher order allocations to function then it is a nasty thing for
+robustness.
 
-Index: linux-2.6.21-rc7-mm1/mm/slub.c
-===================================================================
---- linux-2.6.21-rc7-mm1.orig/mm/slub.c	2007-04-25 21:25:48.000000000 -0700
-+++ linux-2.6.21-rc7-mm1/mm/slub.c	2007-04-25 21:27:07.000000000 -0700
-@@ -109,9 +109,19 @@
- /* Enable to test recovery from slab corruption on boot */
- #undef SLUB_RESILIENCY_TEST
- 
--/* Mininum number of partial slabs */
-+/*
-+ * Mininum number of partial slabs. These will be left on the partial
-+ * lists even if they are empty. kmem_cache_shrink may reclaim them.
-+ */
- #define MIN_PARTIAL 2
- 
-+/*
-+ * Maximum number of desirable partial slabs.
-+ * The existence of more partial slabs makes kmem_cache_shrink
-+ * sort the partial list by the number of objects in the.
-+ */
-+#define MAX_PARTIAL 10
-+
- #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
- 				SLAB_POISON | SLAB_STORE_USER)
- /*
-@@ -2163,6 +2173,78 @@ void kfree(const void *x)
- }
- EXPORT_SYMBOL(kfree);
- 
-+/*
-+ *  kmem_cache_shrink removes empty slabs from the partial lists
-+ *  and then sorts the partially allocated slabs by the number
-+ *  of items in use. The slabs with the most items in use
-+ *  come first. New allocations will remove these from the
-+ *  partial list because they are full. The slabs with the
-+ *  least items are placed last. If it happens that the objects
-+ *  are freed then the page can be returned to the page allocator.
-+ */
-+int kmem_cache_shrink(struct kmem_cache *s)
-+{
-+	int node;
-+	int i;
-+	struct kmem_cache_node *n;
-+	struct page *page;
-+	struct page *t;
-+	struct list_head *slabs_by_inuse =
-+		kmalloc(sizeof(struct list_head) * s->objects, GFP_KERNEL);
-+	unsigned long flags;
-+
-+	if (!slabs_by_inuse)
-+		return -ENOMEM;
-+
-+	flush_all(s);
-+	for_each_online_node(node) {
-+		n = get_node(s, node);
-+
-+		if (n->nr_partial <= MIN_PARTIAL)
-+			continue;
-+
-+		for (i = 0; i < s->objects; i++)
-+			INIT_LIST_HEAD(slabs_by_inuse + i);
-+
-+		spin_lock_irqsave(&n->list_lock, flags);
-+
-+		/*
-+		 * Build lists indexed by the items in use in
-+		 * each slab or free slabs if empty.
-+		 *
-+		 * Note that concurrent frees may occur while
-+		 * we hold the list_lock. page->inuse here is
-+		 * the upper limit.
-+		 */
-+		list_for_each_entry_safe(page, t, &n->partial, lru) {
-+			if (!page->inuse) {
-+				list_del(&page->lru);
-+				discard_slab(s, page);
-+			} else
-+			if (n->nr_partial > MAX_PARTIAL)
-+				list_move(&page->lru,
-+					slabs_by_inuse + page->inuse);
-+		}
-+
-+		if (n->nr_partial <= MAX_PARTIAL)
-+			goto out;
-+
-+		/*
-+		 * Rebuild the partial list with the slabs filled up
-+		 * most first and the least used slabs at the end.
-+		 */
-+		for (i = s->objects - 1; i > 0; i--)
-+			list_splice(slabs_by_inuse + i, n->partial.prev);
-+
-+	out:
-+		spin_unlock_irqrestore(&n->list_lock, flags);
-+	}
-+
-+	kfree(slabs_by_inuse);
-+	return 0;
-+}
-+EXPORT_SYMBOL(kmem_cache_shrink);
-+
- /**
-  * krealloc - reallocate memory. The contents will remain unchanged.
-  *
-@@ -2408,17 +2490,6 @@ static struct notifier_block __cpuinitda
- 
- #endif
- 
--/***************************************************************
-- *	Compatiblility definitions
-- **************************************************************/
--
--int kmem_cache_shrink(struct kmem_cache *s)
--{
--	flush_all(s);
--	return 0;
--}
--EXPORT_SYMBOL(kmem_cache_shrink);
--
- #ifdef CONFIG_NUMA
- 
- /*****************************************************************
-@@ -3194,6 +3265,25 @@ static ssize_t validate_store(struct kme
- }
- SLAB_ATTR(validate);
- 
-+static ssize_t shrink_show(struct kmem_cache *s, char *buf)
-+{
-+	return 0;
-+}
-+
-+static ssize_t shrink_store(struct kmem_cache *s,
-+			const char *buf, size_t length)
-+{
-+	if (buf[0] == '1') {
-+		int rc = kmem_cache_shrink(s);
-+
-+		if (rc)
-+			return rc;
-+	} else
-+		return -EINVAL;
-+	return length;
-+}
-+SLAB_ATTR(shrink);
-+
- static ssize_t alloc_calls_show(struct kmem_cache *s, char *buf)
- {
- 	if (!(s->flags & SLAB_STORE_USER))
-@@ -3250,6 +3340,7 @@ static struct attribute * slab_attrs[] =
- 	&poison_attr.attr,
- 	&store_user_attr.attr,
- 	&validate_attr.attr,
-+	&shrink_attr.attr,
- 	&alloc_calls_attr.attr,
- 	&free_calls_attr.attr,
- #ifdef CONFIG_ZONE_DMA
 
---
+> Is it common for hardware that supports large block sizes to not
+> support splitting those blocks apart during DMA?  Unless it is common
+> the whole premise of this patchset seems broken.
+> 
+> I suspect what needs to be fixed is the page cache block device
+> interface so that we have helper functions that know how to stuff
+> a single block into several pages.
+
+I am working now and again on some code to do this, it is a big job but
+I think it is the right way to do it. But it would take a long time to
+get stable and supported by filesystems...
+
+
+> That would make the choice of using larger order pages (essentially
+> increasing PAGE_SIZE) something that can be investigated in parallel.
+
+I agree that hardware inefficiencies should be handled by increasing
+PAGE_SIZE (not making PAGE_CACHE_SIZE > PAGE_SIZE) at the arch level.
+
+-- 
+SUSE Labs, Novell Inc.
