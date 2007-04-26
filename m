@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbXDZRBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbXDZRBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbXDZRBo (ORCPT <rfc822;w@1wt.eu>);
+	id S1754877AbXDZRBo (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Apr 2007 13:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbXDZRBQ
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXDZRBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39519 "EHLO
+	Thu, 26 Apr 2007 13:01:43 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39790 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbXDZQ7p (ORCPT
+	with ESMTP id S1754877AbXDZRBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:59:45 -0400
-Date: Thu, 26 Apr 2007 09:55:57 -0700
+	Thu, 26 Apr 2007 13:01:39 -0400
+Date: Thu, 26 Apr 2007 09:57:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       John Heffner <jheffner@psc.edu>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 14/33] Fix errors in tcp_memcalculations.
-Message-ID: <20070426165557.GO1898@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 32/33] cfq-iosched: fix alias + front merge bug
+Message-ID: <20070426165719.GG1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-errors-in-tcp_mem-calculations.patch"
+Content-Disposition: inline; filename="cfq-iosched-fix-alias-front-merge-bug.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,52 +36,61 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: John Heffner <jheffner@psc.edu>
+From: Jens Axboe <jens.axboe@oracle.com>
 
-In 2.6.18 a change was made to the tcp_mem[] calculations,
-but this causes regressions for some folks up to 2.6.20
+There's a really rare and obscure bug in CFQ, that causes a crash in
+cfq_dispatch_insert() due to rq == NULL. One example of that is seen
+here:
 
-The following fix to smooth out the calculation from the
-pending 2.6.21 tree by John Heffner fixes the problem for
-these folks.
+http://lkml.org/lkml/2007/4/15/41
 
-[TCP]: Fix tcp_mem[] initialization.
+Neil correctly diagnosed the situation for how this can happen, read
+that analysis here:
 
-Change tcp_mem initialization function.  The fraction of total memory
-is now a continuous function of memory size, and independent of page
-size.
+http://lkml.org/lkml/2007/4/25/57
 
-Signed-off-by: John Heffner <jheffner@psc.edu>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This looks like it requires md to trigger, even though it should
+potentially be possible to due with O_DIRECT (at least if you edit the
+kernel and doctor some of the unplug calls).
+
+The fix is to move the ->next_rq update to when we add a request to the
+rbtree. Then we remove the possibility for a request to exist in the
+rbtree code, but not have ->next_rq correctly updated.
+
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |   13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ block/cfq-iosched.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2457,11 +2457,18 @@ void __init tcp_init(void)
- 		sysctl_max_syn_backlog = 128;
- 	}
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -462,6 +462,12 @@ static void cfq_add_rq_rb(struct request
  
--	/* Allow no more than 3/4 kernel memory (usually less) allocated to TCP */
--	sysctl_tcp_mem[0] = (1536 / sizeof (struct inet_bind_hashbucket)) << order;
--	sysctl_tcp_mem[1] = sysctl_tcp_mem[0] * 4 / 3;
-+	/* Set the pressure threshold to be a fraction of global memory that
-+	 * is up to 1/2 at 256 MB, decreasing toward zero with the amount of
-+	 * memory, with a floor of 128 pages.
+ 	if (!cfq_cfqq_on_rr(cfqq))
+ 		cfq_add_cfqq_rr(cfqd, cfqq);
++
++	/*
++	 * check if this request is a better next-serve candidate
 +	 */
-+	limit = min(nr_all_pages, 1UL<<(28-PAGE_SHIFT)) >> (20-PAGE_SHIFT);
-+	limit = (limit * (nr_all_pages >> (20-PAGE_SHIFT))) >> (PAGE_SHIFT-11);
-+	limit = max(limit, 128UL);
-+	sysctl_tcp_mem[0] = limit / 4 * 3;
-+	sysctl_tcp_mem[1] = limit;
- 	sysctl_tcp_mem[2] = sysctl_tcp_mem[0] * 2;
++	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
++	BUG_ON(!cfqq->next_rq);
+ }
  
-+	/* Set per-socket limits to no more than 1/128 the pressure threshold */
- 	limit = ((unsigned long)sysctl_tcp_mem[1]) << (PAGE_SHIFT - 7);
- 	max_share = min(4UL*1024*1024, limit);
+ static inline void
+@@ -1623,12 +1629,6 @@ cfq_rq_enqueued(struct cfq_data *cfqd, s
+ 		cfqq->meta_pending++;
  
+ 	/*
+-	 * check if this request is a better next-serve candidate)) {
+-	 */
+-	cfqq->next_rq = cfq_choose_req(cfqd, cfqq->next_rq, rq);
+-	BUG_ON(!cfqq->next_rq);
+-
+-	/*
+ 	 * we never wait for an async request and we don't allow preemption
+ 	 * of an async request. so just return early
+ 	 */
 
 -- 
