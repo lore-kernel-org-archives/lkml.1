@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031455AbXDZTM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031457AbXDZTNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031455AbXDZTM3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031457AbXDZTM2
+	id S1031457AbXDZTNF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031390AbXDZTNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:12:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53074 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031455AbXDZTM1 (ORCPT
+	Thu, 26 Apr 2007 15:13:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:40748 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031457AbXDZTNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:12:27 -0400
-Date: Thu, 26 Apr 2007 12:12:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
-In-Reply-To: <4630F203.7020005@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0704261210430.7441@schroedinger.engr.sgi.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
- <4630A662.8090502@shadowen.org> <4630ABF2.1040305@shadowen.org>
- <4630EBFA.9000207@shadowen.org> <Pine.LNX.4.64.0704261123080.3560@schroedinger.engr.sgi.com>
- <4630F203.7020005@shadowen.org>
+	Thu, 26 Apr 2007 15:13:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OSNbSpP8C08J2tKNPGuJ4VztqZl+GSvuVPt8gKLBUqHJ4jbl8bXB+6L5syrHp4gL4FMsqu/O8P1Sv9wsWsIVuGHZSww608hQxSSO9jFhQqQ5K8oZ2Dq3EbAPit6V3msqYoJmBlo4UP2BRyYTAkcSz6b/XE+uafENVtrnLEo4k0Y=
+Message-ID: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
+Date: Thu, 26 Apr 2007 12:13:00 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.21-rc7-mm2 -- gnome-power-manager always shows the power as coming from AC
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Andy Whitcroft wrote:
+One possible issue is that /proc/acpi/power_resource/ is an empty directory.
+Otherwise, the ACPI information seems to be fine:
 
-> > But then how important is gcc 3.3 support?
-> 
-> Well we say 3.2 is the minimum.  If we simply return(NULL) or BUG() in
+# cat /proc/acpi/ac_adapter/ACAD/state
+state:                   on-line
+# cat /proc/acpi/ac_adapter/ACAD/state
+state:                   off-line
 
-Oh before I forget
+# cat /proc/acpi/battery/BAT0/state
+present:                 yes
+capacity state:          ok
+charging state:          discharging
+present rate:            0 mA
+remaining capacity:      7072 mAh
+present voltage:         12487 mV
 
-Gcc 3.3 works just fine on other platforms like i386. This is more likely 
-a platform issue. If we disable it then only for <= gcc 3.3 on ppc. If 
-problems crop up with other platforms then we can expand on it.
+When I unplug the power cable, /proc/acpi/battery/BAT0/state (present
+rate) shows that current flowing from the battery.
+
+# cat /proc/acpi/button/lid/LID0/state
+state:      closed
+# cat /proc/acpi/button/lid/LID0/state
+state:      open
