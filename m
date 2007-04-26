@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031297AbXDZQDk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031299AbXDZQFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031297AbXDZQDk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:03:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXDZQDk
+	id S1031299AbXDZQFq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031300AbXDZQFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:03:40 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55699 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754811AbXDZQDi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:03:38 -0400
-Date: Thu, 26 Apr 2007 09:02:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
-       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+	Thu, 26 Apr 2007 12:05:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34365 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1031299AbXDZQFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:05:45 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+qBJdM4pSqIEaatjo5fKpCQLuO44DyCvrOL4HqHw
+	i2tQH65m1GghHz
+Subject: Re: [patch] CFS scheduler, -v6
+From: Mike Galbraith <efault@gmx.de>
+To: Redeeman <redeeman@metanurb.dk>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <20070426141423.20aa88ec@the-village.bc.nu>
-Message-ID: <alpine.LFD.0.98.0704260859400.9964@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
- <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
- <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
- <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
- <20070425235718.66b71f01@the-village.bc.nu>
- <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
- <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
- <20070426001414.GO17387@elf.ucw.cz> <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
- <463008A2.9020301@zytor.com> <alpine.LFD.0.98.0704251915460.9964@woody.linux-foundation.org>
- <20070426141423.20aa88ec@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+In-Reply-To: <1177596399.14496.1.camel@localhost>
+References: <20070425214704.GA32572@elte.hu>
+	 <1177596399.14496.1.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 18:05:38 +0200
+Message-Id: <1177603538.6145.6.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Apr 2007, Alan Cox wrote:
->
-> > The PCI spec for controlling DMA is really pretty nasty. You can disable 
-> > it in the PCI config word, of course, but that usually just messes up the 
-> > device entirely.
+On Thu, 2007-04-26 at 16:06 +0200, Redeeman wrote:
+> On Wed, 2007-04-25 at 23:47 +0200, Ingo Molnar wrote:
+> <snip>
+> > As usual, any sort of feedback, bugreport, fix and suggestion is more 
+> > than welcome,
 > 
-> And some devices ignore it. Some of the older Cyrix stuff I have appears
-> not to care how the master bit is set.
+> well, from my experiences with cfs on workstation/desktop, on amd64
+> 2ghz, cfs doesent measure up to SD at all.
+> 
+> audio skips easily, with or without reniced X, and games are not as
+> smooth. also it seems to be much lower throughput. vanilla seems much
+> better by comparisin.
 
-I'm not surprised. If the choice is between locking up the PCI bus by 
-hanging the device in endless retries, or just ignoring the bit, I suspect 
-"just ignore it" is actually the better choice.
+Can you give some details wrt these audio skips?  What are you doing,
+and what is your config.  I don't see audio skips at all, unless I
+intentionally beg for it via massive renice of X + a _very_ heavy CPU
+client, and even then, only on UP (logical, one exec path).
 
-Of course, in a perfect world you'd happily honor it, raise a PCI error, 
-and all is good, but in practice the internal state machine of most 
-non-trivial hardware is simply so complicated that the "abort gracefully" 
-simply isn't an option.
+	-Mike
 
-The hw people have enough problems in getting things to work when 
-everything is peachy and well, and a lot of companies end up releasing 
-stuff with known errata for even the _normal_ cases, just because they 
-expect software to work around them ("Doctor, doctor, it hurts when I do 
-the documented access!" "You didn't read errata #317, did you? Don't do 
-that, then!")
-
-			Linus
