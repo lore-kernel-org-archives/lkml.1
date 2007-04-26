@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031279AbXDZPZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031286AbXDZPZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031279AbXDZPZM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031287AbXDZPZL
+	id S1031286AbXDZPZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031283AbXDZPZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:25:11 -0400
-Received: from ns.suse.de ([195.135.220.2]:43137 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031279AbXDZPZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:25:08 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error II
-Date: Thu, 26 Apr 2007 17:24:45 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426143902.GD16909@skynet.ie> <20070426152039.GF16909@skynet.ie>
-In-Reply-To: <20070426152039.GF16909@skynet.ie>
+	Thu, 26 Apr 2007 11:25:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54941 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031286AbXDZPY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:24:58 -0400
+Date: Thu, 26 Apr 2007 08:22:21 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Miles Lane <miles.lane@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysfs: use different lockdep subclass for s_active
+	deactivation
+Message-ID: <20070426152221.GB16563@kroah.com>
+References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com> <462EE4B7.6000708@gmail.com> <20070426145047.GF17130@htj.dyndns.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704261724.46027.ak@suse.de>
+In-Reply-To: <20070426145047.GF17130@htj.dyndns.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 26, 2007 at 11:50:47PM +0900, Tejun Heo wrote:
+> A sysfs node can delete other sysfs files when accessed.  This results
+> in recursive s_active locking - read lock for file access, down lock
+> of the vicitim for deactivation.  Tell lockdep that it's okay.
+> 
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+> Miles, please test this patch.  It should remove the lockdep warning.
+> Fixes for the other two problems will soon follow.
+> 
+> Greg, Andrew, after all the fixes are verified, I'll merge the fixes
+> into the original patches and resend all the sysfs updates in better
+> shape.  Sorry about all the trouble.
 
-> --- build/arch/x86_64/vdso/vdso.lds-orig	2007-04-26 08:18:19.000000000 -0700
-> +++ build/arch/x86_64/vdso/vdso.lds	2007-04-26 08:18:23.000000000 -0700
-> @@ -33,7 +33,7 @@
->       For the layouts to match, we need to skip more than enough
->       space for the dynamic symbol table et al.  If this amount
->       is insufficient, ld -shared will barf.  Just increase it here.  */
-> -  . = 0xffffffffff700000 + 0x500;
-> +  . = 0xffffffffff700000 + 0x400;
+Thanks, that will make it easier for me, as I've seen a lot of them go
+floating by recently :)
 
-Hmm, you must have an old version of the patch. in my copy it looks like
-
-  . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
-
-and 
-
-#define VDSO_TEXT_OFFSET 0x400
-
-Can you try the latest patch from ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/vdso 
-?
-
-(doesn't include the -m64 change yet so you will still need to apply that)
-
--Andi
-
+greg k-h
