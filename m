@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbXDZNZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbXDZN1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbXDZNZe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXDZNZe
+	id S1754674AbXDZN1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXDZN1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:25:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38188 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754040AbXDZNZd (ORCPT
+	Thu, 26 Apr 2007 09:27:39 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:36725 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754674AbXDZN1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:25:33 -0400
-Date: Thu, 26 Apr 2007 14:28:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426142846.45ee23af@the-village.bc.nu>
-In-Reply-To: <m1abwvofke.fsf@ebiederm.dsl.xmission.com>
-References: <20070424222105.883597089@sgi.com>
-	<m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com>
-	<m1abwvofke.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Thu, 26 Apr 2007 09:27:39 -0400
+Date: Thu, 26 Apr 2007 14:27:36 +0100
+To: ak@suse.de
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error
+Message-ID: <20070426132736.GA16909@skynet.ie>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630980D.7010904@shadowen.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4630980D.7010904@shadowen.org>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Oh we have scores of these hacks around. Look at the dvd/cd layer. The 
-> > point is to get rid of those.
+On (26/04/07 13:16), Andy Whitcroft didst pronounce:
+> Getting the following on an x86_64 numa box:
 > 
-> Perhaps this is just a matter of cleaning them up so they are no
-> longer hacks?
+>   CC      arch/x86_64/vdso/vclock_gettime.o
+> arch/x86_64/vdso/vclock_gettime.c:1: error: code model `small' not
+> supported in the 32 bit mode
+> make[1]: *** [arch/x86_64/vdso/vclock_gettime.o] Error 1
+> make: *** [arch/x86_64/vdso] Error 2
+> 
+> Kernel config here: http://test.kernel.org/abat/85358/build/dotconfig
+> 
 
-CD and DVD media support various non power-of-two block sizes. Supporting
-more block sizes would also be useful as we could then read older smart
-media (256byte/sector) without the SCSI layer objecting and the like.
+Hi Andi,
 
+Backing out x86_64-mm-vdso.patch allowed this kernel to build and boot
+successful on the machine in question (elm3b6). The backout caused one reject
+in Documentation/kernel-parameters but otherwise backed out easily. It's
+not super-clear why it fails to build. If you want me to try another patch,
+make sure I'm cc'd and I'll give it a spin.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
