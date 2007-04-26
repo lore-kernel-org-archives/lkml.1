@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752308AbXDZQ3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXDZQbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752308AbXDZQ3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbXDZQ3j
+	id S1752463AbXDZQbH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXDZQbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:29:39 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:37700 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752308AbXDZQ3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:29:38 -0400
-Subject: Re: [PATCH] change global zonelist order on NUMA v3
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, ak@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <Pine.LNX.4.64.0704260904190.1655@schroedinger.engr.sgi.com>
-References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
-	 <200704261147.44413.ak@suse.de>
-	 <20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20070426195348.6a4e5652.kamezawa.hiroyu@jp.fujitsu.com>
-	 <1177603203.5705.36.camel@localhost>
-	 <Pine.LNX.4.64.0704260904190.1655@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Thu, 26 Apr 2007 12:29:22 -0400
-Message-Id: <1177604962.5705.55.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 12:31:07 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44677 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbXDZQbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:31:05 -0400
+To: serue@us.ibm.com
+CC: miklos@szeredi.hu, serge@hallyn.com, hpa@zytor.com, linuxram@us.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       linux-security-module@vger.kernel.org, ebiederm@xmission.com,
+       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org
+In-reply-to: <20070426161929.GA6439@sergelap.austin.ibm.com>
+	(serue@us.ibm.com)
+Subject: Re: [patch] unprivileged mounts update
+References: <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com> <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu> <20070426145733.GA10078@sergelap.austin.ibm.com> <E1Hh5oQ-0000w1-00@dorka.pomaz.szeredi.hu> <20070426161929.GA6439@sergelap.austin.ibm.com>
+Message-Id: <E1Hh6qi-0002LI-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 26 Apr 2007 18:29:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 09:06 -0700, Christoph Lameter wrote:
-> Hmmmm... One additional easy way to fix this would be to create a DMA 
-> node and place it very distant to other nodes. This would make it a 
-> precious system resource that is only used for
-> 
-> 1. GFP_DMA allocations
-> 
-> 2. If the memory on the other nodes is exhausted.
-> 
+> So then as far as you're concerned, the patches which were in -mm will
+> remain unchanged?
 
-This would solve the problem for "100% CLM" configurations where the
-only thing in the interleaved pseudo-node is DMA zone.  However, we can
-configure any %-age of CLM between 0% [fully interleaved, pseudo-SMP]
-and "100%" [which is not really, as I've mentioned].  Interestingly,
-older revs of our firmware set the SLIT distance for the interleaved
-pseudo-node to 255 [or such], so it was always last.  Then someone
-decided that the interleaved node was effectively closer than other
-nodes...
+Basically yes. I've merged the update patch, which was not yet added
+to -mm, did some cosmetic code changes, and updated the patch headers.
 
-I have been considering an HP-platform-specific boot option [handled by
-a new ia64 machine vec op] to re-distance the interleaved node, but for
-other platforms, such as Kame's, I think we still need the ability to
-move the DMA zones last in the Normal zone lists.  Or, exclude them
-altogether?
+There's one open point, that I think we haven't really explored, and
+that is the propagation semantics.  I think you had the idea, that a
+propagated mount should inherit ownership from the parent into which
+it was propagated.
 
-Lee
+That sounds good if everyone agrees?
 
+Miklos
