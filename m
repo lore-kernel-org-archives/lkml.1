@@ -1,49 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbXDZQrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbXDZQ5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbXDZQrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXDZQrm
+	id S1754857AbXDZQ5U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXDZQ5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:47:42 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:49748 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754832AbXDZQrl (ORCPT
+	Thu, 26 Apr 2007 12:57:20 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:34898 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754857AbXDZQ5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:47:41 -0400
-Message-ID: <4630D724.70901@gmail.com>
-Date: Thu, 26 Apr 2007 18:45:24 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 26 Apr 2007 12:57:19 -0400
+Date: Thu, 26 Apr 2007 09:56:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <1177573348.5025.224.camel@nigel.suspend2.net>
+Message-ID: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
+ <1177573348.5025.224.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <20070404150231.GE27660@stusta.de>	<4613C963.6070409@gmail.com>	<20070404170016.453d26f1@the-village.bc.nu>	<4613D492.2070404@gmail.com>	<462C7D74.60003@gmail.com>	<1177327476.17026.75.camel@localhost.localdomain>	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>	<462CA764.5080401@gmail.com>	<20070425181856.42fcfeb4.akpm@linux-foundation.org>	<463081E5.5010306@gmail.com>	<20070426135426.GM3468@stusta.de>	<4630BD61.2050006@gmail.com> <20070426170050.7b333556@the-village.bc.nu>
-In-Reply-To: <20070426170050.7b333556@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26/2007 06:00 PM, Alan Cox wrote:
 
->> Tie Alan to his chair and take away his keyboard while we submit patches 
->> removing MODULE_AUTHOR? Or just apply a trivial two line, optional, non 
->> mandatory, patch introducing a MODULE_MAINTAINER? You pick... :-)
+
+On Thu, 26 Apr 2007, Nigel Cunningham wrote:
 > 
-> MODULE_AUTHOR is extremely important for licensing enforcement. Removing
-> it should not be an option.
+> * Doing things in the right order? (Prepare the image, then do the
+> atomic copy, then save).
 
-Yes, the "choice" was obviously in jest. If you say MODULE_AUTHOR must stay, 
-so must it. As said, that just leaves me wanting a way to override it as a 
-contact.
+I'd actually like to discuss this a bit..
 
-Rene.
+I'm obviously not a huge fan of the whole user/kernel level split and 
+interfaces, but I actually do think that there is *one* split that makes 
+sense:
 
+ - generate the (whole) snapshot image entirely inside the kernel
+
+ - do nothing else (ie no IO at all), and just export it as a single image 
+   to user space (literally just mapping the pages into user space). 
+   *one* interface. None of the "pretty UI update" crap. Just a single 
+   system call:
+
+	void *snapshot_system(u32 *size);
+
+   which will map in the snapshot, return the mapped address and the size 
+   (and if you want to support snapshots > 4GB, be my guest, but I suspect 
+   you're actually *better* off just admitting that if you cannot shrink 
+   the snapshot to less than 32 bits, it's not worth doing)
+
+User space gets a fully running system, with that one process having that 
+one image mapped into its address space. It can then compress/write/do 
+whatever to that snapshot.
+
+You need one other system call, of course, which is
+
+	int resume_snapshot(void *snapshot, u32 size);
+
+and for testing, you should be able to basically do
+
+	u32 size;
+	void *buffer = snapshot_system(&size);
+	if (buffer != MAP_FAILED)
+		resume_snapshot(buffer, size);
+
+and it should obviously work.
+
+And btw, the device model changes are a big part of this. Because I don't 
+think it's even remotely debuggable with the full suspend/resume of the 
+devices being part of generating the image! That freeze/snapshot/unfreeze 
+sequence is likely a lot more debuggable, if only because freeze/unfreeze 
+is actually a no-op for most devices, and snapshotting is trivial too.
+
+Once you have that snapshot image in user space you can do anything you 
+want. And again: you'd hav a fully working system: not any degradation 
+*at*all*. If you're in X, then X will continue running etc even after the 
+snapshotting, although obviously the snapshotting will have tried to page 
+a lot of stuff out in order to make the snapshot smaller, so you'll likely 
+be crawling.
+
+> * Mulithreaded I/O (might as well use multiple cores to compress the
+> image, now that we're hotplugging later).
+> * Support for > 1 swap device.
+> * Support for ordinary files.
+> * Full image option.
+> * Modular design?
+
+I'd really suggest _just_ the "full image". Nothing else is probably ever 
+worth supporting. Your "snapshot to disk" wouldn't be _quite_ as simple as 
+"echo disk > /sys/power/state", but it should not necessarily be much 
+worse than
+
+	snapshot_kernel | gzip -9 > /dev/snapshot
+
+either (and resuming from the snapshot would just be the reverse)!
+
+And if you want to send the snapshot over a TCP connection to another 
+host, be my guest. With pretty images while it's transferring. Whatever.
+
+			Linus
