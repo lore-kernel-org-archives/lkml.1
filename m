@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031184AbXDZOjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031045AbXDZOj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031184AbXDZOjH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXDZOjH
+	id S1031045AbXDZOj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXDZOj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:39:07 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:35180 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbXDZOjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:39:06 -0400
-Date: Thu, 26 Apr 2007 15:39:02 +0100
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error II
-Message-ID: <20070426143902.GD16909@skynet.ie>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630980D.7010904@shadowen.org> <20070426132736.GA16909@skynet.ie> <200704261613.41717.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 26 Apr 2007 10:39:58 -0400
+Received: from holomorphy.com ([66.93.40.71]:59695 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754811AbXDZOj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:39:57 -0400
+Date: Thu, 26 Apr 2007 07:40:17 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426144017.GF19966@holomorphy.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <m1k5vzmoo7.fsf@ebiederm.dsl.xmission.com> <20070426135033.GU65285596@melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704261613.41717.ak@suse.de>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+In-Reply-To: <20070426135033.GU65285596@melbourne.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (26/04/07 16:13), Andi Kleen didst pronounce:
-> On Thursday 26 April 2007 15:27:36 Mel Gorman wrote:
-> > On (26/04/07 13:16), Andy Whitcroft didst pronounce:
-> > > Getting the following on an x86_64 numa box:
-> > > 
-> > >   CC      arch/x86_64/vdso/vclock_gettime.o
-> > > arch/x86_64/vdso/vclock_gettime.c:1: error: code model `small' not
-> > > supported in the 32 bit mode
-> > > make[1]: *** [arch/x86_64/vdso/vclock_gettime.o] Error 1
-> > > make: *** [arch/x86_64/vdso] Error 2
-> > > 
-> > > Kernel config here: http://test.kernel.org/abat/85358/build/dotconfig
-> > > 
-> > 
-> > Hi Andi,
-> > 
-> > Backing out x86_64-mm-vdso.patch allowed this kernel to build and boot
-> > successful on the machine in question (elm3b6). The backout caused one reject
-> > in Documentation/kernel-parameters but otherwise backed out easily. It's
-> > not super-clear why it fails to build. If you want me to try another patch,
-> > make sure I'm cc'd and I'll give it a spin.
-> 
-> 
-> Or please try this simple patch.
-> 
-> -Andi
-> 
-> Index: linux/arch/x86_64/vdso/Makefile
-> ===================================================================
-> --- linux.orig/arch/x86_64/vdso/Makefile
-> +++ linux/arch/x86_64/vdso/Makefile
-> @@ -32,7 +32,7 @@ $(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso
->  $(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
->  	$(call if_changed,syscall)
->  
-> -CF := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables
-> +CF := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
->  
->  $(obj)/vclock_gettime.o: CFLAGS = $(CF)
->  $(obj)/vgetcpu.o: CFLAGS = $(CF)
+On Thu, Apr 26, 2007 at 04:10:32AM -0600, Eric W. Biederman wrote:
+>> You have HW_PAGE_SIZE != PAGE_SIZE.
 
-make -f scripts/Makefile.build obj=arch/x86_64/vdso
-  gcc -Wp,-MD,arch/x86_64/vdso/.vma.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -march=k8 -m64 -mno-red-zone -mcmodel=kernel -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -funit-at-a-time -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -maccumulate-outgoing-args -DCONFIG_AS_CFI=1  -fno-omit-frame-pointer -fno-optimize-sibling-calls  -Wdeclaration-after-statement      -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(vma)"  -D"KBUILD_MODNAME=KBUILD_STR(vma)" -c -o arch/x86_64/vdso/vma.o arch/x86_64/vdso/vma.c
-  gcc -Wp,-MD,arch/x86_64/vdso/.vdso-start.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -D__ASSEMBLY__ -DCONFIG_AS_CFI=1  -m64    -c -o arch/x86_64/vdso/vdso-start.o arch/x86_64/vdso/vdso-start.S
-  gcc -Wp,-MD,arch/x86_64/vdso/.vdso-note.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -D__ASSEMBLY__ -DCONFIG_AS_CFI=1  -m64    -c -o arch/x86_64/vdso/vdso-note.o arch/x86_64/vdso/vdso-note.S
-  gcc -Wp,-MD,arch/x86_64/vdso/.vclock_gettime.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h  -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64     -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(vclock_gettime)"  -D"KBUILD_MODNAME=KBUILD_STR(vclock_gettime)" -c -o arch/x86_64/vdso/vclock_gettime.o arch/x86_64/vdso/vclock_gettime.c
-  gcc -Wp,-MD,arch/x86_64/vdso/.vgetcpu.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h  -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64     -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(vgetcpu)"  -D"KBUILD_MODNAME=KBUILD_STR(vgetcpu)" -c -o arch/x86_64/vdso/vgetcpu.o arch/x86_64/vdso/vgetcpu.c
-  gcc -Wp,-MD,arch/x86_64/vdso/.vvar.o.d  -nostdinc -isystem /usr/lib/gcc/i486-linux/3.4.4/include -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Os  -march=k8 -m64 -mno-red-zone -mcmodel=kernel -pipe -Wno-sign-compare -fno-asynchronous-unwind-tables -funit-at-a-time -mno-sse -mno-mmx -mno-sse2 -mno-3dnow -maccumulate-outgoing-args -DCONFIG_AS_CFI=1  -fno-omit-frame-pointer -fno-optimize-sibling-calls  -Wdeclaration-after-statement      -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(vvar)"  -D"KBUILD_MODNAME=KBUILD_STR(vvar)" -c -o arch/x86_64/vdso/vvar.o arch/x86_64/vdso/vvar.c
-  gcc -m elf_x86_64 -nostdlib -fPIC -shared -Wl,-soname=linux-vdso.so.1  -Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096 -Wl,-T,arch/x86_64/vdso/vdso.lds arch/x86_64/vdso/vdso-start.o arch/x86_64/vdso/vdso-note.o arch/x86_64/vdso/vclock_gettime.o arch/x86_64/vdso/vgetcpu.o arch/x86_64/vdso/vvar.o -o arch/x86_64/vdso/vdso.so
-/usr/bin/ld: section .text [ffffffffff700400 -> ffffffffff700687] overlaps section .dynsym [ffffffffff7001d0 -> ffffffffff700427]
-collect2: ld returned 1 exit status
-make[1]: *** [arch/x86_64/vdso/vdso.so] Error 1
-make: *** [arch/x86_64/vdso] Error 2
+On Thu, Apr 26, 2007 at 11:50:33PM +1000, David Chinner wrote:
+> That's rather wasteful, though. Better to only use the large pages
+> when the filesystem needs them rather than penalise all filesystems.
+
+I found less of an issue with filesystem pagecache than with internal
+fragmentation of anonymous memory when I did it. I'd expect, though,
+that 4KB is probably too small and 64KB too large, at least for some
+workloads. 16KB may do better; if not, 8KB may be worth doing just to
+compensate for the larger sizes of pointers and unsigned longs in
+struct page with respect to memory overhead so as not to regress vs.
+32-bit, which isn't critical, but does have some cache and other
+performance impacts.
+
+Basically I found that without some intelligent method of divvying
+out fragments of anonymous pages, pathological performance resulted.
+The naive scheme of faulting at PAGE_SIZE-aligned boundaries created
+swapstorms on memory-constrained hardware (e.g. laptops). Pagecache
+was a second-order effect. It's not necessarily all that complex to
+handle. One could easily recover the PAGE_SIZE == MMUPAGE_SIZE
+behavior by keeping partially utilized anonymous pages cached in the mm
+and handing out MMUPAGE_SIZE-sized fragments during COW/zerofill faults.
+I had some sort of trouble with tracking the state for it, though I
+don't remember what it was.
+
+It's also notable that the two strategies (increasing base page size
+and dealing with higher-order pages) don't clash all that much.
 
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+-- wli
