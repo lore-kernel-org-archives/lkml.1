@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXDZCh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbXDZCxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbXDZCh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 22:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbXDZCh6
+	id S932167AbXDZCxi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 22:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754691AbXDZCxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 22:37:58 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:21386 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754112AbXDZCh5 (ORCPT
+	Wed, 25 Apr 2007 22:53:38 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:37348 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754689AbXDZCxh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 22:37:57 -0400
-Message-ID: <4630109F.6090002@oracle.com>
-Date: Wed, 25 Apr 2007 19:38:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
-       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
-In-Reply-To: <20070426003911.GA19383@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Apr 2007 22:53:37 -0400
+Date: Wed, 25 Apr 2007 19:53:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Nonfunctional ethernet (was Re: 2.6.21-rc7-mm1 +
+ sysfs-oops-workaround.patch -- INFO: possible recursive locking detected)
+Message-Id: <20070425195326.dba3ab2d.akpm@linux-foundation.org>
+In-Reply-To: <46300DDC.1070805@gmail.com>
+References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>
+	<462EE4B7.6000708@gmail.com>
+	<1177512528.4856.15.camel@daplas>
+	<1177544702.4668.9.camel@daplas>
+	<1177549323.4685.3.camel@daplas>
+	<20070425181302.ebae7481.akpm@linux-foundation.org>
+	<46300DDC.1070805@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Wed, Apr 25, 2007 at 05:24:47PM -0700, Andrew Morton wrote:
-> 
->  > It would be neat if someone could create and maintain a new
->  > scripts/spot-common-mistakes.  Feed it a unified diff and it would complain
->  > about newly-added code (and only newly-added code) which has busted
->  > whitespace, adds new semaphores, adds new kernel_thread calls, etc, etc.
-> 
-> years and years ago, when the dinosaurs roamed the land, I hacked up..
-> http://janitor.kernelnewbies.org/scripts/  and then left it by the wayside.
-> Some of the checks it did are actually bogus, but I'm happy to pick that
-> up again if there's interest in it being a useful tool.
-> 
-> In fact, I should probably munge it together with a similar thing
-> I wrote at http://www.codemonkey.org.uk/projects/findbugs/
-> (Warning: scary regexps)
-> 
->  > It would need to be fairly simple and easily-extensible, as I can
->  > imagine quite a few things getting added to it.
->  > 
->  > (Imagines a procmail rule which just bounces the email if
->  > spot-common-mistakes failed)
-> 
-> or a git checkin rule that refuses to commit if it fails ;-)
+On Thu, 26 Apr 2007 11:26:36 +0900 Tejun Heo <htejun@gmail.com> wrote:
 
-Yep, I was going to mention your scripts but you beat me to it.
+> Hello, Antonino, Andrew.
+> 
+> Andrew Morton wrote:
+> > On Thu, 26 Apr 2007 09:02:02 +0800 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> > 
+> >> I can bring up the network manually using ifconfig.  It's opensuse's
+> >> rcnetwork script that fails to bring the network up. Entries
+> >> in /sys/class/net are still bogus.
+> >>
+> >> This kernel is now usable to me, I'll start bisection later today if
+> >> nobody has an answer.
+> > 
+> > rc7-mm1 is hardly worth bothering with.  Quite a few really bad ones have
+> > now been fixed and I'll try to get rc7-mm2 out within the next 12 hours (I
+> > assume a 76-hour debug session won't be needed this time).
+> > 
+> > But I don't think the sysfs changes in Greg's tree have been updated, so
+> > things will probably still fail in that area.  A suitable bisection
+> > starting pair would be around gregkh-driver-*
+> 
+> This is the rename bug I wrote about in the other thread.
 
-I'll be glad to help maintain such animals if wanted.
+ok.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+>  Can you hold -mm2 off a bit?  I'm almost done here.
+
+sure.  I'm having much fun with all the obviously-wont-compile patches
+which have been checked into various subsystem trees in the past 24 hours.
+
+Please include simple instructions about which gregkh patches I should drop
+when this new set comes in.
