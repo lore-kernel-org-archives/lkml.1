@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbXDZUhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbXDZUk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbXDZUhk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbXDZUhk
+	id S1755032AbXDZUk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbXDZUk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:37:40 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752820AbXDZUhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:37:39 -0400
-Date: Thu, 26 Apr 2007 13:37:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.21-rc7-mm2
-Message-Id: <20070426133720.25085207.akpm@linux-foundation.org>
-In-Reply-To: <46309142.2010907@googlemail.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<46309142.2010907@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 26 Apr 2007 16:40:56 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:36347 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755022AbXDZUk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 16:40:56 -0400
+Date: Thu, 26 Apr 2007 22:41:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Peter Keilty <peter.keilty@hp.com>
+Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
+Message-ID: <20070426204146.GA25142@uranus.ravnborg.org>
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 13:47:14 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-
-> Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/
-> >
-> >
-> > - this has everything which is in 2.6.21.  Plus more!
-> >
-> > - a number of nasty bugs were fixed.  This should be (a lot) more stable
-> >   than 2.6.21-rc7-mm1.
-> >
-> >   
+On Thu, Apr 26, 2007 at 04:26:32PM -0400, Peter Keilty wrote:
+> From: Peter Keilty <peter.keilty@hp.com>
 > 
-> I get this warning here :
+> Initial ia64 conversion to the generic timekeeping/clocksource code.
 > 
-> 
-> drivers/net/Kconfig:2327:warning: 'select' used by config symbol 
-> 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
+> Signed-off-by: Peter Keilty <peter.keilty@hp.com>
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-Yes, we get so many of those that I tend to ignore them, assuming that
-someone will pick it up and fix it.
+The "Signed-off-by:" should reflect the order in which a path is processed
+with the last submitter at the bottom of the list.
+So if this patch came from John then he should be first in the list
+and since the patch passes you and you submit it you should be in the bottom
+of the list.
 
-This one was added by git-powerpc, presumably
-7d776cb596994219584257eb5956b87628e5deaf "QE: automatically select QE
-options"
+And "Signed-off-by:" tell the path that the patch takes. It is not to be used
+to let others say "I have seen it and I think the patch is ok".
+For the latter we have "Acked-by:".
+
+I did not look at the code so ne feedback there.
+
+	Sam
