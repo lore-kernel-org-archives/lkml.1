@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXDZLgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030668AbXDZLi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932184AbXDZLgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 07:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030668AbXDZLgy
+	id S1030668AbXDZLi2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 07:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030685AbXDZLi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 07:36:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33369 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932184AbXDZLgx (ORCPT
+	Thu, 26 Apr 2007 07:38:27 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:36247 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030668AbXDZLi0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 07:36:53 -0400
-Date: Thu, 26 Apr 2007 12:35:26 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+	Thu, 26 Apr 2007 07:38:26 -0400
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
        Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070426113525.GA1332@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	Pavel Machek <pavel@ucw.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-	linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-	Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-	Ingo Molnar <mingo@elte.hu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>
-References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg>
+In-Reply-To: <20070426113005.GU17387@elf.ucw.cz>
+References: <20070425072350.GA6866@ucw.cz>
+	 <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
+	 <20070425202741.GC17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+	 <20070425214420.GG17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+	 <1177540027.5025.87.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
+	 <1177583998.6814.42.camel@johannes.berg>
+	 <20070426113005.GU17387@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-UypE5khZu+UZgyYq3MPg"
+Date: Thu, 26 Apr 2007 13:41:42 +0200
+Message-Id: <1177587702.6814.60.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177582633.6814.29.camel@johannes.berg>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 12:17:12PM +0200, Johannes Berg wrote:
-> On Tue, 2007-04-24 at 23:24 +0200, Pavel Machek wrote:
-> 
-> > I believe uswsusp user/kernel separation is clean enough. Kernel
-> > provides "snapshot image" and "resume image". (Thanks go to Rafael for
-> > very clean interface).
-> 
-> The interface isn't even 64/32-bit compatible...
 
-It's not .  And it's one of the worst interface I've seen lately.
-Did anyone actually review this crap before it went in?  I completely
-agree with Linus that these kind of boundaries that lead to horribly
-complex ioctl interface are totally wrong.
+--=-UypE5khZu+UZgyYq3MPg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Now suspend2 wasn't exactly nice either when I last reviewed it,
-but we should probably give it another attempt if we can sort out
-a proper incremental merge.
+On Thu, 2007-04-26 at 13:30 +0200, Pavel Machek wrote:
+
+> That code goes back to Patrick, AFAICT. (And yes, ACPI S3 and ACPI S4
+> low-level enter is pretty similar).
+
+But that doesn't excuse abusing the same interface, IMHO.
+
+> Patches would be welcome
+
+:) I'll see what I can do. Shouldn't be too hard to add an interface
+just for ACPI here and get platform disk-mode into there from a
+different angle.
+
+johannes
+
+--=-UypE5khZu+UZgyYq3MPg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGMI/2/ETPhpq3jKURAo7aAJ4491M2StFUWq/vANGTRwLXG+BSlwCePSFG
+hJvjj4JjnJe3LKsmt1N98mA=
+=sDoe
+-----END PGP SIGNATURE-----
+
+--=-UypE5khZu+UZgyYq3MPg--
 
