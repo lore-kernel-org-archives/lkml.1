@@ -1,81 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbXDZIHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXDZIOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933638AbXDZIHR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 04:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933644AbXDZIHR
+	id S933174AbXDZIOI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 04:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933211AbXDZIOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 04:07:17 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:57495 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S933638AbXDZIHO (ORCPT
+	Thu, 26 Apr 2007 04:14:08 -0400
+Received: from qb-out-0506.google.com ([72.14.204.227]:48650 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933174AbXDZIOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 04:07:14 -0400
-Date: Thu, 26 Apr 2007 00:27:37 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Olivier Galibert <galibert@pobox.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Pavel Machek <pavel@ucw.cz>,
-       Ingo Molnar <mingo@elte.hu>, Christian Hesse <mail@earthworm.de>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <1177552619.5025.147.camel@nigel.suspend2.net>
-Message-ID: <Pine.LNX.4.63.0704260016590.9337@qynat.qvtvafvgr.pbz>
-References: <20070419070437.GA25211@elte.hu>  <20070424202336.GC16503@elf.ucw.cz>
-  <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> 
- <20070424212408.GD16457@elf.ucw.cz>  <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-  <20070425072350.GA6866@ucw.cz> <20070425151825.GW3468@stusta.de> 
- <20070425173405.GE17074@elf.ucw.cz> <20070425183934.GX3468@stusta.de> 
- <alpine.LFD.0.98.0704251148110.9964@woody.linux-foundation.org> 
- <20070425233355.GA36476@dspnet.fr.eu.org> <1177552619.5025.147.camel@nigel.suspend2.net>
+	Thu, 26 Apr 2007 04:14:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ugp7ambg+xTvAkAZI5sTJ9jYKfTq85+a9D7PtXfLQ+j97PMlLwDOJd2C24u4UIIfwOlOIJayGGTryEudDe4fnnHELcN4ix/gpkwFVykYa9bItgdm1P7CQnTlOCMr9HXv7lcxY3h3n6AAOQjQPV0sj+y3SmINsYbTC8S1/HQrvoU=
+Message-ID: <299ffe0d0704260059x466bda7dt8fe004071931cbb0@mail.gmail.com>
+Date: Thu, 26 Apr 2007 10:59:56 +0300
+From: "OOzy Pal" <oozypal@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel Patch
+In-Reply-To: <299ffe0d0704260057r37c2669ekb2f3e504dcd676c8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <299ffe0d0704260057r37c2669ekb2f3e504dcd676c8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Nigel Cunningham wrote:
+Dears,
 
-> Hi.
->
-> On Thu, 2007-04-26 at 01:33 +0200, Olivier Galibert wrote:
->> On Wed, Apr 25, 2007 at 11:50:45AM -0700, Linus Torvalds wrote:
->>> .. but if the alternative is a feature that just isn't worth it, and
->>> likely to not only have its own bugs, but cause bugs elsewhere? (And yes,
->>> I believe STD is both of those. There's a reason it's called "STD". Go
->>> to google and type "STD" and press "I'm feeling lucky". Google is God).
->>
->> If it was correctly designed, it would be possible to change the
->> hardware or even the kernel through a STD cycle.  And that would be
->> damn interesting on servers.
->
-> Those are different issues - hardware hot/cold plugging for the first.
->
-> Changing the kernel through a cycle - that's not a design fault. The
-> problem there is that the kernel and it's associated data structures are
-> part of the state. Changing the kernel and keeping the image would
-> require exactly correspondence in data structures, memory map and so on.
-> That's why the same kernel is required.
+I am not sure if this is the right place for asking such question. If
+not, please ignore and if possible, direct me to the right place.
 
-that depends on exactly what you save in your snapshot.
+I am trying to rebuilt my kernel patched with the iwlwifi driver. I
+downloaded the mac80211 package then I typed make. I got the following
+error. Can you help me in solving this error.
 
-one approach is to try and save absolutly everything in ram (this is the current 
-approach)
+Note: I am a noob.
 
-if you do this then you do need to use the same kernel for the reasons that you 
-list.
+hab@laptop {~/wifi/mac80211-7.0.6}$ sudo make
+Building modified version in 'modified/' directory:
+Copying modified/ from origin/...done
+Applying patches and scripts from pending/.
+ + Applying: pending/09-range-name-rate.patch
+        Add WE range, name and rate capabilities
+ + Applying: pending/10-txpower.patch
+        Fix user specified TXPOWER from being overridden by stack.
+ + Applying: pending/20-wireless-dev-qos.patch
+        The attachment is the QoS patch for the latest wireless-dev GIT
+ + Applying: pending/21-fix_qos_entries_not_found.patch
+        From: Zhu Yi <yi.zhu@intel.com>
+Checking kernel compatibility in:
+        /lib/modules/2.6.20-15-generic/source//
+ * Kernel requires compatibility version:
+   - Requires class_dev -> dev API compat
+   - Requires to_net_dev API compat
+   - Requires device_rename compat
+Building compatibility version in 'compatible/' directory:
+Copying compatible/ from modified/...done
+ + Applying: patches/remove_debugfs.patch
+        Remove DEBUGFS usage (due to class_dev breakage)
+ + Applying: patches/class_dev_to_dev-wireless.patch
+        Reverse class_dev to dev changes
+ + Applying: patches/add_to_net_dev.patch
+        Add to_net_dev back in (newer kernels have it in netdevice.h)
+ + Applying: patches/fix-qos-sysfs-no-class_dev.patch
+        diff -upr pre/net/mac80211/ieee80211_sysfs.c
+post/net/mac80211/ieee80211_sysfs.c
+ + Applying: patches/nl80211-remove-kconfig.patch
+        Remove nl80211 from being an option in Kconfig
+ + Applying: patches/device_rename.patch
+        The ability to rename devices requires device_rename so we can't use it.
 
-however, you could also decide to only save the information about processes on 
-the system (i.e. what you absolutly have to) and let the kernel re-initialize 
-itself (along with it's devices) then you could use a different kernel safely. 
-doing this should also save you a significant amount of storage when makeing 
-your snapshot
 
-David Lang
-
+--
+OOzy
+Ubuntu-Feisty
