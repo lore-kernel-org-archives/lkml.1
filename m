@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161814AbXDZJrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993106AbXDZJtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161814AbXDZJrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161818AbXDZJrt
+	id S2993106AbXDZJtq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161818AbXDZJtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:47:49 -0400
-Received: from mx1.suse.de ([195.135.220.2]:49155 "EHLO mx1.suse.de"
+	Thu, 26 Apr 2007 05:49:46 -0400
+Received: from lizzard.sbs.de ([194.138.37.39]:21382 "EHLO lizzard.sbs.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161814AbXDZJrs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:47:48 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] change global zonelist order on NUMA v2
-Date: Thu, 26 Apr 2007 11:47:44 +0200
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
-       AKPM <akpm@linux-foundation.org>, Christoph Lameter <clameter@sgi.com>
-References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1161873AbXDZJtp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 05:49:45 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704261147.44413.ak@suse.de>
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] pata_pcmcia: recognize 2GB CompactFlash from Transcend
+Date: Thu, 26 Apr 2007 11:49:35 +0200
+Message-ID: <D7810733513F4840B4EBAAFA64D9C6A40130764F@stgw002a.ww002.siemens.net>
+In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] pata_pcmcia: recognize 2GB CompactFlash from Transcend
+Thread-Index: AceF7Dxw1HG7Z+0/Q922AExek2MqSwBLNw6AADNlyPA=
+From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+To: <linux-pcmcia@lists.infradead.org>
+Cc: "lkml" <linux-kernel@vger.kernel.org>,
+       "Peter Stuge" <stuge-linux-pcmcia@cdy.org>,
+       "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+X-OriginalArrivalTime: 26 Apr 2007 09:48:53.0057 (UTC) FILETIME=[1955E310:01C787E8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 April 2007 11:34:17 KAMEZAWA Hiroyuki wrote:
-> 
-> Changelog from V1 -> V2
-> - sysctl name is changed to be relaxed_zone_order
-> - NORMAL->NORMAL->....->DMA->DMA->DMA order (new ordering) is now default.
->   NORMAL->DMA->NORMAL->DMA order (old ordering) is optional.
-> - addes boot opttion to set relaxed_zone_order. ia64 is supported now.
-> - Added documentation
-> 
-> patch is against 2.6.21-rc7-mm2. tested on ia64 NUMA box. works well.
+This patch allows the pata_pcmcia driver to automatically detect 2GB
+CompactFlash cards from Transcend.
 
-IMHO the change should be default (without any options) unless someone
-can come up with a good reason why not. On x86-64 it should be definitely
-default.
+Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
 
-If there is a good reason on some architecture or machine a user option is also not a 
-good idea, but instead it should be set automatically by that architecture or machine
-on boot.
-
--Andi
-
+=====================================================================
+--- linux-2.6.20.7-orig/drivers/ata/pata_pcmcia.c	2007-04-15
+21:08:02.000000000 +0200
++++ linux-2.6.20.7/drivers/ata/pata_pcmcia.c	2007-04-26
+11:35:38.000000000 +0200
+@@ -350,6 +350,7 @@
+ 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
+0x3489e003),
+ 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
+0x2a54d4b1),
++	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
+0x969aa4f2),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
+0xf54a91c8),
+ 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+ 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
+0x212bb918),
