@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031196AbXDZPyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031296AbXDZPys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031196AbXDZPyJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:54:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031283AbXDZPyJ
+	id S1031296AbXDZPys (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031293AbXDZPys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:54:09 -0400
-Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104]:3486 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031196AbXDZPyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:54:07 -0400
-Date: Thu, 26 Apr 2007 17:54:38 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH][RFC] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070426175438.391157a1@hyperion.delvare>
-In-Reply-To: <462F8A82.40604@kernel.crashing.org>
-References: <20070420082714.4f10f186@localhost.localdomain>
-	<20070421095707.6b42a312@hyperion.delvare>
-	<20070422152937.7332fc31@localhost.localdomain>
-	<20070423111950.129856eb@hyperion.delvare>
-	<462F8A82.40604@kernel.crashing.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Apr 2007 11:54:48 -0400
+Received: from smtp1.cc.ksu.edu ([129.130.7.15]:43336 "EHLO smtp1.cc.ksu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031294AbXDZPyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:54:45 -0400
+Message-ID: <4630CAEC.2050909@ksu.edu>
+Date: Thu, 26 Apr 2007 10:53:16 -0500
+From: Amit Gud <gud@ksu.edu>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: Valerie Henson <val_henson@linux.intel.com>,
+       Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL> <20070425224710.GB16129@nifty> <20070426141455.GA6155@c2.user-mode-linux.org>
+In-Reply-To: <20070426141455.GA6155@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vitaly,
+Jeff Dike wrote:
+> How about this case:
+> 
+> 	Growing file starts in chunk A.
+> 	Overflows into chunk B.
+> 	Delete file in chunk A.
+> 	Growing file overflows chunk B and spots new free space in
+> chunk A (and nothing anywhere else)
+> 	Overflows into chunk A
+> 	Delete file in chunk B.
+> 	Overflow into chunk B again.
+> 
+> Maybe this is not realistic, but in the absence of a mechanism to pull
+> data back from an overflow chunk, it seems at least a theoretical
+> possibility that there could be > 1 continuation inodes per file per
+> chunk.
+> 
 
-On Wed, 25 Apr 2007 21:06:10 +0400, Vitaly Bordug wrote:
-> Jean Delvare wrote:
-> >>>> +/* Structure for a device driver */
-> >>>> +static struct device_driver i2c_rpx_driver = {
-> >>>> +	.name = "fsl-i2c-cpm",
-> >>>> +	.bus = &platform_bus_type,
-> >>>> +	.probe = i2c_rpx_probe,
-> >>>> +	.remove = i2c_rpx_remove,
-> >>>> +};
-> >>>>         
-> >>> Why don't you declare it as a struct platform_driver, register it with
-> >>> platform_driver_register() and unregister it with
-> >>> platform_driver_unregister()?
-> >>>       
-> >> Well. This stuff belongs to CPM1, of the mpc8xx family, but the
-> >> target boards are different, and they may/should provide board
-> >> specific inits and filling of platform data. With
-> >> platform_driver_register we may end up with ifdef stuff here
-> >> (which is evil).
-> >>     
-> >
-> > I don't follow you here, sorry. Platform devices are declared by
-> > board-specific code which can include all the needed initialization.
-> > And device-specific data can be carried to the platform driver for
-> > further use. The platform device/driver infrastructure is meant to
-> > handle that kind of situation, so there really is no excuse that I can
-> > see not to use it. i2c-omap and i2c-mpc use it. As a matter of fact you
-> > _are_ declaring a platform driver (.bus = &platform_bus_type), just not
-> > using the standard way.
-> >
-> >   
-> Standard way here - platform devices got registered from elsewhere - 
-> from arch/ppc/ppc_sys.c if arch/ppc or from 
-> arch/powerpc/sysdev/fsl_soc.c if powerpc.
-> Every way (powerpc is more flexible since is pulling the information 
-> from the firmware-passed device tree) fills in the resources and 
-> platform data, and
-> is capable with device/drive bound you are talking about.
+Preventive measures are taken to limit only one continuation inode per 
+file per chunk. This can be done easily in the chunk allocation 
+algorithm for disk space. Although I'm not quite sure what you mean by 
+"Delete file in chunk A". If you are referring to same file thats 
+growing, then deletion is not possible, because individual parts of any 
+file in any chunk cannot be deleted.
 
-This doesn't explain why you can't use platform_driver_register(),
-which is the right way to register a platform driver.
 
+AG
 -- 
-Jean Delvare
+May the source be with you.
+http://www.cis.ksu.edu/~gud
+
