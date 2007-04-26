@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031453AbXDZTEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXDZTEE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031453AbXDZTEh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031455AbXDZTEh
+	id S1754929AbXDZTEE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:04:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXDZTEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:04:37 -0400
-Received: from www.osadl.org ([213.239.205.134]:54187 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031453AbXDZTEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:04:36 -0400
-Subject: Re: [PATCH] pcmcia: irq probe can be done without risking an IRQ
-	storm
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1177608704.25960.21.camel@localhost.localdomain>
-References: <20070405140936.46fb6ba4@the-village.bc.nu>
-	 <20070425211808.54b86293.akpm@linux-foundation.org>
-	 <1177608704.25960.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 21:06:31 +0200
-Message-Id: <1177614391.25960.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Thu, 26 Apr 2007 15:04:04 -0400
+Received: from mail.tmr.com ([64.65.253.246]:47955 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754934AbXDZTEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:04:00 -0400
+Message-ID: <4630F7A6.3080609@tmr.com>
+Date: Thu, 26 Apr 2007 15:04:06 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Matt Mackall <mpm@selenic.com>
+CC: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Christian Hesse <mail@earthworm.de>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424205416.GA23032@elte.hu> <20070424212956.GE16457@elf.ucw.cz> <20070425214156.GI11166@waste.org>
+In-Reply-To: <20070425214156.GI11166@waste.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 19:31 +0200, Thomas Gleixner wrote:
-> > >  #ifdef CONFIG_PCMCIA_PROBE
-> > > +	if (!(req->Attributes & IRQ_HANDLE_PRESENT))
-> > > +		type |= IRQ_NOAUTOEN;
-> > > +
-> > >  	if (s->irq.AssignedIRQ != 0) {
-> > >  		/* If the interrupt is already assigned, it must be the same */
-> > >  		irq = s->irq.AssignedIRQ;
-> > 
-> > alpha:
-> > 
-> > drivers/pcmcia/pcmcia_resource.c: In function 'pcmcia_request_irq':
-> > drivers/pcmcia/pcmcia_resource.c:816: error: 'IRQ_NOAUTOEN' undeclared (first use in this function)
-> > drivers/pcmcia/pcmcia_resource.c:816: error: (Each undeclared identifier is reported only once
-> > drivers/pcmcia/pcmcia_resource.c:816: error: for each function it appears in.)
-> > 
-> > Problem is, IRQ_NOAUTOEN is a generic-irq thing, so architectures which
-> > don't use generic-irqs break.  And it's defined in linux/irq.h which
-> > (stupidly) cannot be included in generic code.
+Matt Mackall wrote:
+> On Tue, Apr 24, 2007 at 11:29:56PM +0200, Pavel Machek wrote:
+>> We do not want to fragment the testing base, and suspend2 does not
+>> really have any interesting features over uswsusp.
 > 
-> Hrmpf. We need a IRQF_NOAUTOEN, which can be handed to reqeust_irq().
+> The testing base is already fragmented!
 > 
-> I cook a patch.
+> What the current situation means is that you simply never hear from
+> the people who get fed up with suspend but who manage to get suspend2
+> working.
+> 
+I have to feel that having a *working resume* capability is "any 
+interesting features" enough. What you say about "simply never hear 
+from" is unfortunately true.
 
-Not that simple. For non shared interrupts it is straight forward, but
-for shared ones we have to decide, whether we 
+On 04/25/2007 05:30 PM EDT, Pavel Machek wrote:
 
-A) reject the request
-B) disable the interrupt and rely on the caller, that it reenables it
-C) ignore it
+ >It is not Rafael's fault. Actually it is quite hard to work with
+ >Nigel, because he implements every feature someone asks for, and wants
+ >to merge them all  :-( . I don't expect to ever agree with Nigel on
+ >anything important, sorry.
 
-sorted by ugliness order :)
+The fact that Pavel thinks giving the users what they want is a problem 
+certainly defines the difference between them, the populist "give them 
+what they want" and the elitist "let's them make do with what I think 
+they should have."
 
-A) is definitely the most safe bet, but B) might work as well.
+I do respect Pavel for all the stuff he has done and is doing, I wish I 
+could have found a nicer way to say that.
 
-	tglx
-
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
