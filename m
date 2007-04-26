@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbXDZXNN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbXDZXOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbXDZXNN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:13:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXDZXNM
+	id S1755186AbXDZXOH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXDZXOG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:13:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:39383 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755188AbXDZXNL (ORCPT
+	Thu, 26 Apr 2007 19:14:06 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:34676 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755186AbXDZXOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:13:11 -0400
-Message-ID: <463131FD.8020301@zytor.com>
-Date: Thu, 26 Apr 2007 16:13:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Michael McConnell <soruk@eridani.co.uk>
-CC: linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: MAINTAINERS file out of date?
-References: <4631255F.9010902@eridani.co.uk>
-In-Reply-To: <4631255F.9010902@eridani.co.uk>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Apr 2007 19:14:03 -0400
+Date: Thu, 26 Apr 2007 16:13:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Helge Hafting <helge.hafting@aitel.hist.no>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.21-rc6-mm1 USB related boot hang - bisection result
+Message-Id: <20070426161342.4e4dbfdf.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704270038150.20657@twin.jikos.cz>
+References: <20070408143559.f5014629.akpm@linux-foundation.org>
+	<20070411194227.GA31286@aitel.hist.no>
+	<20070411134346.d10765da.akpm@linux-foundation.org>
+	<20070411230700.GA4023@aitel.hist.no>
+	<Pine.LNX.4.64.0704122023510.12991@twin.jikos.cz>
+	<20070412202519.GB14705@aitel.hist.no>
+	<Pine.LNX.4.64.0704130107170.12991@twin.jikos.cz>
+	<462F2558.5010909@aitel.hist.no>
+	<Pine.LNX.4.64.0704251324540.20657@twin.jikos.cz>
+	<46312787.1020702@aitel.hist.no>
+	<Pine.LNX.4.64.0704270038150.20657@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael McConnell wrote:
-> Hi folks,
+On Fri, 27 Apr 2007 00:39:19 +0200 (CEST) Jiri Kosina <jikos@jikos.cz> wrote:
+
+> On Fri, 27 Apr 2007, Helge Hafting wrote:
 > 
-> I noticed the MAINTAINERS file still lists Riley Williams as the
-> maintainer of the i386 boot code, presumably as no-one else has taken it
-> up in his absence (though, I'm sure it's probably been touched since
-> late 2004).
+> > 2.6.21-rc6 boots up fine.  Both rc6 and rc7 has a different problem - 
+> > the machine tends to hang after some minutes work in X.  That hang is 
+> > unusual in that moving the mouse still move the X cursor, but everything 
+> > else stops and sysrq fails me. But that is another story.
+> [...]
+> > The (first) "hanging" patch in 2.6.21-rc6-mm1 is: git-acpi.patch
+
+linux-acpi: we have a problem.
+
+> Hi Helge,
 > 
-> If I knew the first thing about the i386 boot process I would volunteer,
-> but sadly I don't....
-> 
-> This article below details the reason for his absence, but please make
-> sure you're sitting down before clicking. (It is work-safe.)
-> http://www.chorleytoday.co.uk/ViewArticle2.aspx?SectionID=81&ArticleID=905248
+> thanks for the effort. If you take stock rc6-mm1 and revert just 
+> git-acpi.patch, doesn the machine behave correctly?
 > 
 
-Dear.
+It would be easier and would produce a clearer result to test just
 
-I have considered myself as a rather unofficial maintainer of this code,
-and wouldn't mind make it official now when I actually have a job which
-both cares about and actually can support my upstream Linux activities,
-which was a major pain for a while.
+	2.6.21-rc7
++	2.6.21-rc7-mm2's origin.patch
++	2.6.21-rc7-mm2's acpi.patch
 
-Overall, there is a lot of cleanup which really is needed in the i386
-boot process; I have done some work on it already, but more is needed.
-
-	-hpa
+from
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/
