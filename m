@@ -1,118 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbXDZJUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933770AbXDZJUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933766AbXDZJUh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933760AbXDZJUg
+	id S933770AbXDZJUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXDZJUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:20:36 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45408 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933769AbXDZJUd (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:20:33 -0400
-Date: Thu, 26 Apr 2007 19:20:14 +1000
-From: David Chinner <dgc@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426092014.GT65285596@melbourne.sgi.com>
-References: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com> <46305327.2000206@yahoo.com.au> <Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com> <4630593C.8070905@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4630593C.8070905@yahoo.com.au>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 26 Apr 2007 05:20:55 -0400
+Received: from lizzard.sbs.de ([194.138.37.39]:17623 "EHLO lizzard.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933770AbXDZJUx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 05:20:53 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
+Date: Thu, 26 Apr 2007 11:21:01 +0200
+Message-ID: <D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
+In-Reply-To: <20070425171533.22efa133.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
+Thread-Index: AceHmBBXg88AlzzVR+6GbPtwTLxjuAASieIA
+From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Dominik Brodowski" <linux@dominikbrodowski.net>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
+       "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+X-OriginalArrivalTime: 26 Apr 2007 09:20:18.0398 (UTC) FILETIME=[1B51AFE0:01C787E4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 05:48:12PM +1000, Nick Piggin wrote:
-> Christoph Lameter wrote:
-> >On Thu, 26 Apr 2007, Nick Piggin wrote:
-> >
-> >
-> >>No I don't want to add another fs layer.
-> >
-> >
-> >Well maybe you could explain what you want. Preferably without redefining 
-> >the established terms?
+As pointed to by Peter, and also as indicated by a judicious output in
+dmesg, the 4th parameter should be 0x969aa4f2. Please find below the
+corrected patch:
+
+Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
+
+===================================================================
+--- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c	2007-04-15
+21:08:02.000000000 +0200
++++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c	2007-04-26
+11:13:13.000000000 +0200
+@@ -399,6 +399,7 @@
+ 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
+0x3489e003),
+ 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
+0x2a54d4b1),
++	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
+0x969aa4f2),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
+0xf54a91c8),
+ 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+ 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
+0x212bb918),
+===================================================================
+ 
+
+> -----Original Message-----
+> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+> Sent: Donnerstag, 26. April 2007 02:16
+> To: Aeschbacher, Fabrice
+> Cc: linux-pcmcia@lists.infradead.org; lkml; Dominik 
+> Brodowski; Bartlomiej Zolnierkiewicz
+> Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
 > 
-> Support for larger buffers than page cache pages.
-
-The problem with this approach is that it turns around the whole
-way we look at bufferheads. Right now we have well defined 1:n
-mapping of page to bufferheads and so we tpyically lock the
-page first them iterate all the bufferheads on the page.
-
-Going the other way, we need to support m:n which we means
-the buffer has to become the primary interface for the filesystem
-to the page cache. i.e. we need to lock the bufferhead first, then
-iterate all the pages on it. This is messy because the cache indexes
-via pages, not bufferheads. hence a buffer needs to point to all the
-pages in it explicitly, and this leads to interesting issues with
-locking.
-
-If you still think that this is a good idea, I suggest that you
-spend a bit of time looking at fs/xfs/linux-2.6/xfs_buf.c, because
-that is *exactly* what this does - it is a multi-page buffer
-interface on top of a block device address space radix tree. This
-cache is the reason that XFS was so easy to transition to large
-block sizes (i only needed to convert the data path).
-
-However, this approach has some serious problems:
-
-	- need to index buffers so that lookups can be done
-	  on buffer before page
-	- completely different locking is required
-	- needs memory allocation to hold more than 4 pages
-	- needs vmap() rather than kmap_atomic() for mapping
-	  multi-page buffers
-	- I/O needs to be issued based on buffers, not pages
-	- needs it's own flush code
-	- does not interface with memory reclaim well
-
-IOWs, we need to turn every filesystem completely upside down to
-make work with this sort of large page infrastructure, not to mention
-the rest of the VM (mmap, page reclaim, etc). It's back to the
-bad ol' days of buffer caches again and we don't want to go back
-there.
-
-Compared to a buffer based implementation, the high order page cache
-is a picture of elegance and refined integration. It is an
-evolutionary step, not a disconnect, from what we have now....
-	
-> >Because 4k is a good page size that is bound to the binary format? Frankly 
-> >there is no point in having my text files in large page sizes. However, 
-> >when I read a dvd then I may want to transfer 64k chunks or when use my 
-> >flash drive I may want to transfer 128k chunks. And yes if a scientific 
-> >application needs to do data dump then it should be able to use very high 
-> >page sizes (megabytes, gigabytes) to be able to continue its work while 
-> >the huge dumps runs at full I/O speed ...
+> On Wed, 25 Apr 2007 11:27:09 +0200 "Aeschbacher, Fabrice" 
+> <Fabrice.Aeschbacher@siemens.com> wrote:
 > 
-> So block size > page cache size... also, you should obviously be using
-> hardware that is tuned to work well with 4K pages, because surely there
-> is lots of that around.
-
-The CPU hardware works well with 4k pages, but in general I/O
-hardware works more efficiently as the numbers of s/g entries they
-require drops for a given I/O size. Given that we limit drivers to
-128 s/g entries, we really aren't using I/O hardware to it's full
-potential or at it's most efficient by limiting each s/g entry to a
-single 4k page.
-
-And FWIW, a having a buffer for block size > page size does not
-solve this problem - only contiguous page allocation solves this
-problem.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+> > Without the following patch, the kernel does not 
+> automatically detect 
+> > 2GB CompactFlash cards from Transcend.
+> > 
+> > I'm not sure which correct values must be assigned to the 
+> 3th and 4th 
+> > parameters (here: 0x709b1bf1, 0xf54a91c8). Anyway, the patch is 
+> > working with these values. Tested on arch=mips.
+> > 
+> 
+> Thanks.  Your patch was wordwrapped and had tabs replaced by 
+> spaces, btw.
+> 
+> > 
+> > ===================================================================
+> > --- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c     2007-04-15
+> > 21:08:02.000000000 +0200
+> > +++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c  2007-04-25
+> > 10:53:53.000000000 +0200
+> > @@ -64,6 +64,7 @@
+> >  
+> >  #define INT_MODULE_PARM(n, v) static int n = v; 
+> module_param(n, int, 
+> > 0)
+> >  
+> > +#define PCMCIA_DEBUG 1
+> >  #ifdef PCMCIA_DEBUG
+> >  INT_MODULE_PARM(pc_debug, PCMCIA_DEBUG);  #define DEBUG(n, 
+> args...) 
+> > if (pc_debug>(n)) printk(KERN_DEBUG args)
+> 
+> I removed the above change
+> 
+> > @@ -399,6 +400,7 @@
+> >         PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 
+> > 0x3489e003),
+> >         PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+> >         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 
+> 0x709b1bf1, 
+> > 0x2a54d4b1),
+> > +       PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 
+> 0x709b1bf1,
+> > 0xf54a91c8),
+> >         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 
+> 0x709b1bf1, 
+> > 0xf54a91c8),
+> >         PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 
+> 0x3e232852),
+> >         PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 
+> > 0x212bb918),
+> 
+> I'm never sure whether it's Bart or Dominik who handles 
+> pcmcia-cs patches.
+> 
