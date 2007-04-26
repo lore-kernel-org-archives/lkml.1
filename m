@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031465AbXDZTge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031468AbXDZTgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031465AbXDZTge (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031467AbXDZTge
+	id S1031468AbXDZTgu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031466AbXDZTgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:36:34 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37597 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031465AbXDZTgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:36:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <46304B9E.5070604@yahoo.com.au>
-	<20070426161152.GC16337@infradead.org>
-	<m1mz0vkoux.fsf@ebiederm.dsl.xmission.com>
-	<Pine.LNX.4.64.0704261059500.3263@schroedinger.engr.sgi.com>
-	<20070426180358.GG2017@kernel.dk>
-	<20070426180932.GA10642@infradead.org>
-	<20070426181249.GH2017@kernel.dk>
-	<Pine.LNX.4.64.0704261127550.3560@schroedinger.engr.sgi.com>
-	<20070426182945.GJ2017@kernel.dk>
-	<Pine.LNX.4.64.0704261134080.3656@schroedinger.engr.sgi.com>
-	<20070426183935.GK2017@kernel.dk>
-Date: Thu, 26 Apr 2007 13:35:00 -0600
-In-Reply-To: <20070426183935.GK2017@kernel.dk> (Jens Axboe's message of "Thu,
-	26 Apr 2007 20:39:35 +0200")
-Message-ID: <m1irbjj5ej.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Thu, 26 Apr 2007 15:36:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59355 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031468AbXDZTgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:36:48 -0400
+Date: Thu, 26 Apr 2007 21:35:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070426193544.GA18512@elte.hu>
+References: <20070425214704.GA32572@elte.hu> <1177615646.25960.42.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177615646.25960.42.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
 
-> On Thu, Apr 26 2007, Christoph Lameter wrote:
->> On Thu, 26 Apr 2007, Jens Axboe wrote:
->> 
->> > On Thu, Apr 26 2007, Christoph Lameter wrote:
->> > > On Thu, 26 Apr 2007, Jens Axboe wrote:
->> > > 
->> > > > The above can be implemented fairly cleanly, and on a need-to-have
->> > > > basis. It's not something that'll break drivers.
->> > > 
->> > > But its also not going to fix the hacks that we have in the kernel 
->> > > to deal with > PAGE_SIZE i/o.
->> > 
->> > No, but that's a _seperate_ issue! Don't keep mixing up the two.
->> 
->> Yes I understand that you want it to be a separate issue so we get get 
->> more rationales for the hacks that we do to avoid the large 
->> order allocations.
->
-> Christoph, don't take your frustrations out on me. I've several times in
-> this thread said that I'd LIKE to have > PAGE_SIZE support in the page
-> cache. I WROTE the initial pktcdvd driver that is a primary example of
-> these hacks, I'm very well aware of the pain and bugs involved with
-> that.
->
-> But don't push large pages as the only solution to larger ios, because
-> that is trivially not true.
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Just taking a quick look at pktcdvd that does appear to be a case where
-we want to express to the rest of the system that our block device has
-a > 2KB block size.
+> On Wed, 2007-04-25 at 23:47 +0200, Ingo Molnar wrote:
+> > i got lots of -v5 feedback (thanks and please keep the reports coming!) 
+> 
+> You asked for it :)
+> 
+> CFS breaks the PI support for futexes. Fix below.
 
-I think it would be very useful to express to the rest of the system
-that yes indeed this device has a 32K sector size (or whatever the
-real limit is) instead of hiding that fact away.
+thanks, applied! :-) (Did you manage to test whether PI works?)
 
-Now I'm not a block layer expert and my knowledge of the page cache
-is rusty.  So I can't immediately point to a way we can do this.
-I'll guess that it will require cleaning up some old crufty code that
-no one wants to touch.
-
-I will point out that while this appears to require support from
-upper levels it also does not require a larger physical page size
-in the page cache.
-
-Am I correct in assuming that the problem is primarily about getting
-filesystems (and other upper layers) to submit BIOs that take into
-consideration the larger block size of the underlying device, so
-that read/modify write is not needed in the pktcdvd layer?
-
-Eric
+	Ingo
