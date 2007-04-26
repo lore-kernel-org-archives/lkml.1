@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXDZXD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXDZXIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753643AbXDZXD4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbXDZXD4
+	id S1753669AbXDZXIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXDZXIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:03:56 -0400
-Received: from server1.freeshells.ch ([193.73.230.111]:52277 "EHLO
-	server1.freeshells.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbXDZXDz (ORCPT
+	Thu, 26 Apr 2007 19:08:42 -0400
+Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:42192 "EHLO
+	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753645AbXDZXIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:03:55 -0400
-X-Greylist: delayed 1377 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 19:03:55 EDT
-Date: Fri, 27 Apr 2007 00:40:55 +0200 (MEST)
-From: Marko Vrh <mvrh@freeshells.ch>
-To: David Brownell <dbrownell@users.sourceforge.net>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] rtc-cmos: make it load on PNPBIOS systems
-Message-ID: <Pine.NEB.4.64.0704270011030.11494@freeshells.ch>
+	Thu, 26 Apr 2007 19:08:40 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD  0.46
+Date: Fri, 27 Apr 2007 08:56:16 +1000
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Ed Tomlinson <edt@aei.ca>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+References: <462D2BDD.4040406@tmr.com> <20070424065709.GB19802@elte.hu> <46312116.1030506@tmr.com>
+In-Reply-To: <46312116.1030506@tmr.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704270856.17210.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replace CONFIG_PNPACPI with CONFIG_PNP, so it loads on
-ACPI-less PNPBIOS systems.
+On Friday 27 April 2007 08:00, Bill Davidsen wrote:
+> Ingo Molnar wrote:
+> > * Ed Tomlinson <edt@aei.ca> wrote:
+> >>> SD 0.46		1-2 FPS
+> >>> cfs v5 nice -19	219-233 FPS
+> >>> cfs v5 nice 0 	1000-1996
+> >>
+> >>    cfs v5 nice -10  60-65 FPS
+> >
+> > the problem is, the glxgears portion of this test is an _inverse_
+> > testcase.
+> >
+> > The reason? glxgears on true 3D hardware will _not_ use X, it will
+> > directly use the 3D driver of the kernel. So by renicing X to -19 you
+> > give the xterms more chance to show stuff - the performance of the
+> > glxgears will 'degrade' - but that is what you asked for: glxgears is
+> > 'just another CPU hog' that competes with X, it's not a "true" X client.
+> >
+> > if you are after glxgears performance in this test then you'll get the
+> > best performance out of this by renicing X to +19 or even SCHED_BATCH.
+>
+> Several points on this...
+>
+> First, I don't think this is accelerated in the way you mean, the
+> machine is a test server, with motherboard video using the 945G video
+> driver. Given the limitations of the support in that setup, I don't
+> think it qualified as "true 3D hardware," although I guess I could try
+> using the vesafb version as a test.
+>
+> The 2nd thing I note is that on FC6 this scheduler seems to confuse
+> 'top' to some degree, since the glxgears is shown as taking 51% of the
+> CPU (one core), while the state breakdown shows about 73% in idle,
+> waitio, and int. image attached.
 
-Signed-off-by: Marko Vrh <mvrh@freeshells.ch>
+top by itself certainly cannot be trusted to give true representation of the 
+cpu usage I'm afraid. It's not as convoluted as, say, trying to track memory 
+usage of an application, but top's resolution being tied to HZ accounting 
+makes it not reliable in that regard.
+>
+> After I upgrade the kernel and cfs to the absolute latest I'll repeat
+> this, as well as test with vesafb, and my planned run under heavy load.
 
-----
+I have a problem with your test case Bill. Its behaviour would depend on how 
+gpu bound vs cpu bound vs accelerated vs non-accelerated your graphics card 
+is. I get completely different results to those of the other testers given 
+the different hardware configuration and I don't think my results are 
+valuable. My problem with this testcase is - What would you define 
+as "perfect" behaviour for your test case? It seems far too arbitrary.
 
-diff -urNp linux-2.6.21/drivers/rtc/rtc-cmos.c linux-2.6.21.new/drivers/rtc/rtc-cmos.c
---- linux-2.6.21/drivers/rtc/rtc-cmos.c	2007-04-26 05:08:32.000000000 +0200
-+++ linux-2.6.21.new/drivers/rtc/rtc-cmos.c	2007-04-26 23:58:36.000000000 +0200
-@@ -379,12 +379,12 @@ static irqreturn_t cmos_interrupt(int ir
-  		return IRQ_NONE;
-  }
-
--#ifdef	CONFIG_PNPACPI
--#define	is_pnpacpi()	1
-+#ifdef	CONFIG_PNP
-+#define	is_pnp()	1
-  #define	INITSECTION
-
-  #else
--#define	is_pnpacpi()	0
-+#define	is_pnp()	0
-  #define	INITSECTION	__init
-  #endif
-
-@@ -427,7 +427,7 @@ cmos_do_probe(struct device *dev, struct
-  	 * REVISIT for non-x86 systems we may need to handle io memory
-  	 * resources: ioremap them, and request_mem_region().
-  	 */
--	if (is_pnpacpi()) {
-+	if (is_pnp()) {
-  		retval = request_resource(&ioport_resource, ports);
-  		if (retval < 0) {
-  			dev_dbg(dev, "i/o registers already in use\n");
-@@ -520,7 +520,7 @@ static void __exit cmos_do_remove(struct
-
-  	cmos_do_shutdown();
-
--	if (is_pnpacpi())
-+	if (is_pnp())
-  		release_resource(cmos->iomem);
-  	rename_region(cmos->iomem, NULL);
-
-@@ -613,7 +613,7 @@ static int cmos_resume(struct device *de
-   * the device node will always be created as a PNPACPI device.
-   */
-
--#ifdef	CONFIG_PNPACPI
-+#ifdef	CONFIG_PNP
-
-  #include <linux/pnp.h>
-
-@@ -684,11 +684,11 @@ static void __exit cmos_exit(void)
-  }
-  module_exit(cmos_exit);
-
--#else	/* no PNPACPI */
-+#else	/* no PNP */
-
-  /*----------------------------------------------------------------*/
-
--/* Platform setup should have set up an RTC device, when PNPACPI is
-+/* Platform setup should have set up an RTC device, when PNP is
-   * unavailable ... this could happen even on (older) PCs.
-   */
-
-@@ -734,7 +734,7 @@ static void __exit cmos_exit(void)
-  module_exit(cmos_exit);
-
-
--#endif	/* !PNPACPI */
-+#endif	/* !PNP */
-
-  MODULE_AUTHOR("David Brownell");
-  MODULE_DESCRIPTION("Driver for PC-style 'CMOS' RTCs");
+-- 
+-ck
