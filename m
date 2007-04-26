@@ -1,101 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbXDZNug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbXDZNyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbXDZNug (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbXDZNua
+	id S1754798AbXDZNyR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXDZNyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:50:30 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:45327 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754794AbXDZNuR (ORCPT
+	Thu, 26 Apr 2007 09:54:17 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35234 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754798AbXDZNyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:50:17 -0400
-Subject: Re: [PATCH] dma_declare_coherent_memory wrong allocation
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-kernel@vger.kernel.org, jayalk@intworks.biz,
-       akpm@linux-foundation.org
-In-Reply-To: <Pine.LNX.4.60.0704232239250.12939@poirot.grange>
-References: <Pine.LNX.4.60.0704132000030.5919@poirot.grange>
-	 <1177260725.4268.9.camel@mulgrave.il.steeleye.com>
-	 <Pine.LNX.4.60.0704222202050.4127@poirot.grange>
-	 <1177343905.6284.22.camel@mulgrave>
-	 <Pine.LNX.4.60.0704232239250.12939@poirot.grange>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 09:47:47 -0400
-Message-Id: <1177595268.6284.116.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 09:54:16 -0400
+Date: Thu, 26 Apr 2007 15:54:26 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-ID: <20070426135426.GM3468@stusta.de>
+References: <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com> <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com> <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <463081E5.5010306@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-23 at 22:45 +0200, Guennadi Liakhovetski wrote:
-> On Mon, 23 Apr 2007, James Bottomley wrote:
-> 
-> > On Mon, 2007-04-23 at 00:45 +0200, Guennadi Liakhovetski wrote:
-> > > Right, thinko. How about using his:
-> > > 
-> > > +	int pages = DIV_ROUND_UP(size, PAGE_SIZE);
-> > 
-> > Actually, no ... this has to be size >> PAGE_SHIFT.  The reason being
-> > that the  allocator is designed to allocate pages out of a device memory
-> > buffer.  If the size isn't a multiple of page size, we have to round
-> > down (we can't allocate the last page if the memory we have is only part
-> > of a page).
-> > 
-> > I suppose if you want to catch the unlikely nutcase where size <
-> > PAGE_SIZE you could
-> > 
-> > if (unlikely(pages == 0))
-> > 	goto out;
-> > 
-> > > +	int bitmap_size = BITS_TO_LONGS(pages) * BYTES_PER_LONG;
-> > 
-> > This is fine, except the BYTES_PER_LONG.  Traditionally, we do this with
-> > sizeof(long).  The only reason to have a #define for it is if it has to
-> > be used in a macro (the compiler does sizeof() not the preprocessor).
-> > 
-> > How about just a simple
-> > 
-> > int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
-> 
-> Ok, version 3, small, and hopefully, beautiful:
-> 
-> dma_declare_coherent_memory() allocates a bitmap 1 bit per page, it 
-> calculates the bitmap size based on size of long, but allocates bytes...
-> Thanks to James Bottomley for clarifications and corrections.
-> 
-> Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+On Thu, Apr 26, 2007 at 12:41:41PM +0200, Rene Herman wrote:
+> On 04/26/2007 03:18 AM, Andrew Morton wrote:
+>
+>> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com>
+>> wrote:
+>>> Provide MODULE_MAINTAINER() as a convenient place to stick a name and
+>>> email address both for drivers having multiple (current and
+>>> non-current) authors and for when someone who wants to maintain a
+>>> driver isn't so much an author.
+>
+> [ snip ]
+>
+>> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
+>> end up having to maintain the same info in two places.
+>
+> joe@user:~$ less ./MAINTAINERS
+> ./MAINTAINERS: No such file or directory
+>
+> MAINTAINERS is a developers thing, not users, yet a maintainer is someone 
+> who other than by developers wants to be contacted by users of a particular 
+> driver. Right now, a module exports a set of name and email addresses 
+> through the MODULE_AUTHOR tag but given multiple current and non-current 
+> authors, completely or largely orphaned drivers (I have a lot of junk PC 
+> hardware so I come across those relatively often) and people who might be 
+> interested in taking care of a driver but who do not consider themselves an 
+> author for (upto now) having done a s/, struct pt_regs// on it, that tag 
+> only confuses the issue of whom to contact.
+>
+> And it in fact even does so when Joe does know about a MAINTAINERS file and 
+> does happen to have a kernel source tree lying around somewhere. With one 
+> set of addresses displayed prominently inside the sourcecode of the very 
+> driver and another one of in a MAINTAINERS file, the first one wins. Joe 
+> would have to be very new to Linux to trust something in the tree that's 
+> not actually compiled over something that is.
+>
+> As the first response in this thread Cristoph Hellwig stated that 
+> MODULE_AUTHOR serves no purpose other than what MODULE_MAINTAINER would be 
+> serving. Others agreed and Adrian Bunk suggested deleting MODULE_AUTHOR 
+> outright.
+>
+> That would actually also serve my purposes; if there's no MODULE_AUTHOR 
+> confusing the issue, I don't so much need a MODULE_MAINTAINER to fix it 
+> again. I believe having "modinfo" (optionally!) display a contact address 
+> for a driver might be a user advantage, but with all the wrong addresses 
+> gone, I don't really care deeply; MODULE_AUTHOR doesn't serve the purpose 
+> today and with it gone the user at least knows he needs to look elsewhere. 
+> MODULE_AUTHOR is also a credits issue but the information can be 
+> transferred to copyright headers. It would obviously also fix any possible 
+> maintenance issues.
+>
+> Alan Cox believes that having author information embedded in the module 
+> serves a legal purpose though and objects to removal.
+>...
 
-Looks perfect to me.
+Let me try to summarize the points:
+- you think MODULE_AUTHOR without MODULE_MAINTAINER confuses users
+- Alan wants MODULE_AUTHOR to stay for easing showing authorship of code
+  to people
+- I (and others) think MODULE_MAINTAINER wouldn't make sense
 
-Acked-by: James Bottomley <James.Bottomley@SteelEye.com>
+Is there any good solution for this?
+E.g. modinfo could be changed to no longer defaulting to show the author?
 
-> diff --git a/arch/cris/arch-v32/drivers/pci/dma.c b/arch/cris/arch-v32/drivers/pci/dma.c
-> index 70d3bf0..832fc63 100644
-> --- a/arch/cris/arch-v32/drivers/pci/dma.c
-> +++ b/arch/cris/arch-v32/drivers/pci/dma.c
-> @@ -76,7 +76,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
->  {
->  	void __iomem *mem_base;
->  	int pages = size >> PAGE_SHIFT;
-> -	int bitmap_size = (pages + 31)/32;
-> +	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
->  
->  	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
->  		goto out;
-> diff --git a/arch/i386/kernel/pci-dma.c b/arch/i386/kernel/pci-dma.c
-> index 3ebcea0..30b754f 100644
-> --- a/arch/i386/kernel/pci-dma.c
-> +++ b/arch/i386/kernel/pci-dma.c
-> @@ -77,7 +77,7 @@ int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
->  {
->  	void __iomem *mem_base = NULL;
->  	int pages = size >> PAGE_SHIFT;
-> -	int bitmap_size = (pages + 31)/32;
-> +	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
->  
->  	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
->  		goto out;
+> Rene.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
