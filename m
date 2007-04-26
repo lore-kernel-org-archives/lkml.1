@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031141AbXDZOdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031210AbXDZOfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031141AbXDZOdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031184AbXDZOdc
+	id S1031210AbXDZOfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031184AbXDZOfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:33:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38648 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031141AbXDZOdb (ORCPT
+	Thu, 26 Apr 2007 10:35:50 -0400
+Received: from smtp.bulldogdsl.com ([212.158.248.8]:2558 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031210AbXDZOft (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:33:31 -0400
-Date: Fri, 27 Apr 2007 00:33:03 +1000
-From: David Chinner <dgc@sgi.com>
-To: Avi Kivity <avi@argo.co.il>
-Cc: David Chinner <dgc@sgi.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426143303.GW65285596@melbourne.sgi.com>
-References: <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com> <46305327.2000206@yahoo.com.au> <Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com> <4630593C.8070905@yahoo.com.au> <20070426092014.GT65285596@melbourne.sgi.com> <4630AEBC.4000002@argo.co.il>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 10:35:49 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Subject: Re: Linux 2.6.21 - something wrong with dmesg.
+Date: Thu, 26 Apr 2007 15:35:46 +0100
+User-Agent: KMail/1.9.6
+Cc: Sunil Naidu <akula2.shark@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <8355959a0704260514s39afa1ecj3e7e077e482769a8@mail.gmail.com> <20070426130339.GB16833@slug>
+In-Reply-To: <20070426130339.GB16833@slug>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4630AEBC.4000002@argo.co.il>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200704261535.46568.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 04:53:00PM +0300, Avi Kivity wrote:
-> David Chinner wrote:
-> >The problem with this approach is that it turns around the whole
-> >way we look at bufferheads. Right now we have well defined 1:n
-> >mapping of page to bufferheads and so we tpyically lock the
-> >page first them iterate all the bufferheads on the page.
+On Thursday 26 April 2007 14:03:39 you wrote:
+> On Thu, Apr 26, 2007 at 05:44:40PM +0530, Sunil Naidu wrote:
+> > Hello,
 > >
-> >Going the other way, we need to support m:n which we means
-> >the buffer has to become the primary interface for the filesystem
-> >to the page cache. i.e. we need to lock the bufferhead first, then
-> >iterate all the pages on it. This is messy because the cache indexes
-> >via pages, not bufferheads. hence a buffer needs to point to all the
-> >pages in it explicitly, and this leads to interesting issues with
-> >locking.
-> >  
-> 
-> Why is it necessary to assume that one filesystem block == one buffer?  
-> Is it for atomicity, efficiency, or something else?
+> > I did compile the kernel, boots good ;-) BTW, does anyone (on P-III)
+> > facing a memory check skip or sort of? Not getting RAM info in the
+> > dmesg.  Unable to get dmseg from the start of the gcc check! Any clue?
+> > Here is the dmesg I get on my box:
+>
+> Don't you need to increase CONFIG_LOG_BUF_SHIFT ?
 
-By definition, really - each filesystem block has it's own state and
-it's own disk mapping and so we need something to carry that
-information around....
+May also simply be that you need to pass dmesg -s 64000 or something similar, 
+because it defaultly only dumps 16K of the kernel log buffer (regardless of 
+the CONFIG setting).
 
-Cheers,
+(Also, does Andrew really need to be CCed twice?)
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Cheers,
+Alistair.
+
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
