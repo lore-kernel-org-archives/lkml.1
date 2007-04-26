@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXDZHOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbXDZHPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXDZHOR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933127AbXDZHOR
+	id S933161AbXDZHPJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933159AbXDZHPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:14:17 -0400
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27409 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933112AbXDZHOQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:14:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=3XHUsuBmlHfBl+wR1p6NEI8pDTo8KpOv99xVg/FhXmZdav0EmYt7DjKX6VEiTDzkLwUEg3+OCbAA9T/l6D5PxbFvKjClLj/v8nLRs1CczGqNscgIJczE5LgBgdBJZVPkTE0p0fsf1FAaw5MTxikHSiZ2FZI36UnM5PvM9SDEfzI=  ;
-X-YMail-OSG: cLNkmtEVM1l9QYlYxkXRnzueoQ.ByhJkviZ2o0NeA7t4PCoZTIoCPGQznhruwIr_EfwzaRxJWg--
-Message-ID: <46304FAF.7020700@yahoo.com.au>
-Date: Thu, 26 Apr 2007 17:07:27 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <20070426070454.GF32602149@melbourne.sgi.com>
-In-Reply-To: <20070426070454.GF32602149@melbourne.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 26 Apr 2007 03:15:09 -0400
+Received: from main.gmane.org ([80.91.229.2]:43587 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933127AbXDZHPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 03:15:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Andy Grover <andy@bandradar.com>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+   hang in atomic copy)
+Date: Thu, 26 Apr 2007 00:08:07 -0700
+Message-ID: <46304FD7.7050204@bandradar.com>
+References: <20070419070437.GA25211@elte.hu>	<20070424202336.GC16503@elf.ucw.cz>	<alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>	<20070424212408.GD16457@elf.ucw.cz>	<alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>	<20070425072350.GA6866@ucw.cz>	<Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>	<alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>	<20070425202741.GC17387@elf.ucw.cz>	<alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>	<20070425214420.GG17387@elf.ucw.cz>	<alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>	<20070425235718.66b71f01@the-village.bc.nu>	<alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070426012454.3495b5d8@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: gateway.groveronline.com
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+In-Reply-To: <20070426012454.3495b5d8@the-village.bc.nu>
+Cc: suspend2-devel@lists.suspend2.net
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> On Thu, Apr 26, 2007 at 04:53:40PM +1000, Nick Piggin wrote:
-> 
->>Christoph Lameter wrote:
->>
->>>On Thu, 26 Apr 2007, Nick Piggin wrote:
->>>
->>>>I am working now and again on some code to do this, it is a big job but
->>>>I think it is the right way to do it. But it would take a long time to
->>>>get stable and supported by filesystems...
->>>
->>>Ummm... We already have a radix tree for this???? What more is needed? You 
->>>just need to go through all filesystems and make them use extends.
->>
->>I'm talking about block size > page size in the buffer layer.
-> 
-> 
-> Nick, what's the buffer layer? Are you talking about operations
-> based on bufferheads?
+Alan Cox wrote:
 
-Yeah. Our pgoff_t->sector_t translation.
+> Mind you some laptops think S2RAM is just a transition state on the way
+> to disk, leave them in ACPI S2RAM and the firmware will magically turn it
+> into a save to disk and back to ram if the battery runs low or you leave
+> it idle too long.
 
--- 
-SUSE Labs, Novell Inc.
+The OS does this (or at least it's supposed to). STR with battery low,
+it comes back on fully via a battery wake event, and then STD (aka
+snapshot/poweroff). The ACPI state machine always goes through S0, FWIW.
+
+OK, now back to the "should we have 2 function pointers or 4" debate...
+
+-- Andy
+
