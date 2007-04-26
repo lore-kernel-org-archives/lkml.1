@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423470AbXDZAjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423471AbXDZAkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423470AbXDZAjw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423468AbXDZAjw
+	id S1423471AbXDZAkR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423474AbXDZAkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:39:52 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54299 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423470AbXDZAjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:39:51 -0400
-Date: Thu, 26 Apr 2007 09:40:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       y-goto@jp.fujitsu.com
-Subject: Re: [RFC][PATCH] syctl for selecting global zonelist[] order
-Message-Id: <20070426094051.0f3c5875.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070426093112.ec2ecb00.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070425121946.9eb27a79.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0704251211070.17886@schroedinger.engr.sgi.com>
-	<20070426093112.ec2ecb00.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Wed, 25 Apr 2007 20:40:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46672 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423471AbXDZAkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 20:40:13 -0400
+Date: Wed, 25 Apr 2007 20:39:11 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+Message-ID: <20070426003911.GA19383@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	mb@bu3sch.de, linville@tuxdriver.com, arnd@arndb.de,
+	maxextreme@gmail.com, gregkh@suse.de
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425172447.1576c399.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 09:31:12 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > So a IA64 platform with i386 sicknesses? And pretty bad case of it since I 
-> > assume that the memory sizes per node are equal. Your solution of taking 
-> > 4G off node 0 and then going to node 1 first must hurt some 
-> > processes running on node 0. 
-> I think so, too. It is because I made this as selectable option.
-                        ^^^^^^^^^
-                         why...
+On Wed, Apr 25, 2007 at 05:24:47PM -0700, Andrew Morton wrote:
 
-sorry.
--Kame                  
+ > It would be neat if someone could create and maintain a new
+ > scripts/spot-common-mistakes.  Feed it a unified diff and it would complain
+ > about newly-added code (and only newly-added code) which has busted
+ > whitespace, adds new semaphores, adds new kernel_thread calls, etc, etc.
 
+years and years ago, when the dinosaurs roamed the land, I hacked up..
+http://janitor.kernelnewbies.org/scripts/  and then left it by the wayside.
+Some of the checks it did are actually bogus, but I'm happy to pick that
+up again if there's interest in it being a useful tool.
+
+In fact, I should probably munge it together with a similar thing
+I wrote at http://www.codemonkey.org.uk/projects/findbugs/
+(Warning: scary regexps)
+
+ > It would need to be fairly simple and easily-extensible, as I can
+ > imagine quite a few things getting added to it.
+ > 
+ > (Imagines a procmail rule which just bounces the email if
+ > spot-common-mistakes failed)
+
+or a git checkin rule that refuses to commit if it fails ;-)
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
