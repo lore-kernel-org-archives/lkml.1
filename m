@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031072AbXDZKbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031150AbXDZKjK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031072AbXDZKbL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031159AbXDZKbL
+	id S1031150AbXDZKjK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:39:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031157AbXDZKjK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:31:11 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41969 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031072AbXDZKbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:31:09 -0400
-Date: Thu, 26 Apr 2007 12:30:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070426103051.GP17387@elf.ucw.cz>
-References: <200704182245.24156.mail@earthworm.de> <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg>
+	Thu, 26 Apr 2007 06:39:10 -0400
+Received: from ara.aytolacoruna.es ([195.55.102.196]:42311 "EHLO
+	mx.aytolacoruna.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031150AbXDZKjI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 06:39:08 -0400
+X-Greylist: delayed 1567 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 06:39:08 EDT
+Date: Thu, 26 Apr 2007 12:12:48 +0200
+From: Santiago Garcia Mantinan <manty@manty.net>
+To: linux-kernel@vger.kernel.org
+Subject: [ALSA] 2.6.21 loading of module snd_ymfpci takes 2 minutes
+Message-ID: <20070426101248.GA15419@clandestino.aytolacoruna.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1177582633.6814.29.camel@johannes.berg>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-04-26 12:17:12, Johannes Berg wrote:
-> On Tue, 2007-04-24 at 23:24 +0200, Pavel Machek wrote:
-> 
-> > I believe uswsusp user/kernel separation is clean enough. Kernel
-> > provides "snapshot image" and "resume image". (Thanks go to Rafael for
-> > very clean interface).
-> 
-> The interface isn't even 64/32-bit compatible...
+I have just upgraded from 2.6.20 to 2.6.21, when I rebooted I thought the
+computer had halted after loading snd_ymfpci, but what happens is that it
+takes 2 minutes (120 seconds mesured with time) for the driver to load, but
+then works as expected.
 
-Which parts?
+After making a diff between the 2.6.20 and 2.6.21 versions of the ymfpci
+driver I decided to replace the ymfpci_main.c from 2.6.21 with the one from
+2.6.20, it compiled with a few warnings and then worked ok, like it used to
+work, without the two minutes delay.
 
-read/write on /dev/snapshot looks ok.
+These are the messages I get from the kernel when I load the driver:
+PCI: Enabling device 0000:00:0a.0 (0000 -> 0002)
+ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKD] -> GSI 9 (level, low) -> IRQ 9
 
-ioctl(SNAPSHOT_FREEZE, UNFREEZE, ATOMIC_RESTORE, FREE, FREE_SWAP_PAGE,
-	SNAPSHOT_S2RAM,
-	is okay, because it does not pass any data.
+This is the info I got for the sound card, which is integrated on the
+motherboard:
 
-ioctl(ATOMIC_SNAPSHOT,
-	returns 0/1 through pointer. Should be ok. (Maybe we should do 
+Card: Yamaha DS-1L (YMF740C)
+Chip: Asahi Kasei AK4543
 
-		if (!error)
-			error = put_user(in_suspend, (u32 __user *)arg);
+lspci:
+00:0a.0 0401: 1073:000c (rev 03)
+        Subsystem: 1033:804b
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR+
+        Latency: 64 (1250ns min, 6250ns max)
+        Interrupt: pin A routed to IRQ 9
+        Region 0: Memory at e8108000 (32-bit, non-prefetchable) [size=32K]
+        Capabilities: <access denied>
 
-	...instead, to make it very explicit?
+/proc/asound/cards:
+ 0 [YMF740C        ]: YMF740C - Yamaha DS-1L (YMF740C)
+                      Yamaha DS-1L (YMF740C) at 0xe8108000, irq 9
 
-ioctl(SET_IMAGE_SIZE,
-	is okay, because it just uses arg directly.
+Hope that helps to diagnose the problem, if you need any other info don't
+hesitate to contact me.
 
-ioctl(PMOPS,
-	is okay, because it just uses arg directly... and it is in
-	range 0-3 or something.
-
-ioctl(AVAIL_SWAP,
-	...hmm, is this the one you are complaining about? It returns
-	loff_t through a pointer.  Maybe there's another interface
-	that can return available swap, and we should use that, instead?
-
-ioctl(GET_SWAP_PAGE,
-	returns sector_t through a pointer. NOt sure if that's good
-	idea, either.
-
-ioctl(SET_SWAP_FILE,
-	does old_decode_dev(arg). Is that ok?
-
-ioctl(SET_SWAP_AREA,
-	shares struct resume_swap_area between user and kernel. I
-	guess that's bad..?
-									Pavel
+Regards...
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Santiago García Mantiñán
