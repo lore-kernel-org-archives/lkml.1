@@ -1,102 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXDZGp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXDZGqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933020AbXDZGp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 02:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXDZGp1
+	id S933102AbXDZGqJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 02:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbXDZGqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 02:45:27 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:53452 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933020AbXDZGpZ (ORCPT
+	Thu, 26 Apr 2007 02:46:09 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40679 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933094AbXDZGqH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 02:45:25 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070425234549.GM17387@elf.ucw.cz>
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
-	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
-	 <20070425202741.GC17387@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
-	 <20070425214420.GG17387@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-	 <1177540027.5025.87.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
-	 <20070425231319.GK17387@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704251621530.9964@woody.linux-foundation.org>
-	 <20070425234549.GM17387@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4jP3KOzMX9oF+OCm1zVP"
-Date: Thu, 26 Apr 2007 11:48:41 +1000
-Message-Id: <1177552121.5025.141.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 26 Apr 2007 02:46:07 -0400
+Date: Wed, 25 Apr 2007 23:46:06 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <463048FE.5000600@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+ <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com>
+ <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Apr 2007, Nick Piggin wrote:
 
---=-4jP3KOzMX9oF+OCm1zVP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Yeah. IMO anti-fragmentation and defragmentation is the hack, and we
+> should stay away from higher order allocations whenever possible.
 
-Hi.
+Right and we need to create series of other approaches that we then label 
+"non-hack" to replace it. 
 
-On Thu, 2007-04-26 at 01:45 +0200, Pavel Machek wrote:
-> > What's your argument? Your argument seems to be that it's not stupid,=20
-> > because it can work. Can't you see that that simply isn't an
-> > argument at=20
->=20
-> I tried keeping module_init/thaw/resume similar code, so that driver
-> authors can debug suspend-to-disk, cross their fingers, and have
-> suspend-to-ram work, too.
+> Hardware is built to handle many small pages efficintly, and I don't
+> understand how it could be an SGI-only issue. Sure, you may have an
+> order of magnitude or more memory than anyone else, but even my lowly
+> desktop _already_ has orders of magnitude more pages than it has TLB
+> entries or cache -- if a workload is cache-nice for me, it probably
+> will be on a 1TB machine as well, and if it is bad for the 1TB machine,
+> it is also bad on mine.
 
+There have been numbers of people that have argued the same point. Just 
+because we have developed a way of thinking to defend our traditional 4k 
+values does not make them right.
 
+> If this is instead an issue of io path or reclaim efficiency, then it
+> would be really nice to see numbers... but I don't think making these
+> fundamental paths more complex and slower is a nice way to fix it
+> (larger PAGE_SIZE would be, though).
 
-> Now, perhaps enough people do std/str these days so this is not
-> important any longer... lets hope so.
+The code paths can stay the same. You can switch CONFIG_LARGE pages off
+if you do not want it and it is as it was.
 
-Noooo! It's important and getting more important. More and more, people
-are going to be demanding better power saving (climate change and all
-that stuff). The best power saving is to have the thing completely off,
-so STD is more important. The second best power saving is STR, so that's
-important too. But even more important is good power saving all the
-time.
-
-For that reason, I agree completely with Linus. The current model is far
-too limited. It shouldn't be so suspend-to-ram/disk centric, and should
-instead focus on run-time power management, with suspend to ram and disk
-as particular instances of run-time power management. It should make
-appropriate differentiation between snapshotting and suspending to ram.
-
-I do disagree that the current suspend-to-disk algorithm is broken. We
-do need a point at which we say "Ok, drivers, record your state." - the
-current device_suspend and device_resume calls. But that doesn't mean
-the need to be called device_suspend/resume or do what they do now.
-
-I'd love to help make this happen, but I'm afraid I just don't have the
-time.
-
-Nigel
-
---=-4jP3KOzMX9oF+OCm1zVP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGMAT5N0y+n1M3mo0RAlJaAKDk9r4FZyIQNZ7RqAuno97tqEx6wwCaAyPy
-1E1ipjItH16ab0nfcRuWygs=
-=yi5w
------END PGP SIGNATURE-----
-
---=-4jP3KOzMX9oF+OCm1zVP--
-
+If you would have a look the patches: The code is significantly cleanup 
+and easier to read.
