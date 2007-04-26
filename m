@@ -1,70 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031456AbXDZTMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031455AbXDZTM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031456AbXDZTMH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031390AbXDZTMH
+	id S1031455AbXDZTM3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031457AbXDZTM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:12:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58420 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031456AbXDZTME (ORCPT
+	Thu, 26 Apr 2007 15:12:28 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53074 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031455AbXDZTM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:12:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Kthread question
-References: <Pine.LNX.4.44L0.0704261114080.3552-100000@iolanthe.rowland.org>
-Date: Thu, 26 Apr 2007 13:11:15 -0600
-In-Reply-To: <Pine.LNX.4.44L0.0704261114080.3552-100000@iolanthe.rowland.org>
-	(Alan Stern's message of "Thu, 26 Apr 2007 11:29:52 -0400 (EDT)")
-Message-ID: <m1r6q7j6i4.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 26 Apr 2007 15:12:27 -0400
+Date: Thu, 26 Apr 2007 12:12:26 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
+In-Reply-To: <4630F203.7020005@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0704261210430.7441@schroedinger.engr.sgi.com>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+ <4630A662.8090502@shadowen.org> <4630ABF2.1040305@shadowen.org>
+ <4630EBFA.9000207@shadowen.org> <Pine.LNX.4.64.0704261123080.3560@schroedinger.engr.sgi.com>
+ <4630F203.7020005@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern <stern@rowland.harvard.edu> writes:
+On Thu, 26 Apr 2007, Andy Whitcroft wrote:
 
-> Here's a question about how to use a kthread.
->
-> The usb-storage driver creates a new thread to do LUN scanning whenever a
-> newly-hotplugged device is detected.  This scanning involves waiting for
-> several seconds and then carrying out a potentially long-lasting series of
-> I/O operations.  So we don't want to use schedule_work(); instead we
-> create a new thread to do it.
->
-> Once the scanning thread's work is done, there's no reason for it to hang
-> around.  The driver's probe() method has long since exited, leaving nobody
-> to reap the thread.  Of course it could always just exit normally, without
-> checking kthread_should_stop(), but...
->
-> If the device is unplugged during that initial several-second-long delay 
-> period, we need to stop the scanning thread immediately.  The obvious 
-> answer is to use kthread_stop(), but that's not consistent with the 
-> thread's normal behavior of exiting without waiting for 
-> kthread_should_stop().
->
-> Another problem arises as well.  If the driver's remove() method doesn't
-> call kthread_stop() then it doesn't have any straightforward way to wait
-> for the thread to exit.  This leads to the possibility that the driver's
-> module could be unloaded while the scanning thread is still running.
->
-> Would the best approach be to set up a special-purpose struct completion?  
-> Then the thread could call complete_and_exit() and the remove() method
-> could wait for it safely.
+> > But then how important is gcc 3.3 support?
+> 
+> Well we say 3.2 is the minimum.  If we simply return(NULL) or BUG() in
 
-Ok.    Because of the module unloading issue, and because we don't have
-a lot of these threads running around, the current plan is to fix
-thread_create and kthread_stop so that they must always be paired,
-and so that kthread_stop will work correctly if the task has already
-exited.
+Oh before I forget
 
-Basically that just involves calling get_task_struct in kthread_create
-and put_task_struct in kthread_stop.
-
-I have some patches, hopefully I will start getting them out in the next day or
-two.  Sorry I should have acted on this sooner, but I got a little distracted.
-
-Eric
+Gcc 3.3 works just fine on other platforms like i386. This is more likely 
+a platform issue. If we disable it then only for <= gcc 3.3 on ppc. If 
+problems crop up with other platforms then we can expand on it.
