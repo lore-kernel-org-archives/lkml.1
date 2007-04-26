@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXDZTOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXDZTQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbXDZTOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbXDZTOw
+	id S1751856AbXDZTQi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXDZTQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:14:52 -0400
-Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:41142
-	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1031462AbXDZTOt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:14:49 -0400
-Message-ID: <4630FA27.1090203@seclark.us>
-Date: Thu, 26 Apr 2007 15:14:47 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Thu, 26 Apr 2007 15:16:37 -0400
+Received: from lotis.site5.com ([70.47.36.45]:51479 "EHLO lotis.site5.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751856AbXDZTQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:16:36 -0400
+X-Greylist: delayed 3239 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 15:16:36 EDT
+Date: Thu, 26 Apr 2007 13:22:27 -0500 (CDT)
+From: Chase Venters <chase.venters@clientec.com>
+X-X-Sender: root@turbotaz.ourhouse
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
+ <1177573348.5025.224.camel@nigel.suspend2.net>
+ <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org>
-In-Reply-To: <4630E9C8.5060000@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-Antivirus-Scanner: This message has been scanned by ClamAV.
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - lotis.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - clientec.com
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+On Thu, 26 Apr 2007, Linus Torvalds wrote:
 
->IMO, the closer you look, the more warts you find.  Before you starting 
->doing your work with kernel regressions, no one was really tracking it. 
->  I bet you have helped cut down on the regressions, but I have no good 
->way to quantify my gut feeling.
 >
->Additional comments on developers and fixing regressions:
+> Once you have that snapshot image in user space you can do anything you
+> want. And again: you'd hav a fully working system: not any degradation
+> *at*all*. If you're in X, then X will continue running etc even after the
+> snapshotting, although obviously the snapshotting will have tried to page
+> a lot of stuff out in order to make the snapshot smaller, so you'll likely
+> be crawling.
 >
->* Sometimes seeing a long list, peoples' eyes glaze over.  Its just 
->human nature.  A long list also gives us no idea of scale, or severity. 
->  I bet a weekly "top 10 bugs and regressions" email would help focus 
->developer attention.
->
->* To be effective, lists, either long or top-10, must be pruned if you 
->get a sense that only one user is affected.  [With oopses and BUGs as a 
->clear exception,] many problems benefit from at least two users 
->reporting a bug.
->
->* It gets a bit tiresome to field the large number of driver bug reports 
->that eventually turn out to be related to broken interrupt handling 
->somehow.  I think we developers need to get better at showing users how 
->to isolate driver vs. PCI/ACPI/core bugs.  Maybe drivers need to start 
->introducing interrupt delivery tests into their probe code.  Overall, 
->broken interrupt handling manifests in several ways, most of which 
->initially appear symptomatic of a broken driver.
->
->	Jeff
->
->
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-Jeff,
 
-If hardware worked in the previous version of the kernel can't users expect
- the same hardware to work in this kernel?
+In fact... If you're just paging out to make a smaller snapshot (ie, not
+to free up memory), couldn't you just swap it out (if it's not backed by a
+file) then mark it as "half-released"... ie, the snapshot writing code
+ignores it knowing that it will be available on disk at resume, but then
+when the snapshot is complete it's still available in physical RAM,
+preventing user-space from crawling due to the necessity of paging it all
+back in?
 
-Steve
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
+Thanks,
+Chase
 
 
