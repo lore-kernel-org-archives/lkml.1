@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbXDZCdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXDZCh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbXDZCdn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 22:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbXDZCdn
+	id S1754112AbXDZCh6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 22:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbXDZCh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 22:33:43 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59768 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754638AbXDZCdm (ORCPT
+	Wed, 25 Apr 2007 22:37:58 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:21386 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754112AbXDZCh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 22:33:42 -0400
-Date: Wed, 25 Apr 2007 19:32:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-In-Reply-To: <463008A2.9020301@zytor.com>
-Message-ID: <alpine.LFD.0.98.0704251915460.9964@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
- <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
- <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
- <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
- <20070425235718.66b71f01@the-village.bc.nu>
- <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
- <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
- <20070426001414.GO17387@elf.ucw.cz> <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
- <463008A2.9020301@zytor.com>
+	Wed, 25 Apr 2007 22:37:57 -0400
+Message-ID: <4630109F.6090002@oracle.com>
+Date: Wed, 25 Apr 2007 19:38:23 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
+In-Reply-To: <20070426003911.GA19383@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 25 Apr 2007, H. Peter Anvin wrote:
+Dave Jones wrote:
+> On Wed, Apr 25, 2007 at 05:24:47PM -0700, Andrew Morton wrote:
 > 
-> That was the 1990s.  On a brand new server system:
+>  > It would be neat if someone could create and maintain a new
+>  > scripts/spot-common-mistakes.  Feed it a unified diff and it would complain
+>  > about newly-added code (and only newly-added code) which has busted
+>  > whitespace, adds new semaphores, adds new kernel_thread calls, etc, etc.
 > 
-> 00:08.0 System peripheral: Intel Corporation 5000 Series Chipset DMA
-> Engine (rev b1)
+> years and years ago, when the dinosaurs roamed the land, I hacked up..
+> http://janitor.kernelnewbies.org/scripts/  and then left it by the wayside.
+> Some of the checks it did are actually bogus, but I'm happy to pick that
+> up again if there's interest in it being a useful tool.
 > 
-> For better or worse, slave DMA seems to be making a comeback of sorts.
-> Not to mention all kinds of embedded crap^Whardware with optimized DMA
-> engines which look nothing like PCI at all.
+> In fact, I should probably munge it together with a similar thing
+> I wrote at http://www.codemonkey.org.uk/projects/findbugs/
+> (Warning: scary regexps)
+> 
+>  > It would need to be fairly simple and easily-extensible, as I can
+>  > imagine quite a few things getting added to it.
+>  > 
+>  > (Imagines a procmail rule which just bounces the email if
+>  > spot-common-mistakes failed)
+> 
+> or a git checkin rule that refuses to commit if it fails ;-)
 
-Well, the solution to that tends to be to just leave them be, and hold 
-them on until the very end - and just ignore them (and just make-believe 
-that it's actually the device itself that does the DMA transfer).
+Yep, I was going to mention your scripts but you beat me to it.
 
-The PCI spec for controlling DMA is really pretty nasty. You can disable 
-it in the PCI config word, of course, but that usually just messes up the 
-device entirely.
+I'll be glad to help maintain such animals if wanted.
 
-So in practice, the way to shut up DMA (regardless of whether it's an 
-internal DMA engine or an external one) is that you just tell the device 
-not to listen any more (for example, for a network controller, the way to 
-make sure it doesn't do DMA is just to make sure that you're not sending 
-any frames, but also that it's not listening to any either)!
-
-So whether it's internal to the device, or some "system DMA controller", 
-the sequence for shutting down DMA always ends up being the same:
-
- - make sure the host itself doesn't generate any new traffic (eg shut 
-   down the send-queue). This is generally a higher-level thing anyway, ie 
-   not really a driver decision.
- - the driver needs to tell the hardware to stop listening (ie "stop 
-   scanning the command mailboxes" or "stop walking USB command 
-   structures" or "stop receiving data")
- - the driver then needs to wait for the controller to say "ok, I'm idle".
-
-because regardless of whether it's the system DMA controller or some 
-on-chip DMA controller, you generally can *not* just say "stop 
-transferring DMA data", because that will generally just lock the chip up 
-or cause other major unhappiness.
-
-So I don't think an external DMA controller (like the i8237, ugh!) really 
-_changes_ anything. Except for just the horrible pain of serializing 
-access to them for programming etc horrible resource handling issues, of 
-course (but that's not specific to suspend/resume).
-
-			Linus
+-- 
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
