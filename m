@@ -1,82 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031221AbXDZM6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031219AbXDZNCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031221AbXDZM6v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 08:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031222AbXDZM6v
+	id S1031219AbXDZNCu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031223AbXDZNCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 08:58:51 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:38468 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031221AbXDZM6t (ORCPT
+	Thu, 26 Apr 2007 09:02:50 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1753 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031219AbXDZNCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 08:58:49 -0400
-Date: Thu, 26 Apr 2007 18:28:38 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm1: BUG_ON in kthread_bind during _cpu_down
-Message-ID: <20070426125838.GC12892@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200704260110.22224.rjw@sisk.pl> <20070425165410.b73443b4.akpm@linux-foundation.org> <20070426100922.GB12892@in.ibm.com> <20070426101547.GA97@tv-sign.ru>
+	Thu, 26 Apr 2007 09:02:49 -0400
+Message-ID: <4630A2F5.4010009@shadowen.org>
+Date: Thu, 26 Apr 2007 14:02:45 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426101547.GA97@tv-sign.ru>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+References: <20070423141123.GA21174@skybase>	<20070423104534.51bac974.akpm@linux-foundation.org>	<20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org>
+In-Reply-To: <20070425143011.57247c1d.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 02:15:47PM +0400, Oleg Nesterov wrote:
+Andrew Morton wrote:
+> On Wed, 25 Apr 2007 11:21:33 -0700
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> I can't understand why do we need to re-bind this thread. We are doing
-> kthread_stop()->wake_up() below, at this point move_task_off_dead_cpu()
-> has already cared about this task, no?
+>> On Mon, 23 Apr 2007 10:45:34 -0700 Andrew Morton wrote:
+>>
+>>> On Mon, 23 Apr 2007 16:11:23 +0200
+>>> Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
+>>>
+>>>> Greetings,
+>>>> I've added the results of the review to the Kconfig cleanup patches
+>>>> for s390. Patch #2 has been split, one half has all the HAS_IOMEM
+>>>> depends lines the other the remaining !S390 depends lines.
+>>>>
+>>>> Andrew: I plan to add patches 1-5 to the for-andrew branch of the
+>>>> git390 repository if that is fine with you. The only thing that will
+>>>> be missing in the tree is the patch that disables wireless for s390.
+>>>> The code does compile but without hardware it is mute to have the
+>>>> config options. I'll wait until the git-wireless.patch is upstream.
+>>>> Patches 7-9 depend on patches found in -mm.
+>>>>
+>>> umm, OK.  If it's Ok I think I'll duck it for now: -mm is full.
+>>>
+>>> Over-full, really: I've been working basically continuously since Friday
+>>> getting the current dungpile to compile and boot, and it's still miles away
+>>> from that.
+>> and I continue to be concerned about the amount of patch reviews
+>> compared to new patch material overall (not just s390).
+>>
 > 
-> > We only need to ensure in kthread_bind that the task which is being
-> > bound is not running or exiting. Doesn't matter if it's sleeping in 
-> > TASK_INTERRUPTIBLE or TASK_UNINTERRUPTIBLE state.
+> yes.  I'm increasingly reluctant to merge things which have had no visible
+> review from any third party.  Nowadays I'll shove such patches into a
+> pending folder and will wait a day or three to see if anyone has any
+> feedback.  If they don't I have to either ignore the patches or review them
+> myself.
 > 
-> We need to ensure that this task can't be woken after return from
-> wait_task_inactive(k), otherwise set_task_cpu() after that is not safe.
-> 
-> TASK_INTERRUPTIBLE doesn't protect us from freezing.
-> 
-> Couldn't we just remove this kthread_bind() ?
+> I expect (and hope) that more formal processes will come about here.  Perhaps
+> up to it-won't-be-merged-without-a-Reviewed-by:.
 
-Fair enough. We are anyway kthread_stop()ping other per-cpu kernel threads
-after move_task_off_dead_cpu(), so we can do it with the stop_machine_run
-thread as well.
+Is this not the meaning of the Acked-by: ?
 
-I just checked with Vatsa if there was any subtle reason why they
-had put in the kthread_bind() in cpu.c. Vatsa cannot seem to recollect
-any and I can't see any. So let us just remove the kthread_bind.
+> Heaven knows how many more serious problems are being snuck into the tree
+> via this route.
+> 
+> What do we do?
 
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
- kernel/cpu.c |    4 ----
- 1 files changed, 4 deletions(-)
+Perhaps its time for Linus to say he won't accept any patches which are
+not Acked and place the onus on getting those on the tree maintainers.
+In theory at least tree maintainers are supposed to be responsible for
+the stuff coming through their tree.  They could be made responsible to
+ensuring only Ack'd stuff is committed.  Automated checks could be made
+for that at least.
 
-Index: linux-2.6.21-rc7/kernel/cpu.c
-===================================================================
---- linux-2.6.21-rc7.orig/kernel/cpu.c
-+++ linux-2.6.21-rc7/kernel/cpu.c
-@@ -176,10 +176,6 @@ static int _cpu_down(unsigned int cpu, i
- 	/* This actually kills the CPU. */
- 	__cpu_die(cpu);
- 
--	/* Move it here so it can run. */
--	kthread_bind(p, get_cpu());
--	put_cpu();
--
- 	/* CPU is completely dead: tell everyone.  Too late to complain. */
- 	if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD | mod,
- 				    hcpu) == NOTIFY_BAD)
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+As for the white space errors.  I think that we should perhaps run a
+spectrum of commits from each tree through the checked proposed later in
+the thread.  Where any significant non-compliance is detected that
+should be sent to the tree maintainer and their 'upstream' and
+corrections expected.
+
+Public shaming.  A savaging from Linus' or any other respected community
+member is something to be avoided at all costs.
+
+-apw
