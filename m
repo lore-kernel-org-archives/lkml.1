@@ -1,108 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbXDZNyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754806AbXDZNzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754798AbXDZNyR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXDZNyR
+	id S1754806AbXDZNzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754808AbXDZNzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:54:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:35234 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754798AbXDZNyQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:54:16 -0400
-Date: Thu, 26 Apr 2007 15:54:26 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-Message-ID: <20070426135426.GM3468@stusta.de>
-References: <20070404150231.GE27660@stusta.de> <4613C963.6070409@gmail.com> <20070404170016.453d26f1@the-village.bc.nu> <4613D492.2070404@gmail.com> <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 26 Apr 2007 09:55:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48950 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754806AbXDZNzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 09:55:33 -0400
+Date: Thu, 26 Apr 2007 15:55:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Gerdau <mgd@technosis.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [REPORT] cfs-v6-rc2 vs sd-0.46 vs 2.6.21-rc7
+Message-ID: <20070426135509.GA29832@elte.hu>
+References: <200704261312.25571.mgd@technosis.de> <20070426120723.GA4092@elte.hu> <200704261522.43347.mgd@technosis.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <463081E5.5010306@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200704261522.43347.mgd@technosis.de>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 12:41:41PM +0200, Rene Herman wrote:
-> On 04/26/2007 03:18 AM, Andrew Morton wrote:
->
->> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com>
->> wrote:
->>> Provide MODULE_MAINTAINER() as a convenient place to stick a name and
->>> email address both for drivers having multiple (current and
->>> non-current) authors and for when someone who wants to maintain a
->>> driver isn't so much an author.
->
-> [ snip ]
->
->> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
->> end up having to maintain the same info in two places.
->
-> joe@user:~$ less ./MAINTAINERS
-> ./MAINTAINERS: No such file or directory
->
-> MAINTAINERS is a developers thing, not users, yet a maintainer is someone 
-> who other than by developers wants to be contacted by users of a particular 
-> driver. Right now, a module exports a set of name and email addresses 
-> through the MODULE_AUTHOR tag but given multiple current and non-current 
-> authors, completely or largely orphaned drivers (I have a lot of junk PC 
-> hardware so I come across those relatively often) and people who might be 
-> interested in taking care of a driver but who do not consider themselves an 
-> author for (upto now) having done a s/, struct pt_regs// on it, that tag 
-> only confuses the issue of whom to contact.
->
-> And it in fact even does so when Joe does know about a MAINTAINERS file and 
-> does happen to have a kernel source tree lying around somewhere. With one 
-> set of addresses displayed prominently inside the sourcecode of the very 
-> driver and another one of in a MAINTAINERS file, the first one wins. Joe 
-> would have to be very new to Linux to trust something in the tree that's 
-> not actually compiled over something that is.
->
-> As the first response in this thread Cristoph Hellwig stated that 
-> MODULE_AUTHOR serves no purpose other than what MODULE_MAINTAINER would be 
-> serving. Others agreed and Adrian Bunk suggested deleting MODULE_AUTHOR 
-> outright.
->
-> That would actually also serve my purposes; if there's no MODULE_AUTHOR 
-> confusing the issue, I don't so much need a MODULE_MAINTAINER to fix it 
-> again. I believe having "modinfo" (optionally!) display a contact address 
-> for a driver might be a user advantage, but with all the wrong addresses 
-> gone, I don't really care deeply; MODULE_AUTHOR doesn't serve the purpose 
-> today and with it gone the user at least knows he needs to look elsewhere. 
-> MODULE_AUTHOR is also a credits issue but the information can be 
-> transferred to copyright headers. It would obviously also fix any possible 
-> maintenance issues.
->
-> Alan Cox believes that having author information embedded in the module 
-> serves a legal purpose though and objects to removal.
->...
 
-Let me try to summarize the points:
-- you think MODULE_AUTHOR without MODULE_MAINTAINER confuses users
-- Alan wants MODULE_AUTHOR to stay for easing showing authorship of code
-  to people
-- I (and others) think MODULE_MAINTAINER wouldn't make sense
+* Michael Gerdau <mgd@technosis.de> wrote:
 
-Is there any good solution for this?
-E.g. modinfo could be changed to no longer defaulting to show the author?
+> In general sd tends to finish all three such jobs at roughly the same 
+> time while cfs clearly "favors" the LTMM-type jobs (which admittedly 
+> involve the least computations). I don't really know why that is so.
 
-> Rene.
+for the reason of this, look at the raw user runtimes the 3 jobs have:
 
-cu
-Adrian
+  5498.128  secs            # LTMM
+  7559.777  secs
+  7600.179  secs
 
--- 
+the "perfect scheduler" would run each of the jobs at 33.33% of capacity 
+for ~5500 CPU-seconds, and would then run the remaining two jobs at 
+50.0% capacity for about ~2075 CPU-seconds.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Why? Because the scheduler how no idea how much each job takes! So a 
+fair scheduler would run: 3 jobs at 33.33% capacity for as long as the 
+shortest job ends, then the remaining 2 jobs at 50% capacity for as the 
+shorter one of the remaining 2 finishes, and the remaining one at 100%.
 
+in your case that means that the best scheduling would be roughly the 
+following ideal timeline:
+
+   5500*3 / 2 ==  8250 seconds for the LTMM to finish
+   2075*2 / 2 == +2075 more seconds for the other two jobs to finish.
+
+the various runs showed the following wallclock-time timeline for the 
+LTMM phase:
+
+   CFS #1:  real    142m56.806s
+   CFS #2:  real    125m58.235s
+   SD:      real    140m16.127s
+   vanilla: real    133m50.274s
+
+the "ideal" is ~137 minutes (8250 seconds) for the LTMM phase. The 
+closest was indeed SD, but vanilla and cfs #1 wasnt too far away from it 
+either. [ and the variance between CFS #1 and #2 seems to suggest that 
+the noise of this particular metric is significant. The average does 
+come in at 134.5, which is quite close to the ideal number. ]
+
+	Ingo
