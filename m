@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbXDZRNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031344AbXDZRNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbXDZRNI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbXDZQ6p
+	id S1031344AbXDZRNx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031355AbXDZRNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:58:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34993 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754863AbXDZQ6Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:58:25 -0400
-Date: Thu, 26 Apr 2007 09:55:13 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, kvm-devel@lists.sourceforge.net,
-       Avi Kivity <avi@qumranet.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 04/33] KVM: MMU: Fix guest writes to nonpae pde
-Message-ID: <20070426165513.GE1898@kroah.com>
-References: <20070426165111.393445007@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="kvm-mmu-fix-guest-writes-to-nonpae-pde.patch"
-In-Reply-To: <20070426165445.GA1898@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Thu, 26 Apr 2007 13:13:53 -0400
+Received: from www.osadl.org ([213.239.205.134]:39359 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031344AbXDZRN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:13:29 -0400
+Subject: Re: recomended way to check longest period that interupts are
+	disabled ?
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Mike Mattie <codermattie@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070426051953.26582bbb@reforged>
+References: <20070426021350.29ddfa0a@reforged>
+	 <1177581237.26937.105.camel@twins> <20070426040252.3f4fa8cc@reforged>
+	 <1177585912.6815.6.camel@twins>  <20070426051953.26582bbb@reforged>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 19:15:23 +0200
+Message-Id: <1177607723.25960.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
--stable review patch.  If anyone has any objections, please let us know.
+On Thu, 2007-04-26 at 05:19 -0700, Mike Mattie wrote:
+> Thanks for the comments. After running cyclictest it definitely looks
+> like the average jitter is really low, around 7-8 . The max is really
+> high , >100
+> 
+> If I am interpreting this correctly for the most part the jitter is
+> pretty low, but something horrible is happening that blows up the
+> max value.
 
-------------------
-From: Avi Kivity <avi@qumranet.com>
+Yup
 
-KVM shadow page tables are always in pae mode, regardless of the guest
-setting.  This means that a guest pde (mapping 4MB of memory) is mapped
-to two shadow pdes (mapping 2MB each).
+> ./cyclictest -p 30 -t 6
+> 2.00 1.84 1.41 3/120 13760
+> 
+> T: 0 (13130) P:30 I:1000 C:  42763 Min:      4 Act:   10 Avg:    8 Max:     133
+> T: 1 (13131) P:29 I:1500 C:  28509 Min:      4 Act:    6 Avg:    7 Max:     114
+> T: 2 (13132) P:28 I:2000 C:  21382 Min:      4 Act:    7 Avg:    6 Max:     157
+> T: 3 (13133) P:27 I:2500 C:  17106 Min:      4 Act:   11 Avg:    7 Max:     110
+> T: 4 (13134) P:26 I:3000 C:  14255 Min:      4 Act:    8 Avg:    7 Max:    1011
+> T: 5 (13135) P:25 I:3500 C:  12218 Min:      4 Act:   12 Avg:    8 Max:     118
 
-When the guest writes to a pte or pde, we intercept the write and emulate it.
-We also remove any shadowed mappings corresponding to the write.  Since the
-mmu did not account for the doubling in the number of pdes, it removed the
-wrong entry, resulting in a mismatch between shadow page tables and guest
-page tables, followed shortly by guest memory corruption.
+What happens with 
 
-This patch fixes the problem by detecting the special case of writing to
-a non-pae pde and adjusting the address and number of shadow pdes zapped
-accordingly.
+# cyclictest -p 80 -n
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Avi Kivity <avi@qumranet.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+At first it puts the timer thread above everything else and second it
+uses nanosleep instead of the signal delivered posix timers.
 
----
- drivers/kvm/mmu.c |   47 +++++++++++++++++++++++++++++++++++------------
- 1 file changed, 35 insertions(+), 12 deletions(-)
+	tglx
 
---- a/drivers/kvm/mmu.c
-+++ b/drivers/kvm/mmu.c
-@@ -1093,22 +1093,40 @@ out:
- 	return r;
- }
- 
-+static void mmu_pre_write_zap_pte(struct kvm_vcpu *vcpu,
-+				  struct kvm_mmu_page *page,
-+				  u64 *spte)
-+{
-+	u64 pte;
-+	struct kvm_mmu_page *child;
-+
-+	pte = *spte;
-+	if (is_present_pte(pte)) {
-+		if (page->role.level == PT_PAGE_TABLE_LEVEL)
-+			rmap_remove(vcpu, spte);
-+		else {
-+			child = page_header(pte & PT64_BASE_ADDR_MASK);
-+			mmu_page_remove_parent_pte(vcpu, child, spte);
-+		}
-+	}
-+	*spte = 0;
-+}
-+
- void kvm_mmu_pre_write(struct kvm_vcpu *vcpu, gpa_t gpa, int bytes)
- {
- 	gfn_t gfn = gpa >> PAGE_SHIFT;
- 	struct kvm_mmu_page *page;
--	struct kvm_mmu_page *child;
- 	struct hlist_node *node, *n;
- 	struct hlist_head *bucket;
- 	unsigned index;
- 	u64 *spte;
--	u64 pte;
- 	unsigned offset = offset_in_page(gpa);
- 	unsigned pte_size;
- 	unsigned page_offset;
- 	unsigned misaligned;
- 	int level;
- 	int flooded = 0;
-+	int npte;
- 
- 	pgprintk("%s: gpa %llx bytes %d\n", __FUNCTION__, gpa, bytes);
- 	if (gfn == vcpu->last_pt_write_gfn) {
-@@ -1144,22 +1162,27 @@ void kvm_mmu_pre_write(struct kvm_vcpu *
- 		}
- 		page_offset = offset;
- 		level = page->role.level;
-+		npte = 1;
- 		if (page->role.glevels == PT32_ROOT_LEVEL) {
--			page_offset <<= 1;          /* 32->64 */
-+			page_offset <<= 1;	/* 32->64 */
-+			/*
-+			 * A 32-bit pde maps 4MB while the shadow pdes map
-+			 * only 2MB.  So we need to double the offset again
-+			 * and zap two pdes instead of one.
-+			 */
-+			if (level == PT32_ROOT_LEVEL) {
-+				page_offset &= ~7; /* kill rounding error */
-+				page_offset <<= 1;
-+				npte = 2;
-+			}
- 			page_offset &= ~PAGE_MASK;
- 		}
- 		spte = __va(page->page_hpa);
- 		spte += page_offset / sizeof(*spte);
--		pte = *spte;
--		if (is_present_pte(pte)) {
--			if (level == PT_PAGE_TABLE_LEVEL)
--				rmap_remove(vcpu, spte);
--			else {
--				child = page_header(pte & PT64_BASE_ADDR_MASK);
--				mmu_page_remove_parent_pte(vcpu, child, spte);
--			}
-+		while (npte--) {
-+			mmu_pre_write_zap_pte(vcpu, page, spte);
-+			++spte;
- 		}
--		*spte = 0;
- 	}
- }
- 
 
--- 
