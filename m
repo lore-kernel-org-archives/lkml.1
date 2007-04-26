@@ -1,56 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbXDZNcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXDZNds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbXDZNcN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbXDZNcN
+	id S1753169AbXDZNds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbXDZNds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:32:13 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44871 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754779AbXDZNcL (ORCPT
+	Thu, 26 Apr 2007 09:33:48 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:54512 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753169AbXDZNdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:32:11 -0400
-Date: Thu, 26 Apr 2007 15:30:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426133054.GZ3640@kernel.dk>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <20070426142846.45ee23af@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 09:33:47 -0400
+Date: Thu, 26 Apr 2007 14:33:44 +0100
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andy Whitcroft <apw@shadowen.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 blade hard hangs
+Message-ID: <20070426133344.GB16909@skynet.ie>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46309B59.4090701@shadowen.org> <p73fy6n2qhg.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070426142846.45ee23af@the-village.bc.nu>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <p73fy6n2qhg.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26 2007, Alan Cox wrote:
-> > > Oh we have scores of these hacks around. Look at the dvd/cd layer. The 
-> > > point is to get rid of those.
-> > 
-> > Perhaps this is just a matter of cleaning them up so they are no
-> > longer hacks?
+On (26/04/07 15:51), Andi Kleen didst pronounce:
+> Andy Whitcroft <apw@shadowen.org> writes:
 > 
-> CD and DVD media support various non power-of-two block sizes. Supporting
-> more block sizes would also be useful as we could then read older smart
-> media (256byte/sector) without the SCSI layer objecting and the like.
+> > Getting hard boot failures before any kernel output on an x86_64 blade:
+> > 
+> > root (hd0,0)
+> >  Filesystem type is ext2fs, partition type 0x83
+> > kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
+> > console=tty0 console=ttyS1,19200 selinux=no autobench_args:
+> > root=30726124 ABAT:1177507960 profile=2
+> >    [Linux-bzImage, setup=0x1e00, size=0x21fe48]
+> > initrd /initrd-autobench.img
+> >    [Linux-initrd @ 0x37e5f000, 0x190984 bytes]
+> > [silence]
+> > 
+> > Kernel config is here:
+> > 
+> > http://test.kernel.org/abat/85082/build/dotconfig
+> 
+> You should boot with earlyprintk=serial,ttyS1,19200
+> 
 
-I think Christoph is referring to the packet writing stuff, where we use
-32kb or 64kb block sizes. Those aren't implemented as page cache hacks
-currently though, the issue is worked around at the block layer level by
-doing software RMW.
+Here is the console log. Haven't taken a closer look yet in case it's
+blindingly obvious to you.
 
-Supporting larger page cache blocks would allow pktcdvd to be reduced to
-almost nothing.
+kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
+console=tty0 co
+nsole=ttyS1,19200 selinux=no autobench_args: root=30726124
+ABAT:1177594149 logl
+evel=8 earlyprintk=serial,ttyS1,19200 
+   [Linux-bzImage, setup=0x1e00, size=0x220da8]
+initrd /initrd-autobench.img
+   [Linux-initrd @ 0x37e5f000, 0x190982 bytes]
+Linux version 2.6.21-rc7-mm2-autokern1 (root@bl6-13.ltc.austin.ibm.com)
+(gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Thu Apr 26
+08:16:37 CDT 2007
+Command line: ro root=/dev/VolGroup00/LogVol00 rhgb console=tty0
+console=ttyS1,19200 selinux=no autobench_args: root=30726124
+ABAT:1177594149 loglevel=8 earlyprintk=serial,ttyS1,19200 
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009d400 (usable)
+ BIOS-e820: 000000000009d400 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000003ffcddc0 (usable)
+ BIOS-e820: 000000003ffcddc0 - 000000003ffd0000 (ACPI data)
+ BIOS-e820: 000000003ffd0000 - 0000000040000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
+end_pfn_map = 1048576
+kernel direct mapping tables up to 100000000 @ 8000-d000
+DMI 2.3 present.
+ACPI: RSDP 000FDFC0, 0014 (r0 IBM   )
+ACPI: RSDT 3FFCFF80, 0034 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+ACPI: FACP 3FFCFEC0, 0084 (r2 IBM    SERBLADE     1000 IBM  45444F43)
+ACPI: DSDT 3FFCDDC0, 1EA6 (r1 IBM    SERBLADE     1000 INTL  2002025)
+ACPI: FACS 3FFCFCC0, 0040
+ACPI: APIC 3FFCFE00, 009C (r1 IBM    SERBLADE     1000 IBM  45444F43)
+ACPI: SRAT 3FFCFD40, 0098 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+ACPI: HPET 3FFCFD00, 0038 (r1 IBM    SERBLADE     1000 IBM  45444F43)
+SRAT: PXM 0 -> APIC 0 -> Node 0
+SRAT: PXM 0 -> APIC 1 -> Node 0
+SRAT: PXM 1 -> APIC 2 -> Node 1
+SRAT: PXM 1 -> APIC 3 -> Node 1
+SRAT: Node 0 PXM 0 0-40000000
+PANIC: early exception rip ffffffff808a7e83 error 0 cr2 5cf0
+Call Trace:
+ [<ffffffff808a7e83>] reserve_bootmem_node+0x0/0xc
+ [<ffffffff808a3a8c>] reserve_bootmem_generic+0x6d/0x99
+ [<ffffffff8089cc00>] setup_arch+0x2f7/0x469
+ [<ffffffff80896510>] start_kernel+0x64/0x2aa
+ [<ffffffff80896148>] _sinittext+0x148/0x14c
+RIP reserve_bootmem_node+0x0/0xc
 
 -- 
-Jens Axboe
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
