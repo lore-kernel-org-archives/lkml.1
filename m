@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031461AbXDZTNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031464AbXDZTNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031461AbXDZTNb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031459AbXDZTNb
+	id S1031464AbXDZTNx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031462AbXDZTNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:13:31 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35603 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031460AbXDZTN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:13:28 -0400
-Date: Thu, 26 Apr 2007 21:13:38 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426191338.GW3468@stusta.de>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <20070426183602.GT3468@stusta.de> <20070426185851.GA7352@electric-eye.fr.zoreil.com>
+	Thu, 26 Apr 2007 15:13:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44932 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031459AbXDZTNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:13:42 -0400
+Date: Thu, 26 Apr 2007 15:13:37 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: ffilz@us.ibm.com
+Subject: [PATCH] NFS: supress warnings about NFS4ERR_OLD_STATEID in
+	nfs4_handle_exception
+Message-ID: <20070426191336.GB31081@dantu.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070426185851.GA7352@electric-eye.fr.zoreil.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 08:58:51PM +0200, Francois Romieu wrote:
-> Adrian Bunk <bunk@stusta.de> :
-> [...]
-> > And how to order the rtl8139 netdriver regression reported one month ago 
-> > against the snd_hda_intel regression reported one month ago?
-> 
-> Pointer for the rtl8139 regression please ?
+I recently posted this patch to the nfs mailing list, but got no comment.
+Reposting with an actual "[PATCH]" subject...
 
-Subject    : boot failure: rtl8139: exception in interrupt routine
-References : http://lkml.org/lkml/2007/3/31/160
-Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
-Status     : unknown
+In certain situations, a NFSv4 client can end up with a set of racing calls
+that cause the server to return a NFS4ERR_OLD_STATEID error. When this occurs,
+the only real recourse that the client has is to retry the call. In the
+current code, when this occurs, it triggers a useless printk (in
+nfs4_map_errors):
 
+    nfs4_map_errors could not handle NFSv4 error 10024
 
-cu
-Adrian
+Trond recently mentioned that we really don't need to worry users with that
+info. The following patch is based on a suggestion by Frank Filz and supresses
+this error. Changing the return code here to 0 should be safe since all callers
+of nfs4_handle_exception are expected to retry the call in this situation
+anyway.
 
--- 
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Frank Filz <ffilz@us.ibm.com>
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+index f52cf5c..b456783 100644
+--- a/fs/nfs/nfs4proc.c
++++ b/fs/nfs/nfs4proc.c
+@@ -2774,6 +2774,7 @@ int nfs4_handle_exception(const struct nfs_server *server, int errorcode, struct
+ 				break;
+ 		case -NFS4ERR_OLD_STATEID:
+ 			exception->retry = 1;
++			ret = 0;
+ 	}
+ 	/* We failed to handle the error */
+ 	return nfs4_map_errors(ret);
