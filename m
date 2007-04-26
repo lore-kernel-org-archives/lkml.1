@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbXDZVny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbXDZVrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755151AbXDZVny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbXDZVny
+	id S1755159AbXDZVrj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbXDZVrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:43:54 -0400
-Received: from mail1.vetienne.net ([87.98.219.23]:4669 "EHLO
-	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755151AbXDZVnw convert rfc822-to-8bit (ORCPT
+	Thu, 26 Apr 2007 17:47:39 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38378
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755167AbXDZVrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:43:52 -0400
-From: Vincent ETIENNE <ve@vetienne.net>
-To: Jay Vosburgh <fubar@us.ibm.com>
-Subject: Re: [Bonding-devel] [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
-Date: Thu, 26 Apr 2007 23:43:48 +0200
-User-Agent: KMail/1.9.6
-Cc: Chris Snook <csnook@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       bonding-devel@lists.sourceforge.net,
-       "Andy Gospodarek" <andy@greyhouse.net>
-References: <200704262058.33087.ve@vetienne.net> <46310B19.8@redhat.com> <1791.1177620299@death>
-In-Reply-To: <1791.1177620299@death>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704262343.49666.ve@vetienne.net>
+	Thu, 26 Apr 2007 17:47:37 -0400
+Date: Thu, 26 Apr 2007 14:47:43 -0700 (PDT)
+Message-Id: <20070426.144743.94075709.davem@davemloft.net>
+To: johnstul@us.ibm.com
+Cc: peter.keilty@hp.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, eric.whitney@hp.com
+Subject: Re: [PATCH 2/3] ia64: remove interpolater code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1177620767.6031.7.camel@localhost.localdomain>
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>
+	<20070426202702.23343.10036.sendpatchset@rambler.zko.hp.com>
+	<1177620767.6031.7.camel@localhost.localdomain>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Thursday 26 April 2007 22:44:59 Jay Vosburgh, vous avez écrit :
-> Chris Snook <csnook@redhat.com> wrote:
-> >Vincent ETIENNE wrote:
-> >> Hi,
-> >>
-> >>  Summary :
-> >> 	Got this trace when one network interface come down or up in a 2
-> >> 	interfaces bonding.	So far, system seems to survive to this problem
-> >> 	and works fine.
-> >
-> >I'm investigating a similar/possibly identical bug.  Do you experience
-> >packet loss or throughput stalls, beyond just the loss of the interface
-> >that went down, when this happens?
->
-> 	This problem looks to be one of the known locking issues with
-> bonding.
->
-> 	Andy Gospodarek <andy@greyhouse.net> and I have been working
-> offline on the locking issues in bonding over the last several weeks.
-> At the moment, we have a generally stable (but ugly with debug fluff and
-> other yuckies) patch that seems to resolve at least the majority of the
-> various issues.  I'm thinking to clean it up for general posting early
-> next week, and address additional problems from there (since it's
-> hopefully at least a big step forward).
->
-> 	-J
->
-> ---
-> 	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+From: john stultz <johnstul@us.ibm.com>
+Date: Thu, 26 Apr 2007 13:52:47 -0700
 
-Will be more than happy to test it and report the result with the new patch.
+> This specific patch may need to be held off until Dave Miller pushes his
+> SPARC64 GENERIC_TIME conversion (as SPARC64 currently uses the
+> time_interpolator code). 
+> 
+> I think Dave intends to push it soon, so it shouldn't be a long wait.
 
-Thanks for your work,
+Feel free to break the tree meanwhile in order to delete this,
+I won't mind as I'll have it fixed as soon as I merge my
+sparc tree to Linus.
