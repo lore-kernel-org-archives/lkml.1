@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbXDZElf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbXDZEpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754382AbXDZElf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbXDZElZ
+	id S1754706AbXDZEpt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 00:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbXDZEpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:41:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42396 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754382AbXDZElY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:41:24 -0400
-Date: Thu, 26 Apr 2007 00:38:48 -0400
-From: Dave Jones <davej@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426043848.GD11278@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Adrian Bunk <bunk@stusta.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
+	Thu, 26 Apr 2007 00:45:49 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48304
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754704AbXDZEps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 00:45:48 -0400
+Date: Wed, 25 Apr 2007 21:45:55 -0700 (PDT)
+Message-Id: <20070425.214555.13770473.davem@davemloft.net>
+To: k-keiichi@bx.jp.nec.com
+Cc: shemminger@linux-foundation.org, akpm@linux-foundation.org,
+       mpm@selenic.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [RFC][PATCH -mm take4 2/6] support multiple logging
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4630243C.4010402@bx.jp.nec.com>
+References: <20070424012902.1089bc02.akpm@linux-foundation.org>
+	<20070424082117.354341d3@oldman>
+	<4630243C.4010402@bx.jp.nec.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426040806.GJ3468@stusta.de>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 06:08:06AM +0200, Adrian Bunk wrote:
- 
- > What I will NOT do:
- > Waste my time with tracking 2.6.22-rc regressions.
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Date: Thu, 26 Apr 2007 13:02:04 +0900
 
-I seriously hope you'll reconsider.  If you hadn't have done this,
-things would have been a *lot* worse imo.
+> Stephen Hemminger said "The configuration of netconsole's looks like the 
+> configuration of routes".
+> I think so too.
+> So I think ioctl commands for adding/removing port and the following userland 
+> application like route(8) command by using the ioctl.
 
-But either way, thanks for doing what remains a really grotty
-job that may not get you as many kernel groupies as rewriting the
-process scheduler, but is equally as (if not moreso) important.
+Like the route command itself, the route changing ioctl()s are
+old deprecated BSD compatible functionality.
 
-	Dave
+All current routing configuration is done using netlink and the 'ip'
+utility.
 
--- 
-http://www.codemonkey.org.uk
