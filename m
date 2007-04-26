@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXDZRCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXDZRCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbXDZRCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754875AbXDZRBx
+	id S1754897AbXDZRCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXDZRBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39724 "EHLO
+	Thu, 26 Apr 2007 13:01:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39729 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754882AbXDZRBN (ORCPT
+	with ESMTP id S1754859AbXDZRBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:01:13 -0400
-Date: Thu, 26 Apr 2007 09:57:01 -0700
+	Thu, 26 Apr 2007 13:01:16 -0400
+Date: Thu, 26 Apr 2007 09:57:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        torvalds@linux-foundation.org
@@ -20,15 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       nagar@watson.ibm.com, balbir@in.ibm.com, jlan@engr.sgi.com,
-       balbir@linux.vnet.ibm.com
-Subject: [patch 27/33] Taskstats fix the structure members alignment issue
-Message-ID: <20070426165701.GB1898@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, a.righi@cineca.it,
+       vs@namesys.com, jeffm@suse.com, zam@namesys.com, edward@namesys.com
+Subject: [patch 28/33] reiserfs: fix xattr root locking/refcount bug
+Message-ID: <20070426165704.GC1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="taskstats-fix-the-structure-members-alignment-issue.patch"
+Content-Disposition: inline; filename="reiserfs-fix-xattr-root-locking-refcount-bug.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,237 +38,169 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Balbir Singh <balbir@in.ibm.com>
+From: Jeff Mahoney <jeffm@suse.com>
 
-We broke the the alignment of members of taskstats to the 8 byte boundary
-with the CSA patches.  In the current kernel, the taskstats structure is
-not suitable for use by 32 bit applications in a 64 bit kernel.
+The listxattr() and getxattr() operations are only protected by a read
+lock.  As a result, if either of these operations run in parallel, a race
+condition exists where the xattr_root will end up being cached twice, which
+results in the leaking of a reference and a BUG() on umount.
 
-On x86_64
+This patch refactors get_xa_root(), __get_xa_root(), and create_xa_root(),
+into one get_xa_root() function that takes the appropriate locking around
+the entire critical section.
 
-Offsets of taskstats' members (64 bit kernel, 64 bit application)
+Reported, diagnosed and tested by Andrea Righi <a.righi@cineca.it>
 
-@taskstats'offsetof[@taskstats'indices] = (
-        0,      # version
-        4,      # ac_exitcode
-        8,      # ac_flag
-        9,      # ac_nice
-        16,     # cpu_count
-        24,     # cpu_delay_total
-        32,     # blkio_count
-        40,     # blkio_delay_total
-        48,     # swapin_count
-        56,     # swapin_delay_total
-        64,     # cpu_run_real_total
-        72,     # cpu_run_virtual_total
-        80,     # ac_comm
-        112,    # ac_sched
-        113,    # ac_pad
-        116,    # ac_uid
-        120,    # ac_gid
-        124,    # ac_pid
-        128,    # ac_ppid
-        132,    # ac_btime
-        136,    # ac_etime
-        144,    # ac_utime
-        152,    # ac_stime
-        160,    # ac_minflt
-        168,    # ac_majflt
-        176,    # coremem
-        184,    # virtmem
-        192,    # hiwater_rss
-        200,    # hiwater_vm
-        208,    # read_char
-        216,    # write_char
-        224,    # read_syscalls
-        232,    # write_syscalls
-        240,    # read_bytes
-        248,    # write_bytes
-        256,    # cancelled_write_bytes
-    );
-
-Offsets of taskstats' members (64 bit kernel, 32 bit application)
-
-@taskstats'offsetof[@taskstats'indices] = (
-        0,      # version
-        4,      # ac_exitcode
-        8,      # ac_flag
-        9,      # ac_nice
-        12,     # cpu_count
-        20,     # cpu_delay_total
-        28,     # blkio_count
-        36,     # blkio_delay_total
-        44,     # swapin_count
-        52,     # swapin_delay_total
-        60,     # cpu_run_real_total
-        68,     # cpu_run_virtual_total
-        76,     # ac_comm
-        108,    # ac_sched
-        109,    # ac_pad
-        112,    # ac_uid
-        116,    # ac_gid
-        120,    # ac_pid
-        124,    # ac_ppid
-        128,    # ac_btime
-        132,    # ac_etime
-        140,    # ac_utime
-        148,    # ac_stime
-        156,    # ac_minflt
-        164,    # ac_majflt
-        172,    # coremem
-        180,    # virtmem
-        188,    # hiwater_rss
-        196,    # hiwater_vm
-        204,    # read_char
-        212,    # write_char
-        220,    # read_syscalls
-        228,    # write_syscalls
-        236,    # read_bytes
-        244,    # write_bytes
-        252,    # cancelled_write_bytes
-    );
-
-This is one way to solve the problem without re-arranging structure members
-is to pack the structure.  The patch adds an __attribute__((aligned(8))) to
-the taskstats structure members so that 32 bit applications using taskstats
-can work with a 64 bit kernel.
-
-Using __attribute__((packed)) would break the 64 bit alignment of members.
-
-The fix was tested on x86_64. After the fix, we got
-
-Offsets of taskstats' members (64 bit kernel, 64 bit application)
-
-@taskstats'offsetof[@taskstats'indices] = (
-        0,      # version
-        4,      # ac_exitcode
-        8,      # ac_flag
-        9,      # ac_nice
-        16,     # cpu_count
-        24,     # cpu_delay_total
-        32,     # blkio_count
-        40,     # blkio_delay_total
-        48,     # swapin_count
-        56,     # swapin_delay_total
-        64,     # cpu_run_real_total
-        72,     # cpu_run_virtual_total
-        80,     # ac_comm
-        112,    # ac_sched
-        113,    # ac_pad
-        120,    # ac_uid
-        124,    # ac_gid
-        128,    # ac_pid
-        132,    # ac_ppid
-        136,    # ac_btime
-        144,    # ac_etime
-        152,    # ac_utime
-        160,    # ac_stime
-        168,    # ac_minflt
-        176,    # ac_majflt
-        184,    # coremem
-        192,    # virtmem
-        200,    # hiwater_rss
-        208,    # hiwater_vm
-        216,    # read_char
-        224,    # write_char
-        232,    # read_syscalls
-        240,    # write_syscalls
-        248,    # read_bytes
-        256,    # write_bytes
-        264,    # cancelled_write_bytes
-    );
-
-Offsets of taskstats' members (64 bit kernel, 32 bit application)
-
-@taskstats'offsetof[@taskstats'indices] = (
-        0,      # version
-        4,      # ac_exitcode
-        8,      # ac_flag
-        9,      # ac_nice
-        16,     # cpu_count
-        24,     # cpu_delay_total
-        32,     # blkio_count
-        40,     # blkio_delay_total
-        48,     # swapin_count
-        56,     # swapin_delay_total
-        64,     # cpu_run_real_total
-        72,     # cpu_run_virtual_total
-        80,     # ac_comm
-        112,    # ac_sched
-        113,    # ac_pad
-        120,    # ac_uid
-        124,    # ac_gid
-        128,    # ac_pid
-        132,    # ac_ppid
-        136,    # ac_btime
-        144,    # ac_etime
-        152,    # ac_utime
-        160,    # ac_stime
-        168,    # ac_minflt
-        176,    # ac_majflt
-        184,    # coremem
-        192,    # virtmem
-        200,    # hiwater_rss
-        208,    # hiwater_vm
-        216,    # read_char
-        224,    # write_char
-        232,    # read_syscalls
-        240,    # write_syscalls
-        248,    # read_bytes
-        256,    # write_bytes
-        264,    # cancelled_write_bytes
-    );
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Jay Lan <jlan@engr.sgi.com>
-Cc: Shailabh Nagar <nagar@watson.ibm.com>
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+Cc: Andrea Righi <a.righi@cineca.it>
+Cc: "Vladimir V. Saveliev" <vs@namesys.com>
+Cc: Edward Shishkin <edward@namesys.com>
+Cc: Alex Zarochentsev <zam@namesys.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/taskstats.h |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ fs/reiserfs/xattr.c |   92 +++++++++++++---------------------------------------
+ 1 file changed, 24 insertions(+), 68 deletions(-)
 
---- a/include/linux/taskstats.h
-+++ b/include/linux/taskstats.h
-@@ -31,7 +31,7 @@
-  */
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -54,82 +54,48 @@
+ static struct reiserfs_xattr_handler *find_xattr_handler_prefix(const char
+ 								*prefix);
  
+-static struct dentry *create_xa_root(struct super_block *sb)
++/* Returns the dentry referring to the root of the extended attribute
++ * directory tree. If it has already been retrieved, it is used. If it
++ * hasn't been created and the flags indicate creation is allowed, we
++ * attempt to create it. On error, we return a pointer-encoded error.
++ */
++static struct dentry *get_xa_root(struct super_block *sb, int flags)
+ {
+ 	struct dentry *privroot = dget(REISERFS_SB(sb)->priv_root);
+ 	struct dentry *xaroot;
  
--#define TASKSTATS_VERSION	3
-+#define TASKSTATS_VERSION	4
- #define TS_COMM_LEN		32	/* should be >= TASK_COMM_LEN
- 					 * in linux/sched.h */
+ 	/* This needs to be created at mount-time */
+ 	if (!privroot)
+-		return ERR_PTR(-EOPNOTSUPP);
++		return ERR_PTR(-ENODATA);
  
-@@ -66,7 +66,7 @@ struct taskstats {
- 	/* Delay waiting for cpu, while runnable
- 	 * count, delay_total NOT updated atomically
- 	 */
--	__u64	cpu_count;
-+	__u64	cpu_count __attribute__((aligned(8)));
- 	__u64	cpu_delay_total;
+-	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
+-	if (IS_ERR(xaroot)) {
++	mutex_lock(&privroot->d_inode->i_mutex);
++	if (REISERFS_SB(sb)->xattr_root) {
++		xaroot = dget(REISERFS_SB(sb)->xattr_root);
+ 		goto out;
+-	} else if (!xaroot->d_inode) {
+-		int err;
+-		mutex_lock(&privroot->d_inode->i_mutex);
+-		err =
+-		    privroot->d_inode->i_op->mkdir(privroot->d_inode, xaroot,
+-						   0700);
+-		mutex_unlock(&privroot->d_inode->i_mutex);
+-
+-		if (err) {
+-			dput(xaroot);
+-			dput(privroot);
+-			return ERR_PTR(err);
+-		}
+-		REISERFS_SB(sb)->xattr_root = dget(xaroot);
+ 	}
  
- 	/* Following four fields atomically updated using task->delays->lock */
-@@ -101,14 +101,17 @@ struct taskstats {
+-      out:
+-	dput(privroot);
+-	return xaroot;
+-}
+-
+-/* This will return a dentry, or error, refering to the xa root directory.
+- * If the xa root doesn't exist yet, the dentry will be returned without
+- * an associated inode. This dentry can be used with ->mkdir to create
+- * the xa directory. */
+-static struct dentry *__get_xa_root(struct super_block *s)
+-{
+-	struct dentry *privroot = dget(REISERFS_SB(s)->priv_root);
+-	struct dentry *xaroot = NULL;
+-
+-	if (IS_ERR(privroot) || !privroot)
+-		return privroot;
+-
+ 	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
+ 	if (IS_ERR(xaroot)) {
+ 		goto out;
+ 	} else if (!xaroot->d_inode) {
+-		dput(xaroot);
+-		xaroot = NULL;
+-		goto out;
++		int err = -ENODATA;
++		if (flags == 0 || flags & XATTR_CREATE)
++			err = privroot->d_inode->i_op->mkdir(privroot->d_inode,
++			                                     xaroot, 0700);
++		if (err) {
++			dput(xaroot);
++			xaroot = ERR_PTR(err);
++			goto out;
++		}
+ 	}
+-
+-	REISERFS_SB(s)->xattr_root = dget(xaroot);
++	REISERFS_SB(sb)->xattr_root = dget(xaroot);
  
- 	/* Basic Accounting Fields start */
- 	char	ac_comm[TS_COMM_LEN];	/* Command name */
--	__u8	ac_sched;		/* Scheduling discipline */
-+	__u8	ac_sched __attribute__((aligned(8)));
-+					/* Scheduling discipline */
- 	__u8	ac_pad[3];
--	__u32	ac_uid;			/* User ID */
-+	__u32	ac_uid __attribute__((aligned(8)));
-+					/* User ID */
- 	__u32	ac_gid;			/* Group ID */
- 	__u32	ac_pid;			/* Process ID */
- 	__u32	ac_ppid;		/* Parent process ID */
- 	__u32	ac_btime;		/* Begin time [sec since 1970] */
--	__u64	ac_etime;		/* Elapsed time [usec] */
-+	__u64	ac_etime __attribute__((aligned(8)));
-+					/* Elapsed time [usec] */
- 	__u64	ac_utime;		/* User CPU time [usec] */
- 	__u64	ac_stime;		/* SYstem CPU time [usec] */
- 	__u64	ac_minflt;		/* Minor Page Fault Count */
+       out:
++	mutex_unlock(&privroot->d_inode->i_mutex);
+ 	dput(privroot);
+ 	return xaroot;
+ }
+ 
+-/* Returns the dentry (or NULL) referring to the root of the extended
+- * attribute directory tree. If it has already been retrieved, it is used.
+- * Otherwise, we attempt to retrieve it from disk. It may also return
+- * a pointer-encoded error.
+- */
+-static inline struct dentry *get_xa_root(struct super_block *s)
+-{
+-	struct dentry *dentry = dget(REISERFS_SB(s)->xattr_root);
+-
+-	if (!dentry)
+-		dentry = __get_xa_root(s);
+-
+-	return dentry;
+-}
+-
+ /* Opens the directory corresponding to the inode's extended attribute store.
+  * If flags allow, the tree to the directory may be created. If creation is
+  * prohibited, -ENODATA is returned. */
+@@ -138,21 +104,11 @@ static struct dentry *open_xa_dir(const 
+ 	struct dentry *xaroot, *xadir;
+ 	char namebuf[17];
+ 
+-	xaroot = get_xa_root(inode->i_sb);
+-	if (IS_ERR(xaroot)) {
++	xaroot = get_xa_root(inode->i_sb, flags);
++	if (IS_ERR(xaroot))
+ 		return xaroot;
+-	} else if (!xaroot) {
+-		if (flags == 0 || flags & XATTR_CREATE) {
+-			xaroot = create_xa_root(inode->i_sb);
+-			if (IS_ERR(xaroot))
+-				return xaroot;
+-		}
+-		if (!xaroot)
+-			return ERR_PTR(-ENODATA);
+-	}
+ 
+ 	/* ok, we have xaroot open */
+-
+ 	snprintf(namebuf, sizeof(namebuf), "%X.%X",
+ 		 le32_to_cpu(INODE_PKEY(inode)->k_objectid),
+ 		 inode->i_generation);
+@@ -821,7 +777,7 @@ int reiserfs_delete_xattrs(struct inode 
+ 
+ 	/* Leftovers besides . and .. -- that's not good. */
+ 	if (dir->d_inode->i_nlink <= 2) {
+-		root = get_xa_root(inode->i_sb);
++		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
+ 		reiserfs_write_lock_xattrs(inode->i_sb);
+ 		err = vfs_rmdir(root->d_inode, dir);
+ 		reiserfs_write_unlock_xattrs(inode->i_sb);
 
 -- 
