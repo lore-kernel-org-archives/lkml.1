@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbXDZQqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbXDZQrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbXDZQqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbXDZQqY
+	id S1752905AbXDZQrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXDZQrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:46:24 -0400
-Received: from smtp2.cc.ksu.edu ([129.130.7.16]:51357 "EHLO smtp2.cc.ksu.edu"
+	Thu, 26 Apr 2007 12:47:08 -0400
+Received: from mivlgu.ru ([81.18.140.87]:36262 "EHLO mail.mivlgu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753103AbXDZQqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:46:22 -0400
-Message-ID: <4630D703.6060602@ksu.edu>
-Date: Thu, 26 Apr 2007 11:44:51 -0500
-From: Amit Gud <gud@ksu.edu>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jeff Dike <jdike@addtoit.com>, Valerie Henson <val_henson@linux.intel.com>,
-       Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu>	<17965.60841.900376.524639@gargle.gargle.HOWL>	<Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz>	<17966.23512.363955.141489@gargle.gargle.HOWL>	<Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz>	<17967.15531.450627.972572@gargle.gargle.HOWL>	<20070425224710.GB16129@nifty>	<20070426141455.GA6155@c2.user-mode-linux.org>	<4630CAEC.2050909@ksu.edu> <20070426171134.5ce3bb6a@the-village.bc.nu>
-In-Reply-To: <20070426171134.5ce3bb6a@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752905AbXDZQrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:47:07 -0400
+X-Greylist: delayed 1502 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 12:47:06 EDT
+Date: Thu, 26 Apr 2007 20:21:57 +0400
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: Greg KH <gregkh@suse.de>
+Cc: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: "IPV6: Disallow RH0 by default" patch looks broken (Re: Linux
+ 2.6.20.9)
+Message-Id: <20070426202157.e357ece5.vsu@altlinux.ru>
+In-Reply-To: <20070426072503.GA5643@kroah.com>
+References: <20070426072441.GA5515@kroah.com>
+	<20070426072503.GA5643@kroah.com>
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; i586-alt-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Preventive measures are taken to limit only one continuation inode per 
->> file per chunk. This can be done easily in the chunk allocation 
->> algorithm for disk space. Although I'm not quite sure what you mean by 
-> 
-> How are you handling the allocation in this situation, are you assuming
-> that a chunk is "out of bounds" because part of a file already lives on
-> it or simply keeping a single inode per chunk which has multiple sparse
-> pieces of the file on it ?
-> 
-> ie if I write 0-8MB to chunk A and then 8-16 to chunk B can I write
-> 16-24MB to chunk A producing a single inode of 0-8 16-24, or does it have
-> to find another chunk to use ?
+On Thu, 26 Apr 2007 00:25:03 -0700 Greg KH wrote:
 
-Hello Alan,
+[...]
+> diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
+> index 0711f92..5fd7cf9 100644
+> --- a/net/ipv6/exthdrs.c
+> +++ b/net/ipv6/exthdrs.c
+[...]
+> @@ -378,6 +395,22 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
+>  
+>  	hdr = (struct ipv6_rt_hdr *) skb->h.raw;
+>  
+> +	switch (hdr->type) {
+> +#ifdef CONFIG_IPV6_MIP6
+> +		break;
 
-You re-use the same inode with multiple sparse pieces.
+I suppose "case IPV6_SRCRT_TYPE_2:" is missing before "break"?
 
-This way you avoid hopping around continuation inodes and coming back to 
-same chunk with which you started but this time on a different 
-continuation inode. This may not be I/O intensive for successive 
-traversals if the continuation inodes are pinned in the memory, but it 
-certainly is a waste of resource - inodes. Not allowing this would make 
-worst case of every file having a continuation inode in every chunk, 
-even worse; may be like only single file exist in the file system and 
-rest all inodes in all chunks (including file's own chunk) are 
-continuation inodes.
+The same broken patch went in 2.6.21.
 
-
-AG
--- 
-May the source be with you.
-http://www.cis.ksu.edu/~gud
-
+> +#endif
+> +	case IPV6_SRCRT_TYPE_0:
+> +		if (accept_source_route > 0)
+> +			break;
+> +		kfree_skb(skb);
+> +		return -1;
+> +	default:
+> +		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+> +				 IPSTATS_MIB_INHDRERRORS);
+> +		icmpv6_param_prob(skb, ICMPV6_HDR_FIELD, (&hdr->type) - skb->nh.raw);
+> +		return -1;
+> +	}
+> +
+>  	if (ipv6_addr_is_multicast(&skb->nh.ipv6h->daddr) ||
+>  	    skb->pkt_type != PACKET_HOST) {
+>  		IP6_INC_STATS_BH(ip6_dst_idev(skb->dst),
+[...]
