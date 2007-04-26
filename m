@@ -1,125 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbXDZPmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbXDZPmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753045AbXDZPmA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXDZPmA
+	id S1754804AbXDZPmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXDZPmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:42:00 -0400
-Received: from www17.your-server.de ([213.133.104.17]:4210 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045AbXDZPl7 (ORCPT
+	Thu, 26 Apr 2007 11:42:21 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53473 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754804AbXDZPmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:41:59 -0400
-X-Greylist: delayed 2491 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 11:41:59 EDT
-Message-ID: <4630BE67.3000400@web.de>
-Date: Thu, 26 Apr 2007 16:59:51 +0200
-From: Thomas Meyer <thomas.mey@web.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.21 dynticks and amarok
-Content-Type: text/plain; charset=ISO-8859-15
+	Thu, 26 Apr 2007 11:42:18 -0400
+Date: Thu, 26 Apr 2007 08:41:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+Message-Id: <20070426084143.1d973c71.randy.dunlap@oracle.com>
+In-Reply-To: <20070426135426.GM3468@stusta.de>
+References: <20070404150231.GE27660@stusta.de>
+	<4613C963.6070409@gmail.com>
+	<20070404170016.453d26f1@the-village.bc.nu>
+	<4613D492.2070404@gmail.com>
+	<462C7D74.60003@gmail.com>
+	<1177327476.17026.75.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
+	<462CA764.5080401@gmail.com>
+	<20070425181856.42fcfeb4.akpm@linux-foundation.org>
+	<463081E5.5010306@gmail.com>
+	<20070426135426.GM3468@stusta.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, 26 Apr 2007 15:54:26 +0200 Adrian Bunk wrote:
 
-here a vmstat of my laptop with my favorite song player amarok running
-and not running:
+> On Thu, Apr 26, 2007 at 12:41:41PM +0200, Rene Herman wrote:
+> > On 04/26/2007 03:18 AM, Andrew Morton wrote:
+> >
+> >> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com>
+> >> wrote:
+> >>> Provide MODULE_MAINTAINER() as a convenient place to stick a name and
+> >>> email address both for drivers having multiple (current and
+> >>> non-current) authors and for when someone who wants to maintain a
+> >>> driver isn't so much an author.
+> >
+> > [ snip ]
+> >
+> >> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
+> >> end up having to maintain the same info in two places.
+> >
+> > joe@user:~$ less ./MAINTAINERS
+> > ./MAINTAINERS: No such file or directory
+> >
+> > MAINTAINERS is a developers thing, not users, yet a maintainer is someone 
+> > who other than by developers wants to be contacted by users of a particular 
+> > driver. Right now, a module exports a set of name and email addresses 
+> > through the MODULE_AUTHOR tag but given multiple current and non-current 
+> > authors, completely or largely orphaned drivers (I have a lot of junk PC 
+> > hardware so I come across those relatively often) and people who might be 
+> > interested in taking care of a driver but who do not consider themselves an 
+> > author for (upto now) having done a s/, struct pt_regs// on it, that tag 
+> > only confuses the issue of whom to contact.
+> >
+> > And it in fact even does so when Joe does know about a MAINTAINERS file and 
+> > does happen to have a kernel source tree lying around somewhere. With one 
+> > set of addresses displayed prominently inside the sourcecode of the very 
+> > driver and another one of in a MAINTAINERS file, the first one wins. Joe 
+> > would have to be very new to Linux to trust something in the tree that's 
+> > not actually compiled over something that is.
+> >
+> > As the first response in this thread Cristoph Hellwig stated that 
+> > MODULE_AUTHOR serves no purpose other than what MODULE_MAINTAINER would be 
+> > serving. Others agreed and Adrian Bunk suggested deleting MODULE_AUTHOR 
+> > outright.
+> >
+> > That would actually also serve my purposes; if there's no MODULE_AUTHOR 
+> > confusing the issue, I don't so much need a MODULE_MAINTAINER to fix it 
+> > again. I believe having "modinfo" (optionally!) display a contact address 
+> > for a driver might be a user advantage, but with all the wrong addresses 
+> > gone, I don't really care deeply; MODULE_AUTHOR doesn't serve the purpose 
+> > today and with it gone the user at least knows he needs to look elsewhere. 
+> > MODULE_AUTHOR is also a credits issue but the information can be 
+> > transferred to copyright headers. It would obviously also fix any possible 
+> > maintenance issues.
+> >
+> > Alan Cox believes that having author information embedded in the module 
+> > serves a legal purpose though and objects to removal.
 
- procs -----------memory---------- ---swap-- -----io---- -system--
-----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
-id wa
- 0  0      0  39476  62640 641028    0    0    25    26  182  766  5  1
-93  1
- 0  0      0  39404  62640 641028    0    0     0     0   79  200  5  0
-95  0
- 0  0      0  39404  62640 641028    0    0     0    12   50  134  5  0
-95  0
- 0  0      0  39436  62640 641028    0    0     0     0   75  186  5  0
-95  0
- 0  0      0  39436  62640 641028    0    0     0     0   46  134  5  0
-95  0
- 0  0      0  39436  62640 641028    0    0     0     0   79 2192  5  0
-95  0
- 0  0      0  39436  62640 641028    0    0     0     0   47  108  5  0
-95  0
- 0  0      0  39468  62640 641028    0    0     0     0   71  186  5  0
-95  0
- 1  0      0  39468  62640 641028    0    0     0     0   44  117  5  0
-95  0
- 0  0      0  39468  62640 641028    0    0     0     0   56  185  5  1
-95  0
- 0  0      0  39468  62640 641028    0    0     0     0  202 2455  6  0
-94  0
- 0  0      0  39500  62640 641028    0    0     0     0   48  140  5  0
-95  0
- 0  0      0  39500  62640 641028    0    0     0     0   65  196  5  0
-95  0
- 0  0      0  39500  62640 641028    0    0     0     0   50  134  5  0
-95  0
- 0  0      0  39500  62640 641028    0    0     0     0   71  205  5  0
-95  0
- 0  0      0  39528  62640 641028    0    0     0     0   49 2132  5  0
-95  0
- 0  0      0  39528  62640 641028    0    0     0     0   73  184  5  1
-94  0
- 0  0      0  39528  62640 641028    0    0     0     0   51  135  5  0
-95  0
- 0  0      0  39528  62648 641020    0    0     0    24   76  251  5  0
-83 12
- 0  0      0  39560  62648 641028    0    0     0     0   54  155  5  0
-95  0
- 0  0      0  39560  62648 641028    0    0     0     0   71 2192  5  0
-95  0
- 0  0      0  39560  62648 641028    0    0     0     0   51  143  5  0
-95  0
- 0  0      0  39560  62648 641028    0    0     0     0   79  989  6  1
-93  0
- 1  0      0  39564  62656 641024    0    0     0    24   91  686  9  0
-88  3
- 0  0      0  39564  62656 641024    0    0     0     0   87  355  9  0
-91  0
- 5  0      0  39292  62676 641008    0    0     0   331   83  741 10  1
-88  0
-Starting amarok:
- 1  0      0  34312  62784 641000    0    0     0  1248  *321* 3443 46 
-5 45  5
- 2  0      0  28792  62792 641048    0    0     4     0  *232* 2796 48 
-7 44  2
- 0  0      0  22732  62796 641044    0    0     0     0  *134 *1719 33 
-5 62  0
- 0  0      0  22608  62796 641040    0    0     0     0  *122*  729  4 
-0 96  0
- 0  0      0  22608  62796 641040    0    0     0     0  *297* 3114  5 
-0 95  0
- 0  0      0  22608  62796 641040    0    0     0     0  *133*  742  5 
-0 95  0
- 0  0      0  22608  62796 641040    0    0     0     0  *155*  799  5 
-0 95  0
- 0  0      0  22648  62796 641040    0    0     0     0  *130*  745  5 
-0 95  0
- 0  0      0  22648  62796 641040    0    0     0     0  *171*  867  5 
-0 95  0
- 0  0      0  22712  62796 641040    0    0     0     0  *132* 2770  5 
-0 95  0
- 0  0      0  22712  62796 641040    0    0     0     0  *150*  804  5 
-0 95  0
- 0  0      0  22704  62796 641040    0    0     0     0  *133*  741  5 
-0 95  0
+Wouldn't a /* comment */ satisfy AUTHOR needs?
 
-The number of interrupts goes up a lot, just for starting the song
-player. I guess it does a open() on the sound device. These interrupts
-numbers are just because of starting amarok, i don't even play a song in
-this software. So here a two options:
+It gives deserved attribution and should serve legal purpose just as
+well as a macro does (IANAL!).
 
-1.) fix amarok to open the sound device when it's needed
-2.) fix the kernel sound card driver to setup everthing, when an
-application want to put data on the device
-
-what do you think about this?
+IMO we want MAINTAINER info in the macro and in modinfo,
+so I'm for removing MODULE_AUTHOR and just having MAINTAINER.
 
 
+> >...
+> 
+> Let me try to summarize the points:
+> - you think MODULE_AUTHOR without MODULE_MAINTAINER confuses users
+> - Alan wants MODULE_AUTHOR to stay for easing showing authorship of code
+>   to people
+> - I (and others) think MODULE_MAINTAINER wouldn't make sense
+> 
+> Is there any good solution for this?
+> E.g. modinfo could be changed to no longer defaulting to show the author?
+
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
