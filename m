@@ -1,199 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031451AbXDZTDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbXDZTD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031451AbXDZTDG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031454AbXDZTDF
+	id S1754926AbXDZTD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbXDZTD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:03:05 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:41499 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031451AbXDZTDC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:03:02 -0400
-Message-ID: <4630F75F.9060206@linux.vnet.ibm.com>
-Date: Fri, 27 Apr 2007 00:32:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Pavel Emelianov <xemul@sw.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] RSS Container, make page_referenced() container aware
-Content-Type: multipart/mixed;
- boundary="------------080705030002020707090405"
+	Thu, 26 Apr 2007 15:03:59 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:53400 "EHLO
+	fr.zoreil.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbXDZTD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:03:58 -0400
+Date: Thu, 26 Apr 2007 20:58:51 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426185851.GA7352@electric-eye.fr.zoreil.com>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <20070426183602.GT3468@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426183602.GT3468@stusta.de>
+User-Agent: Mutt/1.4.2.1i
+X-Organisation: Land of Sunshine Inc.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080705030002020707090405
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Adrian Bunk <bunk@stusta.de> :
+[...]
+> And how to order the rtl8139 netdriver regression reported one month ago 
+> against the snd_hda_intel regression reported one month ago?
 
-Hi, Pavel,
-
-This patch should help with the shared page issue of one container
-holding shared pages in a another container (the container that
-brought in the page -- by first touch) hostage.
+Pointer for the rtl8139 regression please ?
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Ueimor
 
---------------080705030002020707090405
-Content-Type: text/x-patch;
- name="rss-implement-per-container-page-referenced.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="rss-implement-per-container-page-referenced.patch"
-
-
-
-Make page_referenced() container aware. Without this patch, page_referenced()
-can cause a page to be skipped while reclaiming pages. This patch
-ensures that other containers do not hold pages in a particular container
-hostage. It is required to ensure that shared pages are freed from a container
-when they are not actively referenced from the container that brought
-them in
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- include/linux/rmap.h |    5 +++--
- mm/rmap.c            |   26 ++++++++++++++++++++------
- mm/vmscan.c          |    4 ++--
- 3 files changed, 25 insertions(+), 10 deletions(-)
-
-diff -puN mm/vmscan.c~rss-implement-per-container-page-referenced mm/vmscan.c
---- linux-2.6.20/mm/vmscan.c~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
-+++ linux-2.6.20-balbir/mm/vmscan.c	2007-04-27 00:04:38.000000000 +0530
-@@ -489,7 +489,7 @@ static unsigned long shrink_page_list(st
- 		if (PageWriteback(page))
- 			goto keep_locked;
- 
--		referenced = page_referenced(page, 1);
-+		referenced = page_referenced(page, 1, sc->cnt);
- 		/* In active use or really unfreeable?  Activate it. */
- 		if (referenced && page_mapping_inuse(page))
- 			goto activate_locked;
-@@ -852,7 +852,7 @@ force_reclaim_mapped:
- 		if (page_mapped(page)) {
- 			if (!reclaim_mapped ||
- 			    (total_swap_pages == 0 && PageAnon(page)) ||
--			    page_referenced(page, 0)) {
-+			    page_referenced(page, 0, sc->cnt)) {
- 				list_add(&page->lru, &l_active);
- 				continue;
- 			}
-diff -puN mm/rmap.c~rss-implement-per-container-page-referenced mm/rmap.c
---- linux-2.6.20/mm/rmap.c~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
-+++ linux-2.6.20-balbir/mm/rmap.c	2007-04-26 23:33:41.000000000 +0530
-@@ -318,7 +318,7 @@ out:
- 	return referenced;
- }
- 
--static int page_referenced_anon(struct page *page)
-+static int page_referenced_anon(struct page *page, struct rss_container *cnt)
- {
- 	unsigned int mapcount;
- 	struct anon_vma *anon_vma;
-@@ -331,6 +331,13 @@ static int page_referenced_anon(struct p
- 
- 	mapcount = page_mapcount(page);
- 	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
-+		/*
-+		 * If we are reclaiming on behalf of a container, skip
-+		 * counting on behalf of references from different
-+		 * containers
-+		 */
-+		if (cnt && (vma->vm_mm->rss_container != cnt))
-+			continue;
- 		referenced += page_referenced_one(page, vma, &mapcount);
- 		if (!mapcount)
- 			break;
-@@ -350,7 +357,7 @@ static int page_referenced_anon(struct p
-  *
-  * This function is only called from page_referenced for object-based pages.
-  */
--static int page_referenced_file(struct page *page)
-+static int page_referenced_file(struct page *page, struct rss_container *cnt)
- {
- 	unsigned int mapcount;
- 	struct address_space *mapping = page->mapping;
-@@ -383,6 +390,13 @@ static int page_referenced_file(struct p
- 	mapcount = page_mapcount(page);
- 
- 	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
-+		/*
-+		 * If we are reclaiming on behalf of a container, skip
-+		 * counting on behalf of references from different
-+		 * containers
-+		 */
-+		if (cnt && (vma->vm_mm->rss_container != cnt))
-+			continue;
- 		if ((vma->vm_flags & (VM_LOCKED|VM_MAYSHARE))
- 				  == (VM_LOCKED|VM_MAYSHARE)) {
- 			referenced++;
-@@ -405,7 +419,7 @@ static int page_referenced_file(struct p
-  * Quick test_and_clear_referenced for all mappings to a page,
-  * returns the number of ptes which referenced the page.
-  */
--int page_referenced(struct page *page, int is_locked)
-+int page_referenced(struct page *page, int is_locked, struct rss_container *cnt)
- {
- 	int referenced = 0;
- 
-@@ -417,14 +431,14 @@ int page_referenced(struct page *page, i
- 
- 	if (page_mapped(page) && page->mapping) {
- 		if (PageAnon(page))
--			referenced += page_referenced_anon(page);
-+			referenced += page_referenced_anon(page, cnt);
- 		else if (is_locked)
--			referenced += page_referenced_file(page);
-+			referenced += page_referenced_file(page, cnt);
- 		else if (TestSetPageLocked(page))
- 			referenced++;
- 		else {
- 			if (page->mapping)
--				referenced += page_referenced_file(page);
-+				referenced += page_referenced_file(page, cnt);
- 			unlock_page(page);
- 		}
- 	}
-diff -puN include/linux/rmap.h~rss-implement-per-container-page-referenced include/linux/rmap.h
---- linux-2.6.20/include/linux/rmap.h~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
-+++ linux-2.6.20-balbir/include/linux/rmap.h	2007-04-26 23:29:31.000000000 +0530
-@@ -8,6 +8,7 @@
- #include <linux/slab.h>
- #include <linux/mm.h>
- #include <linux/spinlock.h>
-+#include <linux/rss_container.h>
- 
- /*
-  * The anon_vma heads a list of private "related" vmas, to scan if
-@@ -93,7 +94,7 @@ static inline void page_dup_rmap(struct 
- /*
-  * Called from mm/vmscan.c to handle paging out
-  */
--int page_referenced(struct page *, int is_locked);
-+int page_referenced(struct page *, int is_locked, struct rss_container *cnt);
- int try_to_unmap(struct page *, int ignore_refs);
- 
- /*
-@@ -121,7 +122,7 @@ int page_mkclean(struct page *);
- #define anon_vma_prepare(vma)	(0)
- #define anon_vma_link(vma)	do {} while (0)
- 
--#define page_referenced(page,l) TestClearPageReferenced(page)
-+#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
- #define try_to_unmap(page, refs) SWAP_FAIL
- 
- static inline int page_mkclean(struct page *page)
-_
-
---------------080705030002020707090405--
+Anybody got a battery for my Ultra 10 ?
