@@ -1,104 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbXDZNds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbXDZNiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbXDZNds (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbXDZNds
+	id S1754662AbXDZNiM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXDZNiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:33:48 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:54512 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753169AbXDZNdr (ORCPT
+	Thu, 26 Apr 2007 09:38:11 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32940 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754662AbXDZNiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:33:47 -0400
-Date: Thu, 26 Apr 2007 14:33:44 +0100
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2 -- x86_64 blade hard hangs
-Message-ID: <20070426133344.GB16909@skynet.ie>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46309B59.4090701@shadowen.org> <p73fy6n2qhg.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <p73fy6n2qhg.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+	Thu, 26 Apr 2007 09:38:07 -0400
+Message-ID: <4630AA9E.9030807@bull.net>
+Date: Thu, 26 Apr 2007 15:35:26 +0200
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
+       Ulrich Drepper <drepper@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
+       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
+       pravin b shelar <pravin.shelar@calsoftinc.com>,
+       linux-kernel@vger.kernel.org, Rusty Russel <rusty@rustcorp.com.au>
+Subject: Re: [PATCH, take6] FUTEX : new PRIVATE futexes
+References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<20070411111913.6115dac8.dada1@cosmosbay.com> <20070426145521.0f8b6b35.dada1@cosmosbay.com>
+In-Reply-To: <20070426145521.0f8b6b35.dada1@cosmosbay.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/04/2007 15:40:48,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/04/2007 15:40:54,
+	Serialize complete at 26/04/2007 15:40:54
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (26/04/07 15:51), Andi Kleen didst pronounce:
-> Andy Whitcroft <apw@shadowen.org> writes:
+Eric Dumazet a écrit :
+> Hi Andrew
 > 
-> > Getting hard boot failures before any kernel output on an x86_64 blade:
-> > 
-> > root (hd0,0)
-> >  Filesystem type is ext2fs, partition type 0x83
-> > kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
-> > console=tty0 console=ttyS1,19200 selinux=no autobench_args:
-> > root=30726124 ABAT:1177507960 profile=2
-> >    [Linux-bzImage, setup=0x1e00, size=0x21fe48]
-> > initrd /initrd-autobench.img
-> >    [Linux-initrd @ 0x37e5f000, 0x190984 bytes]
-> > [silence]
-> > 
-> > Kernel config is here:
-> > 
-> > http://test.kernel.org/abat/85082/build/dotconfig
+> Not sure if you prefer to wait Pierre work on futex64, so just in case, I prepared this patch.
 > 
-> You should boot with earlyprintk=serial,ttyS1,19200
+> Update on this take6 :
 > 
+> - Rebased on linux-2.6.21-rc7-mm2 , since futex64 were droped from mm
+> 
+> 
+> Pierre, I can resubmit another patch on top on your next patch, so please do as you prefer (ignoring or not this patch)
 
-Here is the console log. Haven't taken a closer look yet in case it's
-blindingly obvious to you.
-
-kernel /vmlinuz-autobench ro root=/dev/VolGroup00/LogVol00 rhgb
-console=tty0 co
-nsole=ttyS1,19200 selinux=no autobench_args: root=30726124
-ABAT:1177594149 logl
-evel=8 earlyprintk=serial,ttyS1,19200 
-   [Linux-bzImage, setup=0x1e00, size=0x220da8]
-initrd /initrd-autobench.img
-   [Linux-initrd @ 0x37e5f000, 0x190982 bytes]
-Linux version 2.6.21-rc7-mm2-autokern1 (root@bl6-13.ltc.austin.ibm.com)
-(gcc version 4.1.1 20060525 (Red Hat 4.1.1-1)) #1 SMP Thu Apr 26
-08:16:37 CDT 2007
-Command line: ro root=/dev/VolGroup00/LogVol00 rhgb console=tty0
-console=ttyS1,19200 selinux=no autobench_args: root=30726124
-ABAT:1177594149 loglevel=8 earlyprintk=serial,ttyS1,19200 
-BIOS-provided physical RAM map:
- BIOS-e820: 0000000000000000 - 000000000009d400 (usable)
- BIOS-e820: 000000000009d400 - 00000000000a0000 (reserved)
- BIOS-e820: 00000000000e0000 - 0000000000100000 (reserved)
- BIOS-e820: 0000000000100000 - 000000003ffcddc0 (usable)
- BIOS-e820: 000000003ffcddc0 - 000000003ffd0000 (ACPI data)
- BIOS-e820: 000000003ffd0000 - 0000000040000000 (reserved)
- BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-end_pfn_map = 1048576
-kernel direct mapping tables up to 100000000 @ 8000-d000
-DMI 2.3 present.
-ACPI: RSDP 000FDFC0, 0014 (r0 IBM   )
-ACPI: RSDT 3FFCFF80, 0034 (r1 IBM    SERBLADE     1000 IBM  45444F43)
-ACPI: FACP 3FFCFEC0, 0084 (r2 IBM    SERBLADE     1000 IBM  45444F43)
-ACPI: DSDT 3FFCDDC0, 1EA6 (r1 IBM    SERBLADE     1000 INTL  2002025)
-ACPI: FACS 3FFCFCC0, 0040
-ACPI: APIC 3FFCFE00, 009C (r1 IBM    SERBLADE     1000 IBM  45444F43)
-ACPI: SRAT 3FFCFD40, 0098 (r1 IBM    SERBLADE     1000 IBM  45444F43)
-ACPI: HPET 3FFCFD00, 0038 (r1 IBM    SERBLADE     1000 IBM  45444F43)
-SRAT: PXM 0 -> APIC 0 -> Node 0
-SRAT: PXM 0 -> APIC 1 -> Node 0
-SRAT: PXM 1 -> APIC 2 -> Node 1
-SRAT: PXM 1 -> APIC 3 -> Node 1
-SRAT: Node 0 PXM 0 0-40000000
-PANIC: early exception rip ffffffff808a7e83 error 0 cr2 5cf0
-Call Trace:
- [<ffffffff808a7e83>] reserve_bootmem_node+0x0/0xc
- [<ffffffff808a3a8c>] reserve_bootmem_generic+0x6d/0x99
- [<ffffffff8089cc00>] setup_arch+0x2f7/0x469
- [<ffffffff80896510>] start_kernel+0x64/0x2aa
- [<ffffffff80896148>] _sinittext+0x148/0x14c
-RIP reserve_bootmem_node+0x0/0xc
+Thank you for taking care of this.
+But I think your patch is more mature than the futex64 patch; So, it's ok for 
+me, and it's probably simpler and better for "the community" (and for Andrew's 
+work) to put this patch first, because futex64 still may need several reworks...
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Pierre
