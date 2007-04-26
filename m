@@ -1,128 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbXDZPmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753179AbXDZPnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbXDZPmV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXDZPmV
+	id S1753179AbXDZPnv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbXDZPnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:42:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53473 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754804AbXDZPmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:42:18 -0400
-Date: Thu, 26 Apr 2007 08:41:43 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-Message-Id: <20070426084143.1d973c71.randy.dunlap@oracle.com>
-In-Reply-To: <20070426135426.GM3468@stusta.de>
-References: <20070404150231.GE27660@stusta.de>
-	<4613C963.6070409@gmail.com>
-	<20070404170016.453d26f1@the-village.bc.nu>
-	<4613D492.2070404@gmail.com>
-	<462C7D74.60003@gmail.com>
-	<1177327476.17026.75.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0704230748270.25463@localhost.localdomain>
-	<462CA764.5080401@gmail.com>
-	<20070425181856.42fcfeb4.akpm@linux-foundation.org>
-	<463081E5.5010306@gmail.com>
-	<20070426135426.GM3468@stusta.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 26 Apr 2007 11:43:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41874 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753179AbXDZPnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:43:50 -0400
+Date: Thu, 26 Apr 2007 17:43:48 +0200
+From: Bernhard Walle <bwalle@suse.de>
+To: vgoyal@in.ibm.com
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc7-mm2 "irqpoll" seems to be broken
+Message-ID: <20070426154348.GA20350@suse.de>
+Mail-Followup-To: vgoyal@in.ibm.com,
+	linux kernel mailing list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20070426093620.GB2626@in.ibm.com> <20070426082405.67a0fdd2.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="gBBFr7Ir9EOA20Yy"
+Content-Disposition: inline
+In-Reply-To: <20070426082405.67a0fdd2.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 15:54:26 +0200 Adrian Bunk wrote:
 
-> On Thu, Apr 26, 2007 at 12:41:41PM +0200, Rene Herman wrote:
-> > On 04/26/2007 03:18 AM, Andrew Morton wrote:
-> >
-> >> On Mon, 23 Apr 2007 14:32:36 +0200 Rene Herman <rene.herman@gmail.com>
-> >> wrote:
-> >>> Provide MODULE_MAINTAINER() as a convenient place to stick a name and
-> >>> email address both for drivers having multiple (current and
-> >>> non-current) authors and for when someone who wants to maintain a
-> >>> driver isn't so much an author.
-> >
-> > [ snip ]
-> >
-> >> I'm not sure we want to do this - that's what ./MAINTAINERS is for and we
-> >> end up having to maintain the same info in two places.
-> >
-> > joe@user:~$ less ./MAINTAINERS
-> > ./MAINTAINERS: No such file or directory
-> >
-> > MAINTAINERS is a developers thing, not users, yet a maintainer is someone 
-> > who other than by developers wants to be contacted by users of a particular 
-> > driver. Right now, a module exports a set of name and email addresses 
-> > through the MODULE_AUTHOR tag but given multiple current and non-current 
-> > authors, completely or largely orphaned drivers (I have a lot of junk PC 
-> > hardware so I come across those relatively often) and people who might be 
-> > interested in taking care of a driver but who do not consider themselves an 
-> > author for (upto now) having done a s/, struct pt_regs// on it, that tag 
-> > only confuses the issue of whom to contact.
-> >
-> > And it in fact even does so when Joe does know about a MAINTAINERS file and 
-> > does happen to have a kernel source tree lying around somewhere. With one 
-> > set of addresses displayed prominently inside the sourcecode of the very 
-> > driver and another one of in a MAINTAINERS file, the first one wins. Joe 
-> > would have to be very new to Linux to trust something in the tree that's 
-> > not actually compiled over something that is.
-> >
-> > As the first response in this thread Cristoph Hellwig stated that 
-> > MODULE_AUTHOR serves no purpose other than what MODULE_MAINTAINER would be 
-> > serving. Others agreed and Adrian Bunk suggested deleting MODULE_AUTHOR 
-> > outright.
-> >
-> > That would actually also serve my purposes; if there's no MODULE_AUTHOR 
-> > confusing the issue, I don't so much need a MODULE_MAINTAINER to fix it 
-> > again. I believe having "modinfo" (optionally!) display a contact address 
-> > for a driver might be a user advantage, but with all the wrong addresses 
-> > gone, I don't really care deeply; MODULE_AUTHOR doesn't serve the purpose 
-> > today and with it gone the user at least knows he needs to look elsewhere. 
-> > MODULE_AUTHOR is also a credits issue but the information can be 
-> > transferred to copyright headers. It would obviously also fix any possible 
-> > maintenance issues.
-> >
-> > Alan Cox believes that having author information embedded in the module 
-> > serves a legal purpose though and objects to removal.
+--gBBFr7Ir9EOA20Yy
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Wouldn't a /* comment */ satisfy AUTHOR needs?
+* Andrew Morton <akpm@linux-foundation.org> [2007-04-26 17:24]:
+>=20
+> hm.  I'd be suspecting
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/=
+2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-common-code.patch
+> and
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/=
+2.6.21-rc7-mm2/broken-out/add-irqf_irqpoll-flag-on-x86_64.patch
 
-It gives deserved attribution and should serve legal purpose just as
-well as a macro does (IANAL!).
-
-IMO we want MAINTAINER info in the macro and in modinfo,
-so I'm for removing MODULE_AUTHOR and just having MAINTAINER.
+I aggree that it's likely that the patches cause the problem. However,
+Vivek, could you try without the patches if the problem is really in
+theses patches?
 
 
-> >...
-> 
-> Let me try to summarize the points:
-> - you think MODULE_AUTHOR without MODULE_MAINTAINER confuses users
-> - Alan wants MODULE_AUTHOR to stay for easing showing authorship of code
->   to people
-> - I (and others) think MODULE_MAINTAINER wouldn't make sense
-> 
-> Is there any good solution for this?
-> E.g. modinfo could be changed to no longer defaulting to show the author?
+Thanks,
+   Bernhard
+--=20
+SUSE LINUX Products GmbH          Tel. +49 (911) 74053-0
+Maxfeldstr. 5                     GF: Markus Rex
+90409 N=FCrnberg, Germany           HRB 16746 (AG N=FCrnberg)
+OpenPGP DDAF6454: F61F 34CC 09CA FB82 C9F6  BA4B 8865 3696 DDAF 6454
 
+--gBBFr7Ir9EOA20Yy
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+iD8DBQFGMMi0iGU2lt2vZFQRAuJ9AJ0ZUCBKQ38MRDs50U7eSzjR7KEtFACfTvB6
+j3wSZ6NycLT1QLsV5MRS+rY=
+=BZj7
+-----END PGP SIGNATURE-----
+
+--gBBFr7Ir9EOA20Yy--
