@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbXDZVAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbXDZVAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbXDZVAo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbXDZVAn
+	id S1752848AbXDZVAt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbXDZVAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:00:43 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:52303 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbXDZVAn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:00:43 -0400
-Date: Thu, 26 Apr 2007 23:01:25 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Reg Clemens <reg@dwf.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com, reg@deneb.dwf.com
-Message-ID: <20070426210125.GA11092@enneenne.com>
-References: <20070321074121.GA13843@enneenne.com> <200703211655.l2LGtwWl017848@deneb.dwf.com> <20070321203647.GD4539@enneenne.com> <200703212235.l2LMZMQ4005361@deneb.dwf.com>
+	Thu, 26 Apr 2007 17:00:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36453 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752848AbXDZVAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 17:00:47 -0400
+Date: Thu, 26 Apr 2007 23:00:13 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Lord <lkml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070426210013.GC21695@elf.ucw.cz>
+References: <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070426012454.3495b5d8@the-village.bc.nu> <alpine.LFD.0.98.0704251808150.9964@woody.linux-foundation.org> <4630B183.1000905@rtr.ca> <alpine.LFD.0.98.0704260903570.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200703212235.l2LMZMQ4005361@deneb.dwf.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: [LinuxPPS] [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <alpine.LFD.0.98.0704260903570.9964@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 21, 2007 at 04:35:22PM -0600, Reg Clemens wrote:
-> > On Wed, Mar 21, 2007 at 10:55:58AM -0600, Reg Clemens wrote:
-> > > 
-> > > Just one point with your patch.
-> > > A couple of years ago there was a long discussion on the Linux Kernel mailing 
-> > > list
-> > > as to how USER codes were not supposed to use KERNEL include files.  Now I 
-> > > still
-> > > see __KERNEL__ all over the place in the linux=source includes so mabe this
-> > > never went anywhere, but you MIGHT have to provide a separate patch (addition)
-> > > to the Linux (as opposed to Linux-kernel) include files with timepps.h
+Hi!
+
+> > > See? Two *totally* different cases. They have *nothing* in common. Not the
+> > > call sequence, not the logic, not *anything*.
 > > 
-> > Do you mean I should separate file timepps.h into two files? One for
-> > the kernel and one for the userland?
-> > 
-> Well, Im sure you are dealing with some of the Linux Kernel people, so its
-> whatever they want.  But dont be surprised if they ask for a *.h file thats 
-> ONLY
-> for Kernel use.  And I have NO idea how you would get the USER version into
-> the Linux distribution itself.
+> > Except that both methods cannot rely upon hot-pluggable devices
+> > still being present on resume/restore.  It is exceptionally common
+> > to unplug all USB/firewire cables, mouse, keyboard, docking cables etc..
+> > after a machine is in S2R state.
+> 
+> Right, and that has nothing to do with suspend/resume. You'd better be 
+> able to handle unexpected hotplugs _regardless_.
 
-According to this suggestion I've modified the LinuxPPS code. Please
-refere to the GIT repository and the LinuxPPS wiki for further info.
-
-Now I hope LinuxPPS can be ready for the Linux source tree! :)
-
-Ciao,
-
-Rodolfo
-
+Actually, with suspend/resume it is quite easy to cheat, and just
+"unplug" the hardware on suspend, then "plug it back" on resume. That
+works very well for devices like keyboards and mice (where you can't
+tell if you are talking to the same hw, anyway).
+									Pavel
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
