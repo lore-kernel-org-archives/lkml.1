@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031182AbXDZMlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbXDZMx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031182AbXDZMlR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 08:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031183AbXDZMlR
+	id S1754667AbXDZMx3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 08:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbXDZMx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 08:41:17 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4679 "EHLO spitz.ucw.cz"
+	Thu, 26 Apr 2007 08:53:29 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:57117 "EHLO poczta.o2.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031182AbXDZMlQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 08:41:16 -0400
-Date: Thu, 26 Apr 2007 12:41:03 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070426124102.GA8030@ucw.cz>
-References: <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu> <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg> <20070426113525.GA1332@infradead.org> <20070426121544.GA11487@elte.hu>
+	id S1754667AbXDZMx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 08:53:28 -0400
+Date: Thu, 26 Apr 2007 14:59:18 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070426125918.GC3145@ff.dom.local>
+References: <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local> <20070425124714.GA94@tv-sign.ru> <20070425144759.GA201@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070426121544.GA11487@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070425144759.GA201@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > The interface isn't even 64/32-bit compatible...
+On Wed, Apr 25, 2007 at 06:47:59PM +0400, Oleg Nesterov wrote:
+> On 04/25, Oleg Nesterov wrote:
+> >
+> > On 04/25, Jarek Poplawski wrote:
+> > >
+> > >                   Probably this is also possible without timer i.e.
+> > >  with queue_work.
 > > 
-> > It's not .  And it's one of the worst interface I've seen lately. Did 
-> > anyone actually review this crap before it went in?  I completely 
-> > agree with Linus that these kind of boundaries that lead to horribly 
-> > complex ioctl interface are totally wrong.
+> > Yes, thanks. While adding cpu-hotplug check I forgot to add ->current_work
+> > check, which is needed to actually implement this
+> > 
+> > 	> > Note that cancel_rearming_delayed_work() now can handle the works
+> > 	> > which re-arm itself via queue_work(), not only queue_delayed_work().
+> > 
+> > part. I'll resend after fix.
 > 
-> it's a bit hard to see the point of it anyway: the resume binary (much 
-> of the focus of the ioctls) fundamentally lives as an 'initrd binary' - 
-> and most of the stuff that wants to execute in an initrd is 
-> fundamentally tied to the kernel anyway.
+> Hm. But can't we do better? Looks like we don't need to check ->current_work,
+> 
+> 	void cancel_rearming_delayed_work(struct delayed_work *dwork)
+> 	{
+> 		struct work_struct *work = &dwork->work;
+> 		struct cpu_workqueue_struct *cwq = get_wq_data(work);
+> 		int done;
 
-Typically... yes, it needs to be in initrd.
+I don't understand, why you think cwq cannot be NULL here.
 
-And yes, klibc would help here.
+> 
+> 		do {
+> 			done = 1;
+> 			spin_lock_irq(&cwq->lock);
+> 
+> 			if (!list_empty(&work->entry))
+> 				list_del_init(&work->entry);
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+BTW, isn't needs_a_good_name needles after this and after del_timer positive?
+
+> 			else if (test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+> 				done = del_timer(&dwork->timer)
+
+If this runs while a work function is fired in run_workqueue,
+it sets _PENDING bit, but if the work skips rearming, we have probably
+endless loop, again.
+
+> 
+> 			spin_unlock_irq(&cwq->lock);
+> 		} while (!done);
+> 
+> 		/*
+> 		 * Nobody can clear WORK_STRUCT_PENDING. This means that the
+> 		 * work can't be re-queued and the timer can't be re-started.
+> 		 */
+> 		needs_a_good_name(cwq->wq, work);
+> 		work_clear_pending(work);
+> 	}
+> 
+> Jarek, I didn't think much about this, just a new idea. I am posting this code
+> in a hope you can review it while I sleep on this... CPU-hotplug is ignored for
+> now. Note that this version doesn't need the change in run_workqueue().
+
+It's very interesting proposal, but also hard to analyse - the locks
+are taken and given away, and there is hard to forsee, when and where
+the loop regains the lock again. It is something alike to the current
+way, with some added measures: you try to shoot a work on the run,
+while queued or timer_pending, plus the _PENDING flag set, so it seems,
+there is some risk of longer than planed looping.
+
+I have to look at this more, at home and, if something new, I'll write
+tomorrow. So, the good news, is you should have enough sleep this time!
+
+Cheers,
+Jarek P.
