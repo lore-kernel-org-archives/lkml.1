@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031288AbXDZQCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031297AbXDZQDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031288AbXDZQCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXDZQCU
+	id S1031297AbXDZQDk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXDZQDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:02:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:35240 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754811AbXDZQCT (ORCPT
+	Thu, 26 Apr 2007 12:03:40 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:55699 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754811AbXDZQDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:02:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kcraq3mrWUnLWpL5ySUQcBI4mJlQcunegtmtwIqV8WLrJl743Vhbda45ISSRXaX1F3100dGcoIFv98JwcnYjYnI7f8r1EtBgfl2/jvlA7XQPyXkhdz1l9I9jx6aaLK4fJZwe4EnQerbHOXW5/7TnClFCLGBSpA46TPofRBRkPNg=
-Message-ID: <d120d5000704260902h7950b30bi7a5a604c16f23421@mail.gmail.com>
-Date: Thu, 26 Apr 2007 12:02:17 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
-Cc: "johann deneux" <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
-       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <4af2d03a0704220557u5d6368a2t13878b73bf9dbe64@mail.gmail.com>
+	Thu, 26 Apr 2007 12:03:38 -0400
+Date: Thu, 26 Apr 2007 09:02:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+In-Reply-To: <20070426141423.20aa88ec@the-village.bc.nu>
+Message-ID: <alpine.LFD.0.98.0704260859400.9964@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+ <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
+ <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+ <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+ <20070425235718.66b71f01@the-village.bc.nu>
+ <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
+ <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
+ <20070426001414.GO17387@elf.ucw.cz> <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
+ <463008A2.9020301@zytor.com> <alpine.LFD.0.98.0704251915460.9964@woody.linux-foundation.org>
+ <20070426141423.20aa88ec@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com>
-	 <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>
-	 <200704190058.11625.dtor@insightbb.com> <46278CDD.2000007@gmail.com>
-	 <d120d5000704190902o60aa4b19y77728585e22b2e84@mail.gmail.com>
-	 <4af2d03a0704220557u5d6368a2t13878b73bf9dbe64@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/22/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 4/19/07, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > On 4/19/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> > > Dmitry Torokhov napsal(a):
-> > > > If we are interested in using FF API we need to come up with a way
-> > > > to express this effect without exposing implementation details of
-> > > > one particular device.
-> > >
-> > > Still, torques are better named raw/motor values, which goes to the device
-> > > and I'm sceptic about inventing something class-better than this.
-> > >
-> >
-> > Well, I guess we need to make a decision whether moving this kind of
-> > devices into a force feedback layer is possible or whether every
-> > device needs to have an application specifically tailored to that
-> > particular device.
-> >
-> > If we say that it is feasible to plug a device into FF layer then we
-> > must not expose hardware implementation details. That means that
-> > device-sepcific translation between 3d vector of forces into motor
-> > torques must be done by the driver itself.
+
+
+On Thu, 26 Apr 2007, Alan Cox wrote:
 >
-> Hmm, it's 3d at minimum (the glove has 14 torque points, phantom up to
-> 6),
+> > The PCI spec for controlling DMA is really pretty nasty. You can disable 
+> > it in the PCI config word, of course, but that usually just messes up the 
+> > device entirely.
+> 
+> And some devices ignore it. Some of the older Cyrix stuff I have appears
+> not to care how the master bit is set.
 
-The vector of forces is always 3d in our world.
+I'm not surprised. If the choice is between locking up the PCI bus by 
+hanging the device in endless retries, or just ignoring the bit, I suspect 
+"just ignore it" is actually the better choice.
 
-> I think we won't be able to make the transition in independent way
-> due to unspecified meaning of the torques.
->
+Of course, in a perfect world you'd happily honor it, raise a PCI error, 
+and all is good, but in practice the internal state machine of most 
+non-trivial hardware is simply so complicated that the "abort gracefully" 
+simply isn't an option.
 
-With phantom it still seems doable - if I understand correctly ther is
-one point of containct and one resulting vector of forces applied to
-user's hand. With the glove there are multiple points of contact and
-multiple feedback effects applied to different part of hand
-simultaneously and that is for sure requires special application.
+The hw people have enough problems in getting things to work when 
+everything is peachy and well, and a lot of companies end up releasing 
+stuff with known errata for even the _normal_ cases, just because they 
+expect software to work around them ("Doctor, doctor, it hurts when I do 
+the documented access!" "You didn't read errata #317, did you? Don't do 
+that, then!")
 
--- 
-Dmitry
+			Linus
