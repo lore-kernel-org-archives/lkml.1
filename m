@@ -1,146 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031171AbXDZKsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031169AbXDZKxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031171AbXDZKsR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031173AbXDZKsR
+	id S1031169AbXDZKxs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDZKxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:48:17 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:51845 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031171AbXDZKsQ (ORCPT
+	Thu, 26 Apr 2007 06:53:48 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44504 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031169AbXDZKxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:48:16 -0400
-Date: Thu, 26 Apr 2007 11:48:13 +0100
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426104813.GD27620@skynet.ie>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au>
+	Thu, 26 Apr 2007 06:53:47 -0400
+Date: Thu, 26 Apr 2007 19:53:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: ak@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, clameter@sgi.com
+Subject: [PATCH] change global zonelist order on NUMA v3
+Message-Id: <20070426195348.6a4e5652.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
+	<200704261147.44413.ak@suse.de>
+	<20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <463057D9.9030804@yahoo.com.au>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (26/04/07 17:42), Nick Piggin didst pronounce:
-> Christoph Lameter wrote:
-> >On Thu, 26 Apr 2007, Nick Piggin wrote:
-> >
-> >
-> >>>mapping through the radix tree. You just need to change the way the
-> >>>filesystem looks up pages.
-> >>
-> >>You didn't think any of the criticisms of higher order page cache size
-> >>were valid?
-> >
-> >
-> >They are all known points that have been discussed to death.
-> 
-> I missed the part where you showed that it was a better solution than
-> the alternatives.
-> 
-> 
-> >>>What are the exact requirement you are trying to address?
-> >>
-> >>Block size > page cache size.
-> >
-> >
-> >But what do you mean with it? A block is no longer a contiguous section of 
-> >memory. So you have redefined the term.
-> 
-> I don't understand what you mean at all. A block has always been a
-> contiguous area of disk.
-> 
+Changelog V2 -> V3
 
-Yes, but what you seem to be proposing is that lower layers be
-able to treat non-contiguous pages as one IO artifact - like
-non-contiguous-compound-pages. Ultimately both are probably needed. i.e.
-Use contiguous pages for large blocks where possible but be able to deal
-with the compound page consisting of multiple smaller pages with a
-regression in performance when necessary.
+- removed zone ordering selection knobs...
 
-I don't think what Christoph and Nick are proposing are mutually
-exclusive. The arguement is really "which do we deal with first".
+much simpler one. just changing zonelist ordering.
+tested on ia64 NUMA works well as expected.
 
-> 
-> >>You guys have a couple of problems, firstly you need to have ia64
-> >>filesystems accessable to x86_64. And secondly you have these controllers
-> >>without enough sg entries for nice sized IOs.
-> >
-> >
-> >This is not sgi specific sorry.
-> >
-> >
-> >>I sympathise, and higher order pagecache might solve these in a way, but
-> >>I don't think it is the right way to go, mainly because of the 
-> >>fragmentation
-> >>issues.
-> >
-> >
-> >And you dont care about Mel's work on that level?
-> 
-> I actually don't like it too much because it can't provide a robust
-> solution. What do you do on systems with small memories, or those that
-> eventually do get fragmented?
-> 
+-Kame
 
-They won't be creating filesystems with large blocks for a start but
-even if they did, they would need to your proposal.
 
-Again, I don't think they are mutually exclusive as such.
+change zonelist order on NUMA v3.
 
-> Actually, I don't know why people are so excited about being able to
-> use higher order allocations (I would rather be more excited about
-> never having to use them). But for those few places that really need
-> it, I'd rather see them use a virtually mapped kernel with proper
-> defragmentation rather than putting hacks all through the core code.
-> 
+[Description]
+Assume 2 node NUMA, only node(0) has ZONE_DMA.
+(ia64's ZONE_DMA is below 4GB...x86_64's ZONE_DMA32)
 
-That involves creating a vmalloc-like area or breaking the 1:1 physical:virtual
-mapping in the kernel address space. Of those two, I think a vmalloc area
-would be easier, have less performance impact and might even be a starting
-point for non-contiguous-compound-pages.
+In this case, current default (node0's) zonelist order is
 
-hmm.
+Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
 
-> >>Increasing PAGE_SIZE, support for block size > page cache size, and 
-> >>getting
-> >>io controllers matched to a 4K page size IMO would be some good ways to
-> >>solve these problems. I know they are probably harder...
-> >
-> >
-> >No this has been tried before and does not work. Why should we loose the 
-> >capability to work with 4k pages just because there is some data that 
-> >has to be thrown around in quantity? I'd like to have flexibility here.
-> 
-> Is that a big problem? Really? You use 16K pages on your IPF systems,
-> don't you?
-> 
-> 
-> >The fragmentation problem is solvable and we already have a solution in 
-> >mm. So I do not really see a problem there?
-> 
-> I don't think that it is solved, and I think the heuristics that are
-> there would be put under more stress if they become widely used. And
-> it isn't only about whether we can get the page or not, but also about
-> the cost. Look up Linus's arguments about page colouring, which are
-> similar and  I also think are pretty valid.
-> 
+This means Node(0)'s DMA will be used before Node(1)'s NORMAL.
+This will cause OOM on ZONE_DMA easily.
 
-Page coloring has come up a lot in the past. Can you point me at an
-example you have in mind and I'll see if the same arguments really
-apply.
+This patch changes *default* zone order to
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Node(0)'s NORMAL -> Node(1)'s NORMAL -> Node(0)'s DMA.
+
+tested ia64 2-Node NUMA. works well.
+
+Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+Index: linux-2.6.21-rc7-mm2/mm/page_alloc.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/mm/page_alloc.c
++++ linux-2.6.21-rc7-mm2/mm/page_alloc.c
+@@ -2023,6 +2023,7 @@ void show_free_areas(void)
+  *
+  * Add all populated zones of a node to the zonelist.
+  */
++#ifndef CONFIG_NUMA
+ static int __meminit build_zonelists_node(pg_data_t *pgdat,
+ 			struct zonelist *zonelist, int nr_zones, enum zone_type zone_type)
+ {
+@@ -2042,6 +2043,7 @@ static int __meminit build_zonelists_nod
+ 	} while (zone_type);
+ 	return nr_zones;
+ }
++#endif
+ 
+ #ifdef CONFIG_NUMA
+ #define MAX_NODE_LOAD (num_online_nodes())
+@@ -2106,52 +2108,51 @@ static int __meminit find_next_best_node
+ 	return best_node;
+ }
+ 
++/*
++ * Build zonelist based on zone priority.
++ */
++static int __meminitdata node_order[MAX_NUMNODES];
+ static void __meminit build_zonelists(pg_data_t *pgdat)
+ {
+-	int j, node, local_node;
+-	enum zone_type i;
+-	int prev_node, load;
+-	struct zonelist *zonelist;
++	int i, j, pos, zone_type, node, load;
+ 	nodemask_t used_mask;
++	int local_node, prev_node;
++	struct zone *z;
++	struct zonelist *zonelist;
+ 
+-	/* initialize zonelists */
+ 	for (i = 0; i < MAX_NR_ZONES; i++) {
+ 		zonelist = pgdat->node_zonelists + i;
+ 		zonelist->zones[0] = NULL;
+ 	}
+-
+-	/* NUMA-aware ordering of nodes */
++	memset(node_order, 0, sizeof(node_order));
+ 	local_node = pgdat->node_id;
+ 	load = num_online_nodes();
+ 	prev_node = local_node;
+ 	nodes_clear(used_mask);
++	j = 0;
+ 	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
+ 		int distance = node_distance(local_node, node);
+-
+-		/*
+-		 * If another node is sufficiently far away then it is better
+-		 * to reclaim pages in a zone before going off node.
+-		 */
+ 		if (distance > RECLAIM_DISTANCE)
+ 			zone_reclaim_mode = 1;
+-
+-		/*
+-		 * We don't want to pressure a particular node.
+-		 * So adding penalty to the first node in same
+-		 * distance group to make it round-robin.
+-		 */
+-
+ 		if (distance != node_distance(local_node, prev_node))
+-			node_load[node] += load;
++			node_load[node] = load;
++		node_order[j++] = node;
+ 		prev_node = node;
+ 		load--;
+-		for (i = 0; i < MAX_NR_ZONES; i++) {
+-			zonelist = pgdat->node_zonelists + i;
+-			for (j = 0; zonelist->zones[j] != NULL; j++);
+-
+-	 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, i);
+-			zonelist->zones[j] = NULL;
++	}
++	/* calculate node order */
++	for (i = 0; i < MAX_NR_ZONES; i++) {
++		zonelist = pgdat->node_zonelists + i;
++		pos = 0;
++		for (zone_type = i; zone_type >= 0; zone_type--) {
++			for (j = 0; j < num_online_nodes(); j++) {
++				node = node_order[j];
++				z = &NODE_DATA(node)->node_zones[zone_type];
++				if (populated_zone(z))
++					zonelist->zones[pos++] = z;
++			}
+ 		}
++		zonelist->zones[pos] = NULL;
+ 	}
+ }
+ 
+@@ -2239,6 +2240,7 @@ void __meminit build_all_zonelists(void)
+ 		__build_all_zonelists(NULL);
+ 		cpuset_init_current_mems_allowed();
+ 	} else {
++		memset(node_load, 0, sizeof(node_load));
+ 		/* we have to stop all cpus to guaranntee there is no user
+ 		   of zonelist */
+ 		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
+
