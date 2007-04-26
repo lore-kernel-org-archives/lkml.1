@@ -1,97 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbXDZHyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbXDZH51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933379AbXDZHyZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXDZHyZ
+	id S933204AbXDZH51 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXDZH51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:54:25 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:56052 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933379AbXDZHyU (ORCPT
+	Thu, 26 Apr 2007 03:57:27 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:40054 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933204AbXDZH50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:54:20 -0400
-Message-Id: <1177574060.24811.1186654285@webmail.messagingengine.com>
-X-Sasl-Enc: qwe3G3uHoze8iMzn0boySNF5EbnafTHa6yMe7DGSgA5T 1177574060
-From: lkml777@123mail.org
-To: lkml777@123mail.org, "Edward Shishkin" <edward@namesys.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vladimir V. Saveliev" <vs@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>
-Cc: "Alex Zarochentsev" <zam@namesys.com>,
-       "Linux kernel mailing list" <linux-kernel@vger.kernel.org>,
-       "Eric Hopper" <hopper@omnifarious.org>, "Lex Lyamin" <flx@msu.ru>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Rik van Riel" <riel@redhat.com>, "Xu CanHao" <xucanhao@gmail.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu, 26 Apr 2007 03:57:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=lszsAx/UsA74M5t+TY7gRjHgt0awY9fSlcZx4ARsz3gnrbpxPudaBCyxlD216V13yrCd9fz9ECu+rhCiRTM+IKT5c4KH8qA9Fjd8ZawU+AY+ogv/bBWXg4RWDIafiQeDd45IJg3/ovUdM3TgcJK28Oc484XqTzveTsE9rM57b5U=  ;
+X-YMail-OSG: ZHt50cMVM1lodZ8MXc.FlsirNaFyacVEg4FUrRb3KsGFhkVdshpwAfDqSJ50MIgeJS2ghxsTIw--
+Message-ID: <46304D50.1040706@yahoo.com.au>
+Date: Thu, 26 Apr 2007 16:57:20 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-   <462E17AF.7090604@namesys.com>
-   <1177459922.31000.1186391425@webmail.messagingengine.com>
-Subject: Re: Question about Reiser4
-In-Reply-To: <1177459922.31000.1186391425@webmail.messagingengine.com>
-Date: Thu, 26 Apr 2007 00:54:20 -0700
+To: Christoph Lameter <clameter@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Apr 2007 19:03:12 +0400, "Edward Shishkin"
-<edward@namesys.com> said:
-> lkml777@123mail.org wrote:
+Christoph Lameter wrote:
+> On Thu, 26 Apr 2007, Nick Piggin wrote:
 > 
-> >
-> >As I understand it, the default Reiser4 DOES NOT USE any compression at
-> >all, not even tail compression,
-> >
 > 
-> ^tail compression^tail conversion
-> Reiser4 does use tail conversion by default.
+>>Yeah. IMO anti-fragmentation and defragmentation is the hack, and we
+>>should stay away from higher order allocations whenever possible.
 > 
-> > but saves space by eliminating block
-> >alignment wastage (tail compression is an option).
-> >
-> >So lets LOSE the statistics that involve compression. The results now
-> >look like this:
-> >
-> >.-------------------------.
-> >| FILESYSTEM | TIME |DISK |
-> >| TYPE       |(secs)|USAGE|
-> >.-------------------------.
-> >|REISER4     | 3462 | 692 |
-> >|EXT2        | 4092 | 816 |
-> >|JFS         | 4225 | 806 |
-> >|EXT4        | 4408 | 816 |
-> >|EXT3        | 4421 | 816 |
-> >|XFS         | 4625 | 779 |
-> >|REISER3     | 6178 | 793 |
-> >|FAT32       |12342 | 988 |
-> >|NTFS-3g     |10414 | 772 |
-> >.-------------------------.
-> >
-> >These results are still EXTREMELY GOOD for REISER4.
-> >  
-> >
 > 
-> Everything is not so simple in the science of testing..
-> Would you please change direction of your activity to stressing
-> instead of benchmarking? Caught oopses would have great value..
-> OK?
-> 
-> Regards,
-> Edward.
-> 
+> Right and we need to create series of other approaches that we then label 
+> "non-hack" to replace it. 
 
-Tail conversion is NOT compression,....
+I don't understand? We're talking about several utterly different designs
+to approach these problems. You don't agree that one might be better than
+another?
 
-So what exactly is your point?
 
-By "tail compression" I mean plugin ctail40, but since I was never able
-to get it to work, maybe its not tail compression at all.
--- 
-  
-  lkml777@123mail.org
+>>Hardware is built to handle many small pages efficintly, and I don't
+>>understand how it could be an SGI-only issue. Sure, you may have an
+>>order of magnitude or more memory than anyone else, but even my lowly
+>>desktop _already_ has orders of magnitude more pages than it has TLB
+>>entries or cache -- if a workload is cache-nice for me, it probably
+>>will be on a 1TB machine as well, and if it is bad for the 1TB machine,
+>>it is also bad on mine.
+> 
+> 
+> There have been numbers of people that have argued the same point. Just 
+> because we have developed a way of thinking to defend our traditional 4k 
+> values does not make them right.
+> 
+> 
+>>If this is instead an issue of io path or reclaim efficiency, then it
+>>would be really nice to see numbers... but I don't think making these
+>>fundamental paths more complex and slower is a nice way to fix it
+>>(larger PAGE_SIZE would be, though).
+> 
+> 
+> The code paths can stay the same. You can switch CONFIG_LARGE pages off
+> if you do not want it and it is as it was.
+
+That isn't a good reason to merge something. If you don't have numbers then
+that just seems incredible.
+
+
+> If you would have a look the patches: The code is significantly cleanup 
+> and easier to read.
+
+Cleanups are fine.
 
 -- 
-http://www.fastmail.fm - A fast, anti-spam email service.
-
+SUSE Labs, Novell Inc.
