@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbXDZWZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbXDZWac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbXDZWZo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 18:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXDZWZo
+	id S1753508AbXDZWac (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 18:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbXDZWac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 18:25:44 -0400
-Received: from lazybastard.de ([212.112.238.170]:45053 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753209AbXDZWZm (ORCPT
+	Thu, 26 Apr 2007 18:30:32 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50547 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755139AbXDZWaZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 18:25:42 -0400
-Date: Fri, 27 Apr 2007 00:21:13 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: David Chinner <dgc@sgi.com>
-Cc: Valerie Henson <val_henson@linux.intel.com>, Amit Gud <gud@ksu.edu>,
-       Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070426222112.GA18172@lazybastard.org>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425230344.GC16129@nifty> <20070426004740.GE65285596@melbourne.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070426004740.GE65285596@melbourne.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 26 Apr 2007 18:30:25 -0400
+Message-ID: <46312779.4060405@gmail.com>
+Date: Fri, 27 Apr 2007 00:28:09 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: MODULE_MAINTAINER
+References: <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de> <20070426084143.1d973c71.randy.dunlap@oracle.com> <20070426155205.GN3468@stusta.de> <m38xcfhqp4.fsf@maximus.localdomain> <20070426194316.GY3468@stusta.de> <m3ps5qhpk4.fsf@maximus.localdomain> <20070426202436.GZ3468@stusta.de>
+In-Reply-To: <20070426202436.GZ3468@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 April 2007 10:47:40 +1000, David Chinner wrote:
+On 04/26/2007 10:24 PM, Adrian Bunk wrote:
+
+> The problem with such a database would be the same as with the 
+> MAINTAINERS file: The information becomes outdated, and someone has to 
+> maintain it.
 > 
-> This assumes that you know a chunk has been corrupted, though.
-> How do you find that out?
+> Sending a patch against MAINTAINERS is easy - I don't see a 
+> WWW-browseable database being in any respect better than the MAINTAINERS
+> file.
 
-Option 1: you notice something odd while serving userspace.
-Option 2: a checking/scrubbing daemon of some sorts.
+Well, in fact, the database could _be_ (a parsed version of) the current 
+MAINTAINERS file; it's already in a strict, parseable format. I know that 
+MAINTAINERS itself is not very good at staying up to date, but making more 
+intensive use of it like that might in fact improve that...
 
-The first will obviously miss any corruption in data that is not touched
-for a long time (ever?).
+Being able to have "modinfo module" then point at a specific link would 
+require a bit more though. It could be agreed upon to, say, have a module 
+that the kernel installs as
 
-> > What you need to make this go fast is (1) a pre-made list of which
-> > chunks have links with which other chunks,
-> 
-> So you add a new on-disk structure that needs to be kept up to
-> date? How do you trust that structure to be correct if you are
-> not journalling it?
+	/lib/modules/$(uname -r)/kernel/drivers/cdrom/mitsumi.ko
 
-Only chance I see is to treat this list as hints.  It should contain all
-chunks that possibly have links.  It may also contain chunks that don't
-have links.  By keeping strict FFS-style ordering of all relevant
-writes, any mismatch should only cost fsck time.
+have a maintainer page at
 
-Managing this list appears to be less than trivial.  Might actually be
-easier to have LogFS-style rmap for each object in the filesystem.
+	http://www.kernel.org/maintainer/driver/cdrom/mitsumi.html
 
-> What happens if fsfuzzer trashes part
-> of this table as well and you can't trust it?
+but to generate that page, the maintainer file would then need to grow a way 
+to associate the "MITSUMI CDROM DRIVER" entry (don't bother, it's not there) 
+in the MAINTAINERS file with that page (and simply listing that install path 
+in the entry isn't good -- I believe you would wan't to pin down a structure 
+like that).
 
-If you have 5000 redundant copies of data and all get corrupted, you are
-doomed.  I don't expect my filesystem to recover after having written
-0x00 over the whole device.
+Anyways -- might all also be a bit of overkill anyway. If I can get those 
+email adresses from MODULE_AUTHOR out of the way, I'm mostly happy.
 
-Being able to recover a single corruption happening anywhere on the
-device is already a huge step forward.  Of course most current
-filesystems wouldn't even be able to detect all possible corruptions.
-That alone would be a step forward.
+Rene.
 
-One of the smart things of ZFS is to checksum everything.  Among the
-Linux filesystems only JFFS2 seems to do it, but it cannot distinguish
-between corrupted data and incomplete writes before a crash.  It
-definitely costs performance, but that is the price one has to pay if
-errors are to be detected.
-
-Jörn
-
--- 
-Do not stop an army on its way home.
--- Sun Tzu
