@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbXDZDGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXDZD2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbXDZDGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 23:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbXDZDGS
+	id S1752043AbXDZD2t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 23:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbXDZD2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 23:06:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44496 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754689AbXDZDGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 23:06:17 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18QxhALcioQZsjtcJtejgbZ3zNLaZdL1Dq+JVHyW4
-	Eb/v44r/M6PKkW
-Subject: Re: menuconfig issue (checklist) in 2.6.20.7 & 2.6.21-rc7 ?
-From: Mike Galbraith <efault@gmx.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sunil Naidu <akula2.shark@gmail.com>,
+	Wed, 25 Apr 2007 23:28:49 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:56678 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752043AbXDZD2s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 23:28:48 -0400
+Message-ID: <46301C1A.7050201@vmware.com>
+Date: Wed, 25 Apr 2007 20:27:22 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070425203009.GA15917@uranus.ravnborg.org>
-References: <8355959a0704250724g3614d293h2dd08833a6ef473b@mail.gmail.com>
-	 <20070425120730.4c267c15.akpm@linux-foundation.org>
-	 <1177529517.6434.29.camel@Homer.simpson.net>
-	 <20070425203009.GA15917@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 05:06:14 +0200
-Message-Id: <1177556774.6098.10.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Subject: Re: [PATCH] i386: For debugging, make the initial page table setup
+ less forgiving.
+References: <200704132149.l3DLnvUY012097@tazenda.hos.anvin.org>	<20070425044813.f83dde4e.akpm@linux-foundation.org>	<462F73A0.40003@zytor.com> <m1irbks5qa.fsf@ebiederm.dsl.xmission.com>	<462F9B64.3020107@goop.org> <m1wt00qnwg.fsf@ebiederm.dsl.xmission.com>	<462FD179.6070802@goop.org> <m1ps5sozt6.fsf@ebiederm.dsl.xmission.com>	<462FDF6D.8050903@goop.org> <m13b2oow70.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m13b2oow70.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-04-25 at 22:30 +0200, Sam Ravnborg wrote:
+Eric W. Biederman wrote:
+> I suspect what we want to do is come up with a function to call
+> to test to see if a page should be read-only and map such pages
+> _PAGE_KERNEL_RO, or _PAGE_KERNEL_RO_EXEC if it's code.
+>
+> Speaking of things what are paravirt_alloc_pd and parafirt_alloc_pd 
+> supposed to do?
+>   
 
-> > There are general funnies in the menuconfig world (my preference) here.
-> > For instance, I recently had reason to change/test different default IO
-> > schedulers, and found that no matter what I did, I couldn't select a
-> > default IO scheduler any more, though I used to be able to do so.
+For hypervisors which shadow kernel page tables, none of these concerns 
+with keeping page tables read-only arise.  However, another set of 
+concerns does arise with maintaining shadow synchronization.  One of 
+those problems is keeping the hypervisor aware of when pages are being 
+used as page tables.
 
-> Tried it now with latest -git from Linus and here it works.
-> Notice that you need to make the scheduler a built-in <*>
-> before you can select it as default.
-> A scheduler selected as a module <M> cannot be made default.
+However, it turns out both direct page table and shadow page table 
+implementations can be made to use one page table allocation function; 
+in the direct page table case (as for Xen), this is the point where page 
+tables can be recognized and made read-only.  So this is the dual 
+purpose of the paravirt_alloc_p[dt] functions.
 
-Ok, I guess my ncurses is ill.  (all built in)  Thanks.
-
-	-Mike
-
+Zach
