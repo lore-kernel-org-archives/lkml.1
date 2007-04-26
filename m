@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031303AbXDZQIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031304AbXDZQJu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031303AbXDZQIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031306AbXDZQIt
+	id S1031304AbXDZQJu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:09:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031295AbXDZQJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:08:49 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4283 "EHLO kernel.dk"
+	Thu, 26 Apr 2007 12:09:50 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59025 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031303AbXDZQIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:08:48 -0400
-Date: Thu, 26 Apr 2007 18:05:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       David Chinner <dgc@sgi.com>, Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426160507.GC2017@kernel.dk>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <20070426155855.GA16337@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426155855.GA16337@infradead.org>
+	id S1031304AbXDZQJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:09:49 -0400
+Message-ID: <4630CEA9.6050100@garzik.org>
+Date: Thu, 26 Apr 2007 12:09:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+CC: Andrew Morton <akpm@osdl.org>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       David Acker <dacker@roinet.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFT] e100 driver on ARM
+References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com> <20070426135013.GA12154@xi.wantstofly.org> <4630C159.1060707@garzik.org> <4630C7D0.8030901@intel.com>
+In-Reply-To: <4630C7D0.8030901@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26 2007, Christoph Hellwig wrote:
-> On Thu, Apr 26, 2007 at 04:38:54PM +1000, Nick Piggin wrote:
-> > Hardware is built to handle many small pages efficintly, and I don't
-> > understand how it could be an SGI-only issue. Sure, you may have an
-> > order of magnitude or more memory than anyone else, but even my lowly
-> > desktop _already_ has orders of magnitude more pages than it has TLB
-> > entries or cache -- if a workload is cache-nice for me, it probably
-> > will be on a 1TB machine as well, and if it is bad for the 1TB machine,
-> > it is also bad on mine.
+Kok, Auke wrote:
+> Jeff Garzik wrote:
+>> Lennert Buytenhek wrote:
+>>> This is all a while ago now, but wasn't the e100 S-bit patch originally
+>>> written by Intel people in response to the very same quote by Russell
+>>> King that you've quoted above?
+>>
+>> Correct.
+>>
+>> I just wanted to make sure it didn't kill any boxes.
 > 
-> It's not an SGI-only issue, but apparently SGI are the only ones
-> that actually care about real highend linux setups to work on these
-> issues.  The Problem is not on the CPU hardware side.  It's on
-> the Software side and Storage hardware side, or rather a combination
-> of the two.
+> Neither did we. On top of that we didn't have the equipment to test on 
+> ARM on until recently, and the system that I got recently will not even 
+> load the kernel with an e100 NIC in the PCI slot (way way way before 
+> e100.ko loads, e1000 works just fine). that doesn't help either.
+> 
+> Meanwhile we've not sat still and jesse wrote a patch to have e100 use 
+> IO optionally for plagued platforms which seems to fix some of these 
+> issues, and Jeff Kirsher has been actively tracking a e100 IPMI issue on 
+> a very specific platform.
+> 
+> Jeff, I think I should just push the IO patch and the sbit code to 
+> Andrew and have it sit there. That is a vastly larger test resource than 
+> we currently can generate for this. If needed we just let is sit there 
+> for a whole release cycle before moving it to #upstream.
 
-Agree. I don't know why we are arguing the merrits of this, it's an
-obvious win. The problem is more if it's doable this way or not due to
-fragmentation, but that's a different discussion and should be kept
-seperate.
+The sbit code has been in -mm via netdev-2.6.git#ALL for many months 
+now.  I am certainly open to adding any number of "for -mm only" style 
+patches that you wish to pass along, for /any/ driver: e100, e1000, ixgb.
 
--- 
-Jens Axboe
+	Jeff
+
+
 
