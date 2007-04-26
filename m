@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031325AbXDZRCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbXDZRCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031325AbXDZRCy (ORCPT <rfc822;w@1wt.eu>);
+	id S1753396AbXDZRCy (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Apr 2007 13:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbXDZRBs
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbXDZRBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39737 "EHLO
+	Thu, 26 Apr 2007 13:01:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39753 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754890AbXDZRBV (ORCPT
+	with ESMTP id S1754875AbXDZRB1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:01:21 -0400
-Date: Thu, 26 Apr 2007 09:57:08 -0700
+	Thu, 26 Apr 2007 13:01:27 -0400
+Date: Thu, 26 Apr 2007 09:57:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 29/33] hwmon/w83627ehf: Fix the fan5 clock divider write
-Message-ID: <20070426165708.GD1898@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
+       Tommi Kyntola <tommi.kyntola@ray.fi>, Jaroslav Kysela <perex@suse.cz>
+Subject: [patch 30/33] ALSA: intel8x0 - Fix speaker output after S2RAM
+Message-ID: <20070426165711.GE1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hwmon-w83627ehf-fix-the-fan5-clock-divider-write.patch"
+Content-Disposition: inline; filename="alsa-intel8x0-fix-speaker-output-after-s2ram.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,53 +37,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
 
-Users have been complaining about the w83627ehf driver flooding their
-logs with debug messages like:
+From: Tommi Kyntola <tommi.kyntola@ray.fi>
 
-w83627ehf 9191-0a10: Increasing fan 4 clock divider from 64 to 128
+[ALSA] intel8x0 - Fix speaker output after S2RAM
 
-or:
+Fixed the mute speaker problem after S2RAM on some laptops:
+	http://bugme.osdl.org/show_bug.cgi?id=6181
 
-w83627ehf 9191-0290: Increasing fan 4 clock divider from 4 to 8
-
-The reason is that we failed to actually write the LSB of the encoded
-clock divider value for that fan, causing the next read to report the
-same old value again and again.
-
-Additionally, the fan number was improperly reported, making the bug
-harder to find.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Tommi Kyntola <tommi.kyntola@ray.fi>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jaroslav Kysela <perex@suse.cz>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- drivers/hwmon/w83627ehf.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/hwmon/w83627ehf.c
-+++ b/drivers/hwmon/w83627ehf.c
-@@ -389,7 +389,7 @@ static void w83627ehf_write_fan_div(stru
- 		break;
- 	case 4:
- 		reg = (w83627ehf_read_value(client, W83627EHF_REG_DIODE) & 0x73)
--		    | ((data->fan_div[4] & 0x03) << 3)
-+		    | ((data->fan_div[4] & 0x03) << 2)
- 		    | ((data->fan_div[4] & 0x04) << 5);
- 		w83627ehf_write_value(client, W83627EHF_REG_DIODE, reg);
- 		break;
-@@ -453,9 +453,9 @@ static struct w83627ehf_data *w83627ehf_
- 			   time */
- 			if (data->fan[i] == 0xff
- 			 && data->fan_div[i] < 0x07) {
--			 	dev_dbg(&client->dev, "Increasing fan %d "
-+			 	dev_dbg(&client->dev, "Increasing fan%d "
- 					"clock divider from %u to %u\n",
--					i, div_from_reg(data->fan_div[i]),
-+					i + 1, div_from_reg(data->fan_div[i]),
- 					div_from_reg(data->fan_div[i] + 1));
- 				data->fan_div[i]++;
- 				w83627ehf_write_fan_div(client, i);
+---
+ sound/pci/intel8x0.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+--- a/sound/pci/intel8x0.c
++++ b/sound/pci/intel8x0.c
+@@ -2489,7 +2489,10 @@ static int intel8x0_suspend(struct pci_d
+ 	}
+ 	pci_disable_device(pci);
+ 	pci_save_state(pci);
+-	pci_set_power_state(pci, pci_choose_state(pci, state));
++	/* The call below may disable built-in speaker on some laptops
++	 * after S2RAM.  So, don't touch it.
++	 */
++	/* pci_set_power_state(pci, pci_choose_state(pci, state)); */
+ 	return 0;
+ }
+ 
 
 -- 
