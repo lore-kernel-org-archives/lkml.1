@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbXDZHWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXDZHWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbXDZHWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbXDZHWY
+	id S933313AbXDZHWq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933320AbXDZHWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:22:24 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:31605 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933298AbXDZHWX (ORCPT
+	Thu, 26 Apr 2007 03:22:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38270 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933313AbXDZHWn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:22:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=GEXkz/Ltj2Hiz/ZoHFfX8TsVB7wd9+zpOAR75dShNAtYhCopz87M/vTfpThFT0WBmzktzAm29l52MXXytHyuq09Rx6DzgAMfuoxT1FLefBhY9rHZrrOKN63MTqvWWGwlB1DQJKGpZ9Q93tcv7oMAe6vhiDpuHi0uORWcQgoyMik=  ;
-X-YMail-OSG: MfU5UD8VM1lxxYDWdNRnxHMhs6XVvhYx38WniuO0e_ABu5RIViOpOw9.51s78UDV0Xtvw0tGvg--
-Message-ID: <46305327.2000206@yahoo.com.au>
-Date: Thu, 26 Apr 2007 17:22:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+	Thu, 26 Apr 2007 03:22:43 -0400
+Date: Thu, 26 Apr 2007 00:22:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
        Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
        David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <46305177.7060102@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+ <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
+ <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com>
+ <46305177.7060102@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 26 Apr 2007, Nick Piggin wrote:
+On Thu, 26 Apr 2007, Nick Piggin wrote:
+
+> > mapping through the radix tree. You just need to change the way the
+> > filesystem looks up pages.
 > 
+> You didn't think any of the criticisms of higher order page cache size
+> were valid?
+
+They are all known points that have been discussed to death.
+
+> > What are the exact requirement you are trying to address?
 > 
->>>Right and we need to create series of other approaches that we then label
->>>"non-hack" to replace it. 
->>
->>I don't understand? We're talking about several utterly different designs
->>to approach these problems. You don't agree that one might be better than
->>another?
-> 
-> 
-> What I seeing is a series of approaches being put into the kernel to 
-> address this issue. We already have the lumpy reclaim there. Then we talk 
-> about other fixed to basic page handling in the kernel to make it better.
-> Now you want yet another fs layer. All of that could be taken care of by
+> Block size > page cache size.
 
-No I don't want to add another fs layer.
+But what do you mean with it? A block is no longer a contiguous section of 
+memory. So you have redefined the term.
 
-> a defrag approach with larger pages. This has been done a number of times 
-> before and actually the large page approach is a textbook example on how 
-> to improve performance. It goes waaaay back.
+> You guys have a couple of problems, firstly you need to have ia64
+> filesystems accessable to x86_64. And secondly you have these controllers
+> without enough sg entries for nice sized IOs.
 
-I still don't think anti fragmentation or defragmentation are a good
-approach, when you consider the alternatives.
+This is not sgi specific sorry.
 
-It is like Linus on the page colouring issue. That goes back a looong
-way too, but that doesn't mean it is the right way to do it.
+> I sympathise, and higher order pagecache might solve these in a way, but
+> I don't think it is the right way to go, mainly because of the fragmentation
+> issues.
 
+And you dont care about Mel's work on that level?
 
->>>The code paths can stay the same. You can switch CONFIG_LARGE pages off
->>>if you do not want it and it is as it was.
->>
->>That isn't a good reason to merge something. If you don't have numbers then
->>that just seems incredible.
-> 
-> 
-> Dont worry you will get numbers... Just did not have time to fix the bug 
-> in this one since I had to take care of something else.
+> Increasing PAGE_SIZE, support for block size > page cache size, and getting
+> io controllers matched to a 4K page size IMO would be some good ways to
+> solve these problems. I know they are probably harder...
 
-OK, I would like to see them. And also discussions of things like why
-we shouldn't increase PAGE_SIZE instead.
+No this has been tried before and does not work. Why should we loose the 
+capability to work with 4k pages just because there is some data that 
+has to be thrown around in quantity? I'd like to have flexibility here.
 
--- 
-SUSE Labs, Novell Inc.
+The fragmentation problem is solvable and we already have a solution in 
+mm. So I do not really see a problem there?
