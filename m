@@ -1,91 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031336AbXDZQUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031342AbXDZQUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031336AbXDZQUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031335AbXDZQUD
+	id S1031342AbXDZQUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031341AbXDZQUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:20:03 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:55527 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031332AbXDZQUB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:20:01 -0400
-Date: Thu, 26 Apr 2007 11:19:29 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: serge@hallyn.com, hpa@zytor.com, linuxram@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       linux-security-module@vger.kernel.org, ebiederm@xmission.com,
-       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] unprivileged mounts update
-Message-ID: <20070426161929.GA6439@sergelap.austin.ibm.com>
-References: <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com> <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu> <20070426145733.GA10078@sergelap.austin.ibm.com> <E1Hh5oQ-0000w1-00@dorka.pomaz.szeredi.hu>
+	Thu, 26 Apr 2007 12:20:40 -0400
+Received: from mga01.intel.com ([192.55.52.88]:11069 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031340AbXDZQUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:20:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,455,1170662400"; 
+   d="scan'208";a="237226146"
+Message-ID: <4630D154.7050708@intel.com>
+Date: Thu, 26 Apr 2007 09:20:36 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Hh5oQ-0000w1-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>
+CC: Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Lennert Buytenhek <buytenh@wantstofly.org>,
+       David Acker <dacker@roinet.com>,
+       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFT] e100 driver on ARM
+References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com> <20070426135013.GA12154@xi.wantstofly.org> <4630C159.1060707@garzik.org> <4630C7D0.8030901@intel.com> <4630CEA9.6050100@garzik.org>
+In-Reply-To: <4630CEA9.6050100@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Apr 2007 16:20:37.0922 (UTC) FILETIME=[D353A820:01C7881E]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > Quoting Miklos Szeredi (miklos@szeredi.hu):
-> > > > Right, I figure if the normal action is to always do
-> > > > mnt->user = current->fsuid, then for the special case we
-> > > > pass a uid in someplace.  Of course...  do we not have a
-> > > > place to do that?  Would it be a no-no to use 'data' for
-> > > > a non-fs-specific arg?
-> > > 
-> > > I guess it would be OK for bind, but not for new- and remounts, where
-> > > 'data' is already used.
-> > > 
-> > > Maybe it's best to stay with fsuid after all, and live with having to
-> > > restore capabilities.  It's not so bad after all, this seems to do the
-> > > trick:
-> > > 
-> > > 	cap_t cap = cap_get_proc();
-> > > 	setfsuid(uid);
-> > > 	cap_set_proc(cap);
-> > > 
-> > > Unfortunately these functions are not in libc, but in a separate
-> > > "libcap" library.  Ugh.
-> > 
-> > Ok, are you still planning to nix the MS_SETUSER flag, though, as
-> > Eric suggested?  I think it's cleanest - always set the mnt->user
-> > field to current->fsuid, and require CAP_SYS_ADMIN if the
-> > mountpoint->mnt->user != current->fsuid.
+Jeff Garzik wrote:
+> Kok, Auke wrote:
+>> Jeff, I think I should just push the IO patch and the sbit code to 
+>> Andrew and have it sit there. That is a vastly larger test resource than 
+>> we currently can generate for this. If needed we just let is sit there 
+>> for a whole release cycle before moving it to #upstream.
 > 
-> It would be a nice cleanup, but I think it's unworkable for the
-> following reasons:
-> 
-> Up till now mount(2) and umount(2) always required CAP_SYS_ADMIN, and
-> we must make sure, that unless there's some explicit action by the
-> sysadmin, these rules are still enfoced.
-> 
-> For example, with just a check for mnt->mnt_uid == current->fsuid, a
-> fsuid=0 process could umount or submount all the "legacy" mounts even
-> without CAP_SYS_ADMIN.
->
-> This is a fundamental security problem, with getting rid of MS_SETUSER
-> and MNT_USER.
-> 
-> Another, rather unlikely situation is if an existing program sets
-> fsuid to non-zero before calling mount, hence unwantingly making that
-> mount owned by some user after these patches.
-> 
-> Also adding "user=0" to the options in /proc/mounts would be an
-> inteface breakage, that is probably harmless, but people wouldn't like
-> it.  Special casing the zero uid for this case is more ugly IMO, than
-> the problem we are trying to solve.
-> 
-> If we didn't have existing systems to deal with, then of course I'd
-> agree with Eric's suggestion.
-> 
-> Miklos
+> The sbit code has been in -mm via netdev-2.6.git#ALL for many months 
+> now.  I am certainly open to adding any number of "for -mm only" style 
+> patches that you wish to pass along, for /any/ driver: e100, e1000, ixgb.
 
-So then as far as you're concerned, the patches which were in -mm will
-remain unchanged?
+I think we should then just bite the bullet and move it over to #upstream for 
+2.6.22, that gives us another full release cycle to monitor it.
 
--serge
+I'll post 2 patches in a second. the first is for upstream and allows the driver 
+to run with an invalid mac address in case the user overrides the eeprom 
+checksum (in which case the mac address could likely be wrong). The second one 
+is the I/O mode patch and for Andrew (MM), allthough the I/O mode is disabled by 
+default, so it should be safe to put in upstream as well, but I leave that up to 
+you to decide.
 
+Auke
