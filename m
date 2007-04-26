@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbXDZE0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754382AbXDZElf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbXDZE0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXDZE0X
+	id S1754382AbXDZElf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 00:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbXDZElZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:26:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39588 "EHLO mx1.redhat.com"
+	Thu, 26 Apr 2007 00:41:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42396 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbXDZE0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:26:22 -0400
-Date: Thu, 26 Apr 2007 00:26:17 -0400
+	id S1754382AbXDZElY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 00:41:24 -0400
+Date: Thu, 26 Apr 2007 00:38:48 -0400
 From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sworks-agp: Switch to PCI ref counting APIs
-Message-ID: <20070426042617.GC11278@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426043848.GD11278@redhat.com>
 Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-References: <20070423145129.1cfcd1f2@the-village.bc.nu> <20070425192158.8787a248.akpm@linux-foundation.org> <20070426042019.GA11278@redhat.com> <20070425212339.f16f9d7f.akpm@linux-foundation.org>
+	Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070425212339.f16f9d7f.akpm@linux-foundation.org>
+In-Reply-To: <20070426040806.GJ3468@stusta.de>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 09:23:39PM -0700, Andrew Morton wrote:
- > On Thu, 26 Apr 2007 00:20:19 -0400 Dave Jones <davej@redhat.com> wrote:
- > 
- > > On Wed, Apr 25, 2007 at 07:21:58PM -0700, Andrew Morton wrote:
- > >  > On Mon, 23 Apr 2007 14:51:29 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
- > >  > 
- > >  > >  {
- > >  > >  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
- > >  > >  
- > >  > > +	pci_dev_put(bridge->dev);
- > >  > >  	agp_remove_bridge(bridge);
- > >  > >  	agp_put_bridge(bridge);
- > >  > > +	pci_dev_put(serverworks_private.svrwrks_dev)
- > >  > > +	serverworks_private.svrwrks_dev = NULL;
- > >  > 
- > >  > err, guys?
- > > 
- > > ? One put for the agp bridge, one for the host bridge.
- > > What am I missing?
- > > 
- > 
- > a semicolon.
+On Thu, Apr 26, 2007 at 06:08:06AM +0200, Adrian Bunk wrote:
+ 
+ > What I will NOT do:
+ > Waste my time with tracking 2.6.22-rc regressions.
 
-Yow. I thought I build tested that.
-I'll regenerate the git tree tomorrow. Same goes for the cpufreq
-tree with the acpi fixup.
+I seriously hope you'll reconsider.  If you hadn't have done this,
+things would have been a *lot* worse imo.
 
-Thanks.
+But either way, thanks for doing what remains a really grotty
+job that may not get you as many kernel groupies as rewriting the
+process scheduler, but is equally as (if not moreso) important.
 
 	Dave
 
