@@ -1,131 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXDZGuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbXDZGww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbXDZGuI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 02:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbXDZGuH
+	id S933094AbXDZGww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 02:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933112AbXDZGwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 02:50:07 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36648 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933099AbXDZGuE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 02:50:04 -0400
-Date: Thu, 26 Apr 2007 12:18:06 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Keith Owens <kaos@ocs.com.au>,
-       akpm@linux-foundation.org, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, ak@suse.de, horms@verge.net.au,
-       mbligh@google.com
-Subject: Re: [RFC PATCH 0/10] apic_wait_icr_idle issues and possible solutions
-Message-ID: <20070426064806.GA2626@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
-User-Agent: Mutt/1.5.11
+	Thu, 26 Apr 2007 02:52:51 -0400
+Received: from iabervon.org ([66.92.72.58]:2103 "EHLO iabervon.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933094AbXDZGwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 02:52:51 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 02:52:50 EDT
+Date: Thu, 26 Apr 2007 02:46:08 -0400 (EDT)
+From: Daniel Barkalow <barkalow@iabervon.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+In-Reply-To: <20070426040806.GJ3468@stusta.de>
+Message-ID: <Pine.LNX.4.64.0704260133271.28708@iabervon.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+ <20070426040806.GJ3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 08:03:04PM +0900, Fernando Luis Vázquez Cao wrote:
-> 
-> static __inline__ void apic_wait_icr_idle(void)
-> {
->   while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
->     cpu_relax();
-> }
-> 
-> The busy loop in this function would not be problematic if the
-> corresponding status bit in the ICR were always updated, but that does
-> not seem to be the case under certain crash scenarios. As an example,
-> when the other CPUs are locked-up inside the NMI handler the CPU that
-> sends the IPI will end up looping forever in the ICR check, effectively
-> hard-locking the whole system.
-> 
-> Quoting from Intel's "MultiProcessor Specification" (Version 1.4), B-3:
-> 
-> "A local APIC unit indicates successful dispatch of an IPI by
-> resetting the Delivery Status bit in the Interrupt Command
-> Register (ICR). The operating system polls the delivery status
-> bit after sending an INIT or STARTUP IPI until the command has
-> been dispatched.
-> 
-> A period of 20 microseconds should be sufficient for IPI dispatch
-> to complete under normal operating conditions. If the IPI is not
-> successfully dispatched, the operating system can abort the
-> command. Alternatively, the operating system can retry the IPI by
-> writing the lower 32-bit double word of the ICR. This “time-out”
-> mechanism can be implemented through an external interrupt, if
-> interrupts are enabled on the processor, or through execution of
-> an instruction or time-stamp counter spin loop."
-> 
-> Intel's documentation suggests the implementation of a time-out
-> mechanism, which, by the way, is already being open-coded in some parts
-> of the kernel that tinker with ICR.
-> 
-> --- Possible solutions
-> 
-> * Solution A: Implement the time-out mechanism in apic_wait_icr_idle.
-> 
-> The problem with this approach is that introduces a performance penalty
-> that may not be acceptable for some callers of apic_wait_icr_idle.
-> Besides, during normal operation delivery errors should not occur. This
-> brings us to solution B.
-> 
 
-Hi Fernando,
+On Thu, 26 Apr 2007, Adrian Bunk wrote:
 
-How much is the performance penalty? Is it really significant. My point
-is that, to me changing apic_wait_icr_dle() itself seems to be the simple
-approach instead of introducing another function.
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release:
+> 14
 
-Original implementation is:
+I count 13. (v2) had 15 items, of which 2 were subsequently fixed or found 
+to be inapplicable.
 
-static __inline__ void apic_wait_icr_idle(void)
-{
-	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-	cpu_relax();
-}
+> Number of different known regressions compared to 2.6.20 at the time
+> of the 2.6.21 release with patches available at the time of the 2.6.21 
+> release [1]:
+> 3
 
-And new one will look something like.
+The -stable team can presumably take care of these in 2.6.21.1, right? 
+That leaves 10 that need developer attention.
 
-        do {
-                send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
-                if (!send_status)
-                        break;
-                udelay(100);
-        } while (timeout++ < 1000);
+ John Stultz seems to be taking care of 3 of them.
 
-There will be at max 100 microsecond delay before you realize that IPI has
-been dispatched. To optimize it further we can change it to 10 microsecond
-delay
+ Oliver Neukum has 1.
 
-        do {
-                send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
-                if (!send_status)
-                        break;
-                udelay(10);
-        } while (timeout++ < 10000);
- 
-or may be
+ 2 are particular drivers (ali_pata and rtl8139, according to the 
+ reports).
 
-        do {
-                send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
-                if (!send_status)
-                        break;
-                udelay(1);
-        } while (timeout++ < 100000);
+ 2 seem to be ACPI-related; at least one has a candidate patch now.
 
-I don't know if 1 micro second delay is supported. I do see it being
-used in kernel/hpet.c
+ 1 seems to be an ALSA problem.
 
-Is it too much of performance overhead? Somebody who knows more about it
-needs to tell. To me changing apic_wait_icr_idle() seems simple instead
-of introducing a new function and then making a special case for NMI.
+ 1 is STD and being debugged.
 
-Thanks
-Vivek
+It looks like all of the known regressions are being worked on, and 
+getting fixes in for them is -stable material at this point. Furthermore, 
+it doesn't look to me like anyone who is needed for dealing with these 
+regressions is trying to get stuff into the 2.6.22 merge window.
+
+I think it's clear that this is the right point for Linus to start the 
+2.6.22 cycle and leave the rest of the 2.6.21 work to the -stable team, 
+who are the experts of taking care of this sort of stuff. Furthermore, it 
+seems like -rc testers at this point have found everything in 2.6.21-rc 
+they're going to, so, again, it's time for new regressions. Personally, I'd 
+vote for having Linus leave off at 2.6.X-final, and have 2.6.X be the 
+first -stable release of the series, where the remaining known regressions 
+get fixed, but that's an issue of nomenclature, not development process.
+
+I think you've allowed for a well-tested 2.6.21, and a good chance of a 
+2.6.21.1 or .2 with no known regressions against 2.6.20, which seems to me 
+like you succeeded as far as everything except making Linus a release 
+engineer.
+
+	-Daniel
+*This .sig left intentionally blank*
