@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933156AbXDZHSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXDZHSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933156AbXDZHSG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbXDZHSG
+	id S933232AbXDZHSr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933230AbXDZHSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:18:06 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:45498 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933156AbXDZHSE (ORCPT
+	Thu, 26 Apr 2007 03:18:46 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:57825 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933232AbXDZHSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:18:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=ri5I9FUKMFhsiehfWKYn84qDlVUr6FHw1ry70MYFmM6vhctbeUxdlSxgfCkz/ZiJE/ghi/eO4yPRrWb9D8deMnxc+FPnf86Q8vo65j2FusHnzIwvEXgjMkVbaJX2zrve2b98Q8JfCu89rzp97Lr8TKetQ9C+aZX4UR5y/990KIk=  ;
-X-YMail-OSG: l6YeXfAVM1knWpKH6kWiZo8MqEjtZlEBR3.6_A_U59morZbjSSjwGOWrHrcFpdGUt4RToW4YVQ--
-Message-ID: <46305222.60502@yahoo.com.au>
-Date: Thu, 26 Apr 2007 17:17:54 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: David Chinner <dgc@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <20070426070454.GF32602149@melbourne.sgi.com> <46304FAF.7020700@yahoo.com.au> <Pine.LNX.4.64.0704260011140.30731@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704260011140.30731@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 03:18:45 -0400
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.0.98.0704251847310.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu>
+	 <20070424202336.GC16503@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	 <20070424212408.GD16457@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+	 <20070425072350.GA6866@ucw.cz>
+	 <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
+	 <20070425202741.GC17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+	 <20070425214420.GG17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+	 <1177540027.5025.87.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
+	 <1177551601.5025.131.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704251847310.9964@woody.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-vK5cjDr/MbNozpucR6zy"
+Date: Thu, 26 Apr 2007 12:31:51 +1000
+Message-Id: <1177554711.5025.168.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 26 Apr 2007, Nick Piggin wrote:
-> 
-> 
->>>Nick, what's the buffer layer? Are you talking about operations
->>>based on bufferheads?
->>
->>Yeah. Our pgoff_t->sector_t translation.
-> 
-> 
-> Sadly the buffers in the buffer layer still assume contiguous memory. You 
-> would have to add a series of pointers there and then add a layer to 
-> handle this.
 
-That's the least of the problems with rewriting the buffer layer.
+--=-vK5cjDr/MbNozpucR6zy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-But I maintain that the end result is better than the fragmentation
-based approach. A lot of people don't actually want a bigger page
-cache size, because they want efficient internal fragmentation as
-well, so your radix-tree based approach isn't really comparable.
+Hi.
 
--- 
-SUSE Labs, Novell Inc.
+Hmm. Perhaps I should have added to that last reply that recognising
+that they store similar information doesn't mean I think they need the
+same high-level routine for both state transitions.
+
+I'd really like to see each driver have some sort of state machine
+controlling its power management, into which these calls were just
+another input (an important one, but just another alongside information
+about policy, whether we're on battery (UPS or laptop) or AC, whether
+the device is actually being used and so on.
+
+Nigel
+
+--=-vK5cjDr/MbNozpucR6zy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGMA8XN0y+n1M3mo0RAn5LAKDqKVwMbZajkGhEmGcdcAAteFJu8ACgpkoQ
+awCfbfReRpPTFpIyHmr4ZUA=
+=kBjp
+-----END PGP SIGNATURE-----
+
+--=-vK5cjDr/MbNozpucR6zy--
+
