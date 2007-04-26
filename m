@@ -1,128 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752568AbXDZAsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbXDZAsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752568AbXDZAsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXDZAsW
+	id S1753008AbXDZAsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbXDZAsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:48:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56063 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752403AbXDZAsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:48:20 -0400
-Date: Thu, 26 Apr 2007 10:47:40 +1000
-From: David Chinner <dgc@sgi.com>
-To: Valerie Henson <val_henson@linux.intel.com>
-Cc: David Chinner <dgc@sgi.com>, Amit Gud <gud@ksu.edu>,
-       Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070426004740.GE65285596@melbourne.sgi.com>
-References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425230344.GC16129@nifty>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425230344.GC16129@nifty>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 25 Apr 2007 20:48:39 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:49165 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753008AbXDZAsh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 20:48:37 -0400
+Date: Thu, 26 Apr 2007 00:48:35 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
+       Christoph Hellwig <hch@lst.de>, linux-ide@vger.kernel.org
+Subject: Re: BUG: Null pointer dereference in fs/open.c
+In-Reply-To: <20070425160534.00c3a3d4.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704260029400.25153@server.thyself>
+References: <Pine.LNX.4.64.0704222310030.25153@server.thyself>
+ <20070423010032.c89e8d32.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704231356480.25153@server.thyself>
+ <Pine.LNX.4.64.0704231633210.25153@server.thyself>
+ <Pine.LNX.4.64.0704240347470.25153@server.thyself>
+ <20070423215810.5a24ed9a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704240507110.25153@server.thyself>
+ <20070423221726.ccfa982c.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704240527030.25153@server.thyself>
+ <20070425004816.bd0c240a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704251701290.25153@server.thyself>
+ <20070425160534.00c3a3d4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 04:03:44PM -0700, Valerie Henson wrote:
-> On Wed, Apr 25, 2007 at 08:54:34PM +1000, David Chinner wrote:
-> > On Tue, Apr 24, 2007 at 04:53:11PM -0500, Amit Gud wrote:
-> > > 
-> > > The structure looks like this:
-> > > 
-> > >  ----------		----------
-> > > | cnode 0  |---------->| cnode 0  |----------> to another cnode or NULL
-> > >  ----------		----------
-> > > | cnode 1  |-----      | cnode 1  |-----
-> > >  ----------	|	----------	|
-> > > | cnode 2  |-- |      | cnode 2  |--   |
-> > >  ----------  | |	----------  |   |
-> > > | cnode 3  | | |      | cnode 3  | |   |
-> > >  ----------  | |	----------  |   |
-> > > 	  |  |  |		 |  |   |
-> > > 
-> > > 	   inodes		inodes or NULL
-> > 
-> > How do you recover if fsfuzzer takes out a cnode in the chain? The
-> > chunk is marked clean, but clearly corrupted and needs fixing and
-> > you don't know what it was pointing at.  Hence you have a pointer to
-> > a trashed cnode *somewhere* that you need to find and fix, and a
-> > bunch of orphaned cnodes that nobody points to *somewhere else* in
-> > the filesystem that you have to find. That's a full scan fsck case,
-> > isn't?
-> 
-> Excellent question.  This is one of the trickier aspects of chunkfs -
-> the orphan inode problem (tricky, but solvable).  The problem is what
-> if you smash/lose/corrupt an inode in one chunk that has a
-> continuation inode in another chunk?  A back pointer does you no good
-> if the back pointer is corrupted.
+On Wed, 25 Apr 2007, Andrew Morton wrote:
+> On Wed, 25 Apr 2007 22:53:00 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
+>
+>> On Wed, 25 Apr 2007, Andrew Morton wrote:
+>> <snip>
+>>> OK.  I am able to use the pktcdvd driver OK in mainline with a piix/sata
+>>> drive.  It could be that something is going wrong at the IDE level for you.
+>> Perhaps; I'll try an external usb cd burner, and see where that goes.
+>>
+>>> Are you able to identify the most recent kernel which actually worked?
+>> No, because I haven't set packet writing up in Linux before - however, I do know
+>> that I've successfully set up packet writing (using 2 of the 3 cd burners I
+>> have) in another operating system before. I'll try 2.6.18 and see if that gets
+>> me anywhere different, though.
+>
+> OK.
+>
+> A quick summary: mainline's pktcdvd isn't working for William using IDE.
+> It is working for me using sata.
+>
+<snip>
+>
+> So what has happened here is that this code, in ide-cd.c's
+> cdrom_decode_status() is now triggering:
+>
+> 	} else if (blk_pc_request(rq) || rq->cmd_type == REQ_TYPE_ATA_PC) {
+> 		/* All other functions, except for READ. */
+> 		unsigned long flags;
+>
+> 		/*
+> 		 * if we have an error, pass back CHECK_CONDITION as the
+> 		 * scsi status byte
+> 		 */
+> 		if (blk_pc_request(rq) && !rq->errors)
+> 			rq->errors = SAM_STAT_CHECK_CONDITION;
+>
+>
+> I suspect this is a bug introduced by
+> 406c9b605cbc45151c03ac9a3f95e9acf050808c (in which case it'll be the third
+> bug so far).
+>
+> Perhaps the IDE driver was previously not considering these requests to be
+> of type blk_pc_request(), and after
+> 406c9b605cbc45151c03ac9a3f95e9acf050808c it _is_ treating them as
+> blk_pc_request() and is incorrectly reporting an error.  Or something like
+> that.
+>
+> Guys: help!
+>
+A follow-up: after looking around a bit, I have managed to get packet writing to 
+work properly on /dev/hdc (before, it was reporting only 1.8 MB available or so; 
+this was a formatting issue).
+I've also gotten the external cd-rw drive to work. However, I'm still at a loss 
+as to why /dev/hdd won't work. I tried formatting a dvd-rw for this drive, 
+however, it consistently gives me:
+[27342.503933] drivers/ide/ide-cd.c:729: setting error to 2
+[27342.509251]  [<c010521a>] show_trace_log_lvl+0x1a/0x30
+[27342.514411]  [<c0105952>] show_trace+0x12/0x20
+[27342.518864]  [<c0105a46>] dump_stack+0x16/0x20
+[27342.523317]  [<c033f6e4>] cdrom_decode_status+0x1f4/0x3b0
+[27342.528732]  [<c033fae8>] cdrom_newpc_intr+0x38/0x320
+[27342.533791]  [<c0331106>] ide_intr+0x96/0x200
+[27342.538157]  [<c0150cf8>] handle_IRQ_event+0x28/0x60
+[27342.543139]  [<c0151f96>] handle_edge_irq+0xa6/0x130
+[27342.548121]  [<c0106449>] do_IRQ+0x49/0xa0
+[27342.552228]  [<c0104c3a>] common_interrupt+0x2e/0x34
+[27342.557200]  [<c01022d2>] mwait_idle+0x12/0x20
+[27342.561653]  [<c01023ca>] cpu_idle+0x4a/0x80
+[27342.565934]  [<c0101147>] rest_init+0x37/0x40
+[27342.570300]  [<c068ac7b>] start_kernel+0x34b/0x420
+[27342.575109]  [<00000000>] 0x0
+[27342.578089]  =======================
+and doesn't work (the above output was generated by Andrew's patch to log 
+certain areas).
 
-*nod*
+# dvd+rw-format /dev/hdd -force
+* BD/DVDRW/-RAM format utility by <appro@fy.chalmers.se>, version 7.0.
+:-( failed to locate "Quick Format" descriptor.
+* 4.7GB DVD-RW media in Sequential mode detected.
+* formatting 0.0\:-[ READ TRACK INFORMATION failed with SK=3h/ASC=11h/ACQ=05h]: Input/output error
 
-> What you do is keep tabs on whether you see damage that looks like
-> this has occurred - e.g., inode use/free counts wrong, you had to zero
-> a corrupted inode - and when this happens, you do a scan of all
-> continuation inodes in chunks that have links to the corrupted chunk.
+I tried putting in a different dvd-rw, and this time I get:
+# dvd+rw-format /dev/hdd -force
+* BD/DVDRW/-RAM format utility by <appro@fy.chalmers.se>, version 7.0.
+* 4.7GB DVD-RW media in Sequential mode detected.
+* formatting 0.0|:-[ FORMAT UNIT failed with SK=5h/ASC=26h/ACQ=00h]: Input/output error
 
-This assumes that you know a chunk has been corrupted, though.
-How do you find that out?
-
-> What you need to make this go fast is (1) a pre-made list of which
-> chunks have links with which other chunks,
-
-So you add a new on-disk structure that needs to be kept up to
-date? How do you trust that structure to be correct if you are
-not journalling it? What happens if fsfuzzer trashes part
-of this table as well and you can't trust it?
-
-> (2) a fast way to read all
-> of the continuation inodes in a chunk (ignoring chunk-local inodes).
-> This stage is O(fs size) approximately, but it should be quite swift.
-
-Assuming you can trust this list. if not, finding cnodes is going
-to be rather slow.....
-
-> > It seems that any sort of damage to the underlying storage (e.g.
-> > media error, I/O error or user brain explosion) results in the need
-> > to do a full fsck and hence chunkfs gives you no benefit in this
-> > case.
-> 
-> I worry about this but so far haven't found something which couldn't
-> be cut down significantly with just a little extra work.  It might be
-> helpful to look at an extreme case.
-> 
-> Let's say we're incredibly paranoid.  We could be justified in running
-> a full fsck on the entire file system in between every single I/O.
-> After all, something *might* have been silently corrupted.  But this
-> would be ridiculously slow.  We could instead never check the file
-> system.  But then we would end up panicking and corrupting the file
-> system a lot.  So what's a good compromise?
-> 
-> In the chunkfs case, here's my rules of thumb so far:
-> 
-> 1. Detection: All metadata has magic numbers and checksums.
-> 2. Scrubbing: Random check of chunks when possible.
-> 3. Repair: When we detect corruption, either by checksum error, file
->    system code assertion failure, or hardware tells us we have a bug,
->    check the chunk containing the error and any outside-chunk
->    information that could be affected by it.
-
-So if you end up with a corruption in a "clean" part of the
-filesystem, you may not find out about the corruption on reboot and
-fsck?  You need to trip over the corruption first before fsck can be
-told it needs to check/repair a given chunk? Or do you need to force
-a "check everything" fsck in this case?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+William Heimbigner
+icxcnika@mar.tar.cc
