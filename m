@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbXDZRi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbXDZRjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754911AbXDZRi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXDZRi4
+	id S1754914AbXDZRjN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754913AbXDZRjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:38:56 -0400
-Received: from mail.tmr.com ([64.65.253.246]:47880 "EHLO gaimboi.tmr.com"
+	Thu, 26 Apr 2007 13:39:12 -0400
+Received: from mail.screens.ru ([213.234.233.54]:40866 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753927AbXDZRiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:38:55 -0400
-Message-ID: <4630E3C4.20003@tmr.com>
-Date: Thu, 26 Apr 2007 13:39:16 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754909AbXDZRjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:39:10 -0400
+Date: Thu, 26 Apr 2007 20:44:36 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
+Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
+Message-ID: <20070426164436.GB1933@tv-sign.ru>
+References: <20070420092201.GC1695@ff.dom.local> <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local> <20070425124714.GA94@tv-sign.ru> <20070426131311.GD3145@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426131311.GD3145@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-
-> In other words, there's a _reason_ we have staggered development. We have 
-> the "crazy development trees" (aka -mm and various other trees), we have 
-> the "development tree" (aka Linus' tree), and we have the -stable tree. If 
-> the stable tree has a dozen known issues that they'll have to sort out 
-> over the next two months, that's *fine*. That's kind of the point of the 
-> stable tree.
+On 04/26, Jarek Poplawski wrote:
+>
+> On Wed, Apr 25, 2007 at 04:47:14PM +0400, Oleg Nesterov wrote:
+> ...
+> > > > > +		spin_lock_irq(&cwq->lock);
+> > > > > +		/* CPU_DEAD in progress may change cwq */
+> > > > > +		if (likely(cwq == get_wq_data(work))) {
+> > > > > +			list_del_init(&work->entry);
+> > > > > +			__set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
+> > > > > +			retry = try_to_del_timer_sync(&dwork->timer) < 0;
+> > > > > +		}
+> > > > > +		spin_unlock_irq(&cwq->lock);
+> > > > > +	} while (unlikely(retry));
+> > 
+> > >  1. If delayed_work_timer_fn of this work is fired and is waiting
+> > >  on the above spin_lock then, after above spin_unlock, the work
+> > >  will be queued.
+> > 
+> > No, in that case try_to_del_timer_sync() returns -1.
 > 
-If the result is fixing things which then don't get fixed in mainline, 
-as Adrian notes, then there is something wrong with the process, and why 
-will people bother to work on stable if they have doubts that there will 
-be long term benefit.
+> Yes. But I think it's safe only after moving work_clear_pending
+> in run_workqueue under a lock; probably otherwise there is a
+> possibility this flag could be cleared, after above unlock.  
 
-With all the effort the regressions list takes and the stable group puts 
-into fixes, someone in charge should insist that regressions fixed in 
-stable be fixed in mainline. Since there's only one "someone in charge" 
-of policy, I think that's a reasonable commitment to the people doing 
-the work.
+It doesn't matter in this particular case because we are going to retry
+anyway. But yes, this patch moves work_clear_pending() under lock, because
+otherwise it could be cleared by run_workqueue() if this work is about
+to be executed, but was already deleted from list.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Oleg.
+
