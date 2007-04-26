@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754953AbXDZT0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbXDZT1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754953AbXDZT0H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbXDZT0H
+	id S1754957AbXDZT1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbXDZT1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:26:07 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:45344 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1754956AbXDZT0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:26:05 -0400
-Date: Thu, 26 Apr 2007 11:50:59 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Chase Venters <chase.venters@clientec.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
-Message-ID: <Pine.LNX.4.63.0704261150210.9674@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com><1177573348.50
- 25.224.camel@nigel.suspend2.net><alpine.LFD.0.98.0704260941310.9964@woody.l
- inux-foundation.org> <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
+	Thu, 26 Apr 2007 15:27:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50810 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754955AbXDZT1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:27:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,457,1170662400"; 
+   d="scan'208";a="219937132"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] support PCI MCFG space on Intel i915 bridges
+Date: Thu, 26 Apr 2007 12:27:24 -0700
+User-Agent: KMail/1.9.6
+Cc: Olivier Galibert <galibert@pobox.com>, Andi Kleen <ak@suse.de>,
+       Greg KH <greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704261227.25575.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Chase Venters wrote:
+Add support for Intel 915 bridge chips to the new PCI MMConfig detection
+code.  Tested and works on my sole 915 based platform (a Toshiba laptop).  I
+added register masking per Oliver's suggestion, and moved the __init
+qualifier to after the 'static const char' to match Ogawa-san's recent
+cleanup patches.
 
-> On Thu, 26 Apr 2007, Linus Torvalds wrote:
->
->> 
->> Once you have that snapshot image in user space you can do anything you
->> want. And again: you'd hav a fully working system: not any degradation
->> *at*all*. If you're in X, then X will continue running etc even after the
->> snapshotting, although obviously the snapshotting will have tried to page
->> a lot of stuff out in order to make the snapshot smaller, so you'll likely
->> be crawling.
->> 
->
-> In fact... If you're just paging out to make a smaller snapshot (ie, not
-> to free up memory), couldn't you just swap it out (if it's not backed by a
-> file) then mark it as "half-released"... ie, the snapshot writing code
-> ignores it knowing that it will be available on disk at resume, but then
-> when the snapshot is complete it's still available in physical RAM,
-> preventing user-space from crawling due to the necessity of paging it all
-> back in?
+Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
 
-your swap space may end up being re-used before you restore with std
-
-David Lang
+diff --git a/arch/i386/pci/mmconfig-shared.c b/arch/i386/pci/mmconfig-shared.c
+index 747d8c6..1339d31 100644
+--- a/arch/i386/pci/mmconfig-shared.c
++++ b/arch/i386/pci/mmconfig-shared.c
+@@ -72,6 +72,26 @@ static const char __init *pci_mmcfg_e7520(void)
+ 	return "Intel Corporation E7520 Memory Controller Hub";
+ }
+ 
++static const char __init *pci_mmcfg_intel_915(void)
++{
++       u32 pciexbar, len = 0;
++
++       pci_conf1_read(0, 0, PCI_DEVFN(0,0), 0x48, 4, &pciexbar);
++
++       /* No enable bit or size field, so assume 256M range is enabled. */
++       len = 0x10000000U;
++       pci_mmcfg_config_num = 1;
++       pciexbar &= 0xe0000000; /* mask out potentially bogus bits */
++
++       pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]), GFP_KERNEL);
++       pci_mmcfg_config[0].address = pciexbar;
++       pci_mmcfg_config[0].pci_segment = 0;
++       pci_mmcfg_config[0].start_bus_number = 0;
++       pci_mmcfg_config[0].end_bus_number = (len >> 20) - 1;
++
++       return "Intel Corporation 915PM/GM/GMS Express Memory Controller Hub";
++}
++
+ static const char __init *pci_mmcfg_intel_945(void)
+ {
+ 	u32 pciexbar, mask = 0, len = 0;
+@@ -129,6 +149,7 @@ struct pci_mmcfg_hostbridge_probe {
+ 
+ static struct pci_mmcfg_hostbridge_probe pci_mmcfg_probes[] __initdata = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 },
++	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82915GM_HB, pci_mmcfg_intel_915 },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 },
+ };
+ 
