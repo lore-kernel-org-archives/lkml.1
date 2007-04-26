@@ -1,103 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXDZGp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXDZGp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933046AbXDZGp2 (ORCPT <rfc822;w@1wt.eu>);
+	id S933020AbXDZGp2 (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 26 Apr 2007 02:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXDZGp2
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXDZGp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 02:45:28 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:53453 "EHLO
+	Thu, 26 Apr 2007 02:45:27 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:53452 "EHLO
 	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933046AbXDZGp0 (ORCPT
+	with ESMTP id S933020AbXDZGpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 02:45:26 -0400
+	Thu, 26 Apr 2007 02:45:25 -0400
 Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
 	hang in atomic copy)
 From: Nigel Cunningham <nigel@nigel.suspend2.net>
 Reply-To: nigel@nigel.suspend2.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-References: <20070419070437.GA25211@elte.hu>
-	 <20070424202336.GC16503@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070424212408.GD16457@elf.ucw.cz>
-	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-	 <20070425072350.GA6866@ucw.cz>
-	 <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+In-Reply-To: <20070425234549.GM17387@elf.ucw.cz>
+References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
 	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
 	 <20070425202741.GC17387@elf.ucw.cz>
 	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
 	 <20070425214420.GG17387@elf.ucw.cz>
 	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xnLf079A8XArn3c0in3I"
-Date: Thu, 26 Apr 2007 08:27:07 +1000
-Message-Id: <1177540027.5025.87.camel@nigel.suspend2.net>
+	 <1177540027.5025.87.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
+	 <20070425231319.GK17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251621530.9964@woody.linux-foundation.org>
+	 <20070425234549.GM17387@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-4jP3KOzMX9oF+OCm1zVP"
+Date: Thu, 26 Apr 2007 11:48:41 +1000
+Message-Id: <1177552121.5025.141.camel@nigel.suspend2.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-xnLf079A8XArn3c0in3I
+--=-4jP3KOzMX9oF+OCm1zVP
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
 Hi.
 
-On Wed, 2007-04-25 at 15:18 -0700, Linus Torvalds wrote:
+On Thu, 2007-04-26 at 01:45 +0200, Pavel Machek wrote:
+> > What's your argument? Your argument seems to be that it's not stupid,=20
+> > because it can work. Can't you see that that simply isn't an
+> > argument at=20
 >=20
-> On Wed, 25 Apr 2007, Pavel Machek wrote:
-> >=20
-> > Not the same... but they are still related. "freeze" (for atomic
-> > snapshot) is actually subset of "suspend"... freeze needs DMAs off and
-> > saved state, and you need DMAs off and saved state for "suspend".
->=20
-> THEY HAVE ABSOLUTELY NOTHING IN COMMON!
->=20
-> Nobody in their right mind thinks that "disable DMA" and "suspend" are=20
-> similar operations.=20
->=20
-> > So it is actually correct to do "suspend" when you want "freeze"; it
-> > is just slow. That's why they only differ in parameter these days.
->=20
-> It is *not* correct to "suspend" when you want "freeze".
->=20
-> I don't understand how you can even *claim* something like that.
->=20
-> Here's a trivial example:
->  - SCSI disk
->=20
-> Tell me, what does "suspend" do, and what does "freeze" (snapshot) do?
->=20
-> And name *one* thing that have in common.
+> I tried keeping module_init/thaw/resume similar code, so that driver
+> authors can debug suspend-to-disk, cross their fingers, and have
+> suspend-to-ram work, too.
 
-Set/reset the scsi transaction id thingy? Hibernation didn't work with
-SCSI for a long time precisely because that support was missing.
 
-Don't get me wrong, I agree on the whole - Suspend2 worked fine on the
-whole under 2.4 without a driver model. But they do have a bit in
-common.
 
-Regards,
+> Now, perhaps enough people do std/str these days so this is not
+> important any longer... lets hope so.
+
+Noooo! It's important and getting more important. More and more, people
+are going to be demanding better power saving (climate change and all
+that stuff). The best power saving is to have the thing completely off,
+so STD is more important. The second best power saving is STR, so that's
+important too. But even more important is good power saving all the
+time.
+
+For that reason, I agree completely with Linus. The current model is far
+too limited. It shouldn't be so suspend-to-ram/disk centric, and should
+instead focus on run-time power management, with suspend to ram and disk
+as particular instances of run-time power management. It should make
+appropriate differentiation between snapshotting and suspending to ram.
+
+I do disagree that the current suspend-to-disk algorithm is broken. We
+do need a point at which we say "Ok, drivers, record your state." - the
+current device_suspend and device_resume calls. But that doesn't mean
+the need to be called device_suspend/resume or do what they do now.
+
+I'd love to help make this happen, but I'm afraid I just don't have the
+time.
 
 Nigel
 
---=-xnLf079A8XArn3c0in3I
+--=-4jP3KOzMX9oF+OCm1zVP
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQBGL9W7N0y+n1M3mo0RAp2aAKCBpvIPtjm7XShf2wf+XVxDF6a3CgCdG9kI
-bX+QQepHH4K75HqtylXurYM=
-=Q5BJ
+iD8DBQBGMAT5N0y+n1M3mo0RAlJaAKDk9r4FZyIQNZ7RqAuno97tqEx6wwCaAyPy
+1E1ipjItH16ab0nfcRuWygs=
+=yi5w
 -----END PGP SIGNATURE-----
 
---=-xnLf079A8XArn3c0in3I--
+--=-4jP3KOzMX9oF+OCm1zVP--
 
