@@ -1,276 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbXDZFLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbXDZFLF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbXDZFLE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 01:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXDZFJi
+	id S1754722AbXDZFLF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:11:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932837AbXDZFJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 01:09:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59443 "EHLO
+	Thu, 26 Apr 2007 01:09:36 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36148 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754720AbXDZFJe (ORCPT
+	with ESMTP id S1754719AbXDZFJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Apr 2007 01:09:34 -0400
-Message-Id: <20070426050934.017224058@sgi.com>
+Message-Id: <20070426050933.789207761@sgi.com>
 References: <20070426050743.867613938@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Wed, 25 Apr 2007 22:07:46 -0700
+Date: Wed, 25 Apr 2007 22:07:45 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 3/7] SLUB: debug printk cleanup
-Content-Disposition: inline; filename=slub_at_cleanup
+Subject: [patch 2/7] SLAB: Fix sysfs directory handling
+Content-Disposition: inline; filename=slub_sysfs_dir_fix
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set up a new function slab_err in order to report errors consistently.
+This fixes the problem that SLUB does not track the names of aliased
+slabs by changing the way that SLUB manages the files in /sys/slab.
 
-Consistently report corrective actions taken by SLUB by a printk starting
-with @@@.
+If the slab that is being operated on is not mergeable (usually the
+case if we are debugging) then do not create any aliases. If an alias
+exists that we conflict with then remove it before creating the
+directory for the unmergeable slab. If there is a true slab cache there
+and not an alias then we fail since there is a true duplication of
+slab cache names. So debugging allows the detection of slab name
+duplication as usual.
+
+If the slab is mergeable then we create a directory with a unique name
+created from the slab size, slab options and the pointer to the kmem_cache
+structure (disambiguation). All names referring to the slabs will
+then be created as symlinks to that unique name. These symlinks are
+not going to be removed on kmem_cache_destroy() since we only carry
+a counter for the number of aliases. If a new symlink is created
+then it may just replace an existing one. This means that one can create
+a gazillion slabs with the same name (if they all refer to mergeable
+caches). It will only increase the alias count. So we have the potential
+of not detecting duplicate slab names (there is actually no harm
+done by doing that....). We will detect the duplications as
+as soon as debugging is enabled because we will then no longer
+generate symlinks and special unique names.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 Index: linux-2.6.21-rc7-mm1/mm/slub.c
 ===================================================================
---- linux-2.6.21-rc7-mm1.orig/mm/slub.c	2007-04-25 21:20:36.000000000 -0700
-+++ linux-2.6.21-rc7-mm1/mm/slub.c	2007-04-25 21:22:50.000000000 -0700
-@@ -324,8 +324,8 @@ static void object_err(struct kmem_cache
- {
- 	u8 *addr = page_address(page);
+--- linux-2.6.21-rc7-mm1.orig/mm/slub.c	2007-04-25 19:41:23.000000000 -0700
++++ linux-2.6.21-rc7-mm1/mm/slub.c	2007-04-25 19:41:23.000000000 -0700
+@@ -3297,16 +3297,68 @@ static struct kset_uevent_ops slab_ueven
  
--	printk(KERN_ERR "*** SLUB: %s in %s@0x%p slab 0x%p\n",
--			reason, s->name, object, page);
-+	printk(KERN_ERR "*** SLUB %s: %s@0x%p slab 0x%p\n",
-+			s->name, reason, object, page);
- 	printk(KERN_ERR "    offset=%tu flags=0x%04lx inuse=%u freelist=0x%p\n",
- 		object - addr, page->flags, page->inuse, page->freelist);
- 	if (object > addr + 16)
-@@ -335,6 +335,19 @@ static void object_err(struct kmem_cache
- 	dump_stack();
- }
+ decl_subsys(slab, &slab_ktype, &slab_uevent_ops);
  
-+static void slab_err(struct kmem_cache *s, struct page *page, char *reason, ...)
-+{
-+	va_list args;
-+	char buf[100];
++#define ID_STR_LENGTH 64
 +
-+	va_start(args, reason);
-+	vsnprintf(buf, sizeof(buf), reason, args);
-+	va_end(args);
-+	printk(KERN_ERR "*** SLUB %s: %s in slab @0x%p\n", s->name, buf,
-+		page);
-+	dump_stack();
++/* Create a unique string id for a slab cache:
++ * format
++ * :[flags-]size:[memory address of kmemcache]
++ */
++static char *create_unique_id(struct kmem_cache *s)
++{
++	char *name = kmalloc(ID_STR_LENGTH, GFP_KERNEL);
++	char *p = name;
++
++	BUG_ON(!name);
++
++	*p++ = ':';
++	/*
++	 * First flags affecting slabcache operations */
++	if (s->flags & SLAB_CACHE_DMA)
++		*p++ = 'd';
++	if (s->flags & SLAB_RECLAIM_ACCOUNT)
++		*p++ = 'a';
++	if (s->flags & SLAB_DESTROY_BY_RCU)
++		*p++ = 'r';\
++	/* Debug flags */
++	if (s->flags & SLAB_RED_ZONE)
++		*p++ = 'Z';
++	if (s->flags & SLAB_POISON)
++		*p++ = 'P';
++	if (s->flags & SLAB_STORE_USER)
++		*p++ = 'U';
++	if (p != name + 1)
++		*p++ = '-';
++	p += sprintf(p,"%07d:0x%p" ,s->size, s);
++	BUG_ON(p > name + ID_STR_LENGTH - 1);
++	return name;
 +}
 +
- static void init_object(struct kmem_cache *s, void *object, int active)
+ static int sysfs_slab_add(struct kmem_cache *s)
  {
- 	u8 *p = object;
-@@ -412,7 +425,7 @@ static int check_valid_pointer(struct km
- static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
- 						void *from, void *to)
- {
--	printk(KERN_ERR "@@@ SLUB: %s Restoring %s (0x%x) from 0x%p-0x%p\n",
-+	printk(KERN_ERR "@@@ SLUB %s: Restoring %s (0x%x) from 0x%p-0x%p\n",
- 		s->name, message, data, from, to - 1);
- 	memset(from, data, to - from);
- }
-@@ -459,9 +472,7 @@ static int slab_pad_check(struct kmem_ca
- 		return 1;
+ 	int err;
++	const char *name;
  
- 	if (!check_bytes(p + length, POISON_INUSE, remainder)) {
--		printk(KERN_ERR "SLUB: %s slab 0x%p: Padding fails check\n",
--			s->name, p);
--		dump_stack();
-+		slab_err(s, page, "Padding check failed");
- 		restore_bytes(s, "slab padding", POISON_INUSE, p + length,
- 			p + length + remainder);
+ 	if (slab_state < SYSFS)
+ 		/* Defer until later */
  		return 0;
-@@ -547,30 +558,25 @@ static int check_slab(struct kmem_cache 
- 	VM_BUG_ON(!irqs_disabled());
  
- 	if (!PageSlab(page)) {
--		printk(KERN_ERR "SLUB: %s Not a valid slab page @0x%p "
--			"flags=%lx mapping=0x%p count=%d \n",
--			s->name, page, page->flags, page->mapping,
-+		slab_err(s, page, "Not a valid slab page flags=%lx "
-+			"mapping=0x%p count=%d", page->flags, page->mapping,
- 			page_count(page));
- 		return 0;
- 	}
- 	if (page->offset * sizeof(void *) != s->offset) {
--		printk(KERN_ERR "SLUB: %s Corrupted offset %lu in slab @0x%p"
--			" flags=0x%lx mapping=0x%p count=%d\n",
--			s->name,
-+		slab_err(s, page, "Corrupted offset %lu flags=0x%lx "
-+			"mapping=0x%p count=%d",
- 			(unsigned long)(page->offset * sizeof(void *)),
--			page,
- 			page->flags,
- 			page->mapping,
- 			page_count(page));
--		dump_stack();
- 		return 0;
- 	}
- 	if (page->inuse > s->objects) {
--		printk(KERN_ERR "SLUB: %s inuse %u > max %u in slab "
--			"page @0x%p flags=%lx mapping=0x%p count=%d\n",
--			s->name, page->inuse, s->objects, page, page->flags,
-+		slab_err(s, page, "inuse %u > max %u @0x%p flags=%lx "
-+			"mapping=0x%p count=%d",
-+			s->name, page->inuse, s->objects, page->flags,
- 			page->mapping, page_count(page));
--		dump_stack();
- 		return 0;
- 	}
- 	/* Slab_pad_check fixes things up after itself */
-@@ -599,12 +605,13 @@ static int on_freelist(struct kmem_cache
- 				set_freepointer(s, object, NULL);
- 				break;
- 			} else {
--				printk(KERN_ERR "SLUB: %s slab 0x%p "
--					"freepointer 0x%p corrupted.\n",
--					s->name, page, fp);
--				dump_stack();
-+				slab_err(s, page, "Freepointer 0x%p corrupt",
-+									fp);
- 				page->freelist = NULL;
- 				page->inuse = s->objects;
-+				printk(KERN_ERR "@@@ SLUB %s: Freelist "
-+					"cleared. Slab 0x%p\n",
-+					s->name, page);
- 				return 0;
- 			}
- 			break;
-@@ -615,11 +622,12 @@ static int on_freelist(struct kmem_cache
- 	}
- 
- 	if (page->inuse != s->objects - nr) {
--		printk(KERN_ERR "slab %s: page 0x%p wrong object count."
--			" counter is %d but counted were %d\n",
--			s->name, page, page->inuse,
--			s->objects - nr);
-+		slab_err(s, page, "Wrong object count. Counter is %d but "
-+			"counted were %d", s, page, page->inuse,
-+							s->objects - nr);
- 		page->inuse = s->objects - nr;
-+		printk(KERN_ERR "@@@ SLUB %s: Object count adjusted. "
-+			"Slab @0x%p\n", s->name, page);
- 	}
- 	return search == NULL;
- }
-@@ -663,10 +671,7 @@ static int alloc_object_checks(struct km
- 		goto bad;
- 
- 	if (object && !on_freelist(s, page, object)) {
--		printk(KERN_ERR "SLUB: %s Object 0x%p@0x%p "
--			"already allocated.\n",
--			s->name, object, page);
--		dump_stack();
-+		slab_err(s, page, "Object 0x%p already allocated", object);
- 		goto bad;
- 	}
- 
-@@ -706,15 +711,12 @@ static int free_object_checks(struct kme
- 		goto fail;
- 
- 	if (!check_valid_pointer(s, page, object)) {
--		printk(KERN_ERR "SLUB: %s slab 0x%p invalid "
--			"object pointer 0x%p\n",
--			s->name, page, object);
-+		slab_err(s, page, "Invalid object pointer 0x%p", object);
- 		goto fail;
- 	}
- 
- 	if (on_freelist(s, page, object)) {
--		printk(KERN_ERR "SLUB: %s slab 0x%p object "
--			"0x%p already free.\n", s->name, page, object);
-+		slab_err(s, page, "Object 0x%p already free", object);
- 		goto fail;
- 	}
- 
-@@ -723,24 +725,22 @@ static int free_object_checks(struct kme
- 
- 	if (unlikely(s != page->slab)) {
- 		if (!PageSlab(page))
--			printk(KERN_ERR "slab_free %s size %d: attempt to"
--				"free object(0x%p) outside of slab.\n",
--				s->name, s->size, object);
-+			slab_err(s, page, "Attempt to free object(0x%p) "
-+				"outside of slab", object);
- 		else
--		if (!page->slab)
-+		if (!page->slab) {
- 			printk(KERN_ERR
--				"slab_free : no slab(NULL) for object 0x%p.\n",
-+				"SLUB <none>: no slab for object 0x%p.\n",
- 						object);
-+			dump_stack();
-+		}
- 		else
--			printk(KERN_ERR "slab_free %s(%d): object at 0x%p"
--				" belongs to slab %s(%d)\n",
--				s->name, s->size, object,
--				page->slab->name, page->slab->size);
-+			slab_err(s, page, "object at 0x%p belongs "
-+				"to slab %s", object, page->slab->name);
- 		goto fail;
- 	}
- 	return 1;
- fail:
--	dump_stack();
- 	printk(KERN_ERR "@@@ SLUB: %s slab 0x%p object at 0x%p not freed.\n",
- 		s->name, page, object);
- 	return 0;
-@@ -2478,6 +2478,8 @@ __initcall(cpucache_init);
- #endif
- 
- #ifdef SLUB_RESILIENCY_TEST
-+static unsigned long validate_slab_cache(struct kmem_cache *s);
++	if (s->flags & SLUB_NEVER_MERGE) {
++		/*
++		 * Slabcache can never be merged so we can use the name proper.
++		 * This is typically the case for debug situations. In that
++		 * case we can catch duplicate names easily.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, s->name);
++		name = s->name;
++	} else
++		/*
++		 * Create a unique name for the slab as a target
++		 * for the symlinks.
++		 */
++		name = create_unique_id(s);
 +
- static void resiliency_test(void)
- {
- 	u8 *p;
-@@ -2592,16 +2597,16 @@ static void validate_slab_slab(struct km
- 		validate_slab(s, page);
- 		slab_unlock(page);
- 	} else
--		printk(KERN_INFO "SLUB: %s Skipped busy slab %p\n",
-+		printk(KERN_INFO "SLUB %s: Skipped busy slab %p\n",
- 			s->name, page);
- 
- 	if (s->flags & DEBUG_DEFAULT_FLAGS) {
- 		if (!PageError(page))
--			printk(KERN_ERR "SLUB: %s PageError not set "
-+			printk(KERN_ERR "SLUB %s: PageError not set "
- 				"on slab %p\n", s->name, page);
- 	} else {
- 		if (PageError(page))
--			printk(KERN_ERR "SLUB: %s PageError set on "
-+			printk(KERN_ERR "SLUB %s: PageError set on "
- 				"slab %p\n", s->name, page);
- 	}
+ 	kobj_set_kset_s(s, slab_subsys);
+-	kobject_set_name(&s->kobj, s->name);
++	kobject_set_name(&s->kobj, name);
+ 	kobject_init(&s->kobj);
+ 	err = kobject_add(&s->kobj);
+ 	if (err)
+@@ -3316,6 +3368,10 @@ static int sysfs_slab_add(struct kmem_ca
+ 	if (err)
+ 		return err;
+ 	kobject_uevent(&s->kobj, KOBJ_ADD);
++	if (!(s->flags & SLUB_NEVER_MERGE)) {
++		sysfs_slab_alias(s, s->name);
++		kfree(name);
++	}
+ 	return 0;
  }
-@@ -2619,8 +2624,8 @@ static int validate_slab_node(struct kme
- 		count++;
- 	}
- 	if (count != n->nr_partial)
--		printk("SLUB: %s %ld partial slabs counted but counter=%ld\n",
--			s->name, count, n->nr_partial);
-+		printk(KERN_ERR "SLUB %s: %ld partial slabs counted but "
-+			"counter=%ld\n", s->name, count, n->nr_partial);
  
- 	if (!(s->flags & SLAB_STORE_USER))
- 		goto out;
-@@ -2630,8 +2635,9 @@ static int validate_slab_node(struct kme
- 		count++;
- 	}
- 	if (count != atomic_long_read(&n->nr_slabs))
--		printk("SLUB: %s %ld slabs counted but counter=%ld\n",
--		s->name, count, atomic_long_read(&n->nr_slabs));
-+		printk(KERN_ERR "SLUB: %s %ld slabs counted but "
-+			"counter=%ld\n", s->name, count,
-+			atomic_long_read(&n->nr_slabs));
+@@ -3341,9 +3397,14 @@ static int sysfs_slab_alias(struct kmem_
+ {
+ 	struct saved_alias *al;
  
- out:
- 	spin_unlock_irqrestore(&n->list_lock, flags);
+-	if (slab_state == SYSFS)
++	if (slab_state == SYSFS) {
++		/*
++		 * If we have a leftover link then remove it.
++		 */
++		sysfs_remove_link(&slab_subsys.kset.kobj, name);
+ 		return sysfs_create_link(&slab_subsys.kset.kobj,
+ 						&s->kobj, name);
++	}
+ 
+ 	al = kmalloc(sizeof(struct saved_alias), GFP_KERNEL);
+ 	if (!al)
 
 --
