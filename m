@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbXDZNiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXDZNjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbXDZNiM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXDZNiL
+	id S1754785AbXDZNjG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbXDZNjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:38:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32940 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754662AbXDZNiH (ORCPT
+	Thu, 26 Apr 2007 09:39:06 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:27625 "EHLO
+	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754785AbXDZNjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:38:07 -0400
-Message-ID: <4630AA9E.9030807@bull.net>
-Date: Thu, 26 Apr 2007 15:35:26 +0200
-From: Pierre Peiffer <pierre.peiffer@bull.net>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 26 Apr 2007 09:39:03 -0400
+X-BigFish: VP
+X-Server-Uuid: 519AC16A-9632-469E-B354-112C592D09E8
+Date: Thu, 26 Apr 2007 07:39:20 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: lsorense@csclub.uwaterloo.ca
+cc: "Jean Delvare" <khali@linux-fr.org>,
+       "Haavard Skinnemoen" <hskinnemoen@atmel.com>,
+       "David Brownell" <david-b@pacbell.net>,
+       "Bryan Wu" <bryan.wu@analog.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Deepak Saxena" <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
+       "Christer Weinigel" <wingel@nano-system.com>
+Subject: Re: Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070426133920.GA25456@cosmic.amd.com>
+References: <20070414192807.60bdf84b@hyperion.delvare>
+ <20070418174256.GB5577@csclub.uwaterloo.ca>
+ <20070419085413.1520feef@hyperion.delvare>
+ <20070419205942.GC5577@csclub.uwaterloo.ca>
+ <20070420194933.0813a359@hyperion.delvare>
+ <20070422154151.GJ5575@csclub.uwaterloo.ca>
+ <20070423114254.71787844@hyperion.delvare>
+ <20070423144710.GD1372@cosmic.amd.com>
+ <20070426145634.3ac2b7a3@hyperion.delvare>
+ <20070426132905.GP5575@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       "Shai Fultheim (Shai@scalex86.org)" <shai@scalex86.org>,
-       pravin b shelar <pravin.shelar@calsoftinc.com>,
-       linux-kernel@vger.kernel.org, Rusty Russel <rusty@rustcorp.com.au>
-Subject: Re: [PATCH, take6] FUTEX : new PRIVATE futexes
-References: <20060808070708.GA3931@localhost.localdomain>	<200608090826.28249.dada1@cosmosbay.com>	<200608090843.52893.dada1@cosmosbay.com>	<200703152010.35614.dada1@cosmosbay.com>	<a36005b50704040016l180f397bwe5a05e8bf78013b0@mail.gmail.com>	<20070405194942.1414c030.dada1@cosmosbay.com>	<20070407104339.6674336b.dada1@cosmosbay.com>	<20070411111913.6115dac8.dada1@cosmosbay.com> <20070426145521.0f8b6b35.dada1@cosmosbay.com>
-In-Reply-To: <20070426145521.0f8b6b35.dada1@cosmosbay.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/04/2007 15:40:48,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 26/04/2007 15:40:54,
-	Serialize complete at 26/04/2007 15:40:54
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20070426132905.GP5575@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 26 Apr 2007 13:38:49.0240 (UTC)
+ FILETIME=[38805980:01C78808]
+X-WSS-ID: 6A2E74E31SK460923-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Hi Andrew
+On 26/04/07 09:29 -0400, lsorense@csclub.uwaterloo.ca wrote:
 > 
-> Not sure if you prefer to wait Pierre work on futex64, so just in case, I prepared this patch.
+> These return all 0x00
 > 
-> Update on this take6 :
-> 
-> - Rebased on linux-2.6.21-rc7-mm2 , since futex64 were droped from mm
-> 
-> 
-> Pierre, I can resubmit another patch on top on your next patch, so please do as you prefer (ignoring or not this patch)
+> On the Geode LX800 where scx200_acb does work all 4 commands return all
+> 0xff.
 
-Thank you for taking care of this.
-But I think your patch is more mature than the futex64 patch; So, it's ok for 
-me, and it's probably simpler and better for "the community" (and for Andrew's 
-work) to put this patch first, because futex64 still may need several reworks...
+There is no ISA on the LX.
 
 -- 
-Pierre
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
+
+
