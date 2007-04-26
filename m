@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933808AbXDZJ0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933798AbXDZJZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933808AbXDZJ0c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933846AbXDZJZ3
+	id S933798AbXDZJZw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbXDZJZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:25:29 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19341 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933807AbXDZJZM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:25:12 -0400
-Date: Thu, 26 Apr 2007 11:20:44 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070426092044.GF3640@kernel.dk>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de>
+	Thu, 26 Apr 2007 05:25:30 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47668 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933805AbXDZJY5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 05:24:57 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH -mm] x86_64: kill 19000+ sparse warnings
+Date: Thu, 26 Apr 2007 11:24:52 +0200
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+References: <20070425224509.46153baa.randy.dunlap@oracle.com>
+In-Reply-To: <20070425224509.46153baa.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070426040806.GJ3468@stusta.de>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200704261124.52386.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26 2007, Adrian Bunk wrote:
-> What I will NOT do:
-> Waste my time with tracking 2.6.22-rc regressions.
+On Thursday 26 April 2007 07:45:09 Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Eliminate 19439 (!!) sparse warnings like:
+> include/linux/mm.h:321:22: warning: constant 0xffff810000000000 is so big it is unsigned long
 
-Adding my voice to the chorus, I too hope you'll reconsider and continue
-doing a great job with the regressions lists. It's really useful!
+Sparse is just wrong here. The C standard does make it unsigned long long
+automatically
 
--- 
-Jens Axboe
-
+-Andi
