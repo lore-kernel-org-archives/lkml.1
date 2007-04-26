@@ -1,65 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031187AbXDZPkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753045AbXDZPmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031187AbXDZPkH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031193AbXDZPkH
+	id S1753045AbXDZPmA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXDZPmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:40:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:14334 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031187AbXDZPkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:40:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,455,1170662400"; 
-   d="scan'208";a="219793010"
-Message-ID: <4630C7D0.8030901@intel.com>
-Date: Thu, 26 Apr 2007 08:40:00 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Thu, 26 Apr 2007 11:42:00 -0400
+Received: from www17.your-server.de ([213.133.104.17]:4210 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045AbXDZPl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:41:59 -0400
+X-Greylist: delayed 2491 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 11:41:59 EDT
+Message-ID: <4630BE67.3000400@web.de>
+Date: Thu, 26 Apr 2007 16:59:51 +0200
+From: Thomas Meyer <thomas.mey@web.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@osdl.org>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-CC: Lennert Buytenhek <buytenh@wantstofly.org>,
-       David Acker <dacker@roinet.com>,
-       Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com> <20070426135013.GA12154@xi.wantstofly.org> <4630C159.1060707@garzik.org>
-In-Reply-To: <4630C159.1060707@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.21 dynticks and amarok
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Apr 2007 15:40:00.0596 (UTC) FILETIME=[26913940:01C78819]
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Lennert Buytenhek wrote:
->> This is all a while ago now, but wasn't the e100 S-bit patch originally
->> written by Intel people in response to the very same quote by Russell
->> King that you've quoted above?
-> 
-> Correct.
-> 
-> I just wanted to make sure it didn't kill any boxes.
+Hi.
 
-Neither did we. On top of that we didn't have the equipment to test on ARM on 
-until recently, and the system that I got recently will not even load the kernel 
-with an e100 NIC in the PCI slot (way way way before e100.ko loads, e1000 works 
-just fine). that doesn't help either.
+here a vmstat of my laptop with my favorite song player amarok running
+and not running:
 
-Meanwhile we've not sat still and jesse wrote a patch to have e100 use IO 
-optionally for plagued platforms which seems to fix some of these issues, and 
-Jeff Kirsher has been actively tracking a e100 IPMI issue on a very specific 
-platform.
+ procs -----------memory---------- ---swap-- -----io---- -system--
+----cpu----
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
+id wa
+ 0  0      0  39476  62640 641028    0    0    25    26  182  766  5  1
+93  1
+ 0  0      0  39404  62640 641028    0    0     0     0   79  200  5  0
+95  0
+ 0  0      0  39404  62640 641028    0    0     0    12   50  134  5  0
+95  0
+ 0  0      0  39436  62640 641028    0    0     0     0   75  186  5  0
+95  0
+ 0  0      0  39436  62640 641028    0    0     0     0   46  134  5  0
+95  0
+ 0  0      0  39436  62640 641028    0    0     0     0   79 2192  5  0
+95  0
+ 0  0      0  39436  62640 641028    0    0     0     0   47  108  5  0
+95  0
+ 0  0      0  39468  62640 641028    0    0     0     0   71  186  5  0
+95  0
+ 1  0      0  39468  62640 641028    0    0     0     0   44  117  5  0
+95  0
+ 0  0      0  39468  62640 641028    0    0     0     0   56  185  5  1
+95  0
+ 0  0      0  39468  62640 641028    0    0     0     0  202 2455  6  0
+94  0
+ 0  0      0  39500  62640 641028    0    0     0     0   48  140  5  0
+95  0
+ 0  0      0  39500  62640 641028    0    0     0     0   65  196  5  0
+95  0
+ 0  0      0  39500  62640 641028    0    0     0     0   50  134  5  0
+95  0
+ 0  0      0  39500  62640 641028    0    0     0     0   71  205  5  0
+95  0
+ 0  0      0  39528  62640 641028    0    0     0     0   49 2132  5  0
+95  0
+ 0  0      0  39528  62640 641028    0    0     0     0   73  184  5  1
+94  0
+ 0  0      0  39528  62640 641028    0    0     0     0   51  135  5  0
+95  0
+ 0  0      0  39528  62648 641020    0    0     0    24   76  251  5  0
+83 12
+ 0  0      0  39560  62648 641028    0    0     0     0   54  155  5  0
+95  0
+ 0  0      0  39560  62648 641028    0    0     0     0   71 2192  5  0
+95  0
+ 0  0      0  39560  62648 641028    0    0     0     0   51  143  5  0
+95  0
+ 0  0      0  39560  62648 641028    0    0     0     0   79  989  6  1
+93  0
+ 1  0      0  39564  62656 641024    0    0     0    24   91  686  9  0
+88  3
+ 0  0      0  39564  62656 641024    0    0     0     0   87  355  9  0
+91  0
+ 5  0      0  39292  62676 641008    0    0     0   331   83  741 10  1
+88  0
+Starting amarok:
+ 1  0      0  34312  62784 641000    0    0     0  1248  *321* 3443 46 
+5 45  5
+ 2  0      0  28792  62792 641048    0    0     4     0  *232* 2796 48 
+7 44  2
+ 0  0      0  22732  62796 641044    0    0     0     0  *134 *1719 33 
+5 62  0
+ 0  0      0  22608  62796 641040    0    0     0     0  *122*  729  4 
+0 96  0
+ 0  0      0  22608  62796 641040    0    0     0     0  *297* 3114  5 
+0 95  0
+ 0  0      0  22608  62796 641040    0    0     0     0  *133*  742  5 
+0 95  0
+ 0  0      0  22608  62796 641040    0    0     0     0  *155*  799  5 
+0 95  0
+ 0  0      0  22648  62796 641040    0    0     0     0  *130*  745  5 
+0 95  0
+ 0  0      0  22648  62796 641040    0    0     0     0  *171*  867  5 
+0 95  0
+ 0  0      0  22712  62796 641040    0    0     0     0  *132* 2770  5 
+0 95  0
+ 0  0      0  22712  62796 641040    0    0     0     0  *150*  804  5 
+0 95  0
+ 0  0      0  22704  62796 641040    0    0     0     0  *133*  741  5 
+0 95  0
 
-Jeff, I think I should just push the IO patch and the sbit code to Andrew and 
-have it sit there. That is a vastly larger test resource than we currently can 
-generate for this. If needed we just let is sit there for a whole release cycle 
-before moving it to #upstream.
+The number of interrupts goes up a lot, just for starting the song
+player. I guess it does a open() on the sound device. These interrupts
+numbers are just because of starting amarok, i don't even play a song in
+this software. So here a two options:
 
-seems like a good idea, right?
+1.) fix amarok to open the sound device when it's needed
+2.) fix the kernel sound card driver to setup everthing, when an
+application want to put data on the device
 
-Auke
+what do you think about this?
+
+
