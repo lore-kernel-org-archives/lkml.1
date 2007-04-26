@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031368AbXDZR2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031369AbXDZR3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031368AbXDZR2m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbXDZR2l
+	id S1031369AbXDZR3v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbXDZR3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:28:41 -0400
-Received: from mail.screens.ru ([213.234.233.54]:41661 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754872AbXDZR2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:28:40 -0400
-Date: Thu, 26 Apr 2007 20:34:06 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: Re: Fw: [PATCH -mm] workqueue: debug possible endless loop in cancel_rearming_delayed_work
-Message-ID: <20070426163406.GA1933@tv-sign.ru>
-References: <20070420170836.GB470@tv-sign.ru> <20070423090030.GC1684@ff.dom.local> <20070423163312.GA129@tv-sign.ru> <20070424115322.GA2423@ff.dom.local> <20070424185537.GA5029@tv-sign.ru> <20070425122038.GE1613@ff.dom.local> <20070425122814.GF1613@ff.dom.local> <20070425124714.GA94@tv-sign.ru> <20070425144759.GA201@tv-sign.ru> <20070426125918.GC3145@ff.dom.local>
+	Thu, 26 Apr 2007 13:29:51 -0400
+Received: from www.osadl.org ([213.239.205.134]:53697 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754876AbXDZR3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:29:49 -0400
+Subject: Re: [PATCH] pcmcia: irq probe can be done without risking an IRQ
+	storm
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070425211808.54b86293.akpm@linux-foundation.org>
+References: <20070405140936.46fb6ba4@the-village.bc.nu>
+	 <20070425211808.54b86293.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 19:31:44 +0200
+Message-Id: <1177608704.25960.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426125918.GC3145@ff.dom.local>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26, Jarek Poplawski wrote:
->
-> > 	void cancel_rearming_delayed_work(struct delayed_work *dwork)
-> > 	{
-> > 		struct work_struct *work = &dwork->work;
-> > 		struct cpu_workqueue_struct *cwq = get_wq_data(work);
-> > 		int done;
+On Wed, 2007-04-25 at 21:18 -0700, Andrew Morton wrote:
+> On Thu, 5 Apr 2007 14:09:36 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> I don't understand, why you think cwq cannot be NULL here.
-
-sure it can, this is just a template.
-
+> > Nowdays you can ask for an IRQ to be allocated but not enabled, when
+> > PCMCIA was written this was not true and this feature is thus not used
 > > 
-> > 		do {
-> > 			done = 1;
-> > 			spin_lock_irq(&cwq->lock);
+> > Signed-off-by: Alan Cox <alan@redhat.com>
 > > 
-> > 			if (!list_empty(&work->entry))
-> > 				list_del_init(&work->entry);
+> > diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c linux-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c
+> > --- linux.vanilla-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c	2007-04-03 16:52:14.000000000 +0100
+> > +++ linux-2.6.21-rc5-mm4/drivers/pcmcia/pcmcia_resource.c	2007-04-03 17:10:42.000000000 +0100
+> > @@ -810,8 +810,11 @@
+> >  		type = IRQF_SHARED;
+> >  	if (req->Attributes & IRQ_TYPE_DYNAMIC_SHARING)
+> >  		type = IRQF_SHARED;	
+> >  #ifdef CONFIG_PCMCIA_PROBE
+> > +	if (!(req->Attributes & IRQ_HANDLE_PRESENT))
+> > +		type |= IRQ_NOAUTOEN;
+> > +
+> >  	if (s->irq.AssignedIRQ != 0) {
+> >  		/* If the interrupt is already assigned, it must be the same */
+> >  		irq = s->irq.AssignedIRQ;
 > 
-> BTW, isn't needs_a_good_name needles after this and after del_timer positive?
-
-no, we still need it. work->func() may be running on another CPU as well.
-
+> alpha:
 > 
-> > 			else if (test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
-> > 				done = del_timer(&dwork->timer)
+> drivers/pcmcia/pcmcia_resource.c: In function 'pcmcia_request_irq':
+> drivers/pcmcia/pcmcia_resource.c:816: error: 'IRQ_NOAUTOEN' undeclared (first use in this function)
+> drivers/pcmcia/pcmcia_resource.c:816: error: (Each undeclared identifier is reported only once
+> drivers/pcmcia/pcmcia_resource.c:816: error: for each function it appears in.)
 > 
-> If this runs while a work function is fired in run_workqueue,
-> it sets _PENDING bit, but if the work skips rearming, we have probably
-> endless loop, again.
+> Problem is, IRQ_NOAUTOEN is a generic-irq thing, so architectures which
+> don't use generic-irqs break.  And it's defined in linux/irq.h which
+> (stupidly) cannot be included in generic code.
 
-No, if the work skips rearming (or didn't yet), we set WORK_STRUCT_PENDING
-successfully.
+Hrmpf. We need a IRQF_NOAUTOEN, which can be handed to reqeust_irq().
 
->                                  It is something alike to the current
-> way, with some added measures: you try to shoot a work on the run,
-> while queued or timer_pending, plus the _PENDING flag set, so it seems,
-> there is some risk of longer than planed looping.
+I cook a patch.
 
-Sorry, can't understand. done == 0 means that the queueing in progress,
-this work should be placed on cwq->worklist very soon, most probably
-right after we drop cwq->lock.
+	tglx
 
-> I have to look at this more, at home and, if something new, I'll write
-> tomorrow. So, the good news, is you should have enough sleep this time!
-
-Thanks for review!
-
-Oleg.
 
