@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031338AbXDZQYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752205AbXDZQ3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031338AbXDZQYm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031340AbXDZQYm
+	id S1752205AbXDZQ3W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXDZQ3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:24:42 -0400
-Received: from mail.screens.ru ([213.234.233.54]:36594 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031338AbXDZQYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:24:41 -0400
-Date: Thu, 26 Apr 2007 19:29:53 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync()
-Message-ID: <20070426152953.GA1824@tv-sign.ru>
-References: <20070424215034.GA5985@tv-sign.ru> <20070425130246.GA4086@ff.dom.local> <20070425125214.GB94@tv-sign.ru> <20070426142921.GE3145@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426142921.GE3145@ff.dom.local>
-User-Agent: Mutt/1.5.11
+	Thu, 26 Apr 2007 12:29:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46576 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752159AbXDZQ3V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:29:21 -0400
+Date: Thu, 26 Apr 2007 09:27:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Chris Friesen <cfriesen@nortel.com>
+cc: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+In-Reply-To: <4630CFE6.1050702@nortel.com>
+Message-ID: <alpine.LFD.0.98.0704260924590.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
+ <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+ <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg>
+ <20070426103051.GP17387@elf.ucw.cz> <20070426104052.GA19072@elf.ucw.cz>
+ <1177585897.6814.49.camel@johannes.berg> <20070426111645.GR17387@elf.ucw.cz>
+ <1177586850.6814.52.camel@johannes.berg> <20070426112641.GS17387@elf.ucw.cz>
+ <1177587308.6814.57.camel@johannes.berg> <4630CFE6.1050702@nortel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26, Jarek Poplawski wrote:
->
-> On Wed, Apr 25, 2007 at 04:52:14PM +0400, Oleg Nesterov wrote:
-> > 
-> > >                                                  It seems this
-> > > change cannot do any harm, but anyway it could change a few
-> > > things, e.g. with current version of cancel_rearming_delayed_work
-> > > some flush_workqueue could be done needlessly, before the work
-> > > is queued from timer.
-> > 
-> > I don't think so... Could you clarify?
+
+
+On Thu, 26 Apr 2007, Chris Friesen wrote:
 > 
-> With a code like:
-> 
-> if (!cancel_delayed_work(dwork))
-> 	flush_workqueue(wq);
-> 	
-> if cancel_ returns 0, and there is _queue_work in progress,
-> flush_ will be done once, after this work is queued.
-> 
-> After the patch, and the same situation flush_ also runs
-> one time, but maybe without the work in a queue.
+> I disagree...it's quite common.  I think its the standard way of doing things
+> for ppc64, for instance.
 
-First, this is very unlikely event, and the behaviour is correct,
-do you agree?
+It is, although most x86-64 installations seem to be 64-bit user space 
+*if*you*install*from*scatch*.
 
-Even in this case, it is very unlikely that flush_cpu_workqueue()
-will take cwq->lock before extremely short delayed_work_timer_fn.
+Of course, at least some users (yeah, I've done it) started with a 32-bit 
+CD they had lying around, and upgraded just the kernel. And I'm sure some 
+distro out there just defaults to 32-bit binaries just because (in 
+practice, you have to use a 32-bit firefox anyway if you want flash etc, 
+so you need all the 32-bit libraries, so the argument might go that you 
+might as well use 32-bit stuff for all the common stuff, and only 64-bit 
+binaries when actually needed).
 
-Even if it does, work->func() likely will be completed when the
-caller of flush_workqueue() will be woken by run_workquue() and
-gets CPU.
-
-Please also look at http://marc.info/?t=117699337200022&r=1
-
-> > >                       It's not a big deal here, but if anybody
-> > > did something like this without loop - it could matter.
-> > > 
-> > > So, probably a lot of current code should be checked, before
-> > > applying and I doubt the gain is worth of this. Maybe, for
-> > > safety, make this with new name as an alternative and
-> > > deprecate the current version?
-> > 
-> > This change should not make any visible difference for the callers,
-> > otherwise it is buggy.
-> 
-> IMHO, there is the same visible difference,
-> as between del_timer and del_timer_sync.
-
-Jarek, please, could you be more explicite ? del_timer() and
-del_timer_sync() are different in many ways. What exactly will
-impact the user of cancel_delaye_work ?
-
-Oleg.
-
+		Linus
