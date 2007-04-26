@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031373AbXDZRdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031374AbXDZRej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031373AbXDZRdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031371AbXDZRdr
+	id S1031374AbXDZRej (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031376AbXDZRej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:33:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:36932 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031373AbXDZRdp (ORCPT
+	Thu, 26 Apr 2007 13:34:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42104 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031374AbXDZRei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:33:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=tF1FF6IKwVGa6uVE4TdR8q5xWnkTemD0LuwQOgP+mraoRzoLHKMpCCtqphYNlOmgBrtLFxVqO4RsL9d9KB5pcaehIQUpcN7SuJ+/pr64U27RhSTLo2uWbcDxdxAhOKBXzOMStdi8FzPMvza6PJRsX4lOn6KT6rU3ZUXcru5AQAE=
-Message-ID: <4630E26D.2050703@gmail.com>
-Date: Fri, 27 Apr 2007 02:33:33 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 26 Apr 2007 13:34:38 -0400
+Date: Thu, 26 Apr 2007 10:34:16 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Xavier Bestel <xavier.bestel@free.fr>
+cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <1177607026.30284.197.camel@frg-rhel40-em64t-04>
+Message-ID: <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> 
+ <1177573348.5025.224.camel@nigel.suspend2.net> 
+ <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+ <1177607026.30284.197.camel@frg-rhel40-em64t-04>
 MIME-Version: 1.0
-To: Miles Lane <miles.lane@gmail.com>
-CC: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       greg@kroah.com
-Subject: Re: [PATCH] sysfs: use different lockdep subclass for s_active deactivation
-References: <a44ae5cd0704242215w1b474c52r7860f0d49bc64d6c@mail.gmail.com>	 <462EE4B7.6000708@gmail.com> <20070426145047.GF17130@htj.dyndns.org> <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
-In-Reply-To: <a44ae5cd0704261021n78780c71i4c8f7613d58dec54@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miles Lane wrote:
-> On 4/26/07, Tejun Heo <htejun@gmail.com> wrote:
->> A sysfs node can delete other sysfs files when accessed.  This results
->> in recursive s_active locking - read lock for file access, down lock
->> of the vicitim for deactivation.  Tell lockdep that it's okay.
->>
->> Signed-off-by: Tejun Heo <htejun@gmail.com>
->> ---
->> Miles, please test this patch.  It should remove the lockdep warning.
->> Fixes for the other two problems will soon follow.
->>
->> Greg, Andrew, after all the fixes are verified, I'll merge the fixes
->> into the original patches and resend all the sysfs updates in better
->> shape.  Sorry about all the trouble.
-> 
-> Should I test this with 2.6.21-rc7-mm2?
-> It doesn't apply cleanly.
-> 
-> # patch -p1 -l --dry-run < tejun.patch
-> patching file fs/sysfs/dir.c
-> Hunk #1 succeeded at 31 with fuzz 1 (offset -29 lines).
-> patching file fs/sysfs/sysfs.h
-> Hunk #1 succeeded at 40 (offset -1 lines).
-> Hunk #2 succeeded at 182 with fuzz 1 (offset -1 lines).
 
-It's in the middle of gregkh patch series but you can safely ignore the
-fuzzes.
 
--- 
-tejun
+On Thu, 26 Apr 2007, Xavier Bestel wrote:
+> 
+> Won't there be problems if e.g. X tries to write something to its
+> logfile after snapshot ?
+
+Sure. But that's a user-level issue.
+
+You do have to allow writing after snapshotting, since at a minimum, you'd 
+want the snapshot itself to be written. So the kernel has to be fully 
+running, and support full user space. No "degraded mode" like now.
+
+So when I said "fully running user mode", I really meant it from the 
+perspective of the kernel - not necessarily from the perspective of the 
+"user". You do want to limit _what_ user mode does, but you must not limit 
+it by making the kernel less capable.
+
+Remounting mounted filesystems read-only sounds like a good idea, for 
+example. We can do that. We have the technology. But we shouldn't limit 
+user space from doing other things (for example, it might want to actually 
+*mount* a new filesystem for writing the snapshot image).
+
+For example, right now we try to "fix" that with the whole process freezer 
+thing. And that code has *caused* more problems than it fixed, since it 
+tries to freeze all the kernel threads etc, and you simply don't have a 
+truly *working*system*.
+
+I think it's fine to freeze processes if that is what you want to do (for 
+example, send them SIGSTOP), but we freeze them *too*much* right now, and 
+the suspend stuff has taken over policy way too much. We don't actually 
+leave the system in a runnable state. I can almost guarantee that you'd be 
+*better* off having the snapshot taking thing do a
+
+	kill(-1, SIGSTOP);
+
+in user space than our current broken process freezer. At least that 
+wouldn't have screwed up those kernel threads as badly as swsusp did.
+
+And no, I'm not saying that my suggestion is the only way to do it. Go 
+wild. But the *current* situation is just broken. Three different things, 
+none of which people can agree on. I'd *much* rather see a conceptually 
+simpler approach that then required, but even more important is that right 
+now people aren't even discussing alternatives, they're just pushing one 
+of the three existing things, and that's simply not viable. Because I'm 
+not merging another one.
+
+In fact, I personally feel that I shouldn't even have merged 
+userspace-swsusp, but if Andrew thinks it needs to be merged, my personal 
+feelings simply don't matter that much. I have to trust people. But yes, 
+as far as *I* am personally concerned, I think it was a mistake to merge 
+it.
+
+			Linus
