@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbXDZV34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbXDZVaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbXDZV34 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXDZV34
+	id S1755137AbXDZVaf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXDZVaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:29:56 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53023 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752449AbXDZV3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:29:51 -0400
-Date: Thu, 26 Apr 2007 14:28:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: 2.6.21-rc7-mm2 -- gnome-power-manager always shows the power as
- coming from AC
-Message-Id: <20070426142824.9da91feb.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
-References: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 17:30:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57103 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753144AbXDZVac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 17:30:32 -0400
+Date: Thu, 26 Apr 2007 23:30:12 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Olivier Galibert <galibert@pobox.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
+Message-ID: <20070426213012.GE21695@elf.ucw.cz>
+References: <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg> <20070426103051.GP17387@elf.ucw.cz> <1177585458.6814.45.camel@johannes.berg> <20070426110953.GQ17387@elf.ucw.cz> <20070426182120.GA81126@dspnet.fr.eu.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426182120.GA81126@dspnet.fr.eu.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 12:13:00 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+Hi!
 
-> One possible issue is that /proc/acpi/power_resource/ is an empty directory.
-> Otherwise, the ACPI information seems to be fine:
+> > #define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
 > 
-> # cat /proc/acpi/ac_adapter/ACAD/state
-> state:                   on-line
-> # cat /proc/acpi/ac_adapter/ACAD/state
-> state:                   off-line
-> 
-> # cat /proc/acpi/battery/BAT0/state
-> present:                 yes
-> capacity state:          ok
-> charging state:          discharging
-> present rate:            0 mA
-> remaining capacity:      7072 mAh
-> present voltage:         12487 mV
-> 
-> When I unplug the power cable, /proc/acpi/battery/BAT0/state (present
-> rate) shows that current flowing from the battery.
-> 
-> # cat /proc/acpi/button/lid/LID0/state
-> state:      closed
-> # cat /proc/acpi/button/lid/LID0/state
-> state:      open
+> So I'm not supposed to be able to suspend the 16Gb-ram, 32bits servers
+> I have here?
 
-hm, I'm looking suspiciously at "ACPI: Cache battery status instead of
-re-evaluating AML".
+(You are right, this should have been u64)
 
-What sort of machine is this?
+Snapshot image is by design limited by ammount of lowmem. If you want
+to change that, this unsigned long limit will be least of your
+problems.
+
+(And no, I'd not expect loaded 6GB box to suspend properly. It will
+just realize it does not have enough lowmem and refuse to suspend).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
