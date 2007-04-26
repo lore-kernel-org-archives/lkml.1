@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbXDZQbH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752264AbXDZQgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbXDZQbH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:31:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbXDZQbH
+	id S1752264AbXDZQgm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:36:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXDZQgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:31:07 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:44677 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752221AbXDZQbF (ORCPT
+	Thu, 26 Apr 2007 12:36:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45646 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752264AbXDZQgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:31:05 -0400
-To: serue@us.ibm.com
-CC: miklos@szeredi.hu, serge@hallyn.com, hpa@zytor.com, linuxram@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
-       linux-security-module@vger.kernel.org, ebiederm@xmission.com,
-       viro@ftp.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       akpm@linux-foundation.org
-In-reply-to: <20070426161929.GA6439@sergelap.austin.ibm.com>
-	(serue@us.ibm.com)
-Subject: Re: [patch] unprivileged mounts update
-References: <E1HgjG0-0005CN-00@dorka.pomaz.szeredi.hu> <462F87EA.1000002@zytor.com> <20070425172012.GA20336@sergelap.austin.ibm.com> <m1k5w0s5y0.fsf@ebiederm.dsl.xmission.com> <20070425175609.GB20165@vino.hallyn.com> <m1647ks3dm.fsf@ebiederm.dsl.xmission.com> <20070425185244.GA20688@vino.hallyn.com> <E1HgnFH-0006gR-00@dorka.pomaz.szeredi.hu> <20070426145733.GA10078@sergelap.austin.ibm.com> <E1Hh5oQ-0000w1-00@dorka.pomaz.szeredi.hu> <20070426161929.GA6439@sergelap.austin.ibm.com>
-Message-Id: <E1Hh6qi-0002LI-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 26 Apr 2007 18:29:40 +0200
+	Thu, 26 Apr 2007 12:36:41 -0400
+Date: Thu, 26 Apr 2007 09:36:40 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, ak@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [PATCH] change global zonelist order on NUMA v3
+In-Reply-To: <1177604962.5705.55.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0704260934430.22248@schroedinger.engr.sgi.com>
+References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com> 
+ <200704261147.44413.ak@suse.de>  <20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
+  <20070426195348.6a4e5652.kamezawa.hiroyu@jp.fujitsu.com> 
+ <1177603203.5705.36.camel@localhost>  <Pine.LNX.4.64.0704260904190.1655@schroedinger.engr.sgi.com>
+ <1177604962.5705.55.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So then as far as you're concerned, the patches which were in -mm will
-> remain unchanged?
+On Thu, 26 Apr 2007, Lee Schermerhorn wrote:
 
-Basically yes. I've merged the update patch, which was not yet added
-to -mm, did some cosmetic code changes, and updated the patch headers.
+> I have been considering an HP-platform-specific boot option [handled by
+> a new ia64 machine vec op] to re-distance the interleaved node, but for
+> other platforms, such as Kame's, I think we still need the ability to
+> move the DMA zones last in the Normal zone lists.  Or, exclude them
+> altogether?
 
-There's one open point, that I think we haven't really explored, and
-that is the propagation semantics.  I think you had the idea, that a
-propagated mount should inherit ownership from the parent into which
-it was propagated.
+Maybe a solution would be to have a dma_penalty option on boot? The dma 
+penalty is added to the dma zone. If its higher than zero then the dma 
+zone will become a node at that distance to other nodes.
 
-That sounds good if everyone agrees?
+The default is zero which would leave it as is.
 
-Miklos
+If you boot with
+
+	dma_penalty=40
+
+then a new slit entry is generated for the DMA zone and its put at that 
+distance.
+
