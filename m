@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031170AbXDZKz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXDZLBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031170AbXDZKz3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:55:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031178AbXDZKz3
+	id S1030599AbXDZLBJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 07:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030310AbXDZLBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:55:29 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48173 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031170AbXDZKz2 (ORCPT
+	Thu, 26 Apr 2007 07:01:09 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:57289 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932184AbXDZLBH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:55:28 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: mel@skynet.ie (Mel Gorman)
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       clameter@sgi.com, linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com>
-	<m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
-	<46303A98.9000605@yahoo.com.au>
-	<20070426063830.GE32602149@melbourne.sgi.com>
-	<46304B9E.5070604@yahoo.com.au> <20070426084012.GA26926@skynet.ie>
-	<463068E5.6000402@yahoo.com.au> <20070426103014.GC27620@skynet.ie>
-Date: Thu, 26 Apr 2007 04:54:04 -0600
-In-Reply-To: <20070426103014.GC27620@skynet.ie> (Mel Gorman's message of "Thu,
-	26 Apr 2007 11:30:16 +0100")
-Message-ID: <m1y7kfl837.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 07:01:07 -0400
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>, Nick Piggin <npiggin@suse.de>,
+       suspend2-devel@lists.suspend2.net, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu>
+	 <20070424202336.GC16503@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	 <20070424212408.GD16457@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+	 <20070425072350.GA6866@ucw.cz>
+	 <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+	 <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
+	 <20070425202741.GC17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+	 <20070425214420.GG17387@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+	 <1177540027.5025.87.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704251550210.9964@woody.linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IlGzXTFZf60XfRRSMp99"
+Date: Thu, 26 Apr 2007 12:39:58 +0200
+Message-Id: <1177583998.6814.42.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mel@skynet.ie (Mel Gorman) writes:
 
-> On (26/04/07 18:55), Nick Piggin didst pronounce:
->> Mel Gorman wrote:
->> >On (26/04/07 16:50), Nick Piggin didst pronounce:
->> 
->> >>Fragmentation is the problem. The anti-frag patches don't actually
->> >>guarantee anything about fragmentation, and even if they did, then
->> >
->> >
->> >The grouping pages by mobility do not guarantee anything but the memory
->> >partition (kernelcore= boot parameter) does give hard guarantees about
->> >the amount of memory that is "movable". Of course, the partition requires
->> >configuration at boot-time so it's less than ideal but it does give hard
->> >guarantees.
->> 
->> For the hugepages people, I can understand that's a solution.
->
-> I think that's the closest you have ever come to saying fragmentation
-> avoidance is not a terrible idea :)
->
->> But that's
->> the last thing you want to do on a system with a limited amount of memory,
->> or a regular Joe's desktop/server.
->> 
->
-> Regular Joe is not going to be creating a filesystem with large blocks or
-> overly concerned with saturating all the disks hanging off his RAID array.
-> At most, he'll care about faster DVD writing and considering the number and
-> duration of those allocations, the system will be able to handle it. So I
-> don't think Regular Joe will generally care.
+--=-IlGzXTFZf60XfRRSMp99
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The practical question is if this a special purpose hack, or is
-this general infrastructure that we expect filesystems to seriously
-use.
+On Wed, 2007-04-25 at 15:55 -0700, Linus Torvalds wrote:
 
-If this is a special purpose hack then the larger pages and
-fragmentation are minor issues, but it's very existence is a problem.
+> That's where I started: whole "suspend to disk" thing actually has _more_=
+=20
+> to do with "shutdown" than with "suspend".=20
 
-If this is not a special purpose hack and people do use this a lot
-then the fragmentation is a problem. 
+=46rom looking at pm_ops which I was recently working with a lot, it seems
+that it was designed by somebody who was reading the ACPI documentation
+and was otherwise pretty clueless, even at that level std tries to look
+like suspend. IMHO that is one of the first things that should be ripped
+out, no pm_ops for STD, it's a pain to work with.
 
-Your reply indicates that fragmentation is a concern, as does the
-initial posting and the more positive threads.  Therefore either
-this is a special purpose hack in which case it's existence is
-questionable or it fails a general solution and it's existence
-is questionable.
+johannes
 
+--=-IlGzXTFZf60XfRRSMp99
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
->> >Indeed but then you have to deal with internal fragmentation 
->> >for pages-larger-than-TLB-page. I'm not saying it's wrong but it does
->> >come with it's own set of issues.
->> 
->> None of them is perfect (the ways to increase the size of pagecache pages,
->> that is).
->> 
->> I think in the long term, TLB page sizes will probably increase a little
->> bit... but if a given page size is "good enough" for a CPU, they really
->> should be good enough for other hardware. I mean, come on, the CPU's TLB
->> has to have a good hit ratio and handle several lookups per cycle with a
->> 3-cycle latency on 3GHz+ hardware... surely a an IO controller's
->> scatter-gather engine or IOMMU that has to do a few lookups per disk IO
->> is nowhere near so critical as a CPU's datapath: just add a few more
->> entries to it, they've already got hundreds of megs of cache, so that
->> isn't an issue either.
->> 
->
-> I cannot speak with authority on what IO controllers are really capable
-> of so maybe someone else will comment on this more.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Well here is some reality.  Using an FPGA (slow by definition)
-connected to a hypertransport interface I have exceeded a gigabyte a
-second, without even setting up scatter gather.
+iD8DBQBGMIF+/ETPhpq3jKURAutsAJ93vRXClZER1VeZiaPlW7Kr8lzEgwCfcj9g
+ENyA5A/H+5JRXY/YOiJSMPs=
+=qhHq
+-----END PGP SIGNATURE-----
 
-All of the I/O on all of the peripheral busses happens in sub 
-1 page chunks.
+--=-IlGzXTFZf60XfRRSMp99--
 
-At the rates we are talking for disks the issue is really how to
-bury the disk latency.  For fast arrays how do you submit enough
-request to bury the latency. 
-
-I can't possibly believe any of this is about the cost of processing
-a request, but rather the problem that some devices don't have a large
-enough pool of requests to keep them busy if you submit the requests
-in a 4K page sizes.
-
-This all sounds like a device design issue rather than anything more
-significant, and it doesn't sound like a long term trend.  Market
-pressure should fix the hardware.
-
-
-Eric
