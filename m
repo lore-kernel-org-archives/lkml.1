@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031372AbXDZRqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031379AbXDZRqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031372AbXDZRqh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031380AbXDZRqh
+	id S1031379AbXDZRqi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031378AbXDZRqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 26 Apr 2007 13:46:38 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:44943 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031379AbXDZRqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Apr 2007 13:46:37 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5412 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031378AbXDZRqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:46:36 -0400
-Date: Thu, 26 Apr 2007 19:42:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426174254.GD2017@kernel.dk>
-References: <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com> <46305327.2000206@yahoo.com.au> <Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com> <4630593C.8070905@yahoo.com.au> <20070426092014.GT65285596@melbourne.sgi.com> <4630C326.2030906@yahoo.com.au>
+Date: Thu, 26 Apr 2007 10:45:01 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Greg KH <gregkh@suse.de>
+Cc: David Lang <david.lang@digitalinsight.com>, linux-kernel@vger.kernel.org,
+       cebbert@redhat.com, stable@kernel.org
+Subject: Re: [stable] [patch 00/33] 2.6.20-stable review
+Message-ID: <20070426174501.GQ2819@sequoia.sous-sol.org>
+References: <20070426165445.GA1898@kroah.com> <Pine.LNX.4.63.0704260945090.9674@qynat.qvtvafvgr.pbz> <20070426173028.GA16886@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4630C326.2030906@yahoo.com.au>
+In-Reply-To: <20070426173028.GA16886@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27 2007, Nick Piggin wrote:
-> Why do we limit drivers to 128 sg entries?
+* Greg KH (gregkh@suse.de) wrote:
+> On Thu, Apr 26, 2007 at 09:48:22AM -0700, David Lang wrote:
+> >  any idea why there are so many more -stable patches for 2.6.20? this is the 
+> >  10th -stable series, and most of them have been dozens of patches.
+> > 
+> >  is there a new team reporting and fixing bugs? or were there just more small 
+> >  problems found in 2.6.20 then normal? or something else?
+> 
+> I think it's entirely due to the awesome effort by Chuck Ebbert of Red
+> Hat.  He has been digging through all of the applied patches to Linus's
+> tree and been forwarding them on to the stable team.  Without his effort
+> and help, we would not have so many patches in these releases.
 
-No particular reason, except than to avoid 2^bigger order allocations.
-2MiB requests would require 3 contig pages to setup the sg list, which
-is (probably) a little troublesome especially since it's sometimes
-atomically allocated.
+Agreed, Chuck has been really helpful.  AFAIK, he sees it as time
+well-spent to make sure -stable is carrying patches so Fedora doesn't
+have to, great mantra.
 
-Larger pages are by no means a prerequisite to getting larger requests,
-assuming your hardware can handle the bigger sglist. There are other
-ways of doing that, I've contemplated doing chained sglists and adding
-sg_for_each_segment() macros for iterating these things. Drivers that
-want larger sglists would then be required to update their sg mapping
-loop to use the provided macros. It wouldn't be too hard.
+BTW, here's some stats (so it's not that far off from normal):
 
--- 
-Jens Axboe
-
+[chrisw@sequoia linux-2.6-stable]$ for x in $(seq 12 20); do echo linux-2.6.$x.y $(git-rev-list
+v2.6.$x..linux-2.6.$x.y | wc -l); done
+linux-2.6.12.y 53
+linux-2.6.13.y 44
+linux-2.6.14.y 96
+linux-2.6.15.y 110
+linux-2.6.16.y 788
+linux-2.6.17.y 191
+linux-2.6.18.y 240
+linux-2.6.19.y 189
+linux-2.6.20.y 235
