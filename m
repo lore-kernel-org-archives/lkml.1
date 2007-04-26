@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbXDZP6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031291AbXDZP6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754671AbXDZP6T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbXDZP6T
+	id S1031291AbXDZP6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbXDZP6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:58:19 -0400
-Received: from holomorphy.com ([66.93.40.71]:36321 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754671AbXDZP6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:58:18 -0400
-Date: Thu, 26 Apr 2007 08:58:40 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Chinner <dgc@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       clameter@sgi.com, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426155840.GU31925@holomorphy.com>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <m1k5vzmoo7.fsf@ebiederm.dsl.xmission.com> <20070426135033.GU65285596@melbourne.sgi.com> <4630C776.9000804@yahoo.com.au>
+	Thu, 26 Apr 2007 11:58:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48389 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754830AbXDZP6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 11:58:34 -0400
+Date: Thu, 26 Apr 2007 08:56:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Johannes Berg <johannes@sipsolutions.net>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
+       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+In-Reply-To: <20070426112641.GS17387@elf.ucw.cz>
+Message-ID: <alpine.LFD.0.98.0704260855380.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
+ <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+ <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg>
+ <20070426103051.GP17387@elf.ucw.cz> <20070426104052.GA19072@elf.ucw.cz>
+ <1177585897.6814.49.camel@johannes.berg> <20070426111645.GR17387@elf.ucw.cz>
+ <1177586850.6814.52.camel@johannes.berg>
+ <20070426112641.GS17387@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4630C776.9000804@yahoo.com.au>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
-> Or good grounds to increase the sg limit and push for io controller
-> manufacturers to do the same. If we have a hack in the kernel that
-> mostly works, they won't.
-
-On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
-> Page colouring was always rejected, and lots of people who knew
-> better got upset because it was the only way the hardware would go
-> fast...
-
-Yes, stunning wisdom there. Reject the speedups.
 
 
-On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
-> You could put it that way. Or that it is wrong because of the
-> fragmenatation problem. Realise that it is somewhat fundamental
-> considering that it is basically an unsolvable problem with our
-> current kernel assumptions of unconstrained kernel allocations and
-> a 1:1 kernel mapping.
+On Thu, 26 Apr 2007, Pavel Machek wrote:
+> 
+> Yes, probably will. The other option is to break existing 32-bit
+> userspace, which is a bit more common AFAICT.
 
-Depends on what you consider a solution. A broadly used criterion is
-that improves performance significantly in important usage cases.
+And *this* is why kernel/userspace things simply should not be done.
 
+It's simply better to do things entirely in the kernel. Because you add 
+bugs and complications otherwise, and doing it in the kernel allows you 
+to just switch things around.
 
--- wli
+As it is, it appears that user-space suspend is just broken whichever way 
+we turn.
+
+		Linus
