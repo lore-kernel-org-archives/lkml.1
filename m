@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031278AbXDZP3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031276AbXDZPcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031278AbXDZP3y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 11:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031283AbXDZP3y
+	id S1031276AbXDZPcp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 11:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031290AbXDZPco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 11:29:54 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46470 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1031278AbXDZP3x (ORCPT
+	Thu, 26 Apr 2007 11:32:44 -0400
+Received: from amsfep19-int.chello.nl ([213.46.243.16]:54683 "EHLO
+	amsfep11-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1031276AbXDZPco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 11:29:53 -0400
-Date: Thu, 26 Apr 2007 11:29:52 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Kthread question
-Message-ID: <Pine.LNX.4.44L0.0704261114080.3552-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Apr 2007 11:32:44 -0400
+Subject: Re: linux-2.6.21 and __udivid3
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: l l <happyarch@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <768a59a70704260824s584bb20fs8d4554dcca2d4c27@mail.gmail.com>
+References: <768a59a70704260824s584bb20fs8d4554dcca2d4c27@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 17:32:39 +0200
+Message-Id: <1177601559.24664.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a question about how to use a kthread.
+On Fri, 2007-04-27 at 00:24 +0900, l l wrote:
+> Hi,
+> 
+> How to link libgcc.a with linux-2.6.21?
 
-The usb-storage driver creates a new thread to do LUN scanning whenever a
-newly-hotplugged device is detected.  This scanning involves waiting for
-several seconds and then carrying out a potentially long-lasting series of
-I/O operations.  So we don't want to use schedule_work(); instead we
-create a new thread to do it.
+you don't, in kernel one is supposed to used do_div() for 64/32.
 
-Once the scanning thread's work is done, there's no reason for it to hang
-around.  The driver's probe() method has long since exited, leaving nobody
-to reap the thread.  Of course it could always just exit normally, without
-checking kthread_should_stop(), but...
+>   LD      .tmp_vmlinux1
+> kernel/built-in.o: In function `timespec_add_ns':
+> /usr/src/linux-2.6.21/kernel/timer.c:828: undefined reference to `__udivdi3'
+> /usr/src/linux-2.6.21/kernel/timer.c:841: undefined reference to `__udivdi3'
+> /usr/src/linux-2.6.21/kernel/timer.c:1311: undefined reference to `__udivdi3'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make[1]: Leaving directory `/usr/src/linux-2.6.21'
+> make: *** [debian/stamp-build-kernel] Error 2
 
-If the device is unplugged during that initial several-second-long delay 
-period, we need to stop the scanning thread immediately.  The obvious 
-answer is to use kthread_stop(), but that's not consistent with the 
-thread's normal behavior of exiting without waiting for 
-kthread_should_stop().
+I'm not seeing any /s there about. Is this a pristine tree?
 
-Another problem arises as well.  If the driver's remove() method doesn't
-call kthread_stop() then it doesn't have any straightforward way to wait
-for the thread to exit.  This leads to the possibility that the driver's
-module could be unloaded while the scanning thread is still running.
-
-Would the best approach be to set up a special-purpose struct completion?  
-Then the thread could call complete_and_exit() and the remove() method
-could wait for it safely.
-
-Alan Stern
+> cc -v
+> Using built-in specs.
+> Target: i686-pc-linux-gnu
+> Configured with: ../gcc/configure --prefix=/usr --libexecdir=/usr/lib
+> --enable-shared --enable-threads=posix --enable-__cxa_atexit
+> --enable-clocale=gnu --enable-languages=c,c++,treelang
+> --with-system-zlib --with-gmp --enable-mpfr
+> --enable-libstdcxx-allocator=mt
+> Thread model: posix
+> gcc version 4.3.0 20070420 (experimental)
+> 
+> TIA
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
