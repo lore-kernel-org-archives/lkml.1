@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbXDZUUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755006AbXDZUU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752064AbXDZUUd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbXDZUUd
+	id S1755006AbXDZUU7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbXDZUU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:20:33 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2965 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbXDZUUc (ORCPT
+	Thu, 26 Apr 2007 16:20:59 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:52529 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754992AbXDZUU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:20:32 -0400
-Date: Thu, 26 Apr 2007 21:20:19 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Ian Molton <spyro@f2s.com>
-Subject: Re: [PATCH] ARM: Remove useless config option GENERIC_BUST_SPINLOCK.
-Message-ID: <20070426202019.GA11735@flint.arm.linux.org.uk>
-Mail-Followup-To: "Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, Ian Molton <spyro@f2s.com>
-References: <Pine.LNX.4.64.0704260911110.2493@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704260911110.2493@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 26 Apr 2007 16:20:58 -0400
+From: Steve Wise <swise@opengridcomputing.com>
+Subject: [PATCH 2.6.22 0/5] iw_cxgb3: Bug Fixes + Firmware update
+Date: Thu, 26 Apr 2007 15:20:57 -0500
+To: rdreier@cisco.com, jeff@garzik.org
+Cc: divy@chelsio.com, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-Id: <20070426202057.24234.56383.stgit@dell3.ogc.int>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Content-Transfer-Encoding: 8bit
+User-Agent: StGIT/0.10
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 11:10:59AM -0400, Robert P. J. Day wrote:
-> Remove the apparently useless config option GENERIC_BUST_SPINLOCK,
-> since nothing in the source tree refers to it.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Please copy me on ARM (NOT ARM26) fixes.  For all intents and purposes
-they're two entirely separate architectures.  One I'm responsible for.
-The other Ian's responsible for.  Thanks.
+Hey Roland,
 
->  arch/arm/Kconfig   |    3 ---
-> 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index e7baca2..5a4869f 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -102,9 +102,6 @@ config GENERIC_CALIBRATE_DELAY
->  	bool
->  	default y
-> 
-> -config GENERIC_BUST_SPINLOCK
-> -	bool
-> -
->  config ARCH_MAY_HAVE_PC_FDC
->  	bool
-> 
+Here are some bug fixes to the iw_cxgb3 driver that I'd like merged for
+2.6.22.  The 1st patch has been posted before, but I didn't see it in
+your for-2.6.22 branch, so I'm posting it again.  
 
-Just this part:
+Jeff, 
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+The last patch updates the cxgb3 required firmware version.  It is
+included in this series because its required by the patch preceeding it
+in the series.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Steve.
+
+Shortlog:
+
+Steve Wise:
+      Fix TERM codes.
+      Fail qp creation if the requested max_inline is too large.
+      Initialize cpu_idx field in cpl_close_listserv_req message.
+      Support for new abort logic.
+      Update required firmware revision to 4.0.0.
