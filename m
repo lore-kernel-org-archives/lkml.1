@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031434AbXDZSnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031435AbXDZSpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031434AbXDZSnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXDZSnS
+	id S1031435AbXDZSpH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031420AbXDZSpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:43:18 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:1087 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031434AbXDZSnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:43:17 -0400
-Date: Thu, 26 Apr 2007 20:39:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426183935.GK2017@kernel.dk>
-References: <46304B9E.5070604@yahoo.com.au> <20070426161152.GC16337@infradead.org> <m1mz0vkoux.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704261059500.3263@schroedinger.engr.sgi.com> <20070426180358.GG2017@kernel.dk> <20070426180932.GA10642@infradead.org> <20070426181249.GH2017@kernel.dk> <Pine.LNX.4.64.0704261127550.3560@schroedinger.engr.sgi.com> <20070426182945.GJ2017@kernel.dk> <Pine.LNX.4.64.0704261134080.3656@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 14:45:07 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35560 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031435AbXDZSpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:45:06 -0400
+Date: Thu, 26 Apr 2007 20:45:16 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426184516.GV3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <20070426165950.GO3468@stusta.de> <m3d51rhtid.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704261134080.3656@schroedinger.engr.sgi.com>
+In-Reply-To: <m3d51rhtid.fsf@maximus.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26 2007, Christoph Lameter wrote:
-> On Thu, 26 Apr 2007, Jens Axboe wrote:
-> 
-> > On Thu, Apr 26 2007, Christoph Lameter wrote:
-> > > On Thu, 26 Apr 2007, Jens Axboe wrote:
-> > > 
-> > > > The above can be implemented fairly cleanly, and on a need-to-have
-> > > > basis. It's not something that'll break drivers.
-> > > 
-> > > But its also not going to fix the hacks that we have in the kernel 
-> > > to deal with > PAGE_SIZE i/o.
-> > 
-> > No, but that's a _seperate_ issue! Don't keep mixing up the two.
-> 
-> Yes I understand that you want it to be a separate issue so we get get 
-> more rationales for the hacks that we do to avoid the large 
-> order allocations.
+On Thu, Apr 26, 2007 at 08:37:14PM +0200, Krzysztof Halasa wrote:
+>...
+> With KNOWN_PROBLEMS information, sysadmins can decide if they can
+> safely upgrade to .0 or if they have to wait for .123.
+>...
 
-Christoph, don't take your frustrations out on me. I've several times in
-this thread said that I'd LIKE to have > PAGE_SIZE support in the page
-cache. I WROTE the initial pktcdvd driver that is a primary example of
-these hacks, I'm very well aware of the pain and bugs involved with
-that.
+Listing regressions like the following will most likely be zero help for 
+them when deciding whether to upgrade now or later (and BTW, the latter 
+might imply running a kernel with known security issues):
 
-But don't push large pages as the only solution to larger ios, because
-that is trivially not true.
+Subject    : acpi_pm clocksource loses time on x86-64
+References : http://lkml.org/lkml/2007/4/17/143
+Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+Handled-By : John Stultz <johnstul@us.ibm.com>
+             Len Brown <lenb@kernel.org>
+Status     : problem is being debugged
+
+> Krzysztof Halasa
+
+cu
+Adrian
 
 -- 
-Jens Axboe
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
