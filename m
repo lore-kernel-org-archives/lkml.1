@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031404AbXDZSR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031419AbXDZSSL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031404AbXDZSR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031419AbXDZSR2
+	id S1031419AbXDZSSL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:18:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031417AbXDZSSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:17:28 -0400
-Received: from main.gmane.org ([80.91.229.2]:56778 "EHLO ciao.gmane.org"
+	Thu, 26 Apr 2007 14:18:11 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:59820 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031404AbXDZSR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:17:26 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-   hang in atomic copy)
-Date: Thu, 26 Apr 2007 14:18:28 -0400
-Message-ID: <4630ECF4.6040702@tmr.com>
-References: <200704182245.24156.mail@earthworm.de>	 <20070418211632.GA7610@elte.hu> <200704182357.28107.mail@earthworm.de>	 <20070418220228.GA14536@elte.hu>	 <1176947576.5906.21.camel@nigel.suspend2.net>	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>	 <20070424212408.GD16457@elf.ucw.cz>	 <alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>	 <20070425072350.GA6866@ucw.cz>	 <1177490913.30284.38.camel@frg-rhel40-em64t-04>	 <1177491047.3857.32.camel@nigel.suspend2.net> <1177492072.30284.48.camel@frg-rhel40-em64t-04>
+	id S1031419AbXDZSSI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:18:08 -0400
+Date: Thu, 26 Apr 2007 22:17:44 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Dan Williams <dan.j.williams@intel.com>
+Subject: Re: W1 printk format warning
+Message-ID: <20070426181743.GA3552@2ka.mipt.ru>
+References: <20070425162104.168c32b6.randy.dunlap@oracle.com> <20070425164509.715ca5c9.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <1177492072.30284.48.camel@frg-rhel40-em64t-04>
-Cc: suspend2-devel@lists.suspend2.net
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070425164509.715ca5c9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Thu, 26 Apr 2007 22:17:47 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xavier Bestel wrote:
-> On Wed, 2007-04-25 at 18:50 +1000, Nigel Cunningham wrote:
->>> (And guess what, it uses APM and suspend is really faster and way more
->>> reliable than each kernel implementation I could try).
->> If you tried Suspend2 and had problems with reliability, please send me
->> logs. I'll do all I can to help. (I have to qualify it a bit, because
->> I'm not able to fix drivers, but if it's a Suspend2 issue, tell me and
->> I'll fix it).
+On Wed, Apr 25, 2007 at 04:45:09PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Wed, 25 Apr 2007 16:21:04 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > 
-> Does suspend2 work with APM ? After much trying, I think now the ACPI
-> implementation of my laptop (a vintage Compaq Armada 1700) is busted,
-> only APM works.
+> > in 2.6.21-rc7-mm1.  Are you aware of this?
+> > 
+> > drivers/w1/w1.c:460: warning: too few arguments for format
+> > 
+> > 	dev_dbg(&sl->dev, "%s: registering %s as %p.\n", __func__,
+> > 		&sl->dev.bus_id[0]);
+> > 
 > 
-> AFAIR the problem with suspend2 was that it didn't poweroff some parts
-> of the laptop (the led of the wifi pcmcia card was on, and the lcd light
-> was on too), but that was last year. Kernel's suspend kind of worked but
-> didn't resume (no reaction on button press). As I tried all this last
-> year, I may have forgotten some things.
-> Honestly, I like this laptop when it works flawlessly, so I don't see
-> many reasons to try *susp* again. I'll do it when I'm bored, just not
-> today.
-> 
-Actually on some old laptops I just use the apm command, with -s (or -S, 
-I forget by now), and that works.
+> Yeah, that's because Dan's dev_dbg-check-dev_dbg-arguments.patch added
+> printk arg-checking to dev_dbg() and a bunch of bugs got exposed.  I fixed
+> a few of them.
 
+Could you post a full list for w1, if there is only one, here is a fix.
+
+Thanks a lot, Randy.
+
+diff --git a/drivers/w1/w1.c b/drivers/w1/w1.c
+index 63c0724..7d6876d 100644
+--- a/drivers/w1/w1.c
++++ b/drivers/w1/w1.c
+@@ -459,7 +459,7 @@ static int __w1_attach_slave_device(struct w1_slave *sl)
+ 		 (unsigned long long) sl->reg_num.id);
+ 
+ 	dev_dbg(&sl->dev, "%s: registering %s as %p.\n", __func__,
+-		&sl->dev.bus_id[0]);
++		&sl->dev.bus_id[0], sl);
+ 
+ 	err = device_register(&sl->dev);
+ 	if (err < 0) {
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+	Evgeniy Polyakov
