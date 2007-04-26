@@ -1,128 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933770AbXDZJUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXDZJWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933770AbXDZJUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXDZJUz
+	id S933788AbXDZJWZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933781AbXDZJWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:20:55 -0400
-Received: from lizzard.sbs.de ([194.138.37.39]:17623 "EHLO lizzard.sbs.de"
+	Thu, 26 Apr 2007 05:22:25 -0400
+Received: from il.qumranet.com ([82.166.9.18]:53003 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933770AbXDZJUx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:20:53 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Date: Thu, 26 Apr 2007 11:21:01 +0200
-Message-ID: <D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
-In-Reply-To: <20070425171533.22efa133.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Thread-Index: AceHmBBXg88AlzzVR+6GbPtwTLxjuAASieIA
-From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>,
-       "Dominik Brodowski" <linux@dominikbrodowski.net>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-X-OriginalArrivalTime: 26 Apr 2007 09:20:18.0398 (UTC) FILETIME=[1B51AFE0:01C787E4]
+	id S933769AbXDZJWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 05:22:24 -0400
+From: Avi Kivity <avi@qumranet.com>
+To: kvm-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org,
+       Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH 02/18] KVM: Fix overflow bug in overflow detection code
+Date: Thu, 26 Apr 2007 12:22:02 +0300
+Message-Id: <11775793382198-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.0.6
+In-Reply-To: <11775793382353-git-send-email-avi@qumranet.com>
+References: <11775793382353-git-send-email-avi@qumranet.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As pointed to by Peter, and also as indicated by a judicious output in
-dmesg, the 4th parameter should be 0x969aa4f2. Please find below the
-corrected patch:
+From: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
 
-Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
+The expression
 
-===================================================================
---- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c	2007-04-15
-21:08:02.000000000 +0200
-+++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c	2007-04-26
-11:13:13.000000000 +0200
-@@ -399,6 +399,7 @@
- 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
-0x3489e003),
- 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
-0x2a54d4b1),
-+	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
-0x969aa4f2),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
-0xf54a91c8),
- 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
- 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
-0x212bb918),
-===================================================================
+   sp - 6 < sp
+
+where sp is a u16 is undefined in C since 'sp - 6' is promoted to int,
+and signed overflow is undefined in C.  gcc 4.2 actually warns about it.
+Replace with a simpler test.
+
+Signed-off-by: Eric Sesterhenn <snakebyte@gmx.de>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
+ drivers/kvm/vmx.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
+index 61a6116..8c0115b 100644
+--- a/drivers/kvm/vmx.c
++++ b/drivers/kvm/vmx.c
+@@ -1182,7 +1182,7 @@ static void inject_rmode_irq(struct kvm_vcpu *vcpu, int irq)
+ 	u16 sp =  vmcs_readl(GUEST_RSP);
+ 	u32 ss_limit = vmcs_read32(GUEST_SS_LIMIT);
  
+-	if (sp > ss_limit || sp - 6 > sp) {
++	if (sp > ss_limit || sp < 6 ) {
+ 		vcpu_printf(vcpu, "%s: #SS, rsp 0x%lx ss 0x%lx limit 0x%x\n",
+ 			    __FUNCTION__,
+ 			    vmcs_readl(GUEST_RSP),
+-- 
+1.5.0.6
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-> Sent: Donnerstag, 26. April 2007 02:16
-> To: Aeschbacher, Fabrice
-> Cc: linux-pcmcia@lists.infradead.org; lkml; Dominik 
-> Brodowski; Bartlomiej Zolnierkiewicz
-> Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-> 
-> On Wed, 25 Apr 2007 11:27:09 +0200 "Aeschbacher, Fabrice" 
-> <Fabrice.Aeschbacher@siemens.com> wrote:
-> 
-> > Without the following patch, the kernel does not 
-> automatically detect 
-> > 2GB CompactFlash cards from Transcend.
-> > 
-> > I'm not sure which correct values must be assigned to the 
-> 3th and 4th 
-> > parameters (here: 0x709b1bf1, 0xf54a91c8). Anyway, the patch is 
-> > working with these values. Tested on arch=mips.
-> > 
-> 
-> Thanks.  Your patch was wordwrapped and had tabs replaced by 
-> spaces, btw.
-> 
-> > 
-> > ===================================================================
-> > --- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c     2007-04-15
-> > 21:08:02.000000000 +0200
-> > +++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c  2007-04-25
-> > 10:53:53.000000000 +0200
-> > @@ -64,6 +64,7 @@
-> >  
-> >  #define INT_MODULE_PARM(n, v) static int n = v; 
-> module_param(n, int, 
-> > 0)
-> >  
-> > +#define PCMCIA_DEBUG 1
-> >  #ifdef PCMCIA_DEBUG
-> >  INT_MODULE_PARM(pc_debug, PCMCIA_DEBUG);  #define DEBUG(n, 
-> args...) 
-> > if (pc_debug>(n)) printk(KERN_DEBUG args)
-> 
-> I removed the above change
-> 
-> > @@ -399,6 +400,7 @@
-> >         PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 
-> > 0x3489e003),
-> >         PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
-> >         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 
-> 0x709b1bf1, 
-> > 0x2a54d4b1),
-> > +       PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 
-> 0x709b1bf1,
-> > 0xf54a91c8),
-> >         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 
-> 0x709b1bf1, 
-> > 0xf54a91c8),
-> >         PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 
-> 0x3e232852),
-> >         PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 
-> > 0x212bb918),
-> 
-> I'm never sure whether it's Bart or Dominik who handles 
-> pcmcia-cs patches.
-> 
