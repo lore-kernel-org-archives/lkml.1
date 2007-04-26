@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbXDZQ5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbXDZQ5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbXDZQ5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXDZQ5U
+	id S1754856AbXDZQ5c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbXDZQ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:57:20 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34898 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754857AbXDZQ5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:57:19 -0400
-Date: Thu, 26 Apr 2007 09:56:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <1177573348.5025.224.camel@nigel.suspend2.net>
-Message-ID: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
- <1177573348.5025.224.camel@nigel.suspend2.net>
+	Thu, 26 Apr 2007 12:57:32 -0400
+Received: from smtp3.cc.ksu.edu ([129.130.7.17]:36438 "EHLO smtp3.cc.ksu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754856AbXDZQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 12:57:31 -0400
+Message-ID: <4630D9A5.9070105@ksu.edu>
+Date: Thu, 26 Apr 2007 11:56:05 -0500
+From: Amit Gud <gud@ksu.edu>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Jeff Dike <jdike@addtoit.com>
+CC: Valerie Henson <val_henson@linux.intel.com>,
+       Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL> <20070425224710.GB16129@nifty> <20070426141455.GA6155@c2.user-mode-linux.org> <4630CAEC.2050909@ksu.edu> <20070426160504.GA7970@c2.user-mode-linux.org>
+In-Reply-To: <20070426160504.GA7970@c2.user-mode-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Apr 2007, Nigel Cunningham wrote:
+Jeff Dike wrote:
+> On Thu, Apr 26, 2007 at 10:53:16AM -0500, Amit Gud wrote:
+>> Jeff Dike wrote:
+>>> How about this case:
+>>>
+>>> 	Growing file starts in chunk A.
+>>> 	Overflows into chunk B.
+>>> 	Delete file in chunk A.
+>>> 	Growing file overflows chunk B and spots new free space in
+>>> chunk A (and nothing anywhere else)
+>>> 	Overflows into chunk A
+>>> 	Delete file in chunk B.
+>>> 	Overflow into chunk B again.
+>>>
+>>> Maybe this is not realistic, but in the absence of a mechanism to pull
+>>> data back from an overflow chunk, it seems at least a theoretical
+>>> possibility that there could be > 1 continuation inodes per file per
+>>> chunk.
+>>>
+>> Preventive measures are taken to limit only one continuation inode per 
+>> file per chunk. This can be done easily in the chunk allocation 
+>> algorithm for disk space. Although I'm not quite sure what you mean by 
+>> "Delete file in chunk A". If you are referring to same file thats 
+>> growing, then deletion is not possible, because individual parts of any 
+>> file in any chunk cannot be deleted.
 > 
-> * Doing things in the right order? (Prepare the image, then do the
-> atomic copy, then save).
+> No, I'm referring to a different file.  The scenario is that you have
+> a growing file in a nearly full disk with files being deleted (and
+> thus space being freed) such that allocations for the growing file
+> bounce back and forth between chunks.
+> 
 
-I'd actually like to discuss this a bit..
+In such scenario either lot of continuation inodes < number of chunks 
+would be created or lot of sparse pieces would be created. But we can 
+certainly enforce the constraint of one continuation inode per file per 
+chunk, excluding the file's primary chunk in which it started.
 
-I'm obviously not a huge fan of the whole user/kernel level split and 
-interfaces, but I actually do think that there is *one* split that makes 
-sense:
 
- - generate the (whole) snapshot image entirely inside the kernel
+AG
+-- 
+May the source be with you.
+http://www.cis.ksu.edu/~gud
 
- - do nothing else (ie no IO at all), and just export it as a single image 
-   to user space (literally just mapping the pages into user space). 
-   *one* interface. None of the "pretty UI update" crap. Just a single 
-   system call:
-
-	void *snapshot_system(u32 *size);
-
-   which will map in the snapshot, return the mapped address and the size 
-   (and if you want to support snapshots > 4GB, be my guest, but I suspect 
-   you're actually *better* off just admitting that if you cannot shrink 
-   the snapshot to less than 32 bits, it's not worth doing)
-
-User space gets a fully running system, with that one process having that 
-one image mapped into its address space. It can then compress/write/do 
-whatever to that snapshot.
-
-You need one other system call, of course, which is
-
-	int resume_snapshot(void *snapshot, u32 size);
-
-and for testing, you should be able to basically do
-
-	u32 size;
-	void *buffer = snapshot_system(&size);
-	if (buffer != MAP_FAILED)
-		resume_snapshot(buffer, size);
-
-and it should obviously work.
-
-And btw, the device model changes are a big part of this. Because I don't 
-think it's even remotely debuggable with the full suspend/resume of the 
-devices being part of generating the image! That freeze/snapshot/unfreeze 
-sequence is likely a lot more debuggable, if only because freeze/unfreeze 
-is actually a no-op for most devices, and snapshotting is trivial too.
-
-Once you have that snapshot image in user space you can do anything you 
-want. And again: you'd hav a fully working system: not any degradation 
-*at*all*. If you're in X, then X will continue running etc even after the 
-snapshotting, although obviously the snapshotting will have tried to page 
-a lot of stuff out in order to make the snapshot smaller, so you'll likely 
-be crawling.
-
-> * Mulithreaded I/O (might as well use multiple cores to compress the
-> image, now that we're hotplugging later).
-> * Support for > 1 swap device.
-> * Support for ordinary files.
-> * Full image option.
-> * Modular design?
-
-I'd really suggest _just_ the "full image". Nothing else is probably ever 
-worth supporting. Your "snapshot to disk" wouldn't be _quite_ as simple as 
-"echo disk > /sys/power/state", but it should not necessarily be much 
-worse than
-
-	snapshot_kernel | gzip -9 > /dev/snapshot
-
-either (and resuming from the snapshot would just be the reverse)!
-
-And if you want to send the snapshot over a TCP connection to another 
-host, be my guest. With pretty images while it's transferring. Whatever.
-
-			Linus
