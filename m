@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbXDZREr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbXDZRFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754895AbXDZREr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXDZREJ
+	id S1754884AbXDZRFf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbXDZREG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:04:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39866 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754887AbXDZRDo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:03:44 -0400
-Date: Thu, 26 Apr 2007 10:01:18 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/33] 2.6.20-stable review
-Message-ID: <20070426170118.GA8370@kroah.com>
-References: <20070426165445.GA1898@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426165445.GA1898@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Thu, 26 Apr 2007 13:04:06 -0400
+Received: from smtp23.orange.fr ([193.252.22.30]:11205 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754882AbXDZRD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:03:56 -0400
+X-ME-UUID: 20070426170354411.6482B1C0008F@mwinf2337.orange.fr
+Subject: Re: Back to the future.
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+	 <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
+	 <1177573348.5025.224.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 19:03:46 +0200
+Message-Id: <1177607026.30284.197.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 09:54:45AM -0700, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.20.10 release.
-> There are 33 patches in this series, all will be posted as a response to
-> this one.
+On Thu, 2007-04-26 at 09:56 -0700, Linus Torvalds wrote:
+> Once you have that snapshot image in user space you can do anything you 
+> want. And again: you'd hav a fully working system: not any degradation 
+> *at*all*. If you're in X, then X will continue running etc even after the 
+> snapshotting
 
-A full all-in-one patch can be found at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.20.10-rc1.gz
+Won't there be problems if e.g. X tries to write something to its
+logfile after snapshot ?
 
-thanks,
+	Xav
 
-greg k-h
+
