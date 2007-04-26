@@ -1,83 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbXDZNk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbXDZNlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbXDZNk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXDZNk5
+	id S1754789AbXDZNlF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXDZNlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:40:57 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:52019
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754787AbXDZNkz (ORCPT
+	Thu, 26 Apr 2007 09:41:05 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:1806 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754789AbXDZNlD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:40:55 -0400
-Message-ID: <4630AC02.7040706@roinet.com>
-Date: Thu, 26 Apr 2007 09:41:22 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 26 Apr 2007 09:41:03 -0400
+Message-ID: <4630ABF2.1040305@shadowen.org>
+Date: Thu, 26 Apr 2007 14:41:06 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Lennert Buytenhek <buytenh@wantstofly.org>,
-       Jeff Garzik <jeff@garzik.org>, Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca>
-In-Reply-To: <20070417173507.GB5575@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630A662.8090502@shadowen.org>
+In-Reply-To: <4630A662.8090502@shadowen.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> Well the IT8152G+PXA255 combination used on the SBC we tried a couple of
-> years ago did not work.  The PCI bus had errors and the SBC maker gave
-> up trying to fix it.  We switched to a Geode SC1200 based board instead
-> which works fine PCI wise.
+Andy Whitcroft wrote:
+> Getting a link failure on a ppc64 system:
 > 
+>   LD      .tmp_vmlinux1
+> init/built-in.o(.init.text+0x32e4): In function `.rd_load_image':
+> : undefined reference to `.__kmalloc_size_too_large'
+> fs/built-in.o(.text+0xa6fe0): In function `.ext3_fill_super':
+> : undefined reference to `.__kmalloc_size_too_large'
+> fs/built-in.o(.text+0xc1fe0): In function `.ext2_fill_super':
+> : undefined reference to `.__kmalloc_size_too_large'
+> fs/built-in.o(.text+0xf6a1c): In function `.nfs4_proc_lookup':
+> : undefined reference to `.__kmalloc_size_too_large'
+> fs/built-in.o(.text+0x104104): In function `.nfs_idmap_new':
+> : undefined reference to `.__kmalloc_size_too_large'
+> fs/built-in.o(.text+0x105520): more undefined references to
+> `.__kmalloc_size_too_large' follow
+> make: *** [.tmp_vmlinux1] Error 1
 
-I don't think this is it.  Other PCI devices work fine on this board 
-include several 802.11 radios.  The S-bit patch totally fixes the problem.
+Ok, this is a SLUB related link failure.  Am investigating if PPC simply
+needs larger allocs and needs CONFIG_LARGE_ALLOCS, of if this is an
+inlining issue.
 
-Here is a quote from Russell that describes what I believe is the main 
-problem:
-http://www-gatago.com/linux/kernel/15457063.html
-"
-Has e100 actually been fixed to use the PCI DMA API correctly yet?
-Looking at it, it doesn't look like it, so until it does, eepro100
-is the far better bet for platforms needing working DMA API.
-
-What I'm talking about is e100's apparant belief that it can modify
-rfd's in the receive ring on a non-cache coherent architecture and
-expect the data around it to remain unaffected (see e100_rx_alloc_skb):
-
-struct rfd {
-u16 status;
-u16 command;
-u32 link;
-u32 rbd;
-u16 actual_size;
-u16 size;
-};
-
-it touches command and link. This means that the whole rfd plus
-maybe the following or preceding 16 bytes get loaded into a cache
-line (assuming cache lines of 32 bytes), and that data written
-out again at sync. However, it does this on what seems to be an
-active receive chain.
-
-So, both the CPU _and_ the device own the same data. Which is a
-violation of the DMA API.
-"
-
-I think that the S-bit patch fixes it because the hardware spins on the 
-s-bit instead of using the packet.  With just the el-bit, the hardware 
-tries to use the same cache line that the software is updating.
-
-Can someone from Intel let us know if I understand the hardware's 
-handling of the S and EL bits?  If my interpretation is correct, can the 
-s-bit patch be applied?  It seems like the correct way to lock out the 
-hardware while a packet is being updated.  I have not seen a reason 
-given not to apply the patch.
-
--Ack
+-apw
