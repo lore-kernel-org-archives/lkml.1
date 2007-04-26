@@ -1,188 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031208AbXDZMUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030673AbXDZMX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031208AbXDZMUX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 08:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031209AbXDZMUW
+	id S1030673AbXDZMX3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 08:23:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030755AbXDZMX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 08:20:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:57222 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031208AbXDZMUV (ORCPT
+	Thu, 26 Apr 2007 08:23:29 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:41009 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030673AbXDZMX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 08:20:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
-        b=dJVbidqEOEOr8dBgeuw+K3eWLwH6HtGYcBhNhqV+DCbG65HWa6P03pes9tOW5q0o31eHwSWgjTObXQuTQZmmCUS9UYXa9gDqjjkWtZ9tNxP7Mx+RwdEoEZAdt6zu6uyhO24/QsbXCcNCsCaYDMKgThqHPDOksXtox9POb51b808=
-Date: Thu, 26 Apr 2007 05:19:53 -0700
-From: Mike Mattie <codermattie@gmail.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: recomended way to check longest period that interupts are
- disabled ?
-Message-ID: <20070426051953.26582bbb@reforged>
-In-Reply-To: <1177585912.6815.6.camel@twins>
-References: <20070426021350.29ddfa0a@reforged>
-	<1177581237.26937.105.camel@twins>
-	<20070426040252.3f4fa8cc@reforged>
-	<1177585912.6815.6.camel@twins>
-X-Mailer: Claws Mail 2.6.1 (GTK+ 2.10.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_.Bor+uTwm/b=pwmx4l0P2ES";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Thu, 26 Apr 2007 08:23:27 -0400
+Date: Thu, 26 Apr 2007 13:23:25 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
+       clameter@sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <m1y7kfl837.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0704261321210.1906@skynet.skynet.ie>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+ <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com>
+ <46304B9E.5070604@yahoo.com.au> <20070426084012.GA26926@skynet.ie>
+ <463068E5.6000402@yahoo.com.au> <20070426103014.GC27620@skynet.ie>
+ <m1y7kfl837.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_.Bor+uTwm/b=pwmx4l0P2ES
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Thu, 26 Apr 2007, Eric W. Biederman wrote:
 
-On Thu, 26 Apr 2007 13:11:52 +0200
-Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> mel@skynet.ie (Mel Gorman) writes:
+>
+>> On (26/04/07 18:55), Nick Piggin didst pronounce:
+>>> Mel Gorman wrote:
+>>>> On (26/04/07 16:50), Nick Piggin didst pronounce:
+>>>
+>>>>> Fragmentation is the problem. The anti-frag patches don't actually
+>>>>> guarantee anything about fragmentation, and even if they did, then
+>>>>
+>>>>
+>>>> The grouping pages by mobility do not guarantee anything but the memory
+>>>> partition (kernelcore= boot parameter) does give hard guarantees about
+>>>> the amount of memory that is "movable". Of course, the partition requires
+>>>> configuration at boot-time so it's less than ideal but it does give hard
+>>>> guarantees.
+>>>
+>>> For the hugepages people, I can understand that's a solution.
+>>
+>> I think that's the closest you have ever come to saying fragmentation
+>> avoidance is not a terrible idea :)
+>>
+>>> But that's
+>>> the last thing you want to do on a system with a limited amount of memory,
+>>> or a regular Joe's desktop/server.
+>>>
+>>
+>> Regular Joe is not going to be creating a filesystem with large blocks or
+>> overly concerned with saturating all the disks hanging off his RAID array.
+>> At most, he'll care about faster DVD writing and considering the number and
+>> duration of those allocations, the system will be able to handle it. So I
+>> don't think Regular Joe will generally care.
+>
+> The practical question is if this a special purpose hack, or is
+> this general infrastructure that we expect filesystems to seriously
+> use.
+>
+> If this is a special purpose hack then the larger pages and
+> fragmentation are minor issues, but it's very existence is a problem.
+>
+> If this is not a special purpose hack and people do use this a lot
+> then the fragmentation is a problem.
+>
 
-> On Thu, 2007-04-26 at 04:02 -0700, Mike Mattie wrote:
-> > On Thu, 26 Apr 2007 11:53:57 +0200
-> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> >=20
-> > > On Thu, 2007-04-26 at 02:13 -0700, Mike Mattie wrote:
-> > > > Hello,
-> > > >=20
-> > > > I am still struggling to track down problems with audio
-> > > > playback. I get intermittent:
-> > > >=20
-> > > > Apr 26 02:01:40 reforged [13230.947879] cannot submit sync urb
-> > > > (err =3D -45)
-> > > >=20
-> > > > I have tackled the scheduler issues to where I really don't
-> > > > think the driver is being starved at all. I am running
-> > > > audacious like so:
-> > > >=20
-> > > > schedtool -R -p 50 -n 1 -e audacious
-> > > >=20
-> > > > At this point the strongest correlation I can get is that
-> > > > starting programs seems to trigger the stutter. I have
-> > > > suspected IO for some time.
-> > > >=20
-> > > > My system image , / & /usr are on a libata (VIA PATA) driver.
-> > > > I have disabled the write-cache , but I also have noatime set
-> > > > on mount, for /usr
-> > > >=20
-> > > > My big suspicion is that one of my drivers, likely IO is
-> > > > disabling interrupts for too long.
-> > > >=20
-> > > > I have looked but not found a tool for measuring the longest
-> > > > period interrupts are disabled and pointing the finger at
-> > > > the culprit, could anyone on this list recommend tools that
-> > > > might help me pinpoint what is going on ?
-> > > >=20
-> > > > I would also be delighted for any sort of recommended latency
-> > > > testing tools.
-> > > >=20
-> > > > pin-pointing this is going to be a "learning experience" but
-> > > > every time I think I am about to have a bonding moment with=20
-> > > > the kernel audio skips; I am highly motivated.
-> > >=20
-> > > The -rt kernel contains a full latency tracer.
-> > >=20
-> > > http://people.redhat.com/mingo/realtime-preempt/
-> >=20
-> > Thanks for the response. That is very helpful. I had
-> > looked at it briefly before but at a glance it looked
-> > like building a pro-audio workstation, which was a bit
-> > over the top for me. At a closer examination most of the
-> > stuff in -rt looks generally useful.
-> >=20
-> > > Some hardware just isn't up to the job though...
-> >=20
-> > I don't quite understand this. I have a athlon XP 3000+
-> > and an audigy NX. Even using the libsamplerate library
-> > audacious + alsa only uses 12% of the processor tops.
-> >=20
->=20
-> Some (broken) hardware, like some VIA IDE controllers just take
-> forever to do their thing. In which case you're stuck with it. Not
-> all x86 hardware is build to equal standards :-(
->=20
-> quite honestly, x86 hardware is a mess.
+Like so many other things, I think this would start as something used by 
+the minority of users with the hardware that requires this sort of feature 
+and slowly bubbles down until it appears on day-to-day machines. I 
+wouldn't describe it as a hack but it's fair to say that it'll start as 
+special purpose. It won't stay that way forever.
 
-No disagreement there. It's really hard to pick good
-hardware other than remembering the odd kernel hacker
-comments , or grepping for expletives in the source
-and piping through wc :)
+> Your reply indicates that fragmentation is a concern, as does the
+> initial posting and the more positive threads.  Therefore either
+> this is a special purpose hack in which case it's existence is
+> questionable or it fails a general solution and it's existence
+> is questionable.
+>
 
-> >=20
-> > my next step is to go out and buy a usb card so I can
-> > see if I can get the audigy NX on it's own interrupt.
->=20
-> I'd try to pinpoint the latency first, might safe on expenses.
+Or it'll start as a special purpose feature and evolve to be a general 
+solution.
 
-definitely.
+>
+>>>> Indeed but then you have to deal with internal fragmentation
+>>>> for pages-larger-than-TLB-page. I'm not saying it's wrong but it does
+>>>> come with it's own set of issues.
+>>>
+>>> None of them is perfect (the ways to increase the size of pagecache pages,
+>>> that is).
+>>>
+>>> I think in the long term, TLB page sizes will probably increase a little
+>>> bit... but if a given page size is "good enough" for a CPU, they really
+>>> should be good enough for other hardware. I mean, come on, the CPU's TLB
+>>> has to have a good hit ratio and handle several lookups per cycle with a
+>>> 3-cycle latency on 3GHz+ hardware... surely a an IO controller's
+>>> scatter-gather engine or IOMMU that has to do a few lookups per disk IO
+>>> is nowhere near so critical as a CPU's datapath: just add a few more
+>>> entries to it, they've already got hundreds of megs of cache, so that
+>>> isn't an issue either.
+>>>
+>>
+>> I cannot speak with authority on what IO controllers are really capable
+>> of so maybe someone else will comment on this more.
+>
+> Well here is some reality.  Using an FPGA (slow by definition)
+> connected to a hypertransport interface I have exceeded a gigabyte a
+> second, without even setting up scatter gather.
+>
+> All of the I/O on all of the peripheral busses happens in sub
+> 1 page chunks.
+>
+> At the rates we are talking for disks the issue is really how to
+> bury the disk latency.  For fast arrays how do you submit enough
+> request to bury the latency.
+>
+> I can't possibly believe any of this is about the cost of processing
+> a request, but rather the problem that some devices don't have a large
+> enough pool of requests to keep them busy if you submit the requests
+> in a 4K page sizes.
+>
+> This all sounds like a device design issue rather than anything more
+> significant, and it doesn't sound like a long term trend.  Market
+> pressure should fix the hardware.
+>
+>
+> Eric
+>
 
-> > from a look at -RT I need to do this before I can use
-> > the fun stuff like interrupt prioritization.
-> >=20
-> > Maybe a naive question but with the HIRES_TIMERS
-> > stuff merged, can the stats/diagnostics now merge
-> > into the mainline , or be broken out as a seperate patch ?=20
->=20
-> Not sure, it might be. Ingo does all that.
->=20
-> > I would really like to see what exactly the mainline is doing ,=20
-> > especially so I can come up with a answer for what exactly is
-> > wrong with the current system. I would like to change
-> > my system knowing what the change is , rather than
-> > saying "-rt works but I don't know why".
->=20
-> If its a hardware latency, -rt will suffer equally. Either way,
-> running -rt will teach you something. Either its mainline borkage, or
-> hardware.
->=20
-> > One thought I had is that I could use the -rt patches
-> > as a starting place for some SystemTap probes. Looking
-> > down the road that seems to be the most durable option.
->=20
-> Might be, although do remember that traps cost too. But I'm not really
-> familiar with all of this.
->=20
-
-Thanks for the comments. After running cyclictest it definitely looks
-like the average jitter is really low, around 7-8 . The max is really
-high , >100
-
-If I am interpreting this correctly for the most part the jitter is
-pretty low, but something horrible is happening that blows up the
-max value.
-
-./cyclictest -p 30 -t 6
-2.00 1.84 1.41 3/120 13760
-
-T: 0 (13130) P:30 I:1000 C:  42763 Min:      4 Act:   10 Avg:    8 Max:    =
- 133
-T: 1 (13131) P:29 I:1500 C:  28509 Min:      4 Act:    6 Avg:    7 Max:    =
- 114
-T: 2 (13132) P:28 I:2000 C:  21382 Min:      4 Act:    7 Avg:    6 Max:    =
- 157
-T: 3 (13133) P:27 I:2500 C:  17106 Min:      4 Act:   11 Avg:    7 Max:    =
- 110
-T: 4 (13134) P:26 I:3000 C:  14255 Min:      4 Act:    8 Avg:    7 Max:    =
-1011
-T: 5 (13135) P:25 I:3500 C:  12218 Min:      4 Act:   12 Avg:    8 Max:    =
- 118
-
-
-Cheers,
-Mike Mattie
-
---Sig_.Bor+uTwm/b=pwmx4l0P2ES
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGMJj4dfRchrkBInkRAhD5AKDsghM1oye+5ucOibcoDgzEC4o3xACg0rtJ
-JFlgPXkZ9T0O9uhD3//JV+g=
-=tJGM
------END PGP SIGNATURE-----
-
---Sig_.Bor+uTwm/b=pwmx4l0P2ES--
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
