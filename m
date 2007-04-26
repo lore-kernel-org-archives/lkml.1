@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbXDZH2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbXDZH2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933387AbXDZH2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbXDZH2Q
+	id S933463AbXDZH2w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933382AbXDZH2r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:28:16 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43314 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933408AbXDZH2E (ORCPT
+	Thu, 26 Apr 2007 03:28:47 -0400
+Received: from imx12.toshiba.co.jp ([61.202.160.132]:57102 "EHLO
+	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933455AbXDZH2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:28:04 -0400
-Date: Thu, 26 Apr 2007 00:28:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: David Chinner <dgc@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <46305222.60502@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0704260022570.31003@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
- <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com>
- <46304C74.9040304@yahoo.com.au> <20070426070454.GF32602149@melbourne.sgi.com>
- <46304FAF.7020700@yahoo.com.au> <Pine.LNX.4.64.0704260011140.30731@schroedinger.engr.sgi.com>
- <46305222.60502@yahoo.com.au>
+	Thu, 26 Apr 2007 03:28:45 -0400
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+Subject: RE: [PATCH 2/2]  Fixed typo Intel RNG driver for2.6.21-rc7-mm1
+X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
+Date: Thu, 26 Apr 2007 16:27:42 +0900
+Message-ID: <BF571719A4041A478005EF3F08EA6DF00433242E@pcsmail03.pcs.pc.ome.toshiba.co.jp>
+Thread-Topic: [PATCH 2/2]  Fixed typo Intel RNG driver for2.6.21-rc7-mm1
+Thread-Index: AceH0bxMW4B4SAmeR/Cn3hq5WE5iswAAeNsQ
+From: "Tomita, Haruo" <haruo.tomita@toshiba.co.jp>
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: <prarit@redhat.com>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Tomita, Haruo" <haruo.tomita@toshiba.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Nick Piggin wrote:
+Hi Jan,
 
-> But I maintain that the end result is better than the fragmentation
-> based approach. A lot of people don't actually want a bigger page
-> cache size, because they want efficient internal fragmentation as
-> well, so your radix-tree based approach isn't really comparable.
+Thank you for the comment.
+ 
+> ># Do you think that a "FWH not detected" message is noisy?
+> 
+> No, I think it helps understanding why there's no RNG device 
+> in the system.
 
-Me? Radix tree based approach? That approach is in the kernel. Do not 
-create a solution where there is no problem. If we do not want to 
-support large blocksizes then lets be honest and say so instead of 
-redefining what a block is. The current approach is fine if one is 
-satisfied with scatter gather and the VM overhead coming with handling 
-these pages. I fail to see what any of what you are proposing would add to 
-that.
+OK, the typo fixes patch was corrected.
 
-Lets be clear here: A bigger page cache size if its just one is not 
-useful. 4k page size is a good size for many files on the system and 
-chaning it would break the binary format.. I just do not want it to be the 
-only one because different usage scenarios may require differnet page 
-sizes for optimal application performance.
+ intel-rng.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+--- linux-2.6.21-rc7-mm1/drivers/char/hw_random/intel-rng.c~	2007-04-26 13:41:53.000000000 +0900
++++ linux-2.6.21-rc7-mm1/drivers/char/hw_random/intel-rng.c	2007-04-26 16:26:16.000000000 +0900
+@@ -365,7 +365,8 @@ static int __init mod_init(void)
+ 	pci_dev_put(dev);
+ 	iounmap(intel_rng_hw->mem);
+ 	kfree(intel_rng_hw);
+-	goto out;
++	if (err)
++		goto out;
+ 
+ fwh_done:
+ 	err = -ENOMEM;
