@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbXDZFF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbXDZFHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbXDZFF4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 01:05:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXDZFFf
+	id S1754716AbXDZFHp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXDZFHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 01:05:35 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:57574 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754713AbXDZFFW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 01:05:22 -0400
-Message-Id: <1177563921.15159.1186637395@webmail.messagingengine.com>
-X-Sasl-Enc: bBbknofGbMEyg78Whr2dgRprO+xBwEcWNP7e0T9ZQi8g 1177563921
-From: lkml777@123mail.org
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Alex Zarochentsev" <zam@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
-       "Edward Shishkin" <edward@namesys.com>
-Content-Disposition: inline
+	Thu, 26 Apr 2007 01:07:45 -0400
+Received: from mo30.po.2iij.NET ([210.128.50.53]:13293 "EHLO mo30.po.2iij.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754717AbXDZFHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 01:07:44 -0400
+Date: Thu, 26 Apr 2007 14:07:33 +0900
+From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: yoichi_yuasa@tripeaks.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] rename TANBAC TB0219 config
+Message-Id: <20070426140733.2f8165c7.yoichi_yuasa@tripeaks.co.jp>
+Organization: TriPeaks Corporation
+X-Mailer: Sylpheed version 1.0.4 (GTK+ 1.2.10; i386-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-   <462E17AF.7090604@namesys.com>
-   <20070424193921.GA17129@one.firstfloor.org>
-   <462F6717.70508@namesys.com>
-   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
-   <1177513612.18970.1186506815@webmail.messagingengine.com>
-   <b6a2187b0704250850j538d8edbm80fa07fb750703c8@mail.gmail.com>
-Subject: Re: Question about Reiser4
-In-Reply-To: <b6a2187b0704250850j538d8edbm80fa07fb750703c8@mail.gmail.com>
-Date: Wed, 25 Apr 2007 22:05:21 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-On Wed, 25 Apr 2007 23:50:22 +0800, "Jeff Chua"
-<jeff.chua.linux@gmail.com> said:
-> On 4/25/07, lkml777@123mail.org <lkml777@123mail.org> wrote:
-> 
-> > Laurent Riffard's Reiser4 patch to the default linux-2.6.20 kernel and a
-> > couple of others.
-> 
-> Thank you. Got it. Testing it now.
-> 
-> Jeff.
+This patch has renamed config of TANBAC TB0219 GPIO support.
+It changed to an appropriate name. 
 
-What plugins etc are you looking at?
--- 
-  
-  lkml777@123mail.org
+Yoichi
 
--- 
-http://www.fastmail.fm - Email service worth paying for. Try it for free
+Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
 
+diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/char/Kconfig generic/drivers/char/Kconfig
+--- generic-orig/drivers/char/Kconfig	2007-04-26 13:45:27.225157000 +0900
++++ generic/drivers/char/Kconfig	2007-04-26 13:58:56.663743750 +0900
+@@ -905,8 +905,8 @@ config SONYPI
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called sonypi.
+ 
+-config TANBAC_TB0219
+-	tristate "TANBAC TB0219 base board support"
++config GPIO_TB0219
++	tristate "TANBAC TB0219 GPIO support"
+ 	depends on TANBAC_TB022X
+ 	select GPIO_VR41XX
+ 
+diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/char/Makefile generic/drivers/char/Makefile
+--- generic-orig/drivers/char/Makefile	2007-04-26 13:45:27.345164500 +0900
++++ generic/drivers/char/Makefile	2007-04-26 13:43:30.361853500 +0900
+@@ -91,7 +91,7 @@ obj-$(CONFIG_PC8736x_GPIO)	+= pc8736x_gp
+ obj-$(CONFIG_NSC_GPIO)		+= nsc_gpio.o
+ obj-$(CONFIG_CS5535_GPIO)	+= cs5535_gpio.o
+ obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
+-obj-$(CONFIG_TANBAC_TB0219)	+= tb0219.o
++obj-$(CONFIG_GPIO_TB0219)	+= tb0219.o
+ obj-$(CONFIG_TELCLOCK)		+= tlclk.o
+ 
+ obj-$(CONFIG_WATCHDOG)		+= watchdog/
