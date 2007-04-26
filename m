@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031041AbXDZOXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030628AbXDZO2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031041AbXDZOXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 10:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031030AbXDZOXc
+	id S1030628AbXDZO2e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031045AbXDZO2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 10:23:32 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:33259 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031041AbXDZOXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 10:23:31 -0400
-Date: Thu, 26 Apr 2007 16:29:21 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>, David Miller <davem@davemloft.net>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cancel_delayed_work: use del_timer() instead of del_timer_sync()
-Message-ID: <20070426142921.GE3145@ff.dom.local>
-References: <20070424215034.GA5985@tv-sign.ru> <20070425130246.GA4086@ff.dom.local> <20070425125214.GB94@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425125214.GB94@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 26 Apr 2007 10:28:34 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:39992 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030628AbXDZO2d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:28:33 -0400
+Message-ID: <4630B70D.7070409@hp.com>
+Date: Thu, 26 Apr 2007 10:28:29 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Reply-To: Alan.Brunelle@pobox.com
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH 5/15] cfq-iosched: speed up rbtree handling
+References: <11774025432481-git-send-email-jens.axboe@oracle.com> <11774025432403-git-send-email-jens.axboe@oracle.com> <462F7AD9.8020300@hp.com> <20070425171539.GE4730@kernel.dk> <20070425175047.GF4730@kernel.dk> <20070425180813.GI4730@kernel.dk>
+In-Reply-To: <20070425180813.GI4730@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 04:52:14PM +0400, Oleg Nesterov wrote:
-> On 04/25, Jarek Poplawski wrote:
-> >
-> > On Wed, Apr 25, 2007 at 01:50:34AM +0400, Oleg Nesterov wrote:
-> > > del_timer_sync() buys nothing for cancel_delayed_work(), but it is less
-> > > efficient since it locks the timer unconditionally, and may wait for the
-> > > completion of the delayed_work_timer_fn().
-> > 
-> > I'm not sure what is the main aim of this patch.
-> 
-> optimization
-> 
-> >                                                  It seems this
-> > change cannot do any harm, but anyway it could change a few
-> > things, e.g. with current version of cancel_rearming_delayed_work
-> > some flush_workqueue could be done needlessly, before the work
-> > is queued from timer.
-> 
-> I don't think so... Could you clarify?
+Jens Axboe wrote:
+> On Wed, Apr 25 2007, Jens Axboe wrote:
+>> On Wed, Apr 25 2007, Jens Axboe wrote:
+>>> On Wed, Apr 25 2007, Alan D. Brunelle wrote:
+>>>> Hi Jens -
+>>>>
+>>>> The attached patch speeds it up even more - I'm finding a >9% reduction 
+>>>> in %system with no loss in IO performance. This just sets the cached 
+>>>> element when the first is looked for.
+>>> Interesting, good thinking. It should not change the IO pattern, as the
+>>> end result should be the same. Thanks Alan, will commit!
+>>>
+>>> I'll give elevator.c the same treatment, should be even more beneficial.
+>>> Stay tuned for a test patch.
+>> Something like this, totally untested (it compiles). I initially wanted
+>> to fold the cfq addon into the elevator.h provided implementation, but
+>> that requires more extensive changes. Given how little code it is, I
+>> think I'll keep them seperate.
+>
+> Booted, seems to work fine for me. In a null ended IO test, I get about
+> a 1-2% speedup for a single queue of depth 64 using libaio. So it's
+> definitely worth it, will commit.
+>
+After longer runs last night, I think the patched elevator code /does/ 
+help (albeit ever so slightly - about 0.6% performance improvement at a 
+1.1% %system overhead).
 
-With a code like:
+  rkB_s    %system  Kernel
+---------  -------  ----------------------------------------------------
+1022942.2     3.69  Original patch + fix to cfq_rb_first
+1029087.0     3.73  This patch stream (including fixes to elevator code)
 
-if (!cancel_delayed_work(dwork))
-	flush_workqueue(wq);
-	
-if cancel_ returns 0, and there is _queue_work in progress,
-flush_ will be done once, after this work is queued.
+Alan
 
-After the patch, and the same situation flush_ also runs
-one time, but maybe without the work in a queue.
 
-So, if there is no more loops, there could be difference,
-and even if very unprobable, something could stop working
-after such change.
 
-> 
-> >                       It's not a big deal here, but if anybody
-> > did something like this without loop - it could matter.
-> > 
-> > So, probably a lot of current code should be checked, before
-> > applying and I doubt the gain is worth of this. Maybe, for
-> > safety, make this with new name as an alternative and
-> > deprecate the current version?
-> 
-> This change should not make any visible difference for the callers,
-> otherwise it is buggy.
-
-IMHO, there is the same visible difference,
-as between del_timer and del_timer_sync.
-
-Regards,
-Jarek P.
