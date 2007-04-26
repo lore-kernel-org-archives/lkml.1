@@ -1,96 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbXDZNtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbXDZNu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbXDZNtq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbXDZNtq
+	id S1754795AbXDZNu1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 09:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXDZNu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:49:46 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:11344 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754791AbXDZNtp (ORCPT
+	Thu, 26 Apr 2007 09:50:27 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:34798 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754795AbXDZNuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:49:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type;
-        b=Cu/tuZD2XSTFWBX1et1fqucRDaXXRwMB0kJzy14sNMYbextYaugPj54j5iSdctplQkceL7veBUv3g26GQboHXRTE2ow1CP7qEi0LsWBi1UkCZhfPF+OmiXqA0R2d8c86nyp/8/0OMWdgtI0qXi0Her7krxC2jj8/A2Q7/SXE7wA=
-Date: Thu, 26 Apr 2007 06:49:27 -0700
-From: Mike Mattie <codermattie@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: htpt366 PCI latency value is really high
-Message-ID: <20070426064927.13d0ed72@reforged>
-X-Mailer: Claws Mail 2.6.1 (GTK+ 2.10.9; i686-pc-linux-gnu)
+	Thu, 26 Apr 2007 09:50:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=cKDFX92jv2v3e/6NL9Gnz72LZGRB7ctXc7debdQ0IFhE+W7EU7yJiVmrRjCDl
+	mJNBFYyEqwv3CmJjOHgnIzSnA==
+Date: Thu, 26 Apr 2007 15:50:13 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: David Acker <dacker@roinet.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Jeff Garzik <jeff@garzik.org>,
+       Netdev List <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFT] e100 driver on ARM
+Message-ID: <20070426135013.GA12154@xi.wantstofly.org>
+References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630AC02.7040706@roinet.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_suxTBialRlNvBpgZB4hRFBu;
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4630AC02.7040706@roinet.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_suxTBialRlNvBpgZB4hRFBu
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Thu, Apr 26, 2007 at 09:41:22AM -0400, David Acker wrote:
 
-Hello,
+> Here is a quote from Russell that describes what I believe is the main 
+> problem:
+> http://www-gatago.com/linux/kernel/15457063.html
+> "
+> Has e100 actually been fixed to use the PCI DMA API correctly yet?
+> Looking at it, it doesn't look like it, so until it does, eepro100
+> is the far better bet for platforms needing working DMA API.
+> 
+> What I'm talking about is e100's apparant belief that it can modify
+> rfd's in the receive ring on a non-cache coherent architecture and
+> expect the data around it to remain unaffected (see e100_rx_alloc_skb):
+> 
+> struct rfd {
+> u16 status;
+> u16 command;
+> u32 link;
+> u32 rbd;
+> u16 actual_size;
+> u16 size;
+> };
+> 
+> it touches command and link. This means that the whole rfd plus
+> maybe the following or preceding 16 bytes get loaded into a cache
+> line (assuming cache lines of 32 bytes), and that data written
+> out again at sync. However, it does this on what seems to be an
+> active receive chain.
+> 
+> So, both the CPU _and_ the device own the same data. Which is a
+> violation of the DMA API.
+> "
+> 
+> I think that the S-bit patch fixes it because the hardware spins on the 
+> s-bit instead of using the packet.  With just the el-bit, the hardware 
+> tries to use the same cache line that the software is updating.
+> 
+> Can someone from Intel let us know if I understand the hardware's 
+> handling of the S and EL bits?  If my interpretation is correct, can the 
+> s-bit patch be applied?  It seems like the correct way to lock out the 
+> hardware while a packet is being updated.  I have not seen a reason 
+> given not to apply the patch.
 
-while hunting down some latency problems I found something quite odd.
-The latency reported by lspci -v for the HTP203N card is enormous.
-
-00:09.0 RAID bus controller: Triones Technologies, Inc. HPT302/302N
-(rev 02) Subsystem: Triones Technologies, Inc. Unknown device 0001
-        Flags: bus master, 66MHz, medium devsel, latency 120, IRQ 17
-        I/O ports at ec00 [size=3D8]
-        I/O ports at e800 [size=3D4]
-        I/O ports at e400 [size=3D8]
-        I/O ports at e000 [size=3D4]
-        I/O ports at dc00 [size=3D256]
-        Expansion ROM at dffe0000 [disabled by cmd] [size=3D128K]
-        Capabilities: [60] Power Management version 2
-
-
-I am assuming that the "latency" field here is the PCI latency timer
-which means this card is a bus hog.=20
-
-=46rom some reading on this issue linux methodically sets a sane value for=20
-all the PCI cards it sets up, which looks normal on the rest of the system,=
-=20
-which is set to the value: 32
-
-setting the value 32 with:
-
-setpci -v -s "00:09.0" latency_timer=3D32
-
-00:09.0 RAID bus controller: Triones Technologies, Inc. HPT302/302N (rev 02)
-        Subsystem: Triones Technologies, Inc. Unknown device 0001
-        Flags: bus master, 66MHz, medium devsel, latency 48, IRQ 17
-        I/O ports at ec00 [size=3D8]
-        I/O ports at e800 [size=3D4]
-        I/O ports at e400 [size=3D8]
-        I/O ports at e000 [size=3D4]
-        I/O ports at dc00 [size=3D256]
-        Expansion ROM at dffe0000 [disabled by cmd] [size=3D128K]
-        Capabilities: [60] Power Management version 2
-
-Results in 48, which is not what I asked, but hopefully this is
-linux doing the right thing.
-
-I know this chipset is pretty brain-damaged, but is this
-high latency value a work-around for broken hardware, or
-just a oversight ?
-
-Cheers,
-Mike Mattie - codermattie@gmail.com
-
---Sig_suxTBialRlNvBpgZB4hRFBu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGMK3sdfRchrkBInkRAt2IAJ0ThMQ+kCmBMTFvo5KTC8VLzMQmTgCfd1NJ
-pBNHMfwwqupcPrKLehzNj28=
-=PCJW
------END PGP SIGNATURE-----
-
---Sig_suxTBialRlNvBpgZB4hRFBu--
+This is all a while ago now, but wasn't the e100 S-bit patch originally
+written by Intel people in response to the very same quote by Russell
+King that you've quoted above?  The S-bit patch should probably just
+be applied, IMHO.
