@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031457AbXDZTNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031390AbXDZTNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031457AbXDZTNF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031390AbXDZTNE
+	id S1031390AbXDZTNZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031458AbXDZTNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:13:04 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:40748 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031457AbXDZTNB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:13:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=OSNbSpP8C08J2tKNPGuJ4VztqZl+GSvuVPt8gKLBUqHJ4jbl8bXB+6L5syrHp4gL4FMsqu/O8P1Sv9wsWsIVuGHZSww608hQxSSO9jFhQqQ5K8oZ2Dq3EbAPit6V3msqYoJmBlo4UP2BRyYTAkcSz6b/XE+uafENVtrnLEo4k0Y=
-Message-ID: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
-Date: Thu, 26 Apr 2007 12:13:00 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: 2.6.21-rc7-mm2 -- gnome-power-manager always shows the power as coming from AC
+	Thu, 26 Apr 2007 15:13:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60706 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031390AbXDZTNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:13:24 -0400
+Message-ID: <4630F9CB.10600@garzik.org>
+Date: Thu, 26 Apr 2007 15:13:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Francois Romieu <romieu@fr.zoreil.com>
+CC: Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <20070426183602.GT3468@stusta.de> <20070426185851.GA7352@electric-eye.fr.zoreil.com>
+In-Reply-To: <20070426185851.GA7352@electric-eye.fr.zoreil.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One possible issue is that /proc/acpi/power_resource/ is an empty directory.
-Otherwise, the ACPI information seems to be fine:
+Francois Romieu wrote:
+> Pointer for the rtl8139 regression please ?
 
-# cat /proc/acpi/ac_adapter/ACAD/state
-state:                   on-line
-# cat /proc/acpi/ac_adapter/ACAD/state
-state:                   off-line
+I'm guessing it's this one:
 
-# cat /proc/acpi/battery/BAT0/state
-present:                 yes
-capacity state:          ok
-charging state:          discharging
-present rate:            0 mA
-remaining capacity:      7072 mAh
-present voltage:         12487 mV
+> 	Subject    : boot failure: rtl8139: exception in interrupt routine
+> 	References : http://lkml.org/lkml/2007/3/31/160
+> 	Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
+> 	Status     : unknown
 
-When I unplug the power cable, /proc/acpi/battery/BAT0/state (present
-rate) shows that current flowing from the battery.
 
-# cat /proc/acpi/button/lid/LID0/state
-state:      closed
-# cat /proc/acpi/button/lid/LID0/state
-state:      open
+The poster says rtl8139, but doesn't provide more info.  His lspci says 
+"RTL8169SC", which sounds more like r8169 to me.
+
+	Jeff
+
+
