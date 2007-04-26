@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbXDZVdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbXDZVej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbXDZVdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXDZVdT
+	id S1755141AbXDZVej (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755142AbXDZVej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:33:19 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34647 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753024AbXDZVdT (ORCPT
+	Thu, 26 Apr 2007 17:34:39 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:46065 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755141AbXDZVei (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:33:19 -0400
-Date: Thu, 26 Apr 2007 14:33:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Timur Tabi <timur@freescale.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.21-rc7-mm2
-Message-Id: <20070426143304.c445427b.akpm@linux-foundation.org>
-In-Reply-To: <46311231.3090903@freescale.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<46309142.2010907@googlemail.com>
-	<20070426133720.25085207.akpm@linux-foundation.org>
-	<46311231.3090903@freescale.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 26 Apr 2007 17:34:38 -0400
+Date: Thu, 26 Apr 2007 22:34:36 +0100
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426213435.GA10048@skynet.ie>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <20070426165950.GO3468@stusta.de> <m3d51rhtid.fsf@maximus.localdomain> <20070426184516.GV3468@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070426184516.GV3468@stusta.de>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 15:57:21 -0500 Timur Tabi <timur@freescale.com> wrote:
-
-> Andrew Morton wrote:
+On (26/04/07 20:45), Adrian Bunk didst pronounce:
+> On Thu, Apr 26, 2007 at 08:37:14PM +0200, Krzysztof Halasa wrote:
+> >...
+> > With KNOWN_PROBLEMS information, sysadmins can decide if they can
+> > safely upgrade to .0 or if they have to wait for .123.
+> >...
 > 
-> >> drivers/net/Kconfig:2327:warning: 'select' used by config symbol 
-> >> 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
-> > 
-> > Yes, we get so many of those that I tend to ignore them, assuming that
-> > someone will pick it up and fix it.
+> Listing regressions like the following will most likely be zero help for 
+> them when deciding whether to upgrade now or later (and BTW, the latter 
+> might imply running a kernel with known security issues):
 > 
-> Is this being compiled on a non-ppc/powerpc platform?
+> Subject    : acpi_pm clocksource loses time on x86-64
+> References : http://lkml.org/lkml/2007/4/17/143
+> Submitter  : Mikael Pettersson <mikpe@it.uu.se>
+> Handled-By : John Stultz <johnstul@us.ibm.com>
+>              Len Brown <lenb@kernel.org>
+> Status     : problem is being debugged
+> 
 
-yup, sorry I forgot to mention that: i386 `make allmodconfig'.
+On the other hand when I was responsible for a bug, it was a great help
+to see this sort of mail. Not only as it reminded I was responsible for a
+screw-up but when I sent a fix out, these mails let me know it was being
+picked up and ensured it made it to mainline.
 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
