@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbXDZQ7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXDZRAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbXDZQ7a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbXDZQ7X
+	id S1754883AbXDZRAG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbXDZRAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:59:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35075 "EHLO
+	Thu, 26 Apr 2007 13:00:03 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39549 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754859AbXDZQ7B (ORCPT
+	with ESMTP id S1754865AbXDZQ76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:59:01 -0400
-Date: Thu, 26 Apr 2007 09:55:32 -0700
+	Thu, 26 Apr 2007 12:59:58 -0400
+Date: Thu, 26 Apr 2007 09:56:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: [patch 07/33] holepunch: fix shmem_truncate_range punch locking
-Message-ID: <20070426165532.GH1898@kroah.com>
+       alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
+       Olaf Kirch <olaf.kirch@oracle.com>, Samuel Ortiz <samuel@sortiz.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 16/33] Fix IRDA oopser
+Message-ID: <20070426165614.GQ1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="holepunch-fix-shmem_truncate_range-punch-locking.patch"
+Content-Disposition: inline; filename="fix-irda-oops-er.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,222 +38,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Hugh Dickins <hugh@veritas.com>
+From: Olaf Kirch <olaf.kirch@oracle.com>
 
-Miklos Szeredi observes that during truncation of shmem page directories,
-info->lock is released to improve latency (after lowering i_size and
-next_index to exclude races); but this is quite wrong for holepunching,
-which receives no such protection from i_size or next_index, and is left
-vulnerable to races with shmem_unuse, shmem_getpage and shmem_writepage.
+This fixes and OOPS due to incorrect socket orpahning in the
+IRDA stack.
 
-Hold info->lock throughout when holepunching?  No, any user could prevent
-rescheduling for far too long.  Instead take info->lock just when needed:
-in shmem_free_swp when removing the swap entries, and whenever removing
-a directory page from the level above.  But so long as we remove before
-scanning, we can safely skip taking the lock at the lower levels, except
-at misaligned start and end of the hole.
+[IrDA]: Correctly handling socket error
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+This patch fixes an oops first reported in mid 2006 - see
+http://lkml.org/lkml/2006/8/29/358 The cause of this bug report is that
+when an error is signalled on the socket, irda_recvmsg_stream returns
+without removing a local wait_queue variable from the socket's sk_sleep
+queue. This causes havoc further down the road.
+
+In response to this problem, a patch was made that invoked sock_orphan on
+the socket when receiving a disconnect indication. This is not a good fix,
+as this sets sk_sleep to NULL, causing applications sleeping in recvmsg
+(and other places) to oops.
+
+This is against the latest net-2.6 and should be considered for -stable
+inclusion.
+
+Signed-off-by: Olaf Kirch <olaf.kirch@oracle.com>
+Signed-off-by: Samuel Ortiz <samuel@sortiz.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/shmem.c |   96 ++++++++++++++++++++++++++++++++++++++++++++++---------------
- 1 file changed, 73 insertions(+), 23 deletions(-)
+ net/irda/af_irda.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -402,26 +402,38 @@ static swp_entry_t *shmem_swp_alloc(stru
- /*
-  * shmem_free_swp - free some swap entries in a directory
-  *
-- * @dir:   pointer to the directory
-- * @edir:  pointer after last entry of the directory
-+ * @dir:        pointer to the directory
-+ * @edir:       pointer after last entry of the directory
-+ * @punch_lock: pointer to spinlock when needed for the holepunch case
-  */
--static int shmem_free_swp(swp_entry_t *dir, swp_entry_t *edir)
-+static int shmem_free_swp(swp_entry_t *dir, swp_entry_t *edir,
-+						spinlock_t *punch_lock)
- {
-+	spinlock_t *punch_unlock = NULL;
- 	swp_entry_t *ptr;
- 	int freed = 0;
+--- a/net/irda/af_irda.c
++++ b/net/irda/af_irda.c
+@@ -138,7 +138,6 @@ static void irda_disconnect_indication(v
+ 		sk->sk_shutdown |= SEND_SHUTDOWN;
  
- 	for (ptr = dir; ptr < edir; ptr++) {
- 		if (ptr->val) {
-+			if (unlikely(punch_lock)) {
-+				punch_unlock = punch_lock;
-+				punch_lock = NULL;
-+				spin_lock(punch_unlock);
-+				if (!ptr->val)
-+					continue;
-+			}
- 			free_swap_and_cache(*ptr);
- 			*ptr = (swp_entry_t){0};
- 			freed++;
- 		}
- 	}
-+	if (punch_unlock)
-+		spin_unlock(punch_unlock);
- 	return freed;
- }
+ 		sk->sk_state_change(sk);
+-                sock_orphan(sk);
+ 		release_sock(sk);
  
--static int shmem_map_and_free_swp(struct page *subdir,
--		int offset, int limit, struct page ***dir)
-+static int shmem_map_and_free_swp(struct page *subdir, int offset,
-+		int limit, struct page ***dir, spinlock_t *punch_lock)
- {
- 	swp_entry_t *ptr;
- 	int freed = 0;
-@@ -431,7 +443,8 @@ static int shmem_map_and_free_swp(struct
- 		int size = limit - offset;
- 		if (size > LATENCY_LIMIT)
- 			size = LATENCY_LIMIT;
--		freed += shmem_free_swp(ptr+offset, ptr+offset+size);
-+		freed += shmem_free_swp(ptr+offset, ptr+offset+size,
-+							punch_lock);
- 		if (need_resched()) {
- 			shmem_swp_unmap(ptr);
- 			if (*dir) {
-@@ -482,6 +495,8 @@ static void shmem_truncate_range(struct 
- 	int offset;
- 	int freed;
- 	int punch_hole;
-+	spinlock_t *needs_lock;
-+	spinlock_t *punch_lock;
- 	unsigned long upper_limit;
- 
- 	inode->i_ctime = inode->i_mtime = CURRENT_TIME;
-@@ -495,6 +510,7 @@ static void shmem_truncate_range(struct 
- 		limit = info->next_index;
- 		upper_limit = SHMEM_MAX_INDEX;
- 		info->next_index = idx;
-+		needs_lock = NULL;
- 		punch_hole = 0;
- 	} else {
- 		if (end + 1 >= inode->i_size) {	/* we may free a little more */
-@@ -505,6 +521,7 @@ static void shmem_truncate_range(struct 
- 			limit = (end + 1) >> PAGE_CACHE_SHIFT;
- 			upper_limit = limit;
- 		}
-+		needs_lock = &info->lock;
- 		punch_hole = 1;
- 	}
- 
-@@ -521,7 +538,7 @@ static void shmem_truncate_range(struct 
- 		size = limit;
- 		if (size > SHMEM_NR_DIRECT)
- 			size = SHMEM_NR_DIRECT;
--		nr_swaps_freed = shmem_free_swp(ptr+idx, ptr+size);
-+		nr_swaps_freed = shmem_free_swp(ptr+idx, ptr+size, needs_lock);
- 	}
- 
- 	/*
-@@ -531,6 +548,19 @@ static void shmem_truncate_range(struct 
- 	if (!topdir || limit <= SHMEM_NR_DIRECT)
- 		goto done2;
- 
-+	/*
-+	 * The truncation case has already dropped info->lock, and we're safe
-+	 * because i_size and next_index have already been lowered, preventing
-+	 * access beyond.  But in the punch_hole case, we still need to take
-+	 * the lock when updating the swap directory, because there might be
-+	 * racing accesses by shmem_getpage(SGP_CACHE), shmem_unuse_inode or
-+	 * shmem_writepage.  However, whenever we find we can remove a whole
-+	 * directory page (not at the misaligned start or end of the range),
-+	 * we first NULLify its pointer in the level above, and then have no
-+	 * need to take the lock when updating its contents: needs_lock and
-+	 * punch_lock (either pointing to info->lock or NULL) manage this.
-+	 */
-+
- 	upper_limit -= SHMEM_NR_DIRECT;
- 	limit -= SHMEM_NR_DIRECT;
- 	idx = (idx > SHMEM_NR_DIRECT)? (idx - SHMEM_NR_DIRECT): 0;
-@@ -552,7 +582,13 @@ static void shmem_truncate_range(struct 
- 			diroff = ((idx - ENTRIES_PER_PAGEPAGE/2) %
- 				ENTRIES_PER_PAGEPAGE) / ENTRIES_PER_PAGE;
- 			if (!diroff && !offset && upper_limit >= stage) {
--				*dir = NULL;
-+				if (needs_lock) {
-+					spin_lock(needs_lock);
-+					*dir = NULL;
-+					spin_unlock(needs_lock);
-+					needs_lock = NULL;
-+				} else
-+					*dir = NULL;
- 				nr_pages_to_free++;
- 				list_add(&middir->lru, &pages_to_free);
- 			}
-@@ -578,8 +614,16 @@ static void shmem_truncate_range(struct 
- 			}
- 			stage = idx + ENTRIES_PER_PAGEPAGE;
- 			middir = *dir;
-+			if (punch_hole)
-+				needs_lock = &info->lock;
- 			if (upper_limit >= stage) {
--				*dir = NULL;
-+				if (needs_lock) {
-+					spin_lock(needs_lock);
-+					*dir = NULL;
-+					spin_unlock(needs_lock);
-+					needs_lock = NULL;
-+				} else
-+					*dir = NULL;
- 				nr_pages_to_free++;
- 				list_add(&middir->lru, &pages_to_free);
- 			}
-@@ -588,31 +632,37 @@ static void shmem_truncate_range(struct 
- 			dir = shmem_dir_map(middir);
- 			diroff = 0;
- 		}
-+		punch_lock = needs_lock;
- 		subdir = dir[diroff];
--		if (subdir && page_private(subdir)) {
-+		if (subdir && !offset && upper_limit-idx >= ENTRIES_PER_PAGE) {
-+			if (needs_lock) {
-+				spin_lock(needs_lock);
-+				dir[diroff] = NULL;
-+				spin_unlock(needs_lock);
-+				punch_lock = NULL;
-+			} else
-+				dir[diroff] = NULL;
-+			nr_pages_to_free++;
-+			list_add(&subdir->lru, &pages_to_free);
-+		}
-+		if (subdir && page_private(subdir) /* has swap entries */) {
- 			size = limit - idx;
- 			if (size > ENTRIES_PER_PAGE)
- 				size = ENTRIES_PER_PAGE;
- 			freed = shmem_map_and_free_swp(subdir,
--						offset, size, &dir);
-+					offset, size, &dir, punch_lock);
- 			if (!dir)
- 				dir = shmem_dir_map(middir);
- 			nr_swaps_freed += freed;
--			if (offset)
-+			if (offset || punch_lock) {
- 				spin_lock(&info->lock);
--			set_page_private(subdir, page_private(subdir) - freed);
--			if (offset)
-+				set_page_private(subdir,
-+					page_private(subdir) - freed);
- 				spin_unlock(&info->lock);
--			if (!punch_hole)
--				BUG_ON(page_private(subdir) > offset);
--		}
--		if (offset)
--			offset = 0;
--		else if (subdir && upper_limit - idx >= ENTRIES_PER_PAGE) {
--			dir[diroff] = NULL;
--			nr_pages_to_free++;
--			list_add(&subdir->lru, &pages_to_free);
-+			} else
-+				BUG_ON(page_private(subdir) != freed);
- 		}
-+		offset = 0;
- 	}
- done1:
- 	shmem_dir_unmap(dir);
+ 		/* Close our TSAP.
+@@ -1446,7 +1445,7 @@ static int irda_recvmsg_stream(struct ki
+ 			 */
+ 			ret = sock_error(sk);
+ 			if (ret)
+-				break;
++				;
+ 			else if (sk->sk_shutdown & RCV_SHUTDOWN)
+ 				;
+ 			else if (noblock)
 
 -- 
