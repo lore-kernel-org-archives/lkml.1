@@ -1,103 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbXDZHSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933294AbXDZHUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933230AbXDZHSs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 03:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933247AbXDZHSr
+	id S933294AbXDZHUz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 03:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933304AbXDZHUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 03:18:47 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:57826 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933238AbXDZHSp (ORCPT
+	Thu, 26 Apr 2007 03:20:55 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:48521 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933294AbXDZHUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 03:18:45 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
-       Ingo Molnar <mingo@elte.hu>, Christian Hesse <mail@earthworm.de>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20070425213049.GF17387@elf.ucw.cz>
-References: <20070419070437.GA25211@elte.hu>
-	 <20070425192512.GZ3468@stusta.de>
-	 <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
-	 <200704252220.57792.rjw@sisk.pl>
-	 <alpine.LFD.0.98.0704251323000.9964@woody.linux-foundation.org>
-	 <20070425213049.GF17387@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mSIa20EZD0y/Kar652Fw"
-Date: Thu, 26 Apr 2007 08:22:49 +1000
-Message-Id: <1177539769.5025.82.camel@nigel.suspend2.net>
+	Thu, 26 Apr 2007 03:20:54 -0400
+Subject: Re: [RFC PATCH 0/10] apic_wait_icr_idle issues and possible
+	solutions
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: vgoyal@in.ibm.com
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Keith Owens <kaos@ocs.com.au>,
+       akpm@linux-foundation.org, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, ak@suse.de, horms@verge.net.au,
+       mbligh@google.com
+In-Reply-To: <20070426064806.GA2626@in.ibm.com>
+References: <1177498984.16078.37.camel@sebastian.intellilink.co.jp>
+	 <20070426064806.GA2626@in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Organization: NTT Open Source Software Center
+Date: Thu, 26 Apr 2007 16:20:51 +0900
+Message-Id: <1177572051.1600.20.camel@sebastian.intellilink.co.jp>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-04-26 at 12:18 +0530, Vivek Goyal wrote:
+> On Wed, Apr 25, 2007 at 08:03:04PM +0900, Fernando Luis Vázquez Cao wrote:
+> > 
+> > static __inline__ void apic_wait_icr_idle(void)
+> > {
+> >   while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+> >     cpu_relax();
+> > }
+> > 
+> > The busy loop in this function would not be problematic if the
+> > corresponding status bit in the ICR were always updated, but that does
+> > not seem to be the case under certain crash scenarios. As an example,
+> > when the other CPUs are locked-up inside the NMI handler the CPU that
+> > sends the IPI will end up looping forever in the ICR check, effectively
+> > hard-locking the whole system.
+> > 
+> > Quoting from Intel's "MultiProcessor Specification" (Version 1.4), B-3:
+> > 
+> > "A local APIC unit indicates successful dispatch of an IPI by
+> > resetting the Delivery Status bit in the Interrupt Command
+> > Register (ICR). The operating system polls the delivery status
+> > bit after sending an INIT or STARTUP IPI until the command has
+> > been dispatched.
+> > 
+> > A period of 20 microseconds should be sufficient for IPI dispatch
+> > to complete under normal operating conditions. If the IPI is not
+> > successfully dispatched, the operating system can abort the
+> > command. Alternatively, the operating system can retry the IPI by
+> > writing the lower 32-bit double word of the ICR. This “time-out”
+> > mechanism can be implemented through an external interrupt, if
+> > interrupts are enabled on the processor, or through execution of
+> > an instruction or time-stamp counter spin loop."
+> > 
+> > Intel's documentation suggests the implementation of a time-out
+> > mechanism, which, by the way, is already being open-coded in some parts
+> > of the kernel that tinker with ICR.
+> > 
+> > --- Possible solutions
+> > 
+> > * Solution A: Implement the time-out mechanism in apic_wait_icr_idle.
+> > 
+> > The problem with this approach is that introduces a performance penalty
+> > that may not be acceptable for some callers of apic_wait_icr_idle.
+> > Besides, during normal operation delivery errors should not occur. This
+> > brings us to solution B.
+> > 
+> 
+> Hi Fernando,
+Hi Vivek,
 
---=-mSIa20EZD0y/Kar652Fw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thank you for your feedback!
 
-Hello.
+> How much is the performance penalty? Is it really significant. My point
+> is that, to me changing apic_wait_icr_dle() itself seems to be the simple
+> approach instead of introducing another function.
+That was what my gut feel said at first, too. But...
 
-On Wed, 2007-04-25 at 23:30 +0200, Pavel Machek wrote:
-> Hi!
->=20
-> > > Please ask anyone who's worked with me if he's had any problem with t=
-hat.
-> > > If anyone say I'm unable to work with anybody else, I'd say you're ri=
-ght.  Till
-> > > then, I feel offended.
-> >=20
-> > I'll apologise (and virtually kiss your hairy feet) if you could actual=
-ly=20
-> > show me a single implementation that people can agree on.
-> >=20
-> > But until then, I claim that the suspend-to-disk people cannot work wit=
-h=20
-> > each other.
->=20
-> It is not Rafael's fault. Actually it is quite hard to work with
-> Nigel, because he implements every feature someone asks for, and wants
-> to merge them all :-(. I don't expect to ever agree with Nigel on
-> anything important, sorry.
+> Original implementation is:
+> 
+> static __inline__ void apic_wait_icr_idle(void)
+> {
+> 	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
+> 	cpu_relax();
+> }
+> 
+> And new one will look something like.
+> 
+>         do {
+>                 send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
+>                 if (!send_status)
+>                         break;
+>                 udelay(100);
+>         } while (timeout++ < 1000);
+> 
+> There will be at max 100 microsecond delay before you realize that IPI has
+> been dispatched. To optimize it further we can change it to 10 microsecond
+> delay
+... I noticed that the maximum theoretical delay you mention has to be
+multiplied by the number of CPUs on big systems, because on those
+machines send_IPI_mask is implemented as a series of unicasts to each
+CPU. It is for this reason that I thought this approach may be
+considered unacceptable (I have to admit that I have not performed any
+micro-benchmarks, though).
 
-I'm sorry that you feel that way, Pavel.
+>         do {
+>                 send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
+>                 if (!send_status)
+>                         break;
+>                 udelay(10);
+>         } while (timeout++ < 10000);
+>  
+> or may be
+> 
+>         do {
+>                 send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
+>                 if (!send_status)
+>                         break;
+>                 udelay(1);
+>         } while (timeout++ < 100000);
+> 
+> I don't know if 1 micro second delay is supported. I do see it being
+> used in kernel/hpet.c
+Please notice that such high-precision timers are not available in all
+machines.
 
-I can agree that I implement features that people ask for, but I think
-saying "every feature someone asks for" is going a bit far (I won't ask
-you to prove that). My desire is to provide Linux with hibernation
-support that does more than just the bare minimum. Different people have
-different usage scenarios, and this has led to me implementing more and
-different features.
+> Is it too much of performance overhead? Somebody who knows more about it
+> needs to tell. To me changing apic_wait_icr_idle() seems simple instead
+> of introducing a new function and then making a special case for NMI.
+As I mentioned above the performance overhead depends on several
+factors. I hope it makes sense.
 
-As to wanting to merge them all, this is true. No one wants to put time
-into something only to have it left out. But I don't see why you think
-this is a bad thing. Many kernel guys claim the thing follows an
-evolutionary model. Well, here's software that has been developed out of
-tree - evolved if you like - and which many people would consider more
-mature ('evolved'?) than [u]swsusp. If evolutionary theory is to be
-followed, let the fittest survive!
-
-Nigel
-
---=-mSIa20EZD0y/Kar652Fw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGL9S5N0y+n1M3mo0RAmmXAKC3AiTSQi9UgLht83zGgRP0vpQZbgCg4C/W
-J3zjzKvNhmZNV9n57Qmz5GY=
-=u4VS
------END PGP SIGNATURE-----
-
---=-mSIa20EZD0y/Kar652Fw--
+ - Fernando
 
