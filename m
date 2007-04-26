@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXDZXIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbXDZXMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbXDZXIm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbXDZXIm
+	id S1755187AbXDZXMk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbXDZXMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:08:42 -0400
-Received: from mail06.syd.optusnet.com.au ([211.29.132.187]:42192 "EHLO
-	mail06.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753645AbXDZXIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:08:40 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD  0.46
-Date: Fri, 27 Apr 2007 08:56:16 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Ed Tomlinson <edt@aei.ca>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-References: <462D2BDD.4040406@tmr.com> <20070424065709.GB19802@elte.hu> <46312116.1030506@tmr.com>
-In-Reply-To: <46312116.1030506@tmr.com>
+	Thu, 26 Apr 2007 19:12:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52081 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755187AbXDZXMi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 19:12:38 -0400
+Date: Fri, 27 Apr 2007 01:12:28 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+Message-ID: <20070426231228.GI21695@elf.ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <20070426224256.GB21926@elf.ucw.cz> <Pine.LNX.4.63.0704261520350.9674@qynat.qvtvafvgr.pbz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704270856.17210.kernel@kolivas.org>
+In-Reply-To: <Pine.LNX.4.63.0704261520350.9674@qynat.qvtvafvgr.pbz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 April 2007 08:00, Bill Davidsen wrote:
-> Ingo Molnar wrote:
-> > * Ed Tomlinson <edt@aei.ca> wrote:
-> >>> SD 0.46		1-2 FPS
-> >>> cfs v5 nice -19	219-233 FPS
-> >>> cfs v5 nice 0 	1000-1996
-> >>
-> >>    cfs v5 nice -10  60-65 FPS
-> >
-> > the problem is, the glxgears portion of this test is an _inverse_
-> > testcase.
-> >
-> > The reason? glxgears on true 3D hardware will _not_ use X, it will
-> > directly use the 3D driver of the kernel. So by renicing X to -19 you
-> > give the xterms more chance to show stuff - the performance of the
-> > glxgears will 'degrade' - but that is what you asked for: glxgears is
-> > 'just another CPU hog' that competes with X, it's not a "true" X client.
-> >
-> > if you are after glxgears performance in this test then you'll get the
-> > best performance out of this by renicing X to +19 or even SCHED_BATCH.
->
-> Several points on this...
->
-> First, I don't think this is accelerated in the way you mean, the
-> machine is a test server, with motherboard video using the 945G video
-> driver. Given the limitations of the support in that setup, I don't
-> think it qualified as "true 3D hardware," although I guess I could try
-> using the vesafb version as a test.
->
-> The 2nd thing I note is that on FC6 this scheduler seems to confuse
-> 'top' to some degree, since the glxgears is shown as taking 51% of the
-> CPU (one core), while the state breakdown shows about 73% in idle,
-> waitio, and int. image attached.
+Hi!
 
-top by itself certainly cannot be trusted to give true representation of the 
-cpu usage I'm afraid. It's not as convoluted as, say, trying to track memory 
-usage of an application, but top's resolution being tied to HZ accounting 
-makes it not reliable in that regard.
->
-> After I upgrade the kernel and cfs to the absolute latest I'll repeat
-> this, as well as test with vesafb, and my planned run under heavy load.
+> >This is basically the loop above, made complex by the fact that we do
+> >not want to have separate partition for snapshot; we just want to
+> >reuse free space in swap partition.
+> 
+> with the size of drives today is it really that bad to require a seperate 
+> partition for this?
 
-I have a problem with your test case Bill. Its behaviour would depend on how 
-gpu bound vs cpu bound vs accelerated vs non-accelerated your graphics card 
-is. I get completely different results to those of the other testers given 
-the different hardware configuration and I don't think my results are 
-valuable. My problem with this testcase is - What would you define 
-as "perfect" behaviour for your test case? It seems far too arbitrary.
+Yes. You want uswsusp to work in situations where swsusp worked.
 
+> I also don't like the idea of storing this in the swap partition for a 
+> couple of reasons.
+> 
+> 1. on many modern linux systems the swap partition is not large enough.
+> 
+> for example, on my boxes with 16G or ram I only allocate 2G of swap
+> space
+
+WTF? So allocate larger swap partition. You just told me disks are big
+enough.
+
+> 2. it's too easy for other things to stomp on your swap partition.
+> 
+>   for example: booting from a live CD that finds and uses swap
+> partitions
+
+That's a feature. If you are booting from live CD, you _want_ to erase
+any hibernation image.
+
+> if you are needing space for your freeze, allocate it in an unabigous way, 
+> not by re-useing an existing partition.
+
+Of course you have that option. Writing image is done in userspace, so
+you are free to write it to raw partition (and first versions indeed
+done that).
+									Pavel
 -- 
--ck
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
