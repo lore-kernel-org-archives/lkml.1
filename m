@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031387AbXDZSDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031388AbXDZSDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031387AbXDZSDG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031388AbXDZSDG
+	id S1031388AbXDZSDR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031392AbXDZSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:03:06 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52106 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031387AbXDZSDF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:03:05 -0400
-Date: Thu, 26 Apr 2007 11:03:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <m1mz0vkoux.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <Pine.LNX.4.64.0704261059500.3263@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
- <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com>
- <46304B9E.5070604@yahoo.com.au> <20070426161152.GC16337@infradead.org>
- <m1mz0vkoux.fsf@ebiederm.dsl.xmission.com>
+	Thu, 26 Apr 2007 14:03:17 -0400
+Received: from tag.witbe.net ([81.88.96.48]:44091 "EHLO tag.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031388AbXDZSDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:03:15 -0400
+X-Greylist: delayed 3034 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 14:03:15 EDT
+Reply-To: <rol@as2917.net>
+From: "Paul Rolland" <rol@as2917.net>
+To: "'LKML'" <linux-kernel@vger.kernel.org>
+Cc: <rol@as2917.net>
+Subject: Strange problem with Device Mapper
+Date: Thu, 26 Apr 2007 19:12:27 +0200
+Organization: AS2917.net
+Message-ID: <006001c78826$13f50cf0$4b00a8c0@donald>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AceIJhDRPpzDOV5cQmm0XhUokMOy4w==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Eric W. Biederman wrote:
+Hello,
 
-> My most practical suggestion is to have support code so that you can
-> do all of the locking (that I/O cares about) on the first page of a
-> page group in the page cache.  You don't need larger physical pages to
-> do that.
+I've a machine that has been installed with Intel Soft Raid on top
+of 2 SATA disks.
+I'm trying to have this work as a RAID-1 array. 
+Bios configuration has been done, using 128K chunk, and the kernel
+(2.6.20.7) sees perfectly /dev/mapper/isw_xxxxxxxx_RAID1
 
-Virtual mappings for larger pages? Or some software simulated form? This 
-all sounds like awful hacks.
+But, I'm facing two problems :
+1 - If i try to create partitions on this device, it does fail (the 
+    values are not interpreted correctly)
 
-> Iff we really the larger physical page size to support the hardware
-> then it makes sense to go down a path of larger pages.  But it doesn't.
+2 - To avoid 1), I stop the RAID array (dmraid -an), then I do create
+    exactly the same partition set on /dev/sda, and /dev/sdb, and
+    then I reactivate RAID (dmraid -ay).
+    This allows me to see all the /dev/mapper/isw_xxxxxxx_RAID1p1, p2, ...
+    But, running fsck -t ext2 /dev/mapper/isw_xxxxxxx_RAID1p1
+    ends in a lock when the partition is larger than 10Go (well, it is
+    Ok on the 10Go one, and it locks on the 100Go).
+    Not a real hardlock, I still can switch to a new VC, but it's not
+    more possible to start a new command or to stop fsck.
 
-You are redefining the problem. We need larger physical sizes to support 
-the hardware. Yes. We can dodge the issue with shim layers and hacks. It 
-is obvious from the kernel sources that this is needed.
-  
-> There is also a more fundamental reasons this patch is silly.  It assumes
-> that there is a trivial mapping between filesystems (the primary target
-> of the page cache and blocks on disk).  Now I admit this is common but
-> there is no reason to supposed it is true, and this patch appears to
-> exacerbate things.
+Should I do everything on the physical disks before activating RAID ?
+Is it a normal behavior ?
 
-The patch does the obvious... Nothing is silly about memory being 
-contigous in memory and on disk.
+BTW, I also noticed that such a device doesn't support BLKRRPART ioctl...
+So it is possible that what I'm doing is wrong...
+
+Any idea ?
+
+Regards,
+Paul
+
