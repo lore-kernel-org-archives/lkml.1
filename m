@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbXDZXCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753643AbXDZXD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbXDZXCk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbXDZXCk
+	id S1753643AbXDZXD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbXDZXD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:02:40 -0400
-Received: from mail33.syd.optusnet.com.au ([211.29.132.104]:53347 "EHLO
-	mail33.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753643AbXDZXCi (ORCPT
+	Thu, 26 Apr 2007 19:03:56 -0400
+Received: from server1.freeshells.ch ([193.73.230.111]:52277 "EHLO
+	server1.freeshells.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753643AbXDZXDz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:02:38 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: [REPORT] cfs-v6-rc2 vs sd-0.46 vs 2.6.21-rc7
-Date: Fri, 27 Apr 2007 08:59:36 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Michael Gerdau <mgd@technosis.de>,
-       Nick Piggin <npiggin@suse.de>, Bill Davidsen <davidsen@tmr.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200704261312.25571.mgd@technosis.de> <20070426120723.GA4092@elte.hu>
-In-Reply-To: <20070426120723.GA4092@elte.hu>
+	Thu, 26 Apr 2007 19:03:55 -0400
+X-Greylist: delayed 1377 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 19:03:55 EDT
+Date: Fri, 27 Apr 2007 00:40:55 +0200 (MEST)
+From: Marko Vrh <mvrh@freeshells.ch>
+To: David Brownell <dbrownell@users.sourceforge.net>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] rtc-cmos: make it load on PNPBIOS systems
+Message-ID: <Pine.NEB.4.64.0704270011030.11494@freeshells.ch>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704270859.37931.kernel@kolivas.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 April 2007 22:07, Ingo Molnar wrote:
-> * Michael Gerdau <mgd@technosis.de> wrote:
-> > Hi list,
-> >
-> > find below a test comparing
-> >     2.6.21-rc7 (mainline)
-> >     2.6.21-rc7-sd046
-> >     2.6.21-rc7-cfs-v6-rc2(*) (X @ nice 0)
-> >     2.6.21-rc7-cfs-v6-rc2(*) (X @ nice -10)
-> > running on a dualcore x86_64.
->
-> thanks for the testing!
+Replace CONFIG_PNPACPI with CONFIG_PNP, so it loads on
+ACPI-less PNPBIOS systems.
 
-Very interesting indeed but fairly complicated as well.
+Signed-off-by: Marko Vrh <mvrh@freeshells.ch>
 
-> as a summary: i think your numbers demonstrate it nicely that the
-> shorter 'timeslice length' that both CFS and SD utilizes does not have a
-> measurable negative impact on your workload. To measure the total impact
-> of 'timeslicing' you might want to try the exact same workload with a
-> much higher 'timeslice length' of say 400 msecs, via:
->
->     echo 400000000 > /proc/sys/kernel/sched_granularity_ns  # on CFS
->     echo 400 > /proc/sys/kernel/rr_interval                 # on SD
+----
 
-I thought that the effective "timeslice" on CFS was double the 
-sched_granularity_ns so wouldn't this make the effective timeslice double 
-that of what you're setting SD to? Anyway the difference between 400 and 
-800ms timeslices is unlikely to be significant so I don't mind.
+diff -urNp linux-2.6.21/drivers/rtc/rtc-cmos.c linux-2.6.21.new/drivers/rtc/rtc-cmos.c
+--- linux-2.6.21/drivers/rtc/rtc-cmos.c	2007-04-26 05:08:32.000000000 +0200
++++ linux-2.6.21.new/drivers/rtc/rtc-cmos.c	2007-04-26 23:58:36.000000000 +0200
+@@ -379,12 +379,12 @@ static irqreturn_t cmos_interrupt(int ir
+  		return IRQ_NONE;
+  }
 
--- 
--ck
+-#ifdef	CONFIG_PNPACPI
+-#define	is_pnpacpi()	1
++#ifdef	CONFIG_PNP
++#define	is_pnp()	1
+  #define	INITSECTION
+
+  #else
+-#define	is_pnpacpi()	0
++#define	is_pnp()	0
+  #define	INITSECTION	__init
+  #endif
+
+@@ -427,7 +427,7 @@ cmos_do_probe(struct device *dev, struct
+  	 * REVISIT for non-x86 systems we may need to handle io memory
+  	 * resources: ioremap them, and request_mem_region().
+  	 */
+-	if (is_pnpacpi()) {
++	if (is_pnp()) {
+  		retval = request_resource(&ioport_resource, ports);
+  		if (retval < 0) {
+  			dev_dbg(dev, "i/o registers already in use\n");
+@@ -520,7 +520,7 @@ static void __exit cmos_do_remove(struct
+
+  	cmos_do_shutdown();
+
+-	if (is_pnpacpi())
++	if (is_pnp())
+  		release_resource(cmos->iomem);
+  	rename_region(cmos->iomem, NULL);
+
+@@ -613,7 +613,7 @@ static int cmos_resume(struct device *de
+   * the device node will always be created as a PNPACPI device.
+   */
+
+-#ifdef	CONFIG_PNPACPI
++#ifdef	CONFIG_PNP
+
+  #include <linux/pnp.h>
+
+@@ -684,11 +684,11 @@ static void __exit cmos_exit(void)
+  }
+  module_exit(cmos_exit);
+
+-#else	/* no PNPACPI */
++#else	/* no PNP */
+
+  /*----------------------------------------------------------------*/
+
+-/* Platform setup should have set up an RTC device, when PNPACPI is
++/* Platform setup should have set up an RTC device, when PNP is
+   * unavailable ... this could happen even on (older) PCs.
+   */
+
+@@ -734,7 +734,7 @@ static void __exit cmos_exit(void)
+  module_exit(cmos_exit);
+
+
+-#endif	/* !PNPACPI */
++#endif	/* !PNP */
+
+  MODULE_AUTHOR("David Brownell");
+  MODULE_DESCRIPTION("Driver for PC-style 'CMOS' RTCs");
