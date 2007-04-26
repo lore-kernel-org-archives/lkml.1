@@ -1,72 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423409AbXDZAQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422987AbXDZAXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423409AbXDZAQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422996AbXDZAQS
+	id S1422987AbXDZAXp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXDZAXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:16:18 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:59700 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423001AbXDZAQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:16:17 -0400
-Date: Wed, 25 Apr 2007 18:16:15 -0600
-From: Mike Stroyan <mike.stroyan@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ia64: race flushing icache in do_no_page path
-Message-ID: <20070426001615.GA8908@ldl.fc.hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 25 Apr 2007 20:23:45 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:39306 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751988AbXDZAXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 20:23:44 -0400
+Date: Thu, 26 Apr 2007 01:24:54 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+ hang in atomic copy)
+Message-ID: <20070426012454.3495b5d8@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
+References: <20070419070437.GA25211@elte.hu>
+	<20070424202336.GC16503@elf.ucw.cz>
+	<alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	<20070424212408.GD16457@elf.ucw.cz>
+	<alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
+	<20070425072350.GA6866@ucw.cz>
+	<Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
+	<alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
+	<20070425202741.GC17387@elf.ucw.cz>
+	<alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
+	<20070425214420.GG17387@elf.ucw.cz>
+	<alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
+	<20070425235718.66b71f01@the-village.bc.nu>
+	<alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This is a very similar problem to a copy-on-write cache flushing problem
-that Tony Luck fixed in July 2006.  In this case the do_no_page function
-handles a fault in an executable or library that is mmapped from an
-NFS file system.  The code is copied into a newly reallocated page.
-The lazy_mmu_prot_update() function should be used to flush old entries
-from the icache for that page on ia64 processors.  But that call is made
-after a set_pte_at call that makes the page accessible to other threads
-executing the same code.  This was seen to cause application crashes
-when an OpenMP application ran many threads calling same functions at
-the same time.  The first thread to reach a page starts to fault in the
-new code.  One of the other threads overtakes the first and executes old
-data from the icache.  That could result in bad instructions.  It is more
-obvious when an old cache line contains prefetched non-instruction bits
-that result in an illegal instruction trap.
+> STR does not need to "ensure that you have a consistent snapshot".
 
-  The problem has only been seen on montecito processors which have
-separate level 2 icache and dcache.  This dcache to icache coherency
-problem is more likely to occur there because of the much larger level
-2 icache.  I suspect that the non-NFS case is working because direct
-DMA into the new page is making the instruction cache coherent.  Any
-file system that uses a non-DMA copy into the text page could show the
-same problem.
+Linus I think someone's been spiking your guinness again...
 
-Signed-off-by: Mike Stroyan <mike.stroyan@hp.com>
+> Why? Becuase there is no _room_ for inconsistency. There's nothing to be 
+> "inconsistent with", since any changes to memory (by things like DMA or 
+> other setup that happens while the suspend process is going on) is by 
+> _definition_ consistent with the resume image (becasue there is no 
+> separate image).
 
-diff --git a/mm/memory.c b/mm/memory.c
-index e7066e7..50c8848 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2291,6 +2291,7 @@ retry:
- 		entry = mk_pte(new_page, vma->vm_page_prot);
- 		if (write_access)
- 			entry = maybe_mkwrite(pte_mkdirty(entry), vma);
-+		lazy_mmu_prot_update(entry);
- 		set_pte_at(mm, address, page_table, entry);
- 		if (anon) {
- 			inc_mm_counter(mm, anon_rss);
-@@ -2312,7 +2313,6 @@ retry:
- 
- 	/* no need to invalidate: a not-present page shouldn't be cached */
- 	update_mmu_cache(vma, address, entry);
--	lazy_mmu_prot_update(entry);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
- 	if (dirty_page) {
+You bet there is. We need to know if data arrived or not, because there
+is no guarantee that the data retrieved if we inadvertently re-execute a
+command will be the same. The hardware state itself isn't the problem,
+its the combination of hardware state and internal state which need to
+match in some cases.
 
--- 
-Mike Stroyan, mike.stroyan@hp.com
+> off DMA and try to make the hardware be wevy wevy quiet while it's hunting 
+> wabbits, it's a lot easier to just do nothing at all on "freeze", and just 
+> make sure that "thaw" will re-initialze the DMA tables entirely! All 
+
+Who cares about DMA mapping tables, those are easy to deal with, not even
+that bad with an IOMMU to restore. More problematic is the users data
+because if we have a device where re-executing a command is not
+repeatable (eg O_DIRECT SCSI on a shared bus) then we risk being
+inconsistent in our S2RAM.  If we re-run the command on resume having
+allowed it to prattle on while doing S2anything then we'll get the wrong
+answer.
+
+Now there are lots of devices we don't care about as they don't have
+state in the form that causes problems - network cards, TV capture etc,
+but there are cases where it matters that every operation is either
+finished or not started and there is no doubt about them getting done
+during the S2RAM/S2DISK
+
+S2DISK/S2RAM both need to synchronize the state of a device so it can
+build a valid snapshot. That bit is a shared requirement just like you
+said didn't exist. Doesn't even need to involve turning DMA off, just
+getting a consistent state.
+
+The rest can be quite different.
+
+Mind you some laptops think S2RAM is just a transition state on the way
+to disk, leave them in ACPI S2RAM and the firmware will magically turn it
+into a save to disk and back to ram if the battery runs low or you leave
+it idle too long.
