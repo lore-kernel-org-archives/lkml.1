@@ -1,52 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXDZN5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754800AbXDZODZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXDZN5j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 09:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbXDZN5i
+	id S1754800AbXDZODZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 10:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbXDZODZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 09:57:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49198 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753510AbXDZN5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 09:57:37 -0400
-Date: Thu, 26 Apr 2007 15:57:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt-users@vger.kernel.org
-Subject: v2.6.21-rt1
-Message-ID: <20070426135730.GA2116@elte.hu>
-References: <20070205065636.GA1652@elte.hu>
-Mime-Version: 1.0
+	Thu, 26 Apr 2007 10:03:25 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:32963 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754800AbXDZODY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 10:03:24 -0400
+Date: Thu, 26 Apr 2007 10:03:23 -0400
+To: Jordan Crouse <jordan.crouse@amd.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>, Bryan Wu <bryan.wu@analog.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-kernel@vger.kernel.org,
+       Christer Weinigel <wingel@nano-system.com>
+Subject: Re: Bitbanging i2c bus driver using the GPIO API
+Message-ID: <20070426140323.GE5577@csclub.uwaterloo.ca>
+References: <20070418174256.GB5577@csclub.uwaterloo.ca> <20070419085413.1520feef@hyperion.delvare> <20070419205942.GC5577@csclub.uwaterloo.ca> <20070420194933.0813a359@hyperion.delvare> <20070422154151.GJ5575@csclub.uwaterloo.ca> <20070423114254.71787844@hyperion.delvare> <20070423144710.GD1372@cosmic.amd.com> <20070426145634.3ac2b7a3@hyperion.delvare> <20070426132905.GP5575@csclub.uwaterloo.ca> <20070426133920.GA25456@cosmic.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070205065636.GA1652@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070426133920.GA25456@cosmic.amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 26, 2007 at 07:39:20AM -0600, Jordan Crouse wrote:
+> There is no ISA on the LX.
 
-i have released the v2.6.20-rt1 kernel, which can be downloaded from the 
-usual place:
+Isn't LPC a good equivalant?
 
-    http://redhat.com/~mingo/realtime-preempt/
- 
-more info about the -rt patchset can be found in the RT wiki:
- 
-    http://rt.wiki.kernel.org
-
-This is a fixes-only release.
-
-to build a 2.6.21-rt1 tree, the following patches should be applied:
-
-  http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.tar.bz2
-  http://redhat.com/~mingo/realtime-preempt/patch-2.6.21-rt1
-
-	Ingo
+--
+Len Sorensen
