@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbXDZAOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751724AbXDZAPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751673AbXDZAOh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbXDZAOh
+	id S1751724AbXDZAPr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXDZAPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:14:37 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52712 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751673AbXDZAOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:14:36 -0400
-Date: Thu, 26 Apr 2007 02:14:14 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070426001414.GO17387@elf.ucw.cz>
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Wed, 25 Apr 2007 20:15:47 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51076 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751724AbXDZAPq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 20:15:46 -0400
+Date: Wed, 25 Apr 2007 17:15:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>,
+       Dominik Brodowski <linux@dominikbrodowski.net>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
+Message-Id: <20070425171533.22efa133.akpm@linux-foundation.org>
+In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
+References: <44c9a2b88950e3848d2c4e457641eb9b@kernel.crashing.org>
+	<D7810733513F4840B4EBAAFA64D9C6A4012D5C9F@stgw002a.ww002.siemens.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, 25 Apr 2007 11:27:09 +0200 "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com> wrote:
 
-> > > Why? Becuase there is no _room_ for inconsistency. There's nothing to be 
-> > > "inconsistent with", since any changes to memory (by things like DMA or 
-> > > other setup that happens while the suspend process is going on) is by 
-> > > _definition_ consistent with the resume image (becasue there is no 
-> > > separate image).
-> > 
-> > Do you propose to keep DMAs running while suspending-to-RAM?
+> Without the following patch, the kernel does not automatically detect
+> 2GB CompactFlash cards from Transcend.
 > 
-> What part of "suspend a chip" do you have trouble with?
+> I'm not sure which correct values must be assigned to the 3th and 4th
+> parameters (here: 0x709b1bf1, 0xf54a91c8). Anyway, the patch is working
+> with these values. Tested on arch=mips.
 > 
-> DMA obviously does *not* happen with a suspended device. There's no need 
-> to turn DMA even off - it just doesn't happen!
 
-Ok, I guess I'll have nightmares of DMA controllers doing DMAs from
-chips that are no longer there tonight.
+Thanks.  Your patch was wordwrapped and had tabs replaced by spaces, btw.
 
-> > > For example, the whole myth that "freeze" needs to shut off DMA is a total 
-> > > and utter *myth*. It needs nothing of the sort at all. Rather than shut 
-> > > off DMA and try to make the hardware be wevy wevy quiet while it's hunting 
-> > > wabbits, it's a lot easier to just do nothing at all on "freeze",
-> > 
-> > No. Sorry, you are wrong here. 
-> > 
-> > Remember that during resume we run
-> > 
-> > freeze()
-> > copy old data into memory
-> > thaw()
-> > 
-> > Now, if the old kernel left DMAs running, it could be overwriting
-> > the data we are copying in.
 > 
-> The *thaw* needs to happen with devices quiescent. 
-> 
-> But that sure doesn't have anythign to do with the "snapshot()" path. In 
-> fact, you'll have rebooted the machine in between.
+> ===================================================================
+> --- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c     2007-04-15
+> 21:08:02.000000000 +0200
+> +++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c  2007-04-25
+> 10:53:53.000000000 +0200
+> @@ -64,6 +64,7 @@
+>  
+>  #define INT_MODULE_PARM(n, v) static int n = v; module_param(n, int, 0)
+>  
+> +#define PCMCIA_DEBUG 1
+>  #ifdef PCMCIA_DEBUG
+>  INT_MODULE_PARM(pc_debug, PCMCIA_DEBUG);
+>  #define DEBUG(n, args...) if (pc_debug>(n)) printk(KERN_DEBUG args)
 
-Only the fact that we are currently using same device call during
-snapshot() and during restore(). We obviously could do _5_ device
-calls
+I removed the above change
 
-(suspend/resume/freeze/quiesce_disable_dma/thaw)
+> @@ -399,6 +400,7 @@
+>         PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
+> 0x3489e003),
+>         PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+>         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
+> 0x2a54d4b1),
+> +       PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
+> 0xf54a91c8),
+>         PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
+> 0xf54a91c8),
+>         PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+>         PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
+> 0x212bb918),
 
-...but that looks like too many calls to me.
-
-> So what does that have to do with "snapshotting"?
-
-I'm not comfortable with memory I'm copying changing under my hands
-because of some DMA. It just looks like asking for trouble. I _think_
-we can get away with DMA running during snapshot, because driver may
-not assume anything about the DMA result before it got completion
-interrupt, but... 
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm never sure whether it's Bart or Dominik who handles pcmcia-cs patches.
