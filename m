@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422987AbXDZAXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423014AbXDZA0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422987AbXDZAXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXDZAXp
+	id S1423014AbXDZA0W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423011AbXDZA0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:23:45 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:39306 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751988AbXDZAXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:23:44 -0400
-Date: Thu, 26 Apr 2007 01:24:54 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-Message-ID: <20070426012454.3495b5d8@the-village.bc.nu>
-In-Reply-To: <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
-References: <20070419070437.GA25211@elte.hu>
-	<20070424202336.GC16503@elf.ucw.cz>
-	<alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	<20070424212408.GD16457@elf.ucw.cz>
-	<alpine.LFD.0.98.0704241630170.9964@woody.linux-foundation.org>
-	<20070425072350.GA6866@ucw.cz>
-	<Pine.LNX.4.64.0704251239110.8406@vaio.localdomain>
-	<alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org>
-	<20070425202741.GC17387@elf.ucw.cz>
-	<alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
-	<20070425214420.GG17387@elf.ucw.cz>
-	<alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-	<20070425235718.66b71f01@the-village.bc.nu>
-	<alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Wed, 25 Apr 2007 20:26:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44261 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422997AbXDZA0V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Apr 2007 20:26:21 -0400
+Date: Wed, 25 Apr 2007 17:24:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+Message-Id: <20070425172447.1576c399.akpm@linux-foundation.org>
+In-Reply-To: <20070425143011.57247c1d.akpm@linux-foundation.org>
+References: <20070423141123.GA21174@skybase>
+	<20070423104534.51bac974.akpm@linux-foundation.org>
+	<20070425112133.4ae86399.randy.dunlap@oracle.com>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> STR does not need to "ensure that you have a consistent snapshot".
+On Wed, 25 Apr 2007 14:30:11 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Linus I think someone's been spiking your guinness again...
+> But that only applies to things which I merge.  There's heaps of stuff
+> coming in via the git trees which is obviously inadequately reviewed - look
+> at all the instances of open-coded kernel_thread() which were merged after
+> the kthread() API was introduced, for example.
+> 
+> 
+> And other basic stuff like "use mutexes, not semaphores":
+> 
+> box:/usr/src/25> grep '^+.*[    ]down[  ]*[(]' patches/git-*.patch | wc -l
+> 32
+> 
+> 
+> 
+> Ever wonder where all those whitespace bugs are coming from?
+> 
+> box:/usr/src/25> grep '^+.*[    ]if[(]' patches/git-*.patch | wc -l
+> 265
+> box:/usr/src/25> grep '^+.*[    ]while[(]' patches/git-*.patch | wc -l  
+> 35
+> 
+> 
+> Code which use spaces where it should be using tabs?
+> 
+> box:/usr/src/25> grep '^+        ' patches/git-*.patch | wc -l
+> 1346
+> 
 
-> Why? Becuase there is no _room_ for inconsistency. There's nothing to be 
-> "inconsistent with", since any changes to memory (by things like DMA or 
-> other setup that happens while the suspend process is going on) is by 
-> _definition_ consistent with the resume image (becasue there is no 
-> separate image).
+It would be neat if someone could create and maintain a new
+scripts/spot-common-mistakes.  Feed it a unified diff and it would complain
+about newly-added code (and only newly-added code) which has busted
+whitespace, adds new semaphores, adds new kernel_thread calls, etc, etc.
 
-You bet there is. We need to know if data arrived or not, because there
-is no guarantee that the data retrieved if we inadvertently re-execute a
-command will be the same. The hardware state itself isn't the problem,
-its the combination of hardware state and internal state which need to
-match in some cases.
+It would need to be fairly simple and easily-extensible, as I can
+imagine quite a few things getting added to it.
 
-> off DMA and try to make the hardware be wevy wevy quiet while it's hunting 
-> wabbits, it's a lot easier to just do nothing at all on "freeze", and just 
-> make sure that "thaw" will re-initialze the DMA tables entirely! All 
+(Imagines a procmail rule which just bounces the email if
+spot-common-mistakes failed)
 
-Who cares about DMA mapping tables, those are easy to deal with, not even
-that bad with an IOMMU to restore. More problematic is the users data
-because if we have a device where re-executing a command is not
-repeatable (eg O_DIRECT SCSI on a shared bus) then we risk being
-inconsistent in our S2RAM.  If we re-run the command on resume having
-allowed it to prattle on while doing S2anything then we'll get the wrong
-answer.
 
-Now there are lots of devices we don't care about as they don't have
-state in the form that causes problems - network cards, TV capture etc,
-but there are cases where it matters that every operation is either
-finished or not started and there is no doubt about them getting done
-during the S2RAM/S2DISK
+> 
+> Heaven knows how many more serious problems are being snuck into the tree
+> via this route.
 
-S2DISK/S2RAM both need to synchronize the state of a device so it can
-build a valid snapshot. That bit is a shared requirement just like you
-said didn't exist. Doesn't even need to involve turning DMA off, just
-getting a consistent state.
-
-The rest can be quite different.
-
-Mind you some laptops think S2RAM is just a transition state on the way
-to disk, leave them in ACPI S2RAM and the firmware will magically turn it
-into a save to disk and back to ram if the battery runs low or you leave
-it idle too long.
+But it won't solve this problem.
