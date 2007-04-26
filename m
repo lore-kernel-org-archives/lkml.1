@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbXDZVaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbXDZVcH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbXDZVaf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 17:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXDZVaf
+	id S1752999AbXDZVcH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 17:32:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXDZVcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 17:30:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57103 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753144AbXDZVac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 17:30:32 -0400
-Date: Thu, 26 Apr 2007 23:30:12 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Olivier Galibert <galibert@pobox.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Message-ID: <20070426213012.GE21695@elf.ucw.cz>
-References: <1176947576.5906.21.camel@nigel.suspend2.net> <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz> <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070424212408.GD16457@elf.ucw.cz> <1177582633.6814.29.camel@johannes.berg> <20070426103051.GP17387@elf.ucw.cz> <1177585458.6814.45.camel@johannes.berg> <20070426110953.GQ17387@elf.ucw.cz> <20070426182120.GA81126@dspnet.fr.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426182120.GA81126@dspnet.fr.eu.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 26 Apr 2007 17:32:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41904
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752999AbXDZVcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 17:32:04 -0400
+Date: Thu, 26 Apr 2007 14:32:11 -0700 (PDT)
+Message-Id: <20070426.143211.34758786.davem@davemloft.net>
+To: vsu@altlinux.ru
+Cc: gregkh@suse.de, yoshfuji@linux-ipv6.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: "IPV6: Disallow RH0 by default" patch looks broken
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070426202157.e357ece5.vsu@altlinux.ru>
+References: <20070426072441.GA5515@kroah.com>
+	<20070426072503.GA5643@kroah.com>
+	<20070426202157.e357ece5.vsu@altlinux.ru>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Sergey Vlasov <vsu@altlinux.ru>
+Date: Thu, 26 Apr 2007 20:21:57 +0400
 
-> > #define SNAPSHOT_SET_IMAGE_SIZE		_IOW(SNAPSHOT_IOC_MAGIC, 6, unsigned long)
+> I suppose "case IPV6_SRCRT_TYPE_2:" is missing before "break"?
 > 
-> So I'm not supposed to be able to suspend the 16Gb-ram, 32bits servers
-> I have here?
+> The same broken patch went in 2.6.21.
 
-(You are right, this should have been u64)
-
-Snapshot image is by design limited by ammount of lowmem. If you want
-to change that, this unsigned long limit will be least of your
-problems.
-
-(And no, I'd not expect loaded 6GB box to suspend properly. It will
-just realize it does not have enough lowmem and refuse to suspend).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, I already discussed this in private email with Yoshifuji and
+he sent me a fix which I'll push around.
