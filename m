@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbXDZXQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbXDZXYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbXDZXQt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755189AbXDZXQs
+	id S1755197AbXDZXYc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXDZXYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:16:48 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36052 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753569AbXDZXQr (ORCPT
+	Thu, 26 Apr 2007 19:24:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:40777 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185AbXDZXYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:16:47 -0400
-Date: Thu, 26 Apr 2007 16:15:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
-       Xavier Bestel <xavier.bestel@free.fr>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: Back to the future.
-In-Reply-To: <200704270008.19017.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.98.0704261608160.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
- <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org>
- <1177618081.4737.42.camel@nigel.suspend2.net>
- <200704270008.19017.rjw@sisk.pl>
+	Thu, 26 Apr 2007 19:24:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=s4NxG5ToWXWhGVtGUDKtMAkwFC1SJiCTabT3XQ7SqSWvTU6ubC+Mkaq6yshMn/gBAA5WeO8jDKEEpzmMpY1yv15S+t9MhWSMrQNCx3kYcLoRpwfRTtLIRRuCXaDPbAqaXfXZRRV5B2J3lNvXzyc1Qj9rrSOAE8bYLnX/IlLgVLg=
+Message-ID: <463134A9.7020001@gmail.com>
+Date: Fri, 27 Apr 2007 01:24:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: johann deneux <johann.deneux@gmail.com>, linux-kernel@vger.kernel.org,
+       stenyak@gmail.com, linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [RFC 1/2] Input: ff, add FF_RAW effect
+References: <210731960111436322@karneval.cz> <462688AB.4060707@gmail.com>	 <38b3b7c0704182125q1928c5barad21ed603088ab04@mail.gmail.com>	 <200704190058.11625.dtor@insightbb.com> <46278CDD.2000007@gmail.com>	 <d120d5000704190902o60aa4b19y77728585e22b2e84@mail.gmail.com>	 <4af2d03a0704220557u5d6368a2t13878b73bf9dbe64@mail.gmail.com> <d120d5000704260902h7950b30bi7a5a604c16f23421@mail.gmail.com>
+In-Reply-To: <d120d5000704260902h7950b30bi7a5a604c16f23421@mail.gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
+Dmitry Torokhov napsal(a):
+> On 4/22/07, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> I think we won't be able to make the transition in independent way
+>> due to unspecified meaning of the torques.
+>>
 > 
-> Well, I think that much of what Linus is saying indicates that he hasn't tried
-> to write any such thing himself. ;-)
+> With phantom it still seems doable - if I understand correctly ther is
+> one point of containct and one resulting vector of forces applied to
+> user's hand. With the glove there are multiple points of contact and
+> multiple feedback effects applied to different part of hand
+> simultaneously and that is for sure requires special application.
 
-That's definitely true. The only interaction I ever had with "hibernation" 
-(and yes, we should just call it that) is when I was working on s2ram and 
-cleaning up the PCI device suspend/resume in particular, and trying 
-(_mostly_ successfully - I think I broke it once or twice mainly due to 
-interactions with the console, but on the whole I think it mostly worked) 
-to not break hibernation in the process without actually running it.
+Hi.
 
-> Now that I know much more than before, I can say I agree with Linus on his
-> opinion about the separation of s2ram form the snapshot/restore functionality
-> (I'll call it 'hibernation' for simplicity from now on).
+Good news are, that I've got openhaptics (OS independent layer for sensable
+devices) under academic license (I don't know, what the "open" word in that name
+means -- no sourcecodes; licensed), the bad ones are, that they use ioctl
+approach for both reporting and FF.
 
-So my strong opinion on it literally comes from the other end (ie _not_ 
-knowing about hibernation, but trying to work with s2ram, and cursing the 
-mixups).
+Furthermore I tried phantom with input layer in X and realized, that it's needed
+to compute real axies from that numbers and that's what I'm doing in userspace
+with doubke precision.
 
-> It should be done, because it would make things simpler and cleaner.  
-> Still, it will be difficult to do without screwing users en masse and 
-> that's my main concern here.
+Ok, so the question is if the old ioctl approach (something which I posted as a
+first patch before we ever starrted to talk about FF and input layer without
+mmaping anything to US) is acceptable alone (this is what is needed for
+OHaptics) or at least some particular computing to convert the numbers and
+reporting to input layer should be implemented (which will have no users anyway,
+who will ever want to have 60000$ pointer ;))?
 
-I do agree. It will inevitably affect a lot of devices. That's always 
-painful.
-
-> I don't agree that we don't need the tasks freezer for suspending and
-> hibernation.  We need it, because we need to be sure that the (other) tasks
-> will not get us in the way, and that also applies to kernel threads (and I
-> don't think the tasks freezer is 'screwing' them, BTW).
-
-I actually feel much less strongly about that, because just separating out 
-s2ram and hibernate entirely from each other would already really get the 
-thing _I_ care about taken care of - being able to work on one of the 
-other without fear of breaking the other one.
-
-And besides, I actually came into the whole discussion because I'm not a 
-huge fan of thinking that user-land is "better". If the thing can sanely 
-be done in kernel, I'm actually all for that. What drives me wild is 
-having three different things, and nobody driving.
-
-It needs somebody who (a) cares (b) has good taste and (c) has enough time 
-and personal karma to burn that he can actually take the (obviously) 
-inevitable heat from just doing things right, and convincing people to 
-select *one* implementation.
-
-That kind of person is really really hard to find. And if you're it, 
-you're in for some pain ;)
-
-		Linus
+thanks a lot,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
