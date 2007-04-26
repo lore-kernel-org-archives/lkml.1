@@ -1,102 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031381AbXDZTGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754931AbXDZTLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031381AbXDZTGx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031446AbXDZTGx
+	id S1754931AbXDZTLX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXDZTLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:06:53 -0400
-Received: from mail1.vetienne.net ([87.98.219.23]:3926 "EHLO
-	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031381AbXDZTGv convert rfc822-to-8bit (ORCPT
+	Thu, 26 Apr 2007 15:11:23 -0400
+Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:35733
+	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751752AbXDZTLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:06:51 -0400
-X-Greylist: delayed 496 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 15:06:51 EDT
-From: Vincent ETIENNE <ve@vetienne.net>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
-Date: Thu, 26 Apr 2007 20:58:32 +0200
-User-Agent: KMail/1.9.6
-Cc: fubar@us.ibm.com, bonding-devel@lists.sourceforge.net
+	Thu, 26 Apr 2007 15:11:21 -0400
+Message-ID: <4630F957.40700@seclark.us>
+Date: Thu, 26 Apr 2007 15:11:19 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200704262058.33087.ve@vetienne.net>
+To: Krzysztof Halasa <khc@pm.waw.pl>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>	<20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de>	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>	<20070426165950.GO3468@stusta.de> <m3d51rhtid.fsf@maximus.localdomain>
+In-Reply-To: <m3d51rhtid.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
- 
- Summary :
-	Got this trace when one network interface come down or up in a 2
-	interfaces bonding.	So far, system seems to survive to this problem
-	and works fine.
+Krzysztof Halasa wrote:
 
- Full description
- 
-	During testing of bonding of 2 interfaces, i have seen this from
-	time to time in my log file ( the problem doesn't arrive each
-	time but one in 3 or 4 try ). 
+>Adrian Bunk <bunk@stusta.de> writes:
+>
+>  
+>
+>>Look at the facts:
+>>8 out of 14 regressions in my current list were reported in March or earlier.
+>>And for many regressions fixed it took several weeks until debugging 
+>>by a kernel developer was started.
+>>
+>>We do not lack testers for getting bug reports quickly.
+>>We lack developer manpower for debugging the many regression reports.
+>>    
+>>
+>
+>Quite possible, given the (very) limited range of the bugs. Most people
+>just can't debug them.
+>
+>This isn't IMHO fundamentally wrong, and releasing a ".0" kernel with
+>known problems isn't fundamentally wrong either.
+>
+>What is missing is easily accessible KNOWN_PROBLEMS information for
+>released kernels. While I think your work documenting etc. known
+>regressions is a very good thing, publishing it with the released
+>kernels (certainly .0 and next stable releases, perhaps "quite stable"
+>rc versions as well) would be ideal.
+>
+>A pressure for fixing the bugs is, obviously, the other very good thing.
+>
+>  
+>
+>>>2.6.20 was actually really good. Yes, it had some regressions, but I do 
+>>>believe that it was one of the least buggy releases we've had. The process 
+>>>_worked_.
+>>>      
+>>>
+>
+>I the process worked with 2.6.21 as well. Obviously no two releases
+>are equal, one has to be better than the other.
+>
+>  
+>
+>>>>I'm not satisfied with the result, and the world won't stop turning when 
+>>>>I'm not tracking 2.6.22-rc regressions.
+>>>>        
+>>>>
+>
+>Anyway, I and many others are satisfied with the result. I think it's
+>one of the few "quite recent" things which are a great improvements.
+>Other such things are using that weird git thing :-) and perhaps the
+>most important - the length of devel cycle under control (I mean the
+>lack of "2.5 series" thing).
+>
+>  
+>
+>>But I am not happy with the current state of released kernels.
+>>    
+>>
+>
+>We've got stable series.
+>With KNOWN_PROBLEMS information, sysadmins can decide if they can
+>safely upgrade to .0 or if they have to wait for .123. Pressing
+>the responsible people to fix the problems in .123 (would) help
+>it greatly.
+>  
+>
+The biggest problem I see is that developers want to make
+ improvements in an area, like ide, but they don't seem to
+look at the old code and make it  sure the new code supports
+everything the old code did. This causes hardware that used
+to work to not work, or work in a degraded fashion.
 
-	SYSTEM :	 2 NIC card bond on interface bond0 : 
-				intel PRO/1000 (e1000 )
-				Broadcomm ( tg3 )
-	I have also try a 2.6.20 and 2.6.19 vanilla kernel ( identical problem but in 
-	onecase the system doesn't survive : that the reason the problem catch my 
-	attention )
- 
-	Keywords	; network, bonding
- 
-	Version : Linux version 2.6.21-rc6-mm1 (root@jupiter2) (gcc version 4.1.1
-	(Gentoo 4.1.1-r3)) #3 SMP Thu Apr 26 08:45:06 CEST 2007
- 
-	Output of /var/log/messages
- 
-		Apr 26 11:09:34 jupiter2 e1000: eth0: e1000_watchdog_task: NIC Link
-		is Down Apr 26 11:09:34 jupiter2 bonding: bond0: link status
-		definitely down for interface eth0, disabling it
-		Apr 26 11:09:34 jupiter2 bonding: bond0: making interface eth1 the new
-		active one.
-		Apr 26 11:09:34 jupiter2 RTNL: assertion failed at net/ipv4/devinet.c
-		(1055) Apr 26 11:09:34 jupiter2
-		Apr 26 11:09:34 jupiter2 Call Trace:
-		Apr 26 11:09:34 jupiter2 <IRQ>  [<ffffffff8049b49e>] 
-inetdev_event+0x48/0x283
-		Apr 26 11:09:34 jupiter2 [<ffffffff804c8731>] _spin_lock_bh+0x9/0x19
-		Apr 26 11:09:34 jupiter2 [<ffffffff80473df1>] rt_run_flush+0x7e/0xaf
-		Apr 26 11:09:34 jupiter2 [<ffffffff8022bdd0>] notifier_call_chain+0x29/0x56 
-		Apr 26 11:09:34 jupiter2 [<ffffffff804560cc>] dev_set_mac_address+0x53/0x59 			
-		Apr 26 11:09:34 jupiter2 [<ffffffff88006d8d>] 
-bonding:alb_set_slave_mac_addr+0x41/0x6c
-		Apr 26 11:09:34 jupiter2 [<ffffffff88007215>] 
-bonding:alb_swap_mac_addr+0x91/0x165
-		Apr 26 11:09:34 jupiter2 [<ffffffff88002029>] 
-bonding:bond_change_active_slave+0x227/0x382
-		Apr 26 11:09:34 jupiter2 [<ffffffff880024c9>]
-		bonding:bond_select_active_slave+0xb7/0xe5
-		Apr 26 11:09:34 jupiter2 [<ffffffff88004182>] 
-bonding:bond_mii_monitor+0x3cd/0x41e
-		Apr 26 11:09:34 jupiter2 [<ffffffff88003db5>] 
-bonding:bond_mii_monitor+0x0/0x41e
-		Apr 26 11:09:34 jupiter2 [<ffffffff80228714>]
- run_timer_softirq+0x130/0x19f
-		Apr 26 11:09:34 jupiter2[<ffffffff8022618a>] __do_softirq+0x55/0xc4 
-		Apr 26 11:09:34 jupiter2 [<ffffffff8020a5ac>] call_softirq+0x1c/0x28
-		Apr 26 11:09:34 jupiter2 [<ffffffff8020bead>] do_softirq+0x2c/0x7d
-		Apr 26 11:09:34 jupiter2 [<ffffffff80213b2a>] 
-smp_apic_timer_interrupt+0x49/0x5f
-		 Apr 26 11:09:34 jupiter2 [<ffffffff802088a3>] mwait_idle+0x0/0x45
-		Apr 26 11:09:34 jupiter2 [<ffffffff8020a056>] apic_timer_interrupt+0x66/0x70
-		 Apr 26 11:09:34 jupiter2 <EOI>  [<ffffffff802088e5>] mwait_idle+0x42/0x45 
-		Apr 26 11:09:34 jupiter2 [<ffffffff8020883f>] cpu_idle+0x51/0x70 
-		Apr 26 11:09:34 jupiter2 [<ffffffff806369bd>] start_kernel+0x242/0x24e
-		Apr 26 11:09:34 jupiter2 [<ffffffff80636146>] _sinittext+0x146/0x14a
- 
- 
-other  informations (ver_linux, lspci, ...  ) available at 
-http://mail1.vetienne.net/linux
+My $.02
+Steve
 
-I'm a bit worried by the message so any help will be greatly appreciated
+-- 
 
-	Vincent
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
