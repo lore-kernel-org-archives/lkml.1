@@ -1,96 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXDZJT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbXDZJUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbXDZJT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 05:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933766AbXDZJT7
+	id S933766AbXDZJUh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 05:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933760AbXDZJUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 05:19:59 -0400
-Received: from mailhub.fokus.fraunhofer.de ([193.174.154.14]:33510 "EHLO
-	mailhub.fokus.fraunhofer.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933751AbXDZJT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 05:19:58 -0400
-Date: Thu, 26 Apr 2007 11:19:32 +0200
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: stern@rowland.harvard.edu, dougg@torque.net
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       James.Bottomley@steeleye.com
-Subject: Re: [PATCH] Block layer: separate out queue-oriented ioctls
-Message-ID: <46306ea4.nlqf3c05IYBhob1c%Joerg.Schilling@fokus.fraunhofer.de>
-References: <Pine.LNX.4.44L0.0702191148421.13197-100000@netrider.rowland.org>
- <45DA23C7.6090800@torque.net>
-In-Reply-To: <45DA23C7.6090800@torque.net>
-User-Agent: nail 11.22 3/20/05
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 26 Apr 2007 05:20:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45408 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933769AbXDZJUd (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 05:20:33 -0400
+Date: Thu, 26 Apr 2007 19:20:14 +1000
+From: David Chinner <dgc@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070426092014.GT65285596@melbourne.sgi.com>
+References: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com> <46305327.2000206@yahoo.com.au> <Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com> <4630593C.8070905@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4630593C.8070905@yahoo.com.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Any chance to that this bug will be fixed anytime soon?
+On Thu, Apr 26, 2007 at 05:48:12PM +1000, Nick Piggin wrote:
+> Christoph Lameter wrote:
+> >On Thu, 26 Apr 2007, Nick Piggin wrote:
+> >
+> >
+> >>No I don't want to add another fs layer.
+> >
+> >
+> >Well maybe you could explain what you want. Preferably without redefining 
+> >the established terms?
+> 
+> Support for larger buffers than page cache pages.
 
-The Bug has been reported February 2004 but is still not fixed in sg.c
-Is Linux development really sooooo slow?
+The problem with this approach is that it turns around the whole
+way we look at bufferheads. Right now we have well defined 1:n
+mapping of page to bufferheads and so we tpyically lock the
+page first them iterate all the bufferheads on the page.
 
+Going the other way, we need to support m:n which we means
+the buffer has to become the primary interface for the filesystem
+to the page cache. i.e. we need to lock the bufferhead first, then
+iterate all the pages on it. This is messy because the cache indexes
+via pages, not bufferheads. hence a buffer needs to point to all the
+pages in it explicitly, and this leads to interesting issues with
+locking.
 
-Douglas Gilbert <dougg@torque.net> wrote:
+If you still think that this is a good idea, I suggest that you
+spend a bit of time looking at fs/xfs/linux-2.6/xfs_buf.c, because
+that is *exactly* what this does - it is a multi-page buffer
+interface on top of a block device address space radix tree. This
+cache is the reason that XFS was so easy to transition to large
+block sizes (i only needed to convert the data path).
 
-> Alan,
-> The SG_GET_RESERVED_SIZE ioctl is also defined in
-> the block layer, see block/scsi_ioctl.c .
-> I suspect it is just a kludge to fool cdrecord that it
-> is talking to a sg device. [One of many kludges in the
-> block SG_IO ioctl implementation to that end.]
-> So perhaps the block layer versions of SG_SET_RESERVED_SIZE
-> and SG_GET_RESERVED_SIZE need to be similarly capped.
-> Actually I think that I would default SG_GET_RESERVED_SIZE to
-> request_queue->max_sectors * 512 in the block layer
-> implementation (as there is no "reserve buffer" associated
-> with a block device).
->
->
-> <aside>
-> The idea of a reserved buffer may live on in bsg as experience
-> with sg has shown that it is the fastest way to do (mmap-ed) IO.
-> Having one reserved buffer per file descriptor means not
-> having to create and tear down a scatter gather list
-> per IO. [Having a pool of such lists would be even better.]
-> Until optical storage needs 10 times its current datarates
-> then cdrecord will not need this mechanism.
-> </aside>
->
-> Doug Gilbert
->
->
-> > Index: usb-2.6/drivers/scsi/sg.c
-> > ===================================================================
-> > --- usb-2.6.orig/drivers/scsi/sg.c
-> > +++ usb-2.6/drivers/scsi/sg.c
-> > @@ -917,6 +917,8 @@ sg_ioctl(struct inode *inode, struct fil
-> >  			return result;
-> >                  if (val < 0)
-> >                          return -EINVAL;
-> > +		if (val > sdp->device->request_queue->max_sectors * 512)
-> > +			return -EOVERFLOW;
-> >  		if (val != sfp->reserve.bufflen) {
-> >  			if (sg_res_in_use(sfp) || sfp->mmap_called)
-> >  				return -EBUSY;
-> > @@ -925,7 +927,8 @@ sg_ioctl(struct inode *inode, struct fil
-> >  		}
-> >  		return 0;
-> >  	case SG_GET_RESERVED_SIZE:
-> > -		val = (int) sfp->reserve.bufflen;
-> > +		val = min_t(int, sfp->reserve.bufflen,
-> > +				sdp->device->request_queue->max_sectors * 512);
-> >  		return put_user(val, ip);
-> >  	case SG_SET_COMMAND_Q:
-> >  		result = get_user(val, ip);
-> > 
+However, this approach has some serious problems:
 
-Jörg
+	- need to index buffers so that lookups can be done
+	  on buffer before page
+	- completely different locking is required
+	- needs memory allocation to hold more than 4 pages
+	- needs vmap() rather than kmap_atomic() for mapping
+	  multi-page buffers
+	- I/O needs to be issued based on buffers, not pages
+	- needs it's own flush code
+	- does not interface with memory reclaim well
 
+IOWs, we need to turn every filesystem completely upside down to
+make work with this sort of large page infrastructure, not to mention
+the rest of the VM (mmap, page reclaim, etc). It's back to the
+bad ol' days of buffer caches again and we don't want to go back
+there.
+
+Compared to a buffer based implementation, the high order page cache
+is a picture of elegance and refined integration. It is an
+evolutionary step, not a disconnect, from what we have now....
+	
+> >Because 4k is a good page size that is bound to the binary format? Frankly 
+> >there is no point in having my text files in large page sizes. However, 
+> >when I read a dvd then I may want to transfer 64k chunks or when use my 
+> >flash drive I may want to transfer 128k chunks. And yes if a scientific 
+> >application needs to do data dump then it should be able to use very high 
+> >page sizes (megabytes, gigabytes) to be able to continue its work while 
+> >the huge dumps runs at full I/O speed ...
+> 
+> So block size > page cache size... also, you should obviously be using
+> hardware that is tuned to work well with 4K pages, because surely there
+> is lots of that around.
+
+The CPU hardware works well with 4k pages, but in general I/O
+hardware works more efficiently as the numbers of s/g entries they
+require drops for a given I/O size. Given that we limit drivers to
+128 s/g entries, we really aren't using I/O hardware to it's full
+potential or at it's most efficient by limiting each s/g entry to a
+single 4k page.
+
+And FWIW, a having a buffer for block size > page size does not
+solve this problem - only contiguous page allocation solves this
+problem.
+
+Cheers,
+
+Dave.
 -- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
