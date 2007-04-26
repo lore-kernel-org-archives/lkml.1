@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423021AbXDZA0i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423011AbXDZAav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423021AbXDZA0i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 20:26:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423015AbXDZA0i
+	id S1423011AbXDZAav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 20:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423015AbXDZAav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 20:26:38 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:58504 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1423011AbXDZA0f (ORCPT
+	Wed, 25 Apr 2007 20:30:51 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53613 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423011AbXDZAau (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 20:26:35 -0400
-Date: Wed, 25 Apr 2007 16:51:14 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Kenneth Crudup <kenny@panix.com>,
-       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-  hang in atomic copy)
-In-Reply-To: <20070426001414.GO17387@elf.ucw.cz>
-Message-ID: <Pine.LNX.4.63.0704251644170.8669@qynat.qvtvafvgr.pbz>
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> 
- <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> 
- <20070425202741.GC17387@elf.ucw.cz>  <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org>
-  <20070425214420.GG17387@elf.ucw.cz>  <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org>
-  <20070425235718.66b71f01@the-village.bc.nu> 
- <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> 
- <20070425235235.GN17387@elf.ucw.cz>  <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org>
- <20070426001414.GO17387@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 25 Apr 2007 20:30:50 -0400
+Date: Thu, 26 Apr 2007 09:31:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, y-goto@jp.fujitsu.com
+Subject: Re: [RFC][PATCH] syctl for selecting global zonelist[] order
+Message-Id: <20070426093112.ec2ecb00.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0704251211070.17886@schroedinger.engr.sgi.com>
+References: <20070425121946.9eb27a79.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0704251211070.17886@schroedinger.engr.sgi.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Pavel Machek wrote:
+On Wed, 25 Apr 2007 12:17:15 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
->>> Now, if the old kernel left DMAs running, it could be overwriting
->>> the data we are copying in.
->>
->> The *thaw* needs to happen with devices quiescent.
->>
->> But that sure doesn't have anythign to do with the "snapshot()" path. In
->> fact, you'll have rebooted the machine in between.
->
-> Only the fact that we are currently using same device call during
-> snapshot() and during restore(). We obviously could do _5_ device
-> calls
->
-> (suspend/resume/freeze/quiesce_disable_dma/thaw)
->
-> ...but that looks like too many calls to me.
->
->> So what does that have to do with "snapshotting"?
->
-> I'm not comfortable with memory I'm copying changing under my hands
-> because of some DMA. It just looks like asking for trouble. I _think_
-> we can get away with DMA running during snapshot, because driver may
-> not assume anything about the DMA result before it got completion
-> interrupt, but...
+> On Wed, 25 Apr 2007, KAMEZAWA Hiroyuki wrote:
+> 
+> > Make zonelist policy selectable from sysctl.
+> > 
+> > Assume 2 node NUMA, only node(0) has ZONE_DMA (ZONE_DMA32).
+> > 
+> > In this case, default (node0's) zonelist order is
+> > 
+> > Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
+> > 
+> > This means Node(0)'s DMA is used before Node(1)'s NORMAL.
+> 
+> So a IA64 platform with i386 sicknesses? And pretty bad case of it since I 
+> assume that the memory sizes per node are equal. Your solution of taking 
+> 4G off node 0 and then going to node 1 first must hurt some 
+> processes running on node 0. 
+I think so, too. It is because I made this as selectable option.
 
-the key is that with STR you don't need to copy the memory (it's staying where 
-it is)
+> Whatever you do the  memory balance between the two nodes is making
+> the system behave in an unsymmetric way.
 
-for STD you need to copy the memory, and there you halt DMA becouse you need to 
-make an atomic snapshot.
 
-David Lang
+> > In some server, some application uses large memory allcation.
+> > This exhaust memory in the above order.
+> 
+> Could we add a boot time option instead that changes the zonelist build 
+> behavior? Maybe an arch hook that can deal with it?
+> 
+Yes, it' in my plan. I'll add boot option support.
+
+Thanks,
+-Kame
+
