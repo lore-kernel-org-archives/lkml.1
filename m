@@ -1,150 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbXDZExG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbXDZFFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbXDZExG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 00:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbXDZExF
+	id S1754702AbXDZFFc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXDZFFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 00:53:05 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47676 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754420AbXDZEwq (ORCPT
+	Thu, 26 Apr 2007 01:05:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35951 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754702AbXDZFFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 00:52:46 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	Thu, 26 Apr 2007 01:05:14 -0400
+Date: Wed, 25 Apr 2007 22:05:12 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
        William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
        Jens Axboe <jens.axboe@oracle.com>,
        Badari Pulavarty <pbadari@gmail.com>,
        Maxim Levitsky <maximlevitsky@gmail.com>
 Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070424222105.883597089@sgi.com>
-Date: Wed, 25 Apr 2007 22:51:21 -0600
-In-Reply-To: <20070424222105.883597089@sgi.com> (clameter@sgi.com's message of
-	"Tue, 24 Apr 2007 15:21:05 -0700")
-Message-ID: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+In-Reply-To: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clameter@sgi.com writes:
+On Wed, 25 Apr 2007, Eric W. Biederman wrote:
 
-> V2->V3
-> - More restructuring
-> - It actually works!
-> - Add XFS support
-> - Fix up UP support
-> - Work out the direct I/O issues
-> - Add CONFIG_LARGE_BLOCKSIZE. Off by default which makes the inlines revert
->   back to constants. Disabled for 32bit and HIGHMEM configurations.
->   This also allows a gradual migration to the new page cache
->   inline functions. LARGE_BLOCKSIZE capabilities can be
->   added gradually and if there is a problem then we can disable
->   a subsystem.
->
-> V1->V2
-> - Some ext2 support
-> - Some block layer, fs layer support etc.
-> - Better page cache macros
-> - Use macros to clean up code.
->
-> This patchset modifies the Linux kernel so that larger block sizes than
-> page size can be supported. Larger block sizes are handled by using
-> compound pages of an arbitrary order for the page cache instead of
-> single pages with order 0.
+> The page cache has no problems supporting things with a block
+> size larger then page size.  Now the block device layer may not
+> have the code to do the scatter gather into small pages and it
+> may not handle buffer heads whose data is split between multiple
+> pages. 
 
-Huh?
+It does have that problem. If a system is in use then memory is fragmented
+and requests to the devices are in 4k sizes. The kernel has to manage the 
+4k size. The number of requests that the driver can take is limited. 
+Larger blocks allow shuffling more data to the device.
 
-You seem to be mixing two very different concepts.
+> And generally larger physical pages are a mistake to use.
+> Especially as it looks from some of the later comment you don't
+> date test on 32bit because the memory fragments faster.
 
-The page cache has no problems supporting things with a block
-size larger then page size.  Now the block device layer may not
-have the code to do the scatter gather into small pages and it
-may not handle buffer heads whose data is split between multiple
-pages. 
+Ummm.. Dont get me to comment on i386. I never said that memory fragments 
+faster on i386. i386 has multiple issues with memory management that 
+require a lot of work and that will cause difficulty. If you have these
+fun systems with 512k ZONE_NORMAL and 63GB HIGHMEM then good luck...
 
-But this is not a page cache issue.
+> Is it common for hardware that supports large block sizes to not
+> support splitting those blocks apart during DMA?  Unless it is common
+> the whole premise of this patchset seems broken.
 
-And generally larger physical pages are a mistake to use.
-Especially as it looks from some of the later comment you don't
-date test on 32bit because the memory fragments faster.
+Huh? Splitting the blocks requires hardware effort -> Reduction in 
+transfer rate.
+ 
+> I suspect what needs to be fixed is the page cache block device
+> interface so that we have helper functions that know how to stuff
+> a single block into several pages.
 
-Is it common for hardware that supports large block sizes to not
-support splitting those blocks apart during DMA?  Unless it is common
-the whole premise of this patchset seems broken.
+Oh we have scores of these hacks around. Look at the dvd/cd layer. The 
+point is to get rid of those.
 
-I suspect what needs to be fixed is the page cache block device
-interface so that we have helper functions that know how to stuff
-a single block into several pages.
+> Right now I don't even want to think about trying to use a swap device
+> with a large block size when we are low on memory.
 
-That would make the choice of using larger order pages (essentially
-increasing PAGE_SIZE) something that can be investigated in parallel.
+But that is due to the VM (at least Linus tree) having no defrag methods.
+mm has Mel's antifrag methods and can do it.
 
-Right now I don't even want to think about trying to use a swap device
-with a large block size when we are low on memory.
+> > 2. 32/64k blocksize is also used in flash devices. Same issues.
+> 
+> flash devices are not block devices so I strongly doubt it is
+> the same issue.
 
->
-> Rationales:
->
-> 1. We have problems supporting devices with a higher blocksize than
->    page size. This is for example important to support CD and DVDs that
->    can only read and write 32k or 64k blocks. We currently have a shim
->    layer in there to deal with this situation which limits the speed
->    of I/O. The developers are currently looking for ways to completely
->    bypass the page cache because of this deficiency.
+But they could be treated as such. Right now these poor guys have to 
+improvise around the page size limit.
 
-block device /page cache interface issue.
+> > 4. Reduce fsck times. Larger block sizes mean faster file system checking.
+> 
+> Fewer seeks and less meta-data means faster fsck times.  Larger block
+> sizes get us there only tangentially.  
 
-> 2. 32/64k blocksize is also used in flash devices. Same issues.
+Less meta data to manage does not reduce fsck times? Going from order 0 to 
+order 2 blocks cuts the metadata to a fourth.
 
-flash devices are not block devices so I strongly doubt it is
-the same issue.
+> > 5. Performance. If we look at IA64 vs. x86_64 then it seems that the
+> >    faster interrupt handling on x86_64 compensate for the speed loss due to
+> >    a smaller page size (4k vs 16k on IA64). Supporting larger block sizes
+> >    sizes on all allows a significant reduction in I/O overhead and increases
+> >    the size of I/O that can be performed by hardware in a single request
+> >    since the number of scatter gather entries are typically limited for
+> >    one request. This is going to become increasingly important to support
+> >    the ever growing memory sizes since we may have to handle excessively
+> >    large amounts of 4k requests for data sizes that may become common
+> >    soon. For example to write a 1 terabyte file the kernel would have to
+> >    handle 256 million 4k chunks.
+> 
+> This assumes you get the option of large files and batching things as
+> the systems scale.  At SGI maybe that is true.  However in general
+> you gets lots of small requests as systems scale up.
 
-> 3. Future harddisks will support bigger block sizes that Linux cannot
->    support since we are limited to PAGE_SIZE. Ok the on board cache
->    may buffer this for us but what is the point of handling smaller
->    page sizes than what the drive supports?
+Yes you get lots of small request *because* we do not support defrag and 
+cannot large contiguous allocations.
 
-No fragmenting memory and keeping the system running. 
+> > 6. Cross arch compatibility: It is currently not possible to mount
+> >    an 16k blocksize ext2 filesystem created on IA64 on an x86_64 system.
+> >    With this patch this becoems possible.
+> 
+> Again this is a problem with the page cache block device interface not
+> a page cache problem.
 
-> 4. Reduce fsck times. Larger block sizes mean faster file system checking.
+Ummm the other arches read 16k blocks of contigous memory. That is not 
+supported on 4k platforms right now. I guess you you move those to vmalloc 
+areas? Want to hack the filesystems for this?
+ 
+> I think supporting larger block sizes is a nice goal.  However unless
+> we are bumping up against hardware limitations let's see how far
+> we can go with batching and fixing the block layer/page cache interface
+> instead of assuming that larger page sizes are the answer.
 
-Fewer seeks and less meta-data means faster fsck times.  Larger block
-sizes get us there only tangentially.  
+There are multiple scaling issues in the kernel. What you propose is to 
+add hack over hack into the VM to avoid having to deal with 
+defragmentation. That in turn will cause churn with hardware etc etc.
 
-> 5. Performance. If we look at IA64 vs. x86_64 then it seems that the
->    faster interrupt handling on x86_64 compensate for the speed loss due to
->    a smaller page size (4k vs 16k on IA64). Supporting larger block sizes
->    sizes on all allows a significant reduction in I/O overhead and increases
->    the size of I/O that can be performed by hardware in a single request
->    since the number of scatter gather entries are typically limited for
->    one request. This is going to become increasingly important to support
->    the ever growing memory sizes since we may have to handle excessively
->    large amounts of 4k requests for data sizes that may become common
->    soon. For example to write a 1 terabyte file the kernel would have to
->    handle 256 million 4k chunks.
 
-This assumes you get the option of large files and batching things as
-the systems scale.  At SGI maybe that is true.  However in general
-you gets lots of small requests as systems scale up.
-
-For example I have gigabytes of kernel trees.  How are larger requests
-going to speed of my reading and writing of those?  And yes even with
-8G of ram I have enough kernel trees that they fall out of memory.
-So cache is not the only answer.
-
-> 6. Cross arch compatibility: It is currently not possible to mount
->    an 16k blocksize ext2 filesystem created on IA64 on an x86_64 system.
->    With this patch this becoems possible.
-
-Again this is a problem with the page cache block device interface not
-a page cache problem.
-
-I think supporting larger block sizes is a nice goal.  However unless
-we are bumping up against hardware limitations let's see how far
-we can go with batching and fixing the block layer/page cache interface
-instead of assuming that larger page sizes are the answer.
-
-Eric
