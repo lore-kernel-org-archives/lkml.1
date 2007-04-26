@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbXDZXZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXDZX1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbXDZXZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 19:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbXDZXZl
+	id S1755210AbXDZX1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 19:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXDZX1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 19:25:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60962 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755203AbXDZXZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 19:25:39 -0400
-Date: Thu, 26 Apr 2007 16:25:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-Message-Id: <20070426162530.bc30a1bb.akpm@linux-foundation.org>
-In-Reply-To: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 19:27:35 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50862 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755210AbXDZX1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 19:27:34 -0400
+Date: Fri, 27 Apr 2007 01:27:24 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+Message-ID: <20070426232724.GL21695@elf.ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <20070426224256.GB21926@elf.ucw.cz> <Pine.LNX.4.63.0704261520350.9674@qynat.qvtvafvgr.pbz> <20070426231228.GI21695@elf.ucw.cz> <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 18:49:05 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
+Hi!
 
+> >That's a feature. If you are booting from live CD, you _want_ to erase
+> >any hibernation image.
 > 
-> The next revision of POSIX will support fine-grained filesystem timestamps the way we already support.  struct stat will report nanosecond values.  So far so good.
+> why?
 > 
-> During the development one additional problem was found: there is no interface to set the file timestamp with that precision.  utimes only takes a timeval structure which allows only micro-second resolution.
+> it's been stated that doing a std and booting another OS (including 
+> windows) is a valid and common useage. saying that if you boot another OS 
+> you trash your suspended image doesn't sound reasonable.
 
-Does the spec say what the OS should do if (ts_nsec => 1e9)?
+If you hibernate your machine, boot from live cd, and change anything
+on any filesystem, you are pretty likely to loose that filesystem.
 
-> This is why the utimensat() interface was created.  It is basically the same as our futimesat() interface but it takes a timespec structure.
-> 
-> While adding this new interface two more features got added.  Programmers sometimes/often only want to set one value.  This currently requires reading the current value with stat() and then use this value in the futimesat() call.  This is slow and might create even wrong results (the file could have been updated in the meantime).  If the tv_nsec value of either of the elements of the utimes parameter to utimensat() is UTIME_OMIT no update of that respective value is performed.
-
-ITYM "If the value of either of the elements..."
-
-+#define UTIME_NOW	((1l << 30) - 1l)
-+#define UTIME_OMIT	((1l << 30) - 2l)
-
-OK, so there's no collision on ts_nsec if unnormalised timespecs are
-disallowed.
-
-But there's a potential collision on ts_sec?  Do we know what date that
-corresponds to?
-
-> The second extension allows to set one of the values to the correct current time.  Today it is only possible to set both values at the same time.  Once again this is slower and might to lead to incorrect results.  The use of UTIME_NOW for the respective tv_nsec value implements this functionality.
-> 
-> The resulting patch is attached.  It modifies the do_utimes function which is also used in the compat code.  The callers are adjusted.  Most of the added code are checks for invalid parameters.  In fact, I think one problem where the old code wouldn't recognize certain overflows (if tv_nsec * 1000 overflows).
-> 
-> I've tested the code on x86-64.
-
-Do you have a testcase app which can be used by arch maintainers?
-
+Doing that with Windows is okay as Windows do not usually write to
+ext3 partitions.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
