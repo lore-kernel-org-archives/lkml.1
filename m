@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751856AbXDZTQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031458AbXDZTTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751856AbXDZTQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 15:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbXDZTQh
+	id S1031458AbXDZTTB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 15:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031459AbXDZTTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 15:16:37 -0400
-Received: from lotis.site5.com ([70.47.36.45]:51479 "EHLO lotis.site5.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751856AbXDZTQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 15:16:36 -0400
-X-Greylist: delayed 3239 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Apr 2007 15:16:36 EDT
-Date: Thu, 26 Apr 2007 13:22:27 -0500 (CDT)
-From: Chase Venters <chase.venters@clientec.com>
-X-X-Sender: root@turbotaz.ourhouse
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704261321590.2588@turbotaz.ourhouse>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
- <1177573348.5025.224.camel@nigel.suspend2.net>
- <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+	Thu, 26 Apr 2007 15:19:01 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:35612 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031458AbXDZTTA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 15:19:00 -0400
+Date: Thu, 26 Apr 2007 21:19:10 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Francois Romieu <romieu@fr.zoreil.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070426191910.GX3468@stusta.de>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <20070426183602.GT3468@stusta.de> <20070426185851.GA7352@electric-eye.fr.zoreil.com> <4630F9CB.10600@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-Antivirus-Scanner: This message has been scanned by ClamAV.
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - lotis.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - clientec.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4630F9CB.10600@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Linus Torvalds wrote:
-
+On Thu, Apr 26, 2007 at 03:13:15PM -0400, Jeff Garzik wrote:
+> Francois Romieu wrote:
+>> Pointer for the rtl8139 regression please ?
 >
-> Once you have that snapshot image in user space you can do anything you
-> want. And again: you'd hav a fully working system: not any degradation
-> *at*all*. If you're in X, then X will continue running etc even after the
-> snapshotting, although obviously the snapshotting will have tried to page
-> a lot of stuff out in order to make the snapshot smaller, so you'll likely
-> be crawling.
+> I'm guessing it's this one:
 >
+>> 	Subject    : boot failure: rtl8139: exception in interrupt routine
+>> 	References : http://lkml.org/lkml/2007/3/31/160
+>> 	Submitter  : Stephen Clark <Stephen.Clark@seclark.us>
+>> 	Status     : unknown
+>
+>
+> The poster says rtl8139, but doesn't provide more info.  His lspci says 
+> "RTL8169SC", which sounds more like r8169 to me.
 
-In fact... If you're just paging out to make a smaller snapshot (ie, not
-to free up memory), couldn't you just swap it out (if it's not backed by a
-file) then mark it as "half-released"... ie, the snapshot writing code
-ignores it knowing that it will be available on disk at resume, but then
-when the snapshot is complete it's still available in physical RAM,
-preventing user-space from crawling due to the necessity of paging it all
-back in?
+Interesting.
 
-Thanks,
-Chase
+I didn't notice it, Andrew didn't notice it, and it seems that although 
+it was in three posted versions of my regression lists, noone looked at 
+this bug (or it would have been noticed earlier).
 
+> 	Jeff
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
