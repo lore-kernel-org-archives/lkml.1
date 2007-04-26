@@ -1,126 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031375AbXDZSK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031406AbXDZSLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031375AbXDZSK7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 14:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031406AbXDZSK7
+	id S1031406AbXDZSLd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 14:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031408AbXDZSLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 14:10:59 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:38426 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031375AbXDZSK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 14:10:56 -0400
-Date: Thu, 26 Apr 2007 23:41:01 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 3/5] ext4: Extent overlap bugfix
-Message-ID: <20070426181101.GC7209@amitarora.in.ibm.com>
-References: <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426175056.GA25321@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 26 Apr 2007 14:11:33 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:41906 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031407AbXDZSLc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 14:11:32 -0400
+Message-ID: <4630EB27.60602@s5r6.in-berlin.de>
+Date: Thu, 26 Apr 2007 20:10:47 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Found this in my logs
+References: <462F7637.3080506@xs4all.nl> <462F8DCA.2070404@xs4all.nl>
+In-Reply-To: <462F8DCA.2070404@xs4all.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a fix for an extent-overlap bug. The fallocate() implementation
-on ext4 depends on this bugfix. Though this fix had been posted earlier,
-but because it is still not part of mainline code, I have attached it
-here too.
+Udo van den Heuvel wrote:
+> Udo van den Heuvel wrote:
+>> Apr 25 17:28:18 epia kernel: [ INFO: possible circular locking
+>> dependency detected ]
+>> Apr 25 17:28:18 epia kernel: 2.6.20.1 #8
+> [cut]
+> 
+> I think I was copying a not so large file to my windoze box. The cp took
+> relatively long and afterwards I noticed the logged things.
+> Do I need to post this in bugzilla?
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
----
- fs/ext4/extents.c               |   50 ++++++++++++++++++++++++++++++++++++++--
- include/linux/ext4_fs_extents.h |    1 
- 2 files changed, 49 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21/fs/ext4/extents.c
-===================================================================
---- linux-2.6.21.orig/fs/ext4/extents.c
-+++ linux-2.6.21/fs/ext4/extents.c
-@@ -1129,6 +1129,45 @@ ext4_can_extents_be_merged(struct inode 
- }
- 
- /*
-+ * ext4_ext_check_overlap:
-+ * check if a portion of the "newext" extent overlaps with an
-+ * existing extent.
-+ *
-+ * If there is an overlap discovered, it updates the length of the newext
-+ * such that there will be no overlap, and then returns 1.
-+ * If there is no overlap found, it returns 0.
-+ */
-+unsigned int ext4_ext_check_overlap(struct inode *inode,
-+					struct ext4_extent *newext,
-+					struct ext4_ext_path *path)
-+{
-+	unsigned long b1, b2;
-+	unsigned int depth, len1;
-+
-+	b1 = le32_to_cpu(newext->ee_block);
-+	len1 = le16_to_cpu(newext->ee_len);
-+	depth = ext_depth(inode);
-+	if (!path[depth].p_ext)
-+		goto out;
-+	b2 = le32_to_cpu(path[depth].p_ext->ee_block);
-+
-+	/* get the next allocated block if the extent in the path
-+	 * is before the requested block(s) */
-+	if (b2 < b1) {
-+		b2 = ext4_ext_next_allocated_block(path);
-+		if (b2 == EXT_MAX_BLOCK)
-+			goto out;
-+	}
-+
-+	if (b1 + len1 > b2) {
-+		newext->ee_len = cpu_to_le16(b2 - b1);
-+		return 1;
-+	}
-+out:
-+	return 0;
-+}
-+
-+/*
-  * ext4_ext_insert_extent:
-  * tries to merge requsted extent into the existing extent or
-  * inserts requested extent as new one into the tree,
-@@ -2032,7 +2071,15 @@ int ext4_ext_get_blocks(handle_t *handle
- 
- 	/* allocate new block */
- 	goal = ext4_ext_find_goal(inode, path, iblock);
--	allocated = max_blocks;
-+
-+	/* Check if we can really insert (iblock)::(iblock+max_blocks) extent */
-+	newex.ee_block = cpu_to_le32(iblock);
-+	newex.ee_len = cpu_to_le16(max_blocks);
-+	err = ext4_ext_check_overlap(inode, &newex, path);
-+	if (err)
-+		allocated = le16_to_cpu(newex.ee_len);
-+	else
-+		allocated = max_blocks;
- 	newblock = ext4_new_blocks(handle, inode, goal, &allocated, &err);
- 	if (!newblock)
- 		goto out2;
-@@ -2040,7 +2087,6 @@ int ext4_ext_get_blocks(handle_t *handle
- 			goal, newblock, allocated);
- 
- 	/* try to insert new extent into found leaf and return */
--	newex.ee_block = cpu_to_le32(iblock);
- 	ext4_ext_store_pblock(&newex, newblock);
- 	newex.ee_len = cpu_to_le16(allocated);
- 	err = ext4_ext_insert_extent(handle, inode, path, &newex);
-Index: linux-2.6.21/include/linux/ext4_fs_extents.h
-===================================================================
---- linux-2.6.21.orig/include/linux/ext4_fs_extents.h
-+++ linux-2.6.21/include/linux/ext4_fs_extents.h
-@@ -190,6 +190,7 @@ ext4_ext_invalidate_cache(struct inode *
- 
- extern int ext4_extent_tree_init(handle_t *, struct inode *);
- extern int ext4_ext_calc_credits_for_insert(struct inode *, struct ext4_ext_path *);
-+extern unsigned int ext4_ext_check_overlap(struct inode *, struct ext4_extent *, struct ext4_ext_path *);
- extern int ext4_ext_insert_extent(handle_t *, struct inode *, struct ext4_ext_path *, struct ext4_extent *);
- extern int ext4_ext_walk_space(struct inode *, unsigned long, unsigned long, ext_prepare_callback, void *);
- extern struct ext4_ext_path * ext4_ext_find_extent(struct inode *, int, struct ext4_ext_path *);
+You could do so, but most importantly you should try to be more specific
+in the message subject and in the selection of addressees. :-)
+-- 
+Stefan Richter
+-=====-=-=== -=-- ==-=-
+http://arcgraph.de/sr/
