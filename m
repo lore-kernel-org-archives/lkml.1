@@ -1,81 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXDZKG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030401AbXDZKHT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbXDZKG4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbXDZKG4
+	id S1030401AbXDZKHT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:07:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030367AbXDZKHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:06:56 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:33022 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbXDZKGz (ORCPT
+	Thu, 26 Apr 2007 06:07:19 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:40841
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1030459AbXDZKHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:06:55 -0400
-Date: Thu, 26 Apr 2007 11:06:52 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426100652.GB27620@skynet.ie>
-References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Thu, 26 Apr 2007 06:07:14 -0400
+Date: Thu, 26 Apr 2007 12:10:08 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in virtual console driver
+Message-ID: <20070426101008.GC6468@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (25/04/07 23:46), Christoph Lameter didst pronounce:
-> On Thu, 26 Apr 2007, Nick Piggin wrote:
-> 
-> > Yeah. IMO anti-fragmentation and defragmentation is the hack, and we
-> > should stay away from higher order allocations whenever possible.
-> 
-> Right and we need to create series of other approaches that we then label 
-> "non-hack" to replace it. 
-> 
+the virtual console driver uses a semaphore as mutex. use the mutex
+API instead of the (binary) semaphore
 
-To date, there hasn't been a credible alternative to dealing with
-fragmentation. Breaking the 1:1 virtual:physical mapping and defragmenting
-would incur a serious performance hit.
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-> > Hardware is built to handle many small pages efficintly, and I don't
-> > understand how it could be an SGI-only issue. Sure, you may have an
-> > order of magnitude or more memory than anyone else, but even my lowly
-> > desktop _already_ has orders of magnitude more pages than it has TLB
-> > entries or cache -- if a workload is cache-nice for me, it probably
-> > will be on a 1TB machine as well, and if it is bad for the 1TB machine,
-> > it is also bad on mine.
-> 
-> There have been numbers of people that have argued the same point. Just 
-> because we have developed a way of thinking to defend our traditional 4k 
-> values does not make them right.
-> 
-> > If this is instead an issue of io path or reclaim efficiency, then it
-> > would be really nice to see numbers... but I don't think making these
-> > fundamental paths more complex and slower is a nice way to fix it
-> > (larger PAGE_SIZE would be, though).
-> 
-> The code paths can stay the same. You can switch CONFIG_LARGE pages off
-> if you do not want it and it is as it was.
-> 
-
-It may not even need that that much effort. The most stressful use of the
-high order allocation paths here require the creation of a filesystem and
-is a deliberate action by the user.
-
-> If you would have a look the patches: The code is significantly cleanup 
-> and easier to read.
-
-It is easier to read all right and may be worth doing anyway.
+--
+diff --git a/drivers/char/vc_screen.c b/drivers/char/vc_screen.c
+index 7919303..032d4f1 100644
+--- a/drivers/char/vc_screen.c
++++ b/drivers/char/vc_screen.c
+@@ -70,11 +70,11 @@ static loff_t vcs_lseek(struct file *file, loff_t offset, int orig)
+ {
+ 	int size;
+ 
+-	down(&con_buf_sem);
++	mutex_lock(&con_buf_mtx);
+ 	size = vcs_size(file->f_path.dentry->d_inode);
+ 	switch (orig) {
+ 		default:
+-			up(&con_buf_sem);
++			mutex_unlock(&con_buf_mtx);
+ 			return -EINVAL;
+ 		case 2:
+ 			offset += size;
+@@ -85,11 +85,11 @@ static loff_t vcs_lseek(struct file *file, loff_t offset, int orig)
+ 			break;
+ 	}
+ 	if (offset < 0 || offset > size) {
+-		up(&con_buf_sem);
++		mutex_unlock(&con_buf_mtx);
+ 		return -EINVAL;
+ 	}
+ 	file->f_pos = offset;
+-	up(&con_buf_sem);
++	mutex_unlock(&con_buf_mtx);
+ 	return file->f_pos;
+ }
+ 
+@@ -106,7 +106,7 @@ vcs_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 	unsigned short *org = NULL;
+ 	ssize_t ret;
+ 
+-	down(&con_buf_sem);
++	mutex_lock(&con_buf_mtx);
+ 
+ 	pos = *ppos;
+ 
+@@ -263,7 +263,7 @@ vcs_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+ 		ret = read;
+ unlock_out:
+ 	release_console_sem();
+-	up(&con_buf_sem);
++	mutex_unlock(&con_buf_mtx);
+ 	return ret;
+ }
+ 
+@@ -280,7 +280,7 @@ vcs_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ 	u16 *org0 = NULL, *org = NULL;
+ 	size_t ret;
+ 
+-	down(&con_buf_sem);
++	mutex_lock(&con_buf_mtx);
+ 
+ 	pos = *ppos;
+ 
+@@ -450,7 +450,7 @@ vcs_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
+ unlock_out:
+ 	release_console_sem();
+ 
+-	up(&con_buf_sem);
++	mutex_unlock(&con_buf_mtx);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 1bbb45b..497d24c 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -1930,7 +1930,7 @@ static void do_con_trol(struct tty_struct *tty, struct vc_data *vc, int c)
+  * kernel memory allocation is available.
+  */
+ char con_buf[CON_BUF_SIZE];
+-DECLARE_MUTEX(con_buf_sem);
++DEFINE_MUTEX(con_buf_mtx);
+ 
+ /* acquires console_sem */
+ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int count)
+@@ -1983,7 +1983,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
+ 
+ 	/* At this point 'buf' is guaranteed to be a kernel buffer
+ 	 * and therefore no access to userspace (and therefore sleeping)
+-	 * will be needed.  The con_buf_sem serializes all tty based
++	 * will be needed.  The con_buf_mtx serializes all tty based
+ 	 * console rendering and vcs write/read operations.  We hold
+ 	 * the console spinlock during the entire write.
+ 	 */
+diff --git a/include/linux/vt_kern.h b/include/linux/vt_kern.h
+index e0db669..146dbca 100644
+--- a/include/linux/vt_kern.h
++++ b/include/linux/vt_kern.h
+@@ -82,7 +82,7 @@ void reset_vc(struct vc_data *vc);
+ 
+ #define CON_BUF_SIZE (CONFIG_BASE_SMALL ? 256 : PAGE_SIZE)
+ extern char con_buf[CON_BUF_SIZE];
+-extern struct semaphore con_buf_sem;
++extern struct mutex con_buf_mtx;
+ extern char vt_dont_switch;
+ 
+ struct vt_spawn_console {
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+    Ma patrie est où je suis, où personne ne me dérange, où personne
+    ne me demande que je suis, d'où je viens et ce que je fais
+                              (B. Traven)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
