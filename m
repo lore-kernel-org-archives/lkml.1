@@ -1,33 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbXDZRCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031325AbXDZRCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754897AbXDZRCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754890AbXDZRBv
+	id S1031325AbXDZRCy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbXDZRBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:01:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39729 "EHLO
+	Thu, 26 Apr 2007 13:01:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39737 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754859AbXDZRBQ (ORCPT
+	with ESMTP id S1754890AbXDZRBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:01:16 -0400
-Date: Thu, 26 Apr 2007 09:57:04 -0700
+	Thu, 26 Apr 2007 13:01:21 -0400
+Date: Thu, 26 Apr 2007 09:57:08 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, a.righi@cineca.it,
-       vs@namesys.com, jeffm@suse.com, zam@namesys.com, edward@namesys.com
-Subject: [patch 28/33] reiserfs: fix xattr root locking/refcount bug
-Message-ID: <20070426165704.GC1898@kroah.com>
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 29/33] hwmon/w83627ehf: Fix the fan5 clock divider write
+Message-ID: <20070426165708.GD1898@kroah.com>
 References: <20070426165111.393445007@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="reiserfs-fix-xattr-root-locking-refcount-bug.patch"
+Content-Disposition: inline; filename="hwmon-w83627ehf-fix-the-fan5-clock-divider-write.patch"
 In-Reply-To: <20070426165445.GA1898@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -37,170 +36,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Jean Delvare <khali@linux-fr.org>
 
-From: Jeff Mahoney <jeffm@suse.com>
+Users have been complaining about the w83627ehf driver flooding their
+logs with debug messages like:
 
-The listxattr() and getxattr() operations are only protected by a read
-lock.  As a result, if either of these operations run in parallel, a race
-condition exists where the xattr_root will end up being cached twice, which
-results in the leaking of a reference and a BUG() on umount.
+w83627ehf 9191-0a10: Increasing fan 4 clock divider from 64 to 128
 
-This patch refactors get_xa_root(), __get_xa_root(), and create_xa_root(),
-into one get_xa_root() function that takes the appropriate locking around
-the entire critical section.
+or:
 
-Reported, diagnosed and tested by Andrea Righi <a.righi@cineca.it>
+w83627ehf 9191-0290: Increasing fan 4 clock divider from 4 to 8
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-Cc: Andrea Righi <a.righi@cineca.it>
-Cc: "Vladimir V. Saveliev" <vs@namesys.com>
-Cc: Edward Shishkin <edward@namesys.com>
-Cc: Alex Zarochentsev <zam@namesys.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+The reason is that we failed to actually write the LSB of the encoded
+clock divider value for that fan, causing the next read to report the
+same old value again and again.
+
+Additionally, the fan number was improperly reported, making the bug
+harder to find.
+
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/reiserfs/xattr.c |   92 +++++++++++++---------------------------------------
- 1 file changed, 24 insertions(+), 68 deletions(-)
+ drivers/hwmon/w83627ehf.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -54,82 +54,48 @@
- static struct reiserfs_xattr_handler *find_xattr_handler_prefix(const char
- 								*prefix);
- 
--static struct dentry *create_xa_root(struct super_block *sb)
-+/* Returns the dentry referring to the root of the extended attribute
-+ * directory tree. If it has already been retrieved, it is used. If it
-+ * hasn't been created and the flags indicate creation is allowed, we
-+ * attempt to create it. On error, we return a pointer-encoded error.
-+ */
-+static struct dentry *get_xa_root(struct super_block *sb, int flags)
- {
- 	struct dentry *privroot = dget(REISERFS_SB(sb)->priv_root);
- 	struct dentry *xaroot;
- 
- 	/* This needs to be created at mount-time */
- 	if (!privroot)
--		return ERR_PTR(-EOPNOTSUPP);
-+		return ERR_PTR(-ENODATA);
- 
--	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
--	if (IS_ERR(xaroot)) {
-+	mutex_lock(&privroot->d_inode->i_mutex);
-+	if (REISERFS_SB(sb)->xattr_root) {
-+		xaroot = dget(REISERFS_SB(sb)->xattr_root);
- 		goto out;
--	} else if (!xaroot->d_inode) {
--		int err;
--		mutex_lock(&privroot->d_inode->i_mutex);
--		err =
--		    privroot->d_inode->i_op->mkdir(privroot->d_inode, xaroot,
--						   0700);
--		mutex_unlock(&privroot->d_inode->i_mutex);
--
--		if (err) {
--			dput(xaroot);
--			dput(privroot);
--			return ERR_PTR(err);
--		}
--		REISERFS_SB(sb)->xattr_root = dget(xaroot);
- 	}
- 
--      out:
--	dput(privroot);
--	return xaroot;
--}
--
--/* This will return a dentry, or error, refering to the xa root directory.
-- * If the xa root doesn't exist yet, the dentry will be returned without
-- * an associated inode. This dentry can be used with ->mkdir to create
-- * the xa directory. */
--static struct dentry *__get_xa_root(struct super_block *s)
--{
--	struct dentry *privroot = dget(REISERFS_SB(s)->priv_root);
--	struct dentry *xaroot = NULL;
--
--	if (IS_ERR(privroot) || !privroot)
--		return privroot;
--
- 	xaroot = lookup_one_len(XAROOT_NAME, privroot, strlen(XAROOT_NAME));
- 	if (IS_ERR(xaroot)) {
- 		goto out;
- 	} else if (!xaroot->d_inode) {
--		dput(xaroot);
--		xaroot = NULL;
--		goto out;
-+		int err = -ENODATA;
-+		if (flags == 0 || flags & XATTR_CREATE)
-+			err = privroot->d_inode->i_op->mkdir(privroot->d_inode,
-+			                                     xaroot, 0700);
-+		if (err) {
-+			dput(xaroot);
-+			xaroot = ERR_PTR(err);
-+			goto out;
-+		}
- 	}
--
--	REISERFS_SB(s)->xattr_root = dget(xaroot);
-+	REISERFS_SB(sb)->xattr_root = dget(xaroot);
- 
-       out:
-+	mutex_unlock(&privroot->d_inode->i_mutex);
- 	dput(privroot);
- 	return xaroot;
- }
- 
--/* Returns the dentry (or NULL) referring to the root of the extended
-- * attribute directory tree. If it has already been retrieved, it is used.
-- * Otherwise, we attempt to retrieve it from disk. It may also return
-- * a pointer-encoded error.
-- */
--static inline struct dentry *get_xa_root(struct super_block *s)
--{
--	struct dentry *dentry = dget(REISERFS_SB(s)->xattr_root);
--
--	if (!dentry)
--		dentry = __get_xa_root(s);
--
--	return dentry;
--}
--
- /* Opens the directory corresponding to the inode's extended attribute store.
-  * If flags allow, the tree to the directory may be created. If creation is
-  * prohibited, -ENODATA is returned. */
-@@ -138,21 +104,11 @@ static struct dentry *open_xa_dir(const 
- 	struct dentry *xaroot, *xadir;
- 	char namebuf[17];
- 
--	xaroot = get_xa_root(inode->i_sb);
--	if (IS_ERR(xaroot)) {
-+	xaroot = get_xa_root(inode->i_sb, flags);
-+	if (IS_ERR(xaroot))
- 		return xaroot;
--	} else if (!xaroot) {
--		if (flags == 0 || flags & XATTR_CREATE) {
--			xaroot = create_xa_root(inode->i_sb);
--			if (IS_ERR(xaroot))
--				return xaroot;
--		}
--		if (!xaroot)
--			return ERR_PTR(-ENODATA);
--	}
- 
- 	/* ok, we have xaroot open */
--
- 	snprintf(namebuf, sizeof(namebuf), "%X.%X",
- 		 le32_to_cpu(INODE_PKEY(inode)->k_objectid),
- 		 inode->i_generation);
-@@ -821,7 +777,7 @@ int reiserfs_delete_xattrs(struct inode 
- 
- 	/* Leftovers besides . and .. -- that's not good. */
- 	if (dir->d_inode->i_nlink <= 2) {
--		root = get_xa_root(inode->i_sb);
-+		root = get_xa_root(inode->i_sb, XATTR_REPLACE);
- 		reiserfs_write_lock_xattrs(inode->i_sb);
- 		err = vfs_rmdir(root->d_inode, dir);
- 		reiserfs_write_unlock_xattrs(inode->i_sb);
+--- a/drivers/hwmon/w83627ehf.c
++++ b/drivers/hwmon/w83627ehf.c
+@@ -389,7 +389,7 @@ static void w83627ehf_write_fan_div(stru
+ 		break;
+ 	case 4:
+ 		reg = (w83627ehf_read_value(client, W83627EHF_REG_DIODE) & 0x73)
+-		    | ((data->fan_div[4] & 0x03) << 3)
++		    | ((data->fan_div[4] & 0x03) << 2)
+ 		    | ((data->fan_div[4] & 0x04) << 5);
+ 		w83627ehf_write_value(client, W83627EHF_REG_DIODE, reg);
+ 		break;
+@@ -453,9 +453,9 @@ static struct w83627ehf_data *w83627ehf_
+ 			   time */
+ 			if (data->fan[i] == 0xff
+ 			 && data->fan_div[i] < 0x07) {
+-			 	dev_dbg(&client->dev, "Increasing fan %d "
++			 	dev_dbg(&client->dev, "Increasing fan%d "
+ 					"clock divider from %u to %u\n",
+-					i, div_from_reg(data->fan_div[i]),
++					i + 1, div_from_reg(data->fan_div[i]),
+ 					div_from_reg(data->fan_div[i] + 1));
+ 				data->fan_div[i]++;
+ 				w83627ehf_write_fan_div(client, i);
 
 -- 
