@@ -1,169 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031169AbXDZKxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031174AbXDZKyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031169AbXDZKxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 06:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031161AbXDZKxs
+	id S1031174AbXDZKyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 06:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031170AbXDZKyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 06:53:48 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44504 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031169AbXDZKxr (ORCPT
+	Thu, 26 Apr 2007 06:54:21 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:59617
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1031177AbXDZKyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 06:53:47 -0400
-Date: Thu, 26 Apr 2007 19:53:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: ak@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, clameter@sgi.com
-Subject: [PATCH] change global zonelist order on NUMA v3
-Message-Id: <20070426195348.6a4e5652.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
-	<200704261147.44413.ak@suse.de>
-	<20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 06:54:12 -0400
+Date: Thu, 26 Apr 2007 12:57:05 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: kkeil@suse.de, kai.germaschewski@gmx.de
+Cc: isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: [PATCH] use mutex instead of semaphore in CAPI 2.0 interface
+Message-ID: <20070426105705.GD6468@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	kkeil@suse.de, kai.germaschewski@gmx.de,
+	isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog V2 -> V3
+the CAPI 2.0 interface uses a semaphore as mutex. use the mutex
+API instead of the (binary) semaphore
 
-- removed zone ordering selection knobs...
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-much simpler one. just changing zonelist ordering.
-tested on ia64 NUMA works well as expected.
-
--Kame
-
-
-change zonelist order on NUMA v3.
-
-[Description]
-Assume 2 node NUMA, only node(0) has ZONE_DMA.
-(ia64's ZONE_DMA is below 4GB...x86_64's ZONE_DMA32)
-
-In this case, current default (node0's) zonelist order is
-
-Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
-
-This means Node(0)'s DMA will be used before Node(1)'s NORMAL.
-This will cause OOM on ZONE_DMA easily.
-
-This patch changes *default* zone order to
-
-Node(0)'s NORMAL -> Node(1)'s NORMAL -> Node(0)'s DMA.
-
-tested ia64 2-Node NUMA. works well.
-
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Index: linux-2.6.21-rc7-mm2/mm/page_alloc.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/mm/page_alloc.c
-+++ linux-2.6.21-rc7-mm2/mm/page_alloc.c
-@@ -2023,6 +2023,7 @@ void show_free_areas(void)
-  *
-  * Add all populated zones of a node to the zonelist.
-  */
-+#ifndef CONFIG_NUMA
- static int __meminit build_zonelists_node(pg_data_t *pgdat,
- 			struct zonelist *zonelist, int nr_zones, enum zone_type zone_type)
- {
-@@ -2042,6 +2043,7 @@ static int __meminit build_zonelists_nod
- 	} while (zone_type);
- 	return nr_zones;
- }
-+#endif
+--
+diff --git a/drivers/isdn/capi/capi.c b/drivers/isdn/capi/capi.c
+index db1260f..b260bdc 100644
+--- a/drivers/isdn/capi/capi.c
++++ b/drivers/isdn/capi/capi.c
+@@ -147,7 +147,7 @@ struct capidev {
  
- #ifdef CONFIG_NUMA
- #define MAX_NODE_LOAD (num_online_nodes())
-@@ -2106,52 +2108,51 @@ static int __meminit find_next_best_node
- 	return best_node;
- }
+ 	struct capincci *nccis;
  
-+/*
-+ * Build zonelist based on zone priority.
-+ */
-+static int __meminitdata node_order[MAX_NUMNODES];
- static void __meminit build_zonelists(pg_data_t *pgdat)
- {
--	int j, node, local_node;
--	enum zone_type i;
--	int prev_node, load;
--	struct zonelist *zonelist;
-+	int i, j, pos, zone_type, node, load;
- 	nodemask_t used_mask;
-+	int local_node, prev_node;
-+	struct zone *z;
-+	struct zonelist *zonelist;
+-	struct semaphore ncci_list_sem;
++	struct mutex ncci_list_mtx;
+ };
  
--	/* initialize zonelists */
- 	for (i = 0; i < MAX_NR_ZONES; i++) {
- 		zonelist = pgdat->node_zonelists + i;
- 		zonelist->zones[0] = NULL;
+ /* -------- global variables ---------------------------------------- */
+@@ -395,7 +395,7 @@ static struct capidev *capidev_alloc(void)
+ 	if (!cdev)
+ 		return NULL;
+ 
+-	init_MUTEX(&cdev->ncci_list_sem);
++	mutex_init(&cdev->ncci_list_mtx);
+ 	skb_queue_head_init(&cdev->recvqueue);
+ 	init_waitqueue_head(&cdev->recvwait);
+ 	write_lock_irqsave(&capidev_list_lock, flags);
+@@ -414,9 +414,9 @@ static void capidev_free(struct capidev *cdev)
  	}
--
--	/* NUMA-aware ordering of nodes */
-+	memset(node_order, 0, sizeof(node_order));
- 	local_node = pgdat->node_id;
- 	load = num_online_nodes();
- 	prev_node = local_node;
- 	nodes_clear(used_mask);
-+	j = 0;
- 	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
- 		int distance = node_distance(local_node, node);
--
--		/*
--		 * If another node is sufficiently far away then it is better
--		 * to reclaim pages in a zone before going off node.
--		 */
- 		if (distance > RECLAIM_DISTANCE)
- 			zone_reclaim_mode = 1;
--
--		/*
--		 * We don't want to pressure a particular node.
--		 * So adding penalty to the first node in same
--		 * distance group to make it round-robin.
--		 */
--
- 		if (distance != node_distance(local_node, prev_node))
--			node_load[node] += load;
-+			node_load[node] = load;
-+		node_order[j++] = node;
- 		prev_node = node;
- 		load--;
--		for (i = 0; i < MAX_NR_ZONES; i++) {
--			zonelist = pgdat->node_zonelists + i;
--			for (j = 0; zonelist->zones[j] != NULL; j++);
--
--	 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, i);
--			zonelist->zones[j] = NULL;
-+	}
-+	/* calculate node order */
-+	for (i = 0; i < MAX_NR_ZONES; i++) {
-+		zonelist = pgdat->node_zonelists + i;
-+		pos = 0;
-+		for (zone_type = i; zone_type >= 0; zone_type--) {
-+			for (j = 0; j < num_online_nodes(); j++) {
-+				node = node_order[j];
-+				z = &NODE_DATA(node)->node_zones[zone_type];
-+				if (populated_zone(z))
-+					zonelist->zones[pos++] = z;
-+			}
+ 	skb_queue_purge(&cdev->recvqueue);
+ 
+-	down(&cdev->ncci_list_sem);
++	mutex_lock(&cdev->ncci_list_mtx);
+ 	capincci_free(cdev, 0xffffffff);
+-	up(&cdev->ncci_list_sem);
++	mutex_unlock(&cdev->ncci_list_mtx);
+ 
+ 	write_lock_irqsave(&capidev_list_lock, flags);
+ 	list_del(&cdev->list);
+@@ -603,15 +603,15 @@ static void capi_recv_message(struct capi20_appl *ap, struct sk_buff *skb)
+ 	if (CAPIMSG_CMD(skb->data) == CAPI_CONNECT_B3_CONF) {
+ 		u16 info = CAPIMSG_U16(skb->data, 12); // Info field
+ 		if (info == 0) {
+-			down(&cdev->ncci_list_sem);
++			mutex_lock(&cdev->ncci_list_mtx);
+ 			capincci_alloc(cdev, CAPIMSG_NCCI(skb->data));
+-			up(&cdev->ncci_list_sem);
++			mutex_unlock(&cdev->ncci_list_mtx);
  		}
-+		zonelist->zones[pos] = NULL;
  	}
- }
+ 	if (CAPIMSG_CMD(skb->data) == CAPI_CONNECT_B3_IND) {
+-		down(&cdev->ncci_list_sem);
++		mutex_lock(&cdev->ncci_list_mtx);
+ 		capincci_alloc(cdev, CAPIMSG_NCCI(skb->data));
+-		up(&cdev->ncci_list_sem);
++		mutex_unlock(&cdev->ncci_list_mtx);
+ 	}
+ 	spin_lock_irqsave(&workaround_lock, flags);
+ 	if (CAPIMSG_COMMAND(skb->data) != CAPI_DATA_B3) {
+@@ -752,9 +752,9 @@ capi_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos
+ 	CAPIMSG_SETAPPID(skb->data, cdev->ap.applid);
  
-@@ -2239,6 +2240,7 @@ void __meminit build_all_zonelists(void)
- 		__build_all_zonelists(NULL);
- 		cpuset_init_current_mems_allowed();
- 	} else {
-+		memset(node_load, 0, sizeof(node_load));
- 		/* we have to stop all cpus to guaranntee there is no user
- 		   of zonelist */
- 		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
+ 	if (CAPIMSG_CMD(skb->data) == CAPI_DISCONNECT_B3_RESP) {
+-		down(&cdev->ncci_list_sem);
++		mutex_lock(&cdev->ncci_list_mtx);
+ 		capincci_free(cdev, CAPIMSG_NCCI(skb->data));
+-		up(&cdev->ncci_list_sem);
++		mutex_unlock(&cdev->ncci_list_mtx);
+ 	}
+ 
+ 	cdev->errcode = capi20_put_message(&cdev->ap, skb);
+@@ -939,9 +939,9 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 			if (copy_from_user(&ncci, argp, sizeof(ncci)))
+ 				return -EFAULT;
+ 
+-			down(&cdev->ncci_list_sem);
++			mutex_lock(&cdev->ncci_list_mtx);
+ 			if ((nccip = capincci_find(cdev, (u32) ncci)) == 0) {
+-				up(&cdev->ncci_list_sem);
++				mutex_unlock(&cdev->ncci_list_mtx);
+ 				return 0;
+ 			}
+ #ifdef CONFIG_ISDN_CAPI_MIDDLEWARE
+@@ -949,7 +949,7 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 				count += atomic_read(&mp->ttyopencount);
+ 			}
+ #endif /* CONFIG_ISDN_CAPI_MIDDLEWARE */
+-			up(&cdev->ncci_list_sem);
++			mutex_unlock(&cdev->ncci_list_mtx);
+ 			return count;
+ 		}
+ 		return 0;
+@@ -964,14 +964,14 @@ capi_ioctl(struct inode *inode, struct file *file,
+ 			if (copy_from_user(&ncci, argp,
+ 					   sizeof(ncci)))
+ 				return -EFAULT;
+-			down(&cdev->ncci_list_sem);
++			mutex_lock(&cdev->ncci_list_mtx);
+ 			nccip = capincci_find(cdev, (u32) ncci);
+ 			if (!nccip || (mp = nccip->minorp) == 0) {
+-				up(&cdev->ncci_list_sem);
++				mutex_unlock(&cdev->ncci_list_mtx);
+ 				return -ESRCH;
+ 			}
+ 			unit = mp->minor;
+-			up(&cdev->ncci_list_sem);
++			mutex_unlock(&cdev->ncci_list_mtx);
+ 			return unit;
+ 		}
+ 		return 0;
 
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+
+   Usually when people are sad, they don't do anything. They just cry over
+     their condition. But when they get angry, they bring about a change
+                              (Malcolm X)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
