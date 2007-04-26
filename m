@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031350AbXDZRIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbXDZRIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031350AbXDZRIo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031345AbXDZRIA
+	id S1754906AbXDZRIr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031358AbXDZRIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:08:00 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36265 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754859AbXDZRHc (ORCPT
+	Thu, 26 Apr 2007 13:08:46 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35071 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031344AbXDZRI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:07:32 -0400
-Date: Thu, 26 Apr 2007 10:07:24 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.98.0704261000480.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
- <1177573348.5025.224.camel@nigel.suspend2.net>
- <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 26 Apr 2007 13:08:28 -0400
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+	hang in atomic copy)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <20070426104052.GA19072@elf.ucw.cz>
+References: <20070418211632.GA7610@elte.hu>
+	 <200704182357.28107.mail@earthworm.de> <20070418220228.GA14536@elte.hu>
+	 <1176947576.5906.21.camel@nigel.suspend2.net>
+	 <20070419070437.GA25211@elte.hu> <20070424202336.GC16503@elf.ucw.cz>
+	 <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	 <20070424212408.GD16457@elf.ucw.cz>
+	 <1177582633.6814.29.camel@johannes.berg>
+	 <20070426103051.GP17387@elf.ucw.cz>  <20070426104052.GA19072@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Cq4kHQcX8Z5UWySbuMjC"
+Date: Thu, 26 Apr 2007 15:45:24 +0200
+Message-Id: <1177595124.6814.77.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--=-Cq4kHQcX8Z5UWySbuMjC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 26 Apr 2007, Linus Torvalds wrote:
-> 
-> Once you have that snapshot image in user space you can do anything you 
-> want.
+By the way.
 
-Side note: the exception, of course, is page out more. The swap device has 
-to be read-only.
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index eb461b8..dc13af5 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+        ^^^^^^^^^^^^^^^^^^^^
 
-We actually have support for that mode (it's how "swapoff" works: it marks 
-swap devices as not accepting _new_ entries, even though old entries are 
-still valid). So you can have a fully running system, with 99% of memory 
-swapped out, and still guarantee that you won't swap out anything *more* 
-(which would destroy the swap image, which you don't want, since it's 
-where a lot of the memory may end up being, in order to make the snapshot 
-itself as small as possible)!
+Don't these definitions need to be exported to userspace? That
+definitely is not a header file for userspace.
 
-Anybody who cares can look at the code that messes with the the 
-SWP_WRITEOK flag. You'd basically swap out enough to make the snapshot 
-image fit comfortably in memory, and then you'd clear SWP_WRITEOK on all 
-swap devices and return to user space. Or something very close to that.
+johannes
 
-But the point here is that we should actually really be able to have a 
-fully working system, even _after_ we created the snapshot. I don't even 
-think you should need any "initrd only" kind of situation.
+--=-Cq4kHQcX8Z5UWySbuMjC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-If somebody can do that, with just those two system calls, I'll remove 
-every other suspend-to-disk wannabe from the kernel in a heartbeat. I may 
-have missed something subtle, of course, but I really *think* it should be 
-doable.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-			Linus
+iD8DBQBGMKzz/ETPhpq3jKURAhceAJ9SBVuwgyYBWC+M4CjGS4VEXIrMvACgkLNQ
+UrcPPbm320NvW3l+mgnltiU=
+=dIOl
+-----END PGP SIGNATURE-----
+
+--=-Cq4kHQcX8Z5UWySbuMjC--
+
