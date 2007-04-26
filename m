@@ -1,43 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031497AbXDZUOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbXDZUQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031497AbXDZUOO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 16:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXDZUOO
+	id S1752055AbXDZUQG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 16:16:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXDZUQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 16:14:14 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:60318 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbXDZUON (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 16:14:13 -0400
-Message-ID: <4631077A.4050000@gmail.com>
-Date: Thu, 26 Apr 2007 22:11:38 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Thu, 26 Apr 2007 16:16:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51533 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbXDZUQF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 16:16:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-rc7-mm1: BUG_ON in kthread_bind during _cpu_down
+Date: Thu, 26 Apr 2007 22:20:23 +0200
+User-Agent: KMail/1.9.5
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+References: <200704260110.22224.rjw@sisk.pl> <20070425165410.b73443b4.akpm@linux-foundation.org>
+In-Reply-To: <20070425165410.b73443b4.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_MAINTAINER
-References: <462C7D74.60003@gmail.com> <1177327476.17026.75.camel@localhost.localdomain> <Pine.LNX.4.64.0704230748270.25463@localhost.localdomain> <462CA764.5080401@gmail.com> <20070425181856.42fcfeb4.akpm@linux-foundation.org> <463081E5.5010306@gmail.com> <20070426135426.GM3468@stusta.de> <20070426084143.1d973c71.randy.dunlap@oracle.com> <20070426155205.GN3468@stusta.de> <m38xcfhqp4.fsf@maximus.localdomain> <20070426194316.GY3468@stusta.de>
-In-Reply-To: <20070426194316.GY3468@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200704262220.24286.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/26/2007 09:43 PM, Adrian Bunk wrote:
+On Thursday, 26 April 2007 01:54, Andrew Morton wrote:
+> On Thu, 26 Apr 2007 01:10:21 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > Hi,
+> > 
+> > The BUG_ON in khthread_bind (line 165 in kthread.c) triggers for me during
+> > attempted suspend to disk, when disable_nonboot_cpus() calls _cpu_down()
+> > (on x86_64).
+> 
+> I guess the backtrace would be pretty important here.
 
-> What exactly is missing that the kernel Bugzilla doesn't already offer?
-
-Users?
-
-Rene.
+Yes, I didn't have the time to collect one yestarday.
