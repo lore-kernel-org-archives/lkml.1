@@ -1,74 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031383AbXDZRu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031386AbXDZRwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031383AbXDZRu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031385AbXDZRu5
+	id S1031386AbXDZRwT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031388AbXDZRwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:50:57 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33370 "EHLO e1.ny.us.ibm.com"
+	Thu, 26 Apr 2007 13:52:19 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:44244 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031381AbXDZRuz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:50:55 -0400
-Date: Thu, 26 Apr 2007 23:20:56 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 0/5] fallocate system call
-Message-ID: <20070426175056.GA25321@amitarora.in.ibm.com>
-References: <20070317111036.GC29931@parisc-linux.org> <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070424121632.GA10136@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	id S1031386AbXDZRwR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:52:17 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] scsi: megaraid_sas - intercepts cmd timeout andthrottle io
+Date: Thu, 26 Apr 2007 11:52:04 -0600
+Message-ID: <0631C836DBF79F42B5A60C8C8D4E8229A5922C@NAMAIL2.ad.lsil.com>
+In-Reply-To: <1177609150.6284.133.camel@mulgrave.il.steeleye.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] scsi: megaraid_sas - intercepts cmd timeout andthrottle io
+Thread-Index: AceIKdK6VscEwejrQAGqrwb5KAQ1ngAAIRHA
+From: "Patro, Sumant" <Sumant.Patro@lsi.com>
+To: "James Bottomley" <James.Bottomley@SteelEye.com>
+Cc: <akpm@osdl.org>, <linux-scsi@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, "Kolli, Neela" <Neela.Kolli@lsi.com>,
+       "Yang, Bo" <Bo.Yang@lsi.com>
+X-OriginalArrivalTime: 26 Apr 2007 17:52:05.0974 (UTC) FILETIME=[9A75EF60:01C7882B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Based on the discussion, this new patchset uses following as the
-interface for fallocate() system call:
 
- asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+Hello James,
 
-It seems that only s390 architecture has a problem with such a layout of
-arguments in fallocate(). Thus for s390, we plan to have a wrapper
-(say, sys_s390_fallocate()) for the sys_fallocate(), which will get
-called by glibc when an application issues a fallocate() system call
-on s390. The s390 arch specific changes will be part of a separate
-patch (PATCH 2/5). It will be great if some s390 expert can verify the
-patch, since I have not been able to test it on s390 so far.
+	The rsvd[3] is reserved for future use. If you have objection to
+the definition I will take it out in a future patch submission.
 
-It was also noted that minor changes might be required to strace code
-to take care of "different arguments on s390" issue.
-
-Currently we have two modes FA_ALLOCATE and FA_DEALLOCATE, for
-preallocation and deallocation of preallocated blocks respectively. More
-modes can be added, when required.
-
-ToDos:
-=====
-1>   Implementation on other architectures (other than i386, x86_64, 
-ppc64 and s390(x)) 
-2>   A generic file system operation to handle fallocate
-(generic_fallocate), for filesystems that do _not_ have the fallocate
-inode operation implemented.
-3>   Changes to glibc,
-	a) to support fallocate() system call
-	b) so that posix_fallocate() and posix_fallocate64() call
-	   fallocate() system call
-4>   Changes to XFS to implement the fallocate inode operation
-
-
-Following patches follow:
-
-Patch 1/5 : fallocate() implementation in i86, x86_64 and powerpc
-Patch 2/5 : fallocate() on s390
-Patch 3/5 : ext4: Extent overlap bugfix
-Patch 4/5 : ext4: fallocate support in ext4
-Patch 5/5 : ext4: write support for preallocated blocks
-
---
 Regards,
-Amit Arora
+
+Sumant
+
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@SteelEye.com] 
+Sent: Thursday, April 26, 2007 10:39 AM
+To: Patro, Sumant
+Cc: akpm@osdl.org; linux-scsi@vger.kernel.org;
+linux-kernel@vger.kernel.org; Kolli, Neela; Yang, Bo
+Subject: Re: [PATCH] scsi: megaraid_sas - intercepts cmd timeout
+andthrottle io
+
+On Wed, 2007-03-28 at 10:43 -0700, Sumant Patro wrote:
+> eh_timed_out call back (megasas_reset_timer) is used to throttle io to
+
+> the adapter when it is called the first time for a scmd.
+> The MEGASAS_FW_BUSY flag is set and can_queue reduced to 16. The 
+> can_queue is restored from completion routine in following two 
+> conditions : 5 seconds has elapsed and the # of outstanding cmds in FW
+is < 17.
+> 
+> Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
+> ---
+>  drivers/scsi/megaraid/megaraid_sas.c |   65 +++++++++++++++++++++++--
+>  drivers/scsi/megaraid/megaraid_sas.h |   13 +++--
+>  2 files changed, 70 insertions(+), 8 deletions(-)
+> 
+> This patch requires the patch submitted by James with subject line : 
+> 
+> [PATCH] expose eh_timed_out to the host template
+> 
+> diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c
+linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c
+> --- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.c
+2007-03-28 08:41:49.000000000 -0700
+> +++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.c
+2007-03-28 08:36:38.000000000 -0700
+> @@ -10,7 +10,7 @@
+>   *	   2 of the License, or (at your option) any later version.
+>   *
+>   * FILE		: megaraid_sas.c
+> - * Version	: v00.00.03.10-rc1
+> + * Version	: v00.00.03.10-rc3
+>   *
+>   * Authors:
+>   *	(email-id : megaraidlinux@lsi.com)
+> @@ -886,6 +886,7 @@ megasas_queue_command(struct scsi_cmnd *
+>  		goto out_return_cmd;
+>  
+>  	cmd->scmd = scmd;
+> +	scmd->SCp.ptr = (char *)cmd;
+>  
+>  	/*
+>  	 * Issue the command to the FW
+> @@ -981,8 +982,8 @@ static int megasas_generic_reset(struct
+>  
+>  	instance = (struct megasas_instance
+*)scmd->device->host->hostdata;
+>  
+> -	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x\n",
+> -	       scmd->serial_number, scmd->cmnd[0]);
+> +	scmd_printk(KERN_NOTICE, scmd, "megasas: RESET -%ld cmd=%x
+retries=%x\n",
+> +		 scmd->serial_number, scmd->cmnd[0], scmd->retries);
+>  
+>  	if (instance->hw_crit_error) {
+>  		printk(KERN_ERR "megasas: cannot recover from previous
+reset "
+> @@ -1000,6 +1001,40 @@ static int megasas_generic_reset(struct  }
+>  
+>  /**
+> + * megasas_reset_timer - quiesce the adapter if required
+> + * @scmd:		scsi cmnd
+> + *
+> + * Sets the FW busy flag and reduces the host->can_queue if the
+> + * cmd has not been completed within the timeout period.
+> + */
+> +static enum
+> +scsi_eh_timer_return megasas_reset_timer(struct scsi_cmnd *scmd) {
+> +	struct megasas_cmd *cmd = (struct megasas_cmd *)scmd->SCp.ptr;
+> +	struct megasas_instance *instance;
+> +	unsigned long flags;
+> +
+> +	if (cmd) {
+
+I don't believe we can ever get a command timeout with no command, can
+we?
+
+> +		if (time_after(jiffies, scmd->jiffies_at_alloc + 170 *
+HZ))
+> +			return EH_NOT_HANDLED;
+
+This 170s is a bit arbitrary ... surely you want it to be related to a
+multiple of scmd->timeout_per_command?
+
+> +		instance = cmd->instance;
+> +		if (!(instance->flag & MEGASAS_FW_BUSY)) {
+> +			/* FW is busy, throttle IO */
+> +			spin_lock_irqsave(&instance->throttle_io_lock,
+flags);
+> +
+> +			instance->host->can_queue = 16;
+
+can_queue is protected by the host lock ... I think you need to dump the
+throttle_io_lock and simply use the host lock for all of this.
+
+> +			instance->last_time = jiffies;
+> +			instance->flag |= MEGASAS_FW_BUSY;
+> +
+> +
+spin_unlock_irqrestore(&instance->throttle_io_lock, flags);
+> +		}
+> +		return EH_RESET_TIMER;
+> +	}
+> +	return EH_HANDLED;
+> +}
+> +
+> +/**
+>   * megasas_reset_device -	Device reset handler entry point
+>   */
+>  static int megasas_reset_device(struct scsi_cmnd *scmd) @@ -1112,6 
+> +1147,7 @@ static struct scsi_host_template megasas
+>  	.eh_device_reset_handler = megasas_reset_device,
+>  	.eh_bus_reset_handler = megasas_reset_bus_host,
+>  	.eh_host_reset_handler = megasas_reset_bus_host,
+> +	.eh_timed_out = megasas_reset_timer,
+>  	.bios_param = megasas_bios_param,
+>  	.use_clustering = ENABLE_CLUSTERING,  }; @@ -1215,9 +1251,8 @@ 
+> megasas_complete_cmd(struct megasas_inst
+>  	int exception = 0;
+>  	struct megasas_header *hdr = &cmd->frame->hdr;
+>  
+> -	if (cmd->scmd) {
+> +	if (cmd->scmd)
+>  		cmd->scmd->SCp.ptr = (char *)0;
+
+That's NULL, ordinarily ...
+
+> -	}
+>  
+>  	switch (hdr->cmd) {
+>  
+> @@ -1806,6 +1841,7 @@ static void megasas_complete_cmd_dpc(uns
+>  	u32 context;
+>  	struct megasas_cmd *cmd;
+>  	struct megasas_instance *instance = (struct megasas_instance 
+> *)instance_addr;
+> +	unsigned long flags;
+>  
+>  	/* If we have already declared adapter dead, donot complete cmds
+*/
+>  	if (instance->hw_crit_error)
+> @@ -1828,6 +1864,22 @@ static void megasas_complete_cmd_dpc(uns
+>  	}
+>  
+>  	*instance->consumer = producer;
+> +
+> +	/*
+> +	 * Check if we can restore can_queue
+> +	 */
+> +	if (instance->flag & MEGASAS_FW_BUSY
+> +		&& time_after(jiffies, instance->last_time + 5 * HZ)
+> +		&& atomic_read(&instance->fw_outstanding) < 17) {
+> +
+> +		spin_lock_irqsave(&instance->throttle_io_lock, flags);
+> +
+> +		instance->flag &= ~MEGASAS_FW_BUSY;
+> +		instance->host->can_queue =
+> +				instance->max_fw_cmds -
+MEGASAS_INT_CMDS;
+> +
+> +		spin_unlock_irqrestore(&instance->throttle_io_lock,
+flags);
+> +	}
+>  }
+>  
+>  /**
+> @@ -2384,6 +2436,7 @@ megasas_probe_one(struct pci_dev *pdev, 
+>  	init_waitqueue_head(&instance->int_cmd_wait_q);
+>  	init_waitqueue_head(&instance->abort_cmd_wait_q);
+>  
+> +	spin_lock_init(&instance->throttle_io_lock);
+>  	spin_lock_init(&instance->cmd_pool_lock);
+>  
+>  	sema_init(&instance->aen_mutex, 1);
+> @@ -2398,6 +2451,8 @@ megasas_probe_one(struct pci_dev *pdev, 
+>  	instance->init_id = MEGASAS_DEFAULT_INIT_ID;
+>  
+>  	megasas_dbg_lvl = 0;
+> +	instance->flag = 0;
+> +	instance->last_time = 0;
+>  
+>  	/*
+>  	 * Initialize MFI Firmware
+> diff -uprN linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h
+linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h
+> --- linux-2.6.orig/drivers/scsi/megaraid/megaraid_sas.h
+2007-03-28 08:41:49.000000000 -0700
+> +++ linux-2.6.new/drivers/scsi/megaraid/megaraid_sas.h
+2007-03-28 08:36:39.000000000 -0700
+> @@ -18,9 +18,9 @@
+>  /*
+>   * MegaRAID SAS Driver meta data
+>   */
+> -#define MEGASAS_VERSION
+"00.00.03.10-rc1"
+> -#define MEGASAS_RELDATE				"Feb 14, 2007"
+> -#define MEGASAS_EXT_VERSION			"Wed Feb 14 10:14:25 PST
+2007"
+> +#define MEGASAS_VERSION
+"00.00.03.10-rc3"
+> +#define MEGASAS_RELDATE				"Mar 28, 2007"
+> +#define MEGASAS_EXT_VERSION			"Wed Mar 28 10:25:52 PST
+2007"
+>  
+>  /*
+>   * Device IDs
+> @@ -539,6 +539,8 @@ struct megasas_ctrl_info {
+>  
+>  #define MEGASAS_DBG_LVL				1
+>  
+> +#define MEGASAS_FW_BUSY				1
+> +
+>  /*
+>   * When SCSI mid-layer calls driver's reset routine, driver waits for
+>   * MEGASAS_RESET_WAIT_TIME seconds for all outstanding IO to 
+> complete. Note @@ -1104,6 +1106,11 @@ struct megasas_instance {
+>  
+>  	struct megasas_instance_template *instancet;
+>  	struct tasklet_struct isr_tasklet;
+> +
+> +	u8 flag;
+> +	u8 rsvd[3];
+
+What's this rsvd?  I don't see it used anywhere in the code ...
+
+> +	unsigned long last_time;
+> +	spinlock_t throttle_io_lock;
+>  };
+>  
+>  #define MEGASAS_IS_LOGICAL(scp)
+\
+
+James
+
 
