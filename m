@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbXDZCJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754636AbXDZCOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754041AbXDZCJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Apr 2007 22:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbXDZCJi
+	id S1754636AbXDZCOq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Apr 2007 22:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXDZCOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Apr 2007 22:09:38 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:34631 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754343AbXDZCJh (ORCPT
+	Wed, 25 Apr 2007 22:14:45 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:35825 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754636AbXDZCOp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Apr 2007 22:09:37 -0400
-Message-ID: <463008A2.9020301@zytor.com>
-Date: Wed, 25 Apr 2007 19:04:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Pavel Machek <pavel@ucw.cz>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Kenneth Crudup <kenny@panix.com>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       suspend2-devel@lists.suspend2.net, Ingo Molnar <mingo@elte.hu>,
+	Wed, 25 Apr 2007 22:14:45 -0400
+Date: Wed, 25 Apr 2007 22:14:29 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+In-reply-to: <20070425214704.GA32572@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
- hang in atomic copy)
-References: <Pine.LNX.4.64.0704251239110.8406@vaio.localdomain> <alpine.LFD.0.98.0704251252070.9964@woody.linux-foundation.org> <20070425202741.GC17387@elf.ucw.cz> <alpine.LFD.0.98.0704251332090.9964@woody.linux-foundation.org> <20070425214420.GG17387@elf.ucw.cz> <alpine.LFD.0.98.0704251515140.9964@woody.linux-foundation.org> <20070425235718.66b71f01@the-village.bc.nu> <alpine.LFD.0.98.0704251610310.9964@woody.linux-foundation.org> <20070425235235.GN17387@elf.ucw.cz> <alpine.LFD.0.98.0704251702290.9964@woody.linux-foundation.org> <20070426001414.GO17387@elf.ucw.cz> <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704251734320.9964@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
+Message-id: <200704252214.29918.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070425214704.GA32572@elte.hu>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Thu, 26 Apr 2007, Pavel Machek wrote:
->> Ok, I guess I'll have nightmares of DMA controllers doing DMAs from
->> chips that are no longer there tonight.
-> 
-> Umm. Welcome to the 21st century: we don't do that "separate DMA 
-> controller" thing any more. All devices do their own DMA.
-> 
+On Wednesday 25 April 2007, Ingo Molnar wrote:
+>i'm pleased to announce release -v6 of the CFS scheduler patchset. The
+>main goal of CFS is to implement "high quality desktop scheduling" as
+>well as technically possible.
+>
+>The CFS patch against v2.6.21-rc7 or against v2.6.20.7 can be downloaded
+>from the usual place:
+>
+>    http://redhat.com/~mingo/cfs-scheduler/
+>
+It hasn't made it to this server yet, and its 22:14 EDT here.
 
-That was the 1990s.  On a brand new server system:
-
-00:08.0 System peripheral: Intel Corporation 5000 Series Chipset DMA
-Engine (rev b1)
-
-For better or worse, slave DMA seems to be making a comeback of sorts.
-Not to mention all kinds of embedded crap^Whardware with optimized DMA
-engines which look nothing like PCI at all.
-
-	-hpa
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Doing gets it done.
