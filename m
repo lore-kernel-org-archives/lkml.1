@@ -1,44 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbXDZRFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbXDZRGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754884AbXDZRFf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 13:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbXDZREG
+	id S1754881AbXDZRGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 13:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbXDZRBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 13:04:06 -0400
-Received: from smtp23.orange.fr ([193.252.22.30]:11205 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754882AbXDZRD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 13:03:56 -0400
-X-ME-UUID: 20070426170354411.6482B1C0008F@mwinf2337.orange.fr
-Subject: Re: Back to the future.
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-	 <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
-	 <1177573348.5025.224.camel@nigel.suspend2.net>
-	 <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 26 Apr 2007 19:03:46 +0200
-Message-Id: <1177607026.30284.197.camel@frg-rhel40-em64t-04>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-27) 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 13:01:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39592 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754882AbXDZRAQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 13:00:16 -0400
+Date: Thu, 26 Apr 2007 09:56:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 19/33] NFS: Fix an Oops in nfs_setattr()
+Message-ID: <20070426165627.GT1898@kroah.com>
+References: <20070426165111.393445007@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="nfs-fix-an-oops-in-nfs_setattr.patch"
+In-Reply-To: <20070426165445.GA1898@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 09:56 -0700, Linus Torvalds wrote:
-> Once you have that snapshot image in user space you can do anything you 
-> want. And again: you'd hav a fully working system: not any degradation 
-> *at*all*. If you're in X, then X will continue running etc even after the 
-> snapshotting
+-stable review patch.  If anyone has any objections, please let us know.
 
-Won't there be problems if e.g. X tries to write something to its
-logfile after snapshot ?
+------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-	Xav
+NFS: Fix an Oops in nfs_setattr()
 
+It looks like nfs_setattr() and nfs_rename() also need to test whether the
+target is a regular file before calling nfs_wb_all()...
 
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/nfs/dir.c   |    3 ++-
+ fs/nfs/inode.c |    6 ++++--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
+
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1659,7 +1659,8 @@ go_ahead:
+ 	 * ... prune child dentries and writebacks if needed.
+ 	 */
+ 	if (atomic_read(&old_dentry->d_count) > 1) {
+-		nfs_wb_all(old_inode);
++		if (S_ISREG(old_inode->i_mode))
++			nfs_wb_all(old_inode);
+ 		shrink_dcache_parent(old_dentry);
+ 	}
+ 	nfs_inode_return_delegation(old_inode);
+--- a/fs/nfs/inode.c
++++ b/fs/nfs/inode.c
+@@ -334,8 +334,10 @@ nfs_setattr(struct dentry *dentry, struc
+ 	lock_kernel();
+ 	nfs_begin_data_update(inode);
+ 	/* Write all dirty data */
+-	filemap_write_and_wait(inode->i_mapping);
+-	nfs_wb_all(inode);
++	if (S_ISREG(inode->i_mode)) {
++		filemap_write_and_wait(inode->i_mapping);
++		nfs_wb_all(inode);
++	}
+ 	/*
+ 	 * Return any delegations if we're going to change ACLs
+ 	 */
+
+-- 
