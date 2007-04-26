@@ -1,157 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbXDZFKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbXDZFLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754728AbXDZFKB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 01:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbXDZFJk
+	id S1754719AbXDZFLE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 01:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932953AbXDZFJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 01:09:40 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36152 "EHLO
+	Thu, 26 Apr 2007 01:09:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59443 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754724AbXDZFJf (ORCPT
+	with ESMTP id S1754720AbXDZFJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 01:09:35 -0400
-Message-Id: <20070426050934.483389047@sgi.com>
+	Thu, 26 Apr 2007 01:09:34 -0400
+Message-Id: <20070426050934.017224058@sgi.com>
 References: <20070426050743.867613938@sgi.com>
 User-Agent: quilt/0.45-1
-Date: Wed, 25 Apr 2007 22:07:48 -0700
+Date: Wed, 25 Apr 2007 22:07:46 -0700
 From: clameter@sgi.com
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 5/7] SLUB: Add MIN_PARTIAL
-Content-Disposition: inline; filename=slab_partial
+Subject: [patch 3/7] SLUB: debug printk cleanup
+Content-Disposition: inline; filename=slub_at_cleanup
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We leave a mininum of partial slabs on nodes when we search for
-partial slabs on other node. Define a constant for that value.
+Set up a new function slab_err in order to report errors consistently.
 
-Then modify slub to keep MIN_PARTIAL slabs around.
-
-This avoids bad situations where a function frees the last object
-in a slab (which results in the page being returned to the page
-allocator) only to then allocate one again (which requires getting
-a page back from the page allocator if the partial list was empty).
-Keeping a couple of slabs on the partial list reduces overhead.
-
-Empty slabs are added to the end of the partial list to ensure that
-partially allocated slabs are consumed first (defragmentation).
+Consistently report corrective actions taken by SLUB by a printk starting
+with @@@.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
 Index: linux-2.6.21-rc7-mm1/mm/slub.c
 ===================================================================
---- linux-2.6.21-rc7-mm1.orig/mm/slub.c	2007-04-25 21:23:59.000000000 -0700
-+++ linux-2.6.21-rc7-mm1/mm/slub.c	2007-04-25 21:25:48.000000000 -0700
-@@ -109,6 +109,9 @@
- /* Enable to test recovery from slab corruption on boot */
- #undef SLUB_RESILIENCY_TEST
- 
-+/* Mininum number of partial slabs */
-+#define MIN_PARTIAL 2
-+
- #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
- 				SLAB_POISON | SLAB_STORE_USER)
- /*
-@@ -635,16 +638,8 @@ static int on_freelist(struct kmem_cache
- /*
-  * Tracking of fully allocated slabs for debugging
-  */
--static void add_full(struct kmem_cache *s, struct page *page)
-+static void add_full(struct kmem_cache_node *n, struct page *page)
+--- linux-2.6.21-rc7-mm1.orig/mm/slub.c	2007-04-25 21:20:36.000000000 -0700
++++ linux-2.6.21-rc7-mm1/mm/slub.c	2007-04-25 21:22:50.000000000 -0700
+@@ -324,8 +324,8 @@ static void object_err(struct kmem_cache
  {
--	struct kmem_cache_node *n;
--
--	VM_BUG_ON(!irqs_disabled());
--
--	if (!(s->flags & SLAB_STORE_USER))
--		return;
--
--	n = get_node(s, page_to_nid(page));
- 	spin_lock(&n->list_lock);
- 	list_add(&page->lru, &n->full);
- 	spin_unlock(&n->list_lock);
-@@ -923,10 +918,16 @@ static __always_inline int slab_trylock(
- /*
-  * Management of partially allocated slabs
-  */
--static void add_partial(struct kmem_cache *s, struct page *page)
-+static void add_partial_tail(struct kmem_cache_node *n, struct page *page)
- {
--	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
-+	spin_lock(&n->list_lock);
-+	n->nr_partial++;
-+	list_add_tail(&page->lru, &n->partial);
-+	spin_unlock(&n->list_lock);
-+}
+ 	u8 *addr = page_address(page);
  
-+static void add_partial(struct kmem_cache_node *n, struct page *page)
+-	printk(KERN_ERR "*** SLUB: %s in %s@0x%p slab 0x%p\n",
+-			reason, s->name, object, page);
++	printk(KERN_ERR "*** SLUB %s: %s@0x%p slab 0x%p\n",
++			s->name, reason, object, page);
+ 	printk(KERN_ERR "    offset=%tu flags=0x%04lx inuse=%u freelist=0x%p\n",
+ 		object - addr, page->flags, page->inuse, page->freelist);
+ 	if (object > addr + 16)
+@@ -335,6 +335,19 @@ static void object_err(struct kmem_cache
+ 	dump_stack();
+ }
+ 
++static void slab_err(struct kmem_cache *s, struct page *page, char *reason, ...)
 +{
- 	spin_lock(&n->list_lock);
- 	n->nr_partial++;
- 	list_add(&page->lru, &n->partial);
-@@ -1026,7 +1027,7 @@ static struct page *get_any_partial(stru
- 		n = get_node(s, zone_to_nid(*z));
- 
- 		if (n && cpuset_zone_allowed_hardwall(*z, flags) &&
--				n->nr_partial > 2) {
-+				n->nr_partial > MIN_PARTIAL) {
- 			page = get_partial_node(n);
- 			if (page)
- 				return page;
-@@ -1060,15 +1061,31 @@ static struct page *get_partial(struct k
-  */
- static void putback_slab(struct kmem_cache *s, struct page *page)
++	va_list args;
++	char buf[100];
++
++	va_start(args, reason);
++	vsnprintf(buf, sizeof(buf), reason, args);
++	va_end(args);
++	printk(KERN_ERR "*** SLUB %s: %s in slab @0x%p\n", s->name, buf,
++		page);
++	dump_stack();
++}
++
+ static void init_object(struct kmem_cache *s, void *object, int active)
  {
-+	struct kmem_cache_node *n = get_node(s, page_to_nid(page));
-+
- 	if (page->inuse) {
-+
- 		if (page->freelist)
--			add_partial(s, page);
--		else if (PageError(page))
--			add_full(s, page);
-+			add_partial(n, page);
-+		else if (PageError(page) && (s->flags & SLAB_STORE_USER))
-+			add_full(n, page);
- 		slab_unlock(page);
-+
- 	} else {
--		slab_unlock(page);
--		discard_slab(s, page);
-+		if (n->nr_partial < MIN_PARTIAL) {
-+			/*
-+			 * Adding an empty page to the partial slabs in order
-+			 * to avoid page allocator overhead. This page needs to
-+			 * come after all the others that are not fully empty
-+			 * in order to make sure that we do maximum
-+			 * defragmentation.
-+			 */
-+			add_partial_tail(n, page);
-+			slab_unlock(page);
-+		} else {
-+			slab_unlock(page);
-+			discard_slab(s, page);
+ 	u8 *p = object;
+@@ -412,7 +425,7 @@ static int check_valid_pointer(struct km
+ static void restore_bytes(struct kmem_cache *s, char *message, u8 data,
+ 						void *from, void *to)
+ {
+-	printk(KERN_ERR "@@@ SLUB: %s Restoring %s (0x%x) from 0x%p-0x%p\n",
++	printk(KERN_ERR "@@@ SLUB %s: Restoring %s (0x%x) from 0x%p-0x%p\n",
+ 		s->name, message, data, from, to - 1);
+ 	memset(from, data, to - from);
+ }
+@@ -459,9 +472,7 @@ static int slab_pad_check(struct kmem_ca
+ 		return 1;
+ 
+ 	if (!check_bytes(p + length, POISON_INUSE, remainder)) {
+-		printk(KERN_ERR "SLUB: %s slab 0x%p: Padding fails check\n",
+-			s->name, p);
+-		dump_stack();
++		slab_err(s, page, "Padding check failed");
+ 		restore_bytes(s, "slab padding", POISON_INUSE, p + length,
+ 			p + length + remainder);
+ 		return 0;
+@@ -547,30 +558,25 @@ static int check_slab(struct kmem_cache 
+ 	VM_BUG_ON(!irqs_disabled());
+ 
+ 	if (!PageSlab(page)) {
+-		printk(KERN_ERR "SLUB: %s Not a valid slab page @0x%p "
+-			"flags=%lx mapping=0x%p count=%d \n",
+-			s->name, page, page->flags, page->mapping,
++		slab_err(s, page, "Not a valid slab page flags=%lx "
++			"mapping=0x%p count=%d", page->flags, page->mapping,
+ 			page_count(page));
+ 		return 0;
+ 	}
+ 	if (page->offset * sizeof(void *) != s->offset) {
+-		printk(KERN_ERR "SLUB: %s Corrupted offset %lu in slab @0x%p"
+-			" flags=0x%lx mapping=0x%p count=%d\n",
+-			s->name,
++		slab_err(s, page, "Corrupted offset %lu flags=0x%lx "
++			"mapping=0x%p count=%d",
+ 			(unsigned long)(page->offset * sizeof(void *)),
+-			page,
+ 			page->flags,
+ 			page->mapping,
+ 			page_count(page));
+-		dump_stack();
+ 		return 0;
+ 	}
+ 	if (page->inuse > s->objects) {
+-		printk(KERN_ERR "SLUB: %s inuse %u > max %u in slab "
+-			"page @0x%p flags=%lx mapping=0x%p count=%d\n",
+-			s->name, page->inuse, s->objects, page, page->flags,
++		slab_err(s, page, "inuse %u > max %u @0x%p flags=%lx "
++			"mapping=0x%p count=%d",
++			s->name, page->inuse, s->objects, page->flags,
+ 			page->mapping, page_count(page));
+-		dump_stack();
+ 		return 0;
+ 	}
+ 	/* Slab_pad_check fixes things up after itself */
+@@ -599,12 +605,13 @@ static int on_freelist(struct kmem_cache
+ 				set_freepointer(s, object, NULL);
+ 				break;
+ 			} else {
+-				printk(KERN_ERR "SLUB: %s slab 0x%p "
+-					"freepointer 0x%p corrupted.\n",
+-					s->name, page, fp);
+-				dump_stack();
++				slab_err(s, page, "Freepointer 0x%p corrupt",
++									fp);
+ 				page->freelist = NULL;
+ 				page->inuse = s->objects;
++				printk(KERN_ERR "@@@ SLUB %s: Freelist "
++					"cleared. Slab 0x%p\n",
++					s->name, page);
+ 				return 0;
+ 			}
+ 			break;
+@@ -615,11 +622,12 @@ static int on_freelist(struct kmem_cache
+ 	}
+ 
+ 	if (page->inuse != s->objects - nr) {
+-		printk(KERN_ERR "slab %s: page 0x%p wrong object count."
+-			" counter is %d but counted were %d\n",
+-			s->name, page, page->inuse,
+-			s->objects - nr);
++		slab_err(s, page, "Wrong object count. Counter is %d but "
++			"counted were %d", s, page, page->inuse,
++							s->objects - nr);
+ 		page->inuse = s->objects - nr;
++		printk(KERN_ERR "@@@ SLUB %s: Object count adjusted. "
++			"Slab @0x%p\n", s->name, page);
+ 	}
+ 	return search == NULL;
+ }
+@@ -663,10 +671,7 @@ static int alloc_object_checks(struct km
+ 		goto bad;
+ 
+ 	if (object && !on_freelist(s, page, object)) {
+-		printk(KERN_ERR "SLUB: %s Object 0x%p@0x%p "
+-			"already allocated.\n",
+-			s->name, object, page);
+-		dump_stack();
++		slab_err(s, page, "Object 0x%p already allocated", object);
+ 		goto bad;
+ 	}
+ 
+@@ -706,15 +711,12 @@ static int free_object_checks(struct kme
+ 		goto fail;
+ 
+ 	if (!check_valid_pointer(s, page, object)) {
+-		printk(KERN_ERR "SLUB: %s slab 0x%p invalid "
+-			"object pointer 0x%p\n",
+-			s->name, page, object);
++		slab_err(s, page, "Invalid object pointer 0x%p", object);
+ 		goto fail;
+ 	}
+ 
+ 	if (on_freelist(s, page, object)) {
+-		printk(KERN_ERR "SLUB: %s slab 0x%p object "
+-			"0x%p already free.\n", s->name, page, object);
++		slab_err(s, page, "Object 0x%p already free", object);
+ 		goto fail;
+ 	}
+ 
+@@ -723,24 +725,22 @@ static int free_object_checks(struct kme
+ 
+ 	if (unlikely(s != page->slab)) {
+ 		if (!PageSlab(page))
+-			printk(KERN_ERR "slab_free %s size %d: attempt to"
+-				"free object(0x%p) outside of slab.\n",
+-				s->name, s->size, object);
++			slab_err(s, page, "Attempt to free object(0x%p) "
++				"outside of slab", object);
+ 		else
+-		if (!page->slab)
++		if (!page->slab) {
+ 			printk(KERN_ERR
+-				"slab_free : no slab(NULL) for object 0x%p.\n",
++				"SLUB <none>: no slab for object 0x%p.\n",
+ 						object);
++			dump_stack();
 +		}
+ 		else
+-			printk(KERN_ERR "slab_free %s(%d): object at 0x%p"
+-				" belongs to slab %s(%d)\n",
+-				s->name, s->size, object,
+-				page->slab->name, page->slab->size);
++			slab_err(s, page, "object at 0x%p belongs "
++				"to slab %s", object, page->slab->name);
+ 		goto fail;
+ 	}
+ 	return 1;
+ fail:
+-	dump_stack();
+ 	printk(KERN_ERR "@@@ SLUB: %s slab 0x%p object at 0x%p not freed.\n",
+ 		s->name, page, object);
+ 	return 0;
+@@ -2478,6 +2478,8 @@ __initcall(cpucache_init);
+ #endif
+ 
+ #ifdef SLUB_RESILIENCY_TEST
++static unsigned long validate_slab_cache(struct kmem_cache *s);
++
+ static void resiliency_test(void)
+ {
+ 	u8 *p;
+@@ -2592,16 +2597,16 @@ static void validate_slab_slab(struct km
+ 		validate_slab(s, page);
+ 		slab_unlock(page);
+ 	} else
+-		printk(KERN_INFO "SLUB: %s Skipped busy slab %p\n",
++		printk(KERN_INFO "SLUB %s: Skipped busy slab %p\n",
+ 			s->name, page);
+ 
+ 	if (s->flags & DEBUG_DEFAULT_FLAGS) {
+ 		if (!PageError(page))
+-			printk(KERN_ERR "SLUB: %s PageError not set "
++			printk(KERN_ERR "SLUB %s: PageError not set "
+ 				"on slab %p\n", s->name, page);
+ 	} else {
+ 		if (PageError(page))
+-			printk(KERN_ERR "SLUB: %s PageError set on "
++			printk(KERN_ERR "SLUB %s: PageError set on "
+ 				"slab %p\n", s->name, page);
  	}
  }
+@@ -2619,8 +2624,8 @@ static int validate_slab_node(struct kme
+ 		count++;
+ 	}
+ 	if (count != n->nr_partial)
+-		printk("SLUB: %s %ld partial slabs counted but counter=%ld\n",
+-			s->name, count, n->nr_partial);
++		printk(KERN_ERR "SLUB %s: %ld partial slabs counted but "
++			"counter=%ld\n", s->name, count, n->nr_partial);
  
-@@ -1325,7 +1342,7 @@ checks_ok:
- 	 * then add it.
- 	 */
- 	if (unlikely(!prior))
--		add_partial(s, page);
-+		add_partial(get_node(s, page_to_nid(page)), page);
+ 	if (!(s->flags & SLAB_STORE_USER))
+ 		goto out;
+@@ -2630,8 +2635,9 @@ static int validate_slab_node(struct kme
+ 		count++;
+ 	}
+ 	if (count != atomic_long_read(&n->nr_slabs))
+-		printk("SLUB: %s %ld slabs counted but counter=%ld\n",
+-		s->name, count, atomic_long_read(&n->nr_slabs));
++		printk(KERN_ERR "SLUB: %s %ld slabs counted but "
++			"counter=%ld\n", s->name, count,
++			atomic_long_read(&n->nr_slabs));
  
- out_unlock:
- 	slab_unlock(page);
-@@ -1541,7 +1558,7 @@ static struct kmem_cache_node * __init e
- 	kmalloc_caches->node[node] = n;
- 	init_kmem_cache_node(n);
- 	atomic_long_inc(&n->nr_slabs);
--	add_partial(kmalloc_caches, page);
-+	add_partial(n, page);
- 	return n;
- }
- 
+ out:
+ 	spin_unlock_irqrestore(&n->list_lock, flags);
 
 --
