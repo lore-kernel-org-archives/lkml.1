@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031301AbXDZQHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbXDZQIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031301AbXDZQHW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 12:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031300AbXDZQHW
+	id S1754818AbXDZQIM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 12:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXDZQIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 12:07:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47570 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031301AbXDZQHU (ORCPT
+	Thu, 26 Apr 2007 12:08:11 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:53564 "EHLO
+	vitb.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754818AbXDZQIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 12:07:20 -0400
-Date: Thu, 26 Apr 2007 17:07:15 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070426160715.GB16337@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Christoph Lameter <clameter@sgi.com>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-	William Lee Irwin III <wli@holomorphy.com>,
-	David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
-	Badari Pulavarty <pbadari@gmail.com>,
-	Maxim Levitsky <maximlevitsky@gmail.com>
-References: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <Pine.LNX.4.64.0704252154250.29271@schroedinger.engr.sgi.com> <m1abwvofke.fsf@ebiederm.dsl.xmission.com> <463048FE.5000600@yahoo.com.au> <Pine.LNX.4.64.0704252341560.30340@schroedinger.engr.sgi.com> <46304D50.1040706@yahoo.com.au> <Pine.LNX.4.64.0704260008280.30731@schroedinger.engr.sgi.com> <46305327.2000206@yahoo.com.au> <Pine.LNX.4.64.0704260028190.31003@schroedinger.engr.sgi.com> <4630593C.8070905@yahoo.com.au>
+	Thu, 26 Apr 2007 12:08:06 -0400
+Date: Thu, 26 Apr 2007 20:07:32 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] i2c: adds support for i2c bus on 8xx
+Message-ID: <20070426200732.529eddc7@vitb.ru.mvista.com>
+In-Reply-To: <20070426175438.391157a1@hyperion.delvare>
+References: <20070420082714.4f10f186@localhost.localdomain>
+	<20070421095707.6b42a312@hyperion.delvare>
+	<20070422152937.7332fc31@localhost.localdomain>
+	<20070423111950.129856eb@hyperion.delvare>
+	<462F8A82.40604@kernel.crashing.org>
+	<20070426175438.391157a1@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.0.0cvs8 (GTK+ 2.6.10; i686-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4630593C.8070905@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 05:48:12PM +1000, Nick Piggin wrote:
-> >Well maybe you could explain what you want. Preferably without redefining 
-> >the established terms?
+On Thu, 26 Apr 2007 17:54:38 +0200
+Jean Delvare <khali@linux-fr.org> wrote:
+
+> Hi Vitaly,
 > 
-> Support for larger buffers than page cache pages.
+> On Wed, 25 Apr 2007 21:06:10 +0400, Vitaly Bordug wrote:
+> > Jean Delvare wrote:
+> > >>>> +/* Structure for a device driver */
+> > >>>> +static struct device_driver i2c_rpx_driver = {
+> > >>>> +	.name = "fsl-i2c-cpm",
+> > >>>> +	.bus = &platform_bus_type,
+> > >>>> +	.probe = i2c_rpx_probe,
+> > >>>> +	.remove = i2c_rpx_remove,
+> > >>>> +};
+> > >>>>         
+> > >>> Why don't you declare it as a struct platform_driver, register it with
+> > >>> platform_driver_register() and unregister it with
+> > >>> platform_driver_unregister()?
+> > >>>       
+> > >> Well. This stuff belongs to CPM1, of the mpc8xx family, but the
+> > >> target boards are different, and they may/should provide board
+> > >> specific inits and filling of platform data. With
+> > >> platform_driver_register we may end up with ifdef stuff here
+> > >> (which is evil).
+> > >>     
+> > >
+> > > I don't follow you here, sorry. Platform devices are declared by
+> > > board-specific code which can include all the needed initialization.
+> > > And device-specific data can be carried to the platform driver for
+> > > further use. The platform device/driver infrastructure is meant to
+> > > handle that kind of situation, so there really is no excuse that I can
+> > > see not to use it. i2c-omap and i2c-mpc use it. As a matter of fact you
+> > > _are_ declaring a platform driver (.bus = &platform_bus_type), just not
+> > > using the standard way.
+> > >
+> > >   
+> > Standard way here - platform devices got registered from elsewhere - 
+> > from arch/ppc/ppc_sys.c if arch/ppc or from 
+> > arch/powerpc/sysdev/fsl_soc.c if powerpc.
+> > Every way (powerpc is more flexible since is pulling the information 
+> > from the firmware-passed device tree) fills in the resources and 
+> > platform data, and
+> > is capable with device/drive bound you are talking about.
+> 
+> This doesn't explain why you can't use platform_driver_register(),
+> which is the right way to register a platform driver.
 
-I don't think you really want this :)  The whole non-pagecache I/O
-path before 2.3 was a toal pain just because it used buffers to drive
-I/O.  Add to that buffers bigger than a page and you add another
-two mangnitudes of complexity.  If you want to see a mess like that
-download on of the eary XFS/Linux releases that had an I/O path
-like that.  I _really_ _really_ don't want to go there.
+Ahm, I clearly confused myself (with device/driver stuff), sorry.
 
-Linux has a long tradition of trading a tiny bit of efficieny for
-much cleaner code, and I'd for 100% go down Christoph's route here.
-Then again I'd actually be rather surprised if > page buffers
-were more efficient - you'd run into shitloads over overhead due to
-them beeing non-contingous like calling vmap all over the place,
-reprogramming iommus to at least make them look virtually contingous [1],
-etc..
-
-I also don't quite get what your problem with higher order allocations
-are.  order 1 allocations are generally just fine, and in fact
-thread stacks are >= oder 1 on most architectures.  And if the pagecache
-uses higher order allocations that means we'll finally fix our problems
-with them, which we have to do anyway.  Workloads continue to grow and
-with them the kernel overhead to manage them, while the pagesize for
-many architectures is fixed.  So we'll have to deal with order 1
-and order 2 allocations better just for backing kmalloc and co.
-
-Or think jumboframes for that matter.
+Anyway I think we'll look at of_device for this, to reduce extract from OF->insert platform device overhead.
 
 
-[1] many iommu implementation of course also have a limit of how many
-    segments they can actually virtually merge
+-- 
+Sincerely, 
+Vitaly
