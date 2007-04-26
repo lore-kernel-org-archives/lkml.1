@@ -1,222 +1,279 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbXDZWps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbXDZWtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbXDZWps (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 18:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXDZWps
+	id S1755180AbXDZWtM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 18:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbXDZWtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 18:45:48 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:2153 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbXDZWpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 18:45:46 -0400
-X-IronPort-AV: i="4.14,458,1170662400"; 
-   d="scan'208"; a="141116097:sNHT77010939"
-To: linux-kernel@vger.kernel.org
-Cc: general@lists.openfabrics.org, netdev@vger.kernel.org
-Subject: [PATCH][RFC] IPoIB: Convert to NAPI
-X-Message-Flag: Warning: May contain useful information
-References: <adaps5rro8v.fsf@cisco.com> <adaejm6pxiw.fsf@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 26 Apr 2007 15:45:44 -0700
-In-Reply-To: <adaejm6pxiw.fsf@cisco.com> (Roland Dreier's message of "Thu, 26 Apr 2007 15:43:19 -0700")
-Message-ID: <adaabwupxev.fsf_-_@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Apr 2007 22:45:44.0963 (UTC) FILETIME=[A0324D30:01C78854]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 26 Apr 2007 18:49:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45681 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031501AbXDZWtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 18:49:10 -0400
+Date: Thu, 26 Apr 2007 18:49:05 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] utimensat implementation
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And here's the patch to convert IPoIB over to using NAPI...
+The next revision of POSIX will support fine-grained filesystem timestamps the way we already support.  struct stat will report nanosecond values.  So far so good.
 
----
+During the development one additional problem was found: there is no interface to set the file timestamp with that precision.  utimes only takes a timeval structure which allows only micro-second resolution.
 
-Convert the IP-over-InfiniBand network device driver over to using
-NAPI to handle all completions (both receive and send).
+This is why the utimensat() interface was created.  It is basically the same as our futimesat() interface but it takes a timespec structure.
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- drivers/infiniband/ulp/ipoib/ipoib.h      |    1 +
- drivers/infiniband/ulp/ipoib/ipoib_cm.c   |    2 +-
- drivers/infiniband/ulp/ipoib/ipoib_ib.c   |   89 ++++++++++++++++++++++------
- drivers/infiniband/ulp/ipoib/ipoib_main.c |    2 +
- 4 files changed, 74 insertions(+), 20 deletions(-)
+While adding this new interface two more features got added.  Programmers sometimes/often only want to set one value.  This currently requires reading the current value with stat() and then use this value in the futimesat() call.  This is slow and might create even wrong results (the file could have been updated in the meantime).  If the tv_nsec value of either of the elements of the utimes parameter to utimensat() is UTIME_OMIT no update of that respective value is performed.
 
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib.h b/drivers/infiniband/ulp/ipoib/ipoib.h
-index fd55826..15867af 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib.h
-+++ b/drivers/infiniband/ulp/ipoib/ipoib.h
-@@ -311,6 +311,7 @@ extern struct workqueue_struct *ipoib_workqueue;
+The second extension allows to set one of the values to the correct current time.  Today it is only possible to set both values at the same time.  Once again this is slower and might to lead to incorrect results.  The use of UTIME_NOW for the respective tv_nsec value implements this functionality.
+
+The resulting patch is attached.  It modifies the do_utimes function which is also used in the compat code.  The callers are adjusted.  Most of the added code are checks for invalid parameters.  In fact, I think one problem where the old code wouldn't recognize certain overflows (if tv_nsec * 1000 overflows).
+
+I've tested the code on x86-64.
+
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+diff --git a/arch/x86_64/ia32/ia32entry.S b/arch/x86_64/ia32/ia32entry.S
+index 796df69..33121e2 100644
+--- a/arch/x86_64/ia32/ia32entry.S
++++ b/arch/x86_64/ia32/ia32entry.S
+@@ -714,9 +714,10 @@ ia32_sys_call_table:
+ 	.quad compat_sys_get_robust_list
+ 	.quad sys_splice
+ 	.quad sys_sync_file_range
+-	.quad sys_tee
++	.quad sys_tee			/* 315 */
+ 	.quad compat_sys_vmsplice
+ 	.quad compat_sys_move_pages
+ 	.quad sys_getcpu
+ 	.quad sys_epoll_pwait
++	.quad sys_utimensat		/* 320 */
+ ia32_syscall_end:		
+diff --git a/fs/compat.c b/fs/compat.c
+index 040a8be..1644cd1 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -79,28 +79,55 @@ int compat_printk(const char *fmt, ...)
+  */
+ asmlinkage long compat_sys_utime(char __user *filename, struct compat_utimbuf __user *t)
+ {
+-	struct timeval tv[2];
++	struct timespec tv[2];
  
- /* functions */
+ 	if (t) {
+ 		if (get_user(tv[0].tv_sec, &t->actime) ||
+ 		    get_user(tv[1].tv_sec, &t->modtime))
+ 			return -EFAULT;
+-		tv[0].tv_usec = 0;
+-		tv[1].tv_usec = 0;
++		tv[0].tv_nsec = 0;
++		tv[1].tv_nsec = 0;
+ 	}
+ 	return do_utimes(AT_FDCWD, filename, t ? tv : NULL);
+ }
  
-+int ipoib_poll(struct net_device *dev, int *budget);
- void ipoib_ib_completion(struct ib_cq *cq, void *dev_ptr);
++asmlinkage long compat_sys_utimensat(unsigned int dfd, char __user *filename, struct compat_timespec __user *t)
++{
++	struct timespec tv[2];
++
++	if  (t) {
++		if (get_compat_timespec(&tv[0], &t[0]) ||
++		    get_compat_timespec(&tv[1], &t[1]))
++			return -EFAULT;
++
++		if ((tv[0].tv_nsec == UTIME_OMIT || tv[0].tv_nsec == UTIME_NOW)
++		    && tv[0].tv_sec != 0)
++			return -EINVAL;
++		if ((tv[1].tv_nsec == UTIME_OMIT || tv[1].tv_nsec == UTIME_NOW)
++		    && tv[1].tv_sec != 0)
++			return -EINVAL;
++
++		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
++			return 0;
++	}
++	return do_utimes(dfd, filename, t ? tv : NULL);
++}
++
+ asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *filename, struct compat_timeval __user *t)
+ {
+-	struct timeval tv[2];
++	struct timespec tv[2];
  
- struct ipoib_ah *ipoib_create_ah(struct net_device *dev,
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_cm.c b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-index 2b242a4..e1fdae1 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-@@ -418,7 +418,7 @@ void ipoib_cm_handle_rx_wc(struct net_device *dev, struct ib_wc *wc)
- 	skb->dev = dev;
- 	/* XXX get correct PACKET_ type here */
- 	skb->pkt_type = PACKET_HOST;
--	netif_rx_ni(skb);
-+	netif_receive_skb(skb);
+ 	if (t) {
+ 		if (get_user(tv[0].tv_sec, &t[0].tv_sec) ||
+-		    get_user(tv[0].tv_usec, &t[0].tv_usec) ||
++		    get_user(tv[0].tv_nsec, &t[0].tv_usec) ||
+ 		    get_user(tv[1].tv_sec, &t[1].tv_sec) ||
+-		    get_user(tv[1].tv_usec, &t[1].tv_usec))
++		    get_user(tv[1].tv_nsec, &t[1].tv_usec))
+ 			return -EFAULT;
++		if (tv[0].tv_nsec > LONG_MAX / 1000
++		    || tv[1].tv_nsec > LONG_MAX / 1000)
++			return -EINVAL;
++		tv[0].tv_nsec *= 1000;
++		tv[1].tv_nsec *= 1000;
+ 	}
+ 	return do_utimes(dfd, filename, t ? tv : NULL);
+ }
+diff --git a/fs/utimes.c b/fs/utimes.c
+index 99cf2cb..dc6612e 100644
+--- a/fs/utimes.c
++++ b/fs/utimes.c
+@@ -3,6 +3,7 @@
+ #include <linux/linkage.h>
+ #include <linux/namei.h>
+ #include <linux/sched.h>
++#include <linux/stat.h>
+ #include <linux/utime.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+@@ -76,7 +77,7 @@ out:
+  * must be owner or have write permission.
+  * Else, update from *times, must be owner or super user.
+  */
+-long do_utimes(int dfd, char __user *filename, struct timeval *times)
++long do_utimes(int dfd, char __user *filename, struct timespec *times)
+ {
+ 	int error;
+ 	struct nameidata nd;
+@@ -100,11 +101,21 @@ long do_utimes(int dfd, char __user *filename, struct timeval *times)
+                 if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+                         goto dput_and_out;
  
- repost:
- 	if (unlikely(ipoib_cm_post_receive(dev, wr_id)))
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_ib.c b/drivers/infiniband/ulp/ipoib/ipoib_ib.c
-index ba0ee5c..e3cc241 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_ib.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_ib.c
-@@ -226,7 +226,7 @@ static void ipoib_ib_handle_rx_wc(struct net_device *dev, struct ib_wc *wc)
- 		skb->dev = dev;
- 		/* XXX get correct PACKET_ type here */
- 		skb->pkt_type = PACKET_HOST;
--		netif_rx_ni(skb);
-+		netif_receive_skb(skb);
+-		newattrs.ia_atime.tv_sec = times[0].tv_sec;
+-		newattrs.ia_atime.tv_nsec = times[0].tv_usec * 1000;
+-		newattrs.ia_mtime.tv_sec = times[1].tv_sec;
+-		newattrs.ia_mtime.tv_nsec = times[1].tv_usec * 1000;
+-		newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
++		if (times[0].tv_nsec == UTIME_OMIT)
++			newattrs.ia_valid &= ~ATTR_ATIME;
++		else if (times[0].tv_nsec != UTIME_NOW) {
++			newattrs.ia_atime.tv_sec = times[0].tv_sec;
++			newattrs.ia_atime.tv_nsec = times[0].tv_nsec;
++			newattrs.ia_valid |= ATTR_ATIME_SET;
++		}
++
++		if (times[1].tv_nsec == UTIME_OMIT)
++			newattrs.ia_valid &= ~ATTR_MTIME;
++		else if (times[1].tv_nsec != UTIME_NOW) {
++			newattrs.ia_mtime.tv_sec = times[1].tv_sec;
++			newattrs.ia_mtime.tv_nsec = times[1].tv_nsec;
++			newattrs.ia_valid |= ATTR_MTIME_SET;
++		}
  	} else {
- 		ipoib_dbg_data(priv, "dropping loopback packet\n");
- 		dev_kfree_skb_any(skb);
-@@ -280,28 +280,65 @@ static void ipoib_ib_handle_tx_wc(struct net_device *dev, struct ib_wc *wc)
- 			   wc->status, wr_id, wc->vendor_err);
+ 		error = -EACCES;
+                 if (IS_IMMUTABLE(inode))
+@@ -123,13 +134,55 @@ out:
+ 	return error;
  }
  
--static void ipoib_ib_handle_wc(struct net_device *dev, struct ib_wc *wc)
-+int ipoib_poll(struct net_device *dev, int *budget)
- {
--	if (wc->wr_id & IPOIB_CM_OP_SRQ)
--		ipoib_cm_handle_rx_wc(dev, wc);
--	else if (wc->wr_id & IPOIB_OP_RECV)
--		ipoib_ib_handle_rx_wc(dev, wc);
--	else
--		ipoib_ib_handle_tx_wc(dev, wc);
-+	struct ipoib_dev_priv *priv = netdev_priv(dev);
-+	int max = min(*budget, dev->quota);
-+	int done;
-+	int t;
-+	int empty;
-+	int n, i;
++asmlinkage long sys_utimensat(int dfd, char __user *filename, struct timespec __user *utimes)
++{
++	struct timespec tstimes[2];
++	if (utimes) {
++		if (copy_from_user(&tstimes, utimes, sizeof(tstimes)))
++			return -EFAULT;
++		if ((tstimes[0].tv_nsec == UTIME_OMIT ||
++		     tstimes[0].tv_nsec == UTIME_NOW) &&
++		    tstimes[0].tv_sec != 0)
++			return -EINVAL;
++		if ((tstimes[1].tv_nsec == UTIME_OMIT ||
++		     tstimes[1].tv_nsec == UTIME_NOW) &&
++		    tstimes[1].tv_sec != 0)
++			return -EINVAL;
 +
-+repoll:
-+	done  = 0;
-+	empty = 0;
-+
-+	while (max) {
-+		t = min(IPOIB_NUM_WC, max);
-+		n = ib_poll_cq(priv->cq, t, priv->ibwc);
-+
-+		for (i = 0; i < n; ++i) {
-+			struct ib_wc *wc = priv->ibwc + i;
-+
-+			if (wc->wr_id & IPOIB_CM_OP_SRQ) {
-+				++done;
-+				--max;
-+				ipoib_cm_handle_rx_wc(dev, wc);
-+			} else if (wc->wr_id & IPOIB_OP_RECV) {
-+				++done;
-+				--max;
-+				ipoib_ib_handle_rx_wc(dev, wc);
-+			} else
-+				ipoib_ib_handle_tx_wc(dev, wc);
-+		}
-+
-+		if (n != t) {
-+			empty = 1;
-+			break;
-+		}
++		/* Nothing to do, we must not even check the path.  */
++		if (tstimes[0].tv_nsec == UTIME_OMIT &&
++		    tstimes[1].tv_nsec == UTIME_OMIT)
++			return 0;
 +	}
 +
-+	dev->quota -= done;
-+	*budget    -= done;
++	return do_utimes(dfd, filename, utimes ? tstimes : NULL);
++}
 +
-+	if (empty) {
-+		netif_rx_complete(dev);
-+		if (unlikely(ib_req_notify_cq(priv->cq,
-+					      IB_CQ_NEXT_COMP |
-+					      IB_CQ_REPORT_MISSED_EVENTS))) {
-+			netif_rx_reschedule(dev, 0);
-+			return 1;
-+		}
-+
-+		return 0;
-+	}
-+
-+	return 1;
- }
- 
- void ipoib_ib_completion(struct ib_cq *cq, void *dev_ptr)
+ asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
  {
--	struct net_device *dev = (struct net_device *) dev_ptr;
--	struct ipoib_dev_priv *priv = netdev_priv(dev);
--	int n, i;
--
--	ib_req_notify_cq(cq, IB_CQ_NEXT_COMP);
--	do {
--		n = ib_poll_cq(cq, IPOIB_NUM_WC, priv->ibwc);
--		for (i = 0; i < n; ++i)
--			ipoib_ib_handle_wc(dev, priv->ibwc + i);
--	} while (n == IPOIB_NUM_WC);
-+	netif_rx_schedule(dev_ptr);
+ 	struct timeval times[2];
++	struct timespec tstimes[2];
++
++	if (utimes) {
++		if (copy_from_user(&times, utimes, sizeof(times)))
++			return -EFAULT;
++
++		/* This test is needed to catch all invalid values.  If we
++		   would test only in do_utimes we would miss those invalid
++		   values truncated by the multiplication with 1000.  Note
++		   that we also catch UTIME_{NOW,OMIT} here which are only
++		   valid for utimensat.  */
++		if (times[0].tv_usec > LONG_MAX / 1000 ||
++		    times[1].tv_usec > LONG_MAX / 1000)
++			return -EINVAL;
++
++		tstimes[0].tv_sec = times[0].tv_sec;
++		tstimes[0].tv_nsec = 1000 * times[0].tv_usec;
++		tstimes[1].tv_sec = times[1].tv_sec;
++		tstimes[1].tv_nsec = 1000 * times[1].tv_usec;
++	}
+ 
+-	if (utimes && copy_from_user(&times, utimes, sizeof(times)))
+-		return -EFAULT;
+-	return do_utimes(dfd, filename, utimes ? times : NULL);
++	return do_utimes(dfd, filename, utimes ? tstimes : NULL);
  }
  
- static inline int post_send(struct ipoib_dev_priv *priv,
-@@ -514,9 +551,10 @@ int ipoib_ib_dev_stop(struct net_device *dev)
- 	struct ib_qp_attr qp_attr;
- 	unsigned long begin;
- 	struct ipoib_tx_buf *tx_req;
--	int i;
-+	int i, n;
+ asmlinkage long sys_utimes(char __user *filename, struct timeval __user *utimes)
+diff --git a/include/asm-i386/unistd.h b/include/asm-i386/unistd.h
+index 833fa17..17a9d5a 100644
+--- a/include/asm-i386/unistd.h
++++ b/include/asm-i386/unistd.h
+@@ -325,6 +325,7 @@
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_utimensat		320
  
- 	clear_bit(IPOIB_FLAG_INITIALIZED, &priv->flags);
-+	netif_poll_disable(dev);
+ #ifdef __KERNEL__
  
- 	ipoib_cm_dev_stop(dev);
+diff --git a/include/asm-x86_64/unistd.h b/include/asm-x86_64/unistd.h
+index c5f596e..0aae2ae 100644
+--- a/include/asm-x86_64/unistd.h
++++ b/include/asm-x86_64/unistd.h
+@@ -619,8 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync_file_range)
+ __SYSCALL(__NR_vmsplice, sys_vmsplice)
+ #define __NR_move_pages		279
+ __SYSCALL(__NR_move_pages, sys_move_pages)
++#define __NR_utimensat		280
++__SYSCALL(__NR_utimensat, sys_utimensat)
  
-@@ -568,6 +606,16 @@ int ipoib_ib_dev_stop(struct net_device *dev)
- 			goto timeout;
- 		}
+-#define __NR_syscall_max __NR_move_pages
++#define __NR_syscall_max __NR_utimensat
  
-+		do {
-+			n = ib_poll_cq(priv->cq, IPOIB_NUM_WC, priv->ibwc);
-+			for (i = 0; i < n; ++i) {
-+				if (priv->ibwc[i].wr_id & IPOIB_OP_RECV)
-+					ipoib_ib_handle_rx_wc(dev, priv->ibwc + i);
-+				else
-+					ipoib_ib_handle_tx_wc(dev, priv->ibwc + i);
-+			}
-+		} while (n == IPOIB_NUM_WC);
+ #ifndef __NO_STUBS
+ #define __ARCH_WANT_OLD_READDIR
+diff --git a/include/linux/stat.h b/include/linux/stat.h
+index 679ef0d..611c398 100644
+--- a/include/linux/stat.h
++++ b/include/linux/stat.h
+@@ -53,6 +53,9 @@
+ #define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
+ #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
+ 
++#define UTIME_NOW	((1l << 30) - 1l)
++#define UTIME_OMIT	((1l << 30) - 2l)
 +
- 		msleep(1);
- 	}
+ #include <linux/types.h>
+ #include <linux/time.h>
  
-@@ -596,6 +644,9 @@ timeout:
- 		msleep(1);
- 	}
- 
-+	netif_poll_enable(dev);
-+	ib_req_notify_cq(priv->cq, IB_CQ_NEXT_COMP);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_main.c b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-index f2a40ae..a69c472 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_main.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_main.c
-@@ -952,6 +952,8 @@ static void ipoib_setup(struct net_device *dev)
- 	dev->hard_header 	 = ipoib_hard_header;
- 	dev->set_multicast_list  = ipoib_set_mcast_list;
- 	dev->neigh_setup         = ipoib_neigh_setup_dev;
-+	dev->poll                = ipoib_poll;
-+	dev->weight              = 100;
- 
- 	dev->watchdog_timeo 	 = HZ;
- 
--- 
-1.5.1.2
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 8ea8dea..936b21b 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -109,7 +109,7 @@ extern void do_gettimeofday(struct timeval *tv);
+ extern int do_settimeofday(struct timespec *tv);
+ extern int do_sys_settimeofday(struct timespec *tv, struct timezone *tz);
+ #define do_posix_clock_monotonic_gettime(ts) ktime_get_ts(ts)
+-extern long do_utimes(int dfd, char __user *filename, struct timeval *times);
++extern long do_utimes(int dfd, char __user *filename, struct timespec *times);
+ struct itimerval;
+ extern int do_setitimer(int which, struct itimerval *value,
+ 			struct itimerval *ovalue);
