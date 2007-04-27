@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbXD0PBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbXD0PJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbXD0PBP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755968AbXD0PBP
+	id S1755883AbXD0PJO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbXD0PJO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:01:15 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:36538 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755930AbXD0PBN (ORCPT
+	Fri, 27 Apr 2007 11:09:14 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:35341 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755883AbXD0PJN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:01:13 -0400
-Date: Fri, 27 Apr 2007 17:01:24 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>,
-       GOTO Masanori <gotom@sanori.org>
-Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
-Message-ID: <20070427150124.GU3468@stusta.de>
-References: <20070426234742.GH3468@stusta.de> <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain> <20070427001324.GP3468@stusta.de> <1177633855.5532.8.camel@mulgrave.il.steeleye.com> <Pine.LNX.4.64.0704271051240.22643@localhost.localdomain>
+	Fri, 27 Apr 2007 11:09:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=BWkjk1ALrgDdvh5c30ymeHxvySd7INwArAeGrYeMKmQdRo5AP0XLMOAsfWq+SkDTyZDy1yEINhfQ9v0iYsA+kGvrZjVRwoJmReWhZjmLgYkxWc6QccB5W3Fiz9S1/fQ0561SUr0lhCEVy9EhCSJqjhqg6p8J1U7hsBPP3pnB5U0=
+Message-ID: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
+Date: Fri, 27 Apr 2007 20:39:11 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Video for Linux deprecated drivers (VIDEO_V4L1)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704271051240.22643@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 10:55:54AM -0400, Robert P. J. Day wrote:
-> On Thu, 26 Apr 2007, James Bottomley wrote:
-> 
-> > Personally, I don't like to see 2.4 and 2.6 in a new driver, and
-> > will tend to try to force it to be 2.6 only.  For an existing
-> > driver, I tend to be much more tolerant: removing the huge gobs of
-> > code to achieve 2.6 only is usually a bit disruptive on both the
-> > driver and the maintainer
-> >
-> > > But if a driver is no longer actually maintained for both kernels
-> > > these checks become useless (and there quickly arised
-> > > unconditional 2.6-only code in such a driver) and can be removed.
-> >
-> > This driver is maintained by
-> >
-> > Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>
-> > GOTO Masanori <gotom@sanori.org>
-> >
-> > As it says in the header.  It was last modified in May 2006, so it
-> > is maintained under the somewhat elastic standards of SCSI.  I've
-> > cc'd them to see what they think.
-> 
-> while we're on the subject, what's the policy on supporting kernel
-> version selection *within* the 2.5 series?  as in:
-> 
-> $ grep -r "KERNEL_VERSION(2,5" *
-> drivers/scsi/pcmcia/nsp_cs.h:#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,74))
-> drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
-> drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,2))
-> drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,73))
-> ... etc etc ...
-> 
-> granted, this doesn't happen in a lot of files (almost of them
-> SCSI-related), but is it official policy to support code based on its
-> release number in the 2.5 series of releases?  unless you have a good
-> reason, wouldn't it make more sense to compare against (2,6,0) rather
-> than, say, (2,5,73)?  just an observation.
+Hello,
 
-Besides the fact that I sent a patch to remove the compat code from this 
-driver, it simply doesn't matter whether to compare with (2,5,73) or 
-(2,6,0), so there's no reason for changing it.
+I need add a device for a particular solution on a x86 box. Device is
+Logitech QuickCam, USB based WebCam (has to be included because of the
+change in the experiment specs).
 
-> rday
+To get the device working (capture images by a V4L application), need
+to compile the driver (qc-usb) & insert the quickcam.ko module. But,
+what the requirement says I need to enable the VIDEO_V4L1 support.
+Then I need to select USB_QUICKCAM_MESSENGER driver under the V4L USB
+devices. Till here it's fine.
 
-cu
-Adrian
+But if I look at the kernel config, VIDEO_V4L1 is deprecated. If I
+decide to enable VIDEO_V4L1_COMPAT, there isn't any
+USB_QUICKCAM_MESSENGER driver under the V4L USB devices!
 
--- 
+Should I select the VIDEO_V4L1 support to get the WebCam working or is
+there any other way (work around) to get my WebCam working with
+VIDEO_V4L1_COMPAT? Comments pl?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+~Akula2
