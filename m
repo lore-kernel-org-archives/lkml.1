@@ -1,117 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755531AbXD0Jnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbXD0Jqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755531AbXD0Jnp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 05:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXD0Jnp
+	id S1755538AbXD0Jqp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 05:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXD0Jqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 05:43:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:38010 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755531AbXD0Jnn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 05:43:43 -0400
-Message-ID: <4631C69E.5020307@sw.ru>
-Date: Fri, 27 Apr 2007 13:47:10 +0400
-From: Pavel Emelianov <xemul@sw.ru>
-User-Agent: Thunderbird 1.5 (X11/20060317)
+	Fri, 27 Apr 2007 05:46:44 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:46348 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755538AbXD0Jqn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 05:46:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=bDKDjPIqbdazuMtG75hCaK2EUVXxFWKEhSq+GVqJA7Vwx+iddI1TeKytpjwFdvfvBbNdUx2zm8QG2oVWaeBlNyXNwA2tUWHgptwsVrWFbJw+gS4TALgnuP95MBwzhTna5yFhKAXWhj/jo26AwE1hELix8/PB/QJ7NVsetKm0nvA=  ;
+X-YMail-OSG: YPBHPfQVM1mzx.FiraV3e8D31XYv77uNcQB6jcAirlxrwmIIhviNKFifj1KJ1eH7q_cC.CO8Cg--
+Message-ID: <4631C674.9040506@yahoo.com.au>
+Date: Fri, 27 Apr 2007 19:46:28 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] RSS container, fix freeing of active pages
-References: <4630F6D2.8040407@linux.vnet.ibm.com>
-In-Reply-To: <4630F6D2.8040407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: David Chinner <dgc@sgi.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       clameter@sgi.com, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <20070426063830.GE32602149@melbourne.sgi.com> <m1k5vzmoo7.fsf@ebiederm.dsl.xmission.com> <20070426135033.GU65285596@melbourne.sgi.com> <4630C776.9000804@yahoo.com.au> <20070426155840.GU31925@holomorphy.com>
+In-Reply-To: <20070426155840.GU31925@holomorphy.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Hi, Pavel,
+William Lee Irwin III wrote:
+> On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
 > 
-> I missed you on the list and the patch did not make it to lkml.
-> I am resending the patch.
-> 
-> 
-> 
-> 
-> ------------------------------------------------------------------------
+>>Or good grounds to increase the sg limit and push for io controller
+>>manufacturers to do the same. If we have a hack in the kernel that
+>>mostly works, they won't.
 > 
 > 
+> On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
 > 
-> This patch fixes the bad_page() warning seen while freeing a container page.
-> By default all container pages are added to the active list on the
-> container. This patch lazily moves pages to the right list, so that a page
-> on the active list of the zone LRU and the inactive list of the container
-> does not get freed. If that happens, we see a warning from bad_page().
+>>Page colouring was always rejected, and lots of people who knew
+>>better got upset because it was the only way the hardware would go
+>>fast...
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
 > 
->  linux/rss_container.h |    0 
->  mm/rss_container.c    |   30 ++++++++++++++++++++++--------
->  2 files changed, 22 insertions(+), 8 deletions(-)
-> 
-> diff -puN mm/rss_container.c~rss-fix-free-of-active-pages mm/rss_container.c
-> --- linux-2.6.20/mm/rss_container.c~rss-fix-free-of-active-pages	2007-04-25 22:05:54.000000000 +0530
-> +++ linux-2.6.20-balbir/mm/rss_container.c	2007-04-25 23:12:35.000000000 +0530
-> @@ -119,18 +119,36 @@ void container_rss_move_lists(struct pag
->  }
->  
->  static unsigned long isolate_container_pages(unsigned long nr_to_scan,
-> -		struct list_head *src, struct list_head *dst,
-> -		unsigned long *scanned, struct zone *zone)
-> +		struct rss_container *rss, struct list_head *dst,
-> +		unsigned long *scanned, struct zone *zone, bool active)
->  {
->  	unsigned long nr_taken = 0;
->  	struct page *page;
->  	struct page_container *pc;
->  	unsigned long scan;
-> +	struct list_head *src;
->  	LIST_HEAD(pc_list);
->  
-> +	src = active ? &rss->active_list : &rss->inactive_list;
-> +
->  	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
->  		pc = list_entry(src->prev, struct page_container, list);
->  		page = pc->page;
-> +
-> +		/*
-> +		 * We might have got our active, inactive lists
-> +		 * incorrect, fix it here
-> +		 */
+> Yes, stunning wisdom there. Reject the speedups.
 
-Hm... Did you see such a situation in your experiments?
-If yes, then why not fix it in a normal way by moving the 
-pages from list to list where appropriate?
+Yeah, that's how lots of people felt. But there is a good argument
+to do just that.
 
-> +		if (active && !PageActive(page)) {
-> +			list_move(&pc->list, &rss->inactive_list);
-> +			scan--;
-> +			continue;
-> +		} else if (!active && PageActive(page)) {
-> +			list_move(&pc->list, &rss->active_list);
-> +			scan--;
-> +			continue;
-> +		}
-> +
->  		if (page_zone(page) != zone)
->  			continue;
->  
-> @@ -158,12 +176,8 @@ unsigned long isolate_pages_in_container
->  	unsigned long ret;
->  
->  	spin_lock(&rss->res.lock);
-> -	if (active)
-> -		ret = isolate_container_pages(nr_to_scan, &rss->active_list,
-> -				dst, scanned, zone);
-> -	else
-> -		ret = isolate_container_pages(nr_to_scan, &rss->inactive_list,
-> -				dst, scanned, zone);
-> +	ret = isolate_container_pages(nr_to_scan, rss, dst, scanned, zone,
-> +					active);
->  	spin_unlock(&rss->res.lock);
->  	return ret;
->  }
-> diff -puN include/linux/rss_container.h~rss-fix-free-of-active-pages include/linux/rss_container.h
-> _
 
+> On Fri, Apr 27, 2007 at 01:38:30AM +1000, Nick Piggin wrote:
+> 
+>>You could put it that way. Or that it is wrong because of the
+>>fragmenatation problem. Realise that it is somewhat fundamental
+>>considering that it is basically an unsolvable problem with our
+>>current kernel assumptions of unconstrained kernel allocations and
+>>a 1:1 kernel mapping.
+> 
+> 
+> Depends on what you consider a solution. A broadly used criterion is
+> that improves performance significantly in important usage cases.
+
+My criterion is that you are not suddenly unable to access your
+filesystem because you cannot allocate a higher order page.
+
+-- 
+SUSE Labs, Novell Inc.
