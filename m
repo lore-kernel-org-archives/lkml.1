@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXD0Orm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbXD0OtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbXD0Orm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXD0Orl
+	id S1755858AbXD0OtZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbXD0OtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:47:41 -0400
-Received: from lazybastard.de ([212.112.238.170]:32769 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755889AbXD0Ork (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:47:40 -0400
-Date: Fri, 27 Apr 2007 16:43:28 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 0/5] fallocate system call
-Message-ID: <20070427144327.GC22949@lazybastard.org>
-References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070427121003.GA7808@osiris.boeblingen.de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 27 Apr 2007 10:49:25 -0400
+Received: from holomorphy.com ([66.93.40.71]:51837 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755858AbXD0OtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 10:49:24 -0400
+Date: Fri, 27 Apr 2007 07:49:42 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427144942.GQ19966@holomorphy.com>
+References: <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au> <20070426145310.GH19966@holomorphy.com> <m1ejm7kndn.fsf@ebiederm.dsl.xmission.com> <20070427003216.GM19966@holomorphy.com> <4631CECF.4030301@yahoo.com.au> <20070427125843.GO19966@holomorphy.com> <4631F55C.2040800@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070427121003.GA7808@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <4631F55C.2040800@yahoo.com.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 April 2007 14:10:03 +0200, Heiko Carstens wrote:
+On Fri, Apr 27, 2007 at 08:22:07PM +1000, Nick Piggin wrote:
+>>> Just a random aside question... doesn't Oracle db do direct IO from
+>>> hugepages?
+
+William Lee Irwin III wrote:
+>> If and when configured to use direct IO and hugepages, yes.
+
+On Fri, Apr 27, 2007 at 11:06:36PM +1000, Nick Piggin wrote:
+> Sweet. I wonder if you would see a much improvement for allowing more
+> than 128 sglist entries, then.
+
+There should be some. Oracle does its own IO scheduling, so it's able
+to submit relatively large IO's (IIRC also configurable). I'm not sure
+what's done for the non-aio case, but aio might be tricky to catch the
+vectoring with all the blocking on get_request_wait() and the way the
+vector elements are handled there. So turning off aio may also help.
+
+Another useful idea is to look at the results from pagemap patches.
+
+
+William Lee Irwin III wrote:
+> >It's also
+> >noteworthy thar Oracle has more code than its database.
 > 
-> After long discussions where at least two possible implementations
-> were suggested that would work on _all_ architectures you chose one
-> which doesn't and causes extra effort.
+On Fri, Apr 27, 2007 at 11:06:36PM +1000, Nick Piggin wrote:
+> Anything noteworthy in this context, that you care to note?
 
-I believe the long discussion also showed that every possible
-implementation has drawbacks.  To me this one appeared to be the best of
-many bad choices.
+The RMAN backup utility is often used to back up Oracle databases
+and there are always complaints when backups disturb anything.
 
-Is this implementation worse than we thought?
+EM (enterprise management stuff), RAC (clustering affairs), various
+database applications (typically in-depth for whatever field they're
+pertinent to), ASM middleware (abstraction layer for database file
+access), and more are out there.
 
-Jörn
 
--- 
-The grand essentials of happiness are: something to do, something to
-love, and something to hope for.
--- Allan K. Chalmers
+-- wli
