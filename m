@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbXD0QMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756047AbXD0QOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbXD0QMW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 12:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXD0QMW
+	id S1756047AbXD0QOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 12:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbXD0QOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 12:12:22 -0400
-Received: from keil-draco.com ([216.193.185.50]:50875 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756044AbXD0QMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 12:12:20 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Marat Buharov" <marat.buharov@gmail.com>
-Subject: Re: assembly code in the loadable kernel module
-Date: Fri, 27 Apr 2007 12:12:07 -0400
-User-Agent: KMail/1.9.6
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       "Parav K Pandit" <Parav_Pandit@mindtree.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com> <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com> <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
-In-Reply-To: <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 12:14:20 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37429 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756047AbXD0QOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 12:14:19 -0400
+Date: Fri, 27 Apr 2007 18:15:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm 1/2] Separate freezer from PM code
+Message-ID: <20070427161503.GA1046@uranus.ravnborg.org>
+References: <200704271737.31192.rjw@sisk.pl> <200704271738.48429.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704271212.07579.dhazelton@enter.net>
+In-Reply-To: <200704271738.48429.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 April 2007 07:57:58 Marat Buharov wrote:
-> On 4/27/07, Parav K Pandit <Parav_Pandit@mindtree.com> wrote:
-> > DISCLAIMER:
-> > This message (including attachment if any) is confidential and may be
-> > privileged. Before opening attachments please check them for viruses and
-> > defects. MindTree Consulting Limited (MindTree) will not be responsible
-> > for any viruses or defects or any forwarded attachments emanating either
-> > from within MindTree or outside. If you have received this message by
-> > mistake please notify the sender by return  e-mail and delete this
-> > message from your system. Any unauthorized use or dissemination of this
-> > message in whole or in part is strictly prohibited.  Please note that
-> > e-mails are susceptible to change and MindTree shall not be liable for
-> > any improper, untimely or incomplete transmission.
->
-> On 4/27/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> > ****************************************************************
-> > The information transmitted in this message is confidential and may be
-> > privileged.  Any review, retransmission, dissemination, or other use of
-> > this information by persons or entities other than the intended recipient
-> > is prohibited.  If you are not the intended recipient, please notify
-> > Analogic Corporation immediately - by replying to this message or by
-> > sending an email to DeliveryErrors@analogic.com - and destroy all copies
-> > of this information, including any attachments, without reading or
-> > disclosing them.
->
-> Damn, people. Please, remove that sort of disclaimers (about
-> confidential information) while posting to public mailing lists.
+On Fri, Apr 27, 2007 at 05:38:47PM +0200, Rafael J. Wysocki wrote:
+> 
+> Index: linux-2.6.21-rc7-mm2/arch/x86_64/Kconfig
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/arch/x86_64/Kconfig	2007-04-27 01:22:33.000000000 +0200
+> +++ linux-2.6.21-rc7-mm2/arch/x86_64/Kconfig	2007-04-27 01:33:22.000000000 +0200
+> @@ -703,6 +703,14 @@ config GENERIC_PENDING_IRQ
+>  	depends on GENERIC_HARDIRQS && SMP
+>  	default y
+>  
+> +#
+> +# Use the tasks freezer
+> +#
+> +config FREEZER
+> +	bool
+> +	default y
+> +	depends on PM || KPROBES
+> +
+>  menu "Power management options"
 
-Most companies require that *ANY* e-mail sent by employees while at work 
-contain disclaimers like those. Some of them even have their mail servers 
-*automatically* attach those footers.
+Could we have this in a generic Kconfig file instead?
+IIRC the depends on line may refer to unknown options
+without spitting out warnings.
 
-DRH
+	Sam
