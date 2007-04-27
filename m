@@ -1,209 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbXD0LMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbXD0LOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbXD0LMA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbXD0LL7
+	id S1755617AbXD0LOY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:14:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbXD0LOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:11:59 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:35636 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755613AbXD0LL6 (ORCPT
+	Fri, 27 Apr 2007 07:14:24 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:10317 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755617AbXD0LOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:11:58 -0400
-Message-ID: <4631DA66.3080601@linux.vnet.ibm.com>
-Date: Fri, 27 Apr 2007 16:41:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Pavel Emelianov <xemul@sw.ru>
-CC: Andrew Morton <akpm@linux-foundation.org>, Kirill Korotaev <dev@sw.ru>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] RSS Container, make page_referenced() container aware
-References: <4630F75F.9060206@linux.vnet.ibm.com> <4631C7B1.1070406@sw.ru>
-In-Reply-To: <4631C7B1.1070406@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 07:14:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:references:user-agent:date:from:to:cc:
+	subject:content-disposition;
+	b=Ww8ITiUTCsfw5JsbTVa3/2oInMbmXor4CLzOfBts23+9Z6GXQ6poFnSVOaymLpDPM
+	QJHlc9VZmzXq3ZnsdavVQ==
+Message-Id: <20070427111300.769553000@menage.corp.google.com>
+References: <20070427104607.252541000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Fri, 27 Apr 2007 03:46:12 -0700
+From: menage@google.com
+To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com
+Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+       devel@openvz.org
+Subject: [PATCH 5/9] Containers (V9): Add container_clone() interface
+Content-Disposition: inline; filename=container_clone.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov wrote:
-> Balbir Singh wrote:
->> Hi, Pavel,
->>
->> This patch should help with the shared page issue of one container
->> holding shared pages in a another container (the container that
->> brought in the page -- by first touch) hostage.
-> 
-> The shared pages accounting is tricky.
-> Actually we planned not to do it right now, but later,
-> when (if) this will be accepted and we'll move forward
-> to the fractions accounting.
-> 
+This patch adds support for container_clone(), a speculative interface
+to creating new containers intended to be used for systems such as
+namespace unsharing.
 
-Yes, but this patch ensures that we do not hit bottle necks
-when pages are shared
+Signed-off-by: Paul Menage <menage@google.com>
 
->> ------------------------------------------------------------------------
->>
->>
->>
->> Make page_referenced() container aware. Without this patch, page_referenced()
->> can cause a page to be skipped while reclaiming pages. This patch
->> ensures that other containers do not hold pages in a particular container
->> hostage. It is required to ensure that shared pages are freed from a container
->> when they are not actively referenced from the container that brought
->> them in
->>
->> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->> ---
->>
->>  include/linux/rmap.h |    5 +++--
->>  mm/rmap.c            |   26 ++++++++++++++++++++------
->>  mm/vmscan.c          |    4 ++--
->>  3 files changed, 25 insertions(+), 10 deletions(-)
->>
->> diff -puN mm/vmscan.c~rss-implement-per-container-page-referenced mm/vmscan.c
->> --- linux-2.6.20/mm/vmscan.c~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
->> +++ linux-2.6.20-balbir/mm/vmscan.c	2007-04-27 00:04:38.000000000 +0530
->> @@ -489,7 +489,7 @@ static unsigned long shrink_page_list(st
->>  		if (PageWriteback(page))
->>  			goto keep_locked;
->>  
->> -		referenced = page_referenced(page, 1);
->> +		referenced = page_referenced(page, 1, sc->cnt);
->>  		/* In active use or really unfreeable?  Activate it. */
->>  		if (referenced && page_mapping_inuse(page))
->>  			goto activate_locked;
->> @@ -852,7 +852,7 @@ force_reclaim_mapped:
->>  		if (page_mapped(page)) {
->>  			if (!reclaim_mapped ||
->>  			    (total_swap_pages == 0 && PageAnon(page)) ||
->> -			    page_referenced(page, 0)) {
->> +			    page_referenced(page, 0, sc->cnt)) {
->>  				list_add(&page->lru, &l_active);
->>  				continue;
->>  			}
->> diff -puN mm/rmap.c~rss-implement-per-container-page-referenced mm/rmap.c
->> --- linux-2.6.20/mm/rmap.c~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
->> +++ linux-2.6.20-balbir/mm/rmap.c	2007-04-26 23:33:41.000000000 +0530
->> @@ -318,7 +318,7 @@ out:
->>  	return referenced;
->>  }
->>  
->> -static int page_referenced_anon(struct page *page)
->> +static int page_referenced_anon(struct page *page, struct rss_container *cnt)
->>  {
->>  	unsigned int mapcount;
->>  	struct anon_vma *anon_vma;
->> @@ -331,6 +331,13 @@ static int page_referenced_anon(struct p
->>  
->>  	mapcount = page_mapcount(page);
->>  	list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
->> +		/*
->> +		 * If we are reclaiming on behalf of a container, skip
->> +		 * counting on behalf of references from different
->> +		 * containers
->> +		 */
->> +		if (cnt && (vma->vm_mm->rss_container != cnt))
->> +			continue;
-> 
-> An #ifdef missed - mm->rss_container makes sense with 
-> the CONFIG_RSS_COUNTAINER set only.
+---
+ include/linux/container.h |    2 
+ kernel/container.c        |  121 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 123 insertions(+)
 
-Good catch. I'll fix it!
+Index: container-2.6.21-rc7-mm1/kernel/container.c
+===================================================================
+--- container-2.6.21-rc7-mm1.orig/kernel/container.c
++++ container-2.6.21-rc7-mm1/kernel/container.c
+@@ -1619,3 +1619,124 @@ void container_exit(struct task_struct *
+ 	tsk->containers = init_task.containers;
+ 	task_unlock(tsk);
+ }
++
++static atomic_t namecnt;
++static void get_unused_name(char *buf) {
++	sprintf(buf, "node%d", atomic_inc_return(&namecnt));
++}
++
++/**
++ * container_clone - duplicate the current container in the hierarchy
++ * that the given subsystem is attached to, and move this task into
++ * the new child
++ */
++int container_clone(struct task_struct *tsk, struct container_subsys *subsys)
++{
++	struct dentry *dentry;
++	int ret = 0;
++	char nodename[32];
++	struct container *parent, *child;
++	struct inode *inode;
++	struct css_group *cg;
++	struct containerfs_root *root;
++
++	/* We shouldn't be called by an unregistered subsystem */
++	BUG_ON(!subsys->active);
++
++	/* First figure out what hierarchy and container we're dealing
++	 * with, and pin them so we can drop container_mutex */
++	mutex_lock(&container_mutex);
++ again:
++	root = subsys->root;
++	if (root == &rootnode) {
++		printk(KERN_INFO
++		       "Not cloning container for unused subsystem %s\n",
++		       subsys->name);
++		mutex_unlock(&container_mutex);
++		return 0;
++	}
++	cg = &tsk->containers;
++	parent = task_container(tsk, subsys->subsys_id);
++	/* Pin the hierarchy */
++	atomic_inc(&parent->root->sb->s_active);
++
++	mutex_unlock(&container_mutex);
++
++	/* Now do the VFS work to create a container */
++	get_unused_name(nodename);
++	inode = parent->dentry->d_inode;
++
++	/* Hold the parent directory mutex across this operation to
++	 * stop anyone else deleting the new container */
++	mutex_lock(&inode->i_mutex);
++	dentry = container_get_dentry(parent->dentry, nodename);
++	if (IS_ERR(dentry)) {
++		printk(KERN_INFO
++		       "Couldn't allocate dentry for %s: %ld\n", nodename,
++		       PTR_ERR(dentry));
++		ret = PTR_ERR(dentry);
++		goto out_release;
++	}
++
++	/* Create the container directory, which also creates the container */
++	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
++	child = __d_cont(dentry);
++	dput(dentry);
++	if (ret) {
++		printk(KERN_INFO
++		       "Failed to create container %s: %d\n", nodename,
++		       ret);
++		goto out_release;
++	}
++
++	if (!child) {
++		printk(KERN_INFO
++		       "Couldn't find new container %s\n", nodename);
++		ret = -ENOMEM;
++		goto out_release;
++	}
++
++	/* The container now exists. Retake container_mutex and check
++	 * that we're still in the same state that we thought we
++	 * were. */
++	mutex_lock(&container_mutex);
++	if ((root != subsys->root) ||
++	    (parent != task_container(tsk, subsys->subsys_id))) {
++		/* Aargh, we raced ... */
++		mutex_unlock(&inode->i_mutex);
++
++		deactivate_super(parent->root->sb);
++		/* The container is still accessible in the VFS, but
++		 * we're not going to try to rmdir() it at this
++		 * point. */
++		printk(KERN_INFO
++		       "Race in container_clone() - leaking container %s\n",
++		       nodename);
++		goto again;
++	}
++
++	/* All seems fine. Finish by moving the task into the new container */
++	ret = attach_task(child, tsk);
++	mutex_unlock(&container_mutex);
++
++ out_release:
++	mutex_unlock(&inode->i_mutex);
++	deactivate_super(parent->root->sb);
++	return ret;
++}
++
++/* See if "cont" is a descendant of the current task's container in
++ * the appropriate hierarchy */
++
++int container_is_descendant(const struct container *cont) {
++	int ret;
++	struct container *target;
++	int subsys_id;
++	get_first_subsys(cont, NULL, &subsys_id);
++	target = task_container(current, subsys_id);
++	while (cont != target && cont!= cont->top_container) {
++		cont = cont->parent;
++	}
++	ret = (cont == target);
++	return ret;
++}
+Index: container-2.6.21-rc7-mm1/include/linux/container.h
+===================================================================
+--- container-2.6.21-rc7-mm1.orig/include/linux/container.h
++++ container-2.6.21-rc7-mm1/include/linux/container.h
+@@ -189,6 +189,8 @@ static inline struct container* task_con
+ 
+ int container_path(const struct container *cont, char *buf, int buflen);
+ 
++int container_clone(struct task_struct *tsk, struct container_subsys *ss);
++
+ #else /* !CONFIG_CONTAINERS */
+ 
+ static inline int container_init_early(void) { return 0; }
 
-> 
->>  		referenced += page_referenced_one(page, vma, &mapcount);
->>  		if (!mapcount)
->>  			break;
->> @@ -350,7 +357,7 @@ static int page_referenced_anon(struct p
->>   *
->>   * This function is only called from page_referenced for object-based pages.
->>   */
->> -static int page_referenced_file(struct page *page)
->> +static int page_referenced_file(struct page *page, struct rss_container *cnt)
->>  {
->>  	unsigned int mapcount;
->>  	struct address_space *mapping = page->mapping;
->> @@ -383,6 +390,13 @@ static int page_referenced_file(struct p
->>  	mapcount = page_mapcount(page);
->>  
->>  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
->> +		/*
->> +		 * If we are reclaiming on behalf of a container, skip
->> +		 * counting on behalf of references from different
->> +		 * containers
->> +		 */
->> +		if (cnt && (vma->vm_mm->rss_container != cnt))
->> +			continue;
->>  		if ((vma->vm_flags & (VM_LOCKED|VM_MAYSHARE))
->>  				  == (VM_LOCKED|VM_MAYSHARE)) {
->>  			referenced++;
->> @@ -405,7 +419,7 @@ static int page_referenced_file(struct p
->>   * Quick test_and_clear_referenced for all mappings to a page,
->>   * returns the number of ptes which referenced the page.
->>   */
->> -int page_referenced(struct page *page, int is_locked)
->> +int page_referenced(struct page *page, int is_locked, struct rss_container *cnt)
->>  {
->>  	int referenced = 0;
->>  
->> @@ -417,14 +431,14 @@ int page_referenced(struct page *page, i
->>  
->>  	if (page_mapped(page) && page->mapping) {
->>  		if (PageAnon(page))
->> -			referenced += page_referenced_anon(page);
->> +			referenced += page_referenced_anon(page, cnt);
->>  		else if (is_locked)
->> -			referenced += page_referenced_file(page);
->> +			referenced += page_referenced_file(page, cnt);
->>  		else if (TestSetPageLocked(page))
->>  			referenced++;
->>  		else {
->>  			if (page->mapping)
->> -				referenced += page_referenced_file(page);
->> +				referenced += page_referenced_file(page, cnt);
->>  			unlock_page(page);
->>  		}
->>  	}
->> diff -puN include/linux/rmap.h~rss-implement-per-container-page-referenced include/linux/rmap.h
->> --- linux-2.6.20/include/linux/rmap.h~rss-implement-per-container-page-referenced	2007-04-26 23:28:44.000000000 +0530
->> +++ linux-2.6.20-balbir/include/linux/rmap.h	2007-04-26 23:29:31.000000000 +0530
->> @@ -8,6 +8,7 @@
->>  #include <linux/slab.h>
->>  #include <linux/mm.h>
->>  #include <linux/spinlock.h>
->> +#include <linux/rss_container.h>
->>  
->>  /*
->>   * The anon_vma heads a list of private "related" vmas, to scan if
->> @@ -93,7 +94,7 @@ static inline void page_dup_rmap(struct 
->>  /*
->>   * Called from mm/vmscan.c to handle paging out
->>   */
->> -int page_referenced(struct page *, int is_locked);
->> +int page_referenced(struct page *, int is_locked, struct rss_container *cnt);
->>  int try_to_unmap(struct page *, int ignore_refs);
->>  
->>  /*
->> @@ -121,7 +122,7 @@ int page_mkclean(struct page *);
->>  #define anon_vma_prepare(vma)	(0)
->>  #define anon_vma_link(vma)	do {} while (0)
->>  
->> -#define page_referenced(page,l) TestClearPageReferenced(page)
->> +#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
->>  #define try_to_unmap(page, refs) SWAP_FAIL
->>  
->>  static inline int page_mkclean(struct page *page)
->> _
-> 
-
-
--- 
-	Thanks,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+--
