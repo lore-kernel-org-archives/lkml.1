@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXD0CFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbXD0CII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753996AbXD0CFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 22:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbXD0CFZ
+	id S1755407AbXD0CII (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 22:08:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbXD0CIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 22:05:25 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60482 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753996AbXD0CFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 22:05:23 -0400
-Date: Thu, 26 Apr 2007 19:04:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070426190438.3a856220.akpm@linux-foundation.org>
-In-Reply-To: <20070424222105.883597089@sgi.com>
-References: <20070424222105.883597089@sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Apr 2007 22:08:07 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:5444 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755407AbXD0CIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 22:08:06 -0400
+Date: Fri, 27 Apr 2007 06:05:02 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ANNOUNCE] battery2 git repository
+Message-ID: <20070427020502.GA18645@zarina>
+Reply-To: cbou@mail.ru
+References: <20070426232902.GA10423@zarina> <20070427000928.GA5303@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070427000928.GA5303@suse.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Apr 2007 15:21:05 -0700 clameter@sgi.com wrote:
+On Thu, Apr 26, 2007 at 05:09:28PM -0700, Greg KH wrote:
+> On Fri, Apr 27, 2007 at 03:29:02AM +0400, Anton Vorontsov wrote:
+> > 
+> > To not confuse with David own battery-2.6 repository, it's called
+> > battery2-2.6, and can be found here:
+> 
+> So, I'm still not quite understanding this, is David giving up on his
+> code now that you have pulled his changes into your tree?  Or is there
+> some reason there are still two competing versions here?
 
-> This patchset modifies the Linux kernel so that larger block sizes than
-> page size can be supported. Larger block sizes are handled by using
-> compound pages of an arbitrary order for the page cache instead of
-> single pages with order 0.
+[ Of course David will answer for himself better. Below is what I'm
+  seeing. ]
 
-Something I was looking for but couldn't find: suppose an application takes
-a pagefault against the third 4k page of an order-2 pagecache "page".  We
-need to instantiate a pte against find_get_page(offset/4)+3.  But these
-patches don't touch mm/memory.c at all and filemap_nopage() appears to
-return the zeroeth 4k page all the time in that case.
+David said he intend to port his OLPC and Apple PMU work to battery2
+class implementation (and I volunteered to assist, i.e. port them
+myself ;-). So, when these two drivers will be ported, then there
+will no reasons for battery-2.6 existence anymore.
 
-So.. what am I missing, and how does that part work?
-
+As for the competition... No competition took place at all, there was
+two parallel works, each for two *independent* projects (OLPC and
+handhelds.org). battery2 should be suitable for both.
 
 
-Also, afaict your important requirements would be met by retaining
-PAGE_CACHE_SIZE=4k and simply ensuring that pagecache is populated by
-physically contiguous pages - so instead of allocating and adding one 4k
-page, we allocate an order-2 page and sprinkle all four page*'s into the
-radix tree in one hit.  That should be fairly straightforward to do, and
-could be made indistinguishably fast from doing a single 16k page for some
-common pagecache operations (gang-insert, gang-lookup).
+David?
 
-The BIO and block layers will do-the-right-thing with that pagecache and
-you end up with four times more data in the SG lists, worst-case.
+> thanks,
+> 
+> greg k-h
+
+Sincerely,
+
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
