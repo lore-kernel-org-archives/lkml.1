@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbXD0OPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbXD0OPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755868AbXD0OPu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbXD0OGO
+	id S1755961AbXD0OPv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXD0OGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:06:14 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:29121 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755867AbXD0OE4 (ORCPT
+	Fri, 27 Apr 2007 10:06:21 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:20288 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755869AbXD0OE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:04:56 -0400
-Message-Id: <20070427140514.809855077@de.ibm.com>
+	Fri, 27 Apr 2007 10:04:57 -0400
+Message-Id: <20070427140515.277009760@de.ibm.com>
 References: <20070427140503.087958775@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Apr 2007 16:05:16 +0200
+Date: Fri, 27 Apr 2007 16:05:18 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 13/38] cio: Dont call css_update_ssd_info from interrupt context.
-Content-Disposition: inline; filename=111-cio-update-ssd.diff
+Subject: [patch 15/38] cio: cm_enable memory leak.
+Content-Disposition: inline; filename=113-cio-leak.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
+We allocage two pages when channel path measurements are enabled
+via cm_enable. We must not forget to free them again when
+channel path measurements are disabled again.
+
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- drivers/s390/cio/device.c     |    3 ++-
- drivers/s390/cio/device_fsm.c |    1 -
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/s390/cio/chsc.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-Index: quilt-2.6/drivers/s390/cio/device.c
+Index: quilt-2.6/drivers/s390/cio/chsc.c
 ===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device.c	2007-04-27 16:04:55.000000000 +0200
-+++ quilt-2.6/drivers/s390/cio/device.c	2007-04-27 16:04:55.000000000 +0200
-@@ -743,6 +743,7 @@
- static void sch_attach_device(struct subchannel *sch,
- 			      struct ccw_device *cdev)
- {
-+	css_update_ssd_info(sch);
- 	spin_lock_irq(sch->lock);
- 	sch->dev.driver_data = cdev;
- 	cdev->private->schid = sch->schid;
-@@ -878,7 +879,7 @@
- 	priv = container_of(work, struct ccw_device_private, kick_work);
- 	cdev = priv->cdev;
- 	sch = to_subchannel(cdev->dev.parent);
--
-+	css_update_ssd_info(sch);
- 	/*
- 	 * io_subchannel_register() will also be called after device
- 	 * recognition has been done for a boxed device (which will already
-Index: quilt-2.6/drivers/s390/cio/device_fsm.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device_fsm.c	2007-04-27 16:04:55.000000000 +0200
-+++ quilt-2.6/drivers/s390/cio/device_fsm.c	2007-04-27 16:04:55.000000000 +0200
-@@ -246,7 +246,6 @@
- 	 */
- 	old_lpm = sch->lpm;
- 	stsch(sch->schid, &sch->schib);
--	css_update_ssd_info(sch);
- 	sch->lpm = sch->schib.pmcw.pam & sch->opm;
- 	/* Check since device may again have become not operational. */
- 	if (!sch->schib.pmcw.dnv)
+--- quilt-2.6.orig/drivers/s390/cio/chsc.c	2007-04-27 16:04:55.000000000 +0200
++++ quilt-2.6/drivers/s390/cio/chsc.c	2007-04-27 16:04:55.000000000 +0200
+@@ -818,7 +818,7 @@
+ 		} else
+ 			chsc_remove_cmg_attr(css);
+ 	}
+-	if (enable && !css->cm_enabled) {
++	if (!css->cm_enabled) {
+ 		free_page((unsigned long)css->cub_addr1);
+ 		free_page((unsigned long)css->cub_addr2);
+ 	}
 
 -- 
 blue skies,
