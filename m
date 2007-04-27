@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbXD0TN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXD0TOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140AbXD0TN2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbXD0TMx
+	id S1757136AbXD0TOF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXD0TMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:12:53 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35232 "EHLO mx2.suse.de"
+	Fri, 27 Apr 2007 15:12:51 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35240 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757056AbXD0S5H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:57:07 -0400
+	id S1757043AbXD0S5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:57:11 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 14/46] Driver core: suppress uevents via filter
-Date: Fri, 27 Apr 2007 11:53:28 -0700
-Message-Id: <11777000881307-git-send-email-gregkh@suse.de>
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 15/46] Driver core: switch firmware_class to uevent_suppress.
+Date: Fri, 27 Apr 2007 11:53:29 -0700
+Message-Id: <11777000923797-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777000852694-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777000881307-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -32,45 +32,64 @@ References: <20070427185152.GA17121@kroah.com>
  <11777000773819-git-send-email-gregkh@suse.de>
  <11777000814075-git-send-email-gregkh@suse.de>
  <11777000852694-git-send-email-gregkh@suse.de>
+ <11777000881307-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Suppress uevents for devices if uevent_suppress is set via
-dev_uevent_filter(). This makes the driver core suppress all device
-uevents, not just the add event in device_add().
+Use uevent_suppress instead of returning an error code in
+firmware_uevent(). Get rid of the now unneeded FW_STATUS_READY
+and FW_STATUS_READY_NOHOTPLUG.
 
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/core.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/base/firmware_class.c |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index be6aeb4..c34a4d8 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -120,6 +120,8 @@ static int dev_uevent_filter(struct kset *kset, struct kobject *kobj)
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index c0a979a..97ab5bd 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -31,8 +31,6 @@ enum {
+ 	FW_STATUS_LOADING,
+ 	FW_STATUS_DONE,
+ 	FW_STATUS_ABORT,
+-	FW_STATUS_READY,
+-	FW_STATUS_READY_NOHOTPLUG,
+ };
  
- 	if (ktype == &ktype_device) {
- 		struct device *dev = to_dev(kobj);
-+		if (dev->uevent_suppress)
-+			return 0;
- 		if (dev->bus)
- 			return 1;
- 		if (dev->class)
-@@ -675,8 +677,7 @@ int device_add(struct device *dev)
- 		goto PMError;
- 	if ((error = bus_add_device(dev)))
- 		goto BusError;
--	if (!dev->uevent_suppress)
--		kobject_uevent(&dev->kobj, KOBJ_ADD);
-+	kobject_uevent(&dev->kobj, KOBJ_ADD);
- 	bus_attach_device(dev);
- 	if (parent)
- 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
+ static int loading_timeout = 60;	/* In seconds */
+@@ -96,9 +94,6 @@ static int firmware_uevent(struct device *dev, char **envp, int num_envp,
+ 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
+ 	int i = 0, len = 0;
+ 
+-	if (!test_bit(FW_STATUS_READY, &fw_priv->status))
+-		return -ENODEV;
+-
+ 	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
+ 			   "FIRMWARE=%s", fw_priv->fw_id))
+ 		return -ENOMEM;
+@@ -333,6 +328,7 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
+ 	f_dev->parent = device;
+ 	f_dev->class = &firmware_class;
+ 	dev_set_drvdata(f_dev, fw_priv);
++	f_dev->uevent_suppress = 1;
+ 	retval = device_register(f_dev);
+ 	if (retval) {
+ 		printk(KERN_ERR "%s: device_register failed\n",
+@@ -382,9 +378,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
+ 	}
+ 
+ 	if (uevent)
+-                set_bit(FW_STATUS_READY, &fw_priv->status);
+-        else
+-                set_bit(FW_STATUS_READY_NOHOTPLUG, &fw_priv->status);
++		f_dev->uevent_suppress = 0;
+ 	*dev_p = f_dev;
+ 	goto out;
+ 
 -- 
 1.5.1.2
 
