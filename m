@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbXD0PJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbXD0POs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755883AbXD0PJO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbXD0PJO
+	id S1755978AbXD0POs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXD0POr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:09:14 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:35341 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755883AbXD0PJN (ORCPT
+	Fri, 27 Apr 2007 11:14:47 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:53035 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755960AbXD0POq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:09:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=BWkjk1ALrgDdvh5c30ymeHxvySd7INwArAeGrYeMKmQdRo5AP0XLMOAsfWq+SkDTyZDy1yEINhfQ9v0iYsA+kGvrZjVRwoJmReWhZjmLgYkxWc6QccB5W3Fiz9S1/fQ0561SUr0lhCEVy9EhCSJqjhqg6p8J1U7hsBPP3pnB5U0=
-Message-ID: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
-Date: Fri, 27 Apr 2007 20:39:11 +0530
-From: "Sunil Naidu" <akula2.shark@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Video for Linux deprecated drivers (VIDEO_V4L1)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 11:14:46 -0400
+Date: Fri, 27 Apr 2007 11:06:47 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Valerie Henson <val_henson@linux.intel.com>
+Cc: Amit Gud <gud@ksu.edu>, Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070427150647.GA6019@c2.user-mode-linux.org>
+References: <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL> <20070425224710.GB16129@nifty> <20070426141455.GA6155@c2.user-mode-linux.org> <4630CAEC.2050909@ksu.edu> <20070426160504.GA7970@c2.user-mode-linux.org> <20070427045824.GB20286@nifty>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070427045824.GB20286@nifty>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Apr 26, 2007 at 09:58:25PM -0700, Valerie Henson wrote:
+> Here's an example, spelled out:
+> 
+> Allocate file 1 in chunk A.
+> Grow file 1.
+> Chunk A fills up.
+> Allocate continuation inode for file 1 in chunk B.
+> Chunk A gets some free space.
+> Chunk B fills up.
+> Pick chunk A for allocating next block of file 1.
+> Try to look up a continuation inode for file 1 in chunk A.
+> Continuation inode for file 1 found in chunk A!
+> Attach newly allocated block to existing inode for file 1 in chunk A.
 
-I need add a device for a particular solution on a x86 box. Device is
-Logitech QuickCam, USB based WebCam (has to be included because of the
-change in the experiment specs).
+So far, so good (and the slides are helpful, tx!).  What happens when
+file 1 keeps growing and chunk A fills up (and chunk B is still full)?
+Can the same continuation inode also point at chunk C, where the file
+is going to grow to?
 
-To get the device working (capture images by a V4L application), need
-to compile the driver (qc-usb) & insert the quickcam.ko module. But,
-what the requirement says I need to enable the VIDEO_V4L1 support.
-Then I need to select USB_QUICKCAM_MESSENGER driver under the V4L USB
-devices. Till here it's fine.
+				Jeff
 
-But if I look at the kernel config, VIDEO_V4L1 is deprecated. If I
-decide to enable VIDEO_V4L1_COMPAT, there isn't any
-USB_QUICKCAM_MESSENGER driver under the V4L USB devices!
-
-Should I select the VIDEO_V4L1 support to get the WebCam working or is
-there any other way (work around) to get my WebCam working with
-VIDEO_V4L1_COMPAT? Comments pl?
-
-~Akula2
+-- 
+Work email - jdike at linux dot intel dot com
