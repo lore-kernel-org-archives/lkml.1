@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751605AbXD0NrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbXD0Nt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751605AbXD0NrE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 09:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbXD0NrD
+	id S1755843AbXD0Nt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 09:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755844AbXD0Nt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 09:47:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48277 "EHLO mx2.mail.elte.hu"
+	Fri, 27 Apr 2007 09:49:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34026 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751605AbXD0NrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 09:47:01 -0400
-Date: Fri, 27 Apr 2007 15:45:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mark Lord <lkml@rtr.ca>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070427134541.GA26550@elte.hu>
-References: <20070425214704.GA32572@elte.hu> <4631F854.20207@rtr.ca> <4631F924.4080207@rtr.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4631F924.4080207@rtr.ca>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755843AbXD0Nt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 09:49:28 -0400
+Message-ID: <4631FEEE.4070005@redhat.com>
+Date: Fri, 27 Apr 2007 09:47:26 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: bryan.wu@analog.com, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/33] 2.6.20-stable review
+References: <20070426165445.GA1898@kroah.com>	 <1177668954.5969.18.camel@roc-desktop> <9a8748490704270405w1b02119dic0422a0ce661357c@mail.gmail.com>
+In-Reply-To: <9a8748490704270405w1b02119dic0422a0ce661357c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Mark Lord <lkml@rtr.ca> wrote:
-
-> > You've really outdone yourself this time!
-> >
-> > 2.6.21 + CFS-v6, plus the futex PI fix patch posted later, just 
-> > absolutely rocks here!
-> >
-> > I'm having a very difficult time finding any fault with it,
-> > and it has now displaced the stock scheduler as my default
-> > and personal favourite.
-> >
-> > The KDE (Dapper Drake) desktop is smooth under 100% CPU load, mp3's 
-> > play without glitches, and everything is just *so* responsive.
+Jesper Juhl wrote:
 > 
-> Oh, and all of this is *without* renicing X11, even with "make -j2" 
-> happening on the kernel tree.
+> The normal way -stable works is that it tracks the latest 2.6.x kernel
+> that has been released.
+> Now that 2.6.21 has been released, a final flush of the patch queue
+> against 2.6.20 is done, that will be 2.6.20.10, and then -stable will
+> switch to 2.6.21.y, when 2.6.22 comes out a final 2.6.21.y is made and
+> then it's off to track 2.6.22
+> 
 
-cool! :) Regarding renicing: all people so far who tried reniced and 
-non-reniced X say both work fine under CFS, so i've disabled the option 
-by default in the Kconfig.
-
-	Ingo
+The older stable version is usually maintained for a while after the next
+major release comes out. How long that is can vary. I would personally like
+to see 2.6.20 continue for a while, at least until 2.6.21.x is judged stable
+enough (that could be a long time.)
