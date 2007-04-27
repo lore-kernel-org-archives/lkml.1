@@ -1,33 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbXD0PtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbXD0Pul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbXD0PtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbXD0PtS
+	id S1756035AbXD0Pul (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbXD0Puk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:49:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41216 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756019AbXD0PtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:49:17 -0400
-Message-ID: <46321B7B.9060807@redhat.com>
-Date: Fri, 27 Apr 2007 11:49:15 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Sunil Naidu <akula2.shark@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Enigma of Hardware Monitoring in 2.6.20.x or 2.6.21
-References: <8355959a0704270745i2c0b295u4185c7ac63503696@mail.gmail.com>
-In-Reply-To: <8355959a0704270745i2c0b295u4185c7ac63503696@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Apr 2007 11:50:40 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:2407 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756033AbXD0Puh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:50:37 -0400
+Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Keilty <peter.keilty@hp.com>
+Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <463219CD.5040203@hp.com>
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>
+	 <1177621673.12796.121.camel@imap.mvista.com>  <46320ACD.6090704@hp.com>
+	 <1177688158.12796.125.camel@imap.mvista.com>  <463219CD.5040203@hp.com>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 08:48:51 -0700
+Message-Id: <1177688931.12796.130.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunil Naidu wrote:
-> 
-> I have this enigma called Hardware Monitoring support on many boards.
+On Fri, 2007-04-27 at 11:42 -0400, Peter Keilty wrote:
 
-Try the lm-sensors mailing list (look in MAINTAINERS.)
+> >
+> >There is a read(), and a vread() did you modify the slow syscall path to
+> >use the vread()?
+> >  
+> >
+> I miss type, read().
+
+John mentioned that he thought fsys_mmio_ptr could be held in the vread
+pointer. vread() is used in x86 for vsyscalls. It looks like you've used
+the update_vsyscall() which is also used for vsyscalls. So vread could
+also be used .. Have you considered that at all?
+
+Daniel
 
