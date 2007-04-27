@@ -1,155 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbXD0Gz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbXD0HDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbXD0Gz6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbXD0Gz6
+	id S1753394AbXD0HDW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 03:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbXD0HDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:55:58 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:32869 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755432AbXD0Gz4 (ORCPT
+	Fri, 27 Apr 2007 03:03:22 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:37444 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbXD0HDV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:55:56 -0400
-Date: Thu, 26 Apr 2007 23:55:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070426235542.bad7035a.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-References: <20070424222105.883597089@sgi.com>
-	<20070426190438.3a856220.akpm@linux-foundation.org>
-	<20070427022731.GF65285596@melbourne.sgi.com>
-	<20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 27 Apr 2007 03:03:21 -0400
+Subject: Re: Back to the future.
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704270939460.20493@sbz-30.cs.Helsinki.FI>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+	 <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
+	 <1177573348.5025.224.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+	 <1177617379.4737.29.camel@nigel.suspend2.net>
+	 <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
+	 <1177654110.4737.91.camel@nigel.suspend2.net>
+	 <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
+	 <1177655661.4737.106.camel@nigel.suspend2.net>
+	 <Pine.LNX.4.64.0704270939460.20493@sbz-30.cs.Helsinki.FI>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZAjFep5RiM17n3PBbpfg"
+Date: Fri, 27 Apr 2007 17:03:20 +1000
+Message-Id: <1177657400.4737.121.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 22:49:53 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Thu, 26 Apr 2007, Andrew Morton wrote:
-> 
-> > > Or make sure that truncate
-> > > doesn't race on a partial *block* truncate?
-> > 
-> > lock four pages
-> 
-> You would only lock a single higher order block. Truncate works on that 
-> level.
+--=-ZAjFep5RiM17n3PBbpfg
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We all know that.
+Hi.
 
-> If you have 4 separate pages then you need to take separate locks and you 
-> may not have contiguous memory which makes the filesystem run through all 
-> sorts of hoops.
+On Fri, 2007-04-27 at 09:50 +0300, Pekka J Enberg wrote:
+> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > Sorry Pekka, but that's just broken.
+>=20
+> It certainly isn't.
+>=20
+> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > It implies firstly that we tell all userspace programs "I'm sorry, but
+> > I'm suspending at the moment. Can you tip toe quietly around while I do
+> > it?" You can't seriously expect every userspace program to be modified
+> > to adjust it's behaviour according to whether we're writing a snapshot
+> > to disk at the moment or not.
+>=20
+> You don't need to modify other programs. You just need to display the=20
+> progress bar and block _user input_. I don't even claim to know X, but I=20
+> would be extremely surprised if you technically can't say "don't let=20
+> the user touch any other windows except this one." The user couldn't care=
+=20
+> less whether tasks are frozen or not by the kernel. What matters is that=20
+> the user can't shoot himself in the foot while snapshotting.
 
-This is completely incorrect.
+User input doesn't account for all system activity. Think of cron jobs
+or user initiated jobs that may have started before the cycle began.
 
-Of *course* they're contiguous.  That's the whole point.
+> Furthermore, we probably do need to do other things to ensure safety, lik=
+e=20
+> remounting filesystems read-only but again, this has nothing to do with=20
+> snapshotting per se. What the kernel needs to worry about is (1) providin=
+g=20
+> an atomic snapshot that is consistent and (2) resuming to that snapshot=20
+> safely. If the _user_ loses data that was generated between snapshot +=20
+> shutdown, it's absolutely no concern for the snapshot operation!
 
-It's not exactly hard to lock four pages which are contiguous in pagecache,
-contiguous in physical memory and are contiguous in the radix-tree.
+Noooo! If the user looses data, the user will be concerned and we should
+be. I for one would do my best to avoid using software that loses my
+data for me. I wouldn't care if you said "Well, it's your fault. You
+lost the data." From my perspective as a user, I didn't lose the data,
+some part of the computer's OS did.
 
+> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > It also implies that we can prepare a snapshot and then happily have th=
+e
+> > contents of the disk change so that they don't match the superblock and
+> > other filesystem details we just saved in the snapshot. We can't. At
+> > least not without modifying all the filesystems so that (at a minimum)
+> > they know how to throw away all the metadata they have at resume time
+> > and reread it from disk.
+>=20
+> But you just explained how we can! We shouldn't bend over backwards for=20
+> snapshotting just because the filesystems don't currently support=20
+> something we need.
 
-> > I'm not saying it's especially simple, nor fast.  But it has the advantage
-> > that we're not forced to use larger pages with _it's_ attendant performance
-> > problems.
-> 
-> The patch is not about forcing to use large pages but about the option to 
-> use larger pages. Its a new flexibility.
+Sorry, but I just don't believe filesystems should need to throw away
+metadata post resume. If we let data be changed after snapshotting (or
+ourselves cause it to be changed), we're the ones that are broken. Our
+snapshot is out of date and the expectations of userspace programs that
+were snapshotted will be out of date. Just imagine, for example, a
+userspace program that is snapshotted, then reads and deletes a
+temporary file. After the snapshot restore, it's running again. But
+wait, we can't read or delete the file again because it's already gone.
+Life just gets more complicated and confusing this way.
 
-That's just spin.
+> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > By the way, sorry. This email feels like it is pouring a lot of cold
+> > water on your ideas. I don't want to be negative!
+>=20
+> Don't worry, I am used to cold water :-).
 
-> > And it doesn't introduce a rather nasty hack of pretending (in some places)
-> > that pages are larger than they really are.
-> 
-> They are really larger. One page struct controls it all.
+Maybe, but I'd still rather be encouraging!
 
-No it doesn't and please stop spinning.  x86 ptes map 4k pages and the core
-MM needs changes to continue to work with this hack in place.
+Nigel
 
-If x86 had larger pagesize we wouldn't be seeing any of this.  It is a workaround
-for present-generation hardware.
+--=-ZAjFep5RiM17n3PBbpfg
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> > And it has the very significant advantage that it doesn't introduce brand
-> > new concepts and some complexity into core MM.
-> 
-> The patchset would reduce complexity and making it easy to handle the page 
-> cache. Gets rid of the hacks to support larger ones right now. Its 
-> straightforward, no new locking, very much a cleanup patch.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Were any cleanups made which were not also applicable as standalone things
-to mainline?
+iD8DBQBGMaA4N0y+n1M3mo0RAo8iAJ9u0EtFb+9ICDM8aQY3aYnadqUkXwCeOwH6
+IHymTO8NfMDCnv87CWvmpAQ=
+=uMrB
+-----END PGP SIGNATURE-----
 
-> > And make no mistake: the latter disadvantage is huge.  Because if we do the
-> > PAGE_CACHE_SIZE hack (sorry, but it _is_), we have to do it *for ever*. 
-> > Maintaining and enhancing core MM and VFS becomes harder and more costly
-> > and slower and more buggy *for ever*.  The ramp for people to become
-> > competent on core MM becomes longer.  Our developer pool becomes smaller, and
-> > proportionally less skilled.
-> 
-> No it becomes easier. Look at the patchset. It cleans up a huge mess.
-
-I see no cleanups which are not also applicable to mainline.
-
-> What is hacky about it?
-
-It pretends that pages are large than they actually are, forcing the
-pte-management code to also play along with the pretence.
-
-Pages *aren't* 16k.  They're 4k.
-
-> It is consistently using larger pages for the page 
-> cache and it integrates nicely into the VM.
-
-
-> > And hardware gets better.  If Intel & AMD come out with a 16k pagesize
-> > option in a couple of years we'll look pretty dumb.  If the problems which
-> > you're presently having with that controller get sorted out in the next
-> > generation of the hardware, we'll also look pretty dumb.
-> 
-> We are currently looking dumb and unable to deal with the hardware. Yes 
-> we can pressure the hardware vendors to produce hardware conforming to our 
-> specifications but I always thought that was how another company operates.
-
-That's spin as well.
-
-Please address my point: if in five years time x86 has larger or varible
-pagesize, this code will be a permanent millstone around our necks which we
-*should not have merged*.
-
-And if in five years time x86 does not have larger pagesize support then
-the manufacturers would have decided that 4k pages are not a performance
-problem, so we again should not have merged this code.
-
-> > As always, there are tradeoffs.  We can see the cons, and they are very
-> > significant.  We don't yet know the pros.  Perhaps they will be similarly
-> > significant.  But I don't believe that the larger PAGE_CACHE_SIZE hack
-> > (sorry) is the only way in which they can be realised.
-> 
-> It is the most consistent solution that avoid the proliferation of further 
-> hacks to address the large blocksize.
-
-You cannot say this.  I'm sitting here *watching* you refuse to seriously
-consider alternatives.
-
-And you've conspicuously failed to address my point regarding the
-*permanent* additional maintenance cost.
-
-
-Anyway.  Let's await those performance numbers.  If they're notably good,
-and if we judge that this goodness will be realised on more than one
-arguably-crippled present-day disk adapter then we can evaluate the
-*various* options which we have for stuffing more data into that adapter.
-
+--=-ZAjFep5RiM17n3PBbpfg--
 
