@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbXD0S63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757053AbXD0S6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbXD0S63 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757053AbXD0S5y
+	id S1757053AbXD0S6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757062AbXD0S5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:57:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35270 "EHLO mx2.suse.de"
+	Fri, 27 Apr 2007 14:57:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35257 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757060AbXD0S5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:57:42 -0400
+	id S1757052AbXD0S50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:57:26 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Adam Belay <ambx1@neo.rr.com>
-Subject: [PATCH 23/46] PNP: stop using the subsystem rwsem
-Date: Fri, 27 Apr 2007 11:53:37 -0700
-Message-Id: <11777001222882-git-send-email-gregkh@suse.de>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 19/46] kobject: kobject_add() reference leak
+Date: Fri, 27 Apr 2007 11:53:33 -0700
+Message-Id: <11777001072576-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777001182501-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777001041847-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -36,62 +37,31 @@ References: <20070427185152.GA17121@kroah.com>
  <11777000963332-git-send-email-gregkh@suse.de>
  <11777001002860-git-send-email-gregkh@suse.de>
  <11777001041847-git-send-email-gregkh@suse.de>
- <11777001072576-git-send-email-gregkh@suse.de>
- <11777001102852-git-send-email-gregkh@suse.de>
- <1177700114535-git-send-email-gregkh@suse.de>
- <11777001182501-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The rwsem is not used to protect anything, so the use of it by the PNP
-subsystem isn't really useful, and it's doubtful if it really did anything or
-not.  So I've removed it.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-Cc: Adam Belay <ambx1@neo.rr.com>
+We leak a reference if we attempt to add a kobject with no name.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/pnp/card.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
+ lib/kobject.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pnp/card.c b/drivers/pnp/card.c
-index 91c047a..dd6384b 100644
---- a/drivers/pnp/card.c
-+++ b/drivers/pnp/card.c
-@@ -311,7 +311,6 @@ done:
- 	return NULL;
- 
- found:
--	down_write(&dev->dev.bus->subsys.rwsem);
- 	dev->card_link = clink;
- 	dev->dev.driver = &drv->link.driver;
- 	if (pnp_bus_type.probe(&dev->dev))
-@@ -319,14 +318,11 @@ found:
- 	if (device_bind_driver(&dev->dev))
- 		goto err_out;
- 
--	up_write(&dev->dev.bus->subsys.rwsem);
--
- 	return dev;
- 
- err_out:
- 	dev->dev.driver = NULL;
- 	dev->card_link = NULL;
--	up_write(&dev->dev.bus->subsys.rwsem);
- 	return NULL;
- }
- 
-@@ -340,11 +336,9 @@ void pnp_release_card_device(struct pnp_dev * dev)
- 	struct pnp_card_driver * drv = dev->card_link->driver;
- 	if (!drv)
- 		return;
--	down_write(&dev->dev.bus->subsys.rwsem);
- 	drv->link.remove = &card_remove;
- 	device_release_driver(&dev->dev);
- 	drv->link.remove = &card_remove_first;
--	up_write(&dev->dev.bus->subsys.rwsem);
- }
- 
- /*
+diff --git a/lib/kobject.c b/lib/kobject.c
+index db1d237..eb251aa 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -174,6 +174,7 @@ int kobject_shadow_add(struct kobject * kobj, struct dentry *shadow_parent)
+ 	if (!*kobj->k_name) {
+ 		pr_debug("kobject attempted to be registered with no name!\n");
+ 		WARN_ON(1);
++		kobject_put(kobj);
+ 		return -EINVAL;
+ 	}
+ 	parent = kobject_get(kobj->parent);
 -- 
 1.5.1.2
 
