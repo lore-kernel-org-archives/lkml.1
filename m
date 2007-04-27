@@ -1,237 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbXD0WIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXD0WK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbXD0WIy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757486AbXD0WH6
+	id S1757493AbXD0WK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbXD0WK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:07:58 -0400
-Received: from ldap.somanetworks.com ([216.126.67.42]:47357 "EHLO
-	mail.somanetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757472AbXD0WHx (ORCPT
+	Fri, 27 Apr 2007 18:10:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54553 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757487AbXD0WKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:07:53 -0400
-Date: Fri, 27 Apr 2007 18:07:49 -0400 (EDT)
-From: Scott Murray <scottm@somanetworks.com>
-X-X-Sender: scottm@rancor.yyz.somanetworks.com
-To: Christoph Hellwig <hch@infradead.org>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
-In-Reply-To: <20070422120534.GA20763@infradead.org>
-Message-ID: <Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
- <11769657702107-git-send-email-ebiederm@xmission.com> <20070422120534.GA20763@infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Apr 2007 18:10:06 -0400
+Date: Fri, 27 Apr 2007 23:13:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: rct@gherkin.frus.com (Bob Tracy)
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: BAD_SG_DMA panic in aha1542
+Message-ID: <20070427231346.647797bc@the-village.bc.nu>
+In-Reply-To: <20070427214709.DC44BDBA2@gherkin.frus.com>
+References: <20070427214709.DC44BDBA2@gherkin.frus.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Apr 2007, Christoph Hellwig wrote:
+> As before, no problems using the sda hard disk (which is the boot drive):
+> everything works reliably until I touch the cdrom drive.
 
-> On Thu, Apr 19, 2007 at 12:55:29AM -0600, Eric W. Biederman wrote:
-> > From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
-> > 
-> > kthread_run replaces the kernel_thread and  daemonize calls
-> > during thread startup.
-> > 
-> > Calls to signal_pending were also removed as it is currently
-> > impossible for the cpci_hotplug thread to receive signals.
-> 
-> This drivers thread are a bit of a miss, although a lot better than
-> most other pci hotplug drivers :)
-> 
-> Below is more complete conversion to the kthread infrastructure +
-> wake_up_process to wake the thread.  Note that we had to keep
-> a thread_finished variable because the existing one had dual use.
+A little quiet contemplation and gnome number 387 suggests trying the following
+(and providing more detailed information such as the last message printed before
+the DMA message). Stuff a BUG() before the panic in BAD_DMA (aha1542.c) if needed
+to get a good trace.
 
-Sorry, it took me a few days to get to testing this out.  It looks good,    
-but I had to make a couple of tweaks to avoid a hang when rmmod'ing a
-board driver.  The board drivers do:
+Please report success/failure/change.
 
-cpci_hp_stop()
-cpci_hp_unregister_controller(controller)
-
-to shutdown, and the check in cpci_hp_unregister_controller if the thread
-is running wasn't working due to a bit too much code being excised.  The
-result was kthread_stop being called twice, which hangs.  I've indicated 
-my changes to avoid this inline below.
-
-Scott
-
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Acked-by: Scott Murray <scottm@somanetworks.com>
-
-> Index: linux-2.6/drivers/pci/hotplug/cpci_hotplug_core.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/hotplug/cpci_hotplug_core.c	2007-04-22 12:54:17.000000000 +0200
-> +++ linux-2.6/drivers/pci/hotplug/cpci_hotplug_core.c	2007-04-22 13:01:42.000000000 +0200
-> @@ -35,6 +35,7 @@
->  #include <linux/smp_lock.h>
->  #include <asm/atomic.h>
->  #include <linux/delay.h>
-> +#include <linux/kthread.h>
->  #include "cpci_hotplug.h"
->  
->  #define DRIVER_AUTHOR	"Scott Murray <scottm@somanetworks.com>"
-> @@ -59,9 +60,8 @@ static int slots;
->  static atomic_t extracting;
->  int cpci_debug;
->  static struct cpci_hp_controller *controller;
-> -static struct semaphore event_semaphore;	/* mutex for process loop (up if something to process) */
-> -static struct semaphore thread_exit;		/* guard ensure thread has exited before calling it quits */
-> -static int thread_finished = 1;
-> +static struct task_struct *cpci_thread;
-> +static int thread_finished;
->  
->  static int enable_slot(struct hotplug_slot *slot);
->  static int disable_slot(struct hotplug_slot *slot);
-> @@ -357,9 +357,7 @@ cpci_hp_intr(int irq, void *data)
->  	controller->ops->disable_irq();
->  
->  	/* Trigger processing by the event thread */
-> -	dbg("Signal event_semaphore");
-> -	up(&event_semaphore);
-> -	dbg("exited cpci_hp_intr");
-> +	wake_up_process(cpci_thread);
->  	return IRQ_HANDLED;
->  }
->  
-> @@ -521,17 +519,12 @@ event_thread(void *data)
->  {
->  	int rc;
->  
-> -	lock_kernel();
-> -	daemonize("cpci_hp_eventd");
-> -	unlock_kernel();
-> -
->  	dbg("%s - event thread started", __FUNCTION__);
->  	while (1) {
->  		dbg("event thread sleeping");
-> -		down_interruptible(&event_semaphore);
-> -		dbg("event thread woken, thread_finished = %d",
-> -		    thread_finished);
-> -		if (thread_finished || signal_pending(current))
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		schedule();
-> +		if (kthread_should_stop())
->  			break;
->  		do {
->  			rc = check_slots();
-> @@ -541,18 +534,17 @@ event_thread(void *data)
->  			} else if (rc < 0) {
->  				dbg("%s - error checking slots", __FUNCTION__);
->  				thread_finished = 1;
-> -				break;
-> +				goto out;
->  			}
-> -		} while (atomic_read(&extracting) && !thread_finished);
-> -		if (thread_finished)
-> +		} while (atomic_read(&extracting) && !kthread_should_stop());
-> +		if (kthread_should_stop())
->  			break;
->  
->  		/* Re-enable ENUM# interrupt */
->  		dbg("%s - re-enabling irq", __FUNCTION__);
->  		controller->ops->enable_irq();
->  	}
-> -	dbg("%s - event thread signals exit", __FUNCTION__);
-> -	up(&thread_exit);
-> + out:
->  	return 0;
->  }
->  
-> @@ -562,12 +554,8 @@ poll_thread(void *data)
->  {
->  	int rc;
->  
-> -	lock_kernel();
-> -	daemonize("cpci_hp_polld");
-> -	unlock_kernel();
-> -
->  	while (1) {
-> -		if (thread_finished || signal_pending(current))
-> +		if (kthread_should_stop() || signal_pending(current))
->  			break;
->  		if (controller->ops->query_enum()) {
->  			do {
-> @@ -578,48 +566,34 @@ poll_thread(void *data)
->  				} else if (rc < 0) {
->  					dbg("%s - error checking slots", __FUNCTION__);
->  					thread_finished = 1;
-> -					break;
-> +					goto out;
->  				}
-> -			} while (atomic_read(&extracting) && !thread_finished);
-> +			} while (atomic_read(&extracting) && !kthread_should_stop());
->  		}
->  		msleep(100);
->  	}
-> -	dbg("poll thread signals exit");
-> -	up(&thread_exit);
-> + out:
->  	return 0;
->  }
->  
->  static int
->  cpci_start_thread(void)
->  {
-> -	int pid;
-> -
-> -	/* initialize our semaphores */
-> -	init_MUTEX_LOCKED(&event_semaphore);
-> -	init_MUTEX_LOCKED(&thread_exit);
-> -	thread_finished = 0;
-> -
->  	if (controller->irq)
-> -		pid = kernel_thread(event_thread, NULL, 0);
-> +		cpci_thread = kthread_run(event_thread, NULL, "cpci_hp_eventd");
->  	else
-> -		pid = kernel_thread(poll_thread, NULL, 0);
-> -	if (pid < 0) {
-> +		cpci_thread = kthread_run(poll_thread, NULL, "cpci_hp_polld");
-> +	if (IS_ERR(cpci_thread)) {
->  		err("Can't start up our thread");
-> -		return -1;
-> +		return PTR_ERR(cpci_thread);
->  	}
-> -	dbg("Our thread pid = %d", pid);
-
-There still needs to be a:
-
-        thread_finished = 0;
-
-here, so that things work if a board driver is insmod'ed again after a 
-rmmod (i.e. cpci_hp_start after a cpci_hp_stop).
-
->  	return 0;
->  }
->  
->  static void
->  cpci_stop_thread(void)
->  {
-> -	thread_finished = 1;
-> -	dbg("thread finish command given");
-> -	if (controller->irq)
-> -		up(&event_semaphore);
-> -	dbg("wait for thread to exit");
-> -	down(&thread_exit);
-> +	kthread_stop(cpci_thread);
-
-As well, there still needs to be a:
-
-        thread_finished = 1;
-                         
-here to make the check in cpci_hp_unregister_controller work.
-
->  }
->  
->  int
+--- drivers/scsi/sr_ioctl.c~	2007-04-27 22:53:33.885035256 +0100
++++ drivers/scsi/sr_ioctl.c	2007-04-27 22:53:33.885035256 +0100
+@@ -187,9 +187,10 @@
+ 	struct scsi_sense_hdr sshdr;
+ 	int result, err = 0, retries = 0;
+ 	struct request_sense *sense = cgc->sense;
+-
++	void *zebedee = cgc->buffer;
++	
+ 	SDev = cd->device;
+-
++	
+ 	if (!sense) {
+ 		sense = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
+ 		if (!sense) {
+@@ -197,7 +198,22 @@
+ 			goto out;
+ 		}
+ 	}
+-
++	
++	if (cgc->buflen && cd->device->host->unchecked_isa_dma) {
++		switch(cgc->data_direction) {
++			case DMA_NONE:
++				break;
++			case DMA_FROM_DEVICE:
++			case DMA_TO_DEVICE: /* Boing!!!! said Zebedee */
++				zebedee = kmalloc(cgc->buflen, GFP_KERNEL|GFP_DMA);
++				if (zebedee ==NULL) {
++					err = -ENOMEM;
++					goto out;
++				}
++		}
++		if (cgc->data_direction == DMA_TO_DEVICE)
++			memcpy(zebedee, cgc->buffer, cgc->buflen);
++	}
+       retry:
+ 	if (!scsi_block_when_processing_errors(SDev)) {
+ 		err = -ENODEV;
+@@ -206,10 +222,13 @@
  
-
--- 
-Scott Murray
-SOMA Networks, Inc.
-Toronto, Ontario
-e-mail: scottm@somanetworks.com
+ 	memset(sense, 0, sizeof(*sense));
+ 	result = scsi_execute(SDev, cgc->cmd, cgc->data_direction,
+-			      cgc->buffer, cgc->buflen, (char *)sense,
++			      zebedee, cgc->buflen, (char *)sense,
+ 			      cgc->timeout, IOCTL_RETRIES, 0);
+ 
+ 	scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
++	
++	if (zebedeee != cgc->buffer && cgc->data_direction == DMA_FROM_DEVICE)
++		memcpy(cgc->buffer, zebedee, cgc->buflen);
+ 
+ 	/* Minimal error checking.  Ignore cases we know about, and report the rest. */
+ 	if (driver_byte(result) != 0) {
