@@ -1,106 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXD0SWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbXD0S1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbXD0SWh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbXD0SWh
+	id S1756984AbXD0S1h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756985AbXD0S1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:22:37 -0400
-Received: from mail.tmr.com ([64.65.253.246]:48597 "EHLO gaimboi.tmr.com"
+	Fri, 27 Apr 2007 14:27:37 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58001 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754303AbXD0SWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:22:36 -0400
-Message-ID: <46323F6F.6070903@tmr.com>
-Date: Fri, 27 Apr 2007 14:22:39 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1754288AbXD0S1g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:27:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Brownell <david-b@pacbell.net>
+Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
+Date: Fri, 27 Apr 2007 20:31:39 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-pm@lists.linux-foundation.org,
+       Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
+       suspend2-devel@lists.suspend2.net, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
+References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <1177669279.7828.55.camel@johannes.berg> <200704270856.42524.david-b@pacbell.net>
+In-Reply-To: <200704270856.42524.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: Ingo Molnar <mingo@elte.hu>, Ed Tomlinson <edt@aei.ca>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD
-  0.46
-References: <462D2BDD.4040406@tmr.com> <20070424065709.GB19802@elte.hu> <46312116.1030506@tmr.com> <200704270856.17210.kernel@kolivas.org>
-In-Reply-To: <200704270856.17210.kernel@kolivas.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704272031.41215.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> On Friday 27 April 2007 08:00, Bill Davidsen wrote:
->   
->> Ingo Molnar wrote:
->>     
->>> * Ed Tomlinson <edt@aei.ca> wrote:
->>>       
->>>>> SD 0.46		1-2 FPS
->>>>> cfs v5 nice -19	219-233 FPS
->>>>> cfs v5 nice 0 	1000-1996
->>>>>           
->>>>    cfs v5 nice -10  60-65 FPS
->>>>         
->>> the problem is, the glxgears portion of this test is an _inverse_
->>> testcase.
->>>
->>> The reason? glxgears on true 3D hardware will _not_ use X, it will
->>> directly use the 3D driver of the kernel. So by renicing X to -19 you
->>> give the xterms more chance to show stuff - the performance of the
->>> glxgears will 'degrade' - but that is what you asked for: glxgears is
->>> 'just another CPU hog' that competes with X, it's not a "true" X client.
->>>
->>> if you are after glxgears performance in this test then you'll get the
->>> best performance out of this by renicing X to +19 or even SCHED_BATCH.
->>>       
->> Several points on this...
->>
->> First, I don't think this is accelerated in the way you mean, the
->> machine is a test server, with motherboard video using the 945G video
->> driver. Given the limitations of the support in that setup, I don't
->> think it qualified as "true 3D hardware," although I guess I could try
->> using the vesafb version as a test.
->>
->> The 2nd thing I note is that on FC6 this scheduler seems to confuse
->> 'top' to some degree, since the glxgears is shown as taking 51% of the
->> CPU (one core), while the state breakdown shows about 73% in idle,
->> waitio, and int. image attached.
->>     
->
-> top by itself certainly cannot be trusted to give true representation of the 
-> cpu usage I'm afraid. It's not as convoluted as, say, trying to track memory 
-> usage of an application, but top's resolution being tied to HZ accounting 
-> makes it not reliable in that regard.
->   
->> After I upgrade the kernel and cfs to the absolute latest I'll repeat
->> this, as well as test with vesafb, and my planned run under heavy load.
->>     
->
-> I have a problem with your test case Bill. Its behaviour would depend on how 
-> gpu bound vs cpu bound vs accelerated vs non-accelerated your graphics card 
-> is. I get completely different results to those of the other testers given 
-> the different hardware configuration and I don't think my results are 
-> valuable. My problem with this testcase is - What would you define 
-> as "perfect" behaviour for your test case? It seems far too arbitrary.
->
->   
-It was more intended to give an immediate feedback on gross behavior. On 
-some old schedulers (2.4.x) it visibly ran one xterm after the other, 
-while on 2.6.2[01] that behavior is gone and all schedulers give equal 
-time as seen by the eye. Looking at the behavior with line and jump 
-scroll, under load or not, X nice or nasty, allows a quick check on 
-where the bad cases are if any exist.
+On Friday, 27 April 2007 17:56, David Brownell wrote:
+> On Friday 27 April 2007, Johannes Berg wrote:
+> > 
+> >  * FREEZE       Quiesce operations so that a consistent image can be saved;
+> >  *              but do NOT otherwise enter a low power device state, and do
+> >  *              NOT emit system wakeup events.
+> >  *
+> >  * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restoring
+> >  *              the system from a snapshot taken after an earlier FREEZE.
+> >  *              Some drivers will need to reset their hardware state instead
+> >  *              of preserving it, to ensure that it's never mistaken for the
+> >  *              state which that earlier snapshot had set up.
+> > 
+> > Why is prethaw even necessary?
+> 
+> Read the patch comments for the patch adding that transition.  Briefly,
+> adding that transition to swsusp resume was a significant bugfix for
+> all drivers that rely on controller state to determine how to resume.
+> 
+> (That's mostly drivers that are intelligent about wakeup events... so
+> unless you're working with such drivers, the issue may be unclear.)
+> 
+> 
+> > As far as I can tell it's only necessary 
+> > because resume() can't tell you whether you just want to thaw or need to
+> > reset since it doesn't tell you at what point it's invoked.
+> 
+> More like:  because swsusp overloaded the suspend()/resume() code paths
+> to do double duty.
+> 
+> Instead of just putting devices into low power states (just *which* state
+> is another discussion), they evolved into support for swsusp transitions...
+> causing trouble (and sometimes breakage) for non-swsusp models.
+> 
+> 
+> > Having ->freeze(), ->thaw() and ->restart() (can somebody come up with a
+> > better name?) that are called at the appropriate places (with
+> > freeze/thaw around preparing the image and freeze/restart around
+> > restoring would go a long way of clearing up the confusion in all the
+> > drivers. Of course, it'd have to be documented that freeze/thaw isn't
+> > the only valid combination but that freeze/restart is used too, but
+> > that's not hard to do nor hard to understand.
+> 
+> I suspect that after snapshot resume restart() should always be used.
+> That shouldn't be hard to understand at all.  It'd be sub-optimal in
+> the same cases today's system resume is sub-optimal:  devices that
+> were in low power states before system suspend wouldn't be that way
+> after system resume.
+> 
+> 
+> > And, incidentally, it could possibly make both suspend and hibernate
+> > work much faster too. The comments there talk about "minimally power
+> > management aware" drivers which always do the wrong thing for suspend,
+> > in that they always reset everything...
+> 
+> That comment was purely about existing practice ... and was mostly
+> about resume() processing, not suspend() paths.
+> 
+> It's an unfortunate reality that most device drivers are stupid in
+> terms of power management, so we need to be clear about just how
+> stupid they're allowed to be without being terminally broken.
+> 
+> Additionally, it would be a Good Thing if changes to clean up the
+> swsusp-related code paths didn't make "real suspend" more painful.
+> 
+> 
+> > Of course, some drivers will 
+> > actually need to do that, but if freeze/suspend and thaw/restart/resume
+> > have the same prototypes (probably just int <function>(void)) then
+> > drivers can trivially assign the same there.
+> > And hibernate would benefit since a lot of drivers could do a lot less
+> > work for freeze/thaw.
+> 
+> That actually gets into discussions from a while back about wanting
+> to be able to quiesce() devices, as separate from actually putting
+> them into low power states.
 
-I intended it as a quick way to determine really, visibly, bad 
-scheduling, not a a test for quantifying performance. The fact that fps 
-varies by almost an order of magnitude with some earlier versions of the 
-schedulers is certainly a red flag to me that there's a corner case, and 
-something I care more about than glxgears will be inconsistent as well.
+Yes, exactly.
 
-Hopefully in that context, as a relatively quick way to try nice and 
-load values, it's a useful tool.
+Moreover, I think we should separate the current suspend code from the
+hibernation (aka STD) code paths we're discussing.  I mean, we need
+hibernation-specific equivalents of drivers/base/power/suspend.c etc.
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
-
+Greetings,
+Rafael
