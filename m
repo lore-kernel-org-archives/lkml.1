@@ -1,72 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbXD0PQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755984AbXD0PRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbXD0PQN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXD0PQN
+	id S1755984AbXD0PRV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXD0PRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:16:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57175 "EHLO ogre.sisk.pl"
+	Fri, 27 Apr 2007 11:17:21 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47888 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755981AbXD0PQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:16:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 17:20:06 +0200
-User-Agent: KMail/1.9.5
-Cc: Alan Stern <stern@rowland.harvard.edu>, Nick Piggin <npiggin@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org> <1177684764.3565.20.camel@johannes.berg> <1177685391.3565.22.camel@johannes.berg>
-In-Reply-To: <1177685391.3565.22.camel@johannes.berg>
+	id S1755984AbXD0PRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:17:19 -0400
+Message-ID: <463213FD.3060401@suse.com>
+Date: Fri, 27 Apr 2007 11:17:17 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       reiserfs-dev@namesys.com
+Subject: Re: 2.6.21 reiserfs -- cicular locking?
+References: <200704261640.15068.david-b@pacbell.net>	<20070426224408.fd525b46.akpm@linux-foundation.org>	<s5hy7kew2m8.wl%tiwai@suse.de>	<s5hbqhaytph.wl%tiwai@suse.de>	<4631D9CD.4050106@suse.com> <s5h8xceypoe.wl%tiwai@suse.de>
+In-Reply-To: <s5h8xceypoe.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704271720.08150.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 April 2007 16:49, Johannes Berg wrote:
-> On Fri, 2007-04-27 at 16:39 +0200, Johannes Berg wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Takashi Iwai wrote:
+> At Fri, 27 Apr 2007 07:09:01 -0400,
+> Jeff Mahoney wrote:
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> Takashi Iwai wrote:
+>>> At Fri, 27 Apr 2007 12:09:03 +0200,
+>>> I wrote:
+>>>> I got a similar bug right now at the fresh boot of 2.6.21.
+>>>>
+>>>>
+>>>> ReiserFS: sda2: found reiserfs format "3.6" with standard journal
+>>>> ReiserFS: sda2: using ordered data mode
+>>>> ReiserFS: sda2: journal params: device sda2, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+>>>> ReiserFS: sda2: checking transaction log (sda2)
+>>>> ReiserFS: sda2: Using r5 hash to sort names
+>>>> ReiserFS: sda2: Removing [3613 1354701 0x0 SD]..done
+>>>> ReiserFS: sda2: There were 1 uncompleted unlinks/truncates. Completed
+>>>>
+>>>> =======================================================
+>>>> [ INFO: possible circular locking dependency detected ]
+>>>> 2.6.21-work #1
+>>>> -------------------------------------------------------
+>>>> mktemp/1459 is trying to acquire lock:
+>>>>  (&REISERFS_I(inode)->xattr_sem){..--}, at: [<e08a5236>] reiserfs_cache_default_acl+0x2a/0x9c [reiserfs]
+>>>>
+>>>> but task is already holding lock:
+>>>>  (&inode->i_mutex){--..}, at: [<c016d7dc>] open_namei+0xe2/0x5a2
+>>>>
+>>>> which lock already depends on the new lock.
+>>> The message disappears when I revert the patch:
+>>>
+>>> commit 9b7f375505f5611efb562065b57814b28a81abc3
+>>> Author: Jeff Mahoney <jeffm@suse.com>
+>>> Date:   Mon Apr 23 14:41:17 2007 -0700
+>>>
+>>>     reiserfs: fix xattr root locking/refcount bug
+>>>     
+>>>
+>>> So, likely a newly introduced bug after rc7...
+>> I got a message with a trace similar to this from Vladimir before I
+>> submitted that patch. I'm not sure how to annotate this, since the
+>> xattr_sem can never be taken in the manner described. Internal inodes
+>> are protected by I_PRIVATE.
 > 
-> > Good point. Though if we go for passing the interrupt-enable setting as
-> > an argument then many drivers will have the same
-> > "if (irqs_disabled()) return" code. Hm. I guess passing it isn't even
-> > strictly necessary.
+> Hm, then maybe my case was just a coincidence.
 > 
-> Eh, the point I actually wanted to make is that many drivers don't care
-> for the irqs disabled case and would have to add code to exclude it.
+> FWIW, I can reproduce the deadlock warning at each time I boot
+> non-patched 2.6.21, and after reverting the patch, it disappeared.
 
-I think we can use 'stages' and pass them as arguments to the functions.
+Ok, so I took another look at the report Vladimir sent me. The trace he
+ran into was in the delete inode path, but was still a race between the
+xattr_sem and the inode sem. Since we're locking the xattr root on the
+xattr read path now, this condition arises more freqently, but it's
+really the same one he reported.
 
-In that case we can have two callbacks for the hibernation (I'd prefer to say
-'hibernation' instead of 'suspend to disk' from now on), one 'quiesce' callback
-and one 'activate' callback that can be called many times in one
-snapshot/restore cycle with different arguments, for example:
+I'm using the default openSUSE config, which doesn't enable mutex
+debugging. I'll rebuild with it, and hopefully come up with a way to
+kill the warning.
 
-quiesce(PREPARE) -- that may be needed for drivers that allocate much memory
-before quiescing devices (if any)
-...
-quiesce(PRE_SNAPSHOT)
-...
-quiesce(PRE_SNAPSHOT_IRQ_OFF)
-...
-activate(POST_SNAPSHOT_IRQ_OFF)
-...
-activate(POST_SNAPSHOT)
-...
-activate(FINISH)
+- -Jeff
 
-etc.
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Greetings,
-Rafael
+iD8DBQFGMhP8LPWxlyuTD7IRAiInAJwO7Tpga98WvcPICFMSyvb0vSAvrQCdEbal
+XScT+lxIu181A6KNzKhNuYw=
+=K/gK
+-----END PGP SIGNATURE-----
