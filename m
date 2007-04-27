@@ -1,49 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXD0Abz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbXD0AcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbXD0Abz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755256AbXD0Abz
+	id S1755256AbXD0AcJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbXD0AcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:31:55 -0400
-Received: from holomorphy.com ([66.93.40.71]:54470 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755240AbXD0Aby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:31:54 -0400
-Date: Thu, 26 Apr 2007 17:32:16 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070427003216.GM19966@holomorphy.com>
-References: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au> <20070426145310.GH19966@holomorphy.com> <m1ejm7kndn.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1ejm7kndn.fsf@ebiederm.dsl.xmission.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 26 Apr 2007 20:32:08 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:51108 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755256AbXD0AcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 20:32:06 -0400
+Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>,
+       GOTO Masanori <gotom@sanori.org>
+In-Reply-To: <20070427001324.GP3468@stusta.de>
+References: <20070426234742.GH3468@stusta.de>
+	 <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
+	 <20070427001324.GP3468@stusta.de>
+Content-Type: text/plain
+Date: Thu, 26 Apr 2007 20:30:54 -0400
+Message-Id: <1177633855.5532.8.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III <wli@holomorphy.com> writes:
->> In memory as on disk, contiguity matters a lot for performance.
+On Fri, 2007-04-27 at 02:13 +0200, Adrian Bunk wrote:
+> On Thu, Apr 26, 2007 at 07:59:57PM -0400, Robert P. J. Day wrote:
+> > On Fri, 27 Apr 2007, Adrian Bunk wrote:
+> > 
+> > > This patch removes kernel 2.4 code.
+> > >
+> > > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > >
+> > > ---
+> > >
+> > > This patch has been sent on:
+> > > - 26 Mar 2007
+> > >
+> > >  drivers/scsi/nsp32.c |  109 +++++--------------------------------------
+> > >  1 file changed, 13 insertions(+), 96 deletions(-)
+> > >
+> > > --- linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c.old	2007-03-25 20:27:34.000000000 +0200
+> > > +++ linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c	2007-03-25 20:31:59.000000000 +0200
+> > > @@ -49,10 +49,6 @@
+> > >  #include <scsi/scsi_host.h>
+> > >  #include <scsi/scsi_ioctl.h>
+> > >
+> > > -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0))
+> > > -# include <linux/blk.h>
+> > > -#endif
+> > > -
+> > 
+> > i'm curious about the rules for removing code like this.  in the case
+> > of drivers, isn't it possible that some driver source could be
+> > relevant for both the 2.4 and 2.6 kernel source tree, and simply uses
+> > that kind of preprocessor check to make sure it's being compiled
+> > appropriately?
+> 
+> That's what it was for.
+> 
+> > or are you doing something more sophisticated than simply checking the
+> > kernel version being tested?
+> 
+> No.
+> 
+> The point is:
+> 
+> It seems this driver was once maintained for both 2.4 and 2.6 in one 
+> file.
+> 
+> As long as this is done, such version checks are OK.
 
-On Thu, Apr 26, 2007 at 12:21:24PM -0600, Eric W. Biederman wrote:
-> Not nearly so much though.  In memory you don't have seeks to avoid.
-> On disks avoiding seeks is everything.
+Personally, I don't like to see 2.4 and 2.6 in a new driver, and will
+tend to try to force it to be 2.6  only.  For an existing driver, I tend
+to be much more tolerant: removing the huge gobs of code to achieve 2.6
+only is usually a bit disruptive on both the driver and the maintainer
 
-I readily concede that seeks are most costly. Yet memory contiguity
-remains rather influential.
+> But if a driver is no longer actually maintained for both kernels these 
+> checks become useless (and there quickly arised unconditional 2.6-only 
+> code in such a driver) and can be removed.
 
-Witness the fact that I'm now being called upon a second time to
-adjust the order in which mm/page_alloc.c returns pages for the
-sake of implicitly establishing IO contiguity (or otherwise
-determining why things are coming out backward now).
+This driver is maintained by 
+
+Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>
+GOTO Masanori <gotom@sanori.org>
+
+As it says in the header.  It was last modified in May 2006, so it is
+maintained under the somewhat elastic standards of SCSI.  I've cc'd them
+to see what they think.
+
+James
 
 
--- wli
