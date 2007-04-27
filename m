@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXD0Pzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXD0P4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbXD0Pzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756040AbXD0Pzi
+	id S1756028AbXD0P4N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbXD0P4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:55:38 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40542 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756037AbXD0PzU (ORCPT
+	Fri, 27 Apr 2007 11:56:12 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35582 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756039AbXD0P4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:55:20 -0400
-Date: Fri, 27 Apr 2007 08:54:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-In-Reply-To: <alpine.DEB.0.98.0704271139190.29118@sigma.j-a-k-j.com>
-Message-ID: <alpine.LFD.0.98.0704270852480.9964@woody.linux-foundation.org>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
- <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
- <alpine.DEB.0.98.0704271139190.29118@sigma.j-a-k-j.com>
+	Fri, 27 Apr 2007 11:56:10 -0400
+Message-ID: <46321D0B.90809@zytor.com>
+Date: Fri, 27 Apr 2007 08:55:55 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael McConnell <soruk@eridani.co.uk>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: MAINTAINERS file out of date?
+References: <4631255F.9010902@eridani.co.uk> <463131FD.8020301@zytor.com> <20070427010914.GA2570@localhost.localdomain> <46314E0B.1020800@zytor.com> <20070427023252.GA3797@localhost.localdomain> <m1647ijvk1.fsf@ebiederm.dsl.xmission.com> <4631873B.1000107@zytor.com> <m1tzv2ie4i.fsf@ebiederm.dsl.xmission.com> <463189D3.3070805@zytor.com> <20070427102835.GA11449@localhost.localdomain>
+In-Reply-To: <20070427102835.GA11449@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, John Anthony Kazos Jr. wrote:
+WANG Cong wrote:
+> On Thu, Apr 26, 2007 at 10:27:47PM -0700, H. Peter Anvin wrote:
 > 
-> Could[/should] this stuff be changed from ratios to amounts? Or a quick 
-> boot-time test to use a ratio if the memory is small and an amount (like 
-> tax brackets, I would expect) if it's great?
+> Thanks! I will take a look at that file.
+> 
+> Maybe we can rewrite them in C, use a 16-bit C compiler to generate AT&T asm code and finally push the asm code in the kernel source tree. But perhaps there is no such ideal compiler. ;)
+> 
 
-Yes, the "percentage" thing was likely wrong. That said, there *is* some 
-correlation between "lots of memory" and "high-end machine", and that in 
-turn tends to correlate with "fast disk", so I don't think the percentage 
-approach is really *horribly* wrong.
+No, that would be bad.
 
-The main issue with the percentage is that we do export them as such 
-through the /proc/ interface, and they are easy to change and understand. 
-So changing them to amounts is non-trivial if you also want to support the 
-old interfaces - and the advantage isn't obvious enough that it's a 
-clear-cut case.
-
-		Linus
+	-hpa
