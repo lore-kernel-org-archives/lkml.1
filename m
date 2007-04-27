@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbXD0KJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbXD0KK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbXD0KJW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXD0KJW
+	id S1755528AbXD0KK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbXD0KK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:09:22 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:59833 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbXD0KJU (ORCPT
+	Fri, 27 Apr 2007 06:10:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:32928 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755554AbXD0KKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:09:20 -0400
-Subject: Re: [linux-pm] Re: suspend2 merge (was Re: [Suspend2-devel] Re:
-	CFS and suspend2: hang in atomic copy)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Nick Piggin <npiggin@suse.de>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 27 Apr 2007 06:10:25 -0400
+Date: Fri, 27 Apr 2007 11:10:12 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Nigel Cunningham <nigel@nigel.suspend2.net>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1177666915.7828.35.camel@johannes.berg>
-References: <20070425072350.GA6866@ucw.cz> <200704262040.31760.rjw@sisk.pl>
-	 <1177612802.6814.121.camel@johannes.berg> <200704262102.38568.rjw@sisk.pl>
-	 <1177666915.7828.35.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-q/W2ajiTTplPeOUo2Gnm"
-Date: Fri, 27 Apr 2007 12:09:17 +0200
-Message-Id: <1177668558.7828.38.camel@johannes.berg>
+       Xavier Bestel <xavier.bestel@free.fr>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+Message-ID: <20070427101012.GA1714@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Theodore Tso <tytso@mit.edu>,
+	Nigel Cunningham <nigel@nigel.suspend2.net>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Xavier Bestel <xavier.bestel@free.fr>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <1177607026.30284.197.camel@frg-rhel40-em64t-04> <alpine.LFD.0.98.0704261021160.9964@woody.linux-foundation.org> <1177618081.4737.42.camel@nigel.suspend2.net> <20070426213806.GE24852@thunk.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426213806.GE24852@thunk.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Apr 26, 2007 at 05:38:07PM -0400, Theodore Tso wrote:
+> On Fri, Apr 27, 2007 at 06:08:01AM +1000, Nigel Cunningham wrote:
+> > We tried that. It would need some work. IIRC remounting filesystems
+> > read-only makes files become marked read-only. Perfectly sensible,
+> > except that if you then remount the filesystem rw at resume time, all
+> > those files are still marked ro and userspace crashes and burns. Not
+> > unfixable, I'll agree, but there is more work to do there.
+> 
+> There are other solutions, though.  One is that we could export a
+> system call interface which freezes a filesystem and prevents any
+> further I/O.  We mostly have something like that right now (via the
+> the write_super_lockfs function in the superblock operations
+> structure), but we haven't exported it to userspace.
 
---=-q/W2ajiTTplPeOUo2Gnm
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It is exported on XFS ;-)
 
-On Fri, 2007-04-27 at 11:41 +0200, Johannes Berg wrote:
+> We would also need a similar interface to freeze any block device I/O,
+> in case you have a database running and doing direct I/O to a block
+> device.  (Or again, we could simply not support that case; how many
+> people will be running running a database accessing a block deivce on
+> their laptop?)
 
-> No, because acpi doesn't know at build time whether it can actually do
-> S4 or not.
-
-Actually, you could probably do it by making some weak symbol for it
-that only ACPI overrides, and then check in the ACPI code if S4 is
-possible, otherwise somehow invoke the old symbol or copy the code or
-something. Seems a bit more fragile though.
-
-johannes
-
---=-q/W2ajiTTplPeOUo2Gnm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMcvN/ETPhpq3jKURAjB1AJwKJgM+u+zMsDr5gD5gz1tK1VbKBwCfan6P
-h/sBaTT+2rgQ88cVHtxR4oU=
-=jLsN
------END PGP SIGNATURE-----
-
---=-q/W2ajiTTplPeOUo2Gnm--
+block device I/O uses generic_file*whateveriscurrenthere*_write, which
+checks for the freeze flag, so the infrastructure for that is there
+aswell.
 
