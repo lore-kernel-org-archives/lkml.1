@@ -1,118 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbXD0QMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbXD0QMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbXD0QMI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 12:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXD0QMI
+	id S1756044AbXD0QMW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 12:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756047AbXD0QMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 12:12:08 -0400
-Received: from smtp105.sbc.mail.mud.yahoo.com ([68.142.198.204]:22104 "HELO
-	smtp105.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756025AbXD0QMF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 12:12:05 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=JOGiO+fz0syJLf8WlyBTRR7h16M+8hq8B11Xm6MsfRI/CvI9/tZ8gnVZUcHcYWtAdJTw9vtMk5bTvpGJDwg/hKLD1f7p5zYU0H/KZefhXLYLQxV9JWc526d93YsFV69muprh+C1KIX3bZf4hvE/HmcByZr1umulf9373QIV1s20=  ;
-X-YMail-OSG: 6Mz6Zo8VM1l.hqda_B6JaDftR1OuufwJrDFzLTbrqHpqhFsaU1g0grBAUMkhBrBEK4MCkYtelg--
-From: David Brownell <david-b@pacbell.net>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
-Date: Fri, 27 Apr 2007 08:56:41 -0700
+	Fri, 27 Apr 2007 12:12:22 -0400
+Received: from keil-draco.com ([216.193.185.50]:50875 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756044AbXD0QMU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 12:12:20 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: "Marat Buharov" <marat.buharov@gmail.com>
+Subject: Re: assembly code in the loadable kernel module
+Date: Fri, 27 Apr 2007 12:12:07 -0400
 User-Agent: KMail/1.9.6
-Cc: Johannes Berg <johannes@sipsolutions.net>, Pavel Machek <pavel@ucw.cz>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
-       suspend2-devel@lists.suspend2.net, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070425203150.GD17387@elf.ucw.cz> <1177669279.7828.55.camel@johannes.berg>
-In-Reply-To: <1177669279.7828.55.camel@johannes.berg>
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       "Parav K Pandit" <Parav_Pandit@mindtree.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com> <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com> <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
+In-Reply-To: <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704270856.42524.david-b@pacbell.net>
+Message-Id: <200704271212.07579.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 April 2007, Johannes Berg wrote:
-> 
->  * FREEZE       Quiesce operations so that a consistent image can be saved;
->  *              but do NOT otherwise enter a low power device state, and do
->  *              NOT emit system wakeup events.
->  *
->  * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restoring
->  *              the system from a snapshot taken after an earlier FREEZE.
->  *              Some drivers will need to reset their hardware state instead
->  *              of preserving it, to ensure that it's never mistaken for the
->  *              state which that earlier snapshot had set up.
-> 
-> Why is prethaw even necessary?
+On Friday 27 April 2007 07:57:58 Marat Buharov wrote:
+> On 4/27/07, Parav K Pandit <Parav_Pandit@mindtree.com> wrote:
+> > DISCLAIMER:
+> > This message (including attachment if any) is confidential and may be
+> > privileged. Before opening attachments please check them for viruses and
+> > defects. MindTree Consulting Limited (MindTree) will not be responsible
+> > for any viruses or defects or any forwarded attachments emanating either
+> > from within MindTree or outside. If you have received this message by
+> > mistake please notify the sender by return  e-mail and delete this
+> > message from your system. Any unauthorized use or dissemination of this
+> > message in whole or in part is strictly prohibited.  Please note that
+> > e-mails are susceptible to change and MindTree shall not be liable for
+> > any improper, untimely or incomplete transmission.
+>
+> On 4/27/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> > ****************************************************************
+> > The information transmitted in this message is confidential and may be
+> > privileged.  Any review, retransmission, dissemination, or other use of
+> > this information by persons or entities other than the intended recipient
+> > is prohibited.  If you are not the intended recipient, please notify
+> > Analogic Corporation immediately - by replying to this message or by
+> > sending an email to DeliveryErrors@analogic.com - and destroy all copies
+> > of this information, including any attachments, without reading or
+> > disclosing them.
+>
+> Damn, people. Please, remove that sort of disclaimers (about
+> confidential information) while posting to public mailing lists.
 
-Read the patch comments for the patch adding that transition.  Briefly,
-adding that transition to swsusp resume was a significant bugfix for
-all drivers that rely on controller state to determine how to resume.
+Most companies require that *ANY* e-mail sent by employees while at work 
+contain disclaimers like those. Some of them even have their mail servers 
+*automatically* attach those footers.
 
-(That's mostly drivers that are intelligent about wakeup events... so
-unless you're working with such drivers, the issue may be unclear.)
-
-
-> As far as I can tell it's only necessary 
-> because resume() can't tell you whether you just want to thaw or need to
-> reset since it doesn't tell you at what point it's invoked.
-
-More like:  because swsusp overloaded the suspend()/resume() code paths
-to do double duty.
-
-Instead of just putting devices into low power states (just *which* state
-is another discussion), they evolved into support for swsusp transitions...
-causing trouble (and sometimes breakage) for non-swsusp models.
-
-
-> Having ->freeze(), ->thaw() and ->restart() (can somebody come up with a
-> better name?) that are called at the appropriate places (with
-> freeze/thaw around preparing the image and freeze/restart around
-> restoring would go a long way of clearing up the confusion in all the
-> drivers. Of course, it'd have to be documented that freeze/thaw isn't
-> the only valid combination but that freeze/restart is used too, but
-> that's not hard to do nor hard to understand.
-
-I suspect that after snapshot resume restart() should always be used.
-That shouldn't be hard to understand at all.  It'd be sub-optimal in
-the same cases today's system resume is sub-optimal:  devices that
-were in low power states before system suspend wouldn't be that way
-after system resume.
-
-
-> And, incidentally, it could possibly make both suspend and hibernate
-> work much faster too. The comments there talk about "minimally power
-> management aware" drivers which always do the wrong thing for suspend,
-> in that they always reset everything...
-
-That comment was purely about existing practice ... and was mostly
-about resume() processing, not suspend() paths.
-
-It's an unfortunate reality that most device drivers are stupid in
-terms of power management, so we need to be clear about just how
-stupid they're allowed to be without being terminally broken.
-
-Additionally, it would be a Good Thing if changes to clean up the
-swsusp-related code paths didn't make "real suspend" more painful.
-
-
-> Of course, some drivers will 
-> actually need to do that, but if freeze/suspend and thaw/restart/resume
-> have the same prototypes (probably just int <function>(void)) then
-> drivers can trivially assign the same there.
-> And hibernate would benefit since a lot of drivers could do a lot less
-> work for freeze/thaw.
-
-That actually gets into discussions from a while back about wanting
-to be able to quiesce() devices, as separate from actually putting
-them into low power states.
-
-- Dave
+DRH
