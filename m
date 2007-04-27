@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbXD0XbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757901AbXD0XdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbXD0XbK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 19:31:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757897AbXD0XbK
+	id S1757901AbXD0XdN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 19:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbXD0XdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 19:31:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38366 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757894AbXD0XbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 19:31:09 -0400
-Message-ID: <463287B2.7070100@redhat.com>
-Date: Fri, 27 Apr 2007 16:30:58 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <20070426162530.bc30a1bb.akpm@linux-foundation.org> <46313F99.6080402@zytor.com> <46314A08.9000209@redhat.com> <46314AAD.9010300@zytor.com> <46314C3B.3040908@redhat.com> <4632842F.20101@zytor.com>
-In-Reply-To: <4632842F.20101@zytor.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigDA926211485CBA09924477F0"
+	Fri, 27 Apr 2007 19:33:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46350 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757901AbXD0XdM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 19:33:12 -0400
+Date: Fri, 27 Apr 2007 16:32:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ananth@in.ibm.com
+Cc: Adrian Bunk <bunk@stusta.de>, prasanna@in.ibm.com,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] include/linux/kprobes.h: always offer
+ show_registers() prototype
+Message-Id: <20070427163251.209fa828.akpm@linux-foundation.org>
+In-Reply-To: <20070427051056.GB9787@in.ibm.com>
+References: <20070426234749.GJ3468@stusta.de>
+	<20070427051056.GB9787@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDA926211485CBA09924477F0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, 27 Apr 2007 10:40:57 +0530
+Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
 
-H. Peter Anvin wrote:
-> The main use of atime seems to be to figure out when something can be
-> automatically deleted.  Anyone else have other usage scenarios?
+> On Fri, Apr 27, 2007 at 01:47:49AM +0200, Adrian Bunk wrote:
+> > Allow gcc to perform show_registers() type checking also with 
+> > CONFIG_KPROBES=n.
+> 
+> Is kprobes.h the correct place to allow for this change? Perhaps, with
+> Christoph's patch http://marc.info/?l=linux-kernel&m=117432009501114&w=2
+> consolidating the die_notifier code, this could be moved to
+> include/linux/kdebug.h instead?
+> 
 
-It's not atime which cannot be set, it's ctime.
+Yes, I think something is definitely wrong here.  If the code is presently
+calling show_registers() with no prototype in scope, it should be emitting
+warnings?
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+Also, yes, kprobes.h is an inappropriate place for this declaration.  It
+should be in include/asm-foo/, I guess.
 
+But if we do that, there's an excellent chance of a compile explosion,
+because we also have implementations of show_registers() in
+drivers/net/wireless/ipw2100.c, drivers/usb/gadget/net2280.c,
+drivers/usb/host/ehci-dbg.c, drivers/usb/host/ohci-dbg.c and who knows
+where else.
 
---------------enigDA926211485CBA09924477F0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+So what I'd suggest is that we rename show_registers() to something saner,
+then put the declaration into some arch header file then include that
+header in kprobes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGMoey2ijCOnn/RHQRAleRAJ4u70nY0T+HEj0V4xAN6BqKVBX2qwCghXo5
-4dZJXQgFwfUlWtfw0eZXvaU=
-=r8Zc
------END PGP SIGNATURE-----
-
---------------enigDA926211485CBA09924477F0--
