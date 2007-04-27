@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbXD0L6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbXD0L6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755669AbXD0L6D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbXD0L6D
+	id S1755672AbXD0L6r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755671AbXD0L6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:58:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:52550 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755669AbXD0L6A (ORCPT
+	Fri, 27 Apr 2007 07:58:46 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42490 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755672AbXD0L6p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:58:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mc1YhB3faS5GBCUHw3spBVXoQbGcSfZfaf0b4q32oWXPiG0rrt5GIHieDf8cHyY0AQ3tytXST5l+4e3MGBu97gfpo7gHVBElwMco5MktgPZcG70VtUg3tlFCUrQl9H0R7DKGH/6cW2IiVLPdGaFk7o+oIiYCSHE8AqKDyACRsiw=
-Message-ID: <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
-Date: Fri, 27 Apr 2007 15:57:58 +0400
-From: "Marat Buharov" <marat.buharov@gmail.com>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Subject: Re: assembly code in the loadable kernel module
-Cc: "Parav K Pandit" <Parav_Pandit@mindtree.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
+	Fri, 27 Apr 2007 07:58:45 -0400
+Date: Fri, 27 Apr 2007 04:58:44 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Paul Mackerras <paulus@samba.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <17969.55533.59287.509889@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.64.0704270452370.21003@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org>
+ <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org>
+ <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+ <20070426235542.bad7035a.akpm@linux-foundation.org>
+ <17969.55533.59287.509889@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com>
-	 <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/27/07, Parav K Pandit <Parav_Pandit@mindtree.com> wrote:
-> DISCLAIMER:
-> This message (including attachment if any) is confidential and may be privileged. Before opening attachments please check them for viruses and defects. MindTree Consulting Limited (MindTree) will not be responsible for any viruses or defects or any forwarded attachments emanating either from within MindTree or outside. If you have received this message by mistake please notify the sender by return  e-mail and delete this message from your system. Any unauthorized use or dissemination of this message in whole or in part is strictly prohibited.  Please note that e-mails are susceptible to change and MindTree shall not be liable for any improper, untimely or incomplete transmission.
+On Fri, 27 Apr 2007, Paul Mackerras wrote:
 
-On 4/27/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
-> ****************************************************************
-> The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+> Option (b) would be a bit of an ugly hack.
+> 
+> Which leaves option (c) - unless you have a further option.  So I have
+> to say I support Christoph on this, at least as far as the general
+> principle is concerned.
 
-Damn, people. Please, remove that sort of disclaimers (about
-confidential information) while posting to public mailing lists.
+We could approximate option (b) by setting a standard page size for the 
+page cache and set the same page size in SLUB (slub is already boot time 
+configurable in that respect). That will make large portions of the VM 
+use the same page order. I can try to add similar controls to the page 
+cache.
+
+If the page size is set too high for a mount then we use the buffer 
+head functionality to split the higher order page into pieces of the 
+appropriate size. That could limit the number of page sizes that we need 
+to support.
+
+But I think we should first see how well Mel's antifrag work does.
+
+
