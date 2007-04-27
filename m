@@ -1,94 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbXD0IDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbXD0IKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755473AbXD0IDq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 04:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbXD0IDq
+	id S1755486AbXD0IKw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 04:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbXD0IKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 04:03:46 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32841 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755473AbXD0IDm (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 04:03:42 -0400
-Date: Fri, 27 Apr 2007 18:03:21 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070427080321.GG32602149@melbourne.sgi.com>
-References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org>
+	Fri, 27 Apr 2007 04:10:51 -0400
+Received: from ns2.suse.de ([195.135.220.15]:45953 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755484AbXD0IKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 04:10:49 -0400
+Subject: Re: 2.6.21-rc7-mm2 -- gnome-power-manager always shows the power
+	as coming from AC
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       Vladimir Lebedev <vladimir.p.lebedev@intel.com>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <a44ae5cd0704261552o20e01dabsdac02dfd7c28f16a@mail.gmail.com>
+References: <a44ae5cd0704261213o37944b46u5dbdd231fc6a2490@mail.gmail.com>
+	 <20070426142824.9da91feb.akpm@linux-foundation.org>
+	 <a44ae5cd0704261552o20e01dabsdac02dfd7c28f16a@mail.gmail.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Fri, 27 Apr 2007 10:10:47 +0200
+Message-Id: <1177661447.1231.689.camel@queen.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070427000403.6013d1fa.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 12:04:03AM -0700, Andrew Morton wrote:
-> On Fri, 27 Apr 2007 16:09:21 +1000 David Chinner <dgc@sgi.com> wrote:
+On Thu, 2007-04-26 at 15:52 -0700, Miles Lane wrote:
+> On 4/26/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Thu, 26 Apr 2007 12:13:00 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
+> >
+> > > One possible issue is that /proc/acpi/power_resource/ is an empty directory.
+> > > Otherwise, the ACPI information seems to be fine:
+> > >
+> > > # cat /proc/acpi/ac_adapter/ACAD/state
+> > > state:                   on-line
+> > > # cat /proc/acpi/ac_adapter/ACAD/state
+> > > state:                   off-line
+> > >
+> > > # cat /proc/acpi/battery/BAT0/state
+> > > present:                 yes
+> > > capacity state:          ok
+> > > charging state:          discharging
+> > > present rate:            0 mA
+> > > remaining capacity:      7072 mAh
+> > > present voltage:         12487 mV
+> > >
+> > > When I unplug the power cable, /proc/acpi/battery/BAT0/state (present
+> > > rate) shows that current flowing from the battery.
+> > >
+> > > # cat /proc/acpi/button/lid/LID0/state
+> > > state:      closed
+> > > # cat /proc/acpi/button/lid/LID0/state
+> > > state:      open
+> >
+> > hm, I'm looking suspiciously at "ACPI: Cache battery status instead of
+> > re-evaluating AML".
+> >
+> > What sort of machine is this?
 > 
-> > On Thu, Apr 26, 2007 at 10:15:28PM -0700, Andrew Morton wrote:
-> > > On Fri, 27 Apr 2007 14:20:46 +1000 David Chinner <dgc@sgi.com> wrote:
-> > > 
-> > > > >    blocksizes via this scheme - instantiate and lock four pages and go for
-> > > > >    it.
-> > > > 
-> > > > So now how do you get block aligned writeback?
-> > > 
-> > > in writeback and pageout:
-> > > 
-> > > 	if (page->index & mapping->block_size_mask)
-> > > 		continue;
-> > 
-> > So we might do writeback on one page in N - how do we
-> > make sure none of the other pages are reclaimed while we are doing
-> > writeback on this bclok?
-> 
-> By marking them all dirty when one is marked dirty.
-> 
-> David, you're perfectly capable of working all this out yourself.  But
-> you're trying not to.  Please stop this game.
+> HP Pavilion dv1240us
+Does compiling CONFIG_MOUSE_PS2= as module (and best not loading it) or
+compiling it out help?
 
-I've looked at all this but I'm trying to work out if anyone
-else has looked at the impact of doing this. I have direct experience
-with this form of block aggregation - this is pretty much what is
-done in irix - and it's full of nasty, ugly corner cases.
+   Thomas
 
-I've got several year-old Irix bugs  assigned that are hit every so
-often where one page in the aggregated set has the wrong state, and
-it's simply not possible to either reproduce the problem or work out
-how it happened. The code has grown too complex and convoluted, and
-by the time the problem is noticed (either by hang, panic or bug
-check) the cause of it is long gone.
-
-I don't want to go back to having to deal with this sort of problem
-- I'd much prefer to have a design that does not make the same
-mistakes that lead to these sorts of problem.
-
-> > > > You basically have to
-> > > > jump through nasty, nasty hoops, to handle corner cases that are introduced
-> > > > because the generic code can no longer reliably lock out access to a
-> > > > filesystem block.
-> > 
-> > This way lies insanity.
-> 
-> You're addressing Christoph's straw man here.
-
-No, I'm speaking from years of experience working on a
-page/buffer/chunk cache capable of using both large pages and
-aggregating multiple pages. It has, at times, almost driven me
-insane and I don't want to go back there.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
