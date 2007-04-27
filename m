@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbXD0UxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbXD0Uzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbXD0UxI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbXD0UxI
+	id S1757162AbXD0Uzw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbXD0Uzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:53:08 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36537 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755975AbXD0UxE (ORCPT
+	Fri, 27 Apr 2007 16:55:52 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:22652 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757154AbXD0Uy6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:53:04 -0400
-Date: Fri, 27 Apr 2007 13:52:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Fri, 27 Apr 2007 16:54:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=M0lNcCwLv6aiv/PgeuvNWpKO0pFH6qWnak/XaNMPJ7Lf1pBvCkcDkMTFDe6yjmXU9b4JT8vHC/hZaRSNUSklduZ/CpeLRVlX4w77mM8YAbBKzcXnYjx4skgzgfj3hDQ0lWrfcIktLr0Ym+u5WaBVWfK1gG7WW5ZI8OeD0N/FvIs=
+Message-ID: <46326309.3050104@gmail.com>
+Date: Sat, 28 Apr 2007 02:24:33 +0530
+From: Manoj Joseph <manoj.joseph@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>
-Subject: Re: [GIT-PULL] please pull UBI tree
-Message-Id: <20070427135224.58d54065.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704270855300.9964@woody.linux-foundation.org>
-References: <1177677925.7539.18.camel@sauron>
-	<alpine.LFD.0.98.0704270855300.9964@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+CC: Andreas Dilger <adilger@clusterfs.com>,
+       Marat Buharov <marat.buharov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Alex Tomas <alex@clusterfs.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+ FS is under heavy write load (massive starvation)
+References: <1177660767.6567.41.camel@Homer.simpson.net> <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com> <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org> <20070427193130.GD5967@schatzie.adilger.int> <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 09:00:25 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Fri, 27 Apr 2007, Artem Bityutskiy wrote:
-> >
-> > Linus, please, pull UBI tree from
-> > git://git.infradead.org/ubi-2.6.git for-linus
-> > 
-> > The UBI tree has been in -mm for several releases and we would like to
-> > see it in the mainline.
+Linus Torvalds wrote:
 > 
-> Quite frankly, I have absolutely _zero_ visibility into things like this, 
-> so before I merge it I want ack's from various layers (preferably a 
-> mixture of interests - are any vendors interested, is DavidW ok with this, 
-> who is using it now and are the interfaces and designs correct etc etc?)
+> On Fri, 27 Apr 2007, Andreas Dilger wrote:
+>> It's true that this is a "feature" of ext3 with data=ordered (the default),
+>> but I suspect the same thing is now true in reiserfs too.
 > 
-> So I simply cannot make that decision. I don't have the expertise or the 
-> knowledge. I'll have to trust somebody else for things like this, and it 
-> should be somebody who isn't "personally involved". 
-> 
-> In other words, I kind of want a sign-off from other parties, because I 
-> can't pull things like this "blind".
-> 
-> Are there (embedded?) vendors that already integrate this into their 
-> kernel, or wait for it? Is dwmw supportive of this? Questions, questions..
+> Oh, well.. Journalling sucks.
 
-The patchset used to contain lots of debugging support which wildly
-duplicated thigs which we already did and was generally overdone.  That
-appears to all have been cleaned up now, so thanks for doing that.
+Go back to ext2? ;)
 
-The one remaining nit I'd have with the debug code is that it adds a
-private hexdump() facility.  By my count, that is the kernel's eighth
-hexdump implementation.  There may be even more which don't have "hexdump"
-in their name.
+> I was actually _really_ hoping that somebody would come along and tell 
+> everybody that this whole journal-logging is stupid, and that it's just 
+> better to not ever re-write blocks on disk, but instead write to new 
+> blocks with version numbers (and not re-use old blocks until new versions 
+> are stable on disk).
 
-lib/hexdump.c is rather overdue.
+Ah, "copy on write"! ZFS (Sun) and WAFL (NetApp) does this. Don't know 
+about WAFL, but ZFS does logging too.
+
+-Manoj
+
+-- 
+Manoj Joseph
+http://kerneljunkie.blogspot.com/
+
