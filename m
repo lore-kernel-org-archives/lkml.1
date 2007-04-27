@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbXD0WTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbXD0WUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbXD0WTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbXD0WTS
+	id S1757489AbXD0WUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbXD0WUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:19:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:45466 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752937AbXD0WTQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:19:16 -0400
-Date: Fri, 27 Apr 2007 15:18:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Alex Tomas <alex@clusterfs.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-Message-Id: <20070427151837.f1439639.akpm@linux-foundation.org>
-In-Reply-To: <20070427193130.GD5967@schatzie.adilger.int>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	<20070427013350.d0d7ac38.akpm@linux-foundation.org>
-	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
-	<20070427193130.GD5967@schatzie.adilger.int>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Apr 2007 18:20:48 -0400
+Received: from gw.goop.org ([64.81.55.164]:54707 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757489AbXD0WTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:19:52 -0400
+Message-ID: <46327706.80508@goop.org>
+Date: Fri, 27 Apr 2007 15:19:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private
+ data
+References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au>
+In-Reply-To: <20070424055731.GA30018@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 13:31:30 -0600
-Andreas Dilger <adilger@clusterfs.com> wrote:
+Herbert Xu wrote:
+> Sure thing.  I'll look over it soon.
+>
+> Actually there is one thing I'd like to see changed first up: I noticed
+> that you've stripped out the checksum hack which is in the main Xen tree.
+> We actually have the code in net-2.6.22 (which is also in mm) that lets
+> you use CHECKSUM_PARTIAL on received packets without having to do that
+> hack.
+>
+> Here's the patch that I've been testing so far.  It's against the Xen
+> source, but should be easy to adapt to your version as well.
+>
+> I just thought about this again, and in fact we need this change for
+> correctness as well as performance.  Because not setting ip_summed
+> to CHECKSUM_PARTIAL in netfront is not going to stop netback from
+> sending CHECKSUM_PARTIAL packets to us.  If these packets are then
+> routed/bridged back to netback, they'll have the wrong checksum.
+>   
 
-> On Apr 27, 2007  08:30 -0700, Linus Torvalds wrote:
-> > On a good filesystem, when you do "fsync()" on a file, nothing at all 
-> > happens to any other files. On ext3, it seems to sync the global journal, 
-> > which means that just about *everything* that writes even a single byte 
-> > (well, at least anything journalled, which would be all the normal 
-> > directory ops etc) to disk will just *stop* dead cold!
-> > 
-> > It's horrid. And it really is ext3, not "fsync()".
-> > 
-> > I used to run reiserfs, and it had its problems, but this was the 
-> > "feature" of ext3 that I've disliked most. If you run a MUA with local 
-> > mail, it will do fsync's for most things, and things really hickup if you 
-> > are doing some other writes at the same time. In contrast, with reiser, if 
-> > you did a big untar or some other big write, if somebody fsync'ed a small 
-> > file, it wasn't even a blip on the radar - the fsync would sync just that 
-> > small thing.
-> 
-> It's true that this is a "feature" of ext3 with data=ordered (the default),
-> but I suspect the same thing is now true in reiserfs too.  The reason is
-> that if a journal commit doesn't flush the data as well then a crash will
-> result in garbage (from old deleted files) being visible in the newly
-> allocated file.  People used to complain about this with reiserfs all the
-> time having corrupt data in new files after a crash, which is why I believe
-> it was fixed.
+OK, I've been sitting on this in the hope that I'll suddenly see the
+light and work out what you're talking about - but apparently that's not
+going to happen.  So, some questions:
 
-People still complain about hey-my-files-are-all-full-of-zeroes on XFS.
+   1. Does this patch change the dom0 <-> domU interface?  or does it
+      fix something that's currently broken?
+   2. Can just apply the netfront part to the pv_ops kernel, or does it
+      require the corresponding dom0 patch to be applied as well?
 
-> There definitely are some problems with the ext3 journal commit though.
-> If the journal is full it will cause the whole journal to checkpoint out
-> to the filesystem synchronously even if just space for a small transaction
-> is needed.  That is doubly bad if you have a very large journal.  I believe
-> Alex has a patch to have it checkpoint much smaller chunks to the fs.
-> 
-
-We can make great improvements here, and I've (twice) previously decribed
-how: hoist the entire ordered-mode data handling out of ext3, and out of
-the buffer_head layer and move it up into the VFS pagecache layer. 
-Basically, do ordered-data with a commit-time inode walk, calling
-do_sync_mapping_range().
-
-Do it in the VFS.  Make reiserfs use it, remove reiserfs ordered-mode too. 
-Make XFS use it, fix the hey-my-files-are-all-full-of-zeroes problem there.
-
-And guess what?  We can then partly fix _this_ problem too.  If we're
-running a commit on behalf of fsync(inode1) and we come across an inode2
-which doesn't have any block allocation metadata in this commit, we don't
-need to sync inode2's pages.
-
-Weep.  It's times like this when I want to escape all this patch-wrangling
-nonsense and go do some real stuff.
+Thanks,
+    J
