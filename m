@@ -1,96 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755566AbXD0KTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbXD0KUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755566AbXD0KTk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbXD0KTk
+	id S1755576AbXD0KUk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXD0KUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:19:40 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:40351 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755566AbXD0KTi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:19:38 -0400
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-	hang in atomic copy)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200704271218.07120.rjw@sisk.pl>
-References: <20070425072350.GA6866@ucw.cz> <200704262102.38568.rjw@sisk.pl>
-	 <1177666915.7828.35.camel@johannes.berg>  <200704271218.07120.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PPoA1Xdr2HRvlmnBzvQd"
-Date: Fri, 27 Apr 2007 12:19:39 +0200
-Message-Id: <1177669179.7828.53.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Fri, 27 Apr 2007 06:20:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:54164 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755568AbXD0KUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 06:20:01 -0400
+From: Danny Kukawka <dkukawka@suse.de>
+To: linux-acpi@vger.kernel.org
+Subject: [PATCH] ACPI video: Don't export sysfs backlight interface if query _BCL fail
+Date: Fri, 27 Apr 2007 12:18:06 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, luming.yu@intel.com
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704271218.07411.dkukawka@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-PPoA1Xdr2HRvlmnBzvQd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+currently the acpi video module export the backlight interface to sysfs also
+if acpi_video_device_lcd_query_levels() fails to read _BLC method (e.g. 
+because the method is not available). In this case the userspace don't know 
+which brightness level are supported and can't set a brightness level (echo 
+return with: "write error: Invalid Argument"). This happend e.g. on a ASUS
+RF1 (correct supported by the asus-laptop module).
 
-On Fri, 2007-04-27 at 12:18 +0200, Rafael J. Wysocki wrote:
+The video module should not export the backlight interface if query _BLC fail,
+because you can't set anything from userspace and this make it useless.
 
-> 1) We define platform_hibernation if CONFIG_ACPI is set.
+See also: http://bugzilla.kernel.org/show_bug.cgi?id=8375
 
-Let's just define it always then in the common code so we don't have
-even more magic bits platforms need to define even if they don't care at
-all. And please don't put #ifdef CONFIG_ACPI into the common code ;)
-Maybe #ifdef CONFIG_ARCH_NEEDS_HIBERNATE_HOOKS or something.
+Danny
 
-> 2) In the ACPI code we do
->=20
-> if (can do S4)
-> 	platform_hibernation =3D 1;
+From: Danny Kukawka <dkukawka@suse.de>
+Subject: ACPI video: Don't export sysfs backlight interface if query _BLC fail
 
-Gotcha.
+if qeuery _BCL fail (e.g. because the method is missing in BIOS) don't 
+export the backlight interface to sysfs.
 
-> 3) We have functions arch_platform_prepare()/finish()/enter() that are de=
-fined
-> to be noops for anything but ACPI systems and for ACPI systems they are
-> defined like this:
->=20
-> int arch_platform_enter(void)
-> {
-> 	if (!platform_hibernation)
-> 		return 0;
->=20
-> 	...
-> }
->=20
-> I think it should work.
+Signed-off-by: Danny Kukawka <dkukawka@suse.de>
+---
+ video.c |   78 ++++++++++++++++++++++++++++--------------------------
+ 1 file changed, 41 insertions(+), 37 deletions(-)
 
-You could reduce code churn in all other platforms by making these weak
-symbols like the irq hooks I did for pm_ops. It looks like it can work
-and possibly is even less intrusive than my hibernate_ops patch. Though
-then again my hibernate_ops patch removed a lot of stuff that is now no
-longer necessary, and also completely removed the PM_SUSPEND_DISK foo...
-we probably want that regardless of how we invoke ACPI.
-
-johannes
-
---=-PPoA1Xdr2HRvlmnBzvQd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMc47/ETPhpq3jKURApT3AKCvsw0rdN8AcI2acGjXpaVcL/kVawCeNtDc
-wG82YWBcPGLNJE3xghRDpN8=
-=w9fF
------END PGP SIGNATURE-----
-
---=-PPoA1Xdr2HRvlmnBzvQd--
+--- linux-2.6.21/drivers/acpi/video.c	2007-04-26 13:50:51.000000000 +0200
++++ linux-2.6.21/drivers/acpi/video.c	2007-04-26 13:50:53.000000000 +0200
+@@ -531,7 +531,6 @@
+ 
+ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+ {
+-	acpi_integer status;
+ 	acpi_handle h_dummy1;
+ 	int i;
+ 	u32 max_level = 0;
+@@ -565,50 +564,55 @@
+ 		device->cap._DSS = 1;
+ 	}
+ 
+-	status = acpi_video_device_lcd_query_levels(device, &obj);
++	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
+ 
+-	if (obj && obj->type == ACPI_TYPE_PACKAGE && obj->package.count >= 2) {
+-		int count = 0;
+-		union acpi_object *o;
+-
+-		br = kzalloc(sizeof(*br), GFP_KERNEL);
+-		if (!br) {
+-			printk(KERN_ERR "can't allocate memory\n");
+-		} else {
+-			br->levels = kmalloc(obj->package.count *
+-					     sizeof *(br->levels), GFP_KERNEL);
+-			if (!br->levels)
+-				goto out;
+-
+-			for (i = 0; i < obj->package.count; i++) {
+-				o = (union acpi_object *)&obj->package.
+-				    elements[i];
+-				if (o->type != ACPI_TYPE_INTEGER) {
+-					printk(KERN_ERR PREFIX "Invalid data\n");
+-					continue;
+-				}
+-				br->levels[count] = (u32) o->integer.value;
+-				if (br->levels[count] > max_level)
+-					max_level = br->levels[count];
+-				count++;
+-			}
+-		      out:
+-			if (count < 2) {
+-				kfree(br->levels);
+-				kfree(br);
++		if (obj->package.count >= 2) {
++			int count = 0;
++			union acpi_object *o;
++
++			br = kzalloc(sizeof(*br), GFP_KERNEL);
++			if (!br) {
++				printk(KERN_ERR "can't allocate memory\n");
+ 			} else {
+-				br->count = count;
+-				device->brightness = br;
+-				ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+-						  "found %d brightness levels\n",
+-						  count));
++				br->levels = kmalloc(obj->package.count *
++						     sizeof *(br->levels), GFP_KERNEL);
++				if (!br->levels) 
++					goto out;
++
++				for (i = 0; i < obj->package.count; i++) {
++					o = (union acpi_object *)&obj->package.
++					    elements[i];
++					if (o->type != ACPI_TYPE_INTEGER) {
++						printk(KERN_ERR PREFIX "Invalid data\n");
++						continue;
++					}
++					br->levels[count] = (u32) o->integer.value;
++
++					if (br->levels[count] > max_level)
++						max_level = br->levels[count];
++					count++;
++				}
++			      out:
++				if (count < 2) {
++					kfree(br->levels);
++					kfree(br);
++				} else {
++					br->count = count;
++					device->brightness = br;
++					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
++							  "found %d brightness levels\n",
++							  count));
++				}
+ 			}
+ 		}
++
++	} else {
++		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
+ 	}
+ 
+ 	kfree(obj);
+ 
+-	if (device->cap._BCL && device->cap._BCM && device->cap._BQC){
++	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
+ 		unsigned long tmp;
+ 		static int count = 0;
+ 		char *name;
 
