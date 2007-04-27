@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbXD0HQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbXD0HRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbXD0HQH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 03:16:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXD0HQH
+	id S1755435AbXD0HRi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 03:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbXD0HRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 03:16:07 -0400
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:38139 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755433AbXD0HQF (ORCPT
+	Fri, 27 Apr 2007 03:17:38 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755435AbXD0HRh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 03:16:05 -0400
-Message-Id: <1177658163.8094.1186854037@webmail.messagingengine.com>
-X-Sasl-Enc: us6wTPp9H4frQxBtsJd5AHbm023PUmKvnQXXzRGgkbVF 1177658163
-From: lkml777@123mail.org
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Alex Zarochentsev" <zam@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
-       "Edward Shishkin" <edward@namesys.com>
-Content-Disposition: inline
+	Fri, 27 Apr 2007 03:17:37 -0400
+Date: Fri, 27 Apr 2007 00:12:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mm] oom: fix constraint deadlock
+Message-Id: <20070427001228.e94ea60f.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704262243370.3461@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0704262243370.3461@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-   <462E17AF.7090604@namesys.com>
-   <20070424193921.GA17129@one.firstfloor.org>
-   <462F6717.70508@namesys.com>
-   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
-   <1177564182.15467.1186637743@webmail.messagingengine.com>
-   <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com>
-   <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
-Subject: Re: Question about Reiser4
-In-Reply-To: <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
-Date: Fri, 27 Apr 2007 00:16:03 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Apr 2007 23:18:17 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
 
-> Just to inform you that the reiserfs4 patch cleanly on 2.6.21 and
-> working well. I've not encountered any problem so far.
+> Subject: [patch -mm] oom: fix constraint deadlock
+> Date: Thu, 26 Apr 2007 23:18:17 -0700 (PDT)
 > 
-> Thanks,
-> Jeff.
+> Fixes a deadlock in the OOM killer for allocations that are not
+> __GFP_HARDWALL.
 
-Hi Jeff, could you outline the procedure that YOU used to get Reiser4
-installed and running.
+Thanks.
 
-Thanks a million. 
--- 
-  
-  lkml777@123mail.org
-
--- 
-http://www.fastmail.fm - The professional email service
+Why is this described as "patch -mm"?  It applies to mainline.  If it's
+fixing a -mm patch, do you know which one?
 
