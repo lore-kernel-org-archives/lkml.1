@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbXD0AXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXD0A1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbXD0AXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXD0AXU
+	id S1755234AbXD0A1g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXD0A1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:23:20 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:4392 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755232AbXD0AXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:23:19 -0400
-Date: Fri, 27 Apr 2007 02:23:18 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: David Lang <david.lang@digitalinsight.com>
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-Message-ID: <20070427002318.GB11265@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	David Lang <david.lang@digitalinsight.com>,
-	Pavel Machek <pavel@ucw.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Nigel Cunningham <nigel@nigel.suspend2.net>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <20070426224256.GB21926@elf.ucw.cz> <Pine.LNX.4.63.0704261520350.9674@qynat.qvtvafvgr.pbz> <20070426231228.GI21695@elf.ucw.cz> <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
+	Thu, 26 Apr 2007 20:27:36 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39546 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755234AbXD0A1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 20:27:35 -0400
+Date: Fri, 27 Apr 2007 09:27:36 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: ak@suse.de, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] change global zonelist order on NUMA v2
+Message-Id: <20070427092736.d0626a30.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0704260846590.1382@schroedinger.engr.sgi.com>
+References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
+	<200704261147.44413.ak@suse.de>
+	<20070426191043.df96c114.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0704260846590.1382@schroedinger.engr.sgi.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.63.0704261545100.9674@qynat.qvtvafvgr.pbz>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 03:49:51PM -0700, David Lang wrote:
-> swap partitions are limited to 2G (or at least they were a couple of months 
-> ago when I last checked). I also don't want to run the risk of having a box 
-> try to _use_ 16G worth of swap. I'd rather have the box hit OOM first.
+On Thu, 26 Apr 2007 08:48:19 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-They aren't limited anymore, I have a number of machines with 20G swap
-for experiments.
+> On Thu, 26 Apr 2007, KAMEZAWA Hiroyuki wrote:
+> 
+> > (1)Use new zonelist ordering always and move init_task's tied cpu to a
+> >   cpu on the best node. 
+> >   Child processes will start in good nodes even if Node 0 has small memory.
+> 
+> How about renumbering the nodes? Node 0 is the one with no DMA memory and 
+> node 1 may be the one with the DMA? That would take care of things even 
+> without core modifications. We can start on node 0 (which hardware 1) and 
+> consume the required memory for boot there not impacting the node with the 
+> DMA memory.
+> 
+It seems a bit complicated. If we do so, following can occur,
 
-  OG.
+Node1: cpu0,1,2,3
+Node0: cpu4,5,6,7
+
+the system layout will be not imaginable look, maybe.
+
+-Kame
 
