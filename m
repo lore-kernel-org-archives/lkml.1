@@ -1,54 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbXD0G3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbXD0GbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbXD0G3N (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbXD0G3M
+	id S1755369AbXD0GbP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755379AbXD0GbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:29:12 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54191 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755379AbXD0G3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:29:12 -0400
-Date: Fri, 27 Apr 2007 09:29:10 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0704270927240.18521@sbz-30.cs.Helsinki.FI>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> 
- <1177573348.5025.224.camel@nigel.suspend2.net> 
- <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> 
- <1177617379.4737.29.camel@nigel.suspend2.net> 
- <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
- <1177654110.4737.91.camel@nigel.suspend2.net>
- <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 02:31:15 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:47109 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755369AbXD0GbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 02:31:14 -0400
+Date: Fri, 27 Apr 2007 08:30:56 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Marat Buharov <marat.buharov@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+In-Reply-To: <698310e10704260123s2e25744ey64e2ea3b680b7795@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0704270830270.506@yvahk01.tjqt.qr>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+ <698310e10704260123s2e25744ey64e2ea3b680b7795@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Nigel Cunningham wrote:
-> > COW is a possibility, but I understood (perhaps wrongly) that Linus was
-> > thinking of a single syscall or such like to prepare the snapshot. If
-> > you're going to start doing things like this, won't that mean you'd then
-> > have to update/redo the snapshot or somehow nullify the effect of
-> > anything the programs does so that doing it again after the snapshot is
-> > restored doesn't cause problems?
 
-On Fri, 27 Apr 2007, Pekka J Enberg wrote:
-> No. The snapshot is just that. A snapshot in time. From kernel point of 
-> view, it doesn't matter one bit what when you did it or if the state has 
-> changed before you resume. It's up to userspace to make sure the user 
-> doesn't do real work while the snapshot is being written to disk and 
-> machine is shut down.
+On Apr 26 2007 12:23, Marat Buharov wrote:
+>
+> [Offtopic]
+> Today, April, 26, 21 year has been passed since Chernobyl Nuclear
+> Power Plant disaster, and Linus announced .... *drum roll* .... 2.6.21
+> !!! What a mysterious coincidence...
 
-Btw, obviously we need to break the COW when resuming and not include the 
-snapshot mapping. However, that should be trivially doable by snapshotting 
-the page mappings before remapping them as COW.
+And 2.6.26 will be released on April 01 2008.
 
-				Pekka
+
+Jan
+-- 
