@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbXD0FHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbXD0FHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbXD0FHW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 01:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbXD0FHW
+	id S1755333AbXD0FHp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 01:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXD0FHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 01:07:22 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:41148 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755315AbXD0FHU (ORCPT
+	Fri, 27 Apr 2007 01:07:45 -0400
+Received: from mga06.intel.com ([134.134.136.21]:10983 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755325AbXD0FHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 01:07:20 -0400
-Date: Fri, 27 Apr 2007 10:40:57 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] include/linux/kprobes.h: always offer show_registers() prototype
-Message-ID: <20070427051056.GB9787@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20070426234749.GJ3468@stusta.de>
-Mime-Version: 1.0
+	Fri, 27 Apr 2007 01:07:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,454,1170662400"; 
+   d="scan'208";a="234876513"
+Date: Thu, 26 Apr 2007 22:07:43 -0700
+From: Valerie Henson <val_henson@linux.intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: David Chinner <dgc@sgi.com>, Amit Gud <gud@ksu.edu>,
+       Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070427050742.GC20286@nifty>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425230344.GC16129@nifty> <20070426084738.GA21666@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070426234749.GJ3468@stusta.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070426084738.GA21666@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 01:47:49AM +0200, Adrian Bunk wrote:
-> Allow gcc to perform show_registers() type checking also with 
-> CONFIG_KPROBES=n.
+On Thu, Apr 26, 2007 at 10:47:38AM +0200, Jan Kara wrote:
+>   Do I get it right that you just have in each cnode a pointer to the
+> previous & next cnode? But then if two consecutive cnodes get corrupted,
+> you have no way to connect the chain, do you? If each cnode contained
+> some unique identifier of the file and a number identifying position of
+> cnode,  then there would be at least some way (through expensive) to
+> link them together correctly...
 
-Is kprobes.h the correct place to allow for this change? Perhaps, with
-Christoph's patch http://marc.info/?l=linux-kernel&m=117432009501114&w=2
-consolidating the die_notifier code, this could be moved to
-include/linux/kdebug.h instead?
+You're right, it's easy to add a little more redundancy that would
+make it possible to recover from two consecutive nodes being
+corrupted.  Keeping a parent inode id in each continuation inode is
+definitely a smart thing to do.
 
-Ananth
+Some minor side notes: Continuation inodes aren't really in any
+defined order - if you look at Jeff's ping-pong chunk allocation
+example, you'll see that the data in each continuation inode won't be
+in linearly increasing order.  Also, while the current implementation
+is a simple doubly-linked list, this may not be the best solution
+long-term.  What's important is that each continuation inode have a
+back pointer to the parent and that there is some structure for
+quickly looking up the continuation inode for a given file offset.
+Suggestions for data structures that work well in this situation are
+welcome. :)
 
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
-> This patch has been sent on:
-> - 27 Mar 2007
-> 
->  include/linux/kprobes.h |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.21-rc4-mm1/include/linux/kprobes.h.old	2007-03-26 15:28:27.000000000 +0200
-> +++ linux-2.6.21-rc4-mm1/include/linux/kprobes.h	2007-03-26 15:32:23.000000000 +0200
-> @@ -163,7 +163,6 @@
->  extern void arch_arm_kprobe(struct kprobe *p);
->  extern void arch_disarm_kprobe(struct kprobe *p);
->  extern int arch_init_kprobes(void);
-> -extern void show_registers(struct pt_regs *regs);
->  extern kprobe_opcode_t *get_insn_slot(void);
->  extern void free_insn_slot(kprobe_opcode_t *slot, int dirty);
->  extern void kprobes_inc_nmissed_count(struct kprobe *p);
-> @@ -241,4 +240,7 @@
->  {
->  }
->  #endif				/* CONFIG_KPROBES */
-> +
-> +void show_registers(struct pt_regs *regs);
-> +
->  #endif				/* _LINUX_KPROBES_H */
+-VAL
