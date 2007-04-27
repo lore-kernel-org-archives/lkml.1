@@ -1,73 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbXD0VRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbXD0VUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757313AbXD0VRk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXD0VRj
+	id S1757319AbXD0VUK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXD0VUK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:17:39 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:15812 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757313AbXD0VRi (ORCPT
+	Fri, 27 Apr 2007 17:20:10 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46102 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757319AbXD0VUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:17:38 -0400
-Date: Fri, 27 Apr 2007 14:19:08 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Tim Hockin" <thockin@google.com>
-Cc: ak@muc.de, vojtech@suse.cz, linux-kernel@vger.kernel.org, akpm@google.com
-Subject: Re: [PATCH] x86_64: dynamic MCE poll interval
-Message-Id: <20070427141908.114bfe5a.randy.dunlap@oracle.com>
-In-Reply-To: <cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
-References: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
-	<cc96a5040704271128t60120aedvd439630b3b80b03@mail.gmail.com>
-	<cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Fri, 27 Apr 2007 17:20:08 -0400
+Date: Fri, 27 Apr 2007 14:19:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
+       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
+Subject: Re: [patch 12/13] signal/timer/event fds v10 - eventfd wire up
+ x86_64 arch ...
+Message-Id: <20070427141941.a7891c62.akpm@linux-foundation.org>
+In-Reply-To: <send-serie.davidel@xmailserver.org.10599.1175553997.12>
+References: <send-serie.davidel@xmailserver.org.10599.1175553997.12>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 13:51:28 -0700 Tim Hockin wrote:
+On Mon, 02 Apr 2007 15:46:31 -0700
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> This is the third version of this patch.  The only change from the prior
-> version is to use time_after_eq().
+> This patch wire the eventfd system call to the x86_64 architecture.
 > 
-> diff -pruN linux-2.6.20/arch/x86_64/kernel/mce.c
-> linux-2.6.20+th/arch/x86_64/kernel/mce.c
-> --- linux-2.6.20/arch/x86_64/kernel/mce.c	2007-04-27 10:01:02.000000000 -0700
-> +++ linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 10:41:02.000000000 -0700
-> @@ -349,17 +351,30 @@ static void mcheck_timer(struct work_str
->  	 * writes.
->  	 */
->  	if (notify_user && console_logged) {
-> +		static unsigned long last_print = 0;
+> 
+> 
+> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+> 
+> 
+> - Davide
+> 
+> 
+> 
+> Index: linux-2.6.21-rc5.fds/arch/x86_64/ia32/ia32entry.S
+> ===================================================================
+> --- linux-2.6.21-rc5.fds.orig/arch/x86_64/ia32/ia32entry.S	2007-04-02 15:06:40.000000000 -0700
+> +++ linux-2.6.21-rc5.fds/arch/x86_64/ia32/ia32entry.S	2007-04-02 15:06:46.000000000 -0700
+> @@ -721,4 +721,5 @@
+>  	.quad sys_epoll_pwait
+>  	.quad sys_signalfd		/* 320 */
+>  	.quad sys_timerfd
+> +	.quad sys_eventfd
+>  ia32_syscall_end:		
+> Index: linux-2.6.21-rc5.fds/include/asm-x86_64/unistd.h
+> ===================================================================
+> --- linux-2.6.21-rc5.fds.orig/include/asm-x86_64/unistd.h	2007-04-02 15:06:40.000000000 -0700
+> +++ linux-2.6.21-rc5.fds/include/asm-x86_64/unistd.h	2007-04-02 15:06:46.000000000 -0700
+> @@ -623,8 +623,10 @@
+>  __SYSCALL(__NR_signalfd, sys_signalfd)
+>  #define __NR_timerfd		281
+>  __SYSCALL(__NR_timerfd, sys_timerfd)
+> +#define __NR_eventfd		282
+> +__SYSCALL(__NR_eventfd, sys_eventfd)
+>  
+> -#define __NR_syscall_max __NR_timerfd
+> +#define __NR_syscall_max __NR_eventfd
+>  
+>  #ifndef __NO_STUBS
+>  #define __ARCH_WANT_OLD_READDIR
 
-Don't need to init statics to 0...
+General point: the first hunk here which wires up the 32-bit entry point
+should arguably be part of the "wire up i386" patch, not the "wire up
+x86_64" patch.
 
-> +		unsigned long now = jiffies;
-> +
-> +		/* if we logged an MCE, reduce the polling interval */
-> +		next_interval = max(next_interval/2, HZ/100);
->  		notify_user = 0;
->  		clear_bit(0, &console_logged);
-> -		printk(KERN_INFO "Machine check events logged\n");
-> +		if (time_after_eq(now, last_print + (check_interval*HZ))) {
-> +			last_print = now;
-> +			printk(KERN_INFO "Machine check events logged\n");
-> +		}
-> +	} else {
-> +		next_interval = min(next_interval*2, check_interval*HZ);
->  	}
-> +
-> +	schedule_delayed_work(&mcheck_work, next_interval);
->  }
+This is not a clear-cut thing.  The problem with the approach you've taken
+here is that if we wire up i386 and not x86_64's i386 table (for example)
+there are ways in which intervening patches can accidentally get i386 and
+x86_64 emulation's syscall tables out of sync.  And, of course, 32-bit
+applications will run on i386 but won't run on x86_64 or vice-versa.
 
+So I think the best way to avoid all such problems is to always wire up
+i386 and x86_64 (both 32- and 64-bit) in the same patch.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
