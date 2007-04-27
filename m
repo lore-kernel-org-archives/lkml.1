@@ -1,776 +1,909 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbXD0WxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXD0WxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbXD0WxG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbXD0WxF
+	id S1757530AbXD0WxZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbXD0WxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:53:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59053 "EHLO ogre.sisk.pl"
+	Fri, 27 Apr 2007 18:53:25 -0400
+Received: from ns1.suse.de ([195.135.220.2]:37244 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757526AbXD0Ww7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:52:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH -mm 2/2] Introduce freezer flags
-Date: Sat, 28 Apr 2007 00:56:52 +0200
-User-Agent: KMail/1.9.5
-Cc: ego@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200704271737.31192.rjw@sisk.pl> <200704280009.19639.rjw@sisk.pl> <20070427220710.GC2994@elf.ucw.cz>
-In-Reply-To: <20070427220710.GC2994@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704280056.53831.rjw@sisk.pl>
+	id S1757526AbXD0WxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:53:21 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org, Thomas Gleixner <tglx@linutronix.de>,
+       Benedikt Spranger <b.spranger@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 1/3] UIO: Add the User IO core code
+Date: Fri, 27 Apr 2007 15:50:56 -0700
+Message-Id: <11777142582534-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.1.2
+In-Reply-To: <20070427224957.GA17967@kroah.com>
+References: <20070427224957.GA17967@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 28 April 2007 00:07, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > +#ifdef CONFIG_FREEZER
-> > > > > +	/* Used by the process freezer, defined in freezer.h */
-> > > > > +	unsigned int freezer_flags;
-> > > > 
-> > > > unsigned long freezer_flags; ??
-> > > 
-> > > I guess so.
-> > 
-> > Still, on x86_64, for example, we'll waste 4 bytes by using 'unsigned long'
-> > here, which I wouldn't like to do.
-> > 
-> > Is it acceptable to use explicit type casting in set_bit() and friends?
-> 
-> I'm afraid set_bit & friends are only defined on unsigned long.
+From: Hans J. Koch <hjk@linutronix.de>
 
-On x86_64 they are defined on anything, even on huge bitmaps.
+This interface allows the ability to write the majority of a driver in
+userspace with only a very small shell of a driver in the kernel itself.
+It uses a char device and sysfs to interact with a userspace process to
+process interrupts and control memory accesses.
 
-> You can cast, but you may run into some nasty surprise... like damaging
-> surrounding bytes on 64-bit architectures != x86_64.
+See the docbook documentation for more details on how to use this
+interface.
 
-Let's use unsigned long, then, but I'm not really happy with that.
-
+From: Hans J. Koch <hjk@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benedikt Spranger <b.spranger@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
+ drivers/Kconfig            |    1 +
+ drivers/Makefile           |    1 +
+ drivers/uio/Kconfig        |   14 +
+ drivers/uio/Makefile       |    1 +
+ drivers/uio/uio.c          |  702 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/uio_driver.h |   91 ++++++
+ 6 files changed, 810 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/uio/Kconfig
+ create mode 100644 drivers/uio/Makefile
+ create mode 100644 drivers/uio/uio.c
+ create mode 100644 include/linux/uio_driver.h
 
-Move all of the freezer-related flags to a separate field in task_struct and
-introduce functions to operate them using set_bit() etc.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- Documentation/power/kernel_threads.txt |    2 -
- Documentation/power/swsusp.txt         |    4 +-
- arch/i386/kernel/apm.c                 |    2 -
- drivers/block/loop.c                   |    2 -
- drivers/char/apm-emulation.c           |    6 +--
- drivers/ieee1394/ieee1394_core.c       |    2 -
- drivers/md/md.c                        |    2 -
- drivers/mmc/card/queue.c               |    3 +
- drivers/mtd/mtd_blkdevs.c              |    3 +
- drivers/scsi/libsas/sas_scsi_host.c    |    2 -
- drivers/scsi/scsi_error.c              |    2 -
- drivers/usb/storage/usb.c              |    2 -
- include/asm-arm/thread_info.h          |    2 -
- include/asm-blackfin/thread_info.h     |    2 -
- include/asm-frv/thread_info.h          |    2 -
- include/asm-i386/thread_info.h         |    2 -
- include/asm-ia64/thread_info.h         |    2 -
- include/asm-mips/thread_info.h         |    2 -
- include/asm-powerpc/thread_info.h      |    2 -
- include/asm-sh/thread_info.h           |    2 -
- include/asm-x86_64/thread_info.h       |    2 -
- include/linux/freezer.h                |   63 +++++++++++++++++++++++++++------
- include/linux/sched.h                  |    8 ++--
- kernel/fork.c                          |    5 ++
- kernel/freezer.c                       |   10 ++---
- kernel/kthread.c                       |    3 +
- kernel/rcutorture.c                    |    4 +-
- kernel/sched.c                         |    2 -
- kernel/softirq.c                       |    2 -
- kernel/softlockup.c                    |    2 -
- kernel/workqueue.c                     |    2 -
- 31 files changed, 90 insertions(+), 61 deletions(-)
-
-Index: linux-2.6.21-rc7-mm2/include/linux/sched.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/linux/sched.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/linux/sched.h	2007-04-28 00:45:20.000000000 +0200
-@@ -1006,7 +1006,10 @@ struct task_struct {
- 	/* Deadlock detection and priority inheritance handling */
- 	struct rt_mutex_waiter *pi_blocked_on;
- #endif
--
-+#ifdef CONFIG_FREEZER
-+	/* Used by the process freezer, defined in freezer.h */
-+	unsigned long freezer_flags;
-+#endif
- #ifdef CONFIG_DEBUG_MUTEXES
- 	/* mutex deadlock detection */
- 	struct mutex_waiter *blocked_on;
-@@ -1189,8 +1192,6 @@ static inline void put_task_struct(struc
- #define PF_MEMALLOC	0x00000800	/* Allocating memory */
- #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
- #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
--#define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
--#define PF_FROZEN	0x00010000	/* frozen for system suspend */
- #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
- #define PF_KSWAPD	0x00040000	/* I am kswapd */
- #define PF_SWAPOFF	0x00080000	/* I am in swapoff */
-@@ -1202,7 +1203,6 @@ static inline void put_task_struct(struc
- #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
--#define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 050323f..325a108 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -84,4 +84,5 @@ source "drivers/auxdisplay/Kconfig"
  
- /*
-  * Only the _current_ task can read/write to tsk->flags, but other
-Index: linux-2.6.21-rc7-mm2/include/asm-arm/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-arm/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-arm/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -147,7 +147,6 @@ extern void iwmmxt_task_switch(struct th
- #define TIF_POLLING_NRFLAG	16
- #define TIF_USING_IWMMXT	17
- #define TIF_MEMDIE		18
--#define TIF_FREEZE		19
+ source "drivers/kvm/Kconfig"
  
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
- #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
-@@ -155,7 +154,6 @@ extern void iwmmxt_task_switch(struct th
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
- #define _TIF_USING_IWMMXT	(1 << TIF_USING_IWMMXT)
--#define _TIF_FREEZE		(1 << TIF_FREEZE)
- 
- /*
-  * Change these and you break ASM code in entry-common.S
-Index: linux-2.6.21-rc7-mm2/include/asm-blackfin/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-blackfin/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-blackfin/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -125,7 +125,6 @@ static inline struct thread_info *curren
- 					   TIF_NEED_RESCHED */
- #define TIF_MEMDIE              5
- #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
--#define TIF_FREEZE              7       /* is freezing for suspend */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -134,7 +133,6 @@ static inline struct thread_info *curren
- #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
--#define _TIF_FREEZE             (1<<TIF_FREEZE)
- 
- #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
- 
-Index: linux-2.6.21-rc7-mm2/include/asm-frv/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-frv/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-frv/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -116,7 +116,6 @@ register struct thread_info *__current_t
- #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
- #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		17	/* OOM killer killed process */
--#define TIF_FREEZE		18	/* freezing for suspend */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-@@ -126,7 +125,6 @@ register struct thread_info *__current_t
- #define _TIF_IRET		(1 << TIF_IRET)
- #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
- #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
--#define _TIF_FREEZE		(1 << TIF_FREEZE)
- 
- #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
- #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
-Index: linux-2.6.21-rc7-mm2/include/asm-i386/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-i386/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-i386/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -136,7 +136,6 @@ static inline struct thread_info *curren
- #define TIF_MEMDIE		16
- #define TIF_DEBUG		17	/* uses debug registers */
- #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
--#define TIF_FREEZE		19	/* is freezing for suspend */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -150,7 +149,6 @@ static inline struct thread_info *curren
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
--#define _TIF_FREEZE		(1<<TIF_FREEZE)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
-Index: linux-2.6.21-rc7-mm2/include/asm-ia64/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-ia64/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-ia64/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -89,7 +89,6 @@ struct thread_info {
- #define TIF_MEMDIE		17
- #define TIF_MCA_INIT		18	/* this task is processing MCA or INIT */
- #define TIF_DB_DISABLED		19	/* debug trap disabled for fsyscall */
--#define TIF_FREEZE		20	/* is freezing for suspend */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
-@@ -101,7 +100,6 @@ struct thread_info {
- #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
- #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
- #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
--#define _TIF_FREEZE		(1 << TIF_FREEZE)
- 
- /* "work to do on user-return" bits */
- #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
-Index: linux-2.6.21-rc7-mm2/include/asm-mips/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-mips/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-mips/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -118,7 +118,6 @@ register struct thread_info *__current_t
- #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
- #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		18
--#define TIF_FREEZE		19
- #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -130,7 +129,6 @@ register struct thread_info *__current_t
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
--#define _TIF_FREEZE		(1<<TIF_FREEZE)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK		(0x0000ffef & ~_TIF_SECCOMP)
-Index: linux-2.6.21-rc7-mm2/include/asm-powerpc/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-powerpc/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-powerpc/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -122,7 +122,6 @@ static inline struct thread_info *curren
- #define TIF_RESTOREALL		12	/* Restore all regs (implies NOERROR) */
- #define TIF_NOERROR		14	/* Force successful syscall return */
- #define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
--#define TIF_FREEZE		16	/* Freezing for suspend */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -139,7 +138,6 @@ static inline struct thread_info *curren
- #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
--#define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_NOTIFY_RESUME | _TIF_SIGPENDING | \
-Index: linux-2.6.21-rc7-mm2/include/asm-sh/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-sh/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-sh/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -115,7 +115,6 @@ static inline struct thread_info *curren
- #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
- #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
- #define TIF_MEMDIE		18
--#define TIF_FREEZE		19
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -125,7 +124,6 @@ static inline struct thread_info *curren
- #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
- #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
--#define _TIF_FREEZE		(1<<TIF_FREEZE)
- 
- #define _TIF_WORK_MASK		0x000000FE	/* work to do on interrupt/exception return */
- #define _TIF_ALLWORK_MASK	0x000000FF	/* work to do on any return to u-space */
-Index: linux-2.6.21-rc7-mm2/include/asm-x86_64/thread_info.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/asm-x86_64/thread_info.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/asm-x86_64/thread_info.h	2007-04-27 23:23:57.000000000 +0200
-@@ -122,7 +122,6 @@ static inline struct thread_info *stack_
- #define TIF_MEMDIE		20
- #define TIF_DEBUG		21	/* uses debug registers */
- #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
--#define TIF_FREEZE		23	/* is freezing for suspend */
- 
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-@@ -138,7 +137,6 @@ static inline struct thread_info *stack_
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
- #define _TIF_DEBUG		(1<<TIF_DEBUG)
- #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
--#define _TIF_FREEZE		(1<<TIF_FREEZE)
- 
- /* work to do on interrupt/exception return */
- #define _TIF_WORK_MASK \
-Index: linux-2.6.21-rc7-mm2/include/linux/freezer.h
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/linux/freezer.h	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/linux/freezer.h	2007-04-28 00:45:13.000000000 +0200
-@@ -3,12 +3,33 @@
- #include <linux/sched.h>
- 
- #ifdef CONFIG_FREEZER
++source "drivers/uio/Kconfig"
+ endmenu
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 920c975..5cf267f 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -37,6 +37,7 @@ obj-$(CONFIG_SCSI)		+= scsi/
+ obj-$(CONFIG_ATA)		+= ata/
+ obj-$(CONFIG_FUSION)		+= message/
+ obj-$(CONFIG_IEEE1394)		+= ieee1394/
++obj-$(CONFIG_UIO)		+= uio/
+ obj-y				+= cdrom/
+ obj-y				+= auxdisplay/
+ obj-$(CONFIG_MTD)		+= mtd/
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+new file mode 100644
+index 0000000..8fcef21
+--- /dev/null
++++ b/drivers/uio/Kconfig
+@@ -0,0 +1,14 @@
++menu "Userspace I/O"
++config UIO
++	tristate "Userspace I/O drivers"
++	default n
++	help
++	  Enable this to allow the userspace driver core code to be
++	  built.  This code allows userspace programs easy access to
++	  kernel interrupts and memory locations, allowing some drivers
++	  to be written in userspace.  Note that a small kernel driver
++	  is also required for interrupt handling to work properly.
 +
++	  If you don't know what to do here, say N.
++
++endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+new file mode 100644
+index 0000000..9b7c830
+--- /dev/null
++++ b/drivers/uio/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_UIO) += uio.o
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+new file mode 100644
+index 0000000..6ca3379
+--- /dev/null
++++ b/drivers/uio/uio.c
+@@ -0,0 +1,702 @@
 +/*
-+ *	Per task flags used by the freezer
++ * drivers/uio/uio.c
 + *
-+ *	They should not be referred to directly outside of this file.
++ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
++ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
++ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
++ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
++ *
++ * Userspace IO
++ *
++ * Base Functions
++ *
++ * Licensed under the GPLv2 only.
 + */
-+#define TFF_NOFREEZE	0	/* task should not be frozen */
-+#define TFF_FREEZE	8	/* task should go to the refrigerator ASAP */
-+#define TFF_SKIP	9	/* do not count this task as freezable */
-+#define TFF_FROZEN	10	/* task is frozen */
 +
- /*
-  * Check if a process has been frozen
-  */
- static inline int frozen(struct task_struct *p)
- {
--	return p->flags & PF_FROZEN;
-+	return test_bit(TFF_FROZEN, &p->freezer_flags);
-+}
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/poll.h>
++#include <linux/device.h>
++#include <linux/mm.h>
++#include <linux/idr.h>
++#include <linux/string.h>
++#include <linux/kobject.h>
++#include <linux/uio_driver.h>
 +
-+static inline void set_frozen_flag(struct task_struct *p)
-+{
-+	set_bit(TFF_FROZEN, &p->freezer_flags);
-+}
++#define UIO_MAX_DEVICES 255
 +
-+static inline void clear_frozen_flag(struct task_struct *p)
-+{
-+	clear_bit(TFF_FROZEN, &p->freezer_flags);
- }
- 
- /*
-@@ -16,7 +37,7 @@ static inline int frozen(struct task_str
-  */
- static inline int freezing(struct task_struct *p)
- {
--	return test_tsk_thread_flag(p, TIF_FREEZE);
-+	return test_bit(TFF_FREEZE, &p->freezer_flags);
- }
- 
- /*
-@@ -24,15 +45,31 @@ static inline int freezing(struct task_s
-  */
- static inline void freeze(struct task_struct *p)
- {
--	set_tsk_thread_flag(p, TIF_FREEZE);
-+	set_bit(TFF_FREEZE, &p->freezer_flags);
-+}
++struct uio_device {
++	struct module		*owner;
++	struct device		*dev;
++	int			minor;
++	atomic_t		event;
++	struct fasync_struct	*async_queue;
++	wait_queue_head_t	wait;
++	int			vma_count;
++	struct uio_info		*info;
++	struct kset 		map_attr_kset;
++};
++
++static int uio_major;
++static DEFINE_IDR(uio_idr);
++static struct file_operations uio_fops;
++
++/* UIO class infrastructure */
++static struct uio_class {
++	struct kref kref;
++	struct class *class;
++} *uio_class;
 +
 +/*
-+ * Cancel the previous 'freeze' request
++ * attributes
 + */
-+static inline void clear_freeze_flag(struct task_struct *p)
++
++static struct attribute attr_addr = {
++	.name  = "addr",
++	.mode  = S_IRUGO,
++};
++
++static struct attribute attr_size = {
++	.name  = "size",
++	.mode  = S_IRUGO,
++};
++
++static struct attribute* map_attrs[] = {
++	&attr_addr, &attr_size, NULL
++};
++
++static ssize_t map_attr_show(struct kobject *kobj, struct attribute *attr,
++			     char *buf)
 +{
-+	clear_bit(TFF_FREEZE, &p->freezer_flags);
++	struct uio_mem *mem = container_of(kobj, struct uio_mem, kobj);
++
++	if (strncmp(attr->name,"addr",4) == 0)
++		return sprintf(buf, "0x%lx\n", mem->addr);
++
++	if (strncmp(attr->name,"size",4) == 0)
++		return sprintf(buf, "0x%lx\n", mem->size);
++
++	return -ENODEV;
 +}
 +
-+/*
-+ * Check if the task wants to be exempted from freezing
-+ */
-+static inline int freezer_should_exempt(struct task_struct *p)
++static void map_attr_release(struct kobject *kobj)
 +{
-+	return test_bit(TFF_NOFREEZE, &p->freezer_flags);
- }
- 
- /*
-- * Sometimes we may need to cancel the previous 'freeze' request
-+ * Tell the freezer to exempt this task from freezing
-  */
--static inline void do_not_freeze(struct task_struct *p)
-+static inline void freezer_exempt(struct task_struct *p)
- {
--	clear_tsk_thread_flag(p, TIF_FREEZE);
-+	set_bit(TFF_NOFREEZE, &p->freezer_flags);
- }
- 
- /*
-@@ -48,12 +85,12 @@ static inline int thaw_process(struct ta
- {
- 	task_lock(p);
- 	if (frozen(p)) {
--		p->flags &= ~PF_FROZEN;
-+		clear_frozen_flag(p);
- 		task_unlock(p);
- 		wake_up_process(p);
- 		return 1;
- 	}
--	clear_tsk_thread_flag(p, TIF_FREEZE);
-+	clear_freeze_flag(p);
- 	task_unlock(p);
- 	return 0;
- }
-@@ -92,7 +129,7 @@ static inline int try_to_freeze(void)
- static inline void freezer_do_not_count(void)
- {
- 	if (current->mm)
--		current->flags |= PF_FREEZER_SKIP;
-+		set_bit(TFF_SKIP, &current->freezer_flags);
- }
- 
- /*
-@@ -102,7 +139,7 @@ static inline void freezer_do_not_count(
- static inline void freezer_count(void)
- {
- 	if (current->mm) {
--		current->flags &= ~PF_FREEZER_SKIP;
-+		clear_bit(TFF_SKIP, &current->freezer_flags);
- 		try_to_freeze();
- 	}
- }
-@@ -112,13 +149,17 @@ static inline void freezer_count(void)
-  */
- static inline int freezer_should_skip(struct task_struct *p)
- {
--	return !!(p->flags & PF_FREEZER_SKIP);
-+	return test_bit(TFF_SKIP, &current->freezer_flags);
- }
- 
- #else
- static inline int frozen(struct task_struct *p) { return 0; }
-+static inline void set_frozen_flag(struct task_struct *p) {}
-+static inline void clear_frozen_flag(struct task_struct *p) {}
- static inline int freezing(struct task_struct *p) { return 0; }
- static inline void freeze(struct task_struct *p) { BUG(); }
-+static inline int freezer_should_exempt(struct task_struct *p) { return 0; }
-+static inline void freezer_exempt(struct task_struct *p) {}
- static inline int thaw_process(struct task_struct *p) { return 1; }
- 
- static inline void refrigerator(void) {}
-Index: linux-2.6.21-rc7-mm2/kernel/sched.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/sched.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/sched.c	2007-04-27 23:23:57.000000000 +0200
-@@ -5478,7 +5478,7 @@ migration_call(struct notifier_block *nf
- 		p = kthread_create(migration_thread, hcpu, "migration/%d",cpu);
- 		if (IS_ERR(p))
- 			return NOTIFY_BAD;
--		p->flags |= PF_NOFREEZE;
-+		freezer_exempt(p);
- 		kthread_bind(p, cpu);
- 		/* Must be high prio: stop_machine expects to yield to it. */
- 		rq = task_rq_lock(p, &flags);
-Index: linux-2.6.21-rc7-mm2/arch/i386/kernel/apm.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/i386/kernel/apm.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/i386/kernel/apm.c	2007-04-27 23:23:57.000000000 +0200
-@@ -2313,7 +2313,7 @@ static int __init apm_init(void)
- 		remove_proc_entry("apm", NULL);
- 		return err;
- 	}
--	kapmd_task->flags |= PF_NOFREEZE;
-+	freezer_exempt(kapmd_task);
- 	wake_up_process(kapmd_task);
- 
- 	if (num_online_cpus() > 1 && !smp ) {
-Index: linux-2.6.21-rc7-mm2/drivers/block/loop.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/block/loop.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/block/loop.c	2007-04-27 23:23:57.000000000 +0200
-@@ -582,7 +582,7 @@ static int loop_thread(void *data)
- 	 * hence, it mustn't be stopped at all
- 	 * because it could be indirectly used during suspension
- 	 */
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	set_user_nice(current, -20);
- 
-Index: linux-2.6.21-rc7-mm2/drivers/char/apm-emulation.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/char/apm-emulation.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/char/apm-emulation.c	2007-04-27 23:23:57.000000000 +0200
-@@ -336,7 +336,7 @@ apm_ioctl(struct inode * inode, struct f
- 			 * threads.
- 			 */
- 			flags = current->flags;
--			current->flags |= PF_NOFREEZE;
-+			freezer_exempt(current);
- 
- 			wait_event(apm_suspend_waitqueue,
- 				   as->suspend_state == SUSPEND_DONE);
-@@ -372,7 +372,7 @@ apm_ioctl(struct inode * inode, struct f
- 			 * threads.
- 			 */
- 			flags = current->flags;
--			current->flags |= PF_NOFREEZE;
-+			freezer_exempt(current);
- 
- 			wait_event_interruptible(apm_suspend_waitqueue,
- 					 as->suspend_state == SUSPEND_DONE);
-@@ -601,7 +601,7 @@ static int __init apm_init(void)
- 		kapmd_tsk = NULL;
- 		return ret;
- 	}
--	kapmd_tsk->flags |= PF_NOFREEZE;
-+	freezer_exempt(kapmd_tsk);
- 	wake_up_process(kapmd_tsk);
- 
- #ifdef CONFIG_PROC_FS
-Index: linux-2.6.21-rc7-mm2/drivers/ieee1394/ieee1394_core.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/ieee1394/ieee1394_core.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/ieee1394/ieee1394_core.c	2007-04-27 23:23:57.000000000 +0200
-@@ -1134,7 +1134,7 @@ static int hpsbpkt_thread(void *__hi)
- 	struct list_head tmp;
- 	int may_schedule;
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	while (!kthread_should_stop()) {
- 
-Index: linux-2.6.21-rc7-mm2/drivers/md/md.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/md/md.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/md/md.c	2007-04-27 23:23:57.000000000 +0200
-@@ -4541,7 +4541,7 @@ static int md_thread(void * arg)
- 	 * many dirty RAID5 blocks.
- 	 */
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 	while (!kthread_should_stop()) {
- 
- 		/* We need to wait INTERRUPTIBLE so that
-Index: linux-2.6.21-rc7-mm2/drivers/mmc/card/queue.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/mmc/card/queue.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/mmc/card/queue.c	2007-04-27 23:23:57.000000000 +0200
-@@ -66,7 +66,8 @@ static int mmc_queue_thread(void *d)
- 	 * Set iothread to ensure that we aren't put to sleep by
- 	 * the process freezing.  We handle suspension ourselves.
- 	 */
--	current->flags |= PF_MEMALLOC|PF_NOFREEZE;
-+	current->flags |= PF_MEMALLOC;
-+	freezer_exempt(current);
- 
- 	down(&mq->thread_sem);
- 	do {
-Index: linux-2.6.21-rc7-mm2/drivers/mtd/mtd_blkdevs.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/mtd/mtd_blkdevs.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/mtd/mtd_blkdevs.c	2007-04-27 23:23:57.000000000 +0200
-@@ -81,7 +81,8 @@ static int mtd_blktrans_thread(void *arg
- 	struct request_queue *rq = tr->blkcore_priv->rq;
- 
- 	/* we might get involved when memory gets low, so use PF_MEMALLOC */
--	current->flags |= PF_MEMALLOC | PF_NOFREEZE;
-+	current->flags |= PF_MEMALLOC;
-+	freezer_exempt(current);
- 
- 	spin_lock_irq(rq->queue_lock);
- 	while (!kthread_should_stop()) {
-Index: linux-2.6.21-rc7-mm2/drivers/scsi/libsas/sas_scsi_host.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/scsi/libsas/sas_scsi_host.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/scsi/libsas/sas_scsi_host.c	2007-04-27 23:23:57.000000000 +0200
-@@ -871,7 +871,7 @@ static int sas_queue_thread(void *_sas_h
- 	struct sas_ha_struct *sas_ha = _sas_ha;
- 	struct scsi_core *core = &sas_ha->core;
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	complete(&queue_th_comp);
- 
-Index: linux-2.6.21-rc7-mm2/drivers/scsi/scsi_error.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/scsi/scsi_error.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/scsi/scsi_error.c	2007-04-27 23:23:57.000000000 +0200
-@@ -1536,7 +1536,7 @@ int scsi_error_handler(void *data)
- {
- 	struct Scsi_Host *shost = data;
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	/*
- 	 * We use TASK_INTERRUPTIBLE so that the thread is not
-Index: linux-2.6.21-rc7-mm2/drivers/usb/storage/usb.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/usb/storage/usb.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/drivers/usb/storage/usb.c	2007-04-27 23:23:57.000000000 +0200
-@@ -301,7 +301,7 @@ static int usb_stor_control_thread(void 
- 	struct us_data *us = (struct us_data *)__us;
- 	struct Scsi_Host *host = us_to_host(us);
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	for(;;) {
- 		try_to_freeze();
-Index: linux-2.6.21-rc7-mm2/kernel/fork.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/fork.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/fork.c	2007-04-27 23:23:57.000000000 +0200
-@@ -921,11 +921,14 @@ static inline void copy_flags(unsigned l
- {
- 	unsigned long new_flags = p->flags;
- 
--	new_flags &= ~(PF_SUPERPRIV | PF_NOFREEZE);
-+	new_flags &= ~PF_SUPERPRIV;
- 	new_flags |= PF_FORKNOEXEC;
- 	if (!(clone_flags & CLONE_PTRACE))
- 		p->ptrace = 0;
- 	p->flags = new_flags;
-+#ifdef CONFIG_FREEZER
-+	p->freezer_flags = 0;
-+#endif
- }
- 
- asmlinkage long sys_set_tid_address(int __user *tidptr)
-Index: linux-2.6.21-rc7-mm2/kernel/rcutorture.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/rcutorture.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/rcutorture.c	2007-04-27 23:23:57.000000000 +0200
-@@ -559,7 +559,7 @@ rcu_torture_fakewriter(void *arg)
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
- 	set_user_nice(current, 19);
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	do {
- 		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
-@@ -590,7 +590,7 @@ rcu_torture_reader(void *arg)
- 
- 	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
- 	set_user_nice(current, 19);
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	do {
- 		idx = cur_ops->readlock();
-Index: linux-2.6.21-rc7-mm2/kernel/softirq.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/softirq.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/softirq.c	2007-04-27 23:23:57.000000000 +0200
-@@ -490,7 +490,7 @@ void __init softirq_init(void)
- static int ksoftirqd(void * __bind_cpu)
- {
- 	set_user_nice(current, 15);
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	set_current_state(TASK_INTERRUPTIBLE);
- 
-Index: linux-2.6.21-rc7-mm2/kernel/softlockup.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/softlockup.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/softlockup.c	2007-04-27 23:23:57.000000000 +0200
-@@ -117,7 +117,7 @@ static int watchdog(void * __bind_cpu)
- 	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
- 
- 	sched_setscheduler(current, SCHED_FIFO, &param);
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	/* initialize timestamp */
- 	touch_softlockup_watchdog();
-Index: linux-2.6.21-rc7-mm2/kernel/workqueue.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/workqueue.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/workqueue.c	2007-04-27 23:23:57.000000000 +0200
-@@ -291,7 +291,7 @@ static int worker_thread(void *__cwq)
- 	DEFINE_WAIT(wait);
- 
- 	if (!cwq->wq->freezeable)
--		current->flags |= PF_NOFREEZE;
-+		freezer_exempt(current);
- 
- 	for (;;) {
- 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
-Index: linux-2.6.21-rc7-mm2/kernel/freezer.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/freezer.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/freezer.c	2007-04-27 23:54:02.000000000 +0200
-@@ -26,7 +26,7 @@
- static inline int freezeable(struct task_struct * p)
- {
- 	if ((p == current) ||
--	    (p->flags & PF_NOFREEZE) ||
-+	    freezer_should_exempt(p) ||
- 	    (p->exit_state != 0))
- 		return 0;
- 	return 1;
-@@ -37,11 +37,11 @@ static inline int freezeable(struct task
-  */
- static inline void frozen_process(void)
- {
--	if (!unlikely(current->flags & PF_NOFREEZE)) {
--		current->flags |= PF_FROZEN;
-+	if (!unlikely(freezer_should_exempt(current))) {
-+		set_frozen_flag(current);
- 		wmb();
- 	}
--	clear_tsk_thread_flag(current, TIF_FREEZE);
-+	clear_freeze_flag(current);
- }
- 
- /* Refrigerator is place where frozen processes are stored :-). */
-@@ -100,7 +100,7 @@ static void cancel_freezing(struct task_
- 
- 	if (freezing(p)) {
- 		pr_debug("  clean up: %s\n", p->comm);
--		do_not_freeze(p);
-+		clear_freeze_flag(p);
- 		spin_lock_irqsave(&p->sighand->siglock, flags);
- 		recalc_sigpending_tsk(p);
- 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-Index: linux-2.6.21-rc7-mm2/Documentation/power/kernel_threads.txt
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/Documentation/power/kernel_threads.txt	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/Documentation/power/kernel_threads.txt	2007-04-27 23:23:57.000000000 +0200
-@@ -32,7 +32,7 @@ like this:
- 	 */
- 	daemonize("usb-storage");
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- from drivers/usb/storage/usb.c::usb_stor_control_thread()
- 
-Index: linux-2.6.21-rc7-mm2/Documentation/power/swsusp.txt
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/Documentation/power/swsusp.txt	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/Documentation/power/swsusp.txt	2007-04-27 23:23:57.000000000 +0200
-@@ -152,8 +152,8 @@ add:
-        try_to_freeze();
- 
- If the thread is needed for writing the image to storage, you should
--instead set the PF_NOFREEZE process flag when creating the thread (and
--be very careful).
-+instead use freezer_exempt() to mark the thread as nonfreezable when creating
-+it (and be very careful).
- 
- 
- Q: What is the difference between "platform" and "shutdown"?
-Index: linux-2.6.21-rc7-mm2/kernel/kthread.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/kthread.c	2007-04-27 23:20:23.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/kthread.c	2007-04-27 23:23:57.000000000 +0200
-@@ -13,6 +13,7 @@
- #include <linux/file.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include <linux/freezer.h>
- #include <asm/semaphore.h>
- 
- static DEFINE_SPINLOCK(kthread_create_lock);
-@@ -232,7 +233,7 @@ int kthreadd(void *unused)
- 	/* Setup a clean context for our children to inherit. */
- 	kthreadd_setup();
- 
--	current->flags |= PF_NOFREEZE;
-+	freezer_exempt(current);
- 
- 	for (;;) {
- 		set_current_state(TASK_INTERRUPTIBLE);
++	/* TODO ??? */
++}
++
++static struct sysfs_ops map_attr_ops = {
++	.show  = map_attr_show,
++};
++
++static struct kobj_type map_attr_type = {
++	.release	= map_attr_release,
++	.sysfs_ops	= &map_attr_ops,
++	.default_attrs	= map_attrs,
++};
++
++static ssize_t show_name(struct device *dev,
++			 struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%s\n", idev->info->name);
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
++
++static ssize_t show_version(struct device *dev,
++			    struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%s\n", idev->info->version);
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(version, S_IRUGO, show_version, NULL);
++
++static ssize_t show_event(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	struct uio_device *idev = dev_get_drvdata(dev);
++	if (idev)
++		return sprintf(buf, "%u\n",
++				(unsigned int)atomic_read(&idev->event));
++	else
++		return -ENODEV;
++}
++static DEVICE_ATTR(event, S_IRUGO, show_event, NULL);
++
++static struct attribute *uio_attrs[] = {
++	&dev_attr_name.attr,
++	&dev_attr_version.attr,
++	&dev_attr_event.attr,
++	NULL,
++};
++
++static struct attribute_group uio_attr_grp = {
++	.attrs = uio_attrs,
++};
++
++/*
++ * device functions
++ */
++static int uio_dev_add_attributes(struct uio_device *idev)
++{
++	int ret;
++	int mi;
++	int map_found = 0;
++	struct uio_mem *mem;
++
++	ret = sysfs_create_group(&idev->dev->kobj, &uio_attr_grp);
++	if (ret)
++		goto err_group;
++
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		mem = &idev->info->mem[mi];
++		if (mem->size == 0)
++			break;
++		if (!map_found) {
++			map_found = 1;
++			kobject_set_name(&idev->map_attr_kset.kobj,"maps");
++			idev->map_attr_kset.ktype = &map_attr_type;
++			idev->map_attr_kset.kobj.parent = &idev->dev->kobj;
++			idev->map_attr_kset.subsys = &uio_class->class->subsys;
++			ret = kset_register(&idev->map_attr_kset);
++			if (ret)
++				goto err_remove_group;
++		}
++		kobject_init(&mem->kobj);
++		kobject_set_name(&mem->kobj,"map%d",mi);
++		mem->kobj.parent = &idev->map_attr_kset.kobj;
++		mem->kobj.kset = &idev->map_attr_kset;
++		ret = kobject_add(&mem->kobj);
++		if (ret)
++			goto err_remove_maps;
++	}
++
++	return 0;
++
++err_remove_maps:
++	for (mi--; mi>=0; mi--) {
++		mem = &idev->info->mem[mi];
++		kobject_unregister(&mem->kobj);
++	}
++	kset_unregister(&idev->map_attr_kset); /* Needed ? */
++err_remove_group:
++	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
++err_group:
++	dev_err(idev->dev, "error creating sysfs files (%d)\n", ret);
++	return ret;
++}
++
++static void uio_dev_del_attributes(struct uio_device *idev)
++{
++	int mi;
++	struct uio_mem *mem;
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		mem = &idev->info->mem[mi];
++		if (mem->size == 0)
++			break;
++		kobject_unregister(&mem->kobj);
++	}
++	kset_unregister(&idev->map_attr_kset);
++	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
++}
++
++static int uio_get_minor(struct uio_device *idev)
++{
++	static DEFINE_MUTEX(minor_lock);
++	int retval = -ENOMEM;
++	int id;
++
++	mutex_lock(&minor_lock);
++	if (idr_pre_get(&uio_idr, GFP_KERNEL) == 0)
++		goto exit;
++
++	retval = idr_get_new(&uio_idr, idev, &id);
++	if (retval < 0) {
++		if (retval == -EAGAIN)
++			retval = -ENOMEM;
++		goto exit;
++	}
++	idev->minor = id & MAX_ID_MASK;
++exit:
++	mutex_unlock(&minor_lock);
++	return retval;
++}
++
++static void uio_free_minor(struct uio_device *idev)
++{
++	idr_remove(&uio_idr, idev->minor);
++}
++
++/**
++ * uio_event_notify - trigger an interrupt event
++ * @idev: UIO device where the event occured
++ */
++void uio_event_notify(struct uio_info *info)
++{
++	struct uio_device *idev = info->uio_dev;
++
++	atomic_inc(&idev->event);
++	wake_up_interruptible(&idev->wait);
++	kill_fasync(&idev->async_queue, SIGIO, POLL_IN);
++}
++EXPORT_SYMBOL_GPL(uio_event_notify);
++
++/**
++ * uio_interrupt - hardware interrupt handler
++ * @irq: IRQ number, can be UIO_IRQ_CYCLIC for cyclic timer
++ * @dev_id: Pointer to the devices uio_device structure
++ */
++static irqreturn_t uio_interrupt(int irq, void *dev_id)
++{
++	struct uio_device *idev = (struct uio_device *)dev_id;
++	irqreturn_t ret = idev->info->handler(irq, idev->info);
++
++	if (ret == IRQ_HANDLED)
++		uio_event_notify(idev->info);
++
++	return ret;
++}
++
++struct uio_listener {
++	struct uio_device *dev;
++	int event_count;
++};
++
++static int uio_open(struct inode *inode, struct file *filep)
++{
++	struct uio_device *idev;
++	struct uio_listener *listener;
++	int ret = 0;
++
++	idev = idr_find(&uio_idr, iminor(inode));
++	if (!idev)
++		return -ENODEV;
++
++	listener = kmalloc(sizeof(*listener), GFP_KERNEL);
++	if (!listener)
++		return -ENOMEM;
++
++	listener->dev = idev;
++	listener->event_count = atomic_read(&idev->event);
++	filep->private_data = listener;
++
++	if (idev->info->open) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->open(idev->info, inode);
++		module_put(idev->owner);
++	}
++
++	if (ret)
++		kfree(listener);
++
++	return ret;
++}
++
++static int uio_fasync(int fd, struct file *filep, int on)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	return fasync_helper(fd, filep, on, &idev->async_queue);
++}
++
++static int uio_release(struct inode *inode, struct file *filep)
++{
++	int ret = 0;
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	if (idev->info->release) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->release(idev->info, inode);
++		module_put(idev->owner);
++	}
++	if (filep->f_flags & FASYNC)
++		ret = uio_fasync(-1, filep, 0);
++	kfree(listener);
++	return ret;
++}
++
++static unsigned int uio_poll(struct file *filep, poll_table *wait)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++
++	if (idev->info->irq == UIO_IRQ_NONE)
++		return -EIO;
++
++	poll_wait(filep, &idev->wait, wait);
++	if (listener->event_count != atomic_read(&idev->event))
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
++static ssize_t uio_read(struct file *filep, char __user *buf,
++			size_t count, loff_t *ppos)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++	DECLARE_WAITQUEUE(wait, current);
++	ssize_t retval;
++	int event_count;
++
++	if (idev->info->irq == UIO_IRQ_NONE)
++		return -EIO;
++
++	if (count != sizeof(int))
++		return -EINVAL;
++
++	add_wait_queue(&idev->wait, &wait);
++
++	do {
++		set_current_state(TASK_INTERRUPTIBLE);
++
++		event_count = atomic_read(&idev->event);
++		if (event_count != listener->event_count) {
++			if (copy_to_user(buf, &event_count, count))
++				retval = -EFAULT;
++			else {
++				listener->event_count = event_count;
++				retval = count;
++			}
++			break;
++		}
++
++		if (filep->f_flags & O_NONBLOCK) {
++			retval = -EAGAIN;
++			break;
++		}
++
++		if (signal_pending(current)) {
++			retval = -ERESTARTSYS;
++			break;
++		}
++		schedule();
++	} while (1);
++
++	__set_current_state(TASK_RUNNING);
++	remove_wait_queue(&idev->wait, &wait);
++
++	return retval;
++}
++
++static int uio_find_mem_index(struct vm_area_struct *vma)
++{
++	int mi;
++	struct uio_device *idev = vma->vm_private_data;
++
++	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
++		if (idev->info->mem[mi].size == 0)
++			return -1;
++		if (vma->vm_pgoff == mi)
++			return mi;
++	}
++	return -1;
++}
++
++static void uio_vma_open(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	idev->vma_count++;
++}
++
++static void uio_vma_close(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	idev->vma_count--;
++}
++
++static struct page *uio_vma_nopage(struct vm_area_struct *vma,
++				   unsigned long address, int *type)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	struct page* page = NOPAGE_SIGBUS;
++
++	int mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return page;
++
++	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
++		page = virt_to_page(idev->info->mem[mi].addr);
++	else
++		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
++	get_page(page);
++	if (type)
++		*type = VM_FAULT_MINOR;
++	return page;
++}
++
++static struct vm_operations_struct uio_vm_ops = {
++	.open = uio_vma_open,
++	.close = uio_vma_close,
++	.nopage = uio_vma_nopage,
++};
++
++static int uio_mmap_physical(struct vm_area_struct *vma)
++{
++	struct uio_device *idev = vma->vm_private_data;
++	int mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return -EINVAL;
++
++	vma->vm_flags |= VM_IO | VM_RESERVED;
++
++	return remap_pfn_range(vma,
++			       vma->vm_start,
++			       idev->info->mem[mi].addr >> PAGE_SHIFT,
++			       vma->vm_end - vma->vm_start,
++			       vma->vm_page_prot);
++}
++
++static int uio_mmap_logical(struct vm_area_struct *vma)
++{
++	vma->vm_flags |= VM_RESERVED;
++	vma->vm_ops = &uio_vm_ops;
++	uio_vma_open(vma);
++	return 0;
++}
++
++static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
++{
++	struct uio_listener *listener = filep->private_data;
++	struct uio_device *idev = listener->dev;
++	int mi;
++	unsigned long requested_pages, actual_pages;
++	int ret = 0;
++
++	if (vma->vm_end < vma->vm_start)
++		return -EINVAL;
++
++	vma->vm_private_data = idev;
++
++	mi = uio_find_mem_index(vma);
++	if (mi < 0)
++		return -EINVAL;
++
++	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
++	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
++	if (requested_pages > actual_pages)
++		return -EINVAL;
++
++	if (idev->info->mmap) {
++		if (!try_module_get(idev->owner))
++			return -ENODEV;
++		ret = idev->info->mmap(idev->info, vma);
++		module_put(idev->owner);
++		return ret;
++	}
++
++	switch (idev->info->mem[mi].memtype) {
++		case UIO_MEM_PHYS:
++			return uio_mmap_physical(vma);
++		case UIO_MEM_LOGICAL:
++		case UIO_MEM_VIRTUAL:
++			return uio_mmap_logical(vma);
++		default:
++			return -EINVAL;
++	}
++}
++
++static struct file_operations uio_fops = {
++	.owner		= THIS_MODULE,
++	.open		= uio_open,
++	.release	= uio_release,
++	.read		= uio_read,
++	.mmap		= uio_mmap,
++	.poll		= uio_poll,
++	.fasync		= uio_fasync,
++};
++
++static int uio_major_init(void)
++{
++	uio_major = register_chrdev(0, "uio", &uio_fops);
++	if (uio_major < 0)
++		return uio_major;
++	return 0;
++}
++
++static void uio_major_cleanup(void)
++{
++	unregister_chrdev(uio_major, "uio");
++}
++
++static int init_uio_class(void)
++{
++	int ret = 0;
++
++	if (uio_class != NULL) {
++		kref_get(&uio_class->kref);
++		goto exit;
++	}
++
++	/* This is the first time in here, set everything up properly */
++	ret = uio_major_init();
++	if (ret)
++		goto exit;
++
++	uio_class = kzalloc(sizeof(*uio_class), GFP_KERNEL);
++	if (!uio_class) {
++		ret = -ENOMEM;
++		goto err_kzalloc;
++	}
++
++	kref_init(&uio_class->kref);
++	uio_class->class = class_create(THIS_MODULE, "uio");
++	if (IS_ERR(uio_class->class)) {
++		ret = IS_ERR(uio_class->class);
++		printk(KERN_ERR "class_create failed for uio\n");
++		goto err_class_create;
++	}
++	return 0;
++
++err_class_create:
++	kfree(uio_class);
++	uio_class = NULL;
++err_kzalloc:
++	uio_major_cleanup();
++exit:
++	return ret;
++}
++
++static void release_uio_class(struct kref *kref)
++{
++	/* Ok, we cheat as we know we only have one uio_class */
++	class_destroy(uio_class->class);
++	kfree(uio_class);
++	uio_major_cleanup();
++	uio_class = NULL;
++}
++
++static void uio_class_destroy(void)
++{
++	if (uio_class)
++		kref_put(&uio_class->kref, release_uio_class);
++}
++
++/**
++ * uio_register_device - register a new userspace IO device
++ *
++ * @parent:	parent device
++ * @idev:	device capabilities
++ *
++ * returns zero on success or a negative error code.
++ */
++int __uio_register_device(struct module *owner,
++			  struct device *parent,
++			  struct uio_info *info)
++{
++	struct uio_device *idev;
++	int ret = 0;
++
++	if (!parent || !info || !info->name || !info->version)
++		return -EINVAL;
++
++	info->uio_dev = NULL;
++
++	ret = init_uio_class();
++	if (ret)
++		return ret;
++
++	idev = kzalloc(sizeof(*idev), GFP_KERNEL);
++	if (!idev) {
++		ret = -ENOMEM;
++		goto err_kzalloc;
++	}
++
++	idev->owner = owner;
++	idev->info = info;
++	init_waitqueue_head(&idev->wait);
++	atomic_set(&idev->event, 0);
++
++	ret = uio_get_minor(idev);
++	if (ret)
++		goto err_get_minor;
++
++	idev->dev = device_create(uio_class->class, parent,
++				  MKDEV(uio_major, idev->minor),
++				  "uio%d", idev->minor);
++	if (IS_ERR(idev->dev)) {
++		printk(KERN_ERR "UIO: device register failed\n");
++		ret = PTR_ERR(idev->dev);
++		goto err_device_create;
++	}
++	dev_set_drvdata(idev->dev, idev);
++
++	ret = uio_dev_add_attributes(idev);
++	if (ret)
++		goto err_uio_dev_add_attributes;
++
++	if (idev->info->irq >= 0) {
++		ret = request_irq(idev->info->irq, uio_interrupt,
++				  idev->info->irq_flags, idev->info->name, idev);
++		if (ret)
++			goto err_request_irq;
++	}
++
++	info->uio_dev = idev;
++	return 0;
++
++err_request_irq:
++	uio_dev_del_attributes(idev);
++err_uio_dev_add_attributes:
++	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
++err_device_create:
++	uio_free_minor(idev);
++err_get_minor:
++	kfree(idev);
++err_kzalloc:
++	uio_class_destroy();
++	return ret;
++}
++EXPORT_SYMBOL_GPL(__uio_register_device);
++
++/**
++ * uio_unregister_device - unregister a industrial IO device
++ * @uiodev:	UIO device driver identifier
++ *
++ * returns 0 on success
++ */
++void uio_unregister_device(struct uio_info *info)
++{
++	struct uio_device *idev;
++
++	if (!info || !info->uio_dev)
++		return;
++
++	idev = info->uio_dev;
++
++	uio_free_minor(idev);
++
++	if (info->irq >= 0)
++		free_irq(info->irq, idev);
++
++	uio_dev_del_attributes(idev);
++
++	dev_set_drvdata(idev->dev, NULL);
++	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
++	kfree(idev);
++	uio_class_destroy();
++
++	return;
++}
++EXPORT_SYMBOL_GPL(uio_unregister_device);
++
++static int __init uio_init(void)
++{
++	return 0;
++}
++
++static void __exit uio_exit(void)
++{
++}
++
++module_init(uio_init)
++module_exit(uio_exit)
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+new file mode 100644
+index 0000000..13d9f90
+--- /dev/null
++++ b/include/linux/uio_driver.h
+@@ -0,0 +1,91 @@
++/*
++ * include/linux/uio_driver.h
++ *
++ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
++ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
++ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
++ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
++ *
++ * Userspace IO driver.
++ *
++ * Licensed under the GPLv2 only.
++ */
++
++#ifndef _UIO_DRIVER_H_
++#define _UIO_DRIVER_H_
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/interrupt.h>
++
++/**
++ * uio_mem - description of a UIO memory region
++ * @kobj:		kobject for this mapping
++ * @addr:		address of the device's memory
++ * @size:		size of IO
++ * @memtype:		type of memory addr points to
++ * @internal_addr:	ioremap-ped version of addr, for driver internal use
++ */
++struct uio_mem {
++	struct kobject		kobj;
++	unsigned long		addr;
++	unsigned long		size;
++	int			memtype;
++	void __iomem		*internal_addr;
++};
++
++#define MAX_UIO_MAPS 	5
++
++struct uio_device;
++
++/**
++ * uio_info - UIO device capabilities
++ * @uio_dev:		the UIO device this info belongs to
++ * @name:		device name
++ * @version:		device driver version
++ * @mem:		list of mappable memory regions, size==0 for end of list
++ * @irq:		interrupt number or UIO_IRQ_CUSTOM
++ * @irq_flags		flags for request_irq()
++ * @priv:		optional private data
++ * @handler:		the device's irq handler
++ * @mmap:		mmap operation for this uio device
++ * @open:		open operation for this uio device
++ * @release:		release operation for this uio device
++ */
++struct uio_info {
++	struct uio_device	*uio_dev;
++	char			*name;
++	char			*version;
++	struct uio_mem		mem[ MAX_UIO_MAPS ];
++	long			irq;
++	unsigned long		irq_flags;
++	void			*priv;
++	irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
++	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
++	int (*open)(struct uio_info *info, struct inode *inode);
++	int (*release)(struct uio_info *info, struct inode *inode);
++};
++
++extern int __must_check
++	__uio_register_device(struct module *owner,
++			      struct device *parent,
++			      struct uio_info *info);
++static inline int __must_check
++	uio_register_device(struct device *parent, struct uio_info *info)
++{
++	return __uio_register_device(THIS_MODULE, parent, info);
++}
++extern void uio_unregister_device(struct uio_info *info);
++extern void uio_event_notify(struct uio_info *info);
++
++/* defines for uio_device->irq */
++#define UIO_IRQ_CUSTOM	-1
++#define UIO_IRQ_NONE	-2
++
++/* defines for uio_device->memtype */
++#define UIO_MEM_NONE	0
++#define UIO_MEM_PHYS	1
++#define UIO_MEM_LOGICAL	2
++#define UIO_MEM_VIRTUAL 3
++
++#endif /* _LINUX_UIO_DRIVER_H_ */
+-- 
+1.5.1.2
+
