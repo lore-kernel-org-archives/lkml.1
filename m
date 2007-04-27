@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755886AbXD0Pg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbXD0Ph3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755886AbXD0Pg5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756008AbXD0Pg5
+	id S1756005AbXD0Ph3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756006AbXD0PhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:36:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57319 "EHLO ogre.sisk.pl"
+	Fri, 27 Apr 2007 11:37:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57321 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755886AbXD0Pgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:36:54 -0400
+	id S1756005AbXD0Pgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:36:55 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 1/2] Separate freezer from PM code
-Date: Fri, 27 Apr 2007 17:38:47 +0200
+Subject: [PATCH -mm 2/2] Introduce freezer flags
+Date: Fri, 27 Apr 2007 17:40:16 +0200
 User-Agent: KMail/1.9.5
 Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
@@ -25,780 +25,727 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704271738.48429.rjw@sisk.pl>
+Message-Id: <200704271740.17972.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Now that the freezer is used by kprobes, it is no longer a PM-specific piece of
-code.  Move the freezer code out of kernel/power and introduce the
-CONFIG_FREEZER option that will be chosen automatically if PM or KPROBES is
-set.
+Move all of the freezer-related flags to a separate field in task_struct and
+introduce functions to operate them using set_bit() etc.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- arch/arm/Kconfig         |    5 
- arch/avr32/Kconfig.debug |    5 
- arch/blackfin/Kconfig    |    5 
- arch/frv/Kconfig         |    5 
- arch/i386/Kconfig        |    5 
- arch/ia64/Kconfig        |    5 
- arch/mips/Kconfig        |    5 
- arch/powerpc/Kconfig     |    5 
- arch/ppc/Kconfig         |    5 
- arch/s390/Kconfig        |    5 
- arch/sh/Kconfig          |    5 
- arch/sparc64/Kconfig     |    5 
- arch/x86_64/Kconfig      |    8 +
- include/linux/freezer.h  |    2 
- kernel/Makefile          |    1 
- kernel/freezer.c         |  236 +++++++++++++++++++++++++++++++++++++++++++++++
- kernel/kprobes.c         |    2 
- kernel/power/Makefile    |    2 
- kernel/power/process.c   |  236 -----------------------------------------------
- 19 files changed, 308 insertions(+), 239 deletions(-)
+ Documentation/power/kernel_threads.txt |    2 -
+ Documentation/power/swsusp.txt         |    4 +-
+ arch/i386/kernel/apm.c                 |    2 -
+ drivers/block/loop.c                   |    2 -
+ drivers/char/apm-emulation.c           |    6 +--
+ drivers/ieee1394/ieee1394_core.c       |    2 -
+ drivers/md/md.c                        |    2 -
+ drivers/mmc/card/queue.c               |    3 +
+ drivers/mtd/mtd_blkdevs.c              |    3 +
+ drivers/scsi/libsas/sas_scsi_host.c    |    2 -
+ drivers/scsi/scsi_error.c              |    2 -
+ drivers/usb/storage/usb.c              |    2 -
+ include/asm-arm/thread_info.h          |    2 -
+ include/asm-blackfin/thread_info.h     |    2 -
+ include/asm-frv/thread_info.h          |    2 -
+ include/asm-i386/thread_info.h         |    2 -
+ include/asm-ia64/thread_info.h         |    2 -
+ include/asm-mips/thread_info.h         |    2 -
+ include/asm-powerpc/thread_info.h      |    2 -
+ include/asm-sh/thread_info.h           |    2 -
+ include/asm-x86_64/thread_info.h       |    2 -
+ include/linux/freezer.h                |   63 +++++++++++++++++++++++++++------
+ include/linux/sched.h                  |    8 ++--
+ kernel/fork.c                          |    5 ++
+ kernel/freezer.c                       |   10 ++---
+ kernel/kthread.c                       |    3 +
+ kernel/rcutorture.c                    |    4 +-
+ kernel/sched.c                         |    2 -
+ kernel/softirq.c                       |    2 -
+ kernel/softlockup.c                    |    2 -
+ kernel/workqueue.c                     |    2 -
+ 31 files changed, 90 insertions(+), 61 deletions(-)
 
-Index: linux-2.6.21-rc7-mm2/arch/x86_64/Kconfig
+Index: linux-2.6.21-rc7-mm2/include/linux/sched.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/x86_64/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/x86_64/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -703,6 +703,14 @@ config GENERIC_PENDING_IRQ
- 	depends on GENERIC_HARDIRQS && SMP
- 	default y
+--- linux-2.6.21-rc7-mm2.orig/include/linux/sched.h
++++ linux-2.6.21-rc7-mm2/include/linux/sched.h
+@@ -1006,7 +1006,10 @@ struct task_struct {
+ 	/* Deadlock detection and priority inheritance handling */
+ 	struct rt_mutex_waiter *pi_blocked_on;
+ #endif
+-
++#ifdef CONFIG_FREEZER
++	/* Used by the process freezer, defined in freezer.h */
++	unsigned int freezer_flags;
++#endif
+ #ifdef CONFIG_DEBUG_MUTEXES
+ 	/* mutex deadlock detection */
+ 	struct mutex_waiter *blocked_on;
+@@ -1189,8 +1192,6 @@ static inline void put_task_struct(struc
+ #define PF_MEMALLOC	0x00000800	/* Allocating memory */
+ #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
+ #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
+-#define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
+-#define PF_FROZEN	0x00010000	/* frozen for system suspend */
+ #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+ #define PF_KSWAPD	0x00040000	/* I am kswapd */
+ #define PF_SWAPOFF	0x00080000	/* I am in swapoff */
+@@ -1202,7 +1203,6 @@ static inline void put_task_struct(struc
+ #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+-#define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
  
-+#
-+# Use the tasks freezer
-+#
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM || KPROBES
-+
- menu "Power management options"
- 
- source kernel/power/Kconfig
-Index: linux-2.6.21-rc7-mm2/arch/avr32/Kconfig.debug
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+Index: linux-2.6.21-rc7-mm2/include/asm-arm/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/avr32/Kconfig.debug	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/avr32/Kconfig.debug	2007-04-27 01:33:22.000000000 +0200
-@@ -24,3 +24,8 @@ source "kernel/Kconfig.marker"
- endmenu
+--- linux-2.6.21-rc7-mm2.orig/include/asm-arm/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-arm/thread_info.h
+@@ -147,7 +147,6 @@ extern void iwmmxt_task_switch(struct th
+ #define TIF_POLLING_NRFLAG	16
+ #define TIF_USING_IWMMXT	17
+ #define TIF_MEMDIE		18
+-#define TIF_FREEZE		19
  
- endmenu
-+
-+config FREEZER
-+	bool
-+	default y
-+	depends on KPROBES
-Index: linux-2.6.21-rc7-mm2/arch/frv/Kconfig
+ #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -155,7 +154,6 @@ extern void iwmmxt_task_switch(struct th
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_USING_IWMMXT	(1 << TIF_USING_IWMMXT)
+-#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ /*
+  * Change these and you break ASM code in entry-common.S
+Index: linux-2.6.21-rc7-mm2/include/asm-blackfin/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/frv/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/frv/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -364,6 +364,11 @@ source "drivers/pcmcia/Kconfig"
- #	  sleep-deprived psychotic hacker types can say Y now, everyone else
- #	  should probably wait a while.
+--- linux-2.6.21-rc7-mm2.orig/include/asm-blackfin/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-blackfin/thread_info.h
+@@ -125,7 +125,6 @@ static inline struct thread_info *curren
+ 					   TIF_NEED_RESCHED */
+ #define TIF_MEMDIE              5
+ #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
+-#define TIF_FREEZE              7       /* is freezing for suspend */
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
-+
- menu "Power management options"
- source kernel/power/Kconfig
- endmenu
-Index: linux-2.6.21-rc7-mm2/arch/i386/Kconfig
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -134,7 +133,6 @@ static inline struct thread_info *curren
+ #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+-#define _TIF_FREEZE             (1<<TIF_FREEZE)
+ 
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ 
+Index: linux-2.6.21-rc7-mm2/include/asm-frv/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/i386/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/i386/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -912,6 +912,11 @@ config ARCH_ENABLE_MEMORY_HOTPLUG
- 	def_bool y
- 	depends on HIGHMEM
+--- linux-2.6.21-rc7-mm2.orig/include/asm-frv/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-frv/thread_info.h
+@@ -116,7 +116,6 @@ register struct thread_info *__current_t
+ #define TIF_RESTORE_SIGMASK	6	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		17	/* OOM killer killed process */
+-#define TIF_FREEZE		18	/* freezing for suspend */
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM || KPROBES
-+
- menu "Power management options (ACPI, APM)"
- 	depends on !X86_VOYAGER
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
+@@ -126,7 +125,6 @@ register struct thread_info *__current_t
+ #define _TIF_IRET		(1 << TIF_IRET)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+-#define _TIF_FREEZE		(1 << TIF_FREEZE)
  
-Index: linux-2.6.21-rc7-mm2/arch/ia64/Kconfig
+ #define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
+Index: linux-2.6.21-rc7-mm2/include/asm-i386/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/ia64/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/ia64/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -495,6 +495,11 @@ source "fs/Kconfig.binfmt"
+--- linux-2.6.21-rc7-mm2.orig/include/asm-i386/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-i386/thread_info.h
+@@ -136,7 +136,6 @@ static inline struct thread_info *curren
+ #define TIF_MEMDIE		16
+ #define TIF_DEBUG		17	/* uses debug registers */
+ #define TIF_IO_BITMAP		18	/* uses I/O bitmap */
+-#define TIF_FREEZE		19	/* is freezing for suspend */
  
- endmenu
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -150,7 +149,6 @@ static inline struct thread_info *curren
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_DEBUG		(1<<TIF_DEBUG)
+ #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
+-#define _TIF_FREEZE		(1<<TIF_FREEZE)
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM || KPROBES
-+
- menu "Power management and ACPI"
- 
- source "kernel/power/Kconfig"
-Index: linux-2.6.21-rc7-mm2/arch/powerpc/Kconfig
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK \
+Index: linux-2.6.21-rc7-mm2/include/asm-ia64/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/powerpc/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/powerpc/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -552,6 +552,11 @@ config CMDLINE
- 	  some command-line options at build time by entering them here.  In
- 	  most cases you will need to specify the root device here.
+--- linux-2.6.21-rc7-mm2.orig/include/asm-ia64/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-ia64/thread_info.h
+@@ -89,7 +89,6 @@ struct thread_info {
+ #define TIF_MEMDIE		17
+ #define TIF_MCA_INIT		18	/* this task is processing MCA or INIT */
+ #define TIF_DB_DISABLED		19	/* debug trap disabled for fsyscall */
+-#define TIF_FREEZE		20	/* is freezing for suspend */
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM || KPROBES
-+
- if !44x || BROKEN
- source kernel/power/Kconfig
- endif
-Index: linux-2.6.21-rc7-mm2/arch/ppc/Kconfig
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
+@@ -101,7 +100,6 @@ struct thread_info {
+ #define _TIF_POLLING_NRFLAG	(1 << TIF_POLLING_NRFLAG)
+ #define _TIF_MCA_INIT		(1 << TIF_MCA_INIT)
+ #define _TIF_DB_DISABLED	(1 << TIF_DB_DISABLED)
+-#define _TIF_FREEZE		(1 << TIF_FREEZE)
+ 
+ /* "work to do on user-return" bits */
+ #define TIF_ALLWORK_MASK	(_TIF_NOTIFY_RESUME|_TIF_SIGPENDING|_TIF_NEED_RESCHED|_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
+Index: linux-2.6.21-rc7-mm2/include/asm-mips/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/ppc/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/ppc/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -1154,6 +1154,11 @@ config PROC_HARDWARE
- source "drivers/zorro/Kconfig"
+--- linux-2.6.21-rc7-mm2.orig/include/asm-mips/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-mips/thread_info.h
+@@ -118,7 +118,6 @@ register struct thread_info *__current_t
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		18
+-#define TIF_FREEZE		19
+ #define TIF_SYSCALL_TRACE	31	/* syscall trace active */
  
- if !44x || BROKEN
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
-+
- source kernel/power/Kconfig
- endif
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -130,7 +129,6 @@ register struct thread_info *__current_t
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+-#define _TIF_FREEZE		(1<<TIF_FREEZE)
  
-Index: linux-2.6.21-rc7-mm2/arch/s390/Kconfig
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK		(0x0000ffef & ~_TIF_SECCOMP)
+Index: linux-2.6.21-rc7-mm2/include/asm-powerpc/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/s390/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/s390/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -564,6 +564,11 @@ config KPROBES
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
+--- linux-2.6.21-rc7-mm2.orig/include/asm-powerpc/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-powerpc/thread_info.h
+@@ -122,7 +122,6 @@ static inline struct thread_info *curren
+ #define TIF_RESTOREALL		12	/* Restore all regs (implies NOERROR) */
+ #define TIF_NOERROR		14	/* Force successful syscall return */
+ #define TIF_RESTORE_SIGMASK	15	/* Restore signal mask in do_signal */
+-#define TIF_FREEZE		16	/* Freezing for suspend */
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on KPROBES
-+
- source "kernel/Kconfig.marker"
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -139,7 +138,6 @@ static inline struct thread_info *curren
+ #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+-#define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
  
- source "lib/Kconfig.statistic"
-Index: linux-2.6.21-rc7-mm2/arch/sh/Kconfig
+ #define _TIF_USER_WORK_MASK	(_TIF_NOTIFY_RESUME | _TIF_SIGPENDING | \
+Index: linux-2.6.21-rc7-mm2/include/asm-sh/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/sh/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/sh/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -699,6 +699,11 @@ source "fs/Kconfig.binfmt"
+--- linux-2.6.21-rc7-mm2.orig/include/asm-sh/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-sh/thread_info.h
+@@ -115,7 +115,6 @@ static inline struct thread_info *curren
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		18
+-#define TIF_FREEZE		19
  
- endmenu
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -125,7 +124,6 @@ static inline struct thread_info *curren
+ #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+-#define _TIF_FREEZE		(1<<TIF_FREEZE)
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
-+
- menu "Power management options (EXPERIMENTAL)"
- depends on EXPERIMENTAL
- 
-Index: linux-2.6.21-rc7-mm2/arch/sparc64/Kconfig
+ #define _TIF_WORK_MASK		0x000000FE	/* work to do on interrupt/exception return */
+ #define _TIF_ALLWORK_MASK	0x000000FF	/* work to do on any return to u-space */
+Index: linux-2.6.21-rc7-mm2/include/asm-x86_64/thread_info.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/sparc64/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/sparc64/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -435,6 +435,11 @@ config KPROBES
- 	  for kernel debugging, non-intrusive instrumentation and testing.
- 	  If in doubt, say "N".
+--- linux-2.6.21-rc7-mm2.orig/include/asm-x86_64/thread_info.h
++++ linux-2.6.21-rc7-mm2/include/asm-x86_64/thread_info.h
+@@ -122,7 +122,6 @@ static inline struct thread_info *stack_
+ #define TIF_MEMDIE		20
+ #define TIF_DEBUG		21	/* uses debug registers */
+ #define TIF_IO_BITMAP		22	/* uses I/O bitmap */
+-#define TIF_FREEZE		23	/* is freezing for suspend */
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on KPROBES
-+
- source "kernel/Kconfig.marker"
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+@@ -138,7 +137,6 @@ static inline struct thread_info *stack_
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
+ #define _TIF_DEBUG		(1<<TIF_DEBUG)
+ #define _TIF_IO_BITMAP		(1<<TIF_IO_BITMAP)
+-#define _TIF_FREEZE		(1<<TIF_FREEZE)
  
- endmenu
-Index: linux-2.6.21-rc7-mm2/kernel/Makefile
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/Makefile	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/Makefile	2007-04-27 01:33:22.000000000 +0200
-@@ -33,6 +33,7 @@ obj-$(CONFIG_MODULES) += module.o
- obj-$(CONFIG_KALLSYMS) += kallsyms.o
- obj-$(CONFIG_STACK_UNWIND) += unwind.o
- obj-$(CONFIG_PM) += power/
-+obj-$(CONFIG_FREEZER) += freezer.o
- obj-$(CONFIG_BSD_PROCESS_ACCT) += acct.o
- obj-$(CONFIG_KEXEC) += kexec.o
- obj-$(CONFIG_COMPAT) += compat.o
-Index: linux-2.6.21-rc7-mm2/kernel/power/Makefile
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/power/Makefile	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/power/Makefile	2007-04-27 01:33:22.000000000 +0200
-@@ -3,7 +3,7 @@ ifeq ($(CONFIG_PM_DEBUG),y)
- EXTRA_CFLAGS	+=	-DDEBUG
- endif
- 
--obj-y				:= main.o process.o console.o notify.o
-+obj-y				:= main.o console.o notify.o
- obj-$(CONFIG_PM_LEGACY)		+= pm.o
- obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o disk.o snapshot.o swap.o user.o
- 
-Index: linux-2.6.21-rc7-mm2/kernel/kprobes.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/kprobes.c	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/kernel/kprobes.c	2007-04-27 01:33:22.000000000 +0200
-@@ -108,7 +108,7 @@ static int collect_garbage_slots(void);
- static int __kprobes check_safety(void)
- {
- 	int ret = 0;
--#if defined(CONFIG_PREEMPT) && defined(CONFIG_PM)
-+#ifdef CONFIG_PREEMPT
- 	ret = freeze_processes();
- 	if (ret == 0) {
- 		struct task_struct *p, *q;
+ /* work to do on interrupt/exception return */
+ #define _TIF_WORK_MASK \
 Index: linux-2.6.21-rc7-mm2/include/linux/freezer.h
 ===================================================================
---- linux-2.6.21-rc7-mm2.orig/include/linux/freezer.h	2007-04-27 01:31:19.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/include/linux/freezer.h	2007-04-27 01:33:22.000000000 +0200
-@@ -2,7 +2,7 @@
- 
+--- linux-2.6.21-rc7-mm2.orig/include/linux/freezer.h
++++ linux-2.6.21-rc7-mm2/include/linux/freezer.h
+@@ -3,12 +3,33 @@
  #include <linux/sched.h>
  
--#ifdef CONFIG_PM
-+#ifdef CONFIG_FREEZER
+ #ifdef CONFIG_FREEZER
++
++/*
++ *	Per task flags used by the freezer
++ *
++ *	They should not be referred to directly outside of this file.
++ */
++#define TFF_NOFREEZE	0	/* task should not be frozen */
++#define TFF_FREEZE	8	/* task should go to the refrigerator ASAP */
++#define TFF_SKIP	9	/* do not count this task as freezable */
++#define TFF_FROZEN	10	/* task is frozen */
++
  /*
   * Check if a process has been frozen
   */
-Index: linux-2.6.21-rc7-mm2/arch/arm/Kconfig
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/arm/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/arm/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -929,6 +929,11 @@ menu "Power management options"
- 
- source "kernel/power/Kconfig"
- 
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
+ static inline int frozen(struct task_struct *p)
+ {
+-	return p->flags & PF_FROZEN;
++	return test_bit(TFF_FROZEN, &p->freezer_flags);
++}
 +
- endmenu
- 
- source "net/Kconfig"
-Index: linux-2.6.21-rc7-mm2/arch/blackfin/Kconfig
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/blackfin/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/blackfin/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -819,6 +819,11 @@ endmenu
- menu "Power management options"
- source "kernel/power/Kconfig"
- 
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
++static inline void set_frozen_flag(struct task_struct *p)
++{
++	set_bit(TFF_FROZEN, &p->freezer_flags);
++}
 +
- choice
- 	prompt "Select PM Wakeup Event Source"
- 	default PM_WAKEUP_GPIO_BY_SIC_IWR
-Index: linux-2.6.21-rc7-mm2/arch/mips/Kconfig
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/arch/mips/Kconfig	2007-04-27 01:22:33.000000000 +0200
-+++ linux-2.6.21-rc7-mm2/arch/mips/Kconfig	2007-04-27 01:33:22.000000000 +0200
-@@ -2138,6 +2138,11 @@ config BINFMT_ELF32
++static inline void clear_frozen_flag(struct task_struct *p)
++{
++	clear_bit(TFF_FROZEN, &p->freezer_flags);
+ }
  
- source "kernel/power/Kconfig"
+ /*
+@@ -16,7 +37,7 @@ static inline int frozen(struct task_str
+  */
+ static inline int freezing(struct task_struct *p)
+ {
+-	return test_tsk_thread_flag(p, TIF_FREEZE);
++	return test_bit(TFF_FREEZE, &p->freezer_flags);
+ }
  
-+config FREEZER
-+	bool
-+	default y
-+	depends on PM
+ /*
+@@ -24,15 +45,31 @@ static inline int freezing(struct task_s
+  */
+ static inline void freeze(struct task_struct *p)
+ {
+-	set_tsk_thread_flag(p, TIF_FREEZE);
++	set_bit(TFF_FREEZE, &p->freezer_flags);
++}
 +
- endmenu
++/*
++ * Cancel the previous 'freeze' request
++ */
++static inline void clear_freeze_flag(struct task_struct *p)
++{
++	clear_bit(TFF_FREEZE, &p->freezer_flags);
++}
++
++/*
++ * Check if the task wants to be exempted from freezing
++ */
++static inline int freezer_should_exempt(struct task_struct *p)
++{
++	return test_bit(TFF_NOFREEZE, &p->freezer_flags);
+ }
  
- source "net/Kconfig"
+ /*
+- * Sometimes we may need to cancel the previous 'freeze' request
++ * Tell the freezer to exempt this task from freezing
+  */
+-static inline void do_not_freeze(struct task_struct *p)
++static inline void freezer_exempt(struct task_struct *p)
+ {
+-	clear_tsk_thread_flag(p, TIF_FREEZE);
++	set_bit(TFF_NOFREEZE, &p->freezer_flags);
+ }
+ 
+ /*
+@@ -48,12 +85,12 @@ static inline int thaw_process(struct ta
+ {
+ 	task_lock(p);
+ 	if (frozen(p)) {
+-		p->flags &= ~PF_FROZEN;
++		clear_frozen_flag(p);
+ 		task_unlock(p);
+ 		wake_up_process(p);
+ 		return 1;
+ 	}
+-	clear_tsk_thread_flag(p, TIF_FREEZE);
++	clear_freeze_flag(p);
+ 	task_unlock(p);
+ 	return 0;
+ }
+@@ -92,7 +129,7 @@ static inline int try_to_freeze(void)
+ static inline void freezer_do_not_count(void)
+ {
+ 	if (current->mm)
+-		current->flags |= PF_FREEZER_SKIP;
++		set_bit(TFF_SKIP, &current->freezer_flags);
+ }
+ 
+ /*
+@@ -102,7 +139,7 @@ static inline void freezer_do_not_count(
+ static inline void freezer_count(void)
+ {
+ 	if (current->mm) {
+-		current->flags &= ~PF_FREEZER_SKIP;
++		clear_bit(TFF_SKIP, &current->freezer_flags);
+ 		try_to_freeze();
+ 	}
+ }
+@@ -112,13 +149,17 @@ static inline void freezer_count(void)
+  */
+ static inline int freezer_should_skip(struct task_struct *p)
+ {
+-	return !!(p->flags & PF_FREEZER_SKIP);
++	return test_bit(TFF_SKIP, &current->freezer_flags);
+ }
+ 
+ #else
+ static inline int frozen(struct task_struct *p) { return 0; }
++static inline void set_frozen_flag(struct task_struct *p) {}
++static inline void clear_frozen_flag(struct task_struct *p) {}
+ static inline int freezing(struct task_struct *p) { return 0; }
+ static inline void freeze(struct task_struct *p) { BUG(); }
++static inline int freezer_should_exempt(struct task_struct *p) { return 0; }
++static inline void freezer_exempt(struct task_struct *p) {}
+ static inline int thaw_process(struct task_struct *p) { return 1; }
+ 
+ static inline void refrigerator(void) {}
+Index: linux-2.6.21-rc7-mm2/kernel/sched.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/sched.c
++++ linux-2.6.21-rc7-mm2/kernel/sched.c
+@@ -5478,7 +5478,7 @@ migration_call(struct notifier_block *nf
+ 		p = kthread_create(migration_thread, hcpu, "migration/%d",cpu);
+ 		if (IS_ERR(p))
+ 			return NOTIFY_BAD;
+-		p->flags |= PF_NOFREEZE;
++		freezer_exempt(p);
+ 		kthread_bind(p, cpu);
+ 		/* Must be high prio: stop_machine expects to yield to it. */
+ 		rq = task_rq_lock(p, &flags);
+Index: linux-2.6.21-rc7-mm2/arch/i386/kernel/apm.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/arch/i386/kernel/apm.c
++++ linux-2.6.21-rc7-mm2/arch/i386/kernel/apm.c
+@@ -2313,7 +2313,7 @@ static int __init apm_init(void)
+ 		remove_proc_entry("apm", NULL);
+ 		return err;
+ 	}
+-	kapmd_task->flags |= PF_NOFREEZE;
++	freezer_exempt(kapmd_task);
+ 	wake_up_process(kapmd_task);
+ 
+ 	if (num_online_cpus() > 1 && !smp ) {
+Index: linux-2.6.21-rc7-mm2/drivers/block/loop.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/block/loop.c
++++ linux-2.6.21-rc7-mm2/drivers/block/loop.c
+@@ -582,7 +582,7 @@ static int loop_thread(void *data)
+ 	 * hence, it mustn't be stopped at all
+ 	 * because it could be indirectly used during suspension
+ 	 */
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	set_user_nice(current, -20);
+ 
+Index: linux-2.6.21-rc7-mm2/drivers/char/apm-emulation.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/char/apm-emulation.c
++++ linux-2.6.21-rc7-mm2/drivers/char/apm-emulation.c
+@@ -336,7 +336,7 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * threads.
+ 			 */
+ 			flags = current->flags;
+-			current->flags |= PF_NOFREEZE;
++			freezer_exempt(current);
+ 
+ 			wait_event(apm_suspend_waitqueue,
+ 				   as->suspend_state == SUSPEND_DONE);
+@@ -372,7 +372,7 @@ apm_ioctl(struct inode * inode, struct f
+ 			 * threads.
+ 			 */
+ 			flags = current->flags;
+-			current->flags |= PF_NOFREEZE;
++			freezer_exempt(current);
+ 
+ 			wait_event_interruptible(apm_suspend_waitqueue,
+ 					 as->suspend_state == SUSPEND_DONE);
+@@ -601,7 +601,7 @@ static int __init apm_init(void)
+ 		kapmd_tsk = NULL;
+ 		return ret;
+ 	}
+-	kapmd_tsk->flags |= PF_NOFREEZE;
++	freezer_exempt(kapmd_tsk);
+ 	wake_up_process(kapmd_tsk);
+ 
+ #ifdef CONFIG_PROC_FS
+Index: linux-2.6.21-rc7-mm2/drivers/ieee1394/ieee1394_core.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/ieee1394/ieee1394_core.c
++++ linux-2.6.21-rc7-mm2/drivers/ieee1394/ieee1394_core.c
+@@ -1134,7 +1134,7 @@ static int hpsbpkt_thread(void *__hi)
+ 	struct list_head tmp;
+ 	int may_schedule;
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	while (!kthread_should_stop()) {
+ 
+Index: linux-2.6.21-rc7-mm2/drivers/md/md.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/md/md.c
++++ linux-2.6.21-rc7-mm2/drivers/md/md.c
+@@ -4541,7 +4541,7 @@ static int md_thread(void * arg)
+ 	 * many dirty RAID5 blocks.
+ 	 */
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 	while (!kthread_should_stop()) {
+ 
+ 		/* We need to wait INTERRUPTIBLE so that
+Index: linux-2.6.21-rc7-mm2/drivers/mmc/card/queue.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/mmc/card/queue.c
++++ linux-2.6.21-rc7-mm2/drivers/mmc/card/queue.c
+@@ -66,7 +66,8 @@ static int mmc_queue_thread(void *d)
+ 	 * Set iothread to ensure that we aren't put to sleep by
+ 	 * the process freezing.  We handle suspension ourselves.
+ 	 */
+-	current->flags |= PF_MEMALLOC|PF_NOFREEZE;
++	current->flags |= PF_MEMALLOC;
++	freezer_exempt(current);
+ 
+ 	down(&mq->thread_sem);
+ 	do {
+Index: linux-2.6.21-rc7-mm2/drivers/mtd/mtd_blkdevs.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/mtd/mtd_blkdevs.c
++++ linux-2.6.21-rc7-mm2/drivers/mtd/mtd_blkdevs.c
+@@ -81,7 +81,8 @@ static int mtd_blktrans_thread(void *arg
+ 	struct request_queue *rq = tr->blkcore_priv->rq;
+ 
+ 	/* we might get involved when memory gets low, so use PF_MEMALLOC */
+-	current->flags |= PF_MEMALLOC | PF_NOFREEZE;
++	current->flags |= PF_MEMALLOC;
++	freezer_exempt(current);
+ 
+ 	spin_lock_irq(rq->queue_lock);
+ 	while (!kthread_should_stop()) {
+Index: linux-2.6.21-rc7-mm2/drivers/scsi/libsas/sas_scsi_host.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/scsi/libsas/sas_scsi_host.c
++++ linux-2.6.21-rc7-mm2/drivers/scsi/libsas/sas_scsi_host.c
+@@ -871,7 +871,7 @@ static int sas_queue_thread(void *_sas_h
+ 	struct sas_ha_struct *sas_ha = _sas_ha;
+ 	struct scsi_core *core = &sas_ha->core;
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	complete(&queue_th_comp);
+ 
+Index: linux-2.6.21-rc7-mm2/drivers/scsi/scsi_error.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/scsi/scsi_error.c
++++ linux-2.6.21-rc7-mm2/drivers/scsi/scsi_error.c
+@@ -1536,7 +1536,7 @@ int scsi_error_handler(void *data)
+ {
+ 	struct Scsi_Host *shost = data;
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	/*
+ 	 * We use TASK_INTERRUPTIBLE so that the thread is not
+Index: linux-2.6.21-rc7-mm2/drivers/usb/storage/usb.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/drivers/usb/storage/usb.c
++++ linux-2.6.21-rc7-mm2/drivers/usb/storage/usb.c
+@@ -301,7 +301,7 @@ static int usb_stor_control_thread(void 
+ 	struct us_data *us = (struct us_data *)__us;
+ 	struct Scsi_Host *host = us_to_host(us);
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	for(;;) {
+ 		try_to_freeze();
+Index: linux-2.6.21-rc7-mm2/kernel/fork.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/fork.c
++++ linux-2.6.21-rc7-mm2/kernel/fork.c
+@@ -921,11 +921,14 @@ static inline void copy_flags(unsigned l
+ {
+ 	unsigned long new_flags = p->flags;
+ 
+-	new_flags &= ~(PF_SUPERPRIV | PF_NOFREEZE);
++	new_flags &= ~PF_SUPERPRIV;
+ 	new_flags |= PF_FORKNOEXEC;
+ 	if (!(clone_flags & CLONE_PTRACE))
+ 		p->ptrace = 0;
+ 	p->flags = new_flags;
++#ifdef CONFIG_FREEZER
++	p->freezer_flags = 0;
++#endif
+ }
+ 
+ asmlinkage long sys_set_tid_address(int __user *tidptr)
+Index: linux-2.6.21-rc7-mm2/kernel/rcutorture.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/rcutorture.c
++++ linux-2.6.21-rc7-mm2/kernel/rcutorture.c
+@@ -559,7 +559,7 @@ rcu_torture_fakewriter(void *arg)
+ 
+ 	VERBOSE_PRINTK_STRING("rcu_torture_fakewriter task started");
+ 	set_user_nice(current, 19);
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	do {
+ 		schedule_timeout_uninterruptible(1 + rcu_random(&rand)%10);
+@@ -590,7 +590,7 @@ rcu_torture_reader(void *arg)
+ 
+ 	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
+ 	set_user_nice(current, 19);
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	do {
+ 		idx = cur_ops->readlock();
+Index: linux-2.6.21-rc7-mm2/kernel/softirq.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/softirq.c
++++ linux-2.6.21-rc7-mm2/kernel/softirq.c
+@@ -490,7 +490,7 @@ void __init softirq_init(void)
+ static int ksoftirqd(void * __bind_cpu)
+ {
+ 	set_user_nice(current, 15);
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	set_current_state(TASK_INTERRUPTIBLE);
+ 
+Index: linux-2.6.21-rc7-mm2/kernel/softlockup.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/softlockup.c
++++ linux-2.6.21-rc7-mm2/kernel/softlockup.c
+@@ -117,7 +117,7 @@ static int watchdog(void * __bind_cpu)
+ 	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+ 
+ 	sched_setscheduler(current, SCHED_FIFO, &param);
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	/* initialize timestamp */
+ 	touch_softlockup_watchdog();
+Index: linux-2.6.21-rc7-mm2/kernel/workqueue.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/workqueue.c
++++ linux-2.6.21-rc7-mm2/kernel/workqueue.c
+@@ -291,7 +291,7 @@ static int worker_thread(void *__cwq)
+ 	DEFINE_WAIT(wait);
+ 
+ 	if (!cwq->wq->freezeable)
+-		current->flags |= PF_NOFREEZE;
++		freezer_exempt(current);
+ 
+ 	for (;;) {
+ 		prepare_to_wait(&cwq->more_work, &wait, TASK_INTERRUPTIBLE);
 Index: linux-2.6.21-rc7-mm2/kernel/freezer.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.21-rc7-mm2/kernel/freezer.c	2007-04-27 01:35:21.000000000 +0200
-@@ -0,0 +1,236 @@
-+/*
-+ * linux/kernel/freezer.c
-+ *
-+ * Generic mechanism for freezing and thawing tasks, originally from swsusp.
-+ *
-+ * Distributed under the GPLv2
-+ */
-+
-+
-+#undef DEBUG
-+
-+#include <linux/sched.h>
-+#include <linux/interrupt.h>
-+#include <linux/module.h>
-+#include <linux/syscalls.h>
-+#include <linux/freezer.h>
-+
-+/*
-+ * Timeout for stopping processes
-+ */
-+#define TIMEOUT	(20 * HZ)
-+
-+#define FREEZER_KERNEL_THREADS 0
-+#define FREEZER_USER_SPACE 1
-+
-+static inline int freezeable(struct task_struct * p)
-+{
-+	if ((p == current) ||
-+	    (p->flags & PF_NOFREEZE) ||
-+	    (p->exit_state != 0))
-+		return 0;
-+	return 1;
-+}
-+
-+/*
-+ * freezing is complete, mark current process as frozen
-+ */
-+static inline void frozen_process(void)
-+{
-+	if (!unlikely(current->flags & PF_NOFREEZE)) {
-+		current->flags |= PF_FROZEN;
-+		wmb();
-+	}
-+	clear_tsk_thread_flag(current, TIF_FREEZE);
-+}
-+
-+/* Refrigerator is place where frozen processes are stored :-). */
-+void refrigerator(void)
-+{
-+	/* Hmm, should we be allowed to suspend when there are realtime
-+	   processes around? */
-+	long save;
-+
-+	task_lock(current);
-+	if (freezing(current)) {
-+		frozen_process();
-+		task_unlock(current);
-+	} else {
-+		task_unlock(current);
-+		return;
-+	}
-+	save = current->state;
-+	pr_debug("%s entered refrigerator\n", current->comm);
-+
-+	spin_lock_irq(&current->sighand->siglock);
-+	recalc_sigpending(); /* We sent fake signal, clean it up */
-+	spin_unlock_irq(&current->sighand->siglock);
-+
-+	for (;;) {
-+		set_current_state(TASK_UNINTERRUPTIBLE);
-+		if (!frozen(current))
-+			break;
-+		schedule();
-+	}
-+	pr_debug("%s left refrigerator\n", current->comm);
-+	current->state = save;
-+}
-+
-+static inline void freeze_process(struct task_struct *p)
-+{
-+	unsigned long flags;
-+
-+	if (!freezing(p)) {
-+		rmb();
-+		if (!frozen(p)) {
-+			if (p->state == TASK_STOPPED)
-+				force_sig_specific(SIGSTOP, p);
-+
-+			freeze(p);
-+			spin_lock_irqsave(&p->sighand->siglock, flags);
-+			signal_wake_up(p, p->state == TASK_STOPPED);
-+			spin_unlock_irqrestore(&p->sighand->siglock, flags);
-+		}
-+	}
-+}
-+
-+static void cancel_freezing(struct task_struct *p)
-+{
-+	unsigned long flags;
-+
-+	if (freezing(p)) {
-+		pr_debug("  clean up: %s\n", p->comm);
-+		do_not_freeze(p);
-+		spin_lock_irqsave(&p->sighand->siglock, flags);
-+		recalc_sigpending_tsk(p);
-+		spin_unlock_irqrestore(&p->sighand->siglock, flags);
-+	}
-+}
-+
-+static inline int is_user_space(struct task_struct *p)
-+{
-+	int ret;
-+
-+	task_lock(p);
-+	ret = p->mm && !(p->flags & PF_BORROWED_MM);
-+	task_unlock(p);
-+	return ret;
-+}
-+
-+static unsigned int try_to_freeze_tasks(int freeze_user_space)
-+{
-+	struct task_struct *g, *p;
-+	unsigned long end_time;
-+	unsigned int todo;
-+
-+	end_time = jiffies + TIMEOUT;
-+	do {
-+		todo = 0;
-+		read_lock(&tasklist_lock);
-+		do_each_thread(g, p) {
-+			if (!freezeable(p))
-+				continue;
-+
-+			if (frozen(p))
-+				continue;
-+
-+			if (p->state == TASK_TRACED && frozen(p->parent)) {
-+				cancel_freezing(p);
-+				continue;
-+			}
-+			if (freeze_user_space && !is_user_space(p))
-+				continue;
-+
-+			freeze_process(p);
-+			if (!freezer_should_skip(p))
-+				todo++;
-+		} while_each_thread(g, p);
-+		read_unlock(&tasklist_lock);
-+		yield();			/* Yield is okay here */
-+		if (todo && time_after(jiffies, end_time))
-+			break;
-+	} while (todo);
-+
-+	if (todo) {
-+		/* This does not unfreeze processes that are already frozen
-+		 * (we have slightly ugly calling convention in that respect,
-+		 * and caller must call thaw_processes() if something fails),
-+		 * but it cleans up leftover PF_FREEZE requests.
-+		 */
-+		printk("\n");
-+		printk(KERN_ERR "Stopping %s timed out after %d seconds "
-+				"(%d tasks refusing to freeze):\n",
-+				freeze_user_space ? "user space processes" :
-+					"kernel threads",
-+				TIMEOUT / HZ, todo);
-+		read_lock(&tasklist_lock);
-+		do_each_thread(g, p) {
-+			if (freeze_user_space && !is_user_space(p))
-+				continue;
-+
-+			task_lock(p);
-+			if (freezeable(p) && !frozen(p) &&
-+			    !freezer_should_skip(p))
-+				printk(KERN_ERR " %s\n", p->comm);
-+
-+			cancel_freezing(p);
-+			task_unlock(p);
-+		} while_each_thread(g, p);
-+		read_unlock(&tasklist_lock);
-+	}
-+
-+	return todo;
-+}
-+
-+/**
-+ *	freeze_processes - tell processes to enter the refrigerator
-+ *
-+ *	Returns 0 on success, or the number of processes that didn't freeze,
-+ *	although they were told to.
-+ */
-+int freeze_processes(void)
-+{
-+	unsigned int nr_unfrozen;
-+
-+	printk("Stopping tasks ... ");
-+	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
-+	if (nr_unfrozen)
-+		return nr_unfrozen;
-+
-+	sys_sync();
-+	nr_unfrozen = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
-+	if (nr_unfrozen)
-+		return nr_unfrozen;
-+
-+	printk("done.\n");
-+	BUG_ON(in_atomic());
-+	return 0;
-+}
-+
-+static void thaw_tasks(int thaw_user_space)
-+{
-+	struct task_struct *g, *p;
-+
-+	read_lock(&tasklist_lock);
-+	do_each_thread(g, p) {
-+		if (!freezeable(p))
-+			continue;
-+
-+		if (is_user_space(p) == !thaw_user_space)
-+			continue;
-+
-+		thaw_process(p);
-+	} while_each_thread(g, p);
-+	read_unlock(&tasklist_lock);
-+}
-+
-+void thaw_processes(void)
-+{
-+	printk("Restarting tasks ... ");
-+	thaw_tasks(FREEZER_KERNEL_THREADS);
-+	thaw_tasks(FREEZER_USER_SPACE);
-+	schedule();
-+	printk("done.\n");
-+}
-+
-+EXPORT_SYMBOL(refrigerator);
-Index: linux-2.6.21-rc7-mm2/kernel/power/process.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/kernel/power/process.c	2007-04-27 01:31:00.000000000 +0200
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,236 +0,0 @@
--/*
-- * drivers/power/process.c - Functions for starting/stopping processes on 
-- *                           suspend transitions.
-- *
-- * Originally from swsusp.
-- */
--
--
--#undef DEBUG
--
--#include <linux/sched.h>
--#include <linux/interrupt.h>
--#include <linux/suspend.h>
--#include <linux/module.h>
--#include <linux/syscalls.h>
--#include <linux/freezer.h>
--
--/* 
-- * Timeout for stopping processes
-- */
--#define TIMEOUT	(20 * HZ)
--
--#define FREEZER_KERNEL_THREADS 0
--#define FREEZER_USER_SPACE 1
--
--static inline int freezeable(struct task_struct * p)
--{
--	if ((p == current) ||
+--- linux-2.6.21-rc7-mm2.orig/kernel/freezer.c
++++ linux-2.6.21-rc7-mm2/kernel/freezer.c
+@@ -26,7 +26,7 @@
+ static inline int freezeable(struct task_struct * p)
+ {
+ 	if ((p == current) ||
 -	    (p->flags & PF_NOFREEZE) ||
--	    (p->exit_state != 0))
--		return 0;
--	return 1;
--}
--
--/*
-- * freezing is complete, mark current process as frozen
-- */
--static inline void frozen_process(void)
--{
++	    freezer_should_exempt(p) ||
+ 	    (p->exit_state != 0))
+ 		return 0;
+ 	return 1;
+@@ -37,11 +37,11 @@ static inline int freezeable(struct task
+  */
+ static inline void frozen_process(void)
+ {
 -	if (!unlikely(current->flags & PF_NOFREEZE)) {
 -		current->flags |= PF_FROZEN;
--		wmb();
--	}
++	if (!unlikely(freezer_should_exempt(current))) {
++		set_frozen_flag(current);
+ 		wmb();
+ 	}
 -	clear_tsk_thread_flag(current, TIF_FREEZE);
--}
--
--/* Refrigerator is place where frozen processes are stored :-). */
--void refrigerator(void)
--{
--	/* Hmm, should we be allowed to suspend when there are realtime
--	   processes around? */
--	long save;
--
--	task_lock(current);
--	if (freezing(current)) {
--		frozen_process();
--		task_unlock(current);
--	} else {
--		task_unlock(current);
--		return;
--	}
--	save = current->state;
--	pr_debug("%s entered refrigerator\n", current->comm);
--
--	spin_lock_irq(&current->sighand->siglock);
--	recalc_sigpending(); /* We sent fake signal, clean it up */
--	spin_unlock_irq(&current->sighand->siglock);
--
--	for (;;) {
--		set_current_state(TASK_UNINTERRUPTIBLE);
--		if (!frozen(current))
--			break;
--		schedule();
--	}
--	pr_debug("%s left refrigerator\n", current->comm);
--	current->state = save;
--}
--
--static inline void freeze_process(struct task_struct *p)
--{
--	unsigned long flags;
--
--	if (!freezing(p)) {
--		rmb();
--		if (!frozen(p)) {
--			if (p->state == TASK_STOPPED)
--				force_sig_specific(SIGSTOP, p);
--
--			freeze(p);
--			spin_lock_irqsave(&p->sighand->siglock, flags);
--			signal_wake_up(p, p->state == TASK_STOPPED);
--			spin_unlock_irqrestore(&p->sighand->siglock, flags);
--		}
--	}
--}
--
--static void cancel_freezing(struct task_struct *p)
--{
--	unsigned long flags;
--
--	if (freezing(p)) {
--		pr_debug("  clean up: %s\n", p->comm);
++	clear_freeze_flag(current);
+ }
+ 
+ /* Refrigerator is place where frozen processes are stored :-). */
+@@ -100,7 +100,7 @@ static void cancel_freezing(struct task_
+ 
+ 	if (freezing(p)) {
+ 		pr_debug("  clean up: %s\n", p->comm);
 -		do_not_freeze(p);
--		spin_lock_irqsave(&p->sighand->siglock, flags);
--		recalc_sigpending_tsk(p);
--		spin_unlock_irqrestore(&p->sighand->siglock, flags);
--	}
--}
--
--static inline int is_user_space(struct task_struct *p)
--{
--	int ret;
--
--	task_lock(p);
--	ret = p->mm && !(p->flags & PF_BORROWED_MM);
--	task_unlock(p);
--	return ret;
--}
--
--static unsigned int try_to_freeze_tasks(int freeze_user_space)
--{
--	struct task_struct *g, *p;
--	unsigned long end_time;
--	unsigned int todo;
--
--	end_time = jiffies + TIMEOUT;
--	do {
--		todo = 0;
--		read_lock(&tasklist_lock);
--		do_each_thread(g, p) {
--			if (!freezeable(p))
--				continue;
--
--			if (frozen(p))
--				continue;
--
--			if (p->state == TASK_TRACED && frozen(p->parent)) {
--				cancel_freezing(p);
--				continue;
--			}
--			if (freeze_user_space && !is_user_space(p))
--				continue;
--
--			freeze_process(p);
--			if (!freezer_should_skip(p))
--				todo++;
--		} while_each_thread(g, p);
--		read_unlock(&tasklist_lock);
--		yield();			/* Yield is okay here */
--		if (todo && time_after(jiffies, end_time))
--			break;
--	} while (todo);
--
--	if (todo) {
--		/* This does not unfreeze processes that are already frozen
--		 * (we have slightly ugly calling convention in that respect,
--		 * and caller must call thaw_processes() if something fails),
--		 * but it cleans up leftover PF_FREEZE requests.
--		 */
--		printk("\n");
--		printk(KERN_ERR "Stopping %s timed out after %d seconds "
--				"(%d tasks refusing to freeze):\n",
--				freeze_user_space ? "user space processes" :
--					"kernel threads",
--				TIMEOUT / HZ, todo);
--		read_lock(&tasklist_lock);
--		do_each_thread(g, p) {
--			if (freeze_user_space && !is_user_space(p))
--				continue;
--
--			task_lock(p);
--			if (freezeable(p) && !frozen(p) &&
--			    !freezer_should_skip(p))
--				printk(KERN_ERR " %s\n", p->comm);
--
--			cancel_freezing(p);
--			task_unlock(p);
--		} while_each_thread(g, p);
--		read_unlock(&tasklist_lock);
--	}
--
--	return todo;
--}
--
--/**
-- *	freeze_processes - tell processes to enter the refrigerator
-- *
-- *	Returns 0 on success, or the number of processes that didn't freeze,
-- *	although they were told to.
-- */
--int freeze_processes(void)
--{
--	unsigned int nr_unfrozen;
--
--	printk("Stopping tasks ... ");
--	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
--	if (nr_unfrozen)
--		return nr_unfrozen;
--
--	sys_sync();
--	nr_unfrozen = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
--	if (nr_unfrozen)
--		return nr_unfrozen;
--
--	printk("done.\n");
--	BUG_ON(in_atomic());
--	return 0;
--}
--
--static void thaw_tasks(int thaw_user_space)
--{
--	struct task_struct *g, *p;
--
--	read_lock(&tasklist_lock);
--	do_each_thread(g, p) {
--		if (!freezeable(p))
--			continue;
--
--		if (is_user_space(p) == !thaw_user_space)
--			continue;
--
--		thaw_process(p);
--	} while_each_thread(g, p);
--	read_unlock(&tasklist_lock);
--}
--
--void thaw_processes(void)
--{
--	printk("Restarting tasks ... ");
--	thaw_tasks(FREEZER_KERNEL_THREADS);
--	thaw_tasks(FREEZER_USER_SPACE);
--	schedule();
--	printk("done.\n");
--}
--
--EXPORT_SYMBOL(refrigerator);
-
++		clear_freeze_flag(p);
+ 		spin_lock_irqsave(&p->sighand->siglock, flags);
+ 		recalc_sigpending_tsk(p);
+ 		spin_unlock_irqrestore(&p->sighand->siglock, flags);
+Index: linux-2.6.21-rc7-mm2/Documentation/power/kernel_threads.txt
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/Documentation/power/kernel_threads.txt
++++ linux-2.6.21-rc7-mm2/Documentation/power/kernel_threads.txt
+@@ -32,7 +32,7 @@ like this:
+ 	 */
+ 	daemonize("usb-storage");
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ from drivers/usb/storage/usb.c::usb_stor_control_thread()
+ 
+Index: linux-2.6.21-rc7-mm2/Documentation/power/swsusp.txt
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/Documentation/power/swsusp.txt
++++ linux-2.6.21-rc7-mm2/Documentation/power/swsusp.txt
+@@ -152,8 +152,8 @@ add:
+        try_to_freeze();
+ 
+ If the thread is needed for writing the image to storage, you should
+-instead set the PF_NOFREEZE process flag when creating the thread (and
+-be very careful).
++instead use freezer_exempt() to mark the thread as nonfreezable when creating
++it (and be very careful).
+ 
+ 
+ Q: What is the difference between "platform" and "shutdown"?
+Index: linux-2.6.21-rc7-mm2/kernel/kthread.c
+===================================================================
+--- linux-2.6.21-rc7-mm2.orig/kernel/kthread.c
++++ linux-2.6.21-rc7-mm2/kernel/kthread.c
+@@ -13,6 +13,7 @@
+ #include <linux/file.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/freezer.h>
+ #include <asm/semaphore.h>
+ 
+ static DEFINE_SPINLOCK(kthread_create_lock);
+@@ -232,7 +233,7 @@ int kthreadd(void *unused)
+ 	/* Setup a clean context for our children to inherit. */
+ 	kthreadd_setup();
+ 
+-	current->flags |= PF_NOFREEZE;
++	freezer_exempt(current);
+ 
+ 	for (;;) {
+ 		set_current_state(TASK_INTERRUPTIBLE);
