@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757357AbXD0VqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXD0VrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757357AbXD0VqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757360AbXD0VqS
+	id S1757361AbXD0VrO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbXD0VrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:46:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44060 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757357AbXD0VqQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:46:16 -0400
-Date: Fri, 27 Apr 2007 22:49:32 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: torvalds@osdl.org
-Subject: BAD PATCH: USB: remove use of the bus rwsem, as it doesn't really
- protect anything.
-Message-ID: <20070427224932.34a03e2e@the-village.bc.nu>
-In-Reply-To: <200704272059.l3RKxNPS023912@hera.kernel.org>
-References: <200704272059.l3RKxNPS023912@hera.kernel.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Apr 2007 17:47:14 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:59503 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757358AbXD0VrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:47:11 -0400
+Subject: BAD_SG_DMA panic in aha1542
+To: linux-kernel@vger.kernel.org
+Date: Fri, 27 Apr 2007 16:47:09 -0500 (CDT)
+CC: linux-scsi@vger.kernel.org
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070427214709.DC44BDBA2@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I previously reported an ISA DMA issue for the 2.6.12 kernel.  The issue
+persists through at least 2.6.18.  SCSI controller is an Adaptec
+AHA-1542B (ISA).
 
-Unless there is something I'm missing most of these patches seem totally
-unsafe.
+The action "mount -t iso9660 /dev/scd0 /mnt/cdrom -r"
 
-> --- a/drivers/usb/core/devices.c
-> +++ b/drivers/usb/core/devices.c
-> @@ -246,7 +246,6 @@ static char *usb_dump_interface_descriptor(char *start, char *end,
->  
->  	if (start > end)
->  		return start;
-> -	down_read(&usb_bus_type.subsys.rwsem);
->  	if (iface) {
->  		driver_name = (iface->dev.driver
->  				? iface->dev.driver->name
+produces
 
-iface->dev.driver can now become NULL during the evaluation above
+(cdrom detection messages as various modules autoload, then...)
+sgpnt[0:1] page c1ee5af0/0x1ee5af0 length 32
+Kernel panic - not syncing: Buffer at physical address > 16 Mb used for aha1542
 
-> @@ -444,8 +441,6 @@ static int releaseintf(struct dev_state *ps, unsigned int ifnum)
->  	if (ifnum >= 8*sizeof(ps->ifclaimed))
->  		return err;
->  	dev = ps->dev;
-> -	/* lock against other changes to driver bindings */
-> -	down_write(&usb_bus_type.subsys.rwsem);
->  	intf = usb_ifnum_to_if(dev, ifnum);
->  	if (!intf)
->  		err = -ENOENT;
-> @@ -453,7 +448,6 @@ static int releaseintf(struct dev_state *ps, unsigned int ifnum)
->  		usb_driver_release_interface(&usbfs_driver, intf);
+As before, no problems using the sda hard disk (which is the boot drive):
+everything works reliably until I touch the cdrom drive.
 
-Which takes iface->dev.driver to NULL
+I'll be happy to assist with the debugging, but the system with the
+aha1542 has no development facilities, i.e., I'll have to build test
+kernels on a different system, and turnaround is going to be slow :-(.
 
->  		err = 0;
->  	}
-> -	up_write(&usb_bus_type.subsys.rwsem);
->  	return err;
->  }
->  
-> @@ -813,7 +807,6 @@ static int proc_getdriver(struct dev_state *ps, void __user *arg)
->  
->  	if (copy_from_user(&gd, arg, sizeof(gd)))
->  		return -EFAULT;
-> -	down_read(&usb_bus_type.subsys.rwsem);
->  	intf = usb_ifnum_to_if(ps->dev, gd.interface);
->  	if (!intf || !intf->dev.driver)
->  		ret = -ENODATA;
+Thanks in advance for helping me get this old machine working again.
+No issues with 2.4 kernels.  I have no idea about 2.5 kernels and
+2.6 kernels prior to 2.6.12.  As for why I didn't report this before
+now, the aha1542b was in my parts bin until I cobbled a system together
+approx. two weeks ago, mostly to see if a useful system could still be
+had using legacy hardware and modern GNU/Linux software.  I'm happy to
+report the answer is mostly "yes".
 
-Ditto ...
-
-
-
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
