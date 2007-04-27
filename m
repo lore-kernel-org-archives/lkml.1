@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757511AbXD0Whc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbXD0WiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757511AbXD0Whc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXD0Whb
+	id S1757512AbXD0WiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXD0WiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:37:31 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:28866 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757511AbXD0Wha (ORCPT
+	Fri, 27 Apr 2007 18:38:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:54419 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757512AbXD0WiJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:37:30 -0400
+	Fri, 27 Apr 2007 18:38:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hswLBgZl3E6b8S0KLbdCwQAE796/Fi/ipNmJoB7A2NGebHaw3W0ok6eUURsbQ98JwKdF9zzqoTdp2OHtKwuwwZiTOUYYa3kdEIK8Ug9sxoH4C4vDv/tZwGBctAZjcbpxip7vKseX4Ft4sgmE57aEy4TYTa2Pt6nom0fI7wmwvJg=
-Subject: Re: [linux-dvb] Re: More than 2Gb problem (dvb related) ?
-From: Jon Burgess <jburgess777@googlemail.com>
-To: Lee Revell <rlrevell@joe-job.com>
-Cc: Markus Rechberger <mrechberger@gmail.com>,
-       Gregoire Favre <Gregoire.Favre@gmail.com>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com>
-References: <20070427111047.GB10284@gmail.com>
-	 <d9def9db0704271346i1556c59dgad222d5de7d919f6@mail.gmail.com>
-	 <1177711220.26292.20.camel@localhost.localdomain>
-	 <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 27 Apr 2007 23:37:26 +0100
-Message-Id: <1177713446.7205.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iKqkGxukAt2hPwA6JBYS9i7TG1m7BdBTdOKgpZplsMYy4qR1l+OT7BwG1V8m+3p3ZfRMMYqhxfbaldYtc8ZPkWp+z0iyO/iwcbhL6gLXvlRNCvaBLIvYBcZZRRV6smN2CxTygpp0gRpSAF6uWHjy0xii/qaZdFM9NSyqooi0w7w=
+Message-ID: <6bffcb0e0704271538v435bfd45u7e06a7f5f5e9a8b@mail.gmail.com>
+Date: Sat, 28 Apr 2007 00:38:07 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: 2.6.21-rc7: known regressions
+Cc: stable@kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Riccardo Ricci" <rricci@nuovanetmore.it>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-acpi@vger.kernel.org, "Len Brown" <len.brown@intel.com>,
+       "David Brownell" <david-b@pacbell.net>, "Jeff Mahoney" <jeffm@suse.com>,
+       reiserfs-dev@namesys.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-27 at 18:06 -0400, Lee Revell wrote:
-> On 4/27/07, Jon Burgess <jburgess777@googlemail.com> wrote:
-> > Interesting - I see similar symptoms after upgrading my PC:
-> > * old PC was AMD Athlon 64 3000 w/ 2GB of RAM which had no issues
-> > * new PC is a Intel Core 2 Duo w/ 4GB of RAM and fails in the way you
-> > describe.
-> 
-> Driver using an incorrect DMA mask?
-> 
-> Lee
+Hi all,
 
-It does not set one explicitly and the docs suggest the default is
-32bit. Adding an explicit "pci_set_dma_mask(dev->pci, DMA_24BIT_MASK)"
-does not seem to make a difference. Mind you, the driver builds its own
-S-G DMA table in saa7146_vmalloc_build_pgtable() and i'm not certain
-whether this might bypass this setting.
+Here is a list of known regressions reported after 2.6.21 release.
 
-	Jon
+Feel free to add new regressions/remove fixed etc.
+http://lkr.wikidot.com/list
 
+Subject : 2.6.21 don't boot, it stops after ACPI: PCI Interrupt Link
+[LNKB] (IRQs 3 4 *5 6 7 9 10 11 12 14 15).
+References : http://lkml.org/lkml/2007/4/27/400
+Submitter : Riccardo Ricci <rricci@nuovanetmore.it>
+Status : unknown
 
+Subject : ACPI interpreter errors
+References : http://lkml.org/lkml/2007/4/27/206
+Submitter : Udo A. Steinberg <us15@os.inf.tu-dresden.de>
+Status : unknown
 
+Subject : reiserfs — circular locking
+References : http://lkml.org/lkml/2007/4/26/648
+Submitter : David Brownell <david-b@pacbell.net>
+Handled-By : Jeff Mahoney <jeffm@suse.com>
+Status : patch available http://lkml.org/lkml/2007/4/27/332
 
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
