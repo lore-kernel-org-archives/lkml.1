@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbXD0TPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757038AbXD0TQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757042AbXD0TPy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbXD0TPv
+	id S1757038AbXD0TQh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbXD0TQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:15:51 -0400
-Received: from mx2.suse.de ([195.135.220.15]:35224 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757038AbXD0S5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:57:00 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Oliver Neukum <oneukum@suse.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 12/46] kref: fix CPU ordering with respect to krefs
-Date: Fri, 27 Apr 2007 11:53:26 -0700
-Message-Id: <11777000814075-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777000773819-git-send-email-gregkh@suse.de>
-References: <20070427185152.GA17121@kroah.com>
- <1177700040520-git-send-email-gregkh@suse.de>
- <11777000433552-git-send-email-gregkh@suse.de>
- <11777000471977-git-send-email-gregkh@suse.de>
- <11777000511784-git-send-email-gregkh@suse.de>
- <11777000552084-git-send-email-gregkh@suse.de>
- <1177700059319-git-send-email-gregkh@suse.de>
- <11777000632194-git-send-email-gregkh@suse.de>
- <11777000663361-git-send-email-gregkh@suse.de>
- <1177700070961-git-send-email-gregkh@suse.de>
- <1177700074272-git-send-email-gregkh@suse.de>
- <11777000773819-git-send-email-gregkh@suse.de>
+	Fri, 27 Apr 2007 15:16:37 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36987 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757086AbXD0TQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 15:16:35 -0400
+Date: Fri, 27 Apr 2007 12:15:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070427121557.de9e8b4a.akpm@linux-foundation.org>
+In-Reply-To: <20070427134451.GP19966@holomorphy.com>
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+	<20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+	<20070426235542.bad7035a.akpm@linux-foundation.org>
+	<20070427134451.GP19966@holomorphy.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oliver Neukum <oneukum@suse.de>
+On Fri, 27 Apr 2007 06:44:51 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
 
-some atomic operations are only atomic, not ordered. Thus a CPU is allowed
-to reorder memory references to an object to before the reference is
-obtained. This fixes it.
+> On Thu, Apr 26, 2007 at 11:55:42PM -0700, Andrew Morton wrote:
+> > Please address my point: if in five years time x86 has larger or varible
+> > pagesize, this code will be a permanent millstone around our necks which we
+> > *should not have merged*.
+> > And if in five years time x86 does not have larger pagesize support then
+> > the manufacturers would have decided that 4k pages are not a performance
+> > problem, so we again should not have merged this code.
+> 
+> So the verdict is wait 5 years, see if x86 did anything, and so on.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- lib/kref.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/lib/kref.c b/lib/kref.c
-index 0d07cc3..a6dc3ec 100644
---- a/lib/kref.c
-+++ b/lib/kref.c
-@@ -21,6 +21,7 @@
- void kref_init(struct kref *kref)
- {
- 	atomic_set(&kref->refcount,1);
-+	smp_mb();
- }
- 
- /**
-@@ -31,6 +32,7 @@ void kref_get(struct kref *kref)
- {
- 	WARN_ON(!atomic_read(&kref->refcount));
- 	atomic_inc(&kref->refcount);
-+	smp_mb__after_atomic_inc();
- }
- 
- /**
--- 
-1.5.1.2
-
+You missed the bit about "evaluate alternatives".
