@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXD0MO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755745AbXD0MOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754212AbXD0MO3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXD0MO3
+	id S1755745AbXD0MOx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbXD0MOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:14:29 -0400
-Received: from ozlabs.org ([203.10.76.45]:34736 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754212AbXD0MO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:14:27 -0400
+	Fri, 27 Apr 2007 08:14:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:7121 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755740AbXD0MOr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:14:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=bhJPY2dPNILfq07mEc/z2FDhGMU7pfIi0KNReW+WNFC/ylIJD3k+hIe7W9MfSkreW/wJRy6tCZ6FPXSAsF/zyI3y/ZhlczghoLM0HwjqwG9npBq0gcom6w1Ptfhe4rqOnuY9A5Wh0f7KZnrT7QaGfjf8n5VvJYslC9UUJGCeE9Y=
+Message-ID: <4631E93A.1010404@gmail.com>
+Date: Fri, 27 Apr 2007 15:14:50 +0300
+From: Sergey Yanovich <ynvich@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17969.59676.356383.189020@cargo.ozlabs.ibm.com>
-Date: Fri, 27 Apr 2007 22:14:20 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <4631E173.7000204@yahoo.com.au>
-References: <20070424222105.883597089@sgi.com>
-	<20070426190438.3a856220.akpm@linux-foundation.org>
-	<20070427022731.GF65285596@melbourne.sgi.com>
-	<20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<17969.55533.59287.509889@cargo.ozlabs.ibm.com>
-	<4631E173.7000204@yahoo.com.au>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+To: Alex Dubov <oakad@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
+References: <603217.22031.qm@web36713.mail.mud.yahoo.com>
+In-Reply-To: <603217.22031.qm@web36713.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin writes:
 
-> For the TLB issue, higher order pagecache doesn't help. If distros
+> As I already said, I'm not aware of any issues with version 0.8 of the driver. If you have any
+> problems with it, I'll be glad to fix them.
+>
+> The version in question was recently committed into the -mm tree. Otherwise, it's available from
+> the project's website for a couple of months now:
 
-Oh?  Assuming your hardware is capable of supporting a variety of page
-sizes, and of putting a page at any address that is a multiple of its
-size, it should help, potentially a great deal, as far as I can see.
-I'm thinking in particular of machines that have software-loaded
-fully-associative TLBs and support a lot of page sizes, e.g.
-4kB * 4^n for n = 0 up to 8 or so, like some embedded powerpc chips.
+It seems a bit out-of-date. Here is the output:
 
-It's not as simple on 64-bit powerpc with the hash table of course,
-because the page size is chosen at the segment (256MB) level,
-restricting where we can put 64k and 16M pages to some degree.
+build-i386-sony-tx770p$ make
+scripts/kconfig/conf -s arch/i386/Kconfig
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CHK     include/linux/compile.h
+  CC [M]  drivers/misc/tifm_core.o
+  CC [M]  drivers/misc/tifm_7xx1.o
+  CC [M]  drivers/mmc/tifm_sd.o
+drivers/mmc/tifm_sd.c: In function ‘tifm_sd_probe’:
+drivers/mmc/tifm_sd.c:987: error: ‘struct mmc_host’ has no member named 
+‘max_sectors’
+make[2]: *** [drivers/mmc/tifm_sd.o] Error 1
+make[1]: *** [drivers/mmc] Error 2
+make: *** [drivers] Error 2
 
-> ship with a 4K page size on powerpc, and use some larger pages in
-> the pagecache, some people are still going to get angry because
-> they wanted to use 64K pages... But I agree 64K pages is too big
-> for most things anyway, and 16 would be better as a default (which
-> hopefully x86-64 will get one day).
+This is with v2.6.21 and your tarball unpacked like this:
+linux/tifm.h -> include/linux/tifm.h
+tifm_sd.c -> drivers/mmc/tifm_sd.c
+tifm_7xx1.c -> drivers/misc/tifm_7xx1.c
+tifm_core.c -> drivers/misc/tifm_core.c
 
-Even 16k is going to bloat the page cache, and some people will
-complain.  One way that x86-64 could do 16k pages is by still indexing
-the PTE page in units of 4k, but then have an indicator in the PTE
-that this is a 16k page.  Thus a 16k page would occupy 4 consecutive
-PTEs, but once it was loaded into the TLB, a single TLB entry would
-map the whole 16k.  That would give the expanded TLB reach and allow
-4k and 16k pages to be intermixed freely.
-
-Paul.
+I will look in mm and write back.
