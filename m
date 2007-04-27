@@ -1,231 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbXD0P1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbXD0P12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbXD0P1Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbXD0P1Q
+	id S1755951AbXD0P12 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbXD0P12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:27:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35286 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755864AbXD0P1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:27:14 -0400
-Message-ID: <46321648.6090705@redhat.com>
-Date: Fri, 27 Apr 2007 08:27:04 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Updated utimensat test program
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <20070426162530.bc30a1bb.akpm@linux-foundation.org> <463149A8.6070408@redhat.com>
-In-Reply-To: <463149A8.6070408@redhat.com>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3CF96407ED7546EFA0522E4E"
+	Fri, 27 Apr 2007 11:27:28 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:59228 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755951AbXD0P11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:27:27 -0400
+Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Nick Piggin <npiggin@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, suspend2-devel@lists.suspend2.net,
+       Mike Galbraith <efault@gmx.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <200704271720.08150.rjw@sisk.pl>
+References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
+	 <1177684764.3565.20.camel@johannes.berg>
+	 <1177685391.3565.22.camel@johannes.berg>  <200704271720.08150.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-osp2hhg194W4i3Vhs4fx"
+Date: Fri, 27 Apr 2007 17:27:18 +0200
+Message-Id: <1177687638.3565.42.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3CF96407ED7546EFA0522E4E
-Content-Type: multipart/mixed;
- boundary="------------000207090607020901050700"
 
-This is a multi-part message in MIME format.
---------------000207090607020901050700
-Content-Type: text/plain; charset=UTF-8
+--=-osp2hhg194W4i3Vhs4fx
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-This is the updated test program for the utimensat syscall.  Cleaned up
-a bit and extended to cover the lutimesat functionality.
+On Fri, 2007-04-27 at 17:20 +0200, Rafael J. Wysocki wrote:
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+> I think we can use 'stages' and pass them as arguments to the functions.
+>=20
+> In that case we can have two callbacks for the hibernation (I'd prefer to=
+ say
+> 'hibernation' instead of 'suspend to disk' from now on), one 'quiesce' ca=
+llback
+> and one 'activate' callback that can be called many times in one
+> snapshot/restore cycle with different arguments, for example:
 
---------------000207090607020901050700
-Content-Type: text/x-csrc;
- name="utimensat-test.c"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
- filename="utimensat-test.c"
+But you're not proposing to add suspend/resume to this interface too, I
+hope :)
 
-#include <errno.h>
-#include <fcntl.h>
-#include <time.h>
-#include <sys/time.h>
-#include <stddef.h>
-#include <syscall.h>
+> quiesce(PREPARE) -- that may be needed for drivers that allocate much mem=
+ory
+> before quiescing devices (if any)
+> ...
+> quiesce(PRE_SNAPSHOT)
+> ...
+> quiesce(PRE_SNAPSHOT_IRQ_OFF)
+> ...
+> activate(POST_SNAPSHOT_IRQ_OFF)
+> ...
+> activate(POST_SNAPSHOT)
+> ...
+> activate(FINISH)
 
-#define __NR_utimensat 280
+I'm still not sure I like having to switch on the argument for every
+implementation. Is it really worth it?
 
-#define UTIME_NOW       ((1l << 30) - 1l)
-#define UTIME_OMIT      ((1l << 30) - 2l)
+johannes
 
-
-int
-main(void)
-{
-  int status =3D 0;
-
-  int fd =3D open("ttt", O_RDWR|O_CREAT|O_EXCL, 0666);
-  if (fd =3D=3D -1)
-    error (1, errno, "failed to create test file \"ttt\"");
-
-  struct stat64 st1;
-  if (fstat64 (fd, &st1) !=3D 0)
-    error (1, errno, "fstat failed");
-
-  struct timespec t[2];
-  t[0].tv_sec =3D 0;
-  t[0].tv_nsec =3D 0;
-  t[1].tv_sec =3D 0;
-  t[1].tv_nsec =3D 0;
-  if (syscall(__NR_utimensat, AT_FDCWD, "ttt", t, 0) !=3D 0)
-    error (1, errno, "utimensat failed");
-
-  struct stat64 st2;
-  if (fstat64 (fd, &st2) !=3D 0)
-    error (1, errno, "fstat failed");
- =20
-  if (st2.st_atim.tv_sec !=3D 0 || st2.st_atim.tv_nsec !=3D 0)
-    {
-      puts ("atim not reset to zero");
-      status =3D 1;
-    }
-  if (st2.st_mtim.tv_sec !=3D 0 || st2.st_mtim.tv_nsec !=3D 0)
-    {
-      puts ("mtim not reset to zero");
-      status =3D 1;
-    }
-  if (status !=3D 0)
-    goto out;
-
-  t[0] =3D st1.st_atim;
-  t[1].tv_sec =3D 0;
-  t[1].tv_nsec =3D UTIME_OMIT;
-  if (syscall(__NR_utimensat, AT_FDCWD, "ttt", t, 0) !=3D 0)
-    error (1, errno, "utimensat failed");
-
-  if (fstat64 (fd, &st2) !=3D 0)
-    error (1, errno, "fstat failed");
- =20
-  if (st2.st_atim.tv_sec !=3D st1.st_atim.tv_sec
-      || st2.st_atim.tv_nsec !=3D st1.st_atim.tv_nsec)
-    {
-      puts ("atim not set");
-      status =3D 1;
-    }
-  if (st2.st_mtim.tv_sec !=3D 0 || st2.st_mtim.tv_nsec !=3D 0)
-    {
-      puts ("mtim changed from zero");
-      status =3D 1;
-    }
-  if (status !=3D 0)
-    goto out;
-
-  t[0].tv_sec =3D 0;
-  t[0].tv_nsec =3D UTIME_OMIT;
-  t[1] =3D st1.st_mtim;
-  if (syscall(__NR_utimensat, AT_FDCWD, "ttt", t, 0) !=3D 0)
-    error (1, errno, "utimensat failed");
-
-  if (fstat64 (fd, &st2) !=3D 0)
-    error (1, errno, "fstat failed");
- =20
-  if (st2.st_atim.tv_sec !=3D st1.st_atim.tv_sec
-      || st2.st_atim.tv_nsec !=3D st1.st_atim.tv_nsec)
-    {
-      puts ("mtim changed from original time");
-      status =3D 1;
-    }
-  if (st2.st_mtim.tv_sec !=3D st1.st_mtim.tv_sec
-      || st2.st_mtim.tv_nsec !=3D st1.st_mtim.tv_nsec)
-    {
-      puts ("mtim not set");
-      status =3D 1;
-    }
-  if (status !=3D 0)
-    goto out;
-
-  sleep (2);
-
-  t[0].tv_sec =3D 0;
-  t[0].tv_nsec =3D UTIME_NOW;
-  t[1].tv_sec =3D 0;
-  t[1].tv_nsec =3D UTIME_NOW;
-  if (syscall(__NR_utimensat, AT_FDCWD, "ttt", t, 0) !=3D 0)
-    error (1, errno, "utimensat failed");
-
-  if (fstat64 (fd, &st2) !=3D 0)
-    error (1, errno, "fstat failed");
-
-  struct timeval tv;
-  gettimeofday(&tv,NULL);
-
-  if (st2.st_atim.tv_sec <=3D st1.st_atim.tv_sec
-      || st2.st_atim.tv_sec > tv.tv_sec)
-    {
-      puts ("atim not set to NOW");
-      status =3D 1;
-    }
-  if (st2.st_mtim.tv_sec <=3D st1.st_mtim.tv_sec
-      || st2.st_mtim.tv_sec > tv.tv_sec)
-    {
-      puts ("mtim not set to NOW");
-      status =3D 1;
-    }
-
-  if (symlink ("ttt", "tttsym") !=3D 0)
-    error (1, errno, "cannot create symlink");
-
-  t[0].tv_sec =3D 0;
-  t[0].tv_nsec =3D 0;
-  t[1].tv_sec =3D 0;
-  t[1].tv_nsec =3D 0;
-  if (syscall(__NR_utimensat, AT_FDCWD, "tttsym", t, AT_SYMLINK_NOFOLLOW)=
- !=3D 0)
-    error (1, errno, "utimensat failed");
-
-  if (lstat64 ("tttsym", &st2) !=3D 0)
-    error (1, errno, "lstat failed");
-
-  if (st2.st_atim.tv_sec !=3D 0 || st2.st_atim.tv_nsec !=3D 0)
-    {
-      puts ("symlink atim not reset to zero");
-      status =3D 1;
-    }
-  if (st2.st_mtim.tv_sec !=3D 0 || st2.st_mtim.tv_nsec !=3D 0)
-    {
-      puts ("symlink mtim not reset to zero");
-      status =3D 1;
-    }
-
-  if (status =3D=3D 0)
-     puts ("all OK");
-
- out:
-  close (fd);
-  unlink ("ttt");
-  unlink ("tttsym");
-
-  return status;
-}
-
---------------000207090607020901050700--
-
---------------enig3CF96407ED7546EFA0522E4E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--=-osp2hhg194W4i3Vhs4fx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Comment: Johannes Berg (powerbook)
 
-iD8DBQFGMhZI2ijCOnn/RHQRAtnrAJ0e2x3bD0riL2A9DtypWdJ/wsMyHACgwXqn
-t7Amf0i4Zb2qy9I2kD3Bvho=
-=ORp0
+iD8DBQBGMhZW/ETPhpq3jKURAjCcAKCLAlJhQHeG4dnh1E0Wo7XnhNY/CACghT5L
+RTKQbNIAYC7XxiC1X6AN8W8=
+=XxdO
 -----END PGP SIGNATURE-----
 
---------------enig3CF96407ED7546EFA0522E4E--
+--=-osp2hhg194W4i3Vhs4fx--
+
