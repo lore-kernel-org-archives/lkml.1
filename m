@@ -1,118 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbXD0HEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbXD0HGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753512AbXD0HEn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 03:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754117AbXD0HEm
+	id S1754117AbXD0HGT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 03:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbXD0HGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 03:04:42 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46515 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753512AbXD0HEl (ORCPT
+	Fri, 27 Apr 2007 03:06:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:52398 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754117AbXD0HGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 03:04:41 -0400
-Date: Fri, 27 Apr 2007 00:04:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Chinner <dgc@sgi.com>
-Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070427000403.6013d1fa.akpm@linux-foundation.org>
-In-Reply-To: <20070427060921.GA77450368@melbourne.sgi.com>
-References: <20070424222105.883597089@sgi.com>
-	<20070426190438.3a856220.akpm@linux-foundation.org>
-	<20070427022731.GF65285596@melbourne.sgi.com>
-	<20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<20070427060921.GA77450368@melbourne.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 03:06:18 -0400
+Message-ID: <4631A0F0.4060308@gmx.net>
+Date: Fri, 27 Apr 2007 09:06:24 +0200
+From: Klaus Strebel <klaus.strebel@gmx.net>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Eric Sandeen <sandeen@sandeen.net>, Jesper Juhl <jesper.juhl@gmail.com>,
+       David Chinner <dgc@sgi.com>, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       viro@zeniv.linux.org.uk
+Subject: Re: 2.6.20.3 - possible recursive locking detected - in XFS
+References: <200704251116.57737.jesper.juhl@gmail.com>	 <20070425233345.GN48531920@melbourne.sgi.com> <9a8748490704260317u211c244au3c5478ac02c12c43@mail.gmail.com> <4630DDC2.2040705@sandeen.net>
+In-Reply-To: <4630DDC2.2040705@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1/woEZC0TSQY/S9fbTr2YWHkJBxAE71dpr02Oa
+ ENMHbzJ1Et7D3sETq5yU1+HEXk9s+RXHDgmM4wc6otvPvhII+c
+ bs0gypp+44870dNdBsRcw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 16:09:21 +1000 David Chinner <dgc@sgi.com> wrote:
-
-> On Thu, Apr 26, 2007 at 10:15:28PM -0700, Andrew Morton wrote:
-> > On Fri, 27 Apr 2007 14:20:46 +1000 David Chinner <dgc@sgi.com> wrote:
-> > 
-> > > >    blocksizes via this scheme - instantiate and lock four pages and go for
-> > > >    it.
-> > > 
-> > > So now how do you get block aligned writeback?
-> > 
-> > in writeback and pageout:
-> > 
-> > 	if (page->index & mapping->block_size_mask)
-> > 		continue;
+Eric Sandeen schrieb:
+> Jesper Juhl wrote:
+>> On 26/04/07, David Chinner <dgc@sgi.com> wrote:
 > 
-> So we might do writeback on one page in N - how do we
-> make sure none of the other pages are reclaimed while we are doing
-> writeback on this bclok?
-
-By marking them all dirty when one is marked dirty.
-
-David, you're perfectly capable of working all this out yourself.  But
-you're trying not to.  Please stop this game.
-
-> IOWs, we have to lock every page in the block, mark them all as
-> writeback, etc. Instead of doing something once, we have
-> to repeat it for every block in page. This is better than a compound
-> page, how?
-
-I already said it'd be a bit slower.  But given that those four pageframes
-will fall within two cachelines the cost will be small.
-
-> > > Or make sure that truncate
-> > > doesn't race on a partial *block* truncate?
-> > 
-> > lock four pages
+>>> Known false positive - XFS doesn't have the annotations needed for
+>>> this yet; we've got a patch that will probably make it's way into 6.5.22 that
+>>> should fix most of these issues.
 > 
-> And the locking order? How do you enforce *kernel wide* the
-> same locking order for all pages in the same block so that we
-> don't get ABBA deadlocks on page locks within a block?
+> wow... 6.5.22.... do we really have to wait that long? :)
 
-Oh stop it.  You know perfectly well how to do this.  It is trivial.
+Why wait? If i remember right ( it's about 3 years ago that it had to do
+with it ), its a quite old patch-version of mother ... IRIX :-)
 
-> i.e:
-> 
-> > > You basically have to
-> > > jump through nasty, nasty hoops, to handle corner cases that are introduced
-> > > because the generic code can no longer reliably lock out access to a
-> > > filesystem block.
-> 
-> This way lies insanity.
-> 
+It's fun to see that your can't hide your roots Dave :-) ...
 
-You're addressing Christoph's straw man here.
+so now that .21 ( of the Linux 2.6 series ) i wonder, will there be
+anybody remembering IRIX 6.5.22 when the Linux kernel reaches to that
+version number? Hey Google, suck this message in and help us remember
+this question !
 
-> > > way to serialise access to these aggregated structures. This is
-> > > the way XFS used to work in it's data path, and we all know how long
-> > > and loud people complained about that.....
-> > > 
-> > > A filesystem specific aggregation mechanism is not a palatable solution
-> > > here because it drives filesystems away from being able to use generic
-> > > code. 
-> > 
-> > I would expect we could (should) implement this in generic code by
-> > modifying the existing stuff.
-> 
-> So you're suggesting that we reintroduce a buffer-oriented filesystem
-> interface to support large block sizes?
+Cheers to all friends of Linux und IRIX
+Klaus
 
-Nothing vaguely like it.  Please be serious.
+P.S.: Guess i will have to boot my old Indy at home, arrrggghhh,
+clock-chip battery will be empty again ... 'll have to reset the MAC ...
+must recover the lost root password ... oh Lord ( no, not you Steve ... )
 
-> > I'm not saying it's especially simple, nor fast.  But it has the advantage
-> > that we're not forced to use larger pages with _it's_ attendant performance
-> > problems.
-> 
-> So you'll take slow, inefficient and complex rather than use an
-> non-intrusive and /optional/ interface to large pages?
+-- 
+Mit freundlichen Grüssen / best regards
 
-The optionality is useful - it at least means that we can easily remove it
-all if/when it becomes obsolete.
+Klaus Strebel, Dipl.-Inform. (FH), mailto:klaus.strebel@gmx.net
 
+/"\
+\ /     ASCII RIBBON CAMPAIGN
+ X        AGAINST HTML MAIL
+/ \
