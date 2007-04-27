@@ -1,190 +1,293 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbXD0Szo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbXD0S4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757039AbXD0Szo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:55:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754377AbXD0Syl
+	id S1754393AbXD0S4Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbXD0S4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:54:41 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:52430 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbXD0SyP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:54:15 -0400
-Date: Fri, 27 Apr 2007 11:51:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] Driver core patches for 2.6.21
-Message-ID: <20070427185152.GA17121@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 27 Apr 2007 14:56:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35187 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754377AbXD0S4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:56:23 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 02/46] driver core: fix namespace issue with devices assigned to classes
+Date: Fri, 27 Apr 2007 11:53:16 -0700
+Message-Id: <11777000433552-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.1.2
+In-Reply-To: <1177700040520-git-send-email-gregkh@suse.de>
+References: <20070427185152.GA17121@kroah.com>
+ <1177700040520-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some driver core patche for 2.6.21.
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-They do a wide range of things, see the shortlog below for details.
+  - uses a kset in "struct class" to keep track of all directories
+    belonging to this class
+  - merges with the /sys/devices/virtual logic.
+  - removes the namespace-dir if the last member of that class
+    leaves the directory.
 
-All of these have been in the -mm tree for quite some time.
+There may be locking or refcounting fixes left, I stopped when it seemed
+to work with network and sound modules. :)
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+From: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/class.c    |    2 +-
+ drivers/base/core.c     |   82 +++++++++++++++++++++++++++++++++++++----------
+ include/linux/device.h  |    3 +-
+ include/linux/kobject.h |    2 +
+ lib/kobject.c           |   12 ++++++-
+ lib/kobject_uevent.c    |   16 ++++++---
+ 6 files changed, 89 insertions(+), 28 deletions(-)
 
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
-
-thanks,
-
-greg k-h
-
-
- Documentation/feature-removal-schedule.txt |    9 -
- arch/powerpc/kernel/of_platform.c          |    3 -
- drivers/amba/bus.c                         |   13 +-
- drivers/base/attribute_container.c         |   26 ++--
- drivers/base/base.h                        |    2 +-
- drivers/base/bus.c                         |  112 +++++++++--
- drivers/base/class.c                       |    2 +-
- drivers/base/core.c                        |  293 ++++++++++++++++++++--------
- drivers/base/dd.c                          |   66 ++++---
- drivers/base/dmapool.c                     |   14 +-
- drivers/base/driver.c                      |   20 --
- drivers/base/firmware_class.c              |   10 +-
- drivers/base/power/main.c                  |    3 +
- drivers/base/power/resume.c                |   13 ++-
- drivers/base/power/shutdown.c              |    2 -
- drivers/base/power/suspend.c               |   12 ++
- drivers/ide/ide-proc.c                     |    4 -
- drivers/ieee1394/nodemgr.c                 |   22 +--
- drivers/input/gameport/gameport.c          |   39 ++---
- drivers/input/serio/serio.c                |   41 ++---
- drivers/mmc/mmc_sysfs.c                    |   27 +--
- drivers/net/phy/fixed.c                    |    6 -
- drivers/net/phy/phy_device.c               |    9 +-
- drivers/pci/pci-driver.c                   |    6 +-
- drivers/pci/pci.c                          |   58 ++++--
- drivers/pnp/card.c                         |    6 -
- drivers/s390/cio/device.c                  |    6 +
- drivers/s390/crypto/ap_bus.c               |   28 ++--
- drivers/s390/net/qeth_proc.c               |    2 -
- drivers/scsi/hosts.c                       |    4 +-
- drivers/usb/core/devices.c                 |    2 -
- drivers/usb/core/devio.c                   |   13 --
- drivers/usb/core/driver.c                  |   12 +-
- drivers/usb/core/hub.c                     |    4 +-
- drivers/usb/core/message.c                 |    2 +-
- drivers/usb/host/ohci-hcd.c                |    6 -
- fs/debugfs/file.c                          |   42 ++++
- fs/namei.c                                 |   72 +++++--
- fs/super.c                                 |   12 --
- fs/sysfs/bin.c                             |    2 +-
- fs/sysfs/file.c                            |   14 +-
- fs/sysfs/group.c                           |    6 +-
- include/linux/debugfs.h                    |    9 +
- include/linux/device.h                     |   69 +++++---
- include/linux/kobject.h                    |   12 +-
- include/linux/namei.h                      |    1 +
- include/linux/pci.h                        |    2 -
- include/linux/pm.h                         |   37 ++++
- include/linux/sysfs.h                      |    4 +-
- kernel/module.c                            |    4 +-
- kernel/power/main.c                        |   18 ++-
- lib/kobject.c                              |   62 +++++-
- lib/kobject_uevent.c                       |   26 ++--
- lib/kref.c                                 |    2 +
- net/core/net-sysfs.c                       |   27 ++-
- sound/aoa/soundbus/core.c                  |   80 +++-----
- 56 files changed, 854 insertions(+), 544 deletions(-)
-
----------------
-
-Adrian Bunk (1):
-      the overdue removal of the mount/umount uevents
-
-Akinobu Mita (1):
-      mod_sysfs_setup() doesn't return errno when kobject_add_dir() failure occurs
-
-Alan Stern (1):
-      device_schedule_callback() needs a module reference
-
-Andrew Morton (2):
-      powerpc: make it compile for multithread change
-      sysfs: bin.c printk fix
-
-Cornelia Huck (7):
-      driver core: per-subsystem multithreaded probing
-      driver core: don't fail attaching the device if it cannot be bound
-      Driver core: suppress uevents via filter
-      Driver core: switch firmware_class to uevent_suppress.
-      kobject: kobject_add() reference leak
-      qeth: Remove usage of subsys.rwsem
-      s390: cio: Delay uevents for subchannels
-
-Dan Williams (1):
-      dev_dbg: check dev_dbg() arguments
-
-David Brownell (1):
-      define platform wakeup hook, use in pci_enable_wake()
-
-Dmitriy Monakhov (2):
-      driver core: fix device_add error path
-      kobject: kobject_shadow_add cleanup
-
-Dmitry Torokhov (4):
-      driver core: Use attribute groups in struct device_type
-      Driver core: add suspend() and resume() to struct device_type
-      Input: serio - do not touch bus's rwsem
-      Input: gameport - do not touch bus's rwsem
-
-Eric Rannaud (1):
-      uevent: use add_uevent_var() instead of open coding it
-
-Eric W. Biederman (1):
-      kobject: Comment and warning fixes to kobject.c
-
-Greg Kroah-Hartman (10):
-      Driver core: remove unneeded completion from driver release path
-      Driver core: remove use of rwsem
-      SCSI: use the proper semaphore to protect the class lists
-      USB: remove use of the bus rwsem, as it doesn't really protect anything.
-      PNP: stop using the subsystem rwsem
-      IDE: remove rwsem use from ide-proc core
-      IEEE1394: remove rwsem use from ieee1394 core
-      PHY: remove rwsem use from phy core
-      kobject core: remove rwsem from struct subsystem
-      driver core: bus_add_driver should return an error if no bus
-
-James Morris (1):
-      security: prevent permission checking of file removal via sysfs_remove_group()
-
-Jean Delvare (1):
-      dev_printk and new-style class devices
-
-Jean Tourrilhes (1):
-      Driver core: notify userspace of network device renames
-
-Johannes Berg (1):
-      s2ram: add arch irq disable/enable hooks
-
-John Anthony Kazos Jr (1):
-      Kobject: kobject_uevent.c: Collapse unnecessary loop nesting (top_kobj)
-
-Kay Sievers (5):
-      driver core: fix namespace issue with devices assigned to classes
-      Driver core: udev triggered device-<>driver binding
-      Driver core: add name to device_type
-      Driver core: make uevent-environment available in uevent-file
-      Driver core: warn when userspace writes to the uevent file in a non-supported way
-
-Matthias Kaehlcke (2):
-      Driver core: use mutex instead of semaphore in DMA pool handler
-      drivers/base/attribute_container.c: use mutex instead of binary semaphore
-
-Michael Ellerman (1):
-      debugfs: Add debugfs_create_u64()
-
-Oliver Neukum (1):
-      kref: fix CPU ordering with respect to krefs
+diff --git a/drivers/base/class.c b/drivers/base/class.c
+index d596812..80bbb20 100644
+--- a/drivers/base/class.c
++++ b/drivers/base/class.c
+@@ -145,6 +145,7 @@ int class_register(struct class * cls)
+ 	INIT_LIST_HEAD(&cls->children);
+ 	INIT_LIST_HEAD(&cls->devices);
+ 	INIT_LIST_HEAD(&cls->interfaces);
++	kset_init(&cls->class_dirs);
+ 	init_MUTEX(&cls->sem);
+ 	error = kobject_set_name(&cls->subsys.kset.kobj, "%s", cls->name);
+ 	if (error)
+@@ -163,7 +164,6 @@ int class_register(struct class * cls)
+ void class_unregister(struct class * cls)
+ {
+ 	pr_debug("device class '%s': unregistering\n", cls->name);
+-	kobject_unregister(cls->virtual_dir);
+ 	remove_class_attrs(cls);
+ 	subsystem_unregister(&cls->subsys);
+ }
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index db3a151..658eae5 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -477,34 +477,58 @@ static struct kobject * get_device_parent(struct device *dev,
+ 	return NULL;
+ }
+ #else
+-static struct kobject * virtual_device_parent(struct device *dev)
++static struct kobject *virtual_device_parent(struct device *dev)
+ {
+-	if (!dev->class)
+-		return ERR_PTR(-ENODEV);
+-
+-	if (!dev->class->virtual_dir) {
+-		static struct kobject *virtual_dir = NULL;
++	static struct kobject *virtual_dir = NULL;
+ 
+-		if (!virtual_dir)
+-			virtual_dir = kobject_add_dir(&devices_subsys.kset.kobj, "virtual");
+-		dev->class->virtual_dir = kobject_add_dir(virtual_dir, dev->class->name);
+-	}
++	if (!virtual_dir)
++		virtual_dir = kobject_add_dir(&devices_subsys.kset.kobj, "virtual");
+ 
+-	return dev->class->virtual_dir;
++	return virtual_dir;
+ }
+ 
+ static struct kobject * get_device_parent(struct device *dev,
+ 					  struct device *parent)
+ {
+-	/* if this is a class device, and has no parent, create one */
+-	if ((dev->class) && (parent == NULL)) {
+-		return virtual_device_parent(dev);
+-	} else if (parent)
++	if (dev->class) {
++		struct kobject *kobj = NULL;
++		struct kobject *parent_kobj;
++		struct kobject *k;
++
++		/*
++		 * If we have no parent, we live in "virtual".
++		 * Class-devices with a bus-device as parent, live
++		 * in a class-directory to prevent namespace collisions.
++		 */
++		if (parent == NULL)
++			parent_kobj = virtual_device_parent(dev);
++		else if (parent->class)
++			return &parent->kobj;
++		else
++			parent_kobj = &parent->kobj;
++
++		/* find our class-directory at the parent and reference it */
++		spin_lock(&dev->class->class_dirs.list_lock);
++		list_for_each_entry(k, &dev->class->class_dirs.list, entry)
++			if (k->parent == parent_kobj) {
++				kobj = kobject_get(k);
++				break;
++			}
++		spin_unlock(&dev->class->class_dirs.list_lock);
++		if (kobj)
++			return kobj;
++
++		/* or create a new class-directory at the parent device */
++		return kobject_kset_add_dir(&dev->class->class_dirs,
++					    parent_kobj, dev->class->name);
++	}
++
++	if (parent)
+ 		return &parent->kobj;
+ 	return NULL;
+ }
+-
+ #endif
++
+ static int setup_parent(struct device *dev, struct device *parent)
+ {
+ 	struct kobject *kobj;
+@@ -541,7 +565,6 @@ int device_add(struct device *dev)
+ 	pr_debug("DEV: registering device: ID = '%s'\n", dev->bus_id);
+ 
+ 	parent = get_device(dev->parent);
+-
+ 	error = setup_parent(dev, parent);
+ 	if (error)
+ 		goto Error;
+@@ -787,6 +810,31 @@ void device_del(struct device * dev)
+ 		/* remove the device from the class list */
+ 		list_del_init(&dev->node);
+ 		up(&dev->class->sem);
++
++		/* If we live in a parent class-directory, unreference it */
++		if (dev->kobj.parent->kset == &dev->class->class_dirs) {
++			struct device *d;
++			int other = 0;
++
++			/*
++			 * if we are the last child of our class, delete
++			 * our class-directory at this parent
++			 */
++			down(&dev->class->sem);
++			list_for_each_entry(d, &dev->class->devices, node) {
++				if (d == dev)
++					continue;
++				if (d->kobj.parent == dev->kobj.parent) {
++					other = 1;
++					break;
++				}
++			}
++			if (!other)
++				kobject_del(dev->kobj.parent);
++
++			kobject_put(dev->kobj.parent);
++			up(&dev->class->sem);
++		}
+ 	}
+ 	device_remove_file(dev, &dev->uevent_attr);
+ 	device_remove_groups(dev);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 5cf30e9..de0e73e 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -181,10 +181,9 @@ struct class {
+ 	struct list_head	children;
+ 	struct list_head	devices;
+ 	struct list_head	interfaces;
++	struct kset		class_dirs;
+ 	struct semaphore	sem;	/* locks both the children and interfaces lists */
+ 
+-	struct kobject		*virtual_dir;
+-
+ 	struct class_attribute		* class_attrs;
+ 	struct class_device_attribute	* class_dev_attrs;
+ 	struct device_attribute		* dev_attrs;
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index b850e03..d37cd7f 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -89,6 +89,8 @@ extern void kobject_unregister(struct kobject *);
+ extern struct kobject * kobject_get(struct kobject *);
+ extern void kobject_put(struct kobject *);
+ 
++extern struct kobject *kobject_kset_add_dir(struct kset *kset,
++					    struct kobject *, const char *);
+ extern struct kobject *kobject_add_dir(struct kobject *, const char *);
+ 
+ extern char * kobject_get_path(struct kobject *, gfp_t);
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 057921c..f664551 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -488,13 +488,15 @@ static struct kobj_type dir_ktype = {
+ };
+ 
+ /**
+- *	kobject_add_dir - add sub directory of object.
++ *	kobject__kset_add_dir - add sub directory of object.
++ *	@kset:		kset the directory is belongs to.
+  *	@parent:	object in which a directory is created.
+  *	@name:	directory name.
+  *
+  *	Add a plain directory object as child of given object.
+  */
+-struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
++struct kobject *kobject_kset_add_dir(struct kset *kset,
++				     struct kobject *parent, const char *name)
+ {
+ 	struct kobject *k;
+ 	int ret;
+@@ -506,6 +508,7 @@ struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
+ 	if (!k)
+ 		return NULL;
+ 
++	k->kset = kset;
+ 	k->parent = parent;
+ 	k->ktype = &dir_ktype;
+ 	kobject_set_name(k, name);
+@@ -520,6 +523,11 @@ struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
+ 	return k;
+ }
+ 
++struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
++{
++	return kobject_kset_add_dir(NULL, parent, name);
++}
++
+ /**
+  *	kset_init - initialize a kset for use
+  *	@k:	kset 
+diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
+index 82fc179..4122f38 100644
+--- a/lib/kobject_uevent.c
++++ b/lib/kobject_uevent.c
+@@ -115,6 +115,16 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 			return 0;
+ 		}
+ 
++	/* originating subsystem */
++	if (uevent_ops && uevent_ops->name)
++		subsystem = uevent_ops->name(kset, kobj);
++	else
++		subsystem = kobject_name(&kset->kobj);
++	if (!subsystem) {
++		pr_debug("unset subsytem caused the event to drop!\n");
++		return 0;
++	}
++
+ 	/* environment index */
+ 	envp = kzalloc(NUM_ENVP * sizeof (char *), GFP_KERNEL);
+ 	if (!envp)
+@@ -134,12 +144,6 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
+ 		goto exit;
+ 	}
+ 
+-	/* originating subsystem */
+-	if (uevent_ops && uevent_ops->name)
+-		subsystem = uevent_ops->name(kset, kobj);
+-	else
+-		subsystem = kobject_name(&kset->kobj);
+-
+ 	/* event environemnt for helper process only */
+ 	envp[i++] = "HOME=/";
+ 	envp[i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+-- 
+1.5.1.2
 
