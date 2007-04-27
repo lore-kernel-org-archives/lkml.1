@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbXD0Vfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXD0Vfw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757346AbXD0Vfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757351AbXD0Vft
+	id S1757350AbXD0Vfw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:35:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbXD0Vfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:35:49 -0400
-Received: from mail.tmr.com ([64.65.253.246]:48774 "EHLO gaimboi.tmr.com"
+	Fri, 27 Apr 2007 17:35:52 -0400
+Received: from colin.muc.de ([193.149.48.1]:3192 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757346AbXD0Ve4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:34:56 -0400
-Message-ID: <46326CDD.9040502@tmr.com>
-Date: Fri, 27 Apr 2007 17:36:29 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Stephen.Clark@seclark.us
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <4630FA27.1090203@seclark.us>
-In-Reply-To: <4630FA27.1090203@seclark.us>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757350AbXD0Vft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:35:49 -0400
+Date: 27 Apr 2007 23:35:46 +0200
+Date: Fri, 27 Apr 2007 23:35:46 +0200
+From: Andi Kleen <ak@muc.de>
+To: Tim Hockin <thockin@google.com>
+Cc: Vojtech Pavlik <vojtech@suse.cz>, linux-kernel@vger.kernel.org,
+       akpm@google.com
+Subject: Re: [PATCH] x86_64: dynamic MCE poll interval (try 2)
+Message-ID: <20070427213546.GA58885@muc.de>
+References: <cc96a5040704271434j441967fcr5530c6f15f7026e8@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cc96a5040704271434j441967fcr5530c6f15f7026e8@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
-
-> If hardware worked in the previous version of the kernel can't users expect
-> the same hardware to work in this kernel?
+On Fri, Apr 27, 2007 at 02:34:11PM -0700, Tim Hockin wrote:
+> From: Tim Hockin <thockin@google.com>
 > 
-Failure of that assumption is the heart of the whole "regression" 
-discussion. It's not limited to hardware, kernel security might be an 
-issue, some network protocols might work faster and less reliably, etc.
+> Background:
+> We've found that MCEs (specifically DRAM SBEs) tend to come in bunches,
+> especially when we are trying really hard to stress the system out.  The
+> current MCE poller uses a static interval which does not care whether it
+> has or has not found MCEs recently.
 
-Kernel behavior changes sometimes totally break user software which 
-makes unwarranted assumptions. That's not a regression, although users 
-may see it that way. When a change in fork() changed the 
-child-runs-first behavior, many programs broke, as was true with 
-threading changes. Bad reliability is the reward for bad code, but if a 
-kernel change makes that obvious some people think it's a regression.
+Added thanks
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+-Andi
