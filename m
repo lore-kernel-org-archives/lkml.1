@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbXD1REI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbXD1RFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756405AbXD1REI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXD1REI
+	id S1756415AbXD1RFd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161877AbXD1RFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:04:08 -0400
-Received: from www.osadl.org ([213.239.205.134]:52324 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756405AbXD1REH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:04:07 -0400
-Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Meyer <thomas.mey@web.de>
-In-Reply-To: <463375E5.5040108@googlemail.com>
-References: <463375E5.5040108@googlemail.com>
-Content-Type: text/plain
-Date: Sat, 28 Apr 2007 19:06:11 +0200
-Message-Id: <1177779971.7646.271.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 13:05:32 -0400
+Received: from ns.suse.de ([195.135.220.2]:60210 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756416AbXD1RFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:05:05 -0400
+Date: Fri, 27 Apr 2007 16:55:16 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [ANNOUNCE] battery2 git repository
+Message-ID: <20070427235516.GB24476@suse.de>
+References: <20070426232902.GA10423@zarina> <20070427164629.fde8ffca.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427164629.fde8ffca.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-28 at 18:27 +0200, Michal Piotrowski wrote:
-> Subject    : Bad interaction between dynticks and amarok?
-> References : http://lkml.org/lkml/2007/4/26/307
-> Submitter  : Thomas Meyer <thomas.mey@web.de>
-> Status     : Unknow
+On Fri, Apr 27, 2007 at 04:46:29PM -0700, Andrew Morton wrote:
+> On Fri, 27 Apr 2007 03:29:02 +0400
+> Anton Vorontsov <cbou@mail.ru> wrote:
+> 
+> > You can get it using "git clone --reference linux-2.6 \
+> > git://git.infradead.org/users/cbou/battery2-2.6.git" command.
+> 
+> I added this to the -mm lineup.
+> 
+> Welcome to git.  This means that nobody looks at your code any more and you
+> get free rein to experiment with interesting innovations in VFS, MM and
+> security in the mainline kernel (well, not really - Linus does squint at
+> the diffstat).
+> 
+> But we do have a general problem that code which travels the
+> developer->git->mainline route is not getting sufficient review.  Please be
+> aware of this, and be as pushy as you like in sending your changes out to
+> mailing lists (including linux-kernel) to get them reviewed.
+> 
+> If you don't think they have received adequate review then send them again,
+> and shout at people - we'd all admire that.
 
-Michal,
+Heh.  Yes, feel free to send me these patches to review, I don't mind.
 
-I don't think this is a regression. What Thomas wanted to point out is,
-that the amarok / sound device is making the positive effect of dynticks
-moot, as it starts to trigger useless interrupts.
+thanks,
 
-Thomas, is my interpretation correct ? Did you check, which interrupt
-was increasing - i.e. was it the soundcard one ?
-
-	tglx
-
-
-
+greg k-h
