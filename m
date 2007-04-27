@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXD0RrJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbXD0RsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754218AbXD0RrJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:47:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXD0RrI
+	id S1754227AbXD0RsP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXD0RsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:47:08 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:28420 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbXD0RrD (ORCPT
+	Fri, 27 Apr 2007 13:48:15 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:59138 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbXD0RsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:47:03 -0400
-Date: Fri, 27 Apr 2007 19:46:13 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 0/5] fallocate system call
-Message-ID: <20070427174613.GA8228@osiris.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070427121003.GA7808@osiris.boeblingen.de.ibm.com> <20070427144327.GC22949@lazybastard.org>
+	Fri, 27 Apr 2007 13:48:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JxKUMEfCBAO1x58xp6wtNnJRGpqEi6VAI3h0ZD3KCyaBQszwoVTN2hkTphiYrLPjGpWK5pru7DTIAivTn5MMAxQNgetc7bnrpEbttKFFApOIhqayQFUbQxV66hS3+HJwRyIQ+rFjlL1bIXt3tNhl64PU17LAX1Bjd2wWds7U+Ag=
+Message-ID: <46323756.8080807@gmail.com>
+Date: Sat, 28 Apr 2007 02:48:06 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070427144327.GC22949@lazybastard.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>	 <462FB8E6.9070501@googlemail.com> <463117DF.2020103@googlemail.com>	 <20070427001246.GB5303@suse.de> <6bffcb0e0704271038y7d099a7au7eae8a99b605cb2f@mail.gmail.com>
+In-Reply-To: <6bffcb0e0704271038y7d099a7au7eae8a99b605cb2f@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 04:43:28PM +0200, Jörn Engel wrote:
-> On Fri, 27 April 2007 14:10:03 +0200, Heiko Carstens wrote:
-> > 
-> > After long discussions where at least two possible implementations
-> > were suggested that would work on _all_ architectures you chose one
-> > which doesn't and causes extra effort.
+Michal Piotrowski wrote:
+>> I've dropped the gregkh-driver-sysfs-* patches listed above from my tree
+>> as Tejun is reworking the series to handle all of the different changes
+>> that have been needed as they have been tested, so you shouldn't have to
+>> worry about them.
+>>
+>> But I would be interested in finding out why the above is breaking for
+>> you.
 > 
-> I believe the long discussion also showed that every possible
-> implementation has drawbacks.  To me this one appeared to be the best of
-> many bad choices.
+> GOOD
+> gregkh-driver-sysfs-reimplement-symlink-using-sysfs_dirent-tree.patch
+> BAD
 
-If one insists to have fd at first argument, what is wrong with having
-u32 arguments only? It's not that this syscall comes even close to
-what can be considered performance critical...
+Thanks for bisecting.  I'm currently re-spinning sysfs rework patches
+and the problem is fixed in new series.  I'll post it soon.
 
-> Is this implementation worse than we thought?
-
-It adds userspace overhead for one architecture. Every *trace and
-*libc needs special handling on s390 for this syscall. I would
-prefer to avoid this.
+-- 
+tejun
