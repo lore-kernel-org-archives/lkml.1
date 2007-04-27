@@ -1,909 +1,558 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbXD0WxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXD0Wx2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757530AbXD0WxZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbXD0WxZ
+	id S1757521AbXD0Wx2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbXD0Wx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:53:25 -0400
-Received: from ns1.suse.de ([195.135.220.2]:37244 "EHLO mx1.suse.de"
+	Fri, 27 Apr 2007 18:53:28 -0400
+Received: from ns.suse.de ([195.135.220.2]:37247 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757526AbXD0WxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:53:21 -0400
+	id S1757521AbXD0WxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:53:22 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: torvalds@osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Benedikt Spranger <b.spranger@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 1/3] UIO: Add the User IO core code
-Date: Fri, 27 Apr 2007 15:50:56 -0700
-Message-Id: <11777142582534-git-send-email-gregkh@suse.de>
+Cc: torvalds@osdl.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2/3] UIO: Documentation
+Date: Fri, 27 Apr 2007 15:50:57 -0700
+Message-Id: <11777142633770-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <20070427224957.GA17967@kroah.com>
+In-Reply-To: <11777142582534-git-send-email-gregkh@suse.de>
 References: <20070427224957.GA17967@kroah.com>
+ <11777142582534-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hans J. Koch <hjk@linutronix.de>
 
-This interface allows the ability to write the majority of a driver in
-userspace with only a very small shell of a driver in the kernel itself.
-It uses a char device and sysfs to interact with a userspace process to
-process interrupts and control memory accesses.
-
-See the docbook documentation for more details on how to use this
-interface.
+Documentation for the UIO interface
 
 From: Hans J. Koch <hjk@linutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benedikt Spranger <b.spranger@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/Kconfig            |    1 +
- drivers/Makefile           |    1 +
- drivers/uio/Kconfig        |   14 +
- drivers/uio/Makefile       |    1 +
- drivers/uio/uio.c          |  702 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/uio_driver.h |   91 ++++++
- 6 files changed, 810 insertions(+), 0 deletions(-)
- create mode 100644 drivers/uio/Kconfig
- create mode 100644 drivers/uio/Makefile
- create mode 100644 drivers/uio/uio.c
- create mode 100644 include/linux/uio_driver.h
+ Documentation/DocBook/kernel-api.tmpl |    4 +
+ Documentation/DocBook/uio-howto.tmpl  |  498 +++++++++++++++++++++++++++++++++
+ 2 files changed, 502 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/DocBook/uio-howto.tmpl
 
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 050323f..325a108 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -84,4 +84,5 @@ source "drivers/auxdisplay/Kconfig"
+diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
+index 0bb9023..40e968d 100644
+--- a/Documentation/DocBook/kernel-api.tmpl
++++ b/Documentation/DocBook/kernel-api.tmpl
+@@ -396,6 +396,10 @@ X!Edrivers/pnp/system.c
+ !Edrivers/pnp/manager.c
+ !Edrivers/pnp/support.c
+      </sect1>
++     <sect1><title>Userspace IO devices</title>
++!Edrivers/uio/uio.c
++!Iinclude/linux/uio_driver.h
++     </sect1>
+   </chapter>
  
- source "drivers/kvm/Kconfig"
- 
-+source "drivers/uio/Kconfig"
- endmenu
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 920c975..5cf267f 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_SCSI)		+= scsi/
- obj-$(CONFIG_ATA)		+= ata/
- obj-$(CONFIG_FUSION)		+= message/
- obj-$(CONFIG_IEEE1394)		+= ieee1394/
-+obj-$(CONFIG_UIO)		+= uio/
- obj-y				+= cdrom/
- obj-y				+= auxdisplay/
- obj-$(CONFIG_MTD)		+= mtd/
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+   <chapter id="blkdev">
+diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
 new file mode 100644
-index 0000000..8fcef21
+index 0000000..bd2209f
 --- /dev/null
-+++ b/drivers/uio/Kconfig
-@@ -0,0 +1,14 @@
-+menu "Userspace I/O"
-+config UIO
-+	tristate "Userspace I/O drivers"
-+	default n
-+	help
-+	  Enable this to allow the userspace driver core code to be
-+	  built.  This code allows userspace programs easy access to
-+	  kernel interrupts and memory locations, allowing some drivers
-+	  to be written in userspace.  Note that a small kernel driver
-+	  is also required for interrupt handling to work properly.
-+
-+	  If you don't know what to do here, say N.
-+
-+endmenu
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-new file mode 100644
-index 0000000..9b7c830
---- /dev/null
-+++ b/drivers/uio/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_UIO) += uio.o
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-new file mode 100644
-index 0000000..6ca3379
---- /dev/null
-+++ b/drivers/uio/uio.c
-@@ -0,0 +1,702 @@
-+/*
-+ * drivers/uio/uio.c
-+ *
-+ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
-+ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
-+ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
-+ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
-+ *
-+ * Userspace IO
-+ *
-+ * Base Functions
-+ *
-+ * Licensed under the GPLv2 only.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/poll.h>
-+#include <linux/device.h>
-+#include <linux/mm.h>
-+#include <linux/idr.h>
-+#include <linux/string.h>
-+#include <linux/kobject.h>
-+#include <linux/uio_driver.h>
-+
-+#define UIO_MAX_DEVICES 255
-+
-+struct uio_device {
-+	struct module		*owner;
-+	struct device		*dev;
-+	int			minor;
-+	atomic_t		event;
-+	struct fasync_struct	*async_queue;
-+	wait_queue_head_t	wait;
-+	int			vma_count;
-+	struct uio_info		*info;
-+	struct kset 		map_attr_kset;
-+};
-+
-+static int uio_major;
-+static DEFINE_IDR(uio_idr);
-+static struct file_operations uio_fops;
-+
-+/* UIO class infrastructure */
-+static struct uio_class {
-+	struct kref kref;
-+	struct class *class;
-+} *uio_class;
-+
-+/*
-+ * attributes
-+ */
-+
-+static struct attribute attr_addr = {
-+	.name  = "addr",
-+	.mode  = S_IRUGO,
-+};
-+
-+static struct attribute attr_size = {
-+	.name  = "size",
-+	.mode  = S_IRUGO,
-+};
-+
-+static struct attribute* map_attrs[] = {
-+	&attr_addr, &attr_size, NULL
-+};
-+
-+static ssize_t map_attr_show(struct kobject *kobj, struct attribute *attr,
-+			     char *buf)
-+{
-+	struct uio_mem *mem = container_of(kobj, struct uio_mem, kobj);
-+
-+	if (strncmp(attr->name,"addr",4) == 0)
-+		return sprintf(buf, "0x%lx\n", mem->addr);
-+
-+	if (strncmp(attr->name,"size",4) == 0)
-+		return sprintf(buf, "0x%lx\n", mem->size);
-+
-+	return -ENODEV;
-+}
-+
-+static void map_attr_release(struct kobject *kobj)
-+{
-+	/* TODO ??? */
-+}
-+
-+static struct sysfs_ops map_attr_ops = {
-+	.show  = map_attr_show,
-+};
-+
-+static struct kobj_type map_attr_type = {
-+	.release	= map_attr_release,
-+	.sysfs_ops	= &map_attr_ops,
-+	.default_attrs	= map_attrs,
-+};
-+
-+static ssize_t show_name(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	struct uio_device *idev = dev_get_drvdata(dev);
-+	if (idev)
-+		return sprintf(buf, "%s\n", idev->info->name);
-+	else
-+		return -ENODEV;
-+}
-+static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-+
-+static ssize_t show_version(struct device *dev,
-+			    struct device_attribute *attr, char *buf)
-+{
-+	struct uio_device *idev = dev_get_drvdata(dev);
-+	if (idev)
-+		return sprintf(buf, "%s\n", idev->info->version);
-+	else
-+		return -ENODEV;
-+}
-+static DEVICE_ATTR(version, S_IRUGO, show_version, NULL);
-+
-+static ssize_t show_event(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	struct uio_device *idev = dev_get_drvdata(dev);
-+	if (idev)
-+		return sprintf(buf, "%u\n",
-+				(unsigned int)atomic_read(&idev->event));
-+	else
-+		return -ENODEV;
-+}
-+static DEVICE_ATTR(event, S_IRUGO, show_event, NULL);
-+
-+static struct attribute *uio_attrs[] = {
-+	&dev_attr_name.attr,
-+	&dev_attr_version.attr,
-+	&dev_attr_event.attr,
-+	NULL,
-+};
-+
-+static struct attribute_group uio_attr_grp = {
-+	.attrs = uio_attrs,
-+};
-+
-+/*
-+ * device functions
-+ */
-+static int uio_dev_add_attributes(struct uio_device *idev)
-+{
-+	int ret;
-+	int mi;
-+	int map_found = 0;
-+	struct uio_mem *mem;
-+
-+	ret = sysfs_create_group(&idev->dev->kobj, &uio_attr_grp);
-+	if (ret)
-+		goto err_group;
-+
-+	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-+		mem = &idev->info->mem[mi];
-+		if (mem->size == 0)
-+			break;
-+		if (!map_found) {
-+			map_found = 1;
-+			kobject_set_name(&idev->map_attr_kset.kobj,"maps");
-+			idev->map_attr_kset.ktype = &map_attr_type;
-+			idev->map_attr_kset.kobj.parent = &idev->dev->kobj;
-+			idev->map_attr_kset.subsys = &uio_class->class->subsys;
-+			ret = kset_register(&idev->map_attr_kset);
-+			if (ret)
-+				goto err_remove_group;
-+		}
-+		kobject_init(&mem->kobj);
-+		kobject_set_name(&mem->kobj,"map%d",mi);
-+		mem->kobj.parent = &idev->map_attr_kset.kobj;
-+		mem->kobj.kset = &idev->map_attr_kset;
-+		ret = kobject_add(&mem->kobj);
-+		if (ret)
-+			goto err_remove_maps;
-+	}
-+
-+	return 0;
-+
-+err_remove_maps:
-+	for (mi--; mi>=0; mi--) {
-+		mem = &idev->info->mem[mi];
-+		kobject_unregister(&mem->kobj);
-+	}
-+	kset_unregister(&idev->map_attr_kset); /* Needed ? */
-+err_remove_group:
-+	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
-+err_group:
-+	dev_err(idev->dev, "error creating sysfs files (%d)\n", ret);
-+	return ret;
-+}
-+
-+static void uio_dev_del_attributes(struct uio_device *idev)
-+{
-+	int mi;
-+	struct uio_mem *mem;
-+	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-+		mem = &idev->info->mem[mi];
-+		if (mem->size == 0)
-+			break;
-+		kobject_unregister(&mem->kobj);
-+	}
-+	kset_unregister(&idev->map_attr_kset);
-+	sysfs_remove_group(&idev->dev->kobj, &uio_attr_grp);
-+}
-+
-+static int uio_get_minor(struct uio_device *idev)
-+{
-+	static DEFINE_MUTEX(minor_lock);
-+	int retval = -ENOMEM;
-+	int id;
-+
-+	mutex_lock(&minor_lock);
-+	if (idr_pre_get(&uio_idr, GFP_KERNEL) == 0)
-+		goto exit;
-+
-+	retval = idr_get_new(&uio_idr, idev, &id);
-+	if (retval < 0) {
-+		if (retval == -EAGAIN)
-+			retval = -ENOMEM;
-+		goto exit;
-+	}
-+	idev->minor = id & MAX_ID_MASK;
-+exit:
-+	mutex_unlock(&minor_lock);
-+	return retval;
-+}
-+
-+static void uio_free_minor(struct uio_device *idev)
-+{
-+	idr_remove(&uio_idr, idev->minor);
-+}
-+
-+/**
-+ * uio_event_notify - trigger an interrupt event
-+ * @idev: UIO device where the event occured
-+ */
-+void uio_event_notify(struct uio_info *info)
-+{
-+	struct uio_device *idev = info->uio_dev;
-+
-+	atomic_inc(&idev->event);
-+	wake_up_interruptible(&idev->wait);
-+	kill_fasync(&idev->async_queue, SIGIO, POLL_IN);
-+}
-+EXPORT_SYMBOL_GPL(uio_event_notify);
-+
-+/**
-+ * uio_interrupt - hardware interrupt handler
-+ * @irq: IRQ number, can be UIO_IRQ_CYCLIC for cyclic timer
-+ * @dev_id: Pointer to the devices uio_device structure
-+ */
-+static irqreturn_t uio_interrupt(int irq, void *dev_id)
-+{
-+	struct uio_device *idev = (struct uio_device *)dev_id;
-+	irqreturn_t ret = idev->info->handler(irq, idev->info);
-+
-+	if (ret == IRQ_HANDLED)
-+		uio_event_notify(idev->info);
-+
-+	return ret;
-+}
-+
-+struct uio_listener {
-+	struct uio_device *dev;
-+	int event_count;
-+};
-+
-+static int uio_open(struct inode *inode, struct file *filep)
-+{
-+	struct uio_device *idev;
-+	struct uio_listener *listener;
-+	int ret = 0;
-+
-+	idev = idr_find(&uio_idr, iminor(inode));
-+	if (!idev)
-+		return -ENODEV;
-+
-+	listener = kmalloc(sizeof(*listener), GFP_KERNEL);
-+	if (!listener)
-+		return -ENOMEM;
-+
-+	listener->dev = idev;
-+	listener->event_count = atomic_read(&idev->event);
-+	filep->private_data = listener;
-+
-+	if (idev->info->open) {
-+		if (!try_module_get(idev->owner))
-+			return -ENODEV;
-+		ret = idev->info->open(idev->info, inode);
-+		module_put(idev->owner);
-+	}
-+
-+	if (ret)
-+		kfree(listener);
-+
-+	return ret;
-+}
-+
-+static int uio_fasync(int fd, struct file *filep, int on)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+
-+	return fasync_helper(fd, filep, on, &idev->async_queue);
-+}
-+
-+static int uio_release(struct inode *inode, struct file *filep)
-+{
-+	int ret = 0;
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+
-+	if (idev->info->release) {
-+		if (!try_module_get(idev->owner))
-+			return -ENODEV;
-+		ret = idev->info->release(idev->info, inode);
-+		module_put(idev->owner);
-+	}
-+	if (filep->f_flags & FASYNC)
-+		ret = uio_fasync(-1, filep, 0);
-+	kfree(listener);
-+	return ret;
-+}
-+
-+static unsigned int uio_poll(struct file *filep, poll_table *wait)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+
-+	if (idev->info->irq == UIO_IRQ_NONE)
-+		return -EIO;
-+
-+	poll_wait(filep, &idev->wait, wait);
-+	if (listener->event_count != atomic_read(&idev->event))
-+		return POLLIN | POLLRDNORM;
-+	return 0;
-+}
-+
-+static ssize_t uio_read(struct file *filep, char __user *buf,
-+			size_t count, loff_t *ppos)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+	DECLARE_WAITQUEUE(wait, current);
-+	ssize_t retval;
-+	int event_count;
-+
-+	if (idev->info->irq == UIO_IRQ_NONE)
-+		return -EIO;
-+
-+	if (count != sizeof(int))
-+		return -EINVAL;
-+
-+	add_wait_queue(&idev->wait, &wait);
-+
-+	do {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+
-+		event_count = atomic_read(&idev->event);
-+		if (event_count != listener->event_count) {
-+			if (copy_to_user(buf, &event_count, count))
-+				retval = -EFAULT;
-+			else {
-+				listener->event_count = event_count;
-+				retval = count;
-+			}
-+			break;
-+		}
-+
-+		if (filep->f_flags & O_NONBLOCK) {
-+			retval = -EAGAIN;
-+			break;
-+		}
-+
-+		if (signal_pending(current)) {
-+			retval = -ERESTARTSYS;
-+			break;
-+		}
-+		schedule();
-+	} while (1);
-+
-+	__set_current_state(TASK_RUNNING);
-+	remove_wait_queue(&idev->wait, &wait);
-+
-+	return retval;
-+}
-+
-+static int uio_find_mem_index(struct vm_area_struct *vma)
-+{
-+	int mi;
-+	struct uio_device *idev = vma->vm_private_data;
-+
-+	for (mi = 0; mi < MAX_UIO_MAPS; mi++) {
-+		if (idev->info->mem[mi].size == 0)
-+			return -1;
-+		if (vma->vm_pgoff == mi)
-+			return mi;
-+	}
-+	return -1;
-+}
-+
-+static void uio_vma_open(struct vm_area_struct *vma)
-+{
-+	struct uio_device *idev = vma->vm_private_data;
-+	idev->vma_count++;
-+}
-+
-+static void uio_vma_close(struct vm_area_struct *vma)
-+{
-+	struct uio_device *idev = vma->vm_private_data;
-+	idev->vma_count--;
-+}
-+
-+static struct page *uio_vma_nopage(struct vm_area_struct *vma,
-+				   unsigned long address, int *type)
-+{
-+	struct uio_device *idev = vma->vm_private_data;
-+	struct page* page = NOPAGE_SIGBUS;
-+
-+	int mi = uio_find_mem_index(vma);
-+	if (mi < 0)
-+		return page;
-+
-+	if (idev->info->mem[mi].memtype == UIO_MEM_LOGICAL)
-+		page = virt_to_page(idev->info->mem[mi].addr);
-+	else
-+		page = vmalloc_to_page((void*)idev->info->mem[mi].addr);
-+	get_page(page);
-+	if (type)
-+		*type = VM_FAULT_MINOR;
-+	return page;
-+}
-+
-+static struct vm_operations_struct uio_vm_ops = {
-+	.open = uio_vma_open,
-+	.close = uio_vma_close,
-+	.nopage = uio_vma_nopage,
-+};
-+
-+static int uio_mmap_physical(struct vm_area_struct *vma)
-+{
-+	struct uio_device *idev = vma->vm_private_data;
-+	int mi = uio_find_mem_index(vma);
-+	if (mi < 0)
-+		return -EINVAL;
-+
-+	vma->vm_flags |= VM_IO | VM_RESERVED;
-+
-+	return remap_pfn_range(vma,
-+			       vma->vm_start,
-+			       idev->info->mem[mi].addr >> PAGE_SHIFT,
-+			       vma->vm_end - vma->vm_start,
-+			       vma->vm_page_prot);
-+}
-+
-+static int uio_mmap_logical(struct vm_area_struct *vma)
-+{
-+	vma->vm_flags |= VM_RESERVED;
-+	vma->vm_ops = &uio_vm_ops;
-+	uio_vma_open(vma);
-+	return 0;
-+}
-+
-+static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
-+{
-+	struct uio_listener *listener = filep->private_data;
-+	struct uio_device *idev = listener->dev;
-+	int mi;
-+	unsigned long requested_pages, actual_pages;
-+	int ret = 0;
-+
-+	if (vma->vm_end < vma->vm_start)
-+		return -EINVAL;
-+
-+	vma->vm_private_data = idev;
-+
-+	mi = uio_find_mem_index(vma);
-+	if (mi < 0)
-+		return -EINVAL;
-+
-+	requested_pages = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
-+	actual_pages = (idev->info->mem[mi].size + PAGE_SIZE -1) >> PAGE_SHIFT;
-+	if (requested_pages > actual_pages)
-+		return -EINVAL;
-+
-+	if (idev->info->mmap) {
-+		if (!try_module_get(idev->owner))
-+			return -ENODEV;
-+		ret = idev->info->mmap(idev->info, vma);
-+		module_put(idev->owner);
-+		return ret;
-+	}
-+
-+	switch (idev->info->mem[mi].memtype) {
-+		case UIO_MEM_PHYS:
-+			return uio_mmap_physical(vma);
-+		case UIO_MEM_LOGICAL:
-+		case UIO_MEM_VIRTUAL:
-+			return uio_mmap_logical(vma);
-+		default:
-+			return -EINVAL;
-+	}
-+}
-+
-+static struct file_operations uio_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= uio_open,
-+	.release	= uio_release,
-+	.read		= uio_read,
-+	.mmap		= uio_mmap,
-+	.poll		= uio_poll,
-+	.fasync		= uio_fasync,
-+};
-+
-+static int uio_major_init(void)
-+{
-+	uio_major = register_chrdev(0, "uio", &uio_fops);
-+	if (uio_major < 0)
-+		return uio_major;
-+	return 0;
-+}
-+
-+static void uio_major_cleanup(void)
-+{
-+	unregister_chrdev(uio_major, "uio");
-+}
-+
-+static int init_uio_class(void)
-+{
-+	int ret = 0;
-+
-+	if (uio_class != NULL) {
-+		kref_get(&uio_class->kref);
-+		goto exit;
-+	}
-+
-+	/* This is the first time in here, set everything up properly */
-+	ret = uio_major_init();
-+	if (ret)
-+		goto exit;
-+
-+	uio_class = kzalloc(sizeof(*uio_class), GFP_KERNEL);
-+	if (!uio_class) {
-+		ret = -ENOMEM;
-+		goto err_kzalloc;
-+	}
-+
-+	kref_init(&uio_class->kref);
-+	uio_class->class = class_create(THIS_MODULE, "uio");
-+	if (IS_ERR(uio_class->class)) {
-+		ret = IS_ERR(uio_class->class);
-+		printk(KERN_ERR "class_create failed for uio\n");
-+		goto err_class_create;
-+	}
-+	return 0;
-+
-+err_class_create:
-+	kfree(uio_class);
-+	uio_class = NULL;
-+err_kzalloc:
-+	uio_major_cleanup();
-+exit:
-+	return ret;
-+}
-+
-+static void release_uio_class(struct kref *kref)
-+{
-+	/* Ok, we cheat as we know we only have one uio_class */
-+	class_destroy(uio_class->class);
-+	kfree(uio_class);
-+	uio_major_cleanup();
-+	uio_class = NULL;
-+}
-+
-+static void uio_class_destroy(void)
-+{
-+	if (uio_class)
-+		kref_put(&uio_class->kref, release_uio_class);
-+}
-+
-+/**
-+ * uio_register_device - register a new userspace IO device
-+ *
-+ * @parent:	parent device
-+ * @idev:	device capabilities
-+ *
-+ * returns zero on success or a negative error code.
-+ */
-+int __uio_register_device(struct module *owner,
-+			  struct device *parent,
-+			  struct uio_info *info)
-+{
-+	struct uio_device *idev;
-+	int ret = 0;
-+
-+	if (!parent || !info || !info->name || !info->version)
-+		return -EINVAL;
-+
-+	info->uio_dev = NULL;
-+
-+	ret = init_uio_class();
-+	if (ret)
-+		return ret;
-+
-+	idev = kzalloc(sizeof(*idev), GFP_KERNEL);
-+	if (!idev) {
-+		ret = -ENOMEM;
-+		goto err_kzalloc;
-+	}
-+
-+	idev->owner = owner;
-+	idev->info = info;
-+	init_waitqueue_head(&idev->wait);
-+	atomic_set(&idev->event, 0);
-+
-+	ret = uio_get_minor(idev);
-+	if (ret)
-+		goto err_get_minor;
-+
-+	idev->dev = device_create(uio_class->class, parent,
-+				  MKDEV(uio_major, idev->minor),
-+				  "uio%d", idev->minor);
-+	if (IS_ERR(idev->dev)) {
-+		printk(KERN_ERR "UIO: device register failed\n");
-+		ret = PTR_ERR(idev->dev);
-+		goto err_device_create;
-+	}
-+	dev_set_drvdata(idev->dev, idev);
-+
-+	ret = uio_dev_add_attributes(idev);
-+	if (ret)
-+		goto err_uio_dev_add_attributes;
-+
-+	if (idev->info->irq >= 0) {
-+		ret = request_irq(idev->info->irq, uio_interrupt,
-+				  idev->info->irq_flags, idev->info->name, idev);
-+		if (ret)
-+			goto err_request_irq;
-+	}
-+
-+	info->uio_dev = idev;
-+	return 0;
-+
-+err_request_irq:
-+	uio_dev_del_attributes(idev);
-+err_uio_dev_add_attributes:
-+	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
-+err_device_create:
-+	uio_free_minor(idev);
-+err_get_minor:
-+	kfree(idev);
-+err_kzalloc:
-+	uio_class_destroy();
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(__uio_register_device);
-+
-+/**
-+ * uio_unregister_device - unregister a industrial IO device
-+ * @uiodev:	UIO device driver identifier
-+ *
-+ * returns 0 on success
-+ */
-+void uio_unregister_device(struct uio_info *info)
-+{
-+	struct uio_device *idev;
-+
-+	if (!info || !info->uio_dev)
-+		return;
-+
-+	idev = info->uio_dev;
-+
-+	uio_free_minor(idev);
-+
-+	if (info->irq >= 0)
-+		free_irq(info->irq, idev);
-+
-+	uio_dev_del_attributes(idev);
-+
-+	dev_set_drvdata(idev->dev, NULL);
-+	device_destroy(uio_class->class, MKDEV(uio_major, idev->minor));
-+	kfree(idev);
-+	uio_class_destroy();
-+
-+	return;
-+}
-+EXPORT_SYMBOL_GPL(uio_unregister_device);
-+
-+static int __init uio_init(void)
-+{
-+	return 0;
-+}
-+
-+static void __exit uio_exit(void)
-+{
-+}
-+
-+module_init(uio_init)
-+module_exit(uio_exit)
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-new file mode 100644
-index 0000000..13d9f90
---- /dev/null
-+++ b/include/linux/uio_driver.h
-@@ -0,0 +1,91 @@
-+/*
-+ * include/linux/uio_driver.h
-+ *
-+ * Copyright(C) 2005, Benedikt Spranger <b.spranger@linutronix.de>
-+ * Copyright(C) 2005, Thomas Gleixner <tglx@linutronix.de>
-+ * Copyright(C) 2006, Hans J. Koch <hjk@linutronix.de>
-+ * Copyright(C) 2006, Greg Kroah-Hartman <greg@kroah.com>
-+ *
-+ * Userspace IO driver.
-+ *
-+ * Licensed under the GPLv2 only.
-+ */
-+
-+#ifndef _UIO_DRIVER_H_
-+#define _UIO_DRIVER_H_
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/interrupt.h>
-+
-+/**
-+ * uio_mem - description of a UIO memory region
-+ * @kobj:		kobject for this mapping
-+ * @addr:		address of the device's memory
-+ * @size:		size of IO
-+ * @memtype:		type of memory addr points to
-+ * @internal_addr:	ioremap-ped version of addr, for driver internal use
-+ */
-+struct uio_mem {
-+	struct kobject		kobj;
-+	unsigned long		addr;
-+	unsigned long		size;
-+	int			memtype;
-+	void __iomem		*internal_addr;
-+};
-+
-+#define MAX_UIO_MAPS 	5
-+
-+struct uio_device;
-+
-+/**
-+ * uio_info - UIO device capabilities
-+ * @uio_dev:		the UIO device this info belongs to
-+ * @name:		device name
-+ * @version:		device driver version
-+ * @mem:		list of mappable memory regions, size==0 for end of list
-+ * @irq:		interrupt number or UIO_IRQ_CUSTOM
-+ * @irq_flags		flags for request_irq()
-+ * @priv:		optional private data
-+ * @handler:		the device's irq handler
-+ * @mmap:		mmap operation for this uio device
-+ * @open:		open operation for this uio device
-+ * @release:		release operation for this uio device
-+ */
-+struct uio_info {
-+	struct uio_device	*uio_dev;
-+	char			*name;
-+	char			*version;
-+	struct uio_mem		mem[ MAX_UIO_MAPS ];
-+	long			irq;
-+	unsigned long		irq_flags;
-+	void			*priv;
-+	irqreturn_t (*handler)(int irq, struct uio_info *dev_info);
-+	int (*mmap)(struct uio_info *info, struct vm_area_struct *vma);
-+	int (*open)(struct uio_info *info, struct inode *inode);
-+	int (*release)(struct uio_info *info, struct inode *inode);
-+};
-+
-+extern int __must_check
-+	__uio_register_device(struct module *owner,
-+			      struct device *parent,
-+			      struct uio_info *info);
-+static inline int __must_check
-+	uio_register_device(struct device *parent, struct uio_info *info)
-+{
-+	return __uio_register_device(THIS_MODULE, parent, info);
-+}
-+extern void uio_unregister_device(struct uio_info *info);
-+extern void uio_event_notify(struct uio_info *info);
-+
-+/* defines for uio_device->irq */
-+#define UIO_IRQ_CUSTOM	-1
-+#define UIO_IRQ_NONE	-2
-+
-+/* defines for uio_device->memtype */
-+#define UIO_MEM_NONE	0
-+#define UIO_MEM_PHYS	1
-+#define UIO_MEM_LOGICAL	2
-+#define UIO_MEM_VIRTUAL 3
-+
-+#endif /* _LINUX_UIO_DRIVER_H_ */
++++ b/Documentation/DocBook/uio-howto.tmpl
+@@ -0,0 +1,498 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
++"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
++
++<article id="index">
++<articleinfo>
++<title>The Userspace I/O HOWTO</title>
++
++<author>
++      <firstname>Hans-Jürgen</firstname>
++      <surname>Koch</surname>
++      <authorblurb><para>Linux developer, Linutronix</para></authorblurb>
++	<affiliation>
++	<orgname>
++		<ulink url="http://www.linutronix.de">Linutronix</ulink>
++	</orgname>
++
++	<address>
++	   <email>hjk@linutronix.de</email>
++	</address>
++    </affiliation>
++</author>
++
++<pubdate>2006-12-11</pubdate>
++
++<abstract>
++	<para>This HOWTO describes concept and usage of Linux kernel's
++		Userspace I/O system.</para>
++</abstract>
++
++<revhistory>
++	<revision>
++	<revnumber>0.2</revnumber>
++	<date>2007-02-13</date>
++	<authorinitials>hjk</authorinitials>
++	<revremark>Update after multiple mappings were added.</revremark>
++	</revision>
++	<revision>
++	<revnumber>0.1</revnumber>
++	<date>2006-12-11</date>
++	<authorinitials>hjk</authorinitials>
++	<revremark>First draft.</revremark>
++	</revision>
++</revhistory>
++</articleinfo>
++
++<sect1 id="aboutthisdoc">
++<?dbhtml filename="about.html"?>
++<title>About this document</title>
++
++<sect2 id="copyright">
++<?dbhtml filename="copyright.html"?>
++<title>Copyright and License</title>
++<para>
++      Copyright (c) 2006 by Hans-Jürgen Koch.</para>
++<para>
++This documentation is Free Software licensed under the terms of the
++GPL version 2.
++</para>
++</sect2>
++
++<sect2 id="translations">
++<?dbhtml filename="translations.html"?>
++<title>Translations</title>
++
++<para>If you know of any translations for this document, or you are
++interested in translating it, please email me
++<email>hjk@linutronix.de</email>.
++</para>
++</sect2>
++
++<sect2 id="preface">
++<title>Preface</title>
++	<para>
++	For many types of devices, creating a Linux kernel driver is
++	overkill.  All that is really needed is some way to handle an
++	interrupt and provide access to the memory space of the
++	device.  The logic of controlling the device does not
++	necessarily have to be within the kernel, as the device does
++	not need to take advantage of any of other resources that the
++	kernel provides.  One such common class of devices that are
++	like this are for industrial I/O cards.
++	</para>
++	<para>
++	To address this situation, the userspace I/O system (UIO) was
++	designed.  For typical industrial I/O cards, only a very small
++	kernel module is needed. The main part of the driver will run in
++	user space. This simplifies development and reduces the risk of
++	serious bugs within a kernel module.
++	</para>
++</sect2>
++
++<sect2 id="thanks">
++<title>Acknowledgments</title>
++	<para>I'd like to thank Thomas Gleixner and Benedikt Spranger of
++	Linutronix, who have not only written most of the UIO code, but also
++	helped greatly writing this HOWTO by giving me all kinds of background
++	information.</para>
++</sect2>
++
++<sect2 id="feedback">
++<title>Feedback</title>
++	<para>Find something wrong with this document? (Or perhaps something
++	right?) I would love to hear from you. Please email me at
++	<email>hjk@linutronix.de</email>.</para>
++</sect2>
++</sect1>
++
++<sect1 id="about">
++<?dbhtml filename="about.html"?>
++<title>About UIO</title>
++
++<para>If you use UIO for your card's driver, here's what you get:</para>
++
++<itemizedlist>
++<listitem>
++	<para>only one small kernel module to write and maintain.</para>
++</listitem>
++<listitem>
++	<para>develop the main part of your driver in user space,
++	with all the tools and libraries you're used to.</para>
++</listitem>
++<listitem>
++	<para>bugs in your driver won't crash the kernel.</para>
++</listitem>
++<listitem>
++	<para>updates of your driver can take place without recompiling
++	the kernel.</para>
++</listitem>
++<listitem>
++	<para>if you need to keep some parts of your driver closed source,
++	you can do so without violating the GPL license on the kernel.</para>
++</listitem>
++</itemizedlist>
++
++<sect2 id="how_uio_works">
++<title>How UIO works</title>
++	<para>
++	Each UIO device is accessed through a device file and several
++	sysfs attribute files. The device file will be called
++	<filename>/dev/uio0</filename> for the first device, and
++	<filename>/dev/uio1</filename>, <filename>/dev/uio2</filename>
++	and so on for subsequent devices.
++	</para>
++
++	<para><filename>/dev/uioX</filename> is used to access the
++	address space of the card. Just use
++	<function>mmap()</function> to access registers or RAM
++	locations of your card.
++	</para>
++
++	<para>
++	Interrupts are handled by reading from
++	<filename>/dev/uioX</filename>. A blocking
++	<function>read()</function> from
++	<filename>/dev/uioX</filename> will return as soon as an
++	interrupt occurs. You can also use
++	<function>select()</function> on
++	<filename>/dev/uioX</filename> to wait for an interrupt. The
++	integer value read from <filename>/dev/uioX</filename>
++	represents the total interrupt count. You can use this number
++	to figure out if you missed some interrupts.
++	</para>
++
++	<para>
++	To handle interrupts properly, your custom kernel module can
++	provide its own interrupt handler. It will automatically be
++	called by the built-in handler.
++	</para>
++
++	<para>
++	For cards that don't generate interrupts but need to be
++	polled, there is the possibility to set up a timer that
++	triggers the interrupt handler at configurable time intervals.
++	See <filename>drivers/uio/uio_dummy.c</filename> for an
++	example of this technique.
++	</para>
++
++	<para>
++	Each driver provides attributes that are used to read or write
++	variables. These attributes are accessible through sysfs
++	files.  A custom kernel driver module can add its own
++	attributes to the device owned by the uio driver, but not added
++	to the UIO device itself at this time.  This might change in the
++	future if it would be found to be useful
++	</para>
++
++	<para>
++	The following standard attributes are provided by the UIO
++	framework:
++	</para>
++<itemizedlist>
++<listitem>
++	<para>
++	<filename>name</filename>: The name of your device. It is
++	recommended to use the name of your kernel module for this.
++	</para>
++</listitem>
++<listitem>
++	<para>
++	<filename>version</filename>: A version string defined by your
++	driver. This allows the user space part of your driver to deal
++	with different versions of the kernel module.
++	</para>
++</listitem>
++<listitem>
++	<para>
++	<filename>event</filename>: The total number of interrupts
++	handled by the driver since the last time the device node was
++	read.
++	</para>
++</listitem>
++</itemizedlist>
++<para>
++	These attributes appear under the
++	<filename>/sys/class/uio/uioX</filename> directory.  Please
++	note that this directory might be a symlink, and not a real
++	directory.  Any userspace code that accesses it must be able
++	to handle this.
++</para>
++<para>
++	Each UIO device can make one or more memory regions available for
++	memory mapping. This is necessary because some industrial I/O cards
++	require access to more than one PCI memory region in a driver.
++</para>
++<para>
++	Each mapping has its own directory in sysfs, the first mapping
++	appears as <filename>/sys/class/uio/uioX/maps/map0/</filename>.
++	Subsequent mappings create directories <filename>map1/</filename>,
++	<filename>map2/</filename>, and so on. These directories will only
++	appear if the size of the mapping is not 0.
++</para>
++<para>
++	Each <filename>mapX/</filename> directory contains two read-only files
++	that show start address and size of the memory:
++</para>
++<itemizedlist>
++<listitem>
++	<para>
++	<filename>addr</filename>: The address of memory that can be mapped.
++	</para>
++</listitem>
++<listitem>
++	<para>
++	<filename>size</filename>: The size, in bytes, of the memory
++	pointed to by addr.
++	</para>
++</listitem>
++</itemizedlist>
++
++<para>
++	From userspace, the different mappings are distinguished by adjusting
++	the <varname>offset</varname> parameter of the
++	<function>mmap()</function> call. To map the memory of mapping N, you
++	have to use N times the page size as your offset:
++</para>
++<programlisting format="linespecific">
++offset = N * getpagesize();
++</programlisting>
++
++</sect2>
++</sect1>
++
++<sect1 id="using-uio_dummy" xreflabel="Using uio_dummy">
++<?dbhtml filename="using-uio_dummy.html"?>
++<title>Using uio_dummy</title>
++	<para>
++	Well, there is no real use for uio_dummy. Its only purpose is
++	to test most parts of the UIO system (everything except
++	hardware interrupts), and to serve as an example for the
++	kernel module that you will have to write yourself.
++	</para>
++
++<sect2 id="what_uio_dummy_does">
++<title>What uio_dummy does</title>
++	<para>
++	The kernel module <filename>uio_dummy.ko</filename> creates a
++	device that uses a timer to generate periodic interrupts. The
++	interrupt handler does nothing but increment a counter. The
++	driver adds two custom attributes, <varname>count</varname>
++	and <varname>freq</varname>, that appear under
++	<filename>/sys/devices/platform/uio_dummy/</filename>.
++	</para>
++
++	<para>
++	The attribute <varname>count</varname> can be read and
++	written.  The associated file
++	<filename>/sys/devices/platform/uio_dummy/count</filename>
++	appears as a normal text file and contains the total number of
++	timer interrupts. If you look at it (e.g. using
++	<function>cat</function>), you'll notice it is slowly counting
++	up.
++	</para>
++
++	<para>
++	The attribute <varname>freq</varname> can be read and written.
++	The content of
++	<filename>/sys/devices/platform/uio_dummy/freq</filename>
++	represents the number of system timer ticks between two timer
++	interrupts. The default value of <varname>freq</varname> is
++	the value of the kernel variable <varname>HZ</varname>, which
++	gives you an interval of one second. Lower values will
++	increase the frequency. Try the following:
++	</para>
++<programlisting format="linespecific">
++cd /sys/devices/platform/uio_dummy/
++echo 100 > freq
++</programlisting>
++	<para>
++	Use <function>cat count</function> to see how the interrupt
++	frequency changes.
++	</para>
++</sect2>
++</sect1>
++
++<sect1 id="custom_kernel_module" xreflabel="Writing your own kernel module">
++<?dbhtml filename="custom_kernel_module.html"?>
++<title>Writing your own kernel module</title>
++	<para>
++	Please have a look at <filename>uio_dummy.c</filename> as an
++	example. The following paragraphs explain the different
++	sections of this file.
++	</para>
++
++<sect2 id="uio_info">
++<title>struct uio_info</title>
++	<para>
++	This structure tells the framework the details of your driver,
++	Some of the members are required, others are optional.
++	</para>
++
++<itemizedlist>
++<listitem>
++<varname>char *name</varname>: Required. The name of your driver as
++it will appear in sysfs. I recommend using the name of your module for this.
++</listitem>
++
++<listitem>
++<varname>char *version</varname>: Required. This string appears in
++<filename>/sys/class/uio/uioX/version</filename>.
++</listitem>
++
++<listitem>
++<varname>struct uio_mem mem[ MAX_UIO_MAPS ]</varname>: Required if you
++have memory that can be mapped with <function>mmap()</function>. For each
++mapping you need to fill one of the <varname>uio_mem</varname> structures.
++See the description below for details.
++</listitem>
++
++<listitem>
++<varname>long irq</varname>: Required. If your hardware generates an
++interrupt, it's your modules task to determine the irq number during
++initialization. If you don't have a hardware generated interrupt but
++want to trigger the interrupt handler in some other way, set
++<varname>irq</varname> to <varname>UIO_IRQ_CUSTOM</varname>. The
++uio_dummy module does this as it triggers the event mechanism in a timer
++routine. If you had no interrupt at all, you could set
++<varname>irq</varname> to <varname>UIO_IRQ_NONE</varname>, though this
++rarely makes sense.
++</listitem>
++
++<listitem>
++<varname>unsigned long irq_flags</varname>: Required if you've set
++<varname>irq</varname> to a hardware interrupt number. The flags given
++here will be used in the call to <function>request_irq()</function>.
++</listitem>
++
++<listitem>
++<varname>int (*mmap)(struct uio_info *info, struct vm_area_struct
++*vma)</varname>: Optional. If you need a special
++<function>mmap()</function> function, you can set it here. If this
++pointer is not NULL, your <function>mmap()</function> will be called
++instead of the built-in one.
++</listitem>
++
++<listitem>
++<varname>int (*open)(struct uio_info *info, struct inode *inode)
++</varname>: Optional. You might want to have your own
++<function>open()</function>, e.g. to enable interrupts only when your
++device is actually used.
++</listitem>
++
++<listitem>
++<varname>int (*release)(struct uio_info *info, struct inode *inode)
++</varname>: Optional. If you define your own
++<function>open()</function>, you will probably also want a custom
++<function>release()</function> function.
++</listitem>
++</itemizedlist>
++
++<para>
++Usually, your device will have one or more memory regions that can be mapped
++to user space. For each region, you have to set up a
++<varname>struct uio_mem</varname> in the <varname>mem[]</varname> array.
++Here's a description of the fields of <varname>struct uio_mem</varname>:
++</para>
++
++<itemizedlist>
++<listitem>
++<varname>int memtype</varname>: Required if the mapping is used. Set this to
++<varname>UIO_MEM_PHYS</varname> if you you have physical memory on your
++card to be mapped. Use <varname>UIO_MEM_LOGICAL</varname> for logical
++memory (e.g. allocated with <function>kmalloc()</function>). There's also
++<varname>UIO_MEM_VIRTUAL</varname> for virtual memory.
++</listitem>
++
++<listitem>
++<varname>unsigned long addr</varname>: Required if the mapping is used.
++Fill in the address of your memory block. This address is the one that
++appears in sysfs.
++</listitem>
++
++<listitem>
++<varname>unsigned long size</varname>: Fill in the size of the
++memory block that <varname>addr</varname> points to. If <varname>size</varname>
++is zero, the mapping is considered unused. Note that you
++<emphasis>must</emphasis> initialize <varname>size</varname> with zero for
++all unused mappings.
++</listitem>
++
++<listitem>
++<varname>void *internal_addr</varname>: If you have to access this memory
++region from within your kernel module, you will want to map it internally by
++using something like <function>ioremap_nocache()</function>. Addresses
++returned by this function can not be mapped to user space, so you must not
++store it in <varname>addr</varname>. Use <varname>internal_addr</varname>
++instead to remember such an address.
++</listitem>
++</itemizedlist>
++
++<para>
++Please do not touch the <varname>kobj</varname> element of
++<varname>struct uio_mem</varname>! It is used by the UIO framework
++to set up sysfs files for this mapping. Simply leave it alone.
++</para>
++</sect2>
++
++<sect2 id="adding_irq_handler">
++<title>Adding an interrupt handler</title>
++	<para>
++	What you need to do in your interrupt handler depends on your
++	hardware and on how you want to	handle it. You should try to
++	keep the amount of code in your kernel interrupt handler low.
++	If your hardware requires no action that you
++	<emphasis>have</emphasis> to perform after each interrupt,
++	then your handler can be empty.</para> <para>If, on the other
++	hand, your hardware <emphasis>needs</emphasis> some action to
++	be performed after each interrupt, then you
++	<emphasis>must</emphasis> do it in your kernel module. Note
++	that you cannot rely on the userspace part of your driver.Your
++	userspace program can terminate at any time, possibly leaving
++	your hardware in a state where proper interrupt handling is
++	still required.
++	</para>
++
++	<para>
++	There might also be applications where you want to read data
++	from your hardware at each interrupt and buffer it in a piece
++	of kernel memory you've allocated for that purpose.  With this
++	technique you could avoid loss of data if your userspace
++	program misses an interrupt.
++	</para>
++
++	<para>
++	A note on shared interrupts: Your driver should support
++	interrupt sharing whenever this is possible. It is possible if
++	and only if your driver can detect whether your hardware has
++	triggered the interrupt or not. This is usually done by looking
++	at an interrupt status register. If your driver sees that the
++	IRQ bit is actually set, it will perform its actions, and the
++	handler returns IRQ_HANDLED. If the driver detects that it was
++	not your hardware that caused the interrupt, it will do nothing
++	and return IRQ_NONE, allowing the kernel to call the next
++	possible interrupt handler.
++	</para>
++
++	<para>
++	If you decide not to support shared interrupts, your card
++	won't work in computers with no free interrupts. As this
++	frequently happens on the PC platform, you can save yourself a
++	lot of trouble by supporting interrupt sharing.
++	</para>
++</sect2>
++
++</sect1>
++
++<appendix id="app1">
++<title>Further information</title>
++<itemizedlist>
++	<listitem><para>
++		<ulink url="http://www.linutronix.de">
++		 Linutronix homepage.</ulink>
++		</para></listitem>
++	<listitem><para>...</para></listitem>
++</itemizedlist>
++</appendix>
++
++</article>
 -- 
 1.5.1.2
 
