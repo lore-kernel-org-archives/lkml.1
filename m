@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbXD0POs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbXD0PQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbXD0POs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755977AbXD0POr
+	id S1755982AbXD0PQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755983AbXD0PQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:14:47 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:53035 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755960AbXD0POq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:14:46 -0400
-Date: Fri, 27 Apr 2007 11:06:47 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Valerie Henson <val_henson@linux.intel.com>
-Cc: Amit Gud <gud@ksu.edu>, Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070427150647.GA6019@c2.user-mode-linux.org>
-References: <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL> <20070425224710.GB16129@nifty> <20070426141455.GA6155@c2.user-mode-linux.org> <4630CAEC.2050909@ksu.edu> <20070426160504.GA7970@c2.user-mode-linux.org> <20070427045824.GB20286@nifty>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 11:16:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57169 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755982AbXD0PQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:16:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: linux-pm@lists.linux-foundation.org
+Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
+Date: Fri, 27 Apr 2007 17:12:09 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       suspend2-devel@lists.suspend2.net, Mike Galbraith <efault@gmx.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070427045824.GB20286@nifty>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200704271712.10437.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 09:58:25PM -0700, Valerie Henson wrote:
-> Here's an example, spelled out:
+On Friday, 27 April 2007 16:34, Alan Stern wrote:
+> On Fri, 27 Apr 2007, Johannes Berg wrote:
 > 
-> Allocate file 1 in chunk A.
-> Grow file 1.
-> Chunk A fills up.
-> Allocate continuation inode for file 1 in chunk B.
-> Chunk A gets some free space.
-> Chunk B fills up.
-> Pick chunk A for allocating next block of file 1.
-> Try to look up a continuation inode for file 1 in chunk A.
-> Continuation inode for file 1 found in chunk A!
-> Attach newly allocated block to existing inode for file 1 in chunk A.
+> > Look at it now:
+> > 
+> >  * FREEZE       Quiesce operations so that a consistent image can be saved;
+> >  *              but do NOT otherwise enter a low power device state, and do
+> >  *              NOT emit system wakeup events.
+> >  *
+> >  * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restoring
+> >  *              the system from a snapshot taken after an earlier FREEZE.
+> >  *              Some drivers will need to reset their hardware state instead
+> >  *              of preserving it, to ensure that it's never mistaken for the
+> >  *              state which that earlier snapshot had set up.
+> > 
+> > Why is prethaw even necessary? As far as I can tell it's only necessary
+> > because resume() can't tell you whether you just want to thaw or need to
+> > reset since it doesn't tell you at what point it's invoked.
+> 
+> I think you're wrong here.  It's a little hard to say because the 
+> terminology is confusing and not yet standardized.
+> 
+> For the sake of argument, let's call the stages of STD and STR by these 
+> names (also noted are the current PSMG values):
+> 
+> 	Suspend to disk:
+> 	"prepare to create snapshot" (= FREEZE)
+> 	"continue after snapshot" (= RESUME)
+> 
+> 	Resume from disk:
+> 	"prepare to restore snapshot" (= PRETHAW)
+> 	"continue after restore" (= RESUME)
+> 
+> 	Suspend to RAM:
+> 	"suspend" (= SUSPEND)
+> 	"resume" (= RESUME)
+> 
+> The real reason for adding PRETHAW was that drivers couldn't distinguish
+> between "continue after restore" and "resume", other than by examining the
+> device's state -- since the PM core doesn't pass any information to the
+> resume() method.
+> 
+> I suppose we could have modified the "prepare to create snapshot" code 
+> instead, but doing so would mean that "continue after snapshot" and 
+> "continue after restore" would always do the same thing, which is not 
+> necessarily a good idea.
+> 
+> Anyway, based on this analysis it seems reasonable to have Six (6) method 
+> pointers.  Suggested names (in the same order as above):
+> 
+> 	pre_snaphot()
+> 	post_snapshot()
+> 	pre_restore()
+> 	post_restore()
+> 	suspend()
+> 	resume()
+> 
+> People apparently assume that pre_snapshot() and pre_restore() would 
+> always do the same thing and hence be redundant.  I'm not so sure; time 
+> will tell.  Doing it this way certainly is more clear.
 
-So far, so good (and the slides are helpful, tx!).  What happens when
-file 1 keeps growing and chunk A fills up (and chunk B is still full)?
-Can the same continuation inode also point at chunk C, where the file
-is going to grow to?
+How do we differentiate between post_snapshot() and post_restore()?
+I mean, after the restore we're entering the same code path as after the
+snapshot, so do we use a global var for this purpose?
 
-				Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Rafael
