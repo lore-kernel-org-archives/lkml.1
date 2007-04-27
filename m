@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbXD0WiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbXD0Wij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757512AbXD0WiM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXD0WiM
+	id S1757498AbXD0Wij (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbXD0Wij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:38:12 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:54419 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757512AbXD0WiJ convert rfc822-to-8bit (ORCPT
+	Fri, 27 Apr 2007 18:38:39 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4792 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757498AbXD0Wii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:38:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=iKqkGxukAt2hPwA6JBYS9i7TG1m7BdBTdOKgpZplsMYy4qR1l+OT7BwG1V8m+3p3ZfRMMYqhxfbaldYtc8ZPkWp+z0iyO/iwcbhL6gLXvlRNCvaBLIvYBcZZRRV6smN2CxTygpp0gRpSAF6uWHjy0xii/qaZdFM9NSyqooi0w7w=
-Message-ID: <6bffcb0e0704271538v435bfd45u7e06a7f5f5e9a8b@mail.gmail.com>
-Date: Sat, 28 Apr 2007 00:38:07 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.21-rc7: known regressions
-Cc: stable@kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Riccardo Ricci" <rricci@nuovanetmore.it>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       linux-acpi@vger.kernel.org, "Len Brown" <len.brown@intel.com>,
-       "David Brownell" <david-b@pacbell.net>, "Jeff Mahoney" <jeffm@suse.com>,
-       reiserfs-dev@namesys.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Apr 2007 18:38:38 -0400
+Date: Sat, 28 Apr 2007 08:37:42 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private data
+Message-ID: <20070427223742.GA2742@gondor.apana.org.au>
+References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <46327706.80508@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, Apr 27, 2007 at 03:19:50PM -0700, Jeremy Fitzhardinge wrote:
+> 
+> OK, I've been sitting on this in the hope that I'll suddenly see the
+> light and work out what you're talking about - but apparently that's not
+> going to happen.  So, some questions:
+> 
+>    1. Does this patch change the dom0 <-> domU interface?  or does it
+>       fix something that's currently broken?
 
-Here is a list of known regressions reported after 2.6.21 release.
+No it doesn't change the interface at all.
 
-Feel free to add new regressions/remove fixed etc.
-http://lkr.wikidot.com/list
+>    2. Can just apply the netfront part to the pv_ops kernel, or does it
+>       require the corresponding dom0 patch to be applied as well?
 
-Subject : 2.6.21 don't boot, it stops after ACPI: PCI Interrupt Link
-[LNKB] (IRQs 3 4 *5 6 7 9 10 11 12 14 15).
-References : http://lkml.org/lkml/2007/4/27/400
-Submitter : Riccardo Ricci <rricci@nuovanetmore.it>
-Status : unknown
+They can be applied separately so you don't need the dom0 part for your
+tree.
 
-Subject : ACPI interpreter errors
-References : http://lkml.org/lkml/2007/4/27/206
-Submitter : Udo A. Steinberg <us15@os.inf.tu-dresden.de>
-Status : unknown
-
-Subject : reiserfs — circular locking
-References : http://lkml.org/lkml/2007/4/26/648
-Submitter : David Brownell <david-b@pacbell.net>
-Handled-By : Jeff Mahoney <jeffm@suse.com>
-Status : patch available http://lkml.org/lkml/2007/4/27/332
-
-Regards,
-Michal
-
+Cheers,
 -- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group (PL)
-(http://www.stardust.webpages.pl/ltg/)
-LTG - Linux Testers Group (EN)
-(http://www.stardust.webpages.pl/linux_testers_group_en/)
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
