@@ -1,120 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbXD0MXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbXD0MYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbXD0MXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755716AbXD0MXq
+	id S1754191AbXD0MYr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbXD0MYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:23:46 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4462 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755715AbXD0MXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:23:45 -0400
-Date: Fri, 27 Apr 2007 08:22:47 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jgarzik@pobox.com
-Subject: Re: Linux-2.6.21 hangs during post boot initialization phase
-Message-ID: <20070427122247.GA19017@hmsreliant.homelinux.net>
-References: <463166C2.6060106@bigpond.net.au> <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org> <46319297.905@bigpond.net.au>
-MIME-Version: 1.0
+	Fri, 27 Apr 2007 08:24:47 -0400
+Received: from isilmar.linta.de ([213.239.214.66]:42302 "EHLO linta.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754191AbXD0MYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:24:46 -0400
+Date: Fri, 27 Apr 2007 08:24:44 -0400
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Dave Jones <davej@redhat.com>, Nish Aravamudan <nish.aravamudan@gmail.com>,
+       William Heimbigner <icxcnika@mar.tar.cc>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+Message-ID: <20070427122444.GA3714@isilmar.linta.de>
+Mail-Followup-To: Dominik Brodowski <linux@dominikbrodowski.net>,
+	Dave Jones <davej@redhat.com>,
+	Nish Aravamudan <nish.aravamudan@gmail.com>,
+	William Heimbigner <icxcnika@mar.tar.cc>,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself> <20070424211253.GG23598@redhat.com> <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com> <20070425000327.GG22267@redhat.com> <20070427015410.GA9650@isilmar.linta.de> <20070427060957.GA4726@redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46319297.905@bigpond.net.au>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20070427060957.GA4726@redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 04:05:11PM +1000, Peter Williams wrote:
-> Linus Torvalds wrote:
-> >
-> >On Fri, 27 Apr 2007, Peter Williams wrote:
-> >>The 2.6.21 kernel is hanging during the post boot phase where various 
-> >>daemons
-> >>are being started (not always the same daemon unfortunately).
-> >>
-> >>This problem was not present in 2.6.21-rc7 and there is no oops or other
-> >>unusual output in the system log at the time the hang occurs.
-> >
-> >Can you use "git bisect" to narrow it down a bit more? It's only 125 
-> >commits, so bisecting even just three or four kernels will narrow it down 
-> >to a handful.
+On Fri, Apr 27, 2007 at 02:09:57AM -0400, Dave Jones wrote:
+> On Thu, Apr 26, 2007 at 09:54:10PM -0400, Dominik Brodowski wrote:
+>  > On Tue, Apr 24, 2007 at 08:03:27PM -0400, Dave Jones wrote:
+>  > > On Tue, Apr 24, 2007 at 03:05:36PM -0700, Nish Aravamudan wrote:
+>  > >  > On 4/24/07, Dave Jones <davej@redhat.com> wrote:
+>  > >  > > On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
+>  > >  > >  > The following patches should allow selection of conservative, powersave, and
+>  > >  > >  > ondemand in the kernel configuration.
+>  > >  > >
+>  > >  > > This has been rejected several times already.
+>  > >  > > Ondemand and conservative isn't a viable governor for all cpufreq
+>  > >  > > implementations (ie, ones with high switching latencies).
+>  > >  > 
+>  > >  > This piques my curiosity -- some governors don't work with some
+>  > >  > cpufreq implementations. Are those implementations in the kernel or in
+>  > >  > userspace? If in the kernel, then perhaps there should be some
+>  > >  > dependency expressed there in Kconfig between cpufreq implementation
+>  > >  > and the available governors
+>  > > 
+>  > > it can't be solved that easily. powernow-k8 for example is fine to
+>  > > use with ondemand on newer systems, where the latency is low.
+>  > > On older models however, it isn't.
+>  > > 
+>  > >  > > Also, see the
+>  > >  > > comment in the Kconfig a few lines above where you are adding this.
+>  > >  > 
+>  > >  > Are these governors unfixable? If
+>  > > 
+>  > > tbh, I've forgotten the original issues that caused the comment
+>  > > to be placed there. Dominik ?
+>  > 
+>  > Not unfixable, but: cpufreq is currently[*] built around the assumption that
+>  > at least one governor is correctly initialized or can be brought to work
+>  > when a CPU is registered with the cpufreq core.
 > 
-> As the changes became, smaller the builds became quicker :-) and after 7 
-> iterations we have:
-> 
-> 
-> author	Neil Horman <nhorman@tuxdriver.com>
-> 	Fri, 20 Apr 2007 13:54:58 +0000 (09:54 -0400)
-> committer	Jeff Garzik <jeff@garzik.org>
-> 	Tue, 24 Apr 2007 16:43:07 +0000 (12:43 -0400)
-> commit	b748d9e3b80dc7e6ce6bf7399f57964b99a4104c
-> tree	887909e1f735bb444ef0e3e370f34401fa6eee02	tree | snapshot
-> parent	d91c088b39e3c66d309938de858775bb90fd1ead	commit | diff
-> sis900: Allocate rx replacement buffer before rx operation
-> 
-> The sis900 driver appears to have a bug in which the receive routine
-> passes the skbuff holding the received frame to the network stack before
-> refilling the buffer in the rx ring.  If a new skbuff cannot be 
-> allocated, the
-> driver simply leaves a hole in the rx ring, which causes the driver to stop
-> receiving frames and become non-recoverable without an rmmod/insmod 
-> according to
-> reporters.  This patch reverses that order, attempting to allocate a 
-> replacement
-> buffer first, and receiving the new frame only if one can be allocated. 
->  If no
-> skbuff can be allocated, the current skbuf in the rx ring is recycled, 
-> dropping
-> the current frame, but keeping the NIC operational.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-> Signed-off-by: Jeff Garzik <jeff@garzik.org>
-> 
-> Peter
-> -- 
-> Peter Williams                                   pwil3058@bigpond.net.au
-> 
-> "Learning, n. The kind of ignorance distinguishing the studious."
->  -- Ambrose Bierce
+> It would have to take something fairly spectacular though for performance or
+> powersave to fail registration. Can you remember why we chose not to allow those?
 
-This was reported to me last night, and I've posted a patch to fix it, its
-available here:
-http://marc.info/?l=linux-netdev&m=117761259222165&w=2
+performance _is_ allowed; powersave would be possible -- but then those who
+accidentally enable it on elanfreq might wait 100 times as long for the
+system to boot, with gx-suspmod it might even be 255 times as long -- okay,
+by default it's just 20 times as long, but still...
 
-It applies on top of the previous patch, and should fix your problem.
-
-Here's a copy of the patch
-
-Thanks & Regards
-Neil
-
-
-diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
-index a6a0f09..7e44939 100644
---- a/drivers/net/sis900.c
-+++ b/drivers/net/sis900.c
-@@ -1754,6 +1754,7 @@ static int sis900_rx(struct net_device *net_dev)
- 			sis_priv->rx_ring[entry].cmdsts = RX_BUF_SIZE;
- 		} else {
- 			struct sk_buff * skb;
-+			struct sk_buff * rx_skb;
- 
- 			pci_unmap_single(sis_priv->pci_dev,
- 				sis_priv->rx_ring[entry].bufptr, RX_BUF_SIZE,
-@@ -1787,10 +1788,10 @@ static int sis900_rx(struct net_device *net_dev)
- 			}
- 
- 			/* give the socket buffer to upper layers */
--			skb = sis_priv->rx_skbuff[entry];
--			skb_put(skb, rx_size);
--			skb->protocol = eth_type_trans(skb, net_dev);
--			netif_rx(skb);
-+			rx_skb = sis_priv->rx_skbuff[entry];
-+			skb_put(rx_skb, rx_size);
-+			skb->protocol = eth_type_trans(rx_skb, net_dev);
-+			netif_rx(rx_skb);
- 
- 			/* some network statistics */
- 			if ((rx_status & BCAST) == MCAST)
+	Dominik
