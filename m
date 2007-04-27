@@ -1,122 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755791AbXD0M5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbXD0M62@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755791AbXD0M5s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbXD0M5s
+	id S1755793AbXD0M62 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:58:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbXD0M62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:57:48 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:34680 "EHLO atlrel6.hp.com"
+	Fri, 27 Apr 2007 08:58:28 -0400
+Received: from holomorphy.com ([66.93.40.71]:51625 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755786AbXD0M5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:57:46 -0400
-Message-ID: <4631F26D.7080404@hp.com>
-Date: Fri, 27 Apr 2007 08:54:05 -0400
-From: Peter Keilty <peter.keilty@hp.com>
-User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
-X-Accept-Language: en-us, en
+	id S1755793AbXD0M61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:58:27 -0400
+Date: Fri, 27 Apr 2007 05:58:43 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427125843.GO19966@holomorphy.com>
+References: <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au> <20070426145310.GH19966@holomorphy.com> <m1ejm7kndn.fsf@ebiederm.dsl.xmission.com> <20070427003216.GM19966@holomorphy.com> <4631CECF.4030301@yahoo.com.au>
 MIME-Version: 1.0
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-ia64@vger.kernel.org, Eric Whitney <eric.whitney@hp.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
-References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com> <1177622301.6031.16.camel@localhost.localdomain>
-In-Reply-To: <1177622301.6031.16.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4631CECF.4030301@yahoo.com.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz wrote:
+William Lee Irwin III wrote:
+>> I readily concede that seeks are most costly. Yet memory contiguity
+>> remains rather influential.
+>> Witness the fact that I'm now being called upon a second time to
+>> adjust the order in which mm/page_alloc.c returns pages for the
+>> sake of implicitly establishing IO contiguity (or otherwise
+>> determining why things are coming out backward now).
 
->On Thu, 2007-04-26 at 16:26 -0400, Peter Keilty wrote:
->  
->
->>From: Peter Keilty <peter.keilty@hp.com>
->>
->>Initial ia64 conversion to the generic timekeeping/clocksource code.
->>
->>Signed-off-by: Peter Keilty <peter.keilty@hp.com>
->>Signed-off-by: John Stultz <johnstul@us.ibm.com>
->>    
->>
->
->Peter,
->	Thanks so much for pushing this on! I suspect this patch needs to be
->updated a touch, as I'm not sure if it still compiles in light of recent
->changes...
->
->  
->
-John,
+On Fri, Apr 27, 2007 at 08:22:07PM +1000, Nick Piggin wrote:
+> Just a random aside question... doesn't Oracle db do direct IO from
+> hugepages?
 
-You are correct, you need patch 3/3 for it to compile and run.
-I did a patch to the orginal patch, thought that was correct thing to do.
-But I can make a new patch 1 from the orginal of ours and my #3.
-I would also make an update to the #2 patch from #3 for ntp correct change.
-That would be just 2 patches then, the enable_ia64 and remove_interpolater.
-What do you think?
+If and when configured to use direct IO and hugepages, yes. It's also
+noteworthy thar Oracle has more code than its database.
 
->  
->
->>diff --git a/arch/ia64/kernel/cyclone.c b/arch/ia64/kernel/cyclone.c
->>index e00b215..280383b 100644
->>--- a/arch/ia64/kernel/cyclone.c
->>+++ b/arch/ia64/kernel/cyclone.c
->>@@ -3,6 +3,7 @@ #include <linux/smp.h>
->> #include <linux/time.h>
->> #include <linux/errno.h>
->> #include <linux/timex.h>
->>+#include <linux/clocksource.h>
->> #include <asm/io.h>
->>
->> /* IBM Summit (EXA) Cyclone counter code*/
->>@@ -18,13 +19,21 @@ void __init cyclone_setup(void)
->> 	use_cyclone = 1;
->> }
->>
->>+static void __iomem *cyclone_mc_ptr;
->>
->>-struct time_interpolator cyclone_interpolator = {
->>-	.source =	TIME_SOURCE_MMIO64,
->>-	.shift =	16,
->>-	.frequency =	CYCLONE_TIMER_FREQ,
->>-	.drift =	-100,
->>-	.mask =		(1LL << 40) - 1
->>+static cycle_t read_cyclone(void)
->>+{
->>+	return (cycle_t)readq((void __iomem *)cyclone_mc_ptr);
->>+}
->>+
->>+static struct clocksource clocksource_cyclone = {
->>+        .name           = "cyclone",
->>+        .rating         = 300,
->>+        .read           = read_cyclone,
->>+        .mask           = (1LL << 40) - 1,
->>    
->>
->
->Daniel Walker pointed out to me on IRC that CLOCKSOURCE_MASK() should
->probably be used here.
->
->  
->
->>+        .mult           = 0, /*to be caluclated*/
->>+        .shift          = 16,
->>+        .is_continuous  = 1,
->>    
->>
->
->.is_continuous no longer exists. 
->
->You want to use:
->.flags = CLOCK_SOURCE_IS_CONTINUOUS 
->
->This holds for all the clocksources introduced.
->
->
->thanks
->-john
->
->
->  
->
+
+-- wli
