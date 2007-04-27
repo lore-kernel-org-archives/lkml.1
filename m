@@ -1,102 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbXD0XIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757864AbXD0XNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbXD0XIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 19:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757881AbXD0XIR
+	id S1757864AbXD0XNc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 19:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbXD0XNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 19:08:17 -0400
-Received: from iabervon.org ([66.92.72.58]:4929 "EHLO iabervon.org"
+	Fri, 27 Apr 2007 19:13:32 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38717 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757879AbXD0XIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 19:08:16 -0400
-Date: Fri, 27 Apr 2007 19:08:12 -0400 (EDT)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070426125802.GL3468@stusta.de>
-Message-ID: <Pine.LNX.4.64.0704271720510.28708@iabervon.org>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
- <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de>
+	id S1757864AbXD0XNb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 19:13:31 -0400
+Date: Fri, 27 Apr 2007 16:11:05 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Benedikt Spranger <b.spranger@linutronix.de>,
+       "Hans J. Koch" <hjk@linutronix.de>
+Subject: Re: [GIT PATCH] UIO patches for 2.6.21
+Message-ID: <20070427231105.GA19156@suse.de>
+References: <20070427224957.GA17967@kroah.com> <20070427160425.710c0230.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427160425.710c0230.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Adrian Bunk wrote:
-
-> Linus said 2.6.20 was a stable kernel. My impression was that at least 
-> two of the regressions from my 2.6.20 regressions list should have been 
-> fixed before 2.6.20.
+On Fri, Apr 27, 2007 at 04:04:25PM -0700, Andrew Morton wrote:
+> On Fri, 27 Apr 2007 15:49:57 -0700
+> Greg KH <gregkh@suse.de> wrote:
 > 
-> They have both been fixed through -stable, but I also remember a quite 
-> experienced kernel maintainer running into one of them after 2.6.20 was 
-> released and spending half a day tracking it down - and my answer was
-> "known unfixed regression, first reported more than a month ago".
+> > Here are the updated UIO (Userspace I/O driver framework) patches for
+> > 2.6.21.
+> 
+> I'm a bit uncertain about the whole UIO idea, really.  I have this vague
+> feeling that we'd prefer to encourage people to move device drivers into
+> GPL'ed kernel rather than encouraging them to do closed-source userspace
+> implementations which will probably end up being slower, less reliable and
+> unavailable on various architectures, distros, etc.
 
-I think there is an issue with two different things being conflated, and 
-this causes real stability problems. 2.6.x is both the first kernel in a 
-series that is judged to be "stable" and the kernel that is the split 
-between 2.6.x.y and 2.6.x+1. This is a fundamental problem, because it 
-means that 2.6.x must have all of the problems that are being debugged by 
-the people who understand the areas they are in, because 2.6.x+1 has to 
-start so that people who are clueless about all of the areas with 
-remaining bugs don't spend their time putting more regressions into their 
-submissions for 2.6.x+1.
+It's not a closed vs. open issue, it just turns out that a lot of people
+keep trying to write PCI drivers in userspace (how many different papers
+were published on this topic alone in the past year...).  This framework
+is to allow this to happen in a sane and correct way.
 
-It is also a problem because it is easily possible for a problem to exist 
-in 2.6.x-rcN which can only be correctly fixed by doing intrusive things, 
-but can be papered over in an obviously-safe way. (E.g., the issue with 
-legacy interrupt delivery when MSI is enabled). The intrusive patch could 
-easily break a bunch of unrelated stuff, so that's no good for 2.6.x-rcN, 
-but papering over bugs is no good for mainline. These bugs have to be 
-fixed after the split, which means that the version at the fork must 
-contain the bug.
+Lots of different types of odd devices do not fit into the "kernelspace
+driver" framework very well for a variety of reasons:
+	- zillions of different controls in the card
+	- floating point is needed to compute the next step of an
+	  operation in moving a physical object
 
-Furthermore, everybody (people reporting bugs, people fixing them, and 
-people merging fixes) seem to doze off late in -rc kernels. Having an 
-announcement of something with a qualitatively different version wakes 
-them up.
+With this framework, we provide a solid and simple way to provide for
+these kinds of devices.  The Linutronix guys have had a lot of
+experience in supporting this kind of hardware in the past and can
+provide better examples if you need.
 
-I say have a target of no known regressions in 2.6.21.1, with 2.6.21 being 
-pretty good, and don't count too much on the stability of 3-number kernel 
-versions.
+But yes, it does allow you to write a PCI driver in userspace, being
+closed source, if you really want to.  But if you do that, then you get
+_no_ advantages of being in the kernel (caching, common userspace
+interface, resource management, etc.) and need to handle that all
+yourself.  Heck, that's pretty much what X does today for lots of old
+video cards :)
 
-> And a serious delay of the next regression-merge window due to unfixed 
-> regressions might even have the positive side effect of more developers 
-> becoming interested in fixing the current regressions for getting their 
-> shiny new regressions^Wfeatures faster into Linus' tree.
+> > They have been revamped from the last time you have seen them, and they
+> > include a real driver, the Hilscher CIF DeviceNet and Profibus card
+> > controller, which is being used in production systems with this driver
+> > framework right now.  The kernel driver they replaced was a total mess,
+> > with over 60+ ioctls to try to control the different aspects of the
+> > device.  See the last patch in this series for more details on this
+> > driver.
+> > 
+> > These patches include full documentation, are self-contained from the
+> > rest of the kernel, and have been in the -mm tree for the past few
+> > months with no complaints.
+> > 
+> > Please pull from:
+> > 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/uio-2.6.git/
+> > 
+> > Patches will be sent as a follow-on to this message to lkml for people
+> > to see.
+> > 
+> >  drivers/uio/uio_cif.c                 |  156 ++++++++
+> 
+> eh?  How come a particular device requires 156 lines of kernel code to
+> support a userspace driver?  Doesn't that kind of defeat the point?
 
-I think the "stick" can't be delaying the window, because that's too 
-broad. I think it has to be making people who are needed for fixing stuff 
-miss the window. People aren't going to go learn a new area of the kernel 
-to resolve regressions in it, but they're more likely to keep their own 
-area clean so that they get to merge every 2 months instead of every 4.
+No, you still need kernel code to handle the interrupt properly, we do
+not want userspace to do this as it would slow the system down and do
+all sorts of other bad things.  That's the main problem with all of
+those other proposals that people have for trying to do this kind of
+work in the past (can't share irqs, can't block on userspace in an
+interrupt handler, etc.)
 
-> These are just my personal opinions, and other people consider the 
-> resulting 2.6.20 and 2.6.21 kernels OK.
+thanks,
 
-I don't think 2.6.x can be OK, by policy. I think 2.6.20.y got to an OK 
-state eventually, which is to say that there's no need now to use a 
-2.6.19.y kernel. I think that 2.6.21 isn't OK yet, but I think looking for 
-an OK 2.6.21-derived kernel is premature still. Ignoring the version 
-scheme entirely, I think the success condition should be that the "latest 
-stable version of the Linux kernel" link on www.kernel.org is 
-always strictly better than all previous links in that spot, and new 
-features get there eventually (ideally, within 4 months of hitting 
-mainline). I think this is actually possible, although it would require 
-changing the policy for this link. And I don't think it requires a change 
-in what goes into Linus's git repository when.
-
-Furthermore, I think we're a lot closer to an OK kernel derived from 
-Linus's Apr 25 version than we would be if "2.6.21" had not been released 
-at that point. It sounds like more items were resolved in the past few 
-days than in the preceding week.
-
-Incidentally, will you continue to track 2.6.21 regressions against 
-2.6.20? You said there was at least one that you haven't sent out, and 
-there's been movement on several others since your last report.
-
-	-Daniel
-*This .sig left intentionally blank*
+greg k-h
