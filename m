@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbXD0OmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXD0Opi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755901AbXD0OmN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXD0OmM
+	id S1755894AbXD0Opi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbXD0Oph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:42:12 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:54063 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755901AbXD0OmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:42:10 -0400
-Message-ID: <46320ACD.6090704@hp.com>
-Date: Fri, 27 Apr 2007 10:38:05 -0400
-From: Peter Keilty <peter.keilty@hp.com>
-User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
-X-Accept-Language: en-us, en
+	Fri, 27 Apr 2007 10:45:37 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:11729 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755937AbXD0OpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 10:45:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Qna8aO+ZQC2vn0fqZbOrj/bMnc4o+pejvCtaaNX5Z5jCt7RwUHUOpcGBZmf74bRNTrilOaaZsmFCMQiHION//dU2tN+8wFnCNOORr74qa/bczZP3YxTy7RldDtLMyu5fwyLLEzYH684IM4UrTvh7EH+OoIlStT/ObsTZovtF9fc=
+Message-ID: <8355959a0704270745i2c0b295u4185c7ac63503696@mail.gmail.com>
+Date: Fri, 27 Apr 2007 20:15:16 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Enigma of Hardware Monitoring in 2.6.20.x or 2.6.21
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
-       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
-References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com> <1177621673.12796.121.camel@imap.mvista.com>
-In-Reply-To: <1177621673.12796.121.camel@imap.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
+Hello,
 
->On Thu, 2007-04-26 at 16:26 -0400, Peter Keilty wrote:
->
->  
->
->>+        .mask           = (1LL << 40) - 1,
->>+        .mult           = 0, /*to be caluclated*/
->>+        .shift          = 16,
->>+        .is_continuous  = 1,
->> };
->>    
->>
->
->You should use CLOCKSOURCE_MASK() here ..
->
->  
->
-It is correct in patch 3, I believe.
+I am did compile those kernels to the best available hardware in a
+P-III machine. (Research experiment - P-III box is a part of Wireless
+stuff).
 
->  
->
->> 
->>diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
->>index daa4940..a20b4d6 100644
->>--- a/include/linux/clocksource.h
->>+++ b/include/linux/clocksource.h
->>@@ -61,6 +61,9 @@ struct clocksource {
->> 	u32 shift;
->> 	unsigned long flags;
->> 	cycle_t (*vread)(void);
->>+#ifdef CONFIG_IA64
->>+	void *fsys_mmio_ptr;	/* used by fsyscall asm code */
->>+#endif
->>    
->>
->
->Could you explain in detail why this is needed?
->  
->
-This ptr is needed to hold the mmio address to read the cycle value.
-The fast ia64 path utilizies a special gate page which can allow user
-code to execute small amount of kernel code, normal calling a function
-not done and so the address is need. The fast syscall path executes on
-user stack, between user/kernel state. And if the the fast path has to 
-fallback
-to the slow syscall code the vread will be needed and used.
-Hope this helps.
+I have this enigma called Hardware Monitoring support on many boards. Because:
 
->Daniel
->
->  
->
+a) Vendors don't give enough info - which chips are meant for Hardware
+Monitoring in a particular board, say in this case a P-III 810E or P4
+945 or Core2Duo 965/975 boards.
+b) Unfortunately, there isn't any reference available in the Config to
+select the chips for the respective boards. Example - for 810E - some
+x chip is to be enabled in that tree.
+
+How to solve this problem? How to know in Linux (any commands) whether
+H/W Mon is supported by 810E board or 945 board? (apart from digging
+from the manuals to narrow down the problem).
+
+I am willing to do something for this task (volunteer). Comments?
+
+~Akula2
