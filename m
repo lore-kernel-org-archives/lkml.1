@@ -1,84 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXD0VVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbXD0VXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXD0VVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbXD0VVU
+	id S1757005AbXD0VXD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757329AbXD0VXC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:21:20 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23636 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757322AbXD0VVS (ORCPT
+	Fri, 27 Apr 2007 17:23:02 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51953 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757005AbXD0VW7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:21:18 -0400
-Date: Fri, 27 Apr 2007 14:22:54 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Artem Bityutskiy <dedekind@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Josh Boyer <jwboyer@linux.vnet.ibm.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Frank Haverkamp <haver@vnet.ibm.com>
-Subject: Re: [GIT-PULL] please pull UBI tree
-Message-Id: <20070427142254.3aa89a16.randy.dunlap@oracle.com>
-In-Reply-To: <20070427135224.58d54065.akpm@linux-foundation.org>
-References: <1177677925.7539.18.camel@sauron>
-	<alpine.LFD.0.98.0704270855300.9964@woody.linux-foundation.org>
-	<20070427135224.58d54065.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Fri, 27 Apr 2007 17:22:59 -0400
+Date: Fri, 27 Apr 2007 14:22:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+In-Reply-To: <Pine.LNX.4.61.0704272202160.506@yvahk01.tjqt.qr>
+Message-ID: <alpine.LFD.0.98.0704271420390.9964@woody.linux-foundation.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+ <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
+ <Pine.LNX.4.61.0704272202160.506@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 13:52:24 -0700 Andrew Morton wrote:
-
-> On Fri, 27 Apr 2007 09:00:25 -0700 (PDT)
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Fri, 27 Apr 2007, Artem Bityutskiy wrote:
-> > >
-> > > Linus, please, pull UBI tree from
-> > > git://git.infradead.org/ubi-2.6.git for-linus
-> > > 
-> > > The UBI tree has been in -mm for several releases and we would like to
-> > > see it in the mainline.
-> > 
-> > Quite frankly, I have absolutely _zero_ visibility into things like this, 
-> > so before I merge it I want ack's from various layers (preferably a 
-> > mixture of interests - are any vendors interested, is DavidW ok with this, 
-> > who is using it now and are the interfaces and designs correct etc etc?)
-> > 
-> > So I simply cannot make that decision. I don't have the expertise or the 
-> > knowledge. I'll have to trust somebody else for things like this, and it 
-> > should be somebody who isn't "personally involved". 
-> > 
-> > In other words, I kind of want a sign-off from other parties, because I 
-> > can't pull things like this "blind".
-> > 
-> > Are there (embedded?) vendors that already integrate this into their 
-> > kernel, or wait for it? Is dwmw supportive of this? Questions, questions..
-> 
-> The patchset used to contain lots of debugging support which wildly
-> duplicated thigs which we already did and was generally overdone.  That
-> appears to all have been cleaned up now, so thanks for doing that.
-> 
-> The one remaining nit I'd have with the debug code is that it adds a
-> private hexdump() facility.  By my count, that is the kernel's eighth
-> hexdump implementation.  There may be even more which don't have "hexdump"
-> in their name.
-> 
-> lib/hexdump.c is rather overdue.
-
-I have a version of that from James Ketrenos that I have been working
-on...  Can post in a few days.
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+On Fri, 27 Apr 2007, Jan Engelhardt wrote:
+> 
+> Interesting. For my laptop, I have configured like 90 for
+> dirty_background_ratio and 95 for dirty_ratio. Makes for a nice
+> delayed write, but I do not do workloads bigger than extracing kernel
+> tarballs (~250 MB) and coding away on that machine (488 MB RAM) anyway.
+> Setting it to something like 95, I could probably rm -Rf the kernel
+> tree again and the disk never gets active because it is all cached.
+> But if dirty_ratio is lowered, the disk will get active soon.
+
+Yes. For laptops, you may want to
+ - raise the dirty limits
+ - increase the dirty scan times
+
+but you do realize that if you then need memory for something else, 
+latency just becomes *horrible*. So even on laptops, it's not obviously 
+the right thing to do (these days, throwing money at the problem instead, 
+and getting one of the nice new 1.8" flash disks, will solve all issues: 
+you'd have no reason to try to delay spinning up the disk anyway).
+
+		Linus
