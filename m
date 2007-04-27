@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbXD0Vbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXD0VcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbXD0Vbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbXD0Vbq
+	id S1757345AbXD0VcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbXD0VcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:31:46 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:40714 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757339AbXD0Vbo (ORCPT
+	Fri, 27 Apr 2007 17:32:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58191 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757343AbXD0VcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:31:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ASoTP595+5I20FUEw4iUWH/jYKCR0Ook95qQSHM6NNmYIHx2i02rs9GH5KblSqMr2RCiL3Gych4H111fynhm1ccy3jVIU+e5OqZuh14UdK7TVEI3gIkdWnkkc2otMUQjTqZr1Oea6jMl65rTMwYWrsn3jSPTo2sJG46MTutXoA8=
-Message-ID: <75b66ecd0704271431h6329955dj27819ee5f14c278c@mail.gmail.com>
-Date: Fri, 27 Apr 2007 17:31:43 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Daniel Hazelton" <dhazelton@enter.net>
-Subject: Re: assembly code in the loadable kernel module
-Cc: "Marat Buharov" <marat.buharov@gmail.com>,
-       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       "Parav K Pandit" <Parav_Pandit@mindtree.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200704271212.07579.dhazelton@enter.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 27 Apr 2007 17:32:21 -0400
+Date: Fri, 27 Apr 2007 14:31:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: - maps2-add-proc-pid-pagemap-interface-fix.patch removed from
+ -mm tree
+Message-Id: <20070427143131.60d0afc1.akpm@linux-foundation.org>
+In-Reply-To: <20070427204155.GT11115@waste.org>
+References: <200704270814.l3R8EnFJ023047@shell0.pdx.osdl.net>
+	<20070427104533.GA6001@localhost.sw.ru>
+	<20070427132713.fc9d82c0.akpm@linux-foundation.org>
+	<20070427204155.GT11115@waste.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com>
-	 <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
-	 <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
-	 <200704271212.07579.dhazelton@enter.net>
-X-Google-Sender-Auth: 2c47b4db3879ca4c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/27/07, Daniel Hazelton <dhazelton@enter.net> wrote:
-> Most companies require that *ANY* e-mail sent by employees while at work
-> contain disclaimers like those. Some of them even have their mail servers
-> *automatically* attach those footers.
+On Fri, 27 Apr 2007 15:41:55 -0500
+Matt Mackall <mpm@selenic.com> wrote:
 
-These employees should be using gmail (over https) rather than
-clogging thousands of people's inboxes with garbage spewed from the
-legal dept.
+> > +	no+_mmap_sem();						\
+> 
+> Except for this bit.
 
-Lee
+You'll put gcc out of a job ;)
+
+> Maybe put it in the same config bucket as might_sleep?
+
+hm, could do.  might_sleep() is intertwined with preempt in complex ways,
+but we did decouple that at the config level.  no_mmap_sem() will dtrt for
+all preempt settings.
+
+But I'll be keeping this as a -mm-only debug patch (which brings us up to
+about thirty of 'em), so I think it's best to make it unconfigurable so we
+get maximum coverage.
+
+That's if it actually works.  I haven't tried running it yet, and I have a
+feeling that running it might cause a big "doh" moment.  We'll see.
