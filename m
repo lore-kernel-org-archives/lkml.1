@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbXD0I70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbXD0JAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755494AbXD0I70 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 04:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbXD0I70
+	id S1755506AbXD0JAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 05:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXD0JAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 04:59:26 -0400
-Received: from mtwmail.mindtree.com.60.200.203.in-addr.arpa ([203.200.60.136]:14633
-	"EHLO mailwo11.mindtree.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755494AbXD0I7Z convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 04:59:25 -0400
-X-Greylist: delayed 851 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Apr 2007 04:59:25 EDT
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2826
-Content-class: urn:content-classes:message
-Importance: normal
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: assembly code in the loadable kernel module
-Date: Fri, 27 Apr 2007 14:15:48 +0530
-Message-ID: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: assembly code in the loadable kernel module
-Thread-Index: AceIqHPI01c+xOYFSsapxz5Q2xP5+A==
-From: "Parav K Pandit" <Parav_Pandit@mindtree.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 27 Apr 2007 08:45:49.0271 (UTC) FILETIME=[746FB670:01C788A8]
+	Fri, 27 Apr 2007 05:00:32 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:40740 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755505AbXD0JAC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 05:00:02 -0400
+Date: Fri, 27 Apr 2007 09:59:59 +0100
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error II
+Message-ID: <20070427085958.GA3645@skynet.ie>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <200704261724.46027.ak@suse.de> <20070426154518.GG16909@skynet.ie> <200704270239.13895.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200704270239.13895.ak@suse.de>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On (27/04/07 02:39), Andi Kleen didst pronounce:
+> 
+> 
+> > That's vdso.lds.S, not vdso.lds. The VDSO_TEXT_OFFSET is still 0x400.
+> > This is what I should have posted the last time
+> > 
+> > --- build/arch/x86_64/vdso/voffset.h.orig	2007-04-26 08:43:31.523739878 -0700
+> > +++ build/arch/x86_64/vdso/voffset.h	2007-04-26 08:43:38.839579356 -0700
+> > @@ -1 +1 @@
+> > -#define VDSO_TEXT_OFFSET 0x500
+> > +#define VDSO_TEXT_OFFSET 0x400
+> 
+> It's definitely 0x400 here. Is your patch reversed and you want 0x500? 
+> 
 
-I have written one function in assembly for my kernel module.
-Function is in module3.s file.
-I have added the module3.o file in the object list in the Makefile.
-But it shows compile time warning and following output.
+Sorry, that patch is reversed. It's 0x500 it needs to be to work here.
 
-What do I need to do to compile assembly code in my kernel module.
-
-CC [M]  /home/parav/cache_improve/test_module/module1.o
-CC [M]  /home/parav/cache_improve/test_module/module2.o
-as -a32 -o /home/parav/cache_improve/test_module/module3.o
-/home/parav/cache_improve/test_module/module3.s
-LD [M]  /home/parav/cache_improve/test_module/sdk3_module.o
-Building modules, stage 2.
-MODPOST
-Warning: could not find /home/parav/cache_improve/test_module/.module3.o.cmd
-for /home/parav/cache_improve/test_module/module3.o
-*** Warning: "test_func"
-[/home/parav/cache_improve/test_module/sdk3_module.ko] undefined!
-*** Warning: "" [/home/parav/cache_improve/test_module/sdk3_module.ko]
-undefined!
-
-I expect CC[M] kind of command for the module3.o file also so that
-.module3.o.cmd file gets generated.
-
-Regards,
-Parav Pandit
-
-
-
-DISCLAIMER:
-This message (including attachment if any) is confidential and may be privileged. Before opening attachments please check them for viruses and defects. MindTree Consulting Limited (MindTree) will not be responsible for any viruses or defects or any forwarded attachments emanating either from within MindTree or outside. If you have received this message by mistake please notify the sender by return  e-mail and delete this message from your system. Any unauthorized use or dissemination of this message in whole or in part is strictly prohibited.  Please note that e-mails are susceptible to change and MindTree shall not be liable for any improper, untimely or incomplete transmission.
+-- 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
