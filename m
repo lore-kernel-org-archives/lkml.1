@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbXD0B6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753996AbXD0CFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbXD0B6R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 21:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbXD0B6R
+	id S1753996AbXD0CFZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 22:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbXD0CFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 21:58:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60927 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbXD0B6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 21:58:16 -0400
-From: Neil Brown <neilb@suse.de>
-To: Ulrich Drepper <drepper@redhat.com>
-Date: Fri, 27 Apr 2007 11:57:56 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 26 Apr 2007 22:05:25 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60482 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753996AbXD0CFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 22:05:23 -0400
+Date: Thu, 26 Apr 2007 19:04:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070426190438.3a856220.akpm@linux-foundation.org>
+In-Reply-To: <20070424222105.883597089@sgi.com>
+References: <20070424222105.883597089@sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <17969.22692.855242.359680@notabene.brown>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-In-Reply-To: message from Ulrich Drepper on Thursday April 26
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday April 26, drepper@redhat.com wrote:
-> The next revision of POSIX will support fine-grained filesystem
-> timestamps the way we already support.  struct stat will report
-> nanosecond values.  So far so good.  
+On Tue, 24 Apr 2007 15:21:05 -0700 clameter@sgi.com wrote:
 
-Does it also specify how to find out what granularity is used by the
-filesystem?  I had a need for this just recently and couldn't see any
-way to extract it.
+> This patchset modifies the Linux kernel so that larger block sizes than
+> page size can be supported. Larger block sizes are handled by using
+> compound pages of an arbitrary order for the page cache instead of
+> single pages with order 0.
 
-[If the mtime of a file matches the current time, then you cannot
-cache the contents of the file.  You have to wait until the mtime is
-in the past.  Without knowing the granularity, you cannot tell if the
-mtime still matches current time or not]
+Something I was looking for but couldn't find: suppose an application takes
+a pagefault against the third 4k page of an order-2 pagecache "page".  We
+need to instantiate a pte against find_get_page(offset/4)+3.  But these
+patches don't touch mm/memory.c at all and filemap_nopage() appears to
+return the zeroeth 4k page all the time in that case.
 
-Thanks,
-NeilBrown
+So.. what am I missing, and how does that part work?
+
+
+
+Also, afaict your important requirements would be met by retaining
+PAGE_CACHE_SIZE=4k and simply ensuring that pagecache is populated by
+physically contiguous pages - so instead of allocating and adding one 4k
+page, we allocate an order-2 page and sprinkle all four page*'s into the
+radix tree in one hit.  That should be fairly straightforward to do, and
+could be made indistinguishably fast from doing a single 16k page for some
+common pagecache operations (gang-insert, gang-lookup).
+
+The BIO and block layers will do-the-right-thing with that pagecache and
+you end up with four times more data in the SG lists, worst-case.
