@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXD0WAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755938AbXD0WF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbXD0WAu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757453AbXD0WAu
+	id S1755938AbXD0WF4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbXD0WF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:00:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58865 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757449AbXD0WAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:00:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Back to the future.
-Date: Sat, 28 Apr 2007 00:04:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Pekka J Enberg <penberg@cs.helsinki.fi>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704272324.43359.rjw@sisk.pl> <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org>
+	Fri, 27 Apr 2007 18:05:56 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:49933 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755938AbXD0WFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:05:17 -0400
+Date: Fri, 27 Apr 2007 14:55:56 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.20.10
+Message-ID: <20070427215556.GA1817@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704280004.47683.rjw@sisk.pl>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 April 2007 23:44, Linus Torvalds wrote:
-> 
-> On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
-> > 
-> > Why do you think that keeping the user space frozen after 'snapshot' is a bad
-> > idea?  I think that solves many of the problems you're discussing.
-> 
-> It makes it harder to debug (wouldn't it be *nice* to just ssh in, and do
-> 
-> 	gdb -p <snapshotter>
-> 
-> when something goes wrong?) but we also *depend* on user space for various 
-> things (the same way we depend on kernel threads, and why it has been such 
-> a total disaster to try to freeze the kernel threads too!).
+We (the -stable team) are announcing the release of the 2.6.20.10 kernel.
+This release has two bugfixes that fix the fixes that were in 2.6.20.8
+and 2.6.20.9.  We are sorry for the constant stream of releases, but
+these are security issues and as such, sometimes it is better to err on
+the side of quicker updates rather than an expanded window of
+vulnerability.
 
-We're freezing many of them just fine. ;-)
+Many thanks go out to the networking kernel developers who resolved
+these issues faster than seemed imaginable.
 
-> For example, if you want to do graphical stuff, just using X would be quite
-> nice, wouldn't it?
+Anyone who uses ipv4 or ipv6 and a 2.6.20 based kernel release is
+strongly encouraged to upgrade.
 
-Yes, it would, but as long as we can't protect mounted filesystems from being
-touched, it's just dangerous to let the user space run at that point.
+I'll also be replying to this message with a copy of the patch between
+2.6.20.9 and 2.6.20.10.
 
-> But I do agree that doing everythign in the kernel is likely to just be a 
-> hell of a lot simpler for everybody.
+The updated 2.6.20.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.20.y.git
+and can be browsed at the normal kernel.org git web browser:
+        www.kernel.org/git/
 
-:-)
+thanks,
 
-Greetings,
-Rafael
+greg k-h
+
+--------
+ Makefile                |    2 +-
+ net/ipv4/fib_frontend.c |    4 ++++
+ net/ipv6/exthdrs.c      |    1 +
+ 3 files changed, 6 insertions(+), 1 deletion(-)
+
+Summary of changes from v2.6.20.9 to v2.6.20.10
+===============================================
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.20.10
+
+Sergey Vlasov (1):
+      IPV4: Fix OOPS'er added to netlink fib.
+
+YOSHIFUJI Hideaki (1):
+      IPV6: Fix for RT0 header ipv6 change.
+
