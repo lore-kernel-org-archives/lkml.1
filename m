@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757225AbXD0Up0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXD0Uqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757225AbXD0Up0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbXD0Up0
+	id S1757227AbXD0Uqg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:46:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXD0Uqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:45:26 -0400
-Received: from smtpauth01.prod.mesa1.secureserver.net ([64.202.165.181]:59328
-	"HELO smtpauth01.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757225AbXD0UpZ (ORCPT
+	Fri, 27 Apr 2007 16:46:36 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:11798 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757227AbXD0Uqe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:45:25 -0400
-Message-ID: <463260E3.8030209@seclark.us>
-Date: Fri, 27 Apr 2007 16:45:23 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Fri, 27 Apr 2007 16:46:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CjVZioNQFdbVynb5y0untyTkgS10b1ZzCMLKTqj8QObUzPPFYfBxGVExprIx6xL0KC0ReAxjgDJDynIaUTzfpksdJ5UVCHABKIULLc5XlI7yMg88VlfSfru6Ou8eAdkivbyIRZUNRKPRbhbWCeT0vwfKtoLgHlaTUO773cJ7oBg=
+Message-ID: <d9def9db0704271346i1556c59dgad222d5de7d919f6@mail.gmail.com>
+Date: Fri, 27 Apr 2007 22:46:33 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Gregoire Favre" <Gregoire.Favre@gmail.com>
+Subject: Re: More than 2Gb problem (dvb related) ?
+Cc: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
+In-Reply-To: <20070427111047.GB10284@gmail.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net> <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com> <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org> <20070427193130.GD5967@schatzie.adilger.int> <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20070427111047.GB10284@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+just for the completeness, what does dmesg show up?
+You forgot to mention what device you have too...
 
->On Fri, 27 Apr 2007, Andreas Dilger wrote:
->  
->
->>It's true that this is a "feature" of ext3 with data=ordered (the default),
->>but I suspect the same thing is now true in reiserfs too.
->>    
->>
->
->Oh, well.. Journalling sucks.
->
->I was actually _really_ hoping that somebody would come along and tell 
->everybody that this whole journal-logging is stupid, and that it's just 
->better to not ever re-write blocks on disk, but instead write to new 
->blocks with version numbers (and not re-use old blocks until new versions 
->are stable on disk).
->
->  
->
-That sort of sounds like something NCR used to do in the mainframe days 
-files had
-generation numbers, and multiple generations of the files were kept 
-around with the
-OS automatically removing the older ones.
+Markus
 
->There was even somebody who did something like that for a PhD thesis, I 
->forget the details (and it apparently died when the thesis was presumably 
->accepted ;).
+On 4/27/07, Gregoire Favre <Gregoire.Favre@gmail.com> wrote:
+> Hello,
 >
->			Linus
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+> I have a computer (mother Asus Commando) with 4x1Gb Ram.
 >
->  
+> If I start without the BIOS remap memory, my BIOS and linux just see 2Gb
+> of ram, and DVB apps works just great.
+>
+> When I enable the remapping of the memory, my BIOS and linux just see
+> the whole 4Gb but then, I can tune to any transponder without problem,
+> but I am unable to get a TS...
+>
+> I have tested it with vdr/kaffeine/mplayer.
+>
+> szap/kaffeine/vdr get the lock just well.
+>
+> I had already asked about this on just linux-dvb ml, but maybe I am the
+> first one to try DVB with a system with more than 2 Gb as I didn't
+> receive any further info as someone get it working or not with such
+> amount of ram.
+>
+> Anyone got an idea on what could be done to solve this issue ?
+>
+> PLEASE CC to me all message in lkml as I am not subscribed to this ml :)
+> --
+> Grégoire FAVRE  http://gregoire.favre.googlepages.com  http://www.gnupg.org
+>                http://picasaweb.google.com/Gregoire.Favre
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
 
 
 -- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
-
-
+Markus Rechberger
