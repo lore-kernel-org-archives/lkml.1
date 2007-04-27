@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbXD0COJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbXD0C1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbXD0COJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 22:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbXD0COJ
+	id S1753686AbXD0C1y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 22:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbXD0C1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 22:14:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59838 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbXD0COI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 22:14:08 -0400
-Message-ID: <46315C61.30001@redhat.com>
-Date: Thu, 26 Apr 2007 19:13:53 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <17969.22692.855242.359680@notabene.brown>
-In-Reply-To: <17969.22692.855242.359680@notabene.brown>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCACC46BE3C1F8D5321E7971A"
+	Thu, 26 Apr 2007 22:27:54 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50773 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752324AbXD0C1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 22:27:53 -0400
+Date: Fri, 27 Apr 2007 12:27:31 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427022731.GF65285596@melbourne.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426190438.3a856220.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCACC46BE3C1F8D5321E7971A
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Thu, Apr 26, 2007 at 07:04:38PM -0700, Andrew Morton wrote:
+> On Tue, 24 Apr 2007 15:21:05 -0700 clameter@sgi.com wrote:
+> 
+> > This patchset modifies the Linux kernel so that larger block sizes than
+> > page size can be supported. Larger block sizes are handled by using
+> > compound pages of an arbitrary order for the page cache instead of
+> > single pages with order 0.
+> 
+> Something I was looking for but couldn't find: suppose an application takes
+> a pagefault against the third 4k page of an order-2 pagecache "page".  We
+> need to instantiate a pte against find_get_page(offset/4)+3.  But these
+> patches don't touch mm/memory.c at all and filemap_nopage() appears to
+> return the zeroeth 4k page all the time in that case.
+> 
+> So.. what am I missing, and how does that part work?
 
-Neil Brown wrote:
-> Does it also specify how to find out what granularity is used by the
-> filesystem?  I had a need for this just recently and couldn't see any
-> way to extract it.
+"mmap not supported yet" ;)
 
-That's still on the table.  We might end up with an fpathconf() solution.=
+> Also, afaict your important requirements would be met by retaining
+> PAGE_CACHE_SIZE=4k and simply ensuring that pagecache is populated by
+> physically contiguous pages
 
+Sure, that addresses the larger I/O side of things, but it doesn't address
+the large filesystem blocksize issues that can only be solved with some kind
+of page aggregation abstraction. Compound pages and high order page cache
+indexing solves this extremely neatly, regardless of whether the compound
+page is contiguous or not.....
 
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
+Cheers,
 
-
---------------enigCACC46BE3C1F8D5321E7971A
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGMVxh2ijCOnn/RHQRAjUVAKCuT+2RasUn5iowZn6BzmtqtcA+WgCcCw5i
-q+sxhEkbHLGC5jiHH5yk0z8=
-=meVJ
------END PGP SIGNATURE-----
-
---------------enigCACC46BE3C1F8D5321E7971A--
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
