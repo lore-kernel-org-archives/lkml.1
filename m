@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756085AbXD0Q4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbXD0Q63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756085AbXD0Q4F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 12:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbXD0Q4D
+	id S1756082AbXD0Q63 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 12:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbXD0Q63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 12:56:03 -0400
-Received: from web36709.mail.mud.yahoo.com ([209.191.85.43]:41036 "HELO
-	web36709.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756082AbXD0Qzp (ORCPT
+	Fri, 27 Apr 2007 12:58:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32898 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756082AbXD0Q62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 12:55:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=fW7iXLMpLt1buuq9sdlRpSTQxOyjI5A9/JjWrFpyJq1Bw1TWITB6BgQ8a5ExjBzRpQKqpoGTP5WXN9e6Q9BDVIVLwC3CPoMcaQy66h/izahdxvC6hNzbBitzuvQNEh6EiSNZdYG8Zb/okz9k3NqRZ+e4zoT+qbAt48i4EAelKmc=  ;
-Message-ID: <20070427165544.99355.qmail@web36709.mail.mud.yahoo.com>
-X-YMail-OSG: tJUi8hAVM1mhTBtRxDrp4fMa7UreTkOBKFyOidrCdGCgQ9xbQyxvEd.K9V3UKRZjKtkA00kwndJ8.4_H.NqLwiWkpXBdI4AM.2oz
-Date: Fri, 27 Apr 2007 09:55:44 -0700 (PDT)
-From: Alex Dubov <oakad@yahoo.com>
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-To: Sergey Yanovich <ynvich@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4631E93A.1010404@gmail.com>
+	Fri, 27 Apr 2007 12:58:28 -0400
+Date: Fri, 27 Apr 2007 09:58:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andy Whitcroft <apw@shadowen.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
+In-Reply-To: <46322AFD.5000706@shadowen.org>
+Message-ID: <Pine.LNX.4.64.0704270956480.1762@schroedinger.engr.sgi.com>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+ <4630A662.8090502@shadowen.org> <4630ABF2.1040305@shadowen.org>
+ <4630EBFA.9000207@shadowen.org> <Pine.LNX.4.64.0704261123080.3560@schroedinger.engr.sgi.com>
+ <4630F203.7020005@shadowen.org> <Pine.LNX.4.64.0704261210430.7441@schroedinger.engr.sgi.com>
+ <46310216.2070608@shadowen.org> <Pine.LNX.4.64.0704261320090.5678@schroedinger.engr.sgi.com>
+ <46322AFD.5000706@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It seems a bit out-of-date. Here is the output:
+On Fri, 27 Apr 2007, Andy Whitcroft wrote:
+
+> > See my patch @ http://marc.info/?l=linux-kernel&m=117752927203466&w=2
 > 
-It clearly says there that the driver is for 2.6.20. The changes needed for 2.6.21 are actually
-very small (couple of fields in the mmc layer were renamed).
+> Yeah I played with that for a bit last night to no good effect.
+> BUILD_BUG_ON simply becomes a noop if the optimiser doesn't really
+> really know that the thing its talking about is a real constant.
 
-In general, it is impossible to maintain out-of-tree driver in sync with kernel tree - too many
-changes are committed into it. The -mm version obviously fits its tree.
+Too bad. Sigh.
 
+> I assume that if it cannot be sure that it should constant fold the
+> number, it leaves it for runtime.  Then the optimiser sees that the
+> thing is void and therefore removable and removes it.  So no error.
+> 
+> Perhaps we need to enlist someone from gcc-land to tell us how to figure
+> out what its doing and massage it into working.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+In the meantime how about moving that generation of the link err out of 
+SLUB and SLAB into kernel.h and make some BUILD_BUG() or so out of it? We 
+are talking about some generically useful functionality I guess.
+
