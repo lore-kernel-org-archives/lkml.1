@@ -1,99 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbXD0JXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbXD0JXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbXD0JXK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 05:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXD0JXK
+	id S1755519AbXD0JXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 05:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbXD0JXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 05:23:10 -0400
-Received: from mail1.vetienne.net ([87.98.219.23]:3195 "EHLO
-	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755513AbXD0JXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 05:23:09 -0400
-Message-ID: <010a01c788ae$0a7d0140$5601a8c0@apws2>
-From: "VE \(HOME\)" <ve@vetienne.net>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, <fubar@us.ibm.com>,
-       <bonding-devel@lists.sourceforge.net>
-References: <200704262058.33087.ve@vetienne.net> <20070426211146.f370cf81.akpm@linux-foundation.org>
-Subject: Re: [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
-Date: Fri, 27 Apr 2007 11:25:46 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Fri, 27 Apr 2007 05:23:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54807 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755519AbXD0JXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 05:23:45 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18nOgAQynYnnh1WbCd5NNCYIyGuOR5HCuIxHOpHQT
+	2/CxyRKxgQ2Tx3
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+	FS is under heavy write load (massive starvation)
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+In-Reply-To: <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	 <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 11:23:41 +0200
+Message-Id: <1177665821.6462.9.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3028
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 26 Apr 2007 20:58:32 +0200 Vincent ETIENNE <ve@vetienne.net>
-> wrote:
->
->
-> This was due to locking bustage in the net tree.  It should be fixed
-> in 2.6.21-rc7-mm2.
+On Fri, 2007-04-27 at 01:33 -0700, Andrew Morton wrote:
+> On Fri, 27 Apr 2007 09:59:27 +0200 Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > Greetings,
+> > 
+> > As subject states, my GUI is going away for extended periods of time
+> > when my very full and likely highly fragmented (how to find out)
+> > filesystem is under heavy write load.  While write is under way, if
+> > amarok (mp3 player) is running, no song change will occur until write is
+> > finished, and the GUI can go _entirely_ comatose for very long periods.
+> > Usually, it will come back to life after write is finished, but
+> > occasionally, a complete GUI restart is necessary.
+> 
+> I'd be suspecting a GUI bug if a restart is necessary.  Perhaps it went to
+> lunch for so long in the kernel that some time-based thing went bad.
 
-I have tried this version. Same problem ( see 
-http://mail1.vetienne.net/linux/dmesg-2.6.21-rc7-mm2.log )
-But also a new problem with USB keyboard/mouse
+Yeah, there have been some KDE updates, maybe something went south.  I
+know for sure that nothing this horrible used to happen during IO.  But
+then when I used to regularly test IO, my disk heads didn't have to
+traverse nearly as much either.
 
-BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
+> Right.  One possibility here is that bonnie is stuffing new dirty blocks
+> onto the committing transaction's ordered-data list and JBD commit is
+> livelocking.  Only we're not supposed to be putting those blocks on that
+> list.
+> 
+> Another livelock possibility is that bonnie is redirtying pages faster than
+> commit can write them out, so commit got livelocked:
+> 
+> When I was doing the original port-from-2.2 I found that an application
+> which does
+> 
+> 	for ( ; ; )
+> 		pwrite(fd, "", 1, 0);
+> 
+> would permanently livelock the fs.  I fixed that, but it was six years ago,
+> and perhaps we later unfixed it.
 
-Call Trace:
-[<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
-[<ffffffff8044ab12>] hid_probe+0x4d/0xbad
-[<ffffffff8021d7cd>] default_wake_function+0x0/0xe
-[<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
-[<ffffffff80403411>] usb_match_one_id+0x26/0x82
-[<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
-[<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
-[<ffffffff80391de4>] __driver_attach+0x0/0x93
-[<ffffffff80391e3e>] __driver_attach+0x5a/0x93
-[<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
-[<ffffffff80391433>] bus_add_driver+0x7b/0x19d
-[<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
-[<ffffffff8064d2d3>] hid_init+0x28/0x4e
-[<ffffffff8063460b>] kernel_init+0x162/0x2d2
-[<ffffffff8020a338>] child_rip+0xa/0x12
-[<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
-[<ffffffff806344a9>] kernel_init+0x0/0x2d2
-[<ffffffff8020a32e>] child_rip+0x0/0x12
+I'll try that.
 
-input: ServerEngines SE USB Device as 
-/devices/pci0000:00/0000:00:1d.2/usb4/4-2/4-2:1.0/input/input2
-input: USB HID v1.11 Keyboard [ServerEngines SE USB Device] on 
-usb-0000:00:1d.2-2
-BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
+> It would be most interesting to try data=writeback.
 
-Call Trace:
-[<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
-[<ffffffff8044ab12>] hid_probe+0x4d/0xbad
-[<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
-[<ffffffff80403411>] usb_match_one_id+0x26/0x82
-[<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
-[<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
-[<ffffffff80391de4>] __driver_attach+0x0/0x93
-[<ffffffff80391e3e>] __driver_attach+0x5a/0x93
-[<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
-[<ffffffff80391433>] bus_add_driver+0x7b/0x19d
-[<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
-[<ffffffff8064d2d3>] hid_init+0x28/0x4e
-[<ffffffff8063460b>] kernel_init+0x162/0x2d2
-[<ffffffff8020a338>] child_rip+0xa/0x12
-[<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
-[<ffffffff806344a9>] kernel_init+0x0/0x2d2
-[<ffffffff8020a32e>] child_rip+0x0/0x12
+Seems somewhat better, but nothing close to tolerable.  I still had to
+hot-key to a VT and kill the bonnie.
 
+> hm, fsync.
+> 
+> Aside: why the heck do applications think that their data is so important
+> that they need to fsync it all the time.  I used to run a kernel on my
+> laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
+> pleasurable.
 
-And also a strange problem : dhcp server and dns server was started before 
-bond0 was completly up ( eth0 and eth1 was declared down at this time and 
-up a few times later : was not the case with later 2.6.21-rc6-mm1 )
+I thought unkind thoughts when I saw those traces :)
 
-Vincent 
+	Thanks,
+
+	-Mike
 
