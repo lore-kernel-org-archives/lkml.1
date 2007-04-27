@@ -1,151 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbXD0OPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbXD0OTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbXD0OPy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbXD0OGB
+	id S1755917AbXD0OTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXD0OTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:06:01 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:20287 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755861AbXD0OE4 (ORCPT
+	Fri, 27 Apr 2007 10:19:21 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:46567 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755917AbXD0OTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:04:56 -0400
-Message-Id: <20070427140513.857001722@de.ibm.com>
-References: <20070427140503.087958775@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 27 Apr 2007 16:05:12 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 09/38] cio: Use add_uevent_var.
-Content-Disposition: inline; filename=107-cio-adduevent.diff
+	Fri, 27 Apr 2007 10:19:12 -0400
+Date: Fri, 27 Apr 2007 15:18:56 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Mike Stroyan <mike.stroyan@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rohit Seth <rohitseth@google.com>, "Luck, Tony" <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+In-Reply-To: <4631E49C.2030501@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0704271437570.14794@blonde.wat.veritas.com>
+References: <20070425205548.fd51b301.akpm@linux-foundation.org>
+ <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com>
+ <4631E49C.2030501@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 27 Apr 2007 14:19:10.0014 (UTC) FILETIME=[05CEE5E0:01C788D7]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAB2luYm94AG1pa2Uuc3Ryb3lhbkBocC5jb20AbGludXgtaWE2NEB2Z2VyLmtlcm5lbC5vcmcAbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAHRvbnkubHVja0BpbnRlbC5jb20Abmlja3BpZ2dpbkB5YWhvby5jb20uYXUAcm9oaXRzZXRoQGdvb2dsZS5jb20A
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+On Fri, 27 Apr 2007, Nick Piggin wrote:
+> 
+> But that's because of ia64's cache coherency implementation. I don't really
+> follow the documentation to know whether it should be one way or the other,
+> but surely it should be done either before or after the set_pte_at, not both.
+> 
+> Anyway, how about fremap or mprotect, for example?
+> ... 
+> 
+> OK, I'm still not sure that I understand why lazy_mmu_prot_update should be
+> used rather than flush_icache_page (in concept, not ia64 implementation).
+> Sure, flush_icache_page isn't given the pte, but let's assume we can change
+> that.
 
-Convert ccw_uevent to use add_uevent_var and adapt snprint_alias.
+You're asking lots of good questions.  I wish the ia64 people would
+know the answers, but from the length of time the "lazy_mmu_prot_update"
+stuff took to get into the tree, and the length of time it's taken to be
+found defective, I suspect they don't, and we'll have to guess for them.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Some guesses I'm working with...
 
- drivers/s390/cio/device.c |   66 ++++++++++++++++++----------------------------
- 1 files changed, 26 insertions(+), 40 deletions(-)
+I presume Mike and Anil are correct, that it needs to be done before
+putting pte into page table, not left until after: but as you've
+guessed, that needs to be done everywhere, not just in the two
+places so far identified.
 
-Index: quilt-2.6/drivers/s390/cio/device.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/cio/device.c	2007-04-27 16:04:53.000000000 +0200
-+++ quilt-2.6/drivers/s390/cio/device.c	2007-04-27 16:04:54.000000000 +0200
-@@ -56,13 +56,12 @@
- /* Store modalias string delimited by prefix/suffix string into buffer with
-  * specified size. Return length of resulting string (excluding trailing '\0')
-  * even if string doesn't fit buffer (snprintf semantics). */
--static int snprint_alias(char *buf, size_t size, const char *prefix,
-+static int snprint_alias(char *buf, size_t size,
- 			 struct ccw_device_id *id, const char *suffix)
- {
- 	int len;
- 
--	len = snprintf(buf, size, "%sccw:t%04Xm%02X", prefix, id->cu_type,
--		       id->cu_model);
-+	len = snprintf(buf, size, "ccw:t%04Xm%02X", id->cu_type, id->cu_model);
- 	if (len > size)
- 		return len;
- 	buf += len;
-@@ -85,53 +84,40 @@
- 	struct ccw_device *cdev = to_ccwdev(dev);
- 	struct ccw_device_id *id = &(cdev->id);
- 	int i = 0;
--	int len;
-+	int len = 0;
-+	int ret;
-+	char modalias_buf[30];
- 
- 	/* CU_TYPE= */
--	len = snprintf(buffer, buffer_size, "CU_TYPE=%04X", id->cu_type) + 1;
--	if (len > buffer_size || i >= num_envp)
--		return -ENOMEM;
--	envp[i++] = buffer;
--	buffer += len;
--	buffer_size -= len;
-+	ret = add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
-+			     "CU_TYPE=%04X", id->cu_type);
-+	if (ret)
-+		return ret;
- 
- 	/* CU_MODEL= */
--	len = snprintf(buffer, buffer_size, "CU_MODEL=%02X", id->cu_model) + 1;
--	if (len > buffer_size || i >= num_envp)
--		return -ENOMEM;
--	envp[i++] = buffer;
--	buffer += len;
--	buffer_size -= len;
-+	ret = add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
-+			     "CU_MODEL=%02X", id->cu_model);
-+	if (ret)
-+		return ret;
- 
- 	/* The next two can be zero, that's ok for us */
- 	/* DEV_TYPE= */
--	len = snprintf(buffer, buffer_size, "DEV_TYPE=%04X", id->dev_type) + 1;
--	if (len > buffer_size || i >= num_envp)
--		return -ENOMEM;
--	envp[i++] = buffer;
--	buffer += len;
--	buffer_size -= len;
-+	ret = add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
-+			     "DEV_TYPE=%04X", id->dev_type);
-+	if (ret)
-+		return ret;
- 
- 	/* DEV_MODEL= */
--	len = snprintf(buffer, buffer_size, "DEV_MODEL=%02X",
--			(unsigned char) id->dev_model) + 1;
--	if (len > buffer_size || i >= num_envp)
--		return -ENOMEM;
--	envp[i++] = buffer;
--	buffer += len;
--	buffer_size -= len;
-+	ret = add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
-+			     "DEV_MODEL=%02X", id->dev_model);
-+	if (ret)
-+		return ret;
- 
- 	/* MODALIAS=  */
--	len = snprint_alias(buffer, buffer_size, "MODALIAS=", id, "") + 1;
--	if (len > buffer_size || i >= num_envp)
--		return -ENOMEM;
--	envp[i++] = buffer;
--	buffer += len;
--	buffer_size -= len;
--
--	envp[i] = NULL;
--
--	return 0;
-+	snprint_alias(modalias_buf, sizeof(modalias_buf), id, "");
-+	ret = add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
-+			     "MODALIAS=%s", modalias_buf);
-+	return ret;
- }
- 
- struct bus_type ccw_bus_type;
-@@ -280,7 +266,7 @@
- 	struct ccw_device_id *id = &(cdev->id);
- 	int len;
- 
--	len = snprint_alias(buf, PAGE_SIZE, "", id, "\n") + 1;
-+	len = snprint_alias(buf, PAGE_SIZE, id, "\n") + 1;
- 
- 	return len > PAGE_SIZE ? PAGE_SIZE : len;
- }
+When it was discussed last year (in connection with Peter's page
+cleaning patches) it was thought to be a variant of update_mmu_cache()
+(after setting pte), and we added the fremap one to accompany it;
+but now it looks to be a variant of flush_icache_page() (before
+setting pte).
 
--- 
-blue skies,
-   Martin.
+I believe lazy_mmu_prot_update(pteval) came into existence primarily
+for mprotect's change_pte_range() case.  If ia64 filled in its
+flush_icache_page(vma, page), that could have been used there
+(checking 'vm_flags & VM_EXEC' instead of pte_exec): but that would
+involve a relatively expensive(?) pte_page() in a place which doesn't
+need to know the struct page for other cases.
 
-"Reality continues to ruin my life." - Calvin.
+Well, not pte_page(), it needs to be vm_normal_page() doesn't it?
+and ia64's current lazy_mmu_prot_update is unsafe when !pfn_valid.
 
+Some flush_icache_pages are already in place, others are not: do
+we need to add some?  But those architectures which have a non-empty
+flush_icache_page seem to have survived without the additional calls
+- so they might be unnecessarily slowed down by additional calls.
+
+I believe that was the secondary reason for lazy_mmu_prot_update(),
+perhaps better called ia64_flush_icache_page(): to allow calls to
+be added where ia64 was (mistakenly) thought to want them, without
+needing a protracted audit of how other architectures might be
+impacted.
+
+But I'm still trying to make sense of it.
+
+Hugh
