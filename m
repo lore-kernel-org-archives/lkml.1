@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbXD0Qg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXD0Qgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbXD0Qg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 12:36:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756073AbXD0Qg3
+	id S1756076AbXD0Qgq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 12:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbXD0Qgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 12:36:29 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53589 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756067AbXD0Qg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 12:36:28 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: [PATCH] Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu fix
-Date: Fri, 27 Apr 2007 18:34:13 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070427085958.GA3645@skynet.ie> <20070427155005.GA20839@skynet.ie>
-In-Reply-To: <20070427155005.GA20839@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 12:36:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34455 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756073AbXD0Qgm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 12:36:42 -0400
+Date: Sat, 28 Apr 2007 02:36:20 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427163620.GI32602149@melbourne.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com> <20070427002640.22a71d06.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704271834.13249.ak@suse.de>
+In-Reply-To: <20070427002640.22a71d06.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 April 2007 17:50:06 Mel Gorman wrote:
-> On (27/04/07 09:59), Mel Gorman didst pronounce:
-> > On (27/04/07 02:39), Andi Kleen didst pronounce:
-> > > 
-> > > 
-> > > > That's vdso.lds.S, not vdso.lds. The VDSO_TEXT_OFFSET is still 0x400.
-> > > > This is what I should have posted the last time
-> > > > 
-> > > > --- build/arch/x86_64/vdso/voffset.h.orig	2007-04-26 08:43:31.523739878 -0700
-> > > > +++ build/arch/x86_64/vdso/voffset.h	2007-04-26 08:43:38.839579356 -0700
-> > > > @@ -1 +1 @@
-> > > > -#define VDSO_TEXT_OFFSET 0x500
-> > > > +#define VDSO_TEXT_OFFSET 0x400
-> > > 
-> > > It's definitely 0x400 here. Is your patch reversed and you want 0x500? 
-> > > 
-> > 
-> > Sorry, that patch is reversed. It's 0x500 it needs to be to work here.
-> > 
+On Fri, Apr 27, 2007 at 12:26:40AM -0700, Andrew Morton wrote:
+> On Fri, 27 Apr 2007 00:19:49 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 > 
-> What I should have done in the first place..... Sorry for the noise.
+> > The page cache handling in the various layers is significantly 
+> > simplified which reduces maintenance cost.
+> 
+> How on earth can the *addition* of variable pagecache size simplify the
+> existing code?
+> 
+> What cleanups are in this patchset which cannot be made *without* the
+> addition of variable pagecache size?
 
-I had already fixed it up. 
+I think this is the cleanup of all the open coded masking and offset
+to index type of operations that get done over and over again everywhere.
 
-But now can you test Suresh's latest patch too please?
+> > Dave, where are we with the performance tests?
+> 
+> Well yes.
 
--Andi
+Backed up behind real work ;)
+
+The test was writing a single 50GB file to a fresh filesystem, and
+then reading it back. Run on two different dm stripes - a 4-disk
+RAID) and a 8disk RAID0 stripe, with a stripe unit of 512k.  Disks
+are 10krpm SAS, external jbod on PCI-X good for ~850MB/s read and
+~750MB/s write.  Server is 4p intel x86_64 with 16GB RAM.
+
+                    READ            WRITE
+blksz  disks     tput   sys       tput    sys
+-----  -----    -----   ----      -----  ----
+ 4k      4       332     35s      203     76s
+64k      4       173     20s      273     21s
+ 4k      8       403     35s      443     76s
+64k      8       634     21s      540     21s
+
+Throughput in MB/s.
+
+So, there's some interaction between reads and large block size;
+may be related to readahead but i haven't looked into I/O
+patterns at this stage.
+
+More results soonish.....
+
+Cheers,
+
+Dave.
+
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
