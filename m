@@ -1,44 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbXD0Ajm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbXD0AlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbXD0Ajm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbXD0Ajm
+	id S1755271AbXD0AlR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbXD0AlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:39:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56033 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755259AbXD0Aja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:39:30 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: 2.6.21-rc7-mm2 -- x86_64 VDSO compile error II
-Date: Fri, 27 Apr 2007 02:39:13 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <200704261724.46027.ak@suse.de> <20070426154518.GG16909@skynet.ie>
-In-Reply-To: <20070426154518.GG16909@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 26 Apr 2007 20:41:17 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41377 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755271AbXD0AlP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 20:41:15 -0400
+Date: Fri, 27 Apr 2007 09:41:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, clameter@sgi.com, ak@suse.de
+Subject: Re: [PATCH] change global zonelist order on NUMA v2
+Message-Id: <20070427094141.82b16497.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1177624660.5705.72.camel@localhost>
+References: <20070426183417.058f6f9e.kamezawa.hiroyu@jp.fujitsu.com>
+	<1177624660.5705.72.camel@localhost>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704270239.13895.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Apr 2007 17:57:40 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-
-> That's vdso.lds.S, not vdso.lds. The VDSO_TEXT_OFFSET is still 0x400.
-> This is what I should have posted the last time
+> On Thu, 2007-04-26 at 18:34 +0900, KAMEZAWA Hiroyuki wrote:
+> > Changelog from V1 -> V2
+> > - sysctl name is changed to be relaxed_zone_order
+> > - NORMAL->NORMAL->....->DMA->DMA->DMA order (new ordering) is now default.
+> >   NORMAL->DMA->NORMAL->DMA order (old ordering) is optional.
+> > - addes boot opttion to set relaxed_zone_order. ia64 is supported now.
+> > - Added documentation
+> > 
+> > patch is against 2.6.21-rc7-mm2. tested on ia64 NUMA box. works well.
 > 
-> --- build/arch/x86_64/vdso/voffset.h.orig	2007-04-26 08:43:31.523739878 -0700
-> +++ build/arch/x86_64/vdso/voffset.h	2007-04-26 08:43:38.839579356 -0700
-> @@ -1 +1 @@
-> -#define VDSO_TEXT_OFFSET 0x500
-> +#define VDSO_TEXT_OFFSET 0x400
+> [PATCH] factor/rework change zonelist order patch
+> 
+> Against 2.6.21-rc7 atop KAMEZAWA Hiroyuki's "change global zonelist
+> order on NUMA v2" patch.
+> 
+Hi, this looks 'easier-to-read' than mine. thanks.
 
-It's definitely 0x400 here. Is your patch reversed and you want 0x500? 
 
--Andi
+> 3) kept early_param() definition for boot parameter in mm/page_alloc.c,
+>    along with the handler function.  One less file to modify.
+> 
+I put early_param() to arch dependent part just beacause no generic code
+except for pci seems to call it. If it is allowed, I welcome this change.
+
+
+> 4) modified the two Documentation additions to match these changes.
+> 
+
+> I've tested various combinations [non-exhaustive], with an ad hoc
+> instrumentation patch, and it appears to work as expected [as I expect,
+> anyway] on ia64 NUMA.
+> 
+> Question:  do we need to rebuild the zonelist caches when we reorder
+>            the zones?  The z_to_n[] array appears to be dependent on
+>            the zonelist order... 
+> 
+maybe no.
+
+
+> Also:      I see the "Movable" zones show up in 21-rc7-mm2.  This patch
+>            will cause Movable zone to overflow to remote movable zones
+>            before using local Normal memory in non-default, zone order.
+>            Is this what we want?
+> 
+>From my point of view, it's what I want. What we have to do will be
+establish a way to create ZONE_MOVABLE with suitable size on each node.
+
+I'll merge your change to my set and add "automatic detection" support.
+
+Thank you.
+-Kame
+
