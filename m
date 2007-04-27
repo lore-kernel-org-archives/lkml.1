@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbXD0PWm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbXD0PYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755897AbXD0PWm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:22:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbXD0PWl
+	id S1755929AbXD0PYK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbXD0PYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:22:41 -0400
-Received: from smtpout08-04.prod.mesa1.secureserver.net ([64.202.165.12]:54200
-	"HELO smtpout08.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1755897AbXD0PWl (ORCPT
+	Fri, 27 Apr 2007 11:24:10 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:4759 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755929AbXD0PYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:22:41 -0400
-Message-ID: <4632153F.7090808@seclark.us>
-Date: Fri, 27 Apr 2007 11:22:39 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <4630E00B.3090502@tmr.com> <4630E9C8.5060000@garzik.org> <20070426183602.GT3468@stusta.de> <20070426185851.GA7352@electric-eye.fr.zoreil.com> <4630F9CB.10600@garzik.org> <4630FC6C.6070902@seclark.us> <4630FE8D.6090900@garzik.org> <4631020B.7060501@seclark.us>
-In-Reply-To: <4631020B.7060501@seclark.us>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 27 Apr 2007 11:24:07 -0400
+Subject: Re: [patch 18/38] Improved oops output.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+In-Reply-To: <20070427142506.GA12738@infradead.org>
+References: <20070427140503.087958775@de.ibm.com>
+	 <20070427140516.013904506@de.ibm.com>
+	 <20070427142506.GA12738@infradead.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Fri, 27 Apr 2007 17:24:25 +0200
+Message-Id: <1177687465.23773.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
+On Fri, 2007-04-27 at 15:25 +0100, Christoph Hellwig wrote:
+> On Fri, Apr 27, 2007 at 04:05:21PM +0200, Martin Schwidefsky wrote:
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > 
+> > This patch adds two improvements to the oops output. First it adds an
+> > additional line after the PSW which decodes the different fields of it.
+> > Second a disassembler is added that decodes the instructions surrounding
+> > the faulting PSW. The output of a test oops now looks like this:
+> 
+> So we're growing in-kernel disassemblers now? :)
+> 
+> I wonder whether this is really worth it, but at least your handwritten
+> one is much nicer than the copy & paste from gdb in the kdb patches.
 
->Jeff Garzik wrote:
->
->  
->
->>Stephen Clark wrote:
->> 
->>
->>    
->>
->>>It is laptop that does not have a serial port and I could not couldn't 
->>>get  the
->>>kernel to boot using a usb serial port so I couldn't get a screen 
->>>capture of
->>>the intermittant panic.
->>>   
->>>
->>>      
->>>
->>If you can write it down with a pen and paper, or manually copy the 
->>panic onto another computer (w/ hand and eyes), that would be helpful.
->>
->>	Jeff
->>
->>
->>
->> 
->>
->>    
->>
->Hi Jeff,
->
->It was with FC7 livecd 6.92 - thought I would just try 6.93 which I see 
->has appeared at the mirrors.
->If it still happens I will copy the exception and send it in.
->
->Steve
->
->
->  
->
-I downloaded and compile 2.6.21 and so far it seem to be running fine on 
-my asus based
-S96F whitebook laptop - no panic from the rtl8169
-
-Steve
+The disassembler uses about 8K of memory and it really helps in
+debugging. For me it is worth the cost.
 
 -- 
+blue skies,
+  Martin.
 
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
+"Reality continues to ruin my life." - Calvin.
 
 
