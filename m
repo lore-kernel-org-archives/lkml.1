@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbXD0KPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXD0KQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755556AbXD0KPb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXD0KPb
+	id S1754168AbXD0KQH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755560AbXD0KQG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:15:31 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:42338 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754168AbXD0KPV (ORCPT
+	Fri, 27 Apr 2007 06:16:06 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:29321 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754168AbXD0KQE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:15:21 -0400
-X-IronPort-AV: i="4.14,461,1170651600"; 
-   d="scan'208"; a="28470093:sNHT23620240"
-Subject: Re: [patch 00/33] 2.6.20-stable review
-From: "Wu, Bryan" <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20070426165445.GA1898@kroah.com>
-References: <20070426165445.GA1898@kroah.com>
-Content-Type: text/plain
+	Fri, 27 Apr 2007 06:16:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=UETUHnUd963+V+XVNqoSuw0Ek7o54/FoxEHZbv8pp1JjqHEEKfgQTyD9oQPYSx16f6HPNpzrYiJIlrUYlAvdwV2Lzy/MsbcrvsmHlujmwm2g19QuEkTldMnIVv4+s+6426k8keiTuyB40Iza4VUGgR6f4zn28b20kDaZnp+/9Eo=  ;
+X-YMail-OSG: cr0rhKQVM1lBDDr1X2ikfuX3OyJPejg6hGuRJrHe9Qme231B1u8P2V6zKvUwxcS8dr7efOrS5g--
+Message-ID: <4631CD58.8010103@yahoo.com.au>
+Date: Fri, 27 Apr 2007 20:15:52 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       David Chinner <dgc@sgi.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com> <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au> <Pine.LNX.4.64.0704261110480.3263@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0704261110480.3263@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Fri, 27 Apr 2007 18:15:54 +0800
-Message-Id: <1177668954.5969.18.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 09:54 -0700, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.20.10 release.
-> There are 33 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
+Christoph Lameter wrote:
+> On Thu, 26 Apr 2007, Nick Piggin wrote:
 > 
-> These patches are sent out with a number of different people on the Cc:
-> line.  If you wish to be a reviewer, please email stable@kernel.org to
-> add your name to the list.  If you want to be off the reviewer list,
-> also email us.
+> 
+>>>But what do you mean with it? A block is no longer a contiguous section of
+>>>memory. So you have redefined the term.
+>>
+>>I don't understand what you mean at all. A block has always been a
+>>contiguous area of disk.
+> 
+> 
+> You want to change the block layer to support larger blocksize than 
+> PAGE_SIZE right? So you need to segment that larger block into pieces.
 
-Hi Greg:
+The block is the disk block, which does not get segmented.
 
-I am just wondering that is there any rule for stable kernel version
-release?
+What you have is a small layer that tells you which block a pagecache
+page points to, and which pagecache page refers to a given block. Just
+like we have now only slightly extended.
 
-AFAIK, 2.6.x kernels are all stable release and 2.6.x.y is for stable
-tree bug fixing and long term supporting. But I found 2.6.16.y got 49
-version updating, it is more active than other stable release such as
-2.6.17 and 2.6.19. It looks like 2.6.16 is a long-long term supporting
-version and even number 2.6.x kernel is more active than odd number
-2.6.x kernel.
 
-You know for some customer's product, they want to use the stable and
-long term support kernel instead to use the latest one. 
+>>>And you dont care about Mel's work on that level?
+>>
+>>I actually don't like it too much because it can't provide a robust
+>>solution. What do you do on systems with small memories, or those that
+>>eventually do get fragmented?
+> 
+> 
+> You could f.e. switch off defragmentation and the large block support?
 
-Could you please give us some idea about this regular?
+Ahh, then you reboot your machine to access your other filesystems?
 
-Thanks
--Bryan Wu
+
+>>Actually, I don't know why people are so excited about being able to
+>>use higher order allocations (I would rather be more excited about
+>>never having to use them). But for those few places that really need
+>>it, I'd rather see them use a virtually mapped kernel with proper
+>>defragmentation rather than putting hacks all through the core code.
+> 
+> 
+> Ahh. I knew we were going this way.... Now we have virtual contiguous vs. 
+> physical discontiguous.... Yuck hackidihack.
+
+That gives you have the proper infrastructure that is needed to actually
+support higher order _physical_ allocations _properly_.
+
+-- 
+SUSE Labs, Novell Inc.
