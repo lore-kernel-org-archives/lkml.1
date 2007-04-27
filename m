@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbXD0Uzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757244AbXD0U43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbXD0Uzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbXD0Uzw
+	id S1757244AbXD0U43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbXD0U40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:55:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:22652 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757154AbXD0Uy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:54:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=M0lNcCwLv6aiv/PgeuvNWpKO0pFH6qWnak/XaNMPJ7Lf1pBvCkcDkMTFDe6yjmXU9b4JT8vHC/hZaRSNUSklduZ/CpeLRVlX4w77mM8YAbBKzcXnYjx4skgzgfj3hDQ0lWrfcIktLr0Ym+u5WaBVWfK1gG7WW5ZI8OeD0N/FvIs=
-Message-ID: <46326309.3050104@gmail.com>
-Date: Sat, 28 Apr 2007 02:24:33 +0530
-From: Manoj Joseph <manoj.joseph@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Fri, 27 Apr 2007 16:56:26 -0400
+Received: from mail.tmr.com ([64.65.253.246]:48740 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757238AbXD0U4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 16:56:02 -0400
+Message-ID: <46326309.9020806@tmr.com>
+Date: Fri, 27 Apr 2007 16:54:33 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andreas Dilger <adilger@clusterfs.com>,
-       Marat Buharov <marat.buharov@gmail.com>,
+To: Con Kolivas <kernel@kolivas.org>
+CC: Gene Heskett <gene.heskett@gmail.com>, Redeeman <redeeman@metanurb.dk>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Alex Tomas <alex@clusterfs.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net> <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com> <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org> <20070427193130.GD5967@schatzie.adilger.int> <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+References: <20070425214704.GA32572@elte.hu> <200704270848.41416.kernel@kolivas.org> <200704262039.07781.gene.heskett@gmail.com> <200704271057.53842.kernel@kolivas.org>
+In-Reply-To: <200704271057.53842.kernel@kolivas.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+Con Kolivas wrote:
+> On Friday 27 April 2007 10:39, Gene Heskett wrote:
+>> Not necessarily Con.  Do you have a fresh one for 2.6.21?
 > 
-> On Fri, 27 Apr 2007, Andreas Dilger wrote:
->> It's true that this is a "feature" of ext3 with data=ordered (the default),
->> but I suspect the same thing is now true in reiserfs too.
+> Since people get nervous about any rejects here is an (otherwise identical) 
+> patch for 2.6.21
 > 
-> Oh, well.. Journalling sucks.
+> http://ck.kolivas.org/patches/staircase-deadline/2.6.21-sd-0.46.patch
+> 
+I applied an older version, maybe rc7 or so, without issues. It may have 
+bitched about the Makefile, can't remember, I sometimes add my own patch 
+level infor for local fixes.
 
-Go back to ext2? ;)
-
-> I was actually _really_ hoping that somebody would come along and tell 
-> everybody that this whole journal-logging is stupid, and that it's just 
-> better to not ever re-write blocks on disk, but instead write to new 
-> blocks with version numbers (and not re-use old blocks until new versions 
-> are stable on disk).
-
-Ah, "copy on write"! ZFS (Sun) and WAFL (NetApp) does this. Don't know 
-about WAFL, but ZFS does logging too.
-
--Manoj
+BTW: to build allmodconfig 2.6.21 the sd-0.46 was marginally faster in 
+real time. Perhaps down in the noise, I'm getting ready to boot and test 
+the x86_64 version.
 
 -- 
-Manoj Joseph
-http://kerneljunkie.blogspot.com/
-
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
