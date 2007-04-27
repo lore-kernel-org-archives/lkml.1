@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755657AbXD0L4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755669AbXD0L6D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755657AbXD0L4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbXD0L4Y
+	id S1755669AbXD0L6D (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:58:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbXD0L6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:56:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59063 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755657AbXD0L4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:56:23 -0400
-Date: Fri, 27 Apr 2007 13:55:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070427115526.GA7699@elte.hu>
-References: <20070425214704.GA32572@elte.hu> <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 07:58:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:52550 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755669AbXD0L6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 07:58:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mc1YhB3faS5GBCUHw3spBVXoQbGcSfZfaf0b4q32oWXPiG0rrt5GIHieDf8cHyY0AQ3tytXST5l+4e3MGBu97gfpo7gHVBElwMco5MktgPZcG70VtUg3tlFCUrQl9H0R7DKGH/6cW2IiVLPdGaFk7o+oIiYCSHE8AqKDyACRsiw=
+Message-ID: <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
+Date: Fri, 27 Apr 2007 15:57:58 +0400
+From: "Marat Buharov" <marat.buharov@gmail.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Subject: Re: assembly code in the loadable kernel module
+Cc: "Parav K Pandit" <Parav_Pandit@mindtree.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070427115344.GA30706@elte.hu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com>
+	 <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/27/07, Parav K Pandit <Parav_Pandit@mindtree.com> wrote:
+> DISCLAIMER:
+> This message (including attachment if any) is confidential and may be privileged. Before opening attachments please check them for viruses and defects. MindTree Consulting Limited (MindTree) will not be responsible for any viruses or defects or any forwarded attachments emanating either from within MindTree or outside. If you have received this message by mistake please notify the sender by return  e-mail and delete this message from your system. Any unauthorized use or dissemination of this message in whole or in part is strictly prohibited.  Please note that e-mails are susceptible to change and MindTree shall not be liable for any improper, untimely or incomplete transmission.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+On 4/27/07, linux-os (Dick Johnson) <linux-os@analogic.com> wrote:
+> ****************************************************************
+> The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-> update for lkml readers: this is some really 'catastrophic' condition 
-> triggering on your box. Here ogg123 just never skips on an older 750 
-> MHz box, which is 4-5 times slower than your 2GHz box - while i have 
-> _fourty nice-0 infinite loops_ running. I.e. at this clearly 
-> ridiculous load, at just 2.5% of CPU time ogg123 is just chugging 
-> along nicely and never leaves out a beat.
-
-Kasper, just to exclude the possibility that this is somehow related to 
-IO scheduling, could you copy the OGG file over to /dev/shm and play it 
-from there? Do you still get the bad skips?
-
-	Ingo
+Damn, people. Please, remove that sort of disclaimers (about
+confidential information) while posting to public mailing lists.
