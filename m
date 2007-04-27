@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbXD0LF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbXD0LFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755596AbXD0LF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbXD0LF1
+	id S1755604AbXD0LFx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbXD0LFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:05:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:53418 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755596AbXD0LF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:05:26 -0400
+	Fri, 27 Apr 2007 07:05:53 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:63388 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755604AbXD0LFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 07:05:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qHLN6n0ARlJ4jsHM6uTe6qkgXlOygsHob+bpn/I/M/krgz+KhIy3w+pKPguzY9tJe7JbqfdZrgehcLZyXnD4g20j4yFLDDuqVhbXFaX7vHWvJBviMUgHsLQOkb7M/YLV9zt9tIkdO2tUrggTv8ua0BoEY1gngqN06QDBqwueYVQ=
+Message-ID: <9a8748490704270405w1b02119dic0422a0ce661357c@mail.gmail.com>
+Date: Fri, 27 Apr 2007 13:05:50 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: bryan.wu@analog.com
+Subject: Re: [patch 00/33] 2.6.20-stable review
+Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable@kernel.org, "Justin Forbes" <jmforbes@linuxtx.org>,
+       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Chuck Wolber" <chuckw@quantumlinux.com>,
+       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
+       "Michael Krufky" <mkrufky@linuxtv.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <1177668954.5969.18.camel@roc-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <17969.55533.59287.509889@cargo.ozlabs.ibm.com>
-Date: Fri, 27 Apr 2007 21:05:17 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <20070426235542.bad7035a.akpm@linux-foundation.org>
-References: <20070424222105.883597089@sgi.com>
-	<20070426190438.3a856220.akpm@linux-foundation.org>
-	<20070427022731.GF65285596@melbourne.sgi.com>
-	<20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+References: <20070426165445.GA1898@kroah.com>
+	 <1177668954.5969.18.camel@roc-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+On 27/04/07, Wu, Bryan <bryan.wu@analog.com> wrote:
+> On Thu, 2007-04-26 at 09:54 -0700, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.20.10 release.
+> > There are 33 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> >
+> > These patches are sent out with a number of different people on the Cc:
+> > line.  If you wish to be a reviewer, please email stable@kernel.org to
+> > add your name to the list.  If you want to be off the reviewer list,
+> > also email us.
+>
+> Hi Greg:
+>
+> I am just wondering that is there any rule for stable kernel version
+> release?
+>
+> AFAIK, 2.6.x kernels are all stable release and 2.6.x.y is for stable
+> tree bug fixing and long term supporting. But I found 2.6.16.y got 49
+> version updating, it is more active than other stable release such as
+> 2.6.17 and 2.6.19. It looks like 2.6.16 is a long-long term supporting
+> version and even number 2.6.x kernel is more active than odd number
+> 2.6.x kernel.
+>
+> You know for some customer's product, they want to use the stable and
+> long term support kernel instead to use the latest one.
+>
+> Could you please give us some idea about this regular?
+>
 
-> If x86 had larger pagesize we wouldn't be seeing any of this.  It is a workaround
-> for present-generation hardware.
+2.6.16.y is special in that Adrian Bunk took it upon himself to
+maintain that branch more or less indefinately. But that's not how
+-stable normally works, it's Adrians own project.
 
-Unfortunately, it's not really practical to increase the page size
-very much on most systems, because you end up wasting a lot of space
-in the page cache.  So there is a tension between wanting a small page
-size so your page cache uses memory efficiently, and wanting a large
-page size so the TLB covers more address space and your programs run
-faster (not to mention other benefits such as the kernel having to
-manage fewer pages, and I/O being done in bigger chunks).
+The normal way -stable works is that it tracks the latest 2.6.x kernel
+that has been released.
+Now that 2.6.21 has been released, a final flush of the patch queue
+against 2.6.20 is done, that will be 2.6.20.10, and then -stable will
+switch to 2.6.21.y, when 2.6.22 comes out a final 2.6.21.y is made and
+then it's off to track 2.6.22
 
-Thus there is not really any single page size that suits all workloads
-and machines.  With distros wanting to just have a single kernel per
-architecture, and the fact that the page size is a compile-time
-constant, we currently end up having to pick one size and just put up
-with the fact that it will suck for some users.  We currently have
-this situation on ppc64 now that POWER5+ and POWER6 machines have
-hardware support for 64k pages as well as 4k pages.
+The rules for what is suitable for a -stable release etc is written in
+Documentation/stable_kernel_rules.txt
 
-So I can see a few different options:
+I believe the above reflects reality - if I've said something wrong I
+assume Greg will correct me :)
 
-(a) Keep things more or less as they are now and just wear the fact
-that we will continue to show lower performance than certain
-proprietary OSes, or
-
-(b) Somehow manage to make the page size a variable rather than a
-compile-time constant, and pick a suitable page size at boot time
-based on how much memory the machine has, or something.  I looked at
-implementing this at one point and recoiled in horror. :)
-
-(c) Make the page cache able to use small pages for small files and
-large pages for large files.  AIUI this is basically what Christoph is
-proposing.
-
-Option (a) isn't very palatable to me (nor I expect, Christoph :)
-since it basically says that Linux is very much focussed on the
-embedded and desktop end of things and isn't really suitable as a
-high-performance OS for large SMP systems.  I don't want to believe
-that. ;)
-
-Option (b) would be a bit of an ugly hack.
-
-Which leaves option (c) - unless you have a further option.  So I have
-to say I support Christoph on this, at least as far as the general
-principle is concerned.
-
-Regards,
-Paul.
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
