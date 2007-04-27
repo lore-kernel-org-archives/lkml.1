@@ -1,123 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbXD0SRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbXD0SWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbXD0SRM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754288AbXD0SRL
+	id S1754303AbXD0SWh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756984AbXD0SWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:17:11 -0400
-Received: from [70.254.190.220] ([70.254.190.220]:44635 "EHLO server.willdawg"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754257AbXD0SRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:17:10 -0400
-Date: Fri, 27 Apr 2007 18:17:08 +0000 (GMT)
-From: William Heimbigner <icxcnika@mar.tar.cc>
-X-X-Sender: icxcnika@server.thyself
-To: Gautham Shenoy <ego.lkml@gmail.com>
-cc: Dominik Brodowski <linux@dominikbrodowski.net>,
-       Dave Jones <davej@redhat.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Dhaval <dhaval.giani@gmail.com>
-Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
-In-Reply-To: <c03d1bd00704271006h4af83a0p99c37c6416b4c846@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0704271812500.25153@server.thyself>
-References: <Pine.LNX.4.64.0704242057430.25153@server.thyself> 
- <20070424211253.GG23598@redhat.com>  <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
-  <20070425000327.GG22267@redhat.com>  <20070427015410.GA9650@isilmar.linta.de>
-  <20070427060957.GA4726@redhat.com>  <20070427122444.GA3714@isilmar.linta.de>
- <c03d1bd00704271006h4af83a0p99c37c6416b4c846@mail.gmail.com>
+	Fri, 27 Apr 2007 14:22:37 -0400
+Received: from mail.tmr.com ([64.65.253.246]:48597 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754303AbXD0SWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:22:36 -0400
+Message-ID: <46323F6F.6070903@tmr.com>
+Date: Fri, 27 Apr 2007 14:22:39 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Con Kolivas <kernel@kolivas.org>
+CC: Ingo Molnar <mingo@elte.hu>, Ed Tomlinson <edt@aei.ca>,
+       Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD
+  0.46
+References: <462D2BDD.4040406@tmr.com> <20070424065709.GB19802@elte.hu> <46312116.1030506@tmr.com> <200704270856.17210.kernel@kolivas.org>
+In-Reply-To: <200704270856.17210.kernel@kolivas.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Gautham Shenoy wrote:
-> On 4/27/07, Dominik Brodowski <linux@dominikbrodowski.net> wrote:
->>  On Fri, Apr 27, 2007 at 02:09:57AM -0400, Dave Jones wrote:
->> >  On Thu, Apr 26, 2007 at 09:54:10PM -0400, Dominik Brodowski wrote:
->> > >  On Tue, Apr 24, 2007 at 08:03:27PM -0400, Dave Jones wrote:
->> > > >  On Tue, Apr 24, 2007 at 03:05:36PM -0700, Nish Aravamudan wrote:
->> > > > >  On 4/24/07, Dave Jones <davej@redhat.com> wrote:
->> > > > > >  On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner 
->> > > > > >  wrote:
->> > > > > > >  The following patches should allow selection of conservative, 
->> > > > > > >  powersave, and
->> > > > > > >  ondemand in the kernel configuration.
->> > > > > > 
->> > > > > >  This has been rejected several times already.
->> > > > > >  Ondemand and conservative isn't a viable governor for all 
->> > > > > >  cpufreq
->> > > > > >  implementations (ie, ones with high switching latencies).
->> > > > > 
->> > > > >  This piques my curiosity -- some governors don't work with some
->> > > > >  cpufreq implementations. Are those implementations in the kernel 
->> > > > >  or in
->> > > > >  userspace? If in the kernel, then perhaps there should be some
->> > > > >  dependency expressed there in Kconfig between cpufreq 
->> > > > >  implementation
->> > > > >  and the available governors
->> > > > 
->> > > >  it can't be solved that easily. powernow-k8 for example is fine to
->> > > >  use with ondemand on newer systems, where the latency is low.
->> > > >  On older models however, it isn't.
->> > > > 
->> > > > > >  Also, see the
->> > > > > >  comment in the Kconfig a few lines above where you are adding 
->> > > > > >  this.
->> > > > > 
->> > > > >  Are these governors unfixable? If
->> > > > 
->> > > >  tbh, I've forgotten the original issues that caused the comment
->> > > >  to be placed there. Dominik ?
->> > > 
->> > >  Not unfixable, but: cpufreq is currently[*] built around the 
->> > >  assumption that
->> > >  at least one governor is correctly initialized or can be brought to 
->> > >  work
->> > >  when a CPU is registered with the cpufreq core.
->> > 
->> >  It would have to take something fairly spectacular though for 
->> >  performance or
->> >  powersave to fail registration. Can you remember why we chose not to 
->> >  allow those?
+Con Kolivas wrote:
+> On Friday 27 April 2007 08:00, Bill Davidsen wrote:
+>   
+>> Ingo Molnar wrote:
+>>     
+>>> * Ed Tomlinson <edt@aei.ca> wrote:
+>>>       
+>>>>> SD 0.46		1-2 FPS
+>>>>> cfs v5 nice -19	219-233 FPS
+>>>>> cfs v5 nice 0 	1000-1996
+>>>>>           
+>>>>    cfs v5 nice -10  60-65 FPS
+>>>>         
+>>> the problem is, the glxgears portion of this test is an _inverse_
+>>> testcase.
+>>>
+>>> The reason? glxgears on true 3D hardware will _not_ use X, it will
+>>> directly use the 3D driver of the kernel. So by renicing X to -19 you
+>>> give the xterms more chance to show stuff - the performance of the
+>>> glxgears will 'degrade' - but that is what you asked for: glxgears is
+>>> 'just another CPU hog' that competes with X, it's not a "true" X client.
+>>>
+>>> if you are after glxgears performance in this test then you'll get the
+>>> best performance out of this by renicing X to +19 or even SCHED_BATCH.
+>>>       
+>> Several points on this...
 >>
->>  performance _is_ allowed; powersave would be possible -- but then those
->>  who
->>  accidentally enable it on elanfreq might wait 100 times as long for the
->>  system to boot, with gx-suspmod it might even be 255 times as long --
->>  okay,
->>  by default it's just 20 times as long, but still...
+>> First, I don't think this is accelerated in the way you mean, the
+>> machine is a test server, with motherboard video using the 945G video
+>> driver. Given the limitations of the support in that setup, I don't
+>> think it qualified as "true 3D hardware," although I guess I could try
+>> using the vesafb version as a test.
+>>
+>> The 2nd thing I note is that on FC6 this scheduler seems to confuse
+>> 'top' to some degree, since the glxgears is shown as taking 51% of the
+>> CPU (one core), while the state breakdown shows about 73% in idle,
+>> waitio, and int. image attached.
+>>     
 >
-> I agree!
+> top by itself certainly cannot be trusted to give true representation of the 
+> cpu usage I'm afraid. It's not as convoluted as, say, trying to track memory 
+> usage of an application, but top's resolution being tied to HZ accounting 
+> makes it not reliable in that regard.
+>   
+>> After I upgrade the kernel and cfs to the absolute latest I'll repeat
+>> this, as well as test with vesafb, and my planned run under heavy load.
+>>     
 >
-> Let a stable governor like performance or userspace be the default to
-> get the cpufreq up and running during boot up, and later on have some
-> init script switch
-> to a preferred governor like powersave/ondemand/conservative.
+> I have a problem with your test case Bill. Its behaviour would depend on how 
+> gpu bound vs cpu bound vs accelerated vs non-accelerated your graphics card 
+> is. I get completely different results to those of the other testers given 
+> the different hardware configuration and I don't think my results are 
+> valuable. My problem with this testcase is - What would you define 
+> as "perfect" behaviour for your test case? It seems far too arbitrary.
 >
-> Changing governor is just a matter of loading the appropriate module
-> and echoing the appropriate value into
-> /sys/devices/*/cpufreq/scaling_governor. Hardly takes any time.
->
-> William, Is there a specific reason why you would want
-> powersave/ondemand/conservative to be activate during the system boot
-> up?
->
+>   
+It was more intended to give an immediate feedback on gross behavior. On 
+some old schedulers (2.4.x) it visibly ran one xterm after the other, 
+while on 2.6.2[01] that behavior is gone and all schedulers give equal 
+time as seen by the eye. Looking at the behavior with line and jump 
+scroll, under load or not, X nice or nasty, allows a quick check on 
+where the bad cases are if any exist.
 
-Specific reason:
-Powersave would be useful for preserving battery life / keeping the CPU cool.
+I intended it as a quick way to determine really, visibly, bad 
+scheduling, not a a test for quantifying performance. The fact that fps 
+varies by almost an order of magnitude with some earlier versions of the 
+schedulers is certainly a red flag to me that there's a corner case, and 
+something I care more about than glxgears will be inconsistent as well.
 
-Secondary reason: Is there any reason why powersave would be any more 
-problematic than performance?
+Hopefully in that context, as a relatively quick way to try nice and 
+load values, it's a useful tool.
 
-What about conservative? Would that be problematic?
+-- 
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-It's been explained that ondemand could be problematic in computers which don't 
-support low-latency transitions, but conservative fixes that.
-
-If performance sends a command to cpufreq to use the highest frequency, and 
-powersave sends a command to cpufreq to use the lowest frequency, can someone 
-explain to me how performance can possibly safer than powersave?
-
-William Heimbigner
-icxcnika@mar.tar.cc
