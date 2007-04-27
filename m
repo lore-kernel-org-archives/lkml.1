@@ -1,48 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbXD0Sgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbXD0SnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756997AbXD0Sgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbXD0Sgb
+	id S1757010AbXD0SnD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbXD0SnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:36:31 -0400
-Received: from mu-out-0910.google.com ([209.85.134.191]:42656 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757012AbXD0Sga (ORCPT
+	Fri, 27 Apr 2007 14:43:01 -0400
+Received: from drizzle.cc.mcgill.ca ([132.206.27.48]:57131 "EHLO
+	drizzle.cc.mcgill.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757010AbXD0SnB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:36:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=bNp4Q9yOr8XGdjza8GMyOl1GzCZQdZHFkFpOwGwEz4EfNSeITZXhMsX2cegNWiouNH/Y7YmWlLAdEFrjFVK2zw8fN1DwTYjFbx5S+Ez4CMHfAaJ0Tl0SrpVnfsDFeeGklcRZoNsaUG3L9tLIZWFylp3Fc1K4cKu+e+DpPJXzfH8=
-Message-ID: <463242AC.5050608@gmail.com>
-Date: Fri, 27 Apr 2007 21:36:28 +0300
-From: Sergey Yanovich <ynvich@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-References: <20070427165544.99355.qmail@web36709.mail.mud.yahoo.com>
-In-Reply-To: <20070427165544.99355.qmail@web36709.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
+	Fri, 27 Apr 2007 14:43:01 -0400
+Subject: RE: Build Failure in 2.6.21
+From: David Ronis <ronis@ronispc.chem.mcgill.ca>
+Reply-To: David.Ronis@McGill.CA
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Chemistry Department, McGill University
+Date: Fri, 27 Apr 2007 14:42:43 -0400
+Message-Id: <1177699363.32236.15.camel@ronispc.chem.mcgill.ca>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Dubov wrote:
-> In general, it is impossible to maintain out-of-tree driver in sync with kernel tree - too many
-> changes are committed into it. The -mm version obviously fits its tree.
->
-I have compiled v2.6.21 with git-mmc.patch of v2.6.21-rc7.mm2.
-After [tifm_sd] is loaded. My smoke test script at
+I just found the problem--one of the patches was rejected.  I patched by hand 
+(patch_realtek.c) and things now build.  Now to see if it runs.
 
-http://bugzilla.kernel.org/attachment.cgi?id=11240&action=view
+David
 
-reliably hangs suspend.
 
-I didn't even see a failure for 'modprove -r tifm', which
-doesn't exist in this build.
+I've just tried to upgrade the kernel from 2.6.19.9 to 2.6.21.  The
+build dies in "make modules" at:
 
-I will try to bisect git-mmc.patch to locate the source of
-trouble. And I will compile my version to check it against
--mm tree.
+sound/pci/hda/patch_realtek.c:4174: error: array type has incomplete
+element type
+sound/pci/hda/patch_realtek.c:4175: error: field name not in record or
+union initializer
+sound/pci/hda/patch_realtek.c:4175: error: (near initialization for
+'alc260_cfg_tbl')
+sound/pci/hda/patch_realtek.c:4175: error: field name not in record or
+union initializer
+sound/pci/hda/patch_realtek.c:4175: error: (near initialization for
+'alc260_cfg_tbl')
+
+[lots more like the above].
+
+sound/pci/hda/patch_realtek.c: In function 'patch_alc260':
+sound/pci/hda/patch_realtek.c:4300: error: 'alc260_models' undeclared
+(first use in this function)
+sound/pci/hda/patch_realtek.c:4300: error: (Each undeclared identifier
+is reported only once
+sound/pci/hda/patch_realtek.c:4300: error: for each function it appears
+in.)
+make[3]: *** [sound/pci/hda/patch_realtek.o] Error 1
+make[2]: *** [sound/pci/hda] Error 2
+make[1]: *** [sound/pci] Error 2
+make: *** [sound] Error 2
+
+I'm on a i686, slackware-11.0 with gcc-4.1.2 box.  Things built fine on
+another box (albeit with a different sound card and hence driver
+options).
+
+Please CC me on any reply.
+
+David
+
+
