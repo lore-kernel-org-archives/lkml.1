@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755773AbXD0Mql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbXD0Mu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755773AbXD0Mql (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbXD0Mql
+	id S1755775AbXD0Mu3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbXD0Mu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:46:41 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:59767 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755771AbXD0Mqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:46:40 -0400
-Subject: Re: driver power operations (was Re: suspend2 merge)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <20070427124029.GH22250@elf.ucw.cz>
-References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
-	 <20070425203150.GD17387@elf.ucw.cz>
-	 <1177669279.7828.55.camel@johannes.berg> <200704271407.00879.rjw@sisk.pl>
-	 <20070427124029.GH22250@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-pcXzd7RiCtDbVasHyGX3"
-Date: Fri, 27 Apr 2007 14:46:42 +0200
-Message-Id: <1177678002.6024.11.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2.1 
+	Fri, 27 Apr 2007 08:50:29 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37775 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755770AbXD0MuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:50:03 -0400
+Date: Fri, 27 Apr 2007 14:49:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+Message-ID: <20070427124932.GA23513@elf.ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
---=-pcXzd7RiCtDbVasHyGX3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > * Doing things in the right order? (Prepare the image, then do the
+> > atomic copy, then save).
+> 
+> I'd actually like to discuss this a bit..
+> 
+> I'm obviously not a huge fan of the whole user/kernel level split and 
+> interfaces, but I actually do think that there is *one* split that makes 
+> sense:
+> 
+>  - generate the (whole) snapshot image entirely inside the kernel
+> 
+>  - do nothing else (ie no IO at all), and just export it as a single image 
+>    to user space (literally just mapping the pages into user space). 
+>    *one* interface. None of the "pretty UI update" crap. Just a single 
+>    system call:
+> 
+> 	void *snapshot_system(u32 *size);
+> 
+>    which will map in the snapshot, return the mapped address and the size 
+>    (and if you want to support snapshots > 4GB, be my guest, but I suspect 
+>    you're actually *better* off just admitting that if you cannot shrink 
+>    the snapshot to less than 32 bits, it's not worth doing)
 
-On Fri, 2007-04-27 at 14:40 +0200, Pavel Machek wrote:
+I think this is very similar to current uswsusp design; except that we
+are using read on /dev/snapshot to read the snapshot (not memory
+mapping) and that we freeze the system (because I do not think killall
+_SIGSTOP is enough).
 
-> > Five callbacks are fine by me, especially if we can define reasonable d=
-efaults
-> > for the hibernation (and can we?).
->=20
-> Well, we still can default to suspend(PMSG_FREEZE) for freeze(), and
-> resume() for thaw(). Anything else is just not sane way forward.
-
-I think we should remove the argument to suspend() in the same patch
-series. Yes, that would mean porting all drivers that currently use it,
-but that's not actually all that many since most drivers are dumbed-down
-wrt. power management.
-
-And realistically, resume for thaw makes no sense, nor does suspend for
-freeze, so we probably want to change those over to suspend/restart and
-use them. or something.
-
-johannes
-
---=-pcXzd7RiCtDbVasHyGX3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMfCy/ETPhpq3jKURAvgfAKCkr5+8OohXwg+2mpD5/9Ck7bZb9wCdGagf
-Lobd27HlV2zLmB2uxffXcaA=
-=I2Ch
------END PGP SIGNATURE-----
-
---=-pcXzd7RiCtDbVasHyGX3--
-
+Can you confirm that it is indeed similar design, or tell me why I'm
+wrong? You had some pretty strong words for uswsusp before, so I'd
+like to understand your position here. ("Ouch, I do not know, I am out
+of time" is still better reply than silence.)
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
