@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXD0Rq6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXD0RrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbXD0Rq6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:46:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXD0Rq6
+	id S1754218AbXD0RrJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXD0RrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:46:58 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38445 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754211AbXD0Rq4 (ORCPT
+	Fri, 27 Apr 2007 13:47:08 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:28420 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754218AbXD0RrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:46:56 -0400
-Date: Fri, 27 Apr 2007 10:46:09 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-cc: Peter Williams <pwil3058@bigpond.net.au>, jgarzik@pobox.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux-2.6.21 hangs during post boot initialization phase
-In-Reply-To: <20070427171150.GF19017@hmsreliant.homelinux.net>
-Message-ID: <alpine.LFD.0.98.0704271045180.9964@woody.linux-foundation.org>
-References: <463166C2.6060106@bigpond.net.au>
- <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org>
- <46319297.905@bigpond.net.au> <20070427122247.GA19017@hmsreliant.homelinux.net>
- <4632088C.8000509@bigpond.net.au>
- <20070427171150.GF19017@hmsreliant.homelinux.net>
+	Fri, 27 Apr 2007 13:47:03 -0400
+Date: Fri, 27 Apr 2007 19:46:13 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 0/5] fallocate system call
+Message-ID: <20070427174613.GA8228@osiris.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070427121003.GA7808@osiris.boeblingen.de.ibm.com> <20070427144327.GC22949@lazybastard.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070427144327.GC22949@lazybastard.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, Neil Horman wrote:
+On Fri, Apr 27, 2007 at 04:43:28PM +0200, Jörn Engel wrote:
+> On Fri, 27 April 2007 14:10:03 +0200, Heiko Carstens wrote:
+> > 
+> > After long discussions where at least two possible implementations
+> > were suggested that would work on _all_ architectures you chose one
+> > which doesn't and causes extra effort.
 > 
-> Damn, This is what happens when I try to do things too quickly.  I missed one
-> spot in my last patch where I replaced skb with rx_skb [...]
+> I believe the long discussion also showed that every possible
+> implementation has drawbacks.  To me this one appeared to be the best of
+> many bad choices.
 
-Jeff, I'm going to assume I get all these through your normal network 
-driver tree.
+If one insists to have fd at first argument, what is wrong with having
+u32 arguments only? It's not that this syscall comes even close to
+what can be considered performance critical...
 
-So this is just a note to say that I'm currently ignoring both the 
-previous patch and this fix on top of it ;)
+> Is this implementation worse than we thought?
 
-		Linus
+It adds userspace overhead for one architecture. Every *trace and
+*libc needs special handling on s390 for this syscall. I would
+prefer to avoid this.
