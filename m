@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbXD0WGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbXD0WHU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbXD0WGa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXD0WGA
+	id S1757450AbXD0WHU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:07:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbXD0WHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:06:00 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:49942 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757463AbXD0WFX (ORCPT
+	Fri, 27 Apr 2007 18:07:01 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:56021 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752834AbXD0WGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:05:23 -0400
-Date: Fri, 27 Apr 2007 15:02:55 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.21.1
-Message-ID: <20070427220255.GB2315@kroah.com>
+	Fri, 27 Apr 2007 18:06:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=CUDKKN8oYFN6B1yNmRC4y7oruZu2V7DzhkJHoOYBaV3NtwQ2XOqLM/PRZk6HiEWVTuno16frD3UTLTENagBFj+35/1oJahh2TrT/hUZgHRi5fxmtkDUhKMtbrE739onZ3pnP+0Q1+V/NNa4/YRX/wEvOTsV0C8jEk/BA/eO2f5U=
+Message-ID: <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com>
+Date: Fri, 27 Apr 2007 18:06:33 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Jon Burgess" <jburgess777@googlemail.com>
+Subject: Re: [linux-dvb] Re: More than 2Gb problem (dvb related) ?
+Cc: "Markus Rechberger" <mrechberger@gmail.com>,
+       "Gregoire Favre" <Gregoire.Favre@gmail.com>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1177711220.26292.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070427220216.GA2315@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <20070427111047.GB10284@gmail.com>
+	 <d9def9db0704271346i1556c59dgad222d5de7d919f6@mail.gmail.com>
+	 <1177711220.26292.20.camel@localhost.localdomain>
+X-Google-Sender-Auth: a06faba453dab6a5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-diff --git a/Makefile b/Makefile
-index d970cb1..58c08d1 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1,7 +1,7 @@
- VERSION = 2
- PATCHLEVEL = 6
- SUBLEVEL = 21
--EXTRAVERSION =
-+EXTRAVERSION = .1
- NAME = Nocturnal Monster Puppy
- 
- # *DOCUMENTATION*
-diff --git a/net/ipv4/fib_frontend.c b/net/ipv4/fib_frontend.c
-index cac06c4..444a56b 100644
---- a/net/ipv4/fib_frontend.c
-+++ b/net/ipv4/fib_frontend.c
-@@ -777,6 +777,10 @@ static void nl_fib_lookup(struct fib_result_nl *frn, struct fib_table *tb )
- 							    .tos = frn->fl_tos,
- 							    .scope = frn->fl_scope } } };
- 
-+#ifdef CONFIG_IP_MULTIPLE_TABLES
-+	res.r = NULL;
-+#endif
-+
- 	frn->err = -ENOENT;
- 	if (tb) {
- 		local_bh_disable();
-diff --git a/net/ipv6/exthdrs.c b/net/ipv6/exthdrs.c
-index fb39604..3205ec9 100644
---- a/net/ipv6/exthdrs.c
-+++ b/net/ipv6/exthdrs.c
-@@ -396,6 +396,7 @@ static int ipv6_rthdr_rcv(struct sk_buff **skbp)
- 
- 	switch (hdr->type) {
- #ifdef CONFIG_IPV6_MIP6
-+	case IPV6_SRCRT_TYPE_2:
- 		break;
- #endif
- 	case IPV6_SRCRT_TYPE_0:
+On 4/27/07, Jon Burgess <jburgess777@googlemail.com> wrote:
+> Interesting - I see similar symptoms after upgrading my PC:
+> * old PC was AMD Athlon 64 3000 w/ 2GB of RAM which had no issues
+> * new PC is a Intel Core 2 Duo w/ 4GB of RAM and fails in the way you
+> describe.
+
+Driver using an incorrect DMA mask?
+
+Lee
