@@ -1,44 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbXD0TBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbXD0TA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbXD0TBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757104AbXD0TBh
+	id S1757075AbXD0TA5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbXD0S7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:01:37 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:38235 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757087AbXD0TB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 15:01:28 -0400
-Date: Fri, 27 Apr 2007 15:01:27 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Acker <dacker@roinet.com>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Lennert Buytenhek <buytenh@wantstofly.org>,
-       Jeff Garzik <jeff@garzik.org>, Netdev List <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFT] e100 driver on ARM
-Message-ID: <20070427190127.GB5578@csclub.uwaterloo.ca>
-References: <44FC0261.6010807@garzik.org> <20060904123123.GB1285@xi.wantstofly.org> <460AF480.7050609@intel.com> <460B4BF2.1070803@roinet.com> <20070329141041.GA3510@csclub.uwaterloo.ca> <46239138.4040408@roinet.com> <20070417173507.GB5575@csclub.uwaterloo.ca> <4630D116.4080202@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4630D116.4080202@zytor.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 27 Apr 2007 14:59:30 -0400
+Received: from mail.suse.de ([195.135.220.2]:50849 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757075AbXD0S7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:59:05 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Akinobu Mita <akinobu.mita@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 44/46] mod_sysfs_setup() doesn't return errno when kobject_add_dir() failure occurs
+Date: Fri, 27 Apr 2007 11:53:58 -0700
+Message-Id: <11777002064008-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.1.2
+In-Reply-To: <11777002022552-git-send-email-gregkh@suse.de>
+References: <20070427185152.GA17121@kroah.com>
+ <1177700040520-git-send-email-gregkh@suse.de>
+ <11777000433552-git-send-email-gregkh@suse.de>
+ <11777000471977-git-send-email-gregkh@suse.de>
+ <11777000511784-git-send-email-gregkh@suse.de>
+ <11777000552084-git-send-email-gregkh@suse.de>
+ <1177700059319-git-send-email-gregkh@suse.de>
+ <11777000632194-git-send-email-gregkh@suse.de>
+ <11777000663361-git-send-email-gregkh@suse.de>
+ <1177700070961-git-send-email-gregkh@suse.de>
+ <1177700074272-git-send-email-gregkh@suse.de>
+ <11777000773819-git-send-email-gregkh@suse.de>
+ <11777000814075-git-send-email-gregkh@suse.de>
+ <11777000852694-git-send-email-gregkh@suse.de>
+ <11777000881307-git-send-email-gregkh@suse.de>
+ <11777000923797-git-send-email-gregkh@suse.de>
+ <11777000963332-git-send-email-gregkh@suse.de>
+ <11777001002860-git-send-email-gregkh@suse.de>
+ <11777001041847-git-send-email-gregkh@suse.de>
+ <11777001072576-git-send-email-gregkh@suse.de>
+ <11777001102852-git-send-email-gregkh@suse.de>
+ <1177700114535-git-send-email-gregkh@suse.de>
+ <11777001182501-git-send-email-gregkh@suse.de>
+ <11777001222882-git-send-email-gregkh@suse.de>
+ <1177700125350-git-send-email-gregkh@suse.de>
+ <11777001301175-git-send-email-gregkh@suse.de>
+ <11777001333852-git-send-email-gregkh@suse.de>
+ <117770013729-git-send-email-gregkh@suse.de>
+ <11777001413571-git-send-email-gregkh@suse.de>
+ <11777001442148-git-send-email-gregkh@suse.de>
+ <1177700148815-git-send-email-gregkh@suse.de>
+ <11777001521006-git-send-email-gregkh@suse.de>
+ <1177700156641-git-send-email-gregkh@suse.de>
+ <1177700160896-git-send-email-gregkh@suse.de>
+ <11777001642551-git-send-email-gregkh@suse.de>
+ <11777001682584-git-send-email-gregkh@suse.de>
+ <1177700172258-git-send-email-gregkh@suse.de>
+ <11777001773804-git-send-email-gregkh@suse.de>
+ <11777001803098-git-send-email-gregkh@suse.de>
+ <11777001852549-git-send-email-gregkh@suse.de>
+ <11777001891914-git-send-email-gregkh@suse.de>
+ <11777001931075-git-send-email-gregkh@suse.de>
+ <11777001971761-git-send-email-gregkh@suse.de>
+ <11777002022552-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 09:19:34AM -0700, H. Peter Anvin wrote:
-> Why wouldn't that be permitted?  It, in fact, happens all the time (the
-> host bridge withdraws the GNT# line and raises STOP#, which does a
-> Termination With Data of the bus transfer.)  This is a normal event and
-> if you can't handle it you won't work with many host bridges at all.
+From: Akinobu Mita <akinobu.mita@gmail.com>
 
-Well there must have been something else wrong then.  Certainly I saw
-data corruption on a rtl8139.  No problems with the same hardware using
-a geode SC1200, so I have no idea.  I liked the speed of the PXA255 a
-lot better than the slow poke SC1200.
+mod_sysfs_setup() doesn't return an errno when kobject_add_dir() for module
+"holders" directory fails.  So caller of mod_sysfs_setup() will keep going
+and get oops.
 
---
-Len Sorensen
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ kernel/module.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index dcdb32b..9da5af6 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1148,8 +1148,10 @@ int mod_sysfs_setup(struct module *mod,
+ 		goto out;
+ 
+ 	mod->holders_dir = kobject_add_dir(&mod->mkobj.kobj, "holders");
+-	if (!mod->holders_dir)
++	if (!mod->holders_dir) {
++		err = -ENOMEM;
+ 		goto out_unreg;
++	}
+ 
+ 	err = module_param_sysfs_setup(mod, kparam, num_params);
+ 	if (err)
+-- 
+1.5.1.2
+
