@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbXD0Mu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbXD0Mws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbXD0Mu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbXD0Mu3
+	id S1755774AbXD0Mws (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXD0Mwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:50:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37775 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755770AbXD0MuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:50:03 -0400
-Date: Fri, 27 Apr 2007 14:49:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-Message-ID: <20070427124932.GA23513@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+	Fri, 27 Apr 2007 08:52:47 -0400
+Received: from holomorphy.com ([66.93.40.71]:41740 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755772AbXD0Mwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:52:46 -0400
+Date: Fri, 27 Apr 2007 05:52:48 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kasper Sandberg <lkml@metanurb.dk>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070427125248.GN19966@holomorphy.com>
+References: <20070425214704.GA32572@elte.hu> <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070427115344.GA30706@elte.hu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, Apr 27, 2007 at 01:53:44PM +0200, Ingo Molnar wrote:
+> i'll try to figure out what is happening on your box. I asked for your 
+> .config off-list (which you already sent me) and i'll try to reproduce 
+> your problems. One thing i noticed: when ogg123 plays with 'esd' also 
+> running on the system, it starts skipping really badly - but it does so 
+> under all schedulers i tried (cfs, sd, vanilla).
 
-> > * Doing things in the right order? (Prepare the image, then do the
-> > atomic copy, then save).
-> 
-> I'd actually like to discuss this a bit..
-> 
-> I'm obviously not a huge fan of the whole user/kernel level split and 
-> interfaces, but I actually do think that there is *one* split that makes 
-> sense:
-> 
->  - generate the (whole) snapshot image entirely inside the kernel
-> 
->  - do nothing else (ie no IO at all), and just export it as a single image 
->    to user space (literally just mapping the pages into user space). 
->    *one* interface. None of the "pretty UI update" crap. Just a single 
->    system call:
-> 
-> 	void *snapshot_system(u32 *size);
-> 
->    which will map in the snapshot, return the mapped address and the size 
->    (and if you want to support snapshots > 4GB, be my guest, but I suspect 
->    you're actually *better* off just admitting that if you cannot shrink 
->    the snapshot to less than 32 bits, it's not worth doing)
+I see similar here, but this has not always been the case. 2.6.10 did
+not have the issue with esd.
 
-I think this is very similar to current uswsusp design; except that we
-are using read on /dev/snapshot to read the snapshot (not memory
-mapping) and that we freeze the system (because I do not think killall
-_SIGSTOP is enough).
 
-Can you confirm that it is indeed similar design, or tell me why I'm
-wrong? You had some pretty strong words for uswsusp before, so I'd
-like to understand your position here. ("Ouch, I do not know, I am out
-of time" is still better reply than silence.)
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- wli
