@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbXD0EDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbXD0EFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbXD0EDE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 00:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbXD0EDD
+	id S1755250AbXD0EFo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 00:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbXD0EFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 00:03:03 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48222 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755260AbXD0EDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 00:03:00 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/E9bgC+UPEMYzQiduNuF99LDhzD7u6W9AS7HdaQc
-	oEcX/pZSx4bvp/
-Subject: Re: [patch] CFS scheduler, -v6
-From: Mike Galbraith <efault@gmx.de>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Gene Heskett <gene.heskett@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-In-Reply-To: <1177618164.14496.5.camel@localhost>
-References: <20070425214704.GA32572@elte.hu>
-	 <1177596399.14496.1.camel@localhost>
-	 <200704261041.04838.gene.heskett@gmail.com>
-	 <1177618164.14496.5.camel@localhost>
-Content-Type: text/plain
-Date: Fri, 27 Apr 2007 06:02:52 +0200
-Message-Id: <1177646573.6520.4.camel@Homer.simpson.net>
+	Fri, 27 Apr 2007 00:05:44 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:38718 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755250AbXD0EFn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 00:05:43 -0400
+Date: Thu, 26 Apr 2007 21:04:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: <rol@as2917.net>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>, dm-devel@redhat.com
+Subject: Re: Strange problem with Device Mapper
+Message-Id: <20070426210455.05400edf.akpm@linux-foundation.org>
+In-Reply-To: <006001c78826$13f50cf0$4b00a8c0@donald>
+References: <006001c78826$13f50cf0$4b00a8c0@donald>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 22:09 +0200, Kasper Sandberg wrote:
-> On Thu, 2007-04-26 at 10:41 -0400, Gene Heskett wrote:
-> <snip>
-> > 
-> > Compared to mainline?  I still think this is a 100% keeper for desktop users 
-> > like me.
+On Thu, 26 Apr 2007 19:12:27 +0200 "Paul Rolland" <rol@as2917.net> wrote:
+
+> Hello,
 > 
-> Here its alot worse, just playing an ogg with ogg123 even without
-> anything reniced (X is 0), just pressing a link in konqueror can make
-> audio skip (ogg123 fails to fill the alsa buffer, and thus it skips).
+> I've a machine that has been installed with Intel Soft Raid on top
+> of 2 SATA disks.
+> I'm trying to have this work as a RAID-1 array. 
+> Bios configuration has been done, using 128K chunk, and the kernel
+> (2.6.20.7) sees perfectly /dev/mapper/isw_xxxxxxxx_RAID1
+> 
+> But, I'm facing two problems :
+> 1 - If i try to create partitions on this device, it does fail (the 
+>     values are not interpreted correctly)
+> 
+> 2 - To avoid 1), I stop the RAID array (dmraid -an), then I do create
+>     exactly the same partition set on /dev/sda, and /dev/sdb, and
+>     then I reactivate RAID (dmraid -ay).
+>     This allows me to see all the /dev/mapper/isw_xxxxxxx_RAID1p1, p2, ...
+>     But, running fsck -t ext2 /dev/mapper/isw_xxxxxxx_RAID1p1
+>     ends in a lock when the partition is larger than 10Go (well, it is
+>     Ok on the 10Go one, and it locks on the 100Go).
+>     Not a real hardlock, I still can switch to a new VC, but it's not
+>     more possible to start a new command or to stop fsck.
+> 
+> Should I do everything on the physical disks before activating RAID ?
+> Is it a normal behavior ?
+> 
+> BTW, I also noticed that such a device doesn't support BLKRRPART ioctl...
+> So it is possible that what I'm doing is wrong...
+> 
+> Any idea ?
+> 
 
-What arguments are you passing to ogg123?  I'm creating some ogg files
-right now, and would like to reproduce these skips to see why they're
-happening if possible.
-
-	-Mike
-
+cc added.
