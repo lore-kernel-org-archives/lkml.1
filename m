@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXD0TOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbXD0TOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbXD0TOF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXD0TMv
+	id S1757031AbXD0TOW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXD0TOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:12:51 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35240 "EHLO mx2.suse.de"
+	Fri, 27 Apr 2007 15:14:07 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50569 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757043AbXD0S5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:57:11 -0400
+	id S1757051AbXD0S5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:57:04 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+Cc: Jean Tourrilhes <jt@hpl.hp.com>, Kay Sievers <kay.sievers@vrfy.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 15/46] Driver core: switch firmware_class to uevent_suppress.
-Date: Fri, 27 Apr 2007 11:53:29 -0700
-Message-Id: <11777000923797-git-send-email-gregkh@suse.de>
+Subject: [PATCH 13/46] Driver core: notify userspace of network device renames
+Date: Fri, 27 Apr 2007 11:53:27 -0700
+Message-Id: <11777000852694-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777000881307-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777000814075-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -31,65 +31,91 @@ References: <20070427185152.GA17121@kroah.com>
  <1177700074272-git-send-email-gregkh@suse.de>
  <11777000773819-git-send-email-gregkh@suse.de>
  <11777000814075-git-send-email-gregkh@suse.de>
- <11777000852694-git-send-email-gregkh@suse.de>
- <11777000881307-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+From: Jean Tourrilhes <jt@hpl.hp.com>
 
-Use uevent_suppress instead of returning an error code in
-firmware_uevent(). Get rid of the now unneeded FW_STATUS_READY
-and FW_STATUS_READY_NOHOTPLUG.
+Provide rename event for when we rename network devices.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Jean Tourrilhes <jt@hpl.hp.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/firmware_class.c |   10 ++--------
- 1 files changed, 2 insertions(+), 8 deletions(-)
+ lib/kobject.c        |   30 ++++++++++++++++++++++++++++++
+ net/core/net-sysfs.c |   11 +++++++++++
+ 2 files changed, 41 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index c0a979a..97ab5bd 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -31,8 +31,6 @@ enum {
- 	FW_STATUS_LOADING,
- 	FW_STATUS_DONE,
- 	FW_STATUS_ABORT,
--	FW_STATUS_READY,
--	FW_STATUS_READY_NOHOTPLUG,
- };
+diff --git a/lib/kobject.c b/lib/kobject.c
+index bbbfab4..db1d237 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -311,13 +311,43 @@ EXPORT_SYMBOL(kobject_set_name);
+ int kobject_rename(struct kobject * kobj, const char *new_name)
+ {
+ 	int error = 0;
++	const char *devpath = NULL;
++	char *devpath_string = NULL;
++	char *envp[2];
  
- static int loading_timeout = 60;	/* In seconds */
-@@ -96,9 +94,6 @@ static int firmware_uevent(struct device *dev, char **envp, int num_envp,
- 	struct firmware_priv *fw_priv = dev_get_drvdata(dev);
- 	int i = 0, len = 0;
+ 	kobj = kobject_get(kobj);
+ 	if (!kobj)
+ 		return -EINVAL;
+ 	if (!kobj->parent)
+ 		return -EINVAL;
++
++	devpath = kobject_get_path(kobj, GFP_KERNEL);
++	if (!devpath) {
++		error = -ENOMEM;
++		goto out;
++	}
++	devpath_string = kmalloc(strlen(devpath) + 15, GFP_KERNEL);
++	if (!devpath_string) {
++		error = -ENOMEM;
++		goto out;
++	}
++	sprintf(devpath_string, "DEVPATH_OLD=%s", devpath);
++	envp[0] = devpath_string;
++	envp[1] = NULL;
++	/* Note : if we want to send the new name alone, not the full path,
++	 * we could probably use kobject_name(kobj); */
++
+ 	error = sysfs_rename_dir(kobj, kobj->parent->dentry, new_name);
++
++	/* This function is mostly/only used for network interface.
++	 * Some hotplug package track interfaces by their name and
++	 * therefore want to know when the name is changed by the user. */
++	if (!error)
++		kobject_uevent_env(kobj, KOBJ_MOVE, envp);
++
++out:
++	kfree(devpath_string);
++	kfree(devpath);
+ 	kobject_put(kobj);
  
--	if (!test_bit(FW_STATUS_READY, &fw_priv->status))
--		return -ENODEV;
--
- 	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size, &len,
- 			   "FIRMWARE=%s", fw_priv->fw_id))
+ 	return error;
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index 221a64a..e441ec7 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -424,6 +424,17 @@ static int netdev_uevent(struct device *d, char **envp,
+ 	if ((size <= 0) || (i >= num_envp))
  		return -ENOMEM;
-@@ -333,6 +328,7 @@ static int fw_register_device(struct device **dev_p, const char *fw_name,
- 	f_dev->parent = device;
- 	f_dev->class = &firmware_class;
- 	dev_set_drvdata(f_dev, fw_priv);
-+	f_dev->uevent_suppress = 1;
- 	retval = device_register(f_dev);
- 	if (retval) {
- 		printk(KERN_ERR "%s: device_register failed\n",
-@@ -382,9 +378,7 @@ static int fw_setup_device(struct firmware *fw, struct device **dev_p,
- 	}
  
- 	if (uevent)
--                set_bit(FW_STATUS_READY, &fw_priv->status);
--        else
--                set_bit(FW_STATUS_READY_NOHOTPLUG, &fw_priv->status);
-+		f_dev->uevent_suppress = 0;
- 	*dev_p = f_dev;
- 	goto out;
- 
++	/* pass ifindex to uevent.
++	 * ifindex is useful as it won't change (interface name may change)
++	 * and is what RtNetlink uses natively. */
++	envp[i++] = buf;
++	n = snprintf(buf, size, "IFINDEX=%d", dev->ifindex) + 1;
++	buf += n;
++	size -= n;
++
++	if ((size <= 0) || (i >= num_envp))
++		return -ENOMEM;
++
+ 	envp[i] = NULL;
+ 	return 0;
+ }
 -- 
 1.5.1.2
 
