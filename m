@@ -1,558 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757521AbXD0Wx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757533AbXD0Wxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757521AbXD0Wx2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757531AbXD0Wx2
+	id S1757533AbXD0Wxz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757532AbXD0Wxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:53:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:37247 "EHLO mx1.suse.de"
+	Fri, 27 Apr 2007 18:53:55 -0400
+Received: from ns1.suse.de ([195.135.220.2]:37250 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757521AbXD0WxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:53:22 -0400
+	id S1757524AbXD0Wx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:53:26 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: torvalds@osdl.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/3] UIO: Documentation
-Date: Fri, 27 Apr 2007 15:50:57 -0700
-Message-Id: <11777142633770-git-send-email-gregkh@suse.de>
+Cc: torvalds@osdl.org, =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/3] UIO: Hilscher CIF card driver
+Date: Fri, 27 Apr 2007 15:50:58 -0700
+Message-Id: <11777142681853-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777142582534-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777142633770-git-send-email-gregkh@suse.de>
 References: <20070427224957.GA17967@kroah.com>
  <11777142582534-git-send-email-gregkh@suse.de>
+ <11777142633770-git-send-email-gregkh@suse.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans J. Koch <hjk@linutronix.de>
+From: Hans-Jürgen Koch <hjk@linutronix.de>
 
-Documentation for the UIO interface
+this is a patch that adds support for Hilscher CIF DeviceNet and
+Profibus cards. I tested it on a Kontron CPX board, and Thomas reviewed
+it.
 
-From: Hans J. Koch <hjk@linutronix.de>
+You can find the user space part here:
+
+http://www.osadl.org/projects/downloads/UIO/user/cif-0.1.0.tar.gz
+
+Notes: cif_api.c is the main file you want to look at. It contains the
+functions to open, close, mmap and so on. cif_dps.c adds functions
+specific to Profibus cards, and cif_dn.c contains functions for
+DeviceNet cards.  cif.c is a universal playground, it's just a small
+test program.  The user space part of this UIO driver is still work in
+progress, and not everything is tested yet. At the moment, the thread in
+cif_api.c contains some code that artificially makes the card generate
+interrupts, this was added for testing and will be removed later. But
+the driver already contains all the functions needed for useful
+operation, so it gives a good idea of how such a thing looks like.
+
+For comparison, here's what you get from the manufacturer
+(www.hilscher.com) when you ask for a Linux 2.6 driver:
+
+http://www.tglx.de/private/hjk/cif-orig-2.6.tar.bz2
+
+WARNING: Don't look at the code for too long, you might become sick :-)
+
+
+Signed-off-by: Hans-Jürgen Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/DocBook/kernel-api.tmpl |    4 +
- Documentation/DocBook/uio-howto.tmpl  |  498 +++++++++++++++++++++++++++++++++
- 2 files changed, 502 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/DocBook/uio-howto.tmpl
+ drivers/uio/Kconfig   |   13 ++++
+ drivers/uio/Makefile  |    3 +-
+ drivers/uio/uio_cif.c |  156 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 171 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/uio/uio_cif.c
 
-diff --git a/Documentation/DocBook/kernel-api.tmpl b/Documentation/DocBook/kernel-api.tmpl
-index 0bb9023..40e968d 100644
---- a/Documentation/DocBook/kernel-api.tmpl
-+++ b/Documentation/DocBook/kernel-api.tmpl
-@@ -396,6 +396,10 @@ X!Edrivers/pnp/system.c
- !Edrivers/pnp/manager.c
- !Edrivers/pnp/support.c
-      </sect1>
-+     <sect1><title>Userspace IO devices</title>
-+!Edrivers/uio/uio.c
-+!Iinclude/linux/uio_driver.h
-+     </sect1>
-   </chapter>
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 8fcef21..279f26c 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -11,4 +11,17 @@ config UIO
  
-   <chapter id="blkdev">
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+ 	  If you don't know what to do here, say N.
+ 
++config UIO_CIF
++	tristate "generic Hilscher CIF Card driver"
++	depends on UIO && PCI
++	default n
++	help
++	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
++	  driver requires a userspace component that handles all of the
++	  heavy lifting and can be found at:
++	  	http://www.osadl.org/projects/downloads/UIO/user/cif-*
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called uio_cif.
++
+ endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 9b7c830..7fecfb4 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1 +1,2 @@
+-obj-$(CONFIG_UIO) += uio.o
++obj-$(CONFIG_UIO)	+= uio.o
++obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
 new file mode 100644
-index 0000000..bd2209f
+index 0000000..9ac625c
 --- /dev/null
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -0,0 +1,498 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
++++ b/drivers/uio/uio_cif.c
+@@ -0,0 +1,156 @@
++/*
++ * UIO Hilscher CIF card driver
++ *
++ * (C) 2007 Hans J. Koch <hjk@linutronix.de>
++ * Original code (C) 2005 Benedikt Spranger <b.spranger@linutronix.de>
++ *
++ * Licensed under GPL version 2 only.
++ *
++ */
 +
-+<article id="index">
-+<articleinfo>
-+<title>The Userspace I/O HOWTO</title>
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/uio_driver.h>
 +
-+<author>
-+      <firstname>Hans-Jürgen</firstname>
-+      <surname>Koch</surname>
-+      <authorblurb><para>Linux developer, Linutronix</para></authorblurb>
-+	<affiliation>
-+	<orgname>
-+		<ulink url="http://www.linutronix.de">Linutronix</ulink>
-+	</orgname>
++#include <asm/io.h>
 +
-+	<address>
-+	   <email>hjk@linutronix.de</email>
-+	</address>
-+    </affiliation>
-+</author>
++#ifndef PCI_DEVICE_ID_PLX_9030
++#define PCI_DEVICE_ID_PLX_9030	0x9030
++#endif
 +
-+<pubdate>2006-12-11</pubdate>
++#define PLX9030_INTCSR		0x4C
++#define INTSCR_INT1_ENABLE	0x01
++#define INTSCR_INT1_STATUS	0x04
++#define INT1_ENABLED_AND_ACTIVE	(INTSCR_INT1_ENABLE | INTSCR_INT1_STATUS)
 +
-+<abstract>
-+	<para>This HOWTO describes concept and usage of Linux kernel's
-+		Userspace I/O system.</para>
-+</abstract>
++#define PCI_SUBVENDOR_ID_PEP	0x1518
++#define CIF_SUBDEVICE_PROFIBUS	0x430
++#define CIF_SUBDEVICE_DEVICENET	0x432
 +
-+<revhistory>
-+	<revision>
-+	<revnumber>0.2</revnumber>
-+	<date>2007-02-13</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Update after multiple mappings were added.</revremark>
-+	</revision>
-+	<revision>
-+	<revnumber>0.1</revnumber>
-+	<date>2006-12-11</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>First draft.</revremark>
-+	</revision>
-+</revhistory>
-+</articleinfo>
 +
-+<sect1 id="aboutthisdoc">
-+<?dbhtml filename="about.html"?>
-+<title>About this document</title>
++static irqreturn_t hilscher_handler(int irq, struct uio_info *dev_info)
++{
++	void __iomem *plx_intscr = dev_info->mem[0].internal_addr
++					+ PLX9030_INTCSR;
 +
-+<sect2 id="copyright">
-+<?dbhtml filename="copyright.html"?>
-+<title>Copyright and License</title>
-+<para>
-+      Copyright (c) 2006 by Hans-Jürgen Koch.</para>
-+<para>
-+This documentation is Free Software licensed under the terms of the
-+GPL version 2.
-+</para>
-+</sect2>
++	if ((ioread8(plx_intscr) & INT1_ENABLED_AND_ACTIVE)
++	    != INT1_ENABLED_AND_ACTIVE)
++		return IRQ_NONE;
 +
-+<sect2 id="translations">
-+<?dbhtml filename="translations.html"?>
-+<title>Translations</title>
++	/* Disable interrupt */
++	iowrite8(ioread8(plx_intscr) & ~INTSCR_INT1_ENABLE, plx_intscr);
++	return IRQ_HANDLED;
++}
 +
-+<para>If you know of any translations for this document, or you are
-+interested in translating it, please email me
-+<email>hjk@linutronix.de</email>.
-+</para>
-+</sect2>
++static int __devinit hilscher_pci_probe(struct pci_dev *dev,
++					const struct pci_device_id *id)
++{
++	struct uio_info *info;
 +
-+<sect2 id="preface">
-+<title>Preface</title>
-+	<para>
-+	For many types of devices, creating a Linux kernel driver is
-+	overkill.  All that is really needed is some way to handle an
-+	interrupt and provide access to the memory space of the
-+	device.  The logic of controlling the device does not
-+	necessarily have to be within the kernel, as the device does
-+	not need to take advantage of any of other resources that the
-+	kernel provides.  One such common class of devices that are
-+	like this are for industrial I/O cards.
-+	</para>
-+	<para>
-+	To address this situation, the userspace I/O system (UIO) was
-+	designed.  For typical industrial I/O cards, only a very small
-+	kernel module is needed. The main part of the driver will run in
-+	user space. This simplifies development and reduces the risk of
-+	serious bugs within a kernel module.
-+	</para>
-+</sect2>
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
 +
-+<sect2 id="thanks">
-+<title>Acknowledgments</title>
-+	<para>I'd like to thank Thomas Gleixner and Benedikt Spranger of
-+	Linutronix, who have not only written most of the UIO code, but also
-+	helped greatly writing this HOWTO by giving me all kinds of background
-+	information.</para>
-+</sect2>
++	if (pci_enable_device(dev))
++		goto out_free;
 +
-+<sect2 id="feedback">
-+<title>Feedback</title>
-+	<para>Find something wrong with this document? (Or perhaps something
-+	right?) I would love to hear from you. Please email me at
-+	<email>hjk@linutronix.de</email>.</para>
-+</sect2>
-+</sect1>
++	if (pci_request_regions(dev, "hilscher"))
++		goto out_disable;
 +
-+<sect1 id="about">
-+<?dbhtml filename="about.html"?>
-+<title>About UIO</title>
++	info->mem[0].addr = pci_resource_start(dev, 0);
++	if (!info->mem[0].addr)
++		goto out_release;
++	info->mem[0].internal_addr = ioremap_nocache(pci_resource_start(dev, 0),
++						     pci_resource_len(dev, 0));
++	if (!info->mem[0].internal_addr)
++		goto out_release;
 +
-+<para>If you use UIO for your card's driver, here's what you get:</para>
++	info->mem[0].size = pci_resource_len(dev, 0);
++	info->mem[0].memtype = UIO_MEM_PHYS;
++	info->mem[1].addr = pci_resource_start(dev, 2);
++	info->mem[1].size = pci_resource_len(dev, 2);
++	info->mem[1].memtype = UIO_MEM_PHYS;
++	switch (id->subdevice) {
++		case CIF_SUBDEVICE_PROFIBUS:
++			info->name = "CIF_Profibus";
++			break;
++		case CIF_SUBDEVICE_DEVICENET:
++			info->name = "CIF_Devicenet";
++			break;
++		default:
++			info->name = "CIF_???";
++	}
++	info->version = "0.0.1";
++	info->irq = dev->irq;
++	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
++	info->handler = hilscher_handler;
 +
-+<itemizedlist>
-+<listitem>
-+	<para>only one small kernel module to write and maintain.</para>
-+</listitem>
-+<listitem>
-+	<para>develop the main part of your driver in user space,
-+	with all the tools and libraries you're used to.</para>
-+</listitem>
-+<listitem>
-+	<para>bugs in your driver won't crash the kernel.</para>
-+</listitem>
-+<listitem>
-+	<para>updates of your driver can take place without recompiling
-+	the kernel.</para>
-+</listitem>
-+<listitem>
-+	<para>if you need to keep some parts of your driver closed source,
-+	you can do so without violating the GPL license on the kernel.</para>
-+</listitem>
-+</itemizedlist>
++	if (uio_register_device(&dev->dev, info))
++		goto out_unmap;
 +
-+<sect2 id="how_uio_works">
-+<title>How UIO works</title>
-+	<para>
-+	Each UIO device is accessed through a device file and several
-+	sysfs attribute files. The device file will be called
-+	<filename>/dev/uio0</filename> for the first device, and
-+	<filename>/dev/uio1</filename>, <filename>/dev/uio2</filename>
-+	and so on for subsequent devices.
-+	</para>
++	pci_set_drvdata(dev, info);
 +
-+	<para><filename>/dev/uioX</filename> is used to access the
-+	address space of the card. Just use
-+	<function>mmap()</function> to access registers or RAM
-+	locations of your card.
-+	</para>
++	return 0;
++out_unmap:
++	iounmap(info->mem[0].internal_addr);
++out_release:
++	pci_release_regions(dev);
++out_disable:
++	pci_disable_device(dev);
++out_free:
++	kfree (info);
++	return -ENODEV;
++}
 +
-+	<para>
-+	Interrupts are handled by reading from
-+	<filename>/dev/uioX</filename>. A blocking
-+	<function>read()</function> from
-+	<filename>/dev/uioX</filename> will return as soon as an
-+	interrupt occurs. You can also use
-+	<function>select()</function> on
-+	<filename>/dev/uioX</filename> to wait for an interrupt. The
-+	integer value read from <filename>/dev/uioX</filename>
-+	represents the total interrupt count. You can use this number
-+	to figure out if you missed some interrupts.
-+	</para>
++static void hilscher_pci_remove(struct pci_dev *dev)
++{
++	struct uio_info *info = pci_get_drvdata(dev);
 +
-+	<para>
-+	To handle interrupts properly, your custom kernel module can
-+	provide its own interrupt handler. It will automatically be
-+	called by the built-in handler.
-+	</para>
++	uio_unregister_device(info);
++	pci_release_regions(dev);
++	pci_disable_device(dev);
++	pci_set_drvdata(dev, NULL);
++	iounmap(info->mem[0].internal_addr);
 +
-+	<para>
-+	For cards that don't generate interrupts but need to be
-+	polled, there is the possibility to set up a timer that
-+	triggers the interrupt handler at configurable time intervals.
-+	See <filename>drivers/uio/uio_dummy.c</filename> for an
-+	example of this technique.
-+	</para>
++	kfree (info);
++}
 +
-+	<para>
-+	Each driver provides attributes that are used to read or write
-+	variables. These attributes are accessible through sysfs
-+	files.  A custom kernel driver module can add its own
-+	attributes to the device owned by the uio driver, but not added
-+	to the UIO device itself at this time.  This might change in the
-+	future if it would be found to be useful
-+	</para>
++static struct pci_device_id hilscher_pci_ids[] = {
++	{
++		.vendor =	PCI_VENDOR_ID_PLX,
++		.device =	PCI_DEVICE_ID_PLX_9030,
++		.subvendor =	PCI_SUBVENDOR_ID_PEP,
++		.subdevice =	CIF_SUBDEVICE_PROFIBUS,
++	},
++	{
++		.vendor =	PCI_VENDOR_ID_PLX,
++		.device =	PCI_DEVICE_ID_PLX_9030,
++		.subvendor =	PCI_SUBVENDOR_ID_PEP,
++		.subdevice =	CIF_SUBDEVICE_DEVICENET,
++	},
++	{ 0, }
++};
 +
-+	<para>
-+	The following standard attributes are provided by the UIO
-+	framework:
-+	</para>
-+<itemizedlist>
-+<listitem>
-+	<para>
-+	<filename>name</filename>: The name of your device. It is
-+	recommended to use the name of your kernel module for this.
-+	</para>
-+</listitem>
-+<listitem>
-+	<para>
-+	<filename>version</filename>: A version string defined by your
-+	driver. This allows the user space part of your driver to deal
-+	with different versions of the kernel module.
-+	</para>
-+</listitem>
-+<listitem>
-+	<para>
-+	<filename>event</filename>: The total number of interrupts
-+	handled by the driver since the last time the device node was
-+	read.
-+	</para>
-+</listitem>
-+</itemizedlist>
-+<para>
-+	These attributes appear under the
-+	<filename>/sys/class/uio/uioX</filename> directory.  Please
-+	note that this directory might be a symlink, and not a real
-+	directory.  Any userspace code that accesses it must be able
-+	to handle this.
-+</para>
-+<para>
-+	Each UIO device can make one or more memory regions available for
-+	memory mapping. This is necessary because some industrial I/O cards
-+	require access to more than one PCI memory region in a driver.
-+</para>
-+<para>
-+	Each mapping has its own directory in sysfs, the first mapping
-+	appears as <filename>/sys/class/uio/uioX/maps/map0/</filename>.
-+	Subsequent mappings create directories <filename>map1/</filename>,
-+	<filename>map2/</filename>, and so on. These directories will only
-+	appear if the size of the mapping is not 0.
-+</para>
-+<para>
-+	Each <filename>mapX/</filename> directory contains two read-only files
-+	that show start address and size of the memory:
-+</para>
-+<itemizedlist>
-+<listitem>
-+	<para>
-+	<filename>addr</filename>: The address of memory that can be mapped.
-+	</para>
-+</listitem>
-+<listitem>
-+	<para>
-+	<filename>size</filename>: The size, in bytes, of the memory
-+	pointed to by addr.
-+	</para>
-+</listitem>
-+</itemizedlist>
++static struct pci_driver hilscher_pci_driver = {
++	.name = "hilscher",
++	.id_table = hilscher_pci_ids,
++	.probe = hilscher_pci_probe,
++	.remove = hilscher_pci_remove,
++};
 +
-+<para>
-+	From userspace, the different mappings are distinguished by adjusting
-+	the <varname>offset</varname> parameter of the
-+	<function>mmap()</function> call. To map the memory of mapping N, you
-+	have to use N times the page size as your offset:
-+</para>
-+<programlisting format="linespecific">
-+offset = N * getpagesize();
-+</programlisting>
++static int __init hilscher_init_module(void)
++{
++	return pci_register_driver(&hilscher_pci_driver);
++}
 +
-+</sect2>
-+</sect1>
++static void __exit hilscher_exit_module(void)
++{
++	pci_unregister_driver(&hilscher_pci_driver);
++}
 +
-+<sect1 id="using-uio_dummy" xreflabel="Using uio_dummy">
-+<?dbhtml filename="using-uio_dummy.html"?>
-+<title>Using uio_dummy</title>
-+	<para>
-+	Well, there is no real use for uio_dummy. Its only purpose is
-+	to test most parts of the UIO system (everything except
-+	hardware interrupts), and to serve as an example for the
-+	kernel module that you will have to write yourself.
-+	</para>
++module_init(hilscher_init_module);
++module_exit(hilscher_exit_module);
 +
-+<sect2 id="what_uio_dummy_does">
-+<title>What uio_dummy does</title>
-+	<para>
-+	The kernel module <filename>uio_dummy.ko</filename> creates a
-+	device that uses a timer to generate periodic interrupts. The
-+	interrupt handler does nothing but increment a counter. The
-+	driver adds two custom attributes, <varname>count</varname>
-+	and <varname>freq</varname>, that appear under
-+	<filename>/sys/devices/platform/uio_dummy/</filename>.
-+	</para>
-+
-+	<para>
-+	The attribute <varname>count</varname> can be read and
-+	written.  The associated file
-+	<filename>/sys/devices/platform/uio_dummy/count</filename>
-+	appears as a normal text file and contains the total number of
-+	timer interrupts. If you look at it (e.g. using
-+	<function>cat</function>), you'll notice it is slowly counting
-+	up.
-+	</para>
-+
-+	<para>
-+	The attribute <varname>freq</varname> can be read and written.
-+	The content of
-+	<filename>/sys/devices/platform/uio_dummy/freq</filename>
-+	represents the number of system timer ticks between two timer
-+	interrupts. The default value of <varname>freq</varname> is
-+	the value of the kernel variable <varname>HZ</varname>, which
-+	gives you an interval of one second. Lower values will
-+	increase the frequency. Try the following:
-+	</para>
-+<programlisting format="linespecific">
-+cd /sys/devices/platform/uio_dummy/
-+echo 100 > freq
-+</programlisting>
-+	<para>
-+	Use <function>cat count</function> to see how the interrupt
-+	frequency changes.
-+	</para>
-+</sect2>
-+</sect1>
-+
-+<sect1 id="custom_kernel_module" xreflabel="Writing your own kernel module">
-+<?dbhtml filename="custom_kernel_module.html"?>
-+<title>Writing your own kernel module</title>
-+	<para>
-+	Please have a look at <filename>uio_dummy.c</filename> as an
-+	example. The following paragraphs explain the different
-+	sections of this file.
-+	</para>
-+
-+<sect2 id="uio_info">
-+<title>struct uio_info</title>
-+	<para>
-+	This structure tells the framework the details of your driver,
-+	Some of the members are required, others are optional.
-+	</para>
-+
-+<itemizedlist>
-+<listitem>
-+<varname>char *name</varname>: Required. The name of your driver as
-+it will appear in sysfs. I recommend using the name of your module for this.
-+</listitem>
-+
-+<listitem>
-+<varname>char *version</varname>: Required. This string appears in
-+<filename>/sys/class/uio/uioX/version</filename>.
-+</listitem>
-+
-+<listitem>
-+<varname>struct uio_mem mem[ MAX_UIO_MAPS ]</varname>: Required if you
-+have memory that can be mapped with <function>mmap()</function>. For each
-+mapping you need to fill one of the <varname>uio_mem</varname> structures.
-+See the description below for details.
-+</listitem>
-+
-+<listitem>
-+<varname>long irq</varname>: Required. If your hardware generates an
-+interrupt, it's your modules task to determine the irq number during
-+initialization. If you don't have a hardware generated interrupt but
-+want to trigger the interrupt handler in some other way, set
-+<varname>irq</varname> to <varname>UIO_IRQ_CUSTOM</varname>. The
-+uio_dummy module does this as it triggers the event mechanism in a timer
-+routine. If you had no interrupt at all, you could set
-+<varname>irq</varname> to <varname>UIO_IRQ_NONE</varname>, though this
-+rarely makes sense.
-+</listitem>
-+
-+<listitem>
-+<varname>unsigned long irq_flags</varname>: Required if you've set
-+<varname>irq</varname> to a hardware interrupt number. The flags given
-+here will be used in the call to <function>request_irq()</function>.
-+</listitem>
-+
-+<listitem>
-+<varname>int (*mmap)(struct uio_info *info, struct vm_area_struct
-+*vma)</varname>: Optional. If you need a special
-+<function>mmap()</function> function, you can set it here. If this
-+pointer is not NULL, your <function>mmap()</function> will be called
-+instead of the built-in one.
-+</listitem>
-+
-+<listitem>
-+<varname>int (*open)(struct uio_info *info, struct inode *inode)
-+</varname>: Optional. You might want to have your own
-+<function>open()</function>, e.g. to enable interrupts only when your
-+device is actually used.
-+</listitem>
-+
-+<listitem>
-+<varname>int (*release)(struct uio_info *info, struct inode *inode)
-+</varname>: Optional. If you define your own
-+<function>open()</function>, you will probably also want a custom
-+<function>release()</function> function.
-+</listitem>
-+</itemizedlist>
-+
-+<para>
-+Usually, your device will have one or more memory regions that can be mapped
-+to user space. For each region, you have to set up a
-+<varname>struct uio_mem</varname> in the <varname>mem[]</varname> array.
-+Here's a description of the fields of <varname>struct uio_mem</varname>:
-+</para>
-+
-+<itemizedlist>
-+<listitem>
-+<varname>int memtype</varname>: Required if the mapping is used. Set this to
-+<varname>UIO_MEM_PHYS</varname> if you you have physical memory on your
-+card to be mapped. Use <varname>UIO_MEM_LOGICAL</varname> for logical
-+memory (e.g. allocated with <function>kmalloc()</function>). There's also
-+<varname>UIO_MEM_VIRTUAL</varname> for virtual memory.
-+</listitem>
-+
-+<listitem>
-+<varname>unsigned long addr</varname>: Required if the mapping is used.
-+Fill in the address of your memory block. This address is the one that
-+appears in sysfs.
-+</listitem>
-+
-+<listitem>
-+<varname>unsigned long size</varname>: Fill in the size of the
-+memory block that <varname>addr</varname> points to. If <varname>size</varname>
-+is zero, the mapping is considered unused. Note that you
-+<emphasis>must</emphasis> initialize <varname>size</varname> with zero for
-+all unused mappings.
-+</listitem>
-+
-+<listitem>
-+<varname>void *internal_addr</varname>: If you have to access this memory
-+region from within your kernel module, you will want to map it internally by
-+using something like <function>ioremap_nocache()</function>. Addresses
-+returned by this function can not be mapped to user space, so you must not
-+store it in <varname>addr</varname>. Use <varname>internal_addr</varname>
-+instead to remember such an address.
-+</listitem>
-+</itemizedlist>
-+
-+<para>
-+Please do not touch the <varname>kobj</varname> element of
-+<varname>struct uio_mem</varname>! It is used by the UIO framework
-+to set up sysfs files for this mapping. Simply leave it alone.
-+</para>
-+</sect2>
-+
-+<sect2 id="adding_irq_handler">
-+<title>Adding an interrupt handler</title>
-+	<para>
-+	What you need to do in your interrupt handler depends on your
-+	hardware and on how you want to	handle it. You should try to
-+	keep the amount of code in your kernel interrupt handler low.
-+	If your hardware requires no action that you
-+	<emphasis>have</emphasis> to perform after each interrupt,
-+	then your handler can be empty.</para> <para>If, on the other
-+	hand, your hardware <emphasis>needs</emphasis> some action to
-+	be performed after each interrupt, then you
-+	<emphasis>must</emphasis> do it in your kernel module. Note
-+	that you cannot rely on the userspace part of your driver.Your
-+	userspace program can terminate at any time, possibly leaving
-+	your hardware in a state where proper interrupt handling is
-+	still required.
-+	</para>
-+
-+	<para>
-+	There might also be applications where you want to read data
-+	from your hardware at each interrupt and buffer it in a piece
-+	of kernel memory you've allocated for that purpose.  With this
-+	technique you could avoid loss of data if your userspace
-+	program misses an interrupt.
-+	</para>
-+
-+	<para>
-+	A note on shared interrupts: Your driver should support
-+	interrupt sharing whenever this is possible. It is possible if
-+	and only if your driver can detect whether your hardware has
-+	triggered the interrupt or not. This is usually done by looking
-+	at an interrupt status register. If your driver sees that the
-+	IRQ bit is actually set, it will perform its actions, and the
-+	handler returns IRQ_HANDLED. If the driver detects that it was
-+	not your hardware that caused the interrupt, it will do nothing
-+	and return IRQ_NONE, allowing the kernel to call the next
-+	possible interrupt handler.
-+	</para>
-+
-+	<para>
-+	If you decide not to support shared interrupts, your card
-+	won't work in computers with no free interrupts. As this
-+	frequently happens on the PC platform, you can save yourself a
-+	lot of trouble by supporting interrupt sharing.
-+	</para>
-+</sect2>
-+
-+</sect1>
-+
-+<appendix id="app1">
-+<title>Further information</title>
-+<itemizedlist>
-+	<listitem><para>
-+		<ulink url="http://www.linutronix.de">
-+		 Linutronix homepage.</ulink>
-+		</para></listitem>
-+	<listitem><para>...</para></listitem>
-+</itemizedlist>
-+</appendix>
-+
-+</article>
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Hans J. Koch, Benedikt Spranger");
 -- 
 1.5.1.2
 
