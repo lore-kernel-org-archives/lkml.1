@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbXD0OzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXD0O5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbXD0OzP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755958AbXD0OzP
+	id S1755963AbXD0O5J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXD0O5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:55:15 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:50698 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755942AbXD0OzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:55:13 -0400
-Date: Fri, 27 Apr 2007 16:55:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-Message-ID: <20070427145507.GP22250@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> <1177573348.5025.224.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> <20070426224005.GA21926@elf.ucw.cz> <84144f020704262241s5bcfc043k55f9d60e368b3c9e@mail.gmail.com>
+	Fri, 27 Apr 2007 10:57:09 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55170 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755952AbXD0O5H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 10:57:07 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Fri, 27 Apr 2007 10:55:54 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: James Bottomley <James.Bottomley@SteelEye.com>
+cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>,
+       GOTO Masanori <gotom@sanori.org>
+Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
+In-Reply-To: <1177633855.5532.8.camel@mulgrave.il.steeleye.com>
+Message-ID: <Pine.LNX.4.64.0704271051240.22643@localhost.localdomain>
+References: <20070426234742.GH3468@stusta.de> 
+ <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain> 
+ <20070427001324.GP3468@stusta.de> <1177633855.5532.8.camel@mulgrave.il.steeleye.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020704262241s5bcfc043k55f9d60e368b3c9e@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-04-27 08:41:56, Pekka Enberg wrote:
-> On 4/27/07, Pavel Machek <pavel@ucw.cz> wrote:
-> >Now, it would be _very_ nice to be able to snapshot system and
-> >continue running, but I just don't see how to do it without extensive
-> >filesystem support.
-> 
-> So what kind of support do we need from the filesystem?
+On Thu, 26 Apr 2007, James Bottomley wrote:
 
-"forcedremount ro, not telling anyone, not killing processes" would do
-the trick. FS snapshots might do.
-									Pavel
+> Personally, I don't like to see 2.4 and 2.6 in a new driver, and
+> will tend to try to force it to be 2.6 only.  For an existing
+> driver, I tend to be much more tolerant: removing the huge gobs of
+> code to achieve 2.6 only is usually a bit disruptive on both the
+> driver and the maintainer
+>
+> > But if a driver is no longer actually maintained for both kernels
+> > these checks become useless (and there quickly arised
+> > unconditional 2.6-only code in such a driver) and can be removed.
+>
+> This driver is maintained by
+>
+> Yokota Hiroshi <yokota@netlab.cs.tsukuba.ac.jp>
+> GOTO Masanori <gotom@sanori.org>
+>
+> As it says in the header.  It was last modified in May 2006, so it
+> is maintained under the somewhat elastic standards of SCSI.  I've
+> cc'd them to see what they think.
+
+while we're on the subject, what's the policy on supporting kernel
+version selection *within* the 2.5 series?  as in:
+
+$ grep -r "KERNEL_VERSION(2,5" *
+drivers/scsi/pcmcia/nsp_cs.h:#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,74))
+drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
+drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,2))
+drivers/scsi/pcmcia/nsp_cs.c:#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,5,73))
+... etc etc ...
+
+granted, this doesn't happen in a lot of files (almost of them
+SCSI-related), but is it official policy to support code based on its
+release number in the 2.5 series of releases?  unless you have a good
+reason, wouldn't it make more sense to compare against (2,6,0) rather
+than, say, (2,5,73)?  just an observation.
+
+rday
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
