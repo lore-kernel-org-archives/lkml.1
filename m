@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757489AbXD0WUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbXD0WVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757489AbXD0WUs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757497AbXD0WUs
+	id S1757487AbXD0WVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbXD0WVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:20:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:54707 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757489AbXD0WTw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:19:52 -0400
-Message-ID: <46327706.80508@goop.org>
-Date: Fri, 27 Apr 2007 15:19:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private
- data
-References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au>
-In-Reply-To: <20070424055731.GA30018@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Apr 2007 18:21:49 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:33917 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757487AbXD0WVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 18:21:48 -0400
+Subject: Re: BAD_SG_DMA panic in aha1542
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Bob Tracy <rct@gherkin.frus.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20070427214709.DC44BDBA2@gherkin.frus.com>
+References: <20070427214709.DC44BDBA2@gherkin.frus.com>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 17:21:39 -0500
+Message-Id: <1177712499.3688.25.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> Sure thing.  I'll look over it soon.
->
-> Actually there is one thing I'd like to see changed first up: I noticed
-> that you've stripped out the checksum hack which is in the main Xen tree.
-> We actually have the code in net-2.6.22 (which is also in mm) that lets
-> you use CHECKSUM_PARTIAL on received packets without having to do that
-> hack.
->
-> Here's the patch that I've been testing so far.  It's against the Xen
-> source, but should be easy to adapt to your version as well.
->
-> I just thought about this again, and in fact we need this change for
-> correctness as well as performance.  Because not setting ip_summed
-> to CHECKSUM_PARTIAL in netfront is not going to stop netback from
-> sending CHECKSUM_PARTIAL packets to us.  If these packets are then
-> routed/bridged back to netback, they'll have the wrong checksum.
->   
+On Fri, 2007-04-27 at 16:47 -0500, Bob Tracy wrote:
+> I previously reported an ISA DMA issue for the 2.6.12 kernel.  The issue
+> persists through at least 2.6.18.  SCSI controller is an Adaptec
+> AHA-1542B (ISA).
+> 
+> The action "mount -t iso9660 /dev/scd0 /mnt/cdrom -r"
+> 
+> produces
+> 
+> (cdrom detection messages as various modules autoload, then...)
 
-OK, I've been sitting on this in the hope that I'll suddenly see the
-light and work out what you're talking about - but apparently that's not
-going to happen.  So, some questions:
+Knowing what these messages are is would be helpful; it tells me what
+point in the initialisation it got to. 
 
-   1. Does this patch change the dom0 <-> domU interface?  or does it
-      fix something that's currently broken?
-   2. Can just apply the netfront part to the pv_ops kernel, or does it
-      require the corresponding dom0 patch to be applied as well?
+> sgpnt[0:1] page c1ee5af0/0x1ee5af0 length 32
+> Kernel panic - not syncing: Buffer at physical address > 16 Mb used for aha1542
+> 
+> As before, no problems using the sda hard disk (which is the boot drive):
+> everything works reliably until I touch the cdrom drive.
+> 
+> I'll be happy to assist with the debugging, but the system with the
+> aha1542 has no development facilities, i.e., I'll have to build test
+> kernels on a different system, and turnaround is going to be slow :-(.
+
+I'm interested.
+
+This is clearly a use_sg==1 path that has failed to bounce the buffer
+for some reason ... and I was contemplating eliminating the GFP_DMA from
+our sr driver because I thought the block bouncing had it covered.
+
+It might also be helpful to apply this patch.  It should give a stack
+trace of the problem command and not immediately panic the box.
 
 Thanks,
-    J
+
+James
+
+diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
+index 1d239f6..4ee7d99 100644
+--- a/drivers/scsi/aha1542.c
++++ b/drivers/scsi/aha1542.c
+@@ -75,7 +75,7 @@ static void BAD_SG_DMA(Scsi_Cmnd * SCpnt,
+ 	/*
+ 	 * Not safe to continue.
+ 	 */
+-	panic("Buffer at physical address > 16Mb used for aha1542");
++	WARN_ON(1);
+ }
+ 
+ #include<linux/stat.h>
+@@ -725,8 +725,12 @@ static int aha1542_queuecommand(Scsi_Cmnd * SCpnt, void (*done) (Scsi_Cmnd *))
+ 				panic("Foooooooood fight!");
+ 			};
+ 			any2scsi(cptr[i].dataptr, SCSI_SG_PA(&sgpnt[i]));
+-			if (SCSI_SG_PA(&sgpnt[i]) + sgpnt[i].length - 1 > ISA_DMA_THRESHOLD)
++			if (SCSI_SG_PA(&sgpnt[i]) + sgpnt[i].length - 1 > ISA_DMA_THRESHOLD) {
+ 				BAD_SG_DMA(SCpnt, sgpnt, SCpnt->use_sg, i);
++				SCpnt->result = DID_ERROR << 16;
++				done(SCpnt);
++				return 0;
++			}
+ 			any2scsi(cptr[i].datalen, sgpnt[i].length);
+ 		};
+ 		any2scsi(ccb[mbo].datalen, SCpnt->use_sg * sizeof(struct chain));
+
+
+
+
