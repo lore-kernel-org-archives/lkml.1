@@ -1,156 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755576AbXD0KUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbXD0KVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755576AbXD0KUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXD0KUj
+	id S1754025AbXD0KVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXD0KVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:20:39 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54164 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755568AbXD0KUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:20:01 -0400
-From: Danny Kukawka <dkukawka@suse.de>
-To: linux-acpi@vger.kernel.org
-Subject: [PATCH] ACPI video: Don't export sysfs backlight interface if query _BCL fail
-Date: Fri, 27 Apr 2007 12:18:06 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, luming.yu@intel.com
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704271218.07411.dkukawka@suse.de>
+	Fri, 27 Apr 2007 06:21:19 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:40421 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754025AbXD0KVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 06:21:17 -0400
+Subject: driver power operations (was Re: suspend2 merge)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <20070425203150.GD17387@elf.ucw.cz>
+References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org>
+	 <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
+	 <20070425200836.GB17387@elf.ucw.cz> <200704252233.25296.rjw@sisk.pl>
+	 <20070425203150.GD17387@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-k2Frzeg9EeCi0PVHImmO"
+Date: Fri, 27 Apr 2007 12:21:19 +0200
+Message-Id: <1177669279.7828.55.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-currently the acpi video module export the backlight interface to sysfs also
-if acpi_video_device_lcd_query_levels() fails to read _BLC method (e.g. 
-because the method is not available). In this case the userspace don't know 
-which brightness level are supported and can't set a brightness level (echo 
-return with: "write error: Invalid Argument"). This happend e.g. on a ASUS
-RF1 (correct supported by the asus-laptop module).
+--=-k2Frzeg9EeCi0PVHImmO
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The video module should not export the backlight interface if query _BLC fail,
-because you can't set anything from userspace and this make it useless.
+On Wed, 2007-04-25 at 22:31 +0200, Pavel Machek wrote:
 
-See also: http://bugzilla.kernel.org/show_bug.cgi?id=8375
+> > So, the "suspend" and "resume" for the functions being called for that =
+are
+> > wrong, but then we call them with PMSG_FREEZE. ;-)  Still, we could add
+> > .freeze() and .thaw() callbacks for hibernation just fine.  This wouldn=
+'t even
+> > be that difficult ...
+>=20
+> It would be ugly big patch I'm afraid.
 
-Danny
+It'd be a lot of code churn, but well worth it. And most of the changes
+would be trivial too. You need to start looking beyond "this is ugly in
+the short term" and realise that it's much more maintainable in the long
+term if driver writers know what they're supposed to do as opposed to
+just hacking at it until it mostly works or just doing a full device
+down/up cycle including resetting full driver state.
 
-From: Danny Kukawka <dkukawka@suse.de>
-Subject: ACPI video: Don't export sysfs backlight interface if query _BLC fail
+Look at it now:
 
-if qeuery _BCL fail (e.g. because the method is missing in BIOS) don't 
-export the backlight interface to sysfs.
+ * FREEZE       Quiesce operations so that a consistent image can be saved;
+ *              but do NOT otherwise enter a low power device state, and do
+ *              NOT emit system wakeup events.
+ *
+ * PRETHAW      Quiesce as if for FREEZE; additionally, prepare for restori=
+ng
+ *              the system from a snapshot taken after an earlier FREEZE.
+ *              Some drivers will need to reset their hardware state instea=
+d
+ *              of preserving it, to ensure that it's never mistaken for th=
+e
+ *              state which that earlier snapshot had set up.
 
-Signed-off-by: Danny Kukawka <dkukawka@suse.de>
----
- video.c |   78 ++++++++++++++++++++++++++++--------------------------
- 1 file changed, 41 insertions(+), 37 deletions(-)
+Why is prethaw even necessary? As far as I can tell it's only necessary
+because resume() can't tell you whether you just want to thaw or need to
+reset since it doesn't tell you at what point it's invoked.
 
---- linux-2.6.21/drivers/acpi/video.c	2007-04-26 13:50:51.000000000 +0200
-+++ linux-2.6.21/drivers/acpi/video.c	2007-04-26 13:50:53.000000000 +0200
-@@ -531,7 +531,6 @@
- 
- static void acpi_video_device_find_cap(struct acpi_video_device *device)
- {
--	acpi_integer status;
- 	acpi_handle h_dummy1;
- 	int i;
- 	u32 max_level = 0;
-@@ -565,50 +564,55 @@
- 		device->cap._DSS = 1;
- 	}
- 
--	status = acpi_video_device_lcd_query_levels(device, &obj);
-+	if (ACPI_SUCCESS(acpi_video_device_lcd_query_levels(device, &obj))) {
- 
--	if (obj && obj->type == ACPI_TYPE_PACKAGE && obj->package.count >= 2) {
--		int count = 0;
--		union acpi_object *o;
--
--		br = kzalloc(sizeof(*br), GFP_KERNEL);
--		if (!br) {
--			printk(KERN_ERR "can't allocate memory\n");
--		} else {
--			br->levels = kmalloc(obj->package.count *
--					     sizeof *(br->levels), GFP_KERNEL);
--			if (!br->levels)
--				goto out;
--
--			for (i = 0; i < obj->package.count; i++) {
--				o = (union acpi_object *)&obj->package.
--				    elements[i];
--				if (o->type != ACPI_TYPE_INTEGER) {
--					printk(KERN_ERR PREFIX "Invalid data\n");
--					continue;
--				}
--				br->levels[count] = (u32) o->integer.value;
--				if (br->levels[count] > max_level)
--					max_level = br->levels[count];
--				count++;
--			}
--		      out:
--			if (count < 2) {
--				kfree(br->levels);
--				kfree(br);
-+		if (obj->package.count >= 2) {
-+			int count = 0;
-+			union acpi_object *o;
-+
-+			br = kzalloc(sizeof(*br), GFP_KERNEL);
-+			if (!br) {
-+				printk(KERN_ERR "can't allocate memory\n");
- 			} else {
--				br->count = count;
--				device->brightness = br;
--				ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--						  "found %d brightness levels\n",
--						  count));
-+				br->levels = kmalloc(obj->package.count *
-+						     sizeof *(br->levels), GFP_KERNEL);
-+				if (!br->levels) 
-+					goto out;
-+
-+				for (i = 0; i < obj->package.count; i++) {
-+					o = (union acpi_object *)&obj->package.
-+					    elements[i];
-+					if (o->type != ACPI_TYPE_INTEGER) {
-+						printk(KERN_ERR PREFIX "Invalid data\n");
-+						continue;
-+					}
-+					br->levels[count] = (u32) o->integer.value;
-+
-+					if (br->levels[count] > max_level)
-+						max_level = br->levels[count];
-+					count++;
-+				}
-+			      out:
-+				if (count < 2) {
-+					kfree(br->levels);
-+					kfree(br);
-+				} else {
-+					br->count = count;
-+					device->brightness = br;
-+					ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+							  "found %d brightness levels\n",
-+							  count));
-+				}
- 			}
- 		}
-+
-+	} else {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Could not query available LCD brightness level\n"));
- 	}
- 
- 	kfree(obj);
- 
--	if (device->cap._BCL && device->cap._BCM && device->cap._BQC){
-+	if (device->cap._BCL && device->cap._BCM && device->cap._BQC && max_level > 0){
- 		unsigned long tmp;
- 		static int count = 0;
- 		char *name;
+Having ->freeze(), ->thaw() and ->restart() (can somebody come up with a
+better name?) that are called at the appropriate places (with
+freeze/thaw around preparing the image and freeze/restart around
+restoring would go a long way of clearing up the confusion in all the
+drivers. Of course, it'd have to be documented that freeze/thaw isn't
+the only valid combination but that freeze/restart is used too, but
+that's not hard to do nor hard to understand.
+
+And, incidentally, it could possibly make both suspend and hibernate
+work much faster too. The comments there talk about "minimally power
+management aware" drivers which always do the wrong thing for suspend,
+in that they always reset everything... Of course, some drivers will
+actually need to do that, but if freeze/suspend and thaw/restart/resume
+have the same prototypes (probably just int <function>(void)) then
+drivers can trivially assign the same there.
+And hibernate would benefit since a lot of drivers could do a lot less
+work for freeze/thaw.
+
+Or, if we don't want to have five calls and use 40 bytes (on 64-bit)
+just for these callback pointers for each device we could just as well
+have a single callback ->pm(what) and make "what" indicate which one of
+these five things... But then drivers can't make that code depend on the
+swsusp configuration which would be doable with five callbacks.
+
+johannes
+
+--=-k2Frzeg9EeCi0PVHImmO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGMc6e/ETPhpq3jKURAgZOAKC7VOqf4D8MuNBZzYKVJW5x7i7v4ACff6rU
+B7oitsi43NOwkfE+KPeUxDc=
+=/5+K
+-----END PGP SIGNATURE-----
+
+--=-k2Frzeg9EeCi0PVHImmO--
 
