@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbXD0TDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbXD0TD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757083AbXD0TDA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:03:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbXD0S7R
+	id S1757112AbXD0TD4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757068AbXD0S6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:59:17 -0400
-Received: from ns1.suse.de ([195.135.220.2]:50861 "EHLO mx1.suse.de"
+	Fri, 27 Apr 2007 14:58:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:35288 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757083AbXD0S7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:59:13 -0400
+	id S1757020AbXD0S6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:58:00 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 46/46] dev_dbg: check dev_dbg() arguments
-Date: Fri, 27 Apr 2007 11:54:00 -0700
-Message-Id: <1177700214849-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, netdev <netdev@vger.kernel.org>
+Subject: [PATCH 28/46] PHY: remove rwsem use from phy core
+Date: Fri, 27 Apr 2007 11:53:42 -0700
+Message-Id: <11777001413571-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777002102105-git-send-email-gregkh@suse.de>
+In-Reply-To: <117770013729-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -47,105 +45,80 @@ References: <20070427185152.GA17121@kroah.com>
  <11777001301175-git-send-email-gregkh@suse.de>
  <11777001333852-git-send-email-gregkh@suse.de>
  <117770013729-git-send-email-gregkh@suse.de>
- <11777001413571-git-send-email-gregkh@suse.de>
- <11777001442148-git-send-email-gregkh@suse.de>
- <1177700148815-git-send-email-gregkh@suse.de>
- <11777001521006-git-send-email-gregkh@suse.de>
- <1177700156641-git-send-email-gregkh@suse.de>
- <1177700160896-git-send-email-gregkh@suse.de>
- <11777001642551-git-send-email-gregkh@suse.de>
- <11777001682584-git-send-email-gregkh@suse.de>
- <1177700172258-git-send-email-gregkh@suse.de>
- <11777001773804-git-send-email-gregkh@suse.de>
- <11777001803098-git-send-email-gregkh@suse.de>
- <11777001852549-git-send-email-gregkh@suse.de>
- <11777001891914-git-send-email-gregkh@suse.de>
- <11777001931075-git-send-email-gregkh@suse.de>
- <11777001971761-git-send-email-gregkh@suse.de>
- <11777002022552-git-send-email-gregkh@suse.de>
- <11777002064008-git-send-email-gregkh@suse.de>
- <11777002102105-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
+The subsystem rwsem is not used by the driver core at all, so the use of
+it in the phy code doesn't make any sense.  They might possibly
+want to use a local lock, but I am unsure about that.
 
-Duplicate what Zach Brown did for pr_debug in commit
-8b2a1fd1b394c60eaa2587716102dd5e9b4e5990
-
-[akpm@linux-foundation.org: fix a couple of things which broke]
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Cc: netdev <netdev@vger.kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/core/hub.c      |    4 +---
- drivers/usb/host/ohci-hcd.c |    6 ------
- include/linux/device.h      |    6 +++++-
- 3 files changed, 6 insertions(+), 10 deletions(-)
+ drivers/net/phy/fixed.c      |    6 ------
+ drivers/net/phy/phy_device.c |    9 +--------
+ 2 files changed, 1 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index b89a98e..7a60285 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -119,8 +119,7 @@ MODULE_PARM_DESC(use_both_schemes,
- 		"first one fails");
- 
- 
--#ifdef	DEBUG
--static inline char *portspeed (int portstatus)
-+static inline char *portspeed(int portstatus)
- {
- 	if (portstatus & (1 << USB_PORT_FEAT_HIGHSPEED))
-     		return "480 Mb/s";
-@@ -129,7 +128,6 @@ static inline char *portspeed (int portstatus)
- 	else
- 		return "12 Mb/s";
- }
--#endif
- 
- /* Note that hdev or one of its children must be locked! */
- static inline struct usb_hub *hdev_to_hub(struct usb_device *hdev)
-diff --git a/drivers/usb/host/ohci-hcd.c b/drivers/usb/host/ohci-hcd.c
-index f0d29ed..e8bbe8b 100644
---- a/drivers/usb/host/ohci-hcd.c
-+++ b/drivers/usb/host/ohci-hcd.c
-@@ -486,9 +486,6 @@ static int ohci_run (struct ohci_hcd *ohci)
- 	 * or if bus glue did the same (e.g. for PCI add-in cards with
- 	 * PCI PM support).
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 66da91b..68c99b4 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -276,21 +276,15 @@ static int fixed_mdio_register_device(int number, int speed, int duplex)
+ 	   artificially, we are binding the driver here by hand;
+ 	   it will be the same for all the fixed phys anyway.
  	 */
--	ohci_dbg (ohci, "resetting from state '%s', control = 0x%x\n",
--			hcfs2string (ohci->hc_control & OHCI_CTRL_HCFS),
--			ohci_readl (ohci, &ohci->regs->control));
- 	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
- 			&& !device_may_wakeup(hcd->self.controller))
- 		device_init_wakeup(hcd->self.controller, 1);
-@@ -744,9 +741,6 @@ static void ohci_stop (struct usb_hcd *hcd)
- {
- 	struct ohci_hcd		*ohci = hcd_to_ohci (hcd);
+-	down_write(&phydev->dev.bus->subsys.rwsem);
+-
+ 	phydev->dev.driver = &fixed_mdio_driver.driver;
  
--	ohci_dbg (ohci, "stop %s controller (state 0x%02x)\n",
--		hcfs2string (ohci->hc_control & OHCI_CTRL_HCFS),
--		hcd->state);
- 	ohci_dump (ohci, 1);
+ 	err = phydev->dev.driver->probe(&phydev->dev);
+ 	if(err < 0) {
+ 		printk(KERN_ERR "Phy %s: problems with fixed driver\n",phydev->dev.bus_id);
+-		up_write(&phydev->dev.bus->subsys.rwsem);
+ 		goto probe_fail;
+ 	}
  
- 	flush_scheduled_work();
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 8511d14..a0cd2ce 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -571,7 +571,11 @@ extern const char *dev_driver_string(struct device *dev);
- #define dev_dbg(dev, format, arg...)		\
- 	dev_printk(KERN_DEBUG , dev , format , ## arg)
- #else
--#define dev_dbg(dev, format, arg...) do { (void)(dev); } while (0)
-+static inline int __attribute__ ((format (printf, 2, 3)))
-+dev_dbg(struct device * dev, const char * fmt, ...)
-+{
-+	return 0;
-+}
- #endif
+ 	err = device_bind_driver(&phydev->dev);
+-
+-	up_write(&phydev->dev.bus->subsys.rwsem);
+-
+ 	if (err)
+ 		goto probe_fail;
  
- #define dev_err(dev, format, arg...)		\
+diff --git a/drivers/net/phy/phy_device.c b/drivers/net/phy/phy_device.c
+index 7d5b6d1..8f01952 100644
+--- a/drivers/net/phy/phy_device.c
++++ b/drivers/net/phy/phy_device.c
+@@ -208,16 +208,12 @@ struct phy_device *phy_attach(struct net_device *dev,
+ 	 * exist, and we should use the genphy driver. */
+ 	if (NULL == d->driver) {
+ 		int err;
+-		down_write(&d->bus->subsys.rwsem);
+ 		d->driver = &genphy_driver.driver;
+ 
+ 		err = d->driver->probe(d);
+-
+ 		if (err >= 0)
+ 			err = device_bind_driver(d);
+ 
+-		up_write(&d->bus->subsys.rwsem);
+-
+ 		if (err)
+ 			return ERR_PTR(err);
+ 	}
+@@ -258,11 +254,8 @@ void phy_detach(struct phy_device *phydev)
+ 	 * was using the generic driver), we unbind the device
+ 	 * from the generic driver so that there's a chance a
+ 	 * real driver could be loaded */
+-	if (phydev->dev.driver == &genphy_driver.driver) {
+-		down_write(&phydev->dev.bus->subsys.rwsem);
++	if (phydev->dev.driver == &genphy_driver.driver)
+ 		device_release_driver(&phydev->dev);
+-		up_write(&phydev->dev.bus->subsys.rwsem);
+-	}
+ }
+ EXPORT_SYMBOL(phy_detach);
+ 
 -- 
 1.5.1.2
 
