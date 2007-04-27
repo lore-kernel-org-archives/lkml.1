@@ -1,79 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbXD0GF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbXD0GIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755368AbXD0GF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbXD0GF2
+	id S1755365AbXD0GIc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbXD0GIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:05:28 -0400
-Received: from omta05ps.mx.bigpond.com ([144.140.83.195]:24701 "EHLO
-	omta05ps.mx.bigpond.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755363AbXD0GFW (ORCPT
+	Fri, 27 Apr 2007 02:08:32 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:41028 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbXD0GIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:05:22 -0400
-Message-ID: <46319297.905@bigpond.net.au>
-Date: Fri, 27 Apr 2007 16:05:11 +1000
-From: Peter Williams <pwil3058@bigpond.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: Linux-2.6.21 hangs during post boot initialization phase
-References: <463166C2.6060106@bigpond.net.au> <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authentication-Info: Submitted using SMTP AUTH PLAIN at oaamta05ps.mx.bigpond.com from [138.130.231.4] using ID pwil3058@bigpond.net.au at Fri, 27 Apr 2007 06:05:14 +0000
+	Fri, 27 Apr 2007 02:08:31 -0400
+Subject: Re: Back to the future.
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+	 <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com>
+	 <1177573348.5025.224.camel@nigel.suspend2.net>
+	 <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org>
+	 <1177617379.4737.29.camel@nigel.suspend2.net>
+	 <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-q2bdYnfD/WIxBrNHe7xq"
+Date: Fri, 27 Apr 2007 16:08:30 +1000
+Message-Id: <1177654110.4737.91.camel@nigel.suspend2.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Fri, 27 Apr 2007, Peter Williams wrote:
->> The 2.6.21 kernel is hanging during the post boot phase where various daemons
->> are being started (not always the same daemon unfortunately).
->>
->> This problem was not present in 2.6.21-rc7 and there is no oops or other
->> unusual output in the system log at the time the hang occurs.
-> 
-> Can you use "git bisect" to narrow it down a bit more? It's only 125 
-> commits, so bisecting even just three or four kernels will narrow it down 
-> to a handful.
 
-As the changes became, smaller the builds became quicker :-) and after 7 
-iterations we have:
+--=-q2bdYnfD/WIxBrNHe7xq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+Hi.
 
-author	Neil Horman <nhorman@tuxdriver.com>
-	Fri, 20 Apr 2007 13:54:58 +0000 (09:54 -0400)
-committer	Jeff Garzik <jeff@garzik.org>
-	Tue, 24 Apr 2007 16:43:07 +0000 (12:43 -0400)
-commit	b748d9e3b80dc7e6ce6bf7399f57964b99a4104c
-tree	887909e1f735bb444ef0e3e370f34401fa6eee02	tree | snapshot
-parent	d91c088b39e3c66d309938de858775bb90fd1ead	commit | diff
-sis900: Allocate rx replacement buffer before rx operation
+On Fri, 2007-04-27 at 07:52 +0300, Pekka J Enberg wrote:
+> On Thu, 2007-04-26 at 09:56 -0700, Linus Torvalds wrote:
+> > >    which will map in the snapshot, return the mapped address and the =
+size=20
+> > >    (and if you want to support snapshots > 4GB, be my guest, but I su=
+spect=20
+> > >    you're actually *better* off just admitting that if you cannot shr=
+ink=20
+> > >    the snapshot to less than 32 bits, it's not worth doing)
+> =20
+> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > That inherently limits the image to half of available ram (you need
+> > somewhere to store the snapshot), so you won't get the full image you
+> > express interest in below.
+>=20
+> It doesn't. We can make the userspace mapped pages copy-on-write. As long=
+=20
+> as the userspace makes sure there's not much activity during=20
+> snapshot/shutdown, we will be fine. What we probably do need to copy is=20
+> kernel pages.
 
-The sis900 driver appears to have a bug in which the receive routine
-passes the skbuff holding the received frame to the network stack before
-refilling the buffer in the rx ring.  If a new skbuff cannot be 
-allocated, the
-driver simply leaves a hole in the rx ring, which causes the driver to stop
-receiving frames and become non-recoverable without an rmmod/insmod 
-according to
-reporters.  This patch reverses that order, attempting to allocate a 
-replacement
-buffer first, and receiving the new frame only if one can be allocated. 
-  If no
-skbuff can be allocated, the current skbuf in the rx ring is recycled, 
-dropping
-the current frame, but keeping the NIC operational.
+COW is a possibility, but I understood (perhaps wrongly) that Linus was
+thinking of a single syscall or such like to prepare the snapshot. If
+you're going to start doing things like this, won't that mean you'd then
+have to update/redo the snapshot or somehow nullify the effect of
+anything the programs does so that doing it again after the snapshot is
+restored doesn't cause problems?
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
+I was going to leave it at that and press send, but perhaps that
+wouldn't be wise. I feel I should also ask what you're thinking of as a
+means of making sure userspace doesn't do much activity.
 
-Peter
--- 
-Peter Williams                                   pwil3058@bigpond.net.au
+Thanks for your labours!
 
-"Learning, n. The kind of ignorance distinguishing the studious."
-  -- Ambrose Bierce
+Regards,
+
+Nigel
+
+--=-q2bdYnfD/WIxBrNHe7xq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGMZNeN0y+n1M3mo0RAopDAJ4nqnszwtQlbMllFX8JVksRge9qbgCgmilK
+phxPNqXDVHepzuCrVm2DuNU=
+=0GSP
+-----END PGP SIGNATURE-----
+
+--=-q2bdYnfD/WIxBrNHe7xq--
+
