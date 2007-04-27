@@ -1,98 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbXD0GxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbXD0Gz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbXD0GxE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbXD0GxE
+	id S1755432AbXD0Gz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbXD0Gz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:53:04 -0400
-Received: from server021.webpack.hosteurope.de ([80.237.130.29]:34355 "EHLO
-	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755425AbXD0GxB (ORCPT
+	Fri, 27 Apr 2007 02:55:58 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:32869 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755432AbXD0Gz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:53:01 -0400
-From: Michael Gerdau <mgd@technosis.de>
-Organization: Technosis GmbH
-To: Con Kolivas <kernel@kolivas.org>
-Subject: Re: [ck] Re: [REPORT] cfs-v6-rc2 vs sd-0.46 vs 2.6.21-rc7
-Date: Fri, 27 Apr 2007 07:59:07 +0200
-User-Agent: KMail/1.9.5
-Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
-       Nick Piggin <npiggin@suse.de>, Bill Davidsen <davidsen@tmr.com>,
-       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Gene Heskett <gene.heskett@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <200704261312.25571.mgd@technosis.de> <20070426120723.GA4092@elte.hu> <200704270859.37931.kernel@kolivas.org>
-In-Reply-To: <200704270859.37931.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1563788.bnKDMgynq7";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Fri, 27 Apr 2007 02:55:56 -0400
+Date: Thu, 26 Apr 2007 23:55:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070426235542.bad7035a.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+	<20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200704270759.23265.mgd@technosis.de>
-X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177656781;8b32656d;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1563788.bnKDMgynq7
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, 26 Apr 2007 22:49:53 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> Very interesting indeed but fairly complicated as well.
+> On Thu, 26 Apr 2007, Andrew Morton wrote:
+> 
+> > > Or make sure that truncate
+> > > doesn't race on a partial *block* truncate?
+> > 
+> > lock four pages
+> 
+> You would only lock a single higher order block. Truncate works on that 
+> level.
 
-Sorry for that -- I've taken these figures from the 3MB logfile
-that each job creates and "reading" them on a regular basis tend
-to forget that probably everyody else does not find them as
-obvious as I do. Also I'm don't really have lots of experience
-with how a scheduler is properly tested.
+We all know that.
 
-=46or any upcoming tests I will restrict the numbers to wallclock
-and what time provides which probably is better suited anyway.
+> If you have 4 separate pages then you need to take separate locks and you 
+> may not have contiguous memory which makes the filesystem run through all 
+> sorts of hoops.
 
-> > as a summary: i think your numbers demonstrate it nicely that the
-> > shorter 'timeslice length' that both CFS and SD utilizes does not have a
-> > measurable negative impact on your workload. To measure the total impact
-> > of 'timeslicing' you might want to try the exact same workload with a
-> > much higher 'timeslice length' of say 400 msecs, via:
-> >
-> >     echo 400000000 > /proc/sys/kernel/sched_granularity_ns  # on CFS
-> >     echo 400 > /proc/sys/kernel/rr_interval                 # on SD
->=20
-> I thought that the effective "timeslice" on CFS was double the=20
-> sched_granularity_ns so wouldn't this make the effective timeslice double=
-=20
-> that of what you're setting SD to? Anyway the difference between 400 and=
-=20
-> 800ms timeslices is unlikely to be significant so I don't mind.
+This is completely incorrect.
 
-I'm happy to do that, hopefully over the weekend.
+Of *course* they're contiguous.  That's the whole point.
 
-Best,
-Michael
-=2D-=20
- Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
- Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
- Vote against SPAM - see http://www.politik-digital.de/spam/
- Michael Gerdau       email: mgd@technosis.de
- GPG-keys available on request or at public keyserver
+It's not exactly hard to lock four pages which are contiguous in pagecache,
+contiguous in physical memory and are contiguous in the radix-tree.
 
---nextPart1563788.bnKDMgynq7
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
+> > I'm not saying it's especially simple, nor fast.  But it has the advantage
+> > that we're not forced to use larger pages with _it's_ attendant performance
+> > problems.
+> 
+> The patch is not about forcing to use large pages but about the option to 
+> use larger pages. Its a new flexibility.
 
-iD8DBQBGMZE7UYYhyuxDQc4RAsRCAJ9OPG2u5zAeIYwUa0GV4b9DDMOC8gCfUdIS
-1Dc+Q1HhMRRiIyXq7lnsNXo=
-=5Vq8
------END PGP SIGNATURE-----
+That's just spin.
 
---nextPart1563788.bnKDMgynq7--
+> > And it doesn't introduce a rather nasty hack of pretending (in some places)
+> > that pages are larger than they really are.
+> 
+> They are really larger. One page struct controls it all.
+
+No it doesn't and please stop spinning.  x86 ptes map 4k pages and the core
+MM needs changes to continue to work with this hack in place.
+
+If x86 had larger pagesize we wouldn't be seeing any of this.  It is a workaround
+for present-generation hardware.
+
+> > And it has the very significant advantage that it doesn't introduce brand
+> > new concepts and some complexity into core MM.
+> 
+> The patchset would reduce complexity and making it easy to handle the page 
+> cache. Gets rid of the hacks to support larger ones right now. Its 
+> straightforward, no new locking, very much a cleanup patch.
+
+Were any cleanups made which were not also applicable as standalone things
+to mainline?
+
+> > And make no mistake: the latter disadvantage is huge.  Because if we do the
+> > PAGE_CACHE_SIZE hack (sorry, but it _is_), we have to do it *for ever*. 
+> > Maintaining and enhancing core MM and VFS becomes harder and more costly
+> > and slower and more buggy *for ever*.  The ramp for people to become
+> > competent on core MM becomes longer.  Our developer pool becomes smaller, and
+> > proportionally less skilled.
+> 
+> No it becomes easier. Look at the patchset. It cleans up a huge mess.
+
+I see no cleanups which are not also applicable to mainline.
+
+> What is hacky about it?
+
+It pretends that pages are large than they actually are, forcing the
+pte-management code to also play along with the pretence.
+
+Pages *aren't* 16k.  They're 4k.
+
+> It is consistently using larger pages for the page 
+> cache and it integrates nicely into the VM.
+
+
+> > And hardware gets better.  If Intel & AMD come out with a 16k pagesize
+> > option in a couple of years we'll look pretty dumb.  If the problems which
+> > you're presently having with that controller get sorted out in the next
+> > generation of the hardware, we'll also look pretty dumb.
+> 
+> We are currently looking dumb and unable to deal with the hardware. Yes 
+> we can pressure the hardware vendors to produce hardware conforming to our 
+> specifications but I always thought that was how another company operates.
+
+That's spin as well.
+
+Please address my point: if in five years time x86 has larger or varible
+pagesize, this code will be a permanent millstone around our necks which we
+*should not have merged*.
+
+And if in five years time x86 does not have larger pagesize support then
+the manufacturers would have decided that 4k pages are not a performance
+problem, so we again should not have merged this code.
+
+> > As always, there are tradeoffs.  We can see the cons, and they are very
+> > significant.  We don't yet know the pros.  Perhaps they will be similarly
+> > significant.  But I don't believe that the larger PAGE_CACHE_SIZE hack
+> > (sorry) is the only way in which they can be realised.
+> 
+> It is the most consistent solution that avoid the proliferation of further 
+> hacks to address the large blocksize.
+
+You cannot say this.  I'm sitting here *watching* you refuse to seriously
+consider alternatives.
+
+And you've conspicuously failed to address my point regarding the
+*permanent* additional maintenance cost.
+
+
+Anyway.  Let's await those performance numbers.  If they're notably good,
+and if we judge that this goodness will be realised on more than one
+arguably-crippled present-day disk adapter then we can evaluate the
+*various* options which we have for stuffing more data into that adapter.
+
+
