@@ -1,107 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbXD0GSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbXD0GSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbXD0GSQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbXD0GSQ
+	id S1755376AbXD0GSq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXD0GSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:18:16 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38173 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753786AbXD0GSP (ORCPT
+	Fri, 27 Apr 2007 02:18:45 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:44222 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755373AbXD0GSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:18:15 -0400
-Date: Fri, 27 Apr 2007 15:17:22 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com
-Subject: [PATCH] change global zonelist order v4 [2/2] auto configuration
-Message-Id: <20070427151722.dfd142b1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Fri, 27 Apr 2007 02:18:37 -0400
+Date: Fri, 27 Apr 2007 09:18:35 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <1177654110.4737.91.camel@nigel.suspend2.net>
+Message-ID: <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> 
+ <1177573348.5025.224.camel@nigel.suspend2.net> 
+ <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> 
+ <1177617379.4737.29.camel@nigel.suspend2.net> 
+ <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
+ <1177654110.4737.91.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add auto zone ordering configuration.
+On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> COW is a possibility, but I understood (perhaps wrongly) that Linus was
+> thinking of a single syscall or such like to prepare the snapshot. If
+> you're going to start doing things like this, won't that mean you'd then
+> have to update/redo the snapshot or somehow nullify the effect of
+> anything the programs does so that doing it again after the snapshot is
+> restored doesn't cause problems?
 
-This function will select ZONE_ORDER_NODE when
+No. The snapshot is just that. A snapshot in time. From kernel point of 
+view, it doesn't matter one bit what when you did it or if the state has 
+changed before you resume. It's up to userspace to make sure the user 
+doesn't do real work while the snapshot is being written to disk and 
+machine is shut down.
 
-- There are only ZONE_DMA or ZONE_DMA32.
-(or) size of (ZONE_DMA/DMA32) > (System Total Memory)/2
-(or) Assume Node(A)
-	* Node (A)'s total memory > System Total Memory/num_of_node+1
-	(and) Node (A)'s ZONE_DMA/DMA32 occupies 60% of Node(A)'s memory.
+On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> I was going to leave it at that and press send, but perhaps that
+> wouldn't be wise. I feel I should also ask what you're thinking of as a
+> means of making sure userspace doesn't do much activity.
 
-otherwise, ZONE_ORDER_ZONE is selected.
+When the snapshot pages are COW, we will run out of memory if userspace 
+writes to those pages too much. If userspace is blocked, say like 
+displaying a "we are suspending" in X which blocks the user from using 
+other programs that could generate new writes and mounting filesystems 
+read-only, we don't need to worry about running out of memory.
 
-Note: a user can specifiy this ordering from boot option.
-
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/page_alloc.c |   44 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc7-mm2/mm/page_alloc.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/mm/page_alloc.c	2007-04-27 15:39:49.000000000 +0900
-+++ linux-2.6.21-rc7-mm2/mm/page_alloc.c	2007-04-27 15:55:51.000000000 +0900
-@@ -2211,8 +2211,50 @@
- 
- static int estimate_zonelist_order(void)
- {
--	/* dummy, just select node order. */
--	return ZONELIST_ORDER_NODE;
-+	int nid, zone_type;
-+	unsigned long low_kmem_size,total_size;
-+	struct zone *z;
-+	int average_size;
-+	/* ZONE_DMA and ZONE_DMA32 can be very small area in the sytem.
-+	   If they are really small and used heavily,
-+	   the system can fall into OOM very easily.
-+	   This function detect ZONE_DMA/DMA32 size and confgigure
-+	   zone ordering */
-+	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
-+	low_kmem_size = 0;
-+	total_size = 0;
-+	for_each_online_node(nid) {
-+		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-+			z = &NODE_DATA(nid)->node_zones[zone_type];
-+			if (populated_zone(z)) {
-+				if (zone_type < ZONE_NORMAL)
-+					low_kmem_size += z->present_pages;
-+				total_size += z->present_pages;
-+			}
-+		}
-+	}
-+	if (!low_kmem_size ||  /* there is no DMA area. */
-+	    !low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
-+		return ZONELIST_ORDER_NODE;
-+	/* look into each node's config. where all processes starts... */
-+	/* average size..a bit smaller than real average size */
-+	average_size = total_size / (num_online_nodes() + 1);
-+	for_each_online_node(nid) {
-+		low_kmem_size = 0;
-+		total_size = 0;
-+		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-+			z = &NODE_DATA(nid)->node_zones[zone_type];
-+			if (populated_zone(z)) {
-+				if (zone_type < ZONE_NORMAL)
-+					low_kmem_size += z->present_pages;
-+				total_size += z->present_pages;
-+			}
-+		}
-+		if (total_size > average_size && /* ignore unbalanced node */
-+		    low_kmem_size > total_size * 60/100)
-+			return ZONELIST_ORDER_NODE;
-+	}
-+	return ZONELIST_ORDER_ZONE;
- }
- 
- 
-
+				Pekka
