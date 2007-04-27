@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbXD0Poc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXD0Ppz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbXD0Poc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXD0Poc
+	id S1756015AbXD0Ppz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXD0Ppz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:44:32 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:33733 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755953AbXD0Po3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:44:29 -0400
-Message-ID: <46321A5A.2030602@austin.ibm.com>
-Date: Fri, 27 Apr 2007 10:44:26 -0500
-From: jschopp <jschopp@austin.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Andy Whitcroft <apw@shadowen.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-kernel@vger.kernel.org
-Subject: Re: patch style checks
-References: <20070423141123.GA21174@skybase>	<20070425143011.57247c1d.akpm@linux-foundation.org>	<20070425172447.1576c399.akpm@linux-foundation.org>	<200704260232.06909.arnd@arndb.de> <20070425180611.25c563d4.akpm@linux-foundation.org> <463206E3.9040309@shadowen.org>
-In-Reply-To: <463206E3.9040309@shadowen.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 11:45:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50223 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756015AbXD0Ppy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:45:54 -0400
+Subject: Re: Video for Linux deprecated drivers (VIDEO_V4L1)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Sunil Naidu <akula2.shark@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
+References: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 27 Apr 2007 12:45:48 -0300
+Message-Id: <1177688748.5163.32.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
->> Methinks it should do `exit 1' if anything was detected.
+Sunil,
+
+Em Sex, 2007-04-27 às 20:39 +0530, Sunil Naidu escreveu:
+> Hello,
 > 
-> [Joel in case you'd not spotted this discussion, your
-> patchstylecheckemail script was found ...  Also this has produced a
-> little patch series improving the tool.  Where would you like that sent?]
+> I need add a device for a particular solution on a x86 box. Device is
+> Logitech QuickCam, USB based WebCam (has to be included because of the
+> change in the experiment specs).
+> 
+> To get the device working (capture images by a V4L application), need
+> to compile the driver (qc-usb) & insert the quickcam.ko module. But,
+> what the requirement says I need to enable the VIDEO_V4L1 support.
+> Then I need to select USB_QUICKCAM_MESSENGER driver under the V4L USB
+> devices. Till here it's fine.
+> 
+> But if I look at the kernel config, VIDEO_V4L1 is deprecated. If I
+> decide to enable VIDEO_V4L1_COMPAT, there isn't any
+> USB_QUICKCAM_MESSENGER driver under the V4L USB devices!
+> 
+> Should I select the VIDEO_V4L1 support to get the WebCam working or is
+> there any other way (work around) to get my WebCam working with
+> VIDEO_V4L1_COMPAT? Comments pl?
 
-Heh.  It's pretty crude but I've found it useful even as crude as it is.  I have been 
-doing library work instead of kernel work for a little more than a year so I haven't been 
-improving it.  That said, I'd be happy to see patches as I expect I'll do kernel work 
-again in the future.  I had made a project page for it here: 
-http://code.google.com/p/patchstylecheck/
+This driver were not yet ported to V4L2. So, if you need it, you will
+need to enable VIDEO_V4L1, until someone can port it to V4L2.
+ 
+Cheers,
+Mauro
 
-I'll maintain it if people want to send me patches.  I also added Andy to the svn 
-commiters list awhile back, so you could bug him as well.
-
-> 2.6.21-rc7-mm2 appears to contian some 4313 commits in total!!!  Of
-> these some 886 failed the style check; over 20%.  Obviously some of
-> these will be false positives, or actually better as they are than made
-> compliant.  I did have a quick look over a sample of the errors and bad
-> use of space at the start and end of line, plus overlength lines, and
-> the lack of spaces round operators seem to be the predominant errors
-> therein.
-
-Whitespace damage is the predominant one I've seen as well.  When I was developing it I 
-fed it a number of lkml patches at random and fixed all the false positives I encountered.
