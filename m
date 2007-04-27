@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXD0VrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbXD0Vuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbXD0VrO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757341AbXD0VrO
+	id S1757360AbXD0Vuv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbXD0Vuu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:47:14 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:59503 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757358AbXD0VrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:47:11 -0400
-Subject: BAD_SG_DMA panic in aha1542
-To: linux-kernel@vger.kernel.org
-Date: Fri, 27 Apr 2007 16:47:09 -0500 (CDT)
-CC: linux-scsi@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Fri, 27 Apr 2007 17:50:50 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55031 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757360AbXD0Vup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:50:45 -0400
+Date: Sat, 28 Apr 2007 03:19:25 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -mm 2/2] Introduce freezer flags
+Message-ID: <20070427214925.GB21224@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <200704271737.31192.rjw@sisk.pl> <200704271740.17972.rjw@sisk.pl> <20070427214047.GA21224@in.ibm.com> <200704272349.36736.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070427214709.DC44BDBA2@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704272349.36736.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I previously reported an ISA DMA issue for the 2.6.12 kernel.  The issue
-persists through at least 2.6.18.  SCSI controller is an Adaptec
-AHA-1542B (ISA).
+On Fri, Apr 27, 2007 at 11:49:35PM +0200, Rafael J. Wysocki wrote:
+> > > -
+> > > +#ifdef CONFIG_FREEZER
+> > > +	/* Used by the process freezer, defined in freezer.h */
+> > > +	unsigned int freezer_flags;
+> > 
+> > unsigned long freezer_flags; ??
+> 
+> I guess so.
+> 
+> > Else it throws the following warnings.
+> 
+> On which arch is that?  I've tested on x86_64 ...
 
-The action "mount -t iso9660 /dev/scd0 /mnt/cdrom -r"
+I compile tested it on i386 with gcc v4.1.2.
 
-produces
+> 
+> 
+> Greetings,
+> Rafael
 
-(cdrom detection messages as various modules autoload, then...)
-sgpnt[0:1] page c1ee5af0/0x1ee5af0 length 32
-Kernel panic - not syncing: Buffer at physical address > 16 Mb used for aha1542
-
-As before, no problems using the sda hard disk (which is the boot drive):
-everything works reliably until I touch the cdrom drive.
-
-I'll be happy to assist with the debugging, but the system with the
-aha1542 has no development facilities, i.e., I'll have to build test
-kernels on a different system, and turnaround is going to be slow :-(.
-
-Thanks in advance for helping me get this old machine working again.
-No issues with 2.4 kernels.  I have no idea about 2.5 kernels and
-2.6 kernels prior to 2.6.12.  As for why I didn't report this before
-now, the aha1542b was in my parts bin until I cobbled a system together
-approx. two weeks ago, mostly to see if a useful system could still be
-had using legacy hardware and modern GNU/Linux software.  I'm happy to
-report the answer is mostly "yes".
-
+Regards
+gautham.
 -- 
------------------------------------------------------------------------
-Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
-rct@frus.com
------------------------------------------------------------------------
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
