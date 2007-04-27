@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755829AbXD0Nma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbXD0Nmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755829AbXD0Nma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 09:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755835AbXD0Nm3
+	id S1755835AbXD0Nmi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 09:42:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbXD0Nmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 09:42:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57966 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755829AbXD0Nm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 09:42:28 -0400
-Date: Fri, 27 Apr 2007 15:41:00 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 27 Apr 2007 09:42:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37590 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755835AbXD0Nmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 09:42:37 -0400
+Date: Fri, 27 Apr 2007 14:42:01 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070427134100.GA26050@elte.hu>
-References: <20070425214704.GA32572@elte.hu> <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177681144.25960.117.camel@localhost.localdomain>
+       Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427134201.GC4152@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+	linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Badari Pulavarty <pbadari@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <17969.55533.59287.509889@cargo.ozlabs.ibm.com> <4631E173.7000204@yahoo.com.au> <17969.59676.356383.189020@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1177681144.25960.117.camel@localhost.localdomain>
+In-Reply-To: <17969.59676.356383.189020@cargo.ozlabs.ibm.com>
 User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Apr 27, 2007 at 10:14:20PM +1000, Paul Mackerras wrote:
+> It's not as simple on 64-bit powerpc with the hash table of course,
+> because the page size is chosen at the segment (256MB) level,
+> restricting where we can put 64k and 16M pages to some degree.
 
-* Thomas Gleixner <tglx@linutronix.de> wrote:
+I think Christoph's variable order pagecache should be perfectly
+fine on ppc64.  We're selecting the pagesize on a per-file basis,
+and the page size selection would choce which segement this mmap
+gets into.  Ben's get_unmapped_area changes are very helpfull for that.
 
-> > Kasper, just to exclude the possibility that this is somehow related 
-> > to IO scheduling, could you copy the OGG file over to /dev/shm and 
-> > play it from there? Do you still get the bad skips?
-> 
-> That's what I can observe here:
-> 
-> ogg123 local harddisk	skips
-> ogg123 nfs		works
-> ogg123 /dev/shm		works
-> 
-> The skips when running from the local harddisk are definitely caused 
-> by the I/O scheduler or some other bottleneck in the 
-> block/disk/scsi/sata jungle. I try to find out more details.
-
-and is it independent of the scheduler - i.e. can you see this skipping 
-on vanilla too?
-
-	Ingo
