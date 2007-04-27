@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXD0Rqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXD0Rq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754116AbXD0Rqf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbXD0Rqe
+	id S1754211AbXD0Rq6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbXD0Rq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:46:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44028 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754116AbXD0Rqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:46:33 -0400
-Message-ID: <463236EA.3030806@redhat.com>
-Date: Fri, 27 Apr 2007 10:46:18 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Fri, 27 Apr 2007 13:46:58 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:38445 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754211AbXD0Rq4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 13:46:56 -0400
+Date: Fri, 27 Apr 2007 10:46:09 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+cc: Peter Williams <pwil3058@bigpond.net.au>, jgarzik@pobox.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux-2.6.21 hangs during post boot initialization phase
+In-Reply-To: <20070427171150.GF19017@hmsreliant.homelinux.net>
+Message-ID: <alpine.LFD.0.98.0704271045180.9964@woody.linux-foundation.org>
+References: <463166C2.6060106@bigpond.net.au>
+ <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org>
+ <46319297.905@bigpond.net.au> <20070427122247.GA19017@hmsreliant.homelinux.net>
+ <4632088C.8000509@bigpond.net.au>
+ <20070427171150.GF19017@hmsreliant.homelinux.net>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       adobriyan@openvz.org
-Subject: Re: [PATCH] v4: merged utimensat implementation
-References: <200704271523.l3RFNwGN031209@devserv.devel.redhat.com> <20070427173247.GA5986@martell.zuzino.mipt.ru>
-In-Reply-To: <20070427173247.GA5986@martell.zuzino.mipt.ru>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5B996CF09F0CC09F0F988B88"
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5B996CF09F0CC09F0F988B88
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Alexey Dobriyan wrote:
-> It should be tiny little bit nicer to call them "ts[2]" because they're=
-
-> timeSpecs.
-
-I always use tv since the prefix of the element names hasn't been
-changed.  ts.tv_sec vs tv.tv_sec.  The latter looks nicer.
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
 
 
---------------enig5B996CF09F0CC09F0F988B88
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+On Fri, 27 Apr 2007, Neil Horman wrote:
+> 
+> Damn, This is what happens when I try to do things too quickly.  I missed one
+> spot in my last patch where I replaced skb with rx_skb [...]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+Jeff, I'm going to assume I get all these through your normal network 
+driver tree.
 
-iD8DBQFGMjbq2ijCOnn/RHQRArJZAKC6v45uTrbJyXcCDsJcYdLx786flQCfaDK1
-X5ObaIGhj7J3dAXXWZ50+w4=
-=c86w
------END PGP SIGNATURE-----
+So this is just a note to say that I'm currently ignoring both the 
+previous patch and this fix on top of it ;)
 
---------------enig5B996CF09F0CC09F0F988B88--
+		Linus
