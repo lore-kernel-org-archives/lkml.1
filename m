@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbXD0Vab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbXD0VbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbXD0Vab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbXD0Vab
+	id S1757337AbXD0VbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750700AbXD0VbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:30:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38579 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757330AbXD0Vaa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:30:30 -0400
-Date: Fri, 27 Apr 2007 22:34:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: torvalds@osdl.org
-Subject: Re: Driver core: warn when userspace writes to the uevent file in a
- non-supported way
-Message-ID: <20070427223411.01cfecae@the-village.bc.nu>
-In-Reply-To: <200704272059.l3RKxUYn024215@hera.kernel.org>
-References: <200704272059.l3RKxUYn024215@hera.kernel.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 17:31:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43795 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757342AbXD0VbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:31:14 -0400
+Message-ID: <46326B90.4050501@redhat.com>
+Date: Fri, 27 Apr 2007 14:30:56 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, adobriyan@openvz.org
+Subject: Re: [PATCH] v4: merged utimensat implementation
+References: <200704271523.l3RFNwGN031209@devserv.devel.redhat.com> <20070427140450.3938183c.akpm@linux-foundation.org>
+In-Reply-To: <20070427140450.3938183c.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigEBB000611C04332275F4C7F1"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->     In the future we will allow the uevent type to be written to the uevent
->     file to trigger the different types of uevents.  But for now, as we only
->     support the ADD event, warn if userspace tries to write anything else to
->     this file.
->     
->     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> ---
->  drivers/base/core.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 72c6ee5..f69305c 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -296,6 +296,9 @@ out:
->  static ssize_t store_uevent(struct device *dev, struct device_attribute *attr,
->  			    const char *buf, size_t count)
->  {
-> +	if (memcmp(buf, "add", 3) != 0)
-> +		dev_err(dev, "uevent: unsupported action-string; this will "
-> +			"be ignored in a future kernel version");
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigEBB000611C04332275F4C7F1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Warnings good, lack of rate limiting extremely bad indeed.
+Andrew Morton wrote:
+> Could we please have [...] a changelog
+> for the commit?
+
+Implement utimensat(2) which is an extension to futimesat(2) in that
+it
+a) supports nano-second resolution for the timestamps
+b) allows to selectively ignore the atime/mtime value
+c) allows to selectively use the current time for either atime or mtime
+d) supports changing the atime/mtime of a symlink itself along the lines
+   of the BSD lutimes(3) functions
+
+For this change the internally used do_utimes() functions was changed to
+accept a timespec time value and an additional flags parameter.
+
+Additionally the sys_utime function was changed to match
+compat_sys_utime which already use do_utimes instead of duplicating the
+work.
+
+--=20
+=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
+=E2=9E=A7 Mountain View, CA =E2=9D=96
+
+
+--------------enigEBB000611C04332275F4C7F1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
+
+iD8DBQFGMmuQ2ijCOnn/RHQRAlS9AJsGZX1jeKm9cnKWjdPTdeXSmDVRLgCfe2G7
+aFUCwvuxqKYtL/1O2lniXMw=
+=VWn4
+-----END PGP SIGNATURE-----
+
+--------------enigEBB000611C04332275F4C7F1--
