@@ -1,268 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751653AbXD0BCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbXD0BDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751653AbXD0BCE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 21:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXD0BCE
+	id S1755327AbXD0BDJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 21:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbXD0BDJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 21:02:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46010 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751653AbXD0BCB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 21:02:01 -0400
-Date: Thu, 26 Apr 2007 21:01:57 -0400
-From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200704270101.l3R11vbQ026634@devserv.devel.redhat.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] v2: utimensat implementation
+	Thu, 26 Apr 2007 21:03:09 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:51430 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755327AbXD0BDG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 21:03:06 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:mime-version:
+	content-type:content-transfer-encoding:content-disposition;
+	b=ZWHzmjuGdFGC7SKpzS3DfjCY78sSVp8aYYqabM6Au0brVZ5Vqvgl0MmfkIsEje1T8
+	cs9W3AwoOaxVuUJArc/Kw==
+Message-ID: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
+Date: Thu, 26 Apr 2007 18:02:52 -0700
+From: "Tim Hockin" <thockin@google.com>
+To: ak@muc.de, vojtech@suse.cz
+Subject: [PATCH] x86_64: dynamic MCE poll interval
+Cc: linux-kernel@vger.kernel.org, akpm@google.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops, little bug, I hooked-up the wrong syscall for the IA32 compat
-code.  Fixed in this revision.
+From: Tim Hockin <thockin@google.com>
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Background:
+  We've found that MCEs (specifically DRAM SBEs) tend to come in bunches,
+  especially when we are trying really hard to stress the system out.  The
+  current MCE poller uses a static interval which does not care whether it
+  has or has not found MCEs recently.
 
-diff --git a/arch/x86_64/ia32/ia32entry.S b/arch/x86_64/ia32/ia32entry.S
-index 796df69..12611c8 100644
---- a/arch/x86_64/ia32/ia32entry.S
-+++ b/arch/x86_64/ia32/ia32entry.S
-@@ -714,9 +714,10 @@ ia32_sys_call_table:
- 	.quad compat_sys_get_robust_list
- 	.quad sys_splice
- 	.quad sys_sync_file_range
--	.quad sys_tee
-+	.quad sys_tee			/* 315 */
- 	.quad compat_sys_vmsplice
- 	.quad compat_sys_move_pages
- 	.quad sys_getcpu
- 	.quad sys_epoll_pwait
-+	.quad compat_sys_utimensat	/* 320 */
- ia32_syscall_end:		
-diff --git a/fs/compat.c b/fs/compat.c
-index 040a8be..1644cd1 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -79,28 +79,55 @@ int compat_printk(const char *fmt, ...)
+Description:
+  This patch makes the MCE poller adjust the polling interval dynamically.
+  If we find an MCE, poll 2x faster (down to 10 ms).  When we stop finding
+  MCEs, poll 2x slower (up to check_interval seconds).  The check_interval
+  tunable becomes the max polling interval.
+
+Result:
+  If you start to take a lot of correctable errors (not exceptions), you
+  log them faster and more accurately (less chance of overflowing the MCA
+  registers).  If you don't take a lot of errors, you will see no change.
+
+Alternatives:
+  I considered simply reducing the polling interval to 10 ms immediately
+  and keeping it there as long as we continue to find errors.  This felt a
+  bit heavy handed, but does perform significantly better for the default
+  check_interval of 5 minutes (we're using a few seconds when testing for
+  DRAM errors).
+
+Patch:
+  This patch is against 2.6.21-rc7.
+
+Signed-Off-By: Tim Hockin <thockin@google.com>o
+
+---
+
+diff -pruN linux-2.6.20/arch/x86_64/kernel/mce.c
+linux-2.6.20+th/arch/x86_64/kernel/mce.c
+--- linux-2.6.20/arch/x86_64/kernel/mce.c	2007-04-24 23:36:04.000000000 -0700
++++ linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-26 10:40:29.000000000 -0700
+@@ -327,6 +327,7 @@ void mce_log_therm_throt_event(unsigned
   */
- asmlinkage long compat_sys_utime(char __user *filename, struct compat_utimbuf __user *t)
+
+ static int check_interval = 5 * 60; /* 5 minutes */
++static int next_interval; /* in jiffies */
+ static void mcheck_timer(struct work_struct *work);
+ static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
+
+@@ -339,7 +340,6 @@ static void mcheck_check_cpu(void *info)
+ static void mcheck_timer(struct work_struct *work)
  {
--	struct timeval tv[2];
-+	struct timespec tv[2];
- 
- 	if (t) {
- 		if (get_user(tv[0].tv_sec, &t->actime) ||
- 		    get_user(tv[1].tv_sec, &t->modtime))
- 			return -EFAULT;
--		tv[0].tv_usec = 0;
--		tv[1].tv_usec = 0;
-+		tv[0].tv_nsec = 0;
-+		tv[1].tv_nsec = 0;
+ 	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
+-	schedule_delayed_work(&mcheck_work, check_interval * HZ);
+
+ 	/*
+ 	 * It's ok to read stale data here for notify_user and
+@@ -349,17 +349,24 @@ static void mcheck_timer(struct work_str
+ 	 * writes.
+ 	 */
+ 	if (notify_user && console_logged) {
++		/* if we logged an MCE, reduce the polling interval */
++		next_interval = max(next_interval/2, HZ/100);
+ 		notify_user = 0;
+ 		clear_bit(0, &console_logged);
+ 		printk(KERN_INFO "Machine check events logged\n");
++	} else {
++		next_interval = min(next_interval*2, check_interval*HZ);
  	}
- 	return do_utimes(AT_FDCWD, filename, t ? tv : NULL);
++
++	schedule_delayed_work(&mcheck_work, next_interval);
  }
- 
-+asmlinkage long compat_sys_utimensat(unsigned int dfd, char __user *filename, struct compat_timespec __user *t)
-+{
-+	struct timespec tv[2];
-+
-+	if  (t) {
-+		if (get_compat_timespec(&tv[0], &t[0]) ||
-+		    get_compat_timespec(&tv[1], &t[1]))
-+			return -EFAULT;
-+
-+		if ((tv[0].tv_nsec == UTIME_OMIT || tv[0].tv_nsec == UTIME_NOW)
-+		    && tv[0].tv_sec != 0)
-+			return -EINVAL;
-+		if ((tv[1].tv_nsec == UTIME_OMIT || tv[1].tv_nsec == UTIME_NOW)
-+		    && tv[1].tv_sec != 0)
-+			return -EINVAL;
-+
-+		if (tv[0].tv_nsec == UTIME_OMIT && tv[1].tv_nsec == UTIME_OMIT)
-+			return 0;
-+	}
-+	return do_utimes(dfd, filename, t ? tv : NULL);
-+}
-+
- asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *filename, struct compat_timeval __user *t)
+
+
+ static __init int periodic_mcheck_init(void)
  {
--	struct timeval tv[2];
-+	struct timespec tv[2];
- 
- 	if (t) {
- 		if (get_user(tv[0].tv_sec, &t[0].tv_sec) ||
--		    get_user(tv[0].tv_usec, &t[0].tv_usec) ||
-+		    get_user(tv[0].tv_nsec, &t[0].tv_usec) ||
- 		    get_user(tv[1].tv_sec, &t[1].tv_sec) ||
--		    get_user(tv[1].tv_usec, &t[1].tv_usec))
-+		    get_user(tv[1].tv_nsec, &t[1].tv_usec))
- 			return -EFAULT;
-+		if (tv[0].tv_nsec > LONG_MAX / 1000
-+		    || tv[1].tv_nsec > LONG_MAX / 1000)
-+			return -EINVAL;
-+		tv[0].tv_nsec *= 1000;
-+		tv[1].tv_nsec *= 1000;
- 	}
- 	return do_utimes(dfd, filename, t ? tv : NULL);
+-	if (check_interval)
+-		schedule_delayed_work(&mcheck_work, check_interval*HZ);
++	next_interval = check_interval * HZ;
++	if (next_interval)
++		schedule_delayed_work(&mcheck_work, next_interval);
+ 	return 0;
  }
-diff --git a/fs/utimes.c b/fs/utimes.c
-index 99cf2cb..dc6612e 100644
---- a/fs/utimes.c
-+++ b/fs/utimes.c
-@@ -3,6 +3,7 @@
- #include <linux/linkage.h>
- #include <linux/namei.h>
- #include <linux/sched.h>
-+#include <linux/stat.h>
- #include <linux/utime.h>
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
-@@ -76,7 +77,7 @@ out:
-  * must be owner or have write permission.
-  * Else, update from *times, must be owner or super user.
-  */
--long do_utimes(int dfd, char __user *filename, struct timeval *times)
-+long do_utimes(int dfd, char __user *filename, struct timespec *times)
+ __initcall(periodic_mcheck_init);
+@@ -597,12 +604,13 @@ static int mce_resume(struct sys_device
+ /* Reinit MCEs after user configuration changes */
+ static void mce_restart(void)
  {
- 	int error;
- 	struct nameidata nd;
-@@ -100,11 +101,21 @@ long do_utimes(int dfd, char __user *filename, struct timeval *times)
-                 if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-                         goto dput_and_out;
- 
--		newattrs.ia_atime.tv_sec = times[0].tv_sec;
--		newattrs.ia_atime.tv_nsec = times[0].tv_usec * 1000;
--		newattrs.ia_mtime.tv_sec = times[1].tv_sec;
--		newattrs.ia_mtime.tv_nsec = times[1].tv_usec * 1000;
--		newattrs.ia_valid |= ATTR_ATIME_SET | ATTR_MTIME_SET;
-+		if (times[0].tv_nsec == UTIME_OMIT)
-+			newattrs.ia_valid &= ~ATTR_ATIME;
-+		else if (times[0].tv_nsec != UTIME_NOW) {
-+			newattrs.ia_atime.tv_sec = times[0].tv_sec;
-+			newattrs.ia_atime.tv_nsec = times[0].tv_nsec;
-+			newattrs.ia_valid |= ATTR_ATIME_SET;
-+		}
-+
-+		if (times[1].tv_nsec == UTIME_OMIT)
-+			newattrs.ia_valid &= ~ATTR_MTIME;
-+		else if (times[1].tv_nsec != UTIME_NOW) {
-+			newattrs.ia_mtime.tv_sec = times[1].tv_sec;
-+			newattrs.ia_mtime.tv_nsec = times[1].tv_nsec;
-+			newattrs.ia_valid |= ATTR_MTIME_SET;
-+		}
- 	} else {
- 		error = -EACCES;
-                 if (IS_IMMUTABLE(inode))
-@@ -123,13 +134,55 @@ out:
- 	return error;
+-	if (check_interval)
++	if (next_interval)
+ 		cancel_delayed_work(&mcheck_work);
+ 	/* Timer race is harmless here */
+ 	on_each_cpu(mce_init, NULL, 1, 1);
+-	if (check_interval)
+-		schedule_delayed_work(&mcheck_work, check_interval*HZ);
++	next_interval = check_interval * HZ;
++	if (next_interval)
++		schedule_delayed_work(&mcheck_work, next_interval);
  }
- 
-+asmlinkage long sys_utimensat(int dfd, char __user *filename, struct timespec __user *utimes)
-+{
-+	struct timespec tstimes[2];
-+	if (utimes) {
-+		if (copy_from_user(&tstimes, utimes, sizeof(tstimes)))
-+			return -EFAULT;
-+		if ((tstimes[0].tv_nsec == UTIME_OMIT ||
-+		     tstimes[0].tv_nsec == UTIME_NOW) &&
-+		    tstimes[0].tv_sec != 0)
-+			return -EINVAL;
-+		if ((tstimes[1].tv_nsec == UTIME_OMIT ||
-+		     tstimes[1].tv_nsec == UTIME_NOW) &&
-+		    tstimes[1].tv_sec != 0)
-+			return -EINVAL;
-+
-+		/* Nothing to do, we must not even check the path.  */
-+		if (tstimes[0].tv_nsec == UTIME_OMIT &&
-+		    tstimes[1].tv_nsec == UTIME_OMIT)
-+			return 0;
-+	}
-+
-+	return do_utimes(dfd, filename, utimes ? tstimes : NULL);
-+}
-+
- asmlinkage long sys_futimesat(int dfd, char __user *filename, struct timeval __user *utimes)
- {
- 	struct timeval times[2];
-+	struct timespec tstimes[2];
-+
-+	if (utimes) {
-+		if (copy_from_user(&times, utimes, sizeof(times)))
-+			return -EFAULT;
-+
-+		/* This test is needed to catch all invalid values.  If we
-+		   would test only in do_utimes we would miss those invalid
-+		   values truncated by the multiplication with 1000.  Note
-+		   that we also catch UTIME_{NOW,OMIT} here which are only
-+		   valid for utimensat.  */
-+		if (times[0].tv_usec > LONG_MAX / 1000 ||
-+		    times[1].tv_usec > LONG_MAX / 1000)
-+			return -EINVAL;
-+
-+		tstimes[0].tv_sec = times[0].tv_sec;
-+		tstimes[0].tv_nsec = 1000 * times[0].tv_usec;
-+		tstimes[1].tv_sec = times[1].tv_sec;
-+		tstimes[1].tv_nsec = 1000 * times[1].tv_usec;
-+	}
- 
--	if (utimes && copy_from_user(&times, utimes, sizeof(times)))
--		return -EFAULT;
--	return do_utimes(dfd, filename, utimes ? times : NULL);
-+	return do_utimes(dfd, filename, utimes ? tstimes : NULL);
- }
- 
- asmlinkage long sys_utimes(char __user *filename, struct timeval __user *utimes)
-diff --git a/include/asm-i386/unistd.h b/include/asm-i386/unistd.h
-index 833fa17..17a9d5a 100644
---- a/include/asm-i386/unistd.h
-+++ b/include/asm-i386/unistd.h
-@@ -325,6 +325,7 @@
- #define __NR_move_pages		317
- #define __NR_getcpu		318
- #define __NR_epoll_pwait	319
-+#define __NR_utimensat		320
- 
- #ifdef __KERNEL__
- 
-diff --git a/include/asm-x86_64/unistd.h b/include/asm-x86_64/unistd.h
-index c5f596e..0aae2ae 100644
---- a/include/asm-x86_64/unistd.h
-+++ b/include/asm-x86_64/unistd.h
-@@ -619,8 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync_file_range)
- __SYSCALL(__NR_vmsplice, sys_vmsplice)
- #define __NR_move_pages		279
- __SYSCALL(__NR_move_pages, sys_move_pages)
-+#define __NR_utimensat		280
-+__SYSCALL(__NR_utimensat, sys_utimensat)
- 
--#define __NR_syscall_max __NR_move_pages
-+#define __NR_syscall_max __NR_utimensat
- 
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
-diff --git a/include/linux/stat.h b/include/linux/stat.h
-index 679ef0d..611c398 100644
---- a/include/linux/stat.h
-+++ b/include/linux/stat.h
-@@ -53,6 +53,9 @@
- #define S_IWUGO		(S_IWUSR|S_IWGRP|S_IWOTH)
- #define S_IXUGO		(S_IXUSR|S_IXGRP|S_IXOTH)
- 
-+#define UTIME_NOW	((1l << 30) - 1l)
-+#define UTIME_OMIT	((1l << 30) - 2l)
-+
- #include <linux/types.h>
- #include <linux/time.h>
- 
-diff --git a/include/linux/time.h b/include/linux/time.h
-index 8ea8dea..936b21b 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -109,7 +109,7 @@ extern void do_gettimeofday(struct timeval *tv);
- extern int do_settimeofday(struct timespec *tv);
- extern int do_sys_settimeofday(struct timespec *tv, struct timezone *tz);
- #define do_posix_clock_monotonic_gettime(ts) ktime_get_ts(ts)
--extern long do_utimes(int dfd, char __user *filename, struct timeval *times);
-+extern long do_utimes(int dfd, char __user *filename, struct timespec *times);
- struct itimerval;
- extern int do_setitimer(int which, struct itimerval *value,
- 			struct itimerval *ovalue);
+
+ static struct sysdev_class mce_sysclass = {
