@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXD0GUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbXD0G3N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbXD0GUs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXD0GUs
+	id S1755377AbXD0G3N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:29:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbXD0G3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:20:48 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:38439 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753968AbXD0GUq (ORCPT
+	Fri, 27 Apr 2007 02:29:12 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54191 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755379AbXD0G3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:20:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	mime-version:content-type;
-	b=PZ2KUNIkwJn52kkPQdOiEwG8C6g943iI2fXxvadsP4rGjxhO+50BHBjenEOEc0DSB
-	iuHKECgT5YJ3GKC/ro1Iw==
-Date: Thu, 26 Apr 2007 23:18:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, linux-kernel@vger.kernel.org
-Subject: [patch -mm] oom: fix constraint deadlock
-Message-ID: <Pine.LNX.4.64.0704262243370.3461@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Apr 2007 02:29:12 -0400
+Date: Fri, 27 Apr 2007 09:29:10 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0704270927240.18521@sbz-30.cs.Helsinki.FI>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <84144f020704260028q190fc90fs8f9ea703e42e7910@mail.gmail.com> 
+ <1177573348.5025.224.camel@nigel.suspend2.net> 
+ <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> 
+ <1177617379.4737.29.camel@nigel.suspend2.net> 
+ <Pine.LNX.4.64.0704270750320.13539@sbz-30.cs.Helsinki.FI>
+ <1177654110.4737.91.camel@nigel.suspend2.net>
+ <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes a deadlock in the OOM killer for allocations that are not
-__GFP_HARDWALL.
+On Fri, 27 Apr 2007, Nigel Cunningham wrote:
+> > COW is a possibility, but I understood (perhaps wrongly) that Linus was
+> > thinking of a single syscall or such like to prepare the snapshot. If
+> > you're going to start doing things like this, won't that mean you'd then
+> > have to update/redo the snapshot or somehow nullify the effect of
+> > anything the programs does so that doing it again after the snapshot is
+> > restored doesn't cause problems?
 
-Before the OOM killer checks for the allocation constraint, it takes
-callback_mutex.
+On Fri, 27 Apr 2007, Pekka J Enberg wrote:
+> No. The snapshot is just that. A snapshot in time. From kernel point of 
+> view, it doesn't matter one bit what when you did it or if the state has 
+> changed before you resume. It's up to userspace to make sure the user 
+> doesn't do real work while the snapshot is being written to disk and 
+> machine is shut down.
 
-constrained_alloc() iterates through each zone in the allocation zonelist
-and calls cpuset_zone_allowed_softwall() to determine whether an
-allocation for gfp_mask is possible.  If a zone's node is not in the
-OOM-triggering task's mems_allowed, it is not exiting, and we did not
-fail on a __GFP_HARDWALL allocation, cpuset_zone_allowed_softwall()
-attempts to take callback_mutex to check the nearest exclusive ancestor
-of current's cpuset.  This results in deadlock.
+Btw, obviously we need to break the COW when resuming and not include the 
+snapshot mapping. However, that should be trivially doable by snapshotting 
+the page mappings before remapping them as COW.
 
-We now take callback_mutex after iterating through the zonelist since we
-don't need it yet.
-
-Cc: Andi Kleen <ak@suse.de>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@engr.sgi.com>
-Cc: Martin J. Bligh <mbligh@mbligh.org>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- mm/oom_kill.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -397,6 +397,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
- 	struct task_struct *p;
- 	unsigned long points = 0;
- 	unsigned long freed = 0;
-+	int constraint;
- 
- 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
- 	if (freed > 0)
-@@ -411,14 +412,15 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
- 		show_mem();
- 	}
- 
--	cpuset_lock();
--	read_lock(&tasklist_lock);
--
- 	/*
- 	 * Check if there were limitations on the allocation (only relevant for
- 	 * NUMA) that may require different handling.
- 	 */
--	switch (constrained_alloc(zonelist, gfp_mask)) {
-+	constraint = constrained_alloc(zonelist, gfp_mask);
-+	cpuset_lock();
-+	read_lock(&tasklist_lock);
-+
-+	switch (constraint) {
- 	case CONSTRAINT_MEMORY_POLICY:
- 		oom_kill_process(current, points,
- 				"No available memory (MPOL_BIND)");
+				Pekka
