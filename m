@@ -1,249 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbXD0Njd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbXD0Nkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755828AbXD0Njd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 09:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXD0Njc
+	id S1755832AbXD0Nkj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 09:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbXD0Nki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 09:39:32 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:39921 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755831AbXD0Nj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 09:39:29 -0400
-Message-ID: <4631FC30.2060602@hp.com>
-Date: Fri, 27 Apr 2007 09:35:44 -0400
-From: Peter Keilty <peter.keilty@hp.com>
-User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
-X-Accept-Language: en-us, en
+	Fri, 27 Apr 2007 09:40:38 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:36434 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755832AbXD0NkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 09:40:10 -0400
+Date: Fri, 27 Apr 2007 13:40:08 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Dominik Brodowski <linux@dominikbrodowski.net>
+cc: Dave Jones <davej@redhat.com>, Nish Aravamudan <nish.aravamudan@gmail.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+In-Reply-To: <20070427122444.GA3714@isilmar.linta.de>
+Message-ID: <Pine.LNX.4.64.0704271334040.25153@server.thyself>
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+ <20070424211253.GG23598@redhat.com> <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
+ <20070425000327.GG22267@redhat.com> <20070427015410.GA9650@isilmar.linta.de>
+ <20070427060957.GA4726@redhat.com> <20070427122444.GA3714@isilmar.linta.de>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
-       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
-References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com> <20070427010253.GV6602@sequoia.sous-sol.org>
-In-Reply-To: <20070427010253.GV6602@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
+On Fri, 27 Apr 2007, Dominik Brodowski wrote:
+> On Fri, Apr 27, 2007 at 02:09:57AM -0400, Dave Jones wrote:
+>> On Thu, Apr 26, 2007 at 09:54:10PM -0400, Dominik Brodowski wrote:
+>> > On Tue, Apr 24, 2007 at 08:03:27PM -0400, Dave Jones wrote:
+>> >> On Tue, Apr 24, 2007 at 03:05:36PM -0700, Nish Aravamudan wrote:
+>> >> > On 4/24/07, Dave Jones <davej@redhat.com> wrote:
+>> >> >> On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
+>> >> >> > The following patches should allow selection of conservative, powersave, and
+>> >> >> > ondemand in the kernel configuration.
+>> >> >>
+>> >> >> This has been rejected several times already.
+>> >> >> Ondemand and conservative isn't a viable governor for all cpufreq
+>> >> >> implementations (ie, ones with high switching latencies).
+>> >> >
+>> >> > This piques my curiosity -- some governors don't work with some
+>> >> > cpufreq implementations. Are those implementations in the kernel or in
+>> >> > userspace? If in the kernel, then perhaps there should be some
+>> >> > dependency expressed there in Kconfig between cpufreq implementation
+>> >> > and the available governors
+>> >>
+>> >> it can't be solved that easily. powernow-k8 for example is fine to
+>> >> use with ondemand on newer systems, where the latency is low.
+>> >> On older models however, it isn't.
+>> >>
+>> >> >> Also, see the
+>> >> >> comment in the Kconfig a few lines above where you are adding this.
+>> >> >
+>> >> > Are these governors unfixable? If
+>> >>
+>> >> tbh, I've forgotten the original issues that caused the comment
+>> >> to be placed there. Dominik ?
+>> >
+>> > Not unfixable, but: cpufreq is currently[*] built around the assumption that
+>> > at least one governor is correctly initialized or can be brought to work
+>> > when a CPU is registered with the cpufreq core.
+>>
+>> It would have to take something fairly spectacular though for performance or
+>> powersave to fail registration. Can you remember why we chose not to allow those?
+>
+> performance _is_ allowed; powersave would be possible -- but then those who
+> accidentally enable it on elanfreq might wait 100 times as long for the
+> system to boot, with gx-suspmod it might even be 255 times as long -- okay,
+> by default it's just 20 times as long, but still...
+>
+> 	Dominik
+>
 
->* Peter Keilty (peter.keilty@hp.com) wrote:
->  
->
->>diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
->>index 6077300..35ad71f 100644
->>--- a/drivers/acpi/processor_idle.c
->>+++ b/drivers/acpi/processor_idle.c
->>@@ -480,10 +480,12 @@ #endif
->> 		/* Get end time (ticks) */
->> 		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->> 
->>+#ifndef CONFIG_IA64
->> #ifdef CONFIG_GENERIC_TIME
->> 		/* TSC halts in C2, so notify users */
->> 		mark_tsc_unstable();
->> #endif
->>+#endif
->>    
->>
->
->Is this a better description of the dependency?
->
->  #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
->  
->
-yes, ok.
+People should be smart enough to realize what "powersave" would imply... or at 
+least read the help for it; again, we wouldn't have the "default default 
+governor" be powersave, it would be performance, and they could choose 
+powersave if they wanted to.
 
->  
->
->> 		/* Re-enable interrupts */
->> 		local_irq_enable();
->> 		current_thread_info()->status |= TS_POLLING;
->>@@ -522,10 +524,12 @@ #endif
->> 			acpi_set_register(ACPI_BITREG_ARB_DISABLE, 0);
->> 		}
->> 
->>+#ifndef CONFIG_IA64
->> #ifdef CONFIG_GENERIC_TIME
->> 		/* TSC halts in C3, so notify users */
->> 		mark_tsc_unstable();
->> #endif
->>+#endif
->>    
->>
->
->ditto
->
->  
->
->> 		/* Re-enable interrupts */
->> 		local_irq_enable();
->> 		current_thread_info()->status |= TS_POLLING;
->>diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
->>index 0be700f..5ea7d3e 100644
->>--- a/drivers/char/hpet.c
->>+++ b/drivers/char/hpet.c
->>@@ -29,6 +29,7 @@ #include <linux/wait.h>
->> #include <linux/bcd.h>
->> #include <linux/seq_file.h>
->> #include <linux/bitops.h>
->>+#include <linux/clocksource.h>
->> 
->> #include <asm/current.h>
->> #include <asm/uaccess.h>
->>@@ -51,8 +52,34 @@ #define	HPET_DRIFT	(500)
->> 
->> #define HPET_RANGE_SIZE		1024	/* from HPET spec */
->> 
->>+#if BITS_PER_LONG == 64
->>+#define	write_counter(V, MC)	writeq(V, MC)
->>+#define	read_counter(MC)	readq(MC)
->>+#else
->>+#define	write_counter(V, MC) 	writel(V, MC)
->>+#define	read_counter(MC)	readl(MC)
->>+#endif
->>+
->> static u32 hpet_nhpet, hpet_max_freq = HPET_USER_FREQ;
->> 
->>+static void __iomem *hpet_mc_ptr;
->>    
->>
->
->CodingStyle nit: we don't need all this _ptr...
->
->  
->
->>+static cycle_t read_hpet(void)
->>+{
->>+	return (cycle_t)read_counter((void __iomem *)hpet_mc_ptr);
->>+}
->>+
->>+static struct clocksource clocksource_hpet = {
->>+        .name           = "hpet",
->>+        .rating         = 300,
->>+        .read           = read_hpet,
->>+        .mask           = 0xffffffffffffffffLL,
->>+        .mult           = 0, /*to be caluclated*/
->>+        .shift          = 10,
->>+        .is_continuous  = 1,
->>+};
->>+static struct clocksource *hpet_clocksource_p;
->>    
->>
->
->and _p naming.
->
->  
->
->>+
->> /* A lock for concurrent access by app and isr hpet activity. */
->> static DEFINE_SPINLOCK(hpet_lock);
->> /* A lock for concurrent intermodule access to hpet and isr hpet activity. */
->>@@ -79,7 +106,7 @@ struct hpets {
->> 	struct hpets *hp_next;
->> 	struct hpet __iomem *hp_hpet;
->> 	unsigned long hp_hpet_phys;
->>-	struct time_interpolator *hp_interpolator;
->>+	struct clocksource *hp_clocksource;
->> 	unsigned long long hp_tick_freq;
->> 	unsigned long hp_delta;
->> 	unsigned int hp_ntimer;
->>@@ -94,13 +121,6 @@ #define	HPET_IE			0x0002	/* interrupt en
->> #define	HPET_PERIODIC		0x0004
->> #define	HPET_SHARED_IRQ		0x0008
->> 
->>-#if BITS_PER_LONG == 64
->>-#define	write_counter(V, MC)	writeq(V, MC)
->>-#define	read_counter(MC)	readq(MC)
->>-#else
->>-#define	write_counter(V, MC) 	writel(V, MC)
->>-#define	read_counter(MC)	readl(MC)
->>-#endif
->> 
->> #ifndef readq
->> static inline unsigned long long readq(void __iomem *addr)
->>@@ -737,27 +757,6 @@ static ctl_table dev_root[] = {
->> 
->> static struct ctl_table_header *sysctl_header;
->> 
->>-static void hpet_register_interpolator(struct hpets *hpetp)
->>-{
->>-#ifdef	CONFIG_TIME_INTERPOLATION
->>-	struct time_interpolator *ti;
->>-
->>-	ti = kzalloc(sizeof(*ti), GFP_KERNEL);
->>-	if (!ti)
->>-		return;
->>-
->>-	ti->source = TIME_SOURCE_MMIO64;
->>-	ti->shift = 10;
->>-	ti->addr = &hpetp->hp_hpet->hpet_mc;
->>-	ti->frequency = hpetp->hp_tick_freq;
->>-	ti->drift = HPET_DRIFT;
->>-	ti->mask = -1;
->>-
->>-	hpetp->hp_interpolator = ti;
->>-	register_time_interpolator(ti);
->>-#endif
->>-}
->>-
->> /*
->>  * Adjustment for when arming the timer with
->>  * initial conditions.  That is, main counter
->>@@ -909,7 +908,14 @@ int hpet_alloc(struct hpet_data *hdp)
->> 	}
->> 
->> 	hpetp->hp_delta = hpet_calibrate(hpetp);
->>-	hpet_register_interpolator(hpetp);
->>+
->>+	if (!hpet_clocksource_p) {
->>+        	clocksource_hpet.fsys_mmio_ptr = hpet_mc_ptr = &hpetp->hp_hpet->hpet_mc;
->>+        	clocksource_hpet.mult = clocksource_hz2mult(hpetp->hp_tick_freq,
->>+						clocksource_hpet.shift);
->>+        	clocksource_register(&clocksource_hpet);
->>+		hpet_clocksource_p = hpetp->hp_clocksource = &clocksource_hpet;
->>+	}
->>    
->>
->
->This looks like a change in behaviour for non-ia64.  Now i386 and x86_64
->will get this clocksource twice (and this one has a higher rating).
->Doesn't look like this will even compile since fsys_mmio_ptr (more
->  
->
-Yes need to change setting for  fsys_mmio just for ia64.
-I will check the load multiple clocksources, before it was limited.
+Also, what of the conservative governor? I understand now some of the problems
+that could arise with ondemand, but conservative doesn't rely on low-latency
+transitions, and seems no riskier than performance or powersave. In fact,
+conservative would probably be the most useful default governor available for a
+laptop system.
 
->extraneous _ptr suffix) is ia64 only?  And sparc64 is left out in
->the cold.
->
->  
->
->> 	return 0;
->> }
->>@@ -995,7 +1001,7 @@ static int hpet_acpi_add(struct acpi_dev
->> 
->> static int hpet_acpi_remove(struct acpi_device *device, int type)
->> {
->>-	/* XXX need to unregister interpolator, dealloc mem, etc */
->>+	/* XXX need to unregister clocksource, dealloc mem, etc */
->> 	return -EINVAL;
->> }
->> 
->>diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
->>index daa4940..a20b4d6 100644
->>--- a/include/linux/clocksource.h
->>+++ b/include/linux/clocksource.h
->>@@ -61,6 +61,9 @@ struct clocksource {
->> 	u32 shift;
->> 	unsigned long flags;
->> 	cycle_t (*vread)(void);
->>+#ifdef CONFIG_IA64
->>+	void *fsys_mmio_ptr;	/* used by fsyscall asm code */
->>+#endif
->> 
->> 	/* timekeeping specific data, ignore */
->> 	cycle_t cycle_last, cycle_interval;
->>    
->>
+For now, I propose allowing a default governor of powersave; allowing 
+conservative while being tagged experimental, and possibly, but not likely, 
+allowing ondemand, tagged as experimental.
+
+William Heimbigner
+icxcnika@mar.tar.cc
