@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbXD0Mje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbXD0Mkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748AbXD0Mje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbXD0Mje
+	id S1755767AbXD0Mkk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbXD0Mkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:39:34 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:42266 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755748AbXD0Mjc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:39:32 -0400
-Message-ID: <4631EEFE.7060309@clusterfs.com>
-Date: Fri, 27 Apr 2007 18:09:26 +0530
-From: Manoj Joseph <manoj@clusterfs.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Marat Buharov <marat.buharov@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Fri, 27 Apr 2007 08:40:40 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:52095 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755765AbXD0Mki (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:40:38 -0400
+Date: Fri, 27 Apr 2007 14:40:29 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Con Kolivas <kernel@kolivas.org>, suspend2-devel@lists.suspend2.net,
+       Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net>	 <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-In-Reply-To: <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>
+Subject: Re: driver power operations (was Re: suspend2 merge)
+Message-ID: <20070427124029.GH22250@elf.ucw.cz>
+References: <alpine.LFD.0.98.0704241327180.9964@woody.linux-foundation.org> <20070425203150.GD17387@elf.ucw.cz> <1177669279.7828.55.camel@johannes.berg> <200704271407.00879.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704271407.00879.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marat Buharov wrote:
-> On 4/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->> Aside: why the heck do applications think that their data is so important
->> that they need to fsync it all the time.  I used to run a kernel on my
->> laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
->> pleasurable.
+Hi!
+
+> > And, incidentally, it could possibly make both suspend and hibernate
+> > work much faster too. The comments there talk about "minimally power
+> > management aware" drivers which always do the wrong thing for suspend,
+> > in that they always reset everything... Of course, some drivers will
+> > actually need to do that, but if freeze/suspend and thaw/restart/resume
+> > have the same prototypes (probably just int <function>(void)) then
+> > drivers can trivially assign the same there.
+> > And hibernate would benefit since a lot of drivers could do a lot less
+> > work for freeze/thaw.
 > 
-> So, if having fake fsync() and fdatasync() is pleasurable for laptop
-> and desktop, may be it's time to add option into Kconfig which
-> disables normal fsync behaviour in favor of robust desktop?
+> I violently agree with all of the above.
+> 
+> Moreover, for the hibernation we have two special cases that are of no interest
+> for the suspend:
+> 1) drivers compiled as modules and not loaded before we restore the image
+> 2) drivers that need to allocate much memory in .freeze()
+> 
+> > Or, if we don't want to have five calls and use 40 bytes (on 64-bit)
+> > just for these callback pointers for each device we could just as well
+> > have a single callback ->pm(what) and make "what" indicate which one of
+> > these five things... But then drivers can't make that code depend on the
+> > swsusp configuration which would be doable with five callbacks.
+> 
+> Five callbacks are fine by me, especially if we can define reasonable defaults
+> for the hibernation (and can we?).
 
-Sure, a noop fsync/fdatasync would speed up some things. And I am sure 
-Andrew Morton knew what he was doing and the consequences.
-
-But unless you care nothing about your data, you should not do it. It is 
-as simple as that. No, it does not give you a robust desktop!!
-
--Manoj
-
+Well, we still can default to suspend(PMSG_FREEZE) for freeze(), and
+resume() for thaw(). Anything else is just not sane way forward.
+									Pavel
 -- 
-Manoj Joseph
-http://kerneljunkie.blogspot.com/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
