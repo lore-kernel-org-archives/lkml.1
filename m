@@ -1,45 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbXD0ImB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbXD0Imr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbXD0ImB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 04:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbXD0ImB
+	id S1755479AbXD0Imr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 04:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbXD0Imr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 04:42:01 -0400
-Received: from gecko.sbs.de ([194.138.37.40]:20371 "EHLO gecko.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755481AbXD0ImA convert rfc822-to-8bit (ORCPT
+	Fri, 27 Apr 2007 04:42:47 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:46360
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755479AbXD0Imq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 04:42:00 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 27 Apr 2007 04:42:46 -0400
+Date: Fri, 27 Apr 2007 10:45:37 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: gregkh@suse.de, axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 2/5] Kcopyd: use mutex instead of semaphore
+Message-ID: <20070427084537.GD4213@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	gregkh@suse.de, axboe@kernel.dk, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070427083857.GB4213@traven>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: pcmcia - failed to initialize IDE interface
-Date: Fri, 27 Apr 2007 10:42:31 +0200
-Message-ID: <D7810733513F4840B4EBAAFA64D9C6A401307AC9@stgw002a.ww002.siemens.net>
-In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A401307A69@stgw002a.ww002.siemens.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: pcmcia - failed to initialize IDE interface
-Thread-Index: AceHqEmPYMhqH9+RSm+Ie3xgpMcxxgA9vZhwAAIIYDA=
-From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-To: <linux-mips@linux-mips.org>
-Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 27 Apr 2007 08:41:48.0655 (UTC) FILETIME=[E5049FF0:01C788A7]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427083857.GB4213@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Which would be the correct way to make pcmcia_request_irq() 
-> use the correct value of 40?
+Kcopyd uses a semaphore as mutex. use the mutex API instead of the
+(binary) semaphore
 
-This is in drivers/pcmcia/au1000_db1x00.c:
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-db1x00_pcmcia_hw_init():
+--
+diff --git a/drivers/md/kcopyd.c b/drivers/md/kcopyd.c
+index b46f6c5..340272a 100644
+--- a/drivers/md/kcopyd.c
++++ b/drivers/md/kcopyd.c
+@@ -195,7 +195,7 @@ struct kcopyd_job {
+ 	 * These fields are only used if the job has been split
+ 	 * into more manageable parts.
+ 	 */
+-	struct semaphore lock;
++	struct mutex lock;
+ 	atomic_t sub_jobs;
+ 	sector_t progress;
+ };
+@@ -452,7 +452,7 @@ static void segment_complete(int read_err,
+ 	sector_t count = 0;
+ 	struct kcopyd_job *job = (struct kcopyd_job *) context;
+ 
+-	down(&job->lock);
++	mutex_lock(&job->lock);
+ 
+ 	/* update the error */
+ 	if (read_err)
+@@ -476,7 +476,7 @@ static void segment_complete(int read_err,
+ 			job->progress += count;
+ 		}
+ 	}
+-	up(&job->lock);
++	mutex_unlock(&job->lock);
+ 
+ 	if (count) {
+ 		int i;
+@@ -558,7 +558,7 @@ int kcopyd_copy(struct kcopyd_client *kc, struct io_region *from,
+ 		dispatch_job(job);
+ 
+ 	else {
+-		init_MUTEX(&job->lock);
++		mutex_init(&job->lock);
+ 		job->progress = 0;
+ 		split_job(job);
+ 	}
 
-	skt->irq = AU1000_GPIO_8;  /* = 40 */
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-Now the CF is working fine.
-
-Fabrice
+      El trabajo es el refugio de los que no tienen nada que hacer
+                            (Oscar Wilde)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
