@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbXD0WsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbXD0WwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757510AbXD0WsJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757524AbXD0WsJ
+	id S1757516AbXD0WwV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbXD0WwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:48:09 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:63975 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1757510AbXD0WsI (ORCPT
+	Fri, 27 Apr 2007 18:52:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54007 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757516AbXD0WwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:48:08 -0400
-Date: Fri, 27 Apr 2007 15:12:10 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <200704272326.58964.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.63.0704271451180.10565@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <alpine.LFD.0.98.0704260941310.9964@woody.linux-foundation.org> 
- <20070427124932.GA23513@elf.ucw.cz> <200704272326.58964.rjw@sisk.pl>
+	Fri, 27 Apr 2007 18:52:20 -0400
+Date: Fri, 27 Apr 2007 15:49:57 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Benedikt Spranger <b.spranger@linutronix.de>,
+       "Hans J. Koch" <hjk@linutronix.de>
+Subject: [GIT PATCH] UIO patches for 2.6.21
+Message-ID: <20070427224957.GA17967@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=unknown-8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
+Here are the updated UIO (Userspace I/O driver framework) patches for
+2.6.21.
 
-> On Friday, 27 April 2007 14:49, Pavel Machek wrote:
->>
->> I think this is very similar to current uswsusp design; except that we
->> are using read on /dev/snapshot to read the snapshot (not memory
->> mapping) and that we freeze the system
->
-> Yes, it seems so.
->
->> (because I do not think killall _SIGSTOP is enough).
->
+They have been revamped from the last time you have seen them, and they
+include a real driver, the Hilscher CIF DeviceNet and Profibus card
+controller, which is being used in production systems with this driver
+framework right now.  The kernel driver they replaced was a total mess,
+with over 60+ ioctls to try to control the different aspects of the
+device.  See the last patch in this series for more details on this
+driver.
 
-remember, this is being done inside the kernel. the kernel can do things like 
-saving off the scheduler queue to prevent any userspace from running during the 
-snapshot, it could then move selected pids over to a new queue to selectivly 
-'unfreeze' whatever you need (like the X processes for example) and then proceed 
-normally (allowing processes to be spawned, forked, etc without activiating the 
-rest of userspace becouse the rest just won't be available to be scheduled) and 
-userspace can tell the kernel the list of pids to unfreeze so the kernel doesn't 
-need to try and guess.
+These patches include full documentation, are self-contained from the
+rest of the kernel, and have been in the -mm tree for the past few
+months with no complaints.
 
-David Lang
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/uio-2.6.git/
+
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+thanks,
+
+greg k-h
+
+
+ Documentation/DocBook/kernel-api.tmpl |    4 +
+ Documentation/DocBook/uio-howto.tmpl  |  498 +++++++++++++++++++++++
+ drivers/Kconfig                       |    1 +
+ drivers/Makefile                      |    1 +
+ drivers/uio/Kconfig                   |   27 ++
+ drivers/uio/Makefile                  |    2 +
+ drivers/uio/uio.c                     |  702 +++++++++++++++++++++++++++++++++
+ drivers/uio/uio_cif.c                 |  156 ++++++++
+ include/linux/uio_driver.h            |   91 +++++
+ 9 files changed, 1482 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/DocBook/uio-howto.tmpl
+ create mode 100644 drivers/uio/Kconfig
+ create mode 100644 drivers/uio/Makefile
+ create mode 100644 drivers/uio/uio.c
+ create mode 100644 drivers/uio/uio_cif.c
+ create mode 100644 include/linux/uio_driver.h
+
+---------------
+
+Hans J. Koch (2):
+      UIO: Add the User IO core code
+      UIO: Documentation
+
+Hans-Jürgen Koch (1):
+      UIO: Hilscher CIF card driver
+
