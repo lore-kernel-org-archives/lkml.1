@@ -1,88 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbXD0TqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbXD0Tvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbXD0TqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbXD0TqK
+	id S1757166AbXD0Tvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbXD0Tvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:46:10 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36680 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755910AbXD0Tpz (ORCPT
+	Fri, 27 Apr 2007 15:51:52 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53055 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755938AbXD0Tvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 15:45:55 -0400
-Date: Fri, 27 Apr 2007 21:46:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070427194605.GV3468@stusta.de>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <20070426165950.GO3468@stusta.de> <20070426215015.003f6196@the-village.bc.nu> <20070427145805.GT3468@stusta.de> <20070427163143.GG24852@thunk.org>
+	Fri, 27 Apr 2007 15:51:51 -0400
+Date: Fri, 27 Apr 2007 12:50:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andreas Dilger <adilger@clusterfs.com>
+cc: Marat Buharov <marat.buharov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Alex Tomas <alex@clusterfs.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+In-Reply-To: <20070427193130.GD5967@schatzie.adilger.int>
+Message-ID: <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+ <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+ <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+ <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+ <20070427193130.GD5967@schatzie.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070427163143.GG24852@thunk.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 12:31:43PM -0400, Theodore Tso wrote:
-> On Fri, Apr 27, 2007 at 04:58:05PM +0200, Adrian Bunk wrote:
-> > "no regressions" is definitely not feasible.
-> > 
-> > 14 known regressions, some of them not yet debugged at all, are 
-> > different from your "some small regression".
-> 
-> Yes, but when were some of these regressions reported?  Past a certain
-> point, I think it's reasonable to look at the regression, decide how
-> many people would be affected by it, and why it hadn't been noticed
-> earlier, and in some cases, decide that it's better to get this
-> debugged and fixed in the stable and development trees in parallel.
 
-8 of them have been reported in March or earlier. [1]
 
-Patches for 2 of these 8 were available at the time of the release. [2]
-While the question whether to merge one of them into 2.6.21 was 
-controversial, the other one was not controversial.
+On Fri, 27 Apr 2007, Andreas Dilger wrote:
+>
+> It's true that this is a "feature" of ext3 with data=ordered (the default),
+> but I suspect the same thing is now true in reiserfs too.
 
-For one of the bugs, it became obvious when someone looked at it after 
-the release of 2.6.21 that between the bug report on March 31th and the 
-release of 2.6.21 on April 21th, noone started debugging this bug. [3] [4]
+Oh, well.. Journalling sucks.
 
-> > And look e.g. at the many (and non-trivial) changes between -rc7 and 
-> > -final, resulting in more than one report from people who were running 
-> > -rc7 without problems - and 2.6.21 doesn't work for them.
-> 
-> I agree that's unfortunate.
-> 
-> > It's not a choice between "regressions don't matter" and "no regressions",
-> > it's about the place in the area between these two extremes. I have my 
-> > opinions on what I want to expect from a stable Linux kernel, and other 
-> > people have different opinins.
-> 
-> Everyone is going to disagree to some extent; and their own comfort
-> zone.  So a certain amount compromise is always going to be necessary.
-> Of course, it's up to you decide whether this has gone beyond the zone
-> where you aren't comfortable working with other people's development
-> style.
-> 
-> Regards,
-> 
-> 					- Ted
+I was actually _really_ hoping that somebody would come along and tell 
+everybody that this whole journal-logging is stupid, and that it's just 
+better to not ever re-write blocks on disk, but instead write to new 
+blocks with version numbers (and not re-use old blocks until new versions 
+are stable on disk).
 
-cu
-Adrian
+There was even somebody who did something like that for a PhD thesis, I 
+forget the details (and it apparently died when the thesis was presumably 
+accepted ;).
 
-[1] http://lkml.org/lkml/2007/4/26/2
-[2] http://lkml.org/lkml/2007/4/25/496
-[3] http://lkml.org/lkml/2007/4/26/496
-[4] and although it turned out this specific regression was already 
-    fixed in 2.6.21, I hope you get my point
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+			Linus
