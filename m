@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755670AbXD0MAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755676AbXD0MBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755670AbXD0MAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbXD0MAY
+	id S1755676AbXD0MBo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755678AbXD0MBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:00:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:55273 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755668AbXD0L76 (ORCPT
+	Fri, 27 Apr 2007 08:01:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42680 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755676AbXD0MBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:59:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cN2m0cKMVi5PYgQsMMxr8FZmEwUedT1ujp4hFp66JXaNtXPQ69QP2DOco2QOBbK1v3pzweEuO9noH3zm4ILOYIzFjEpRpysU52R4FTcz8GXpIJ5XZ0tEMw5gksnow1Gn8baXh7zhQKS19y0kG6wdLcqXI7gsicsXnS41DfLZzdI=
-Message-ID: <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-Date: Fri, 27 Apr 2007 15:59:56 +0400
-From: "Marat Buharov" <marat.buharov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS is under heavy write load (massive starvation)
-Cc: "Mike Galbraith" <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-In-Reply-To: <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+	Fri, 27 Apr 2007 08:01:42 -0400
+Date: Fri, 27 Apr 2007 05:01:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <20070427002640.22a71d06.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704270459520.21003@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org>
+ <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org>
+ <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+ <20070426235542.bad7035a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
+ <20070427002640.22a71d06.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	 <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> Aside: why the heck do applications think that their data is so important
-> that they need to fsync it all the time.  I used to run a kernel on my
-> laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
-> pleasurable.
+On Fri, 27 Apr 2007, Andrew Morton wrote:
 
-So, if having fake fsync() and fdatasync() is pleasurable for laptop
-and desktop, may be it's time to add option into Kconfig which
-disables normal fsync behaviour in favor of robust desktop?
+> On Fri, 27 Apr 2007 00:19:49 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> > The page cache handling in the various layers is significantly 
+> > simplified which reduces maintenance cost.
+> 
+> How on earth can the *addition* of variable pagecache size simplify the
+> existing code?
+
+Because the page cache code is full of manual shifts and adds. Its a mess. 
+Adding appropriate accessors simplifies the code. I took that opportunity 
+to slide in an address space parameter into the accessors which allows to 
+have sets of accessors for single page size and multi page size 
+configurations.
+
