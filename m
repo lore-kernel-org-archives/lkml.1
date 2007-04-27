@@ -1,18 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbXD0GxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbXD0GxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755427AbXD0GxG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbXD0GxG
+	id S1755425AbXD0GxE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbXD0GxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:53:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40052 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755427AbXD0GxB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 02:53:04 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:34355 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755425AbXD0GxB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Apr 2007 02:53:01 -0400
-Date: Fri, 27 Apr 2007 08:52:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
 To: Con Kolivas <kernel@kolivas.org>
-Cc: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>,
+Subject: Re: [ck] Re: [REPORT] cfs-v6-rc2 vs sd-0.46 vs 2.6.21-rc7
+Date: Fri, 27 Apr 2007 07:59:07 +0200
+User-Agent: KMail/1.9.5
+Cc: ck@vds.kolivas.org, Ingo Molnar <mingo@elte.hu>,
        Nick Piggin <npiggin@suse.de>, Bill Davidsen <davidsen@tmr.com>,
        Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
        linux-kernel@vger.kernel.org,
@@ -23,27 +27,35 @@ Cc: ck@vds.kolivas.org, Michael Gerdau <mgd@technosis.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [ck] Re: [REPORT] cfs-v6-rc2 vs sd-0.46 vs 2.6.21-rc7
-Message-ID: <20070427065204.GA31708@elte.hu>
 References: <200704261312.25571.mgd@technosis.de> <20070426120723.GA4092@elte.hu> <200704270859.37931.kernel@kolivas.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <200704270859.37931.kernel@kolivas.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1563788.bnKDMgynq7";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704270759.23265.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177656781;8b32656d;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1563788.bnKDMgynq7
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Con Kolivas <kernel@kolivas.org> wrote:
+> Very interesting indeed but fairly complicated as well.
+
+Sorry for that -- I've taken these figures from the 3MB logfile
+that each job creates and "reading" them on a regular basis tend
+to forget that probably everyody else does not find them as
+obvious as I do. Also I'm don't really have lots of experience
+with how a scheduler is properly tested.
+
+=46or any upcoming tests I will restrict the numbers to wallclock
+and what time provides which probably is better suited anyway.
 
 > > as a summary: i think your numbers demonstrate it nicely that the
 > > shorter 'timeslice length' that both CFS and SD utilizes does not have a
@@ -53,27 +65,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > >
 > >     echo 400000000 > /proc/sys/kernel/sched_granularity_ns  # on CFS
 > >     echo 400 > /proc/sys/kernel/rr_interval                 # on SD
-> 
-> I thought that the effective "timeslice" on CFS was double the 
-> sched_granularity_ns so wouldn't this make the effective timeslice 
-> double that of what you're setting SD to? [...]
+>=20
+> I thought that the effective "timeslice" on CFS was double the=20
+> sched_granularity_ns so wouldn't this make the effective timeslice double=
+=20
+> that of what you're setting SD to? Anyway the difference between 400 and=
+=20
+> 800ms timeslices is unlikely to be significant so I don't mind.
 
-The two settings are not really comparable. The "effective timeslice is 
-the double of the granularity" thing i mentioned before is really a 
-special-case: only true for a really undisturbed 100% CPU-using 
-_two-task_ workload, if and only if the workload would not reschedule 
-otherwise, but that is clearly not the case here: and if you look at the 
-vmstat output provided by Michael you'll see that all 3 schedulers 
-rescheduled this workload at around 1000/sec or 1 msec per scheduling 
-atom. (But i'd agree that to be on the safe side the context-switch rate 
-has to be monitored and if it seems too high on SD, the rr_interval 
-should be increased.)
+I'm happy to do that, hopefully over the weekend.
 
-> [...] Anyway the difference between 400 and 800ms timeslices is 
-> unlikely to be significant so I don't mind.
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
 
-even on a totally idle system there's at least a 10 Hz 'background 
-sound' of various activities, so any setting above 100 msecs rarely has 
-any effect.
+--nextPart1563788.bnKDMgynq7
+Content-Type: application/pgp-signature
 
-	Ingo
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGMZE7UYYhyuxDQc4RAsRCAJ9OPG2u5zAeIYwUa0GV4b9DDMOC8gCfUdIS
+1Dc+Q1HhMRRiIyXq7lnsNXo=
+=5Vq8
+-----END PGP SIGNATURE-----
+
+--nextPart1563788.bnKDMgynq7--
