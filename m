@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbXD0WK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXD0WL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbXD0WK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 18:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbXD0WK5
+	id S1757474AbXD0WL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 18:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757463AbXD0WL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 18:10:57 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54553 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757487AbXD0WKG (ORCPT
+	Fri, 27 Apr 2007 18:11:57 -0400
+Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:48682 "EHLO
+	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757487AbXD0WLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 18:10:06 -0400
-Date: Fri, 27 Apr 2007 23:13:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: rct@gherkin.frus.com (Bob Tracy)
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: BAD_SG_DMA panic in aha1542
-Message-ID: <20070427231346.647797bc@the-village.bc.nu>
-In-Reply-To: <20070427214709.DC44BDBA2@gherkin.frus.com>
-References: <20070427214709.DC44BDBA2@gherkin.frus.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Apr 2007 18:11:54 -0400
+Message-ID: <46327503.9040902@gentoo.org>
+Date: Fri, 27 Apr 2007 18:11:15 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, curio@free.fr
+Subject: Re: sky2 regression in 2.6.21: Asus P5B-E Plus ethernet adapter no
+ more supported
+References: <46311882.2040005@free.fr> <20070426155050.7850bc16@freekitty>
+In-Reply-To: <20070426155050.7850bc16@freekitty>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As before, no problems using the sda hard disk (which is the boot drive):
-> everything works reliably until I touch the cdrom drive.
+Hi Stephen,
 
-A little quiet contemplation and gnome number 387 suggests trying the following
-(and providing more detailed information such as the last message printed before
-the DMA message). Stuff a BUG() before the panic in BAD_DMA (aha1542.c) if needed
-to get a good trace.
+Stephen Hemminger wrote:
+> But the same hardware dies horribly on Gigabyte GA-965P motherboards.
+> Could you send me full lspci -vvx output. I'll re-enable it for Asus and add a block
+> for the Gigabyte boards. (sigh)
 
-Please report success/failure/change.
+This was also reported by another user at 
+https://bugs.gentoo.org/show_bug.cgi?id=176219
 
---- drivers/scsi/sr_ioctl.c~	2007-04-27 22:53:33.885035256 +0100
-+++ drivers/scsi/sr_ioctl.c	2007-04-27 22:53:33.885035256 +0100
-@@ -187,9 +187,10 @@
- 	struct scsi_sense_hdr sshdr;
- 	int result, err = 0, retries = 0;
- 	struct request_sense *sense = cgc->sense;
--
-+	void *zebedee = cgc->buffer;
-+	
- 	SDev = cd->device;
--
-+	
- 	if (!sense) {
- 		sense = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
- 		if (!sense) {
-@@ -197,7 +198,22 @@
- 			goto out;
- 		}
- 	}
--
-+	
-+	if (cgc->buflen && cd->device->host->unchecked_isa_dma) {
-+		switch(cgc->data_direction) {
-+			case DMA_NONE:
-+				break;
-+			case DMA_FROM_DEVICE:
-+			case DMA_TO_DEVICE: /* Boing!!!! said Zebedee */
-+				zebedee = kmalloc(cgc->buflen, GFP_KERNEL|GFP_DMA);
-+				if (zebedee ==NULL) {
-+					err = -ENOMEM;
-+					goto out;
-+				}
-+		}
-+		if (cgc->data_direction == DMA_TO_DEVICE)
-+			memcpy(zebedee, cgc->buffer, cgc->buflen);
-+	}
-       retry:
- 	if (!scsi_block_when_processing_errors(SDev)) {
- 		err = -ENODEV;
-@@ -206,10 +222,13 @@
- 
- 	memset(sense, 0, sizeof(*sense));
- 	result = scsi_execute(SDev, cgc->cmd, cgc->data_direction,
--			      cgc->buffer, cgc->buflen, (char *)sense,
-+			      zebedee, cgc->buflen, (char *)sense,
- 			      cgc->timeout, IOCTL_RETRIES, 0);
- 
- 	scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
-+	
-+	if (zebedeee != cgc->buffer && cgc->data_direction == DMA_FROM_DEVICE)
-+		memcpy(cgc->buffer, zebedee, cgc->buflen);
- 
- 	/* Minimal error checking.  Ignore cases we know about, and report the rest. */
- 	if (driver_byte(result) != 0) {
+The following hardware on an Asus P5B Deluxe board worked fine with 2.6.20:
+
+sky2 v1.10 addr 0xfeafc000 irq 17 Yukon-EC Ultra (0xb4) rev 2
+
+02:00.0 0200: 11ab:4364 (rev 12)
+         Subsystem: 1148:4340
+         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+Stepping- SERR- FastB2B-
+         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- 
+<TAbort-
+<MAbort- >SERR- <PERR-
+         Latency: 0, Cache Line Size: 32 bytes
+         Interrupt: pin A routed to IRQ 17
+         Region 0: Memory at feafc000 (64-bit, non-prefetchable) [size=16K]
+         Region 2: I/O ports at d800 [size=256]
+         Expansion ROM at feac0000 [disabled] [size=128K]
+         Capabilities: [48] Power Management version 3
+                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA
+PME(D0+,D1+,D2+,D3hot+,D3cold+)
+                 Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+         Capabilities: [50] Vital Product Data
+         Capabilities: [5c] Message Signalled Interrupts: 64bit+ Queue=0/0
+Enable-
+                 Address: 0000000000000000  Data: 0000
+         Capabilities: [e0] Express Legacy Endpoint IRQ 0
+                 Device: Supported: MaxPayload 128 bytes, PhantFunc 0, 
+ExtTag-
+                 Device: Latency L0s unlimited, L1 unlimited
+                 Device: AtnBtn- AtnInd- PwrInd-
+                 Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                 Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                 Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+                 Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, 
+Port 0
+                 Link: Latency L0s <256ns, L1 unlimited
+                 Link: ASPM Disabled RCB 128 bytes CommClk+ ExtSynch-
+                 Link: Speed 2.5Gb/s, Width x1
+00: ab 11 64 43 07 00 10 00 12 00 00 02 08 00 00 00
+10: 04 c0 af fe 00 00 00 00 01 d8 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 48 11 40 43
+30: 00 00 ac fe 48 00 00 00 00 00 00 00 0a 01 00 00
+
+I guess it may come as a side effect of your upcoming patch, but it 
+would be nice if sky2 could printk() some basic info when it detects one 
+of the controllers that it is going to ignore. Right now it is kind of 
+mysterious why eth0 has disappeared in 2.6.21 for some users.
+
+Thanks,
+Daniel
