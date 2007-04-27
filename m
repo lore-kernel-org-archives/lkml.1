@@ -1,88 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755476AbXD0IoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbXD0IpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755476AbXD0IoR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 04:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbXD0IoR
+	id S1755487AbXD0IpX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 04:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbXD0IpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 04:44:17 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:4390 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755476AbXD0IoQ (ORCPT
+	Fri, 27 Apr 2007 04:45:22 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:38245
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755487AbXD0IpV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 04:44:16 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org
-Subject: Best CONFIG_HZ value for scheduler testing?
-Date: Fri, 27 Apr 2007 10:44:13 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>
+	Fri, 27 Apr 2007 04:45:21 -0400
+Date: Fri, 27 Apr 2007 10:48:12 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 3/5] sysdev: use mutex instead of semaphore
+Message-ID: <20070427084812.GE4213@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	gregkh@suse.de, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070427083857.GB4213@traven>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200704271044.13916.Martin@lichtvoll.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070427083857.GB4213@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+the sysdev code use a semaphore as mutex. use the mutex API instead
+of the (binary) semaphore
 
-Hi Con and Ingo!
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-What would be the best CONFIG_HZ value for scheduler testing? I used 
-1000HZ for a long time, but use 300HZ since 2.6.20. This worked well 
-enough for sd-0.46 and previous versions and ck patches...
+--
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 04e5db4..82c41d1 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -155,7 +155,7 @@ EXPORT_SYMBOL_GPL(sysdev_class_unregister);
+ 
+ 
+ static LIST_HEAD(sysdev_drivers);
+-static DECLARE_MUTEX(sysdev_drivers_lock);
++static DEFINE_MUTEX(sysdev_drivers_lock);
+ 
+ /**
+  *	sysdev_driver_register - Register auxillary driver
+@@ -172,7 +172,7 @@ static DECLARE_MUTEX(sysdev_drivers_lock);
+ int sysdev_driver_register(struct sysdev_class * cls,
+ 			   struct sysdev_driver * drv)
+ {
+-	down(&sysdev_drivers_lock);
++	mutex_lock(&sysdev_drivers_lock);
+ 	if (cls && kset_get(&cls->kset)) {
+ 		list_add_tail(&drv->entry, &cls->drivers);
+ 
+@@ -184,7 +184,7 @@ int sysdev_driver_register(struct sysdev_class * cls,
+ 		}
+ 	} else
+ 		list_add_tail(&drv->entry, &sysdev_drivers);
+-	up(&sysdev_drivers_lock);
++	mutex_unlock(&sysdev_drivers_lock);
+ 	return 0;
+ }
+ 
+@@ -197,7 +197,7 @@ int sysdev_driver_register(struct sysdev_class * cls,
+ void sysdev_driver_unregister(struct sysdev_class * cls,
+ 			      struct sysdev_driver * drv)
+ {
+-	down(&sysdev_drivers_lock);
++	mutex_lock(&sysdev_drivers_lock);
+ 	list_del_init(&drv->entry);
+ 	if (cls) {
+ 		if (drv->remove) {
+@@ -207,7 +207,7 @@ void sysdev_driver_unregister(struct sysdev_class * cls,
+ 		}
+ 		kset_put(&cls->kset);
+ 	}
+-	up(&sysdev_drivers_lock);
++	mutex_unlock(&sysdev_drivers_lock);
+ }
+ 
+ EXPORT_SYMBOL_GPL(sysdev_driver_register);
+@@ -246,7 +246,7 @@ int sysdev_register(struct sys_device * sysdev)
+ 	if (!error) {
+ 		struct sysdev_driver * drv;
+ 
+-		down(&sysdev_drivers_lock);
++		mutex_lock(&sysdev_drivers_lock);
+ 		/* Generic notification is implicit, because it's that
+ 		 * code that should have called us.
+ 		 */
+@@ -262,7 +262,7 @@ int sysdev_register(struct sys_device * sysdev)
+ 			if (drv->add)
+ 				drv->add(sysdev);
+ 		}
+-		up(&sysdev_drivers_lock);
++		mutex_unlock(&sysdev_drivers_lock);
+ 	}
+ 	return error;
+ }
+@@ -271,7 +271,7 @@ void sysdev_unregister(struct sys_device * sysdev)
+ {
+ 	struct sysdev_driver * drv;
+ 
+-	down(&sysdev_drivers_lock);
++	mutex_lock(&sysdev_drivers_lock);
+ 	list_for_each_entry(drv, &sysdev_drivers, entry) {
+ 		if (drv->remove)
+ 			drv->remove(sysdev);
+@@ -281,7 +281,7 @@ void sysdev_unregister(struct sys_device * sysdev)
+ 		if (drv->remove)
+ 			drv->remove(sysdev);
+ 	}
+-	up(&sysdev_drivers_lock);
++	mutex_unlock(&sysdev_drivers_lock);
+ 
+ 	kobject_unregister(&sysdev->kobj);
+ }
+@@ -308,7 +308,7 @@ void sysdev_shutdown(void)
+ 
+ 	pr_debug("Shutting Down System Devices\n");
+ 
+-	down(&sysdev_drivers_lock);
++	mutex_lock(&sysdev_drivers_lock);
+ 	list_for_each_entry_reverse(cls, &system_subsys.kset.list,
+ 				    kset.kobj.entry) {
+ 		struct sys_device * sysdev;
+@@ -337,7 +337,7 @@ void sysdev_shutdown(void)
+ 				cls->shutdown(sysdev);
+ 		}
+ 	}
+-	up(&sysdev_drivers_lock);
++	mutex_unlock(&sysdev_drivers_lock);
+ }
+ 
+ static void __sysdev_resume(struct sys_device *dev)
 
-martin@deepdance:Computer/Deepdance/Kernel> grep "CONFIG_HZ=" */config*
-2.6.13/config-2.6.13.3-tp23--2005-10-07:CONFIG_HZ=1000
-2.6.13/config-2.6.13.4-tp23--2005-10-13:CONFIG_HZ=1000
-2.6.13/config-2.6.13-tp23--2005-09-03:CONFIG_HZ=1000
-2.6.13/config-2.6.13-tp23-ibmacpi-0.12--2005-09-06:CONFIG_HZ=1000
-2.6.14/config-2.6.14.2-tp23--2005-11-13:CONFIG_HZ=1000
-2.6.14/config-2.6.14.3-tp23-sws2-2.2-rc14--2005-12-08:CONFIG_HZ=1000
-2.6.14/config-2.6.14.4-tp23-sws2-2.2-rc14--2005-12-23:CONFIG_HZ=1000
-2.6.14/config-2.6.14.5-tp23-sws2-2.2-rc15--2005-12-30:CONFIG_HZ=1000
-2.6.15/config-2.6.15.1-tp23-sws2-2.2-rc16--2006-01-17:CONFIG_HZ=1000
-2.6.15/config-2.6.15.2-tp23-sws2-2.2--2006-02-01:CONFIG_HZ=1000
-2.6.15/config-2.6.15.4-tp23-sws2-2.2--2006-02-16:CONFIG_HZ=1000
-2.6.15/config-2.6.15.6-tp23-sws2-2.2--2006-03-18:CONFIG_HZ=1000
-2.6.15/config-2.6.15.7-tp23-sws2-2.2--2006-04-14:CONFIG_HZ=1000
-2.6.15/config-2.6.15.7-tp23-sws2-2.2_2--2006-05-31:CONFIG_HZ=1000
-2.6.16/config-2.6.16.11-tp23-sws2-2.2.5--2006-04-28:CONFIG_HZ=1000
-2.6.16/config-2.6.16.4-tp23-sws2-2.2.4--2006-04-12:CONFIG_HZ=1000
-2.6.17/config-2.6.17.11-ck1-tp23-sws2-2.2.7:CONFIG_HZ=1000
-2.6.17/config-2.6.17.1-tp23--2006-06-23:CONFIG_HZ=1000
-2.6.17/config-2.6.17.1-tp23-sws2-2.2.6-xfs-fix--2006-06-28:CONFIG_HZ=1000
-2.6.17/config-2.6.17.1-tp23-sws-2.2.5.3--2006-06-23:CONFIG_HZ=1000
-2.6.17/config-2.6.17.7-tp23-sws2-2.2.7:CONFIG_HZ=1000
-2.6.18/config-2.6.18-ck1-tp23-sws-2.2.8--2006-10-01:CONFIG_HZ=1000
-2.6.19/config-2.6.19.1-ck2-tp23-sws2-2.2.9:CONFIG_HZ=1000
-2.6.19/config-2.6.19.2-ck2-tp23-sws2-2.2.9.3:CONFIG_HZ=1000
-2.6.20/config-2.6.20.1-ck1-tp23-sws2-2.2.9.7:CONFIG_HZ=300
-2.6.20/config-2.6.20.3-ck1-tp23-sws2-2.2.9.9:CONFIG_HZ=300
-2.6.20/config-2.6.20.4-ck1-tp23-rsdl-0.33-sws2-2.2.9.10:CONFIG_HZ=300
-2.6.20/config-2.6.20.7-tp23-sws2-2.2.9.9-cfs-v5:CONFIG_HZ=300
-2.6.20/config-2.6.20.7-tp23-sws2-2.2.9.9-cfs-v6-rc7:CONFIG_HZ=300
-2.6.20/config-2.6.20.7-tp23-sws2-2.2.9.9-sd-0.46:CONFIG_HZ=300
-2.6.20/config-2.6.20.7-tp23-sws2-2.2.9-sd-0.4.4:CONFIG_HZ=300
-
-Any recommendation? I thought 300HZ was nice two to its compatibility with 
-PAL and NTSC refresh rates, but then I have notebooks with LCD displays 
-and do not use any TV cards whatsoever and it might be totally irrelevant 
-to me.
-
-Well 2.6.21 is out so I may switch to DYNTICKS soon anyway...
-
-About scheduler test results on my two ThinkPads... These are just two 
-ThinkPads - so my results are not that representative . By contacting the 
-people on the linux-thinkpad mailinglist it might be possible to get 
-broader test results[1]. I would be providing my precompiled kernels as 
-Debian packages if you desired - they should work with Debian Etch, but 
-they use libata PATA drivers.
-
-[1] http://mailman.linux-thinkpad.org/mailman/listinfo/linux-thinkpad
-
-Regards,
 -- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+     La libertad es como la mañana. Hay quienes esperan dormidos a que
+   llegue, pero hay quienes desvelan y caminan la noche para alcanzarla
+                        (Subcomandante Marcos)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
