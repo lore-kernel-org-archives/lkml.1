@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755736AbXD0MOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754212AbXD0MO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755736AbXD0MOZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbXD0MOY
+	id S1754212AbXD0MO3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXD0MO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:14:24 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:46582 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753879AbXD0MOX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:14:23 -0400
-Message-Id: <20070427120556.428681640@szeredi.hu>
-References: <20070427120417.110164241@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Fri, 27 Apr 2007 14:04:25 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
-       linuxram@us.ibm.com, ebiederm@xmission.com, kzak@redhat.com
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: [patch 08/10] unprivileged mounts: allow unprivileged fuse mounts
-Content-Disposition: inline; filename=unprivileged-mounts-allow-unprivileged-fuse-mounts.patch
+	Fri, 27 Apr 2007 08:14:29 -0400
+Received: from ozlabs.org ([203.10.76.45]:34736 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754212AbXD0MO1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:14:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17969.59676.356383.189020@cargo.ozlabs.ibm.com>
+Date: Fri, 27 Apr 2007 22:14:20 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <4631E173.7000204@yahoo.com.au>
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+	<20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+	<20070426235542.bad7035a.akpm@linux-foundation.org>
+	<17969.55533.59287.509889@cargo.ozlabs.ibm.com>
+	<4631E173.7000204@yahoo.com.au>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Nick Piggin writes:
 
-Use FS_SAFE for "fuse" fs type, but not for "fuseblk".
+> For the TLB issue, higher order pagecache doesn't help. If distros
 
-FUSE was designed from the beginning to be safe for unprivileged users.  This
-has also been verified in practice over many years.  In addition unprivileged
-mounts require the parent mount to be owned by the user, which is more strict
-than the current userspace policy.
+Oh?  Assuming your hardware is capable of supporting a variety of page
+sizes, and of putting a page at any address that is a multiple of its
+size, it should help, potentially a great deal, as far as I can see.
+I'm thinking in particular of machines that have software-loaded
+fully-associative TLBs and support a lot of page sizes, e.g.
+4kB * 4^n for n = 0 up to 8 or so, like some embedded powerpc chips.
 
-This will enable future installations to remove the suid-root fusermount
-utility.
+It's not as simple on 64-bit powerpc with the hash table of course,
+because the page size is chosen at the segment (256MB) level,
+restricting where we can put 64k and 16M pages to some degree.
 
-Don't require the "user_id=" and "group_id=" options for unprivileged mounts,
-but if they are present, verify them for sanity.
+> ship with a 4K page size on powerpc, and use some larger pages in
+> the pagecache, some people are still going to get angry because
+> they wanted to use 64K pages... But I agree 64K pages is too big
+> for most things anyway, and 16 would be better as a default (which
+> hopefully x86-64 will get one day).
 
-Disallow the "allow_other" option for unprivileged mounts.
+Even 16k is going to bloat the page cache, and some people will
+complain.  One way that x86-64 could do 16k pages is by still indexing
+the PTE page in units of 4k, but then have an indicator in the PTE
+that this is a 16k page.  Thus a 16k page would occupy 4 consecutive
+PTEs, but once it was loaded into the TLB, a single TLB entry would
+map the whole 16k.  That would give the expanded TLB reach and allow
+4k and 16k pages to be intermixed freely.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/fs/fuse/inode.c
-===================================================================
---- linux.orig/fs/fuse/inode.c	2007-04-26 13:07:11.000000000 +0200
-+++ linux/fs/fuse/inode.c	2007-04-26 13:07:33.000000000 +0200
-@@ -311,6 +311,19 @@ static int parse_fuse_opt(char *opt, str
- 	d->max_read = ~0;
- 	d->blksize = 512;
- 
-+	/*
-+	 * For unprivileged mounts use current uid/gid.  Still allow
-+	 * "user_id" and "group_id" options for compatibility, but
-+	 * only if they match these values.
-+	 */
-+	if (!capable(CAP_SYS_ADMIN)) {
-+		d->user_id = current->uid;
-+		d->user_id_present = 1;
-+		d->group_id = current->gid;
-+		d->group_id_present = 1;
-+
-+	}
-+
- 	while ((p = strsep(&opt, ",")) != NULL) {
- 		int token;
- 		int value;
-@@ -339,6 +352,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_USER_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->user_id_present && d->user_id != value)
-+				return 0;
- 			d->user_id = value;
- 			d->user_id_present = 1;
- 			break;
-@@ -346,6 +361,8 @@ static int parse_fuse_opt(char *opt, str
- 		case OPT_GROUP_ID:
- 			if (match_int(&args[0], &value))
- 				return 0;
-+			if (d->group_id_present && d->group_id != value)
-+				return 0;
- 			d->group_id = value;
- 			d->group_id_present = 1;
- 			break;
-@@ -536,6 +553,10 @@ static int fuse_fill_super(struct super_
- 	if (!parse_fuse_opt((char *) data, &d, is_bdev))
- 		return -EINVAL;
- 
-+	/* This is a privileged option */
-+	if ((d.flags & FUSE_ALLOW_OTHER) && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
- 	if (is_bdev) {
- #ifdef CONFIG_BLOCK
- 		if (!sb_set_blocksize(sb, d.blksize))
-@@ -639,6 +660,7 @@ static struct file_system_type fuse_fs_t
- 	.fs_flags	= FS_HAS_SUBTYPE,
- 	.get_sb		= fuse_get_sb,
- 	.kill_sb	= kill_anon_super,
-+	.fs_flags	= FS_SAFE,
- };
- 
- #ifdef CONFIG_BLOCK
-
---
+Paul.
