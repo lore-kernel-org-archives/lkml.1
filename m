@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbXD0Mws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbXD0MxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbXD0Mws (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755781AbXD0Mwr
+	id S1755781AbXD0MxY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXD0MxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:52:47 -0400
-Received: from holomorphy.com ([66.93.40.71]:41740 "EHLO holomorphy.com"
+	Fri, 27 Apr 2007 08:53:24 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3578 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755772AbXD0Mwq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:52:46 -0400
-Date: Fri, 27 Apr 2007 05:52:48 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, Gene Heskett <gene.heskett@gmail.com>,
-       linux-kernel@vger.kernel.org,
+	id S1755781AbXD0MxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 08:53:23 -0400
+Date: Fri, 27 Apr 2007 08:52:32 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Peter Williams <pwil3058@bigpond.net.au>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070427125248.GN19966@holomorphy.com>
-References: <20070425214704.GA32572@elte.hu> <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux-2.6.21 hangs during post boot initialization phase
+Message-ID: <20070427125232.GB19017@hmsreliant.homelinux.net>
+References: <463166C2.6060106@bigpond.net.au> <alpine.LFD.0.98.0704262035410.9964@woody.linux-foundation.org> <46319297.905@bigpond.net.au> <20070427122247.GA19017@hmsreliant.homelinux.net> <4631EC0F.7090605@pobox.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070427115344.GA30706@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4631EC0F.7090605@pobox.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 01:53:44PM +0200, Ingo Molnar wrote:
-> i'll try to figure out what is happening on your box. I asked for your 
-> .config off-list (which you already sent me) and i'll try to reproduce 
-> your problems. One thing i noticed: when ogg123 plays with 'esd' also 
-> running on the system, it starts skipping really badly - but it does so 
-> under all schedulers i tried (cfs, sd, vanilla).
+On Fri, Apr 27, 2007 at 08:26:55AM -0400, Jeff Garzik wrote:
+> Neil Horman wrote:
+> >This was reported to me last night, and I've posted a patch to fix it, its
+> >available here:
+> >http://marc.info/?l=linux-netdev&m=117761259222165&w=2
+> >
+> >It applies on top of the previous patch, and should fix your problem.
+> >
+> >Here's a copy of the patch
+> >
+> >Thanks & Regards
+> >Neil
+> >
+> >
+> >diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
+> >index a6a0f09..7e44939 100644
+> >--- a/drivers/net/sis900.c
+> >+++ b/drivers/net/sis900.c
+> 
+> 
+> Thanks Neil.  I will send upstream and to stable@kernel.org as soon as 
+> Peter gets back with a positive test result.
+> 
+> 	Jeff
+> 
 
-I see similar here, but this has not always been the case. 2.6.10 did
-not have the issue with esd.
+Thanks Jeff, all.  Sorry for the trouble. I've had the person who reported it to
+me test this out last night as well. He cam back with positive results.  He had
+complained of some other timeouts, but as he described them, I belive they were
+unrelated to this patch.
 
+Thanks & Regards
+Neil
 
--- wli
