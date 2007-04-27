@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbXD0TC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbXD0TDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757103AbXD0TC7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXD0S7V
+	id S1757083AbXD0TDA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbXD0S7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:59:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50855 "EHLO mx1.suse.de"
+	Fri, 27 Apr 2007 14:59:17 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50861 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757080AbXD0S7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:59:09 -0400
+	id S1757083AbXD0S7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:59:13 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+Cc: Dan Williams <dan.j.williams@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 45/46] drivers/base/attribute_container.c: use mutex instead of binary semaphore
-Date: Fri, 27 Apr 2007 11:53:59 -0700
-Message-Id: <11777002102105-git-send-email-gregkh@suse.de>
+Subject: [PATCH 46/46] dev_dbg: check dev_dbg() arguments
+Date: Fri, 27 Apr 2007 11:54:00 -0700
+Message-Id: <1177700214849-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777002064008-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777002102105-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -64,133 +64,88 @@ References: <20070427185152.GA17121@kroah.com>
  <11777001971761-git-send-email-gregkh@suse.de>
  <11777002022552-git-send-email-gregkh@suse.de>
  <11777002064008-git-send-email-gregkh@suse.de>
+ <11777002102105-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-use mutex instead of binary semaphore in
-drivers/base/attribute_container.c
+Duplicate what Zach Brown did for pr_debug in commit
+8b2a1fd1b394c60eaa2587716102dd5e9b4e5990
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+[akpm@linux-foundation.org: fix a couple of things which broke]
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/attribute_container.c |   26 +++++++++++++-------------
- 1 files changed, 13 insertions(+), 13 deletions(-)
+ drivers/usb/core/hub.c      |    4 +---
+ drivers/usb/host/ohci-hcd.c |    6 ------
+ include/linux/device.h      |    6 +++++-
+ 3 files changed, 6 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
-index 2222073..1ec0654 100644
---- a/drivers/base/attribute_container.c
-+++ b/drivers/base/attribute_container.c
-@@ -62,7 +62,7 @@ EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index b89a98e..7a60285 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -119,8 +119,7 @@ MODULE_PARM_DESC(use_both_schemes,
+ 		"first one fails");
  
- static struct list_head attribute_container_list;
  
--static DECLARE_MUTEX(attribute_container_mutex);
-+static DEFINE_MUTEX(attribute_container_mutex);
- 
- /**
-  * attribute_container_register - register an attribute container
-@@ -77,9 +77,9 @@ attribute_container_register(struct attribute_container *cont)
- 	klist_init(&cont->containers,internal_container_klist_get,
- 		   internal_container_klist_put);
- 		
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_add_tail(&cont->node, &attribute_container_list);
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- 
- 	return 0;
- }
-@@ -94,7 +94,7 @@ int
- attribute_container_unregister(struct attribute_container *cont)
+-#ifdef	DEBUG
+-static inline char *portspeed (int portstatus)
++static inline char *portspeed(int portstatus)
  {
- 	int retval = -EBUSY;
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	spin_lock(&cont->containers.k_lock);
- 	if (!list_empty(&cont->containers.k_list))
- 		goto out;
-@@ -102,7 +102,7 @@ attribute_container_unregister(struct attribute_container *cont)
- 	list_del(&cont->node);
-  out:
- 	spin_unlock(&cont->containers.k_lock);
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- 	return retval;
- 		
+ 	if (portstatus & (1 << USB_PORT_FEAT_HIGHSPEED))
+     		return "480 Mb/s";
+@@ -129,7 +128,6 @@ static inline char *portspeed (int portstatus)
+ 	else
+ 		return "12 Mb/s";
  }
-@@ -145,7 +145,7 @@ attribute_container_add_device(struct device *dev,
+-#endif
+ 
+ /* Note that hdev or one of its children must be locked! */
+ static inline struct usb_hub *hdev_to_hub(struct usb_device *hdev)
+diff --git a/drivers/usb/host/ohci-hcd.c b/drivers/usb/host/ohci-hcd.c
+index f0d29ed..e8bbe8b 100644
+--- a/drivers/usb/host/ohci-hcd.c
++++ b/drivers/usb/host/ohci-hcd.c
+@@ -486,9 +486,6 @@ static int ohci_run (struct ohci_hcd *ohci)
+ 	 * or if bus glue did the same (e.g. for PCI add-in cards with
+ 	 * PCI PM support).
+ 	 */
+-	ohci_dbg (ohci, "resetting from state '%s', control = 0x%x\n",
+-			hcfs2string (ohci->hc_control & OHCI_CTRL_HCFS),
+-			ohci_readl (ohci, &ohci->regs->control));
+ 	if ((ohci->hc_control & OHCI_CTRL_RWC) != 0
+ 			&& !device_may_wakeup(hcd->self.controller))
+ 		device_init_wakeup(hcd->self.controller, 1);
+@@ -744,9 +741,6 @@ static void ohci_stop (struct usb_hcd *hcd)
  {
- 	struct attribute_container *cont;
+ 	struct ohci_hcd		*ohci = hcd_to_ohci (hcd);
  
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
+-	ohci_dbg (ohci, "stop %s controller (state 0x%02x)\n",
+-		hcfs2string (ohci->hc_control & OHCI_CTRL_HCFS),
+-		hcd->state);
+ 	ohci_dump (ohci, 1);
  
-@@ -173,7 +173,7 @@ attribute_container_add_device(struct device *dev,
- 			attribute_container_add_class_device(&ic->classdev);
- 		klist_add_tail(&ic->node, &cont->containers);
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
+ 	flush_scheduled_work();
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 8511d14..a0cd2ce 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -571,7 +571,11 @@ extern const char *dev_driver_string(struct device *dev);
+ #define dev_dbg(dev, format, arg...)		\
+ 	dev_printk(KERN_DEBUG , dev , format , ## arg)
+ #else
+-#define dev_dbg(dev, format, arg...) do { (void)(dev); } while (0)
++static inline int __attribute__ ((format (printf, 2, 3)))
++dev_dbg(struct device * dev, const char * fmt, ...)
++{
++	return 0;
++}
+ #endif
  
- /* FIXME: can't break out of this unless klist_iter_exit is also
-@@ -211,7 +211,7 @@ attribute_container_remove_device(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
- 		struct klist_iter iter;
-@@ -234,7 +234,7 @@ attribute_container_remove_device(struct device *dev,
- 			}
- 		}
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
-@@ -255,7 +255,7 @@ attribute_container_device_trigger(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		struct internal_container *ic;
- 		struct klist_iter iter;
-@@ -273,7 +273,7 @@ attribute_container_device_trigger(struct device *dev,
- 				fn(cont, dev, &ic->classdev);
- 		}
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
-@@ -295,12 +295,12 @@ attribute_container_trigger(struct device *dev,
- {
- 	struct attribute_container *cont;
- 
--	down(&attribute_container_mutex);
-+	mutex_lock(&attribute_container_mutex);
- 	list_for_each_entry(cont, &attribute_container_list, node) {
- 		if (cont->match(cont, dev))
- 			fn(cont, dev);
- 	}
--	up(&attribute_container_mutex);
-+	mutex_unlock(&attribute_container_mutex);
- }
- 
- /**
+ #define dev_err(dev, format, arg...)		\
 -- 
 1.5.1.2
 
