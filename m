@@ -1,87 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbXD0Cwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXD0Cya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbXD0Cwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 22:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753980AbXD0Cwc
+	id S1753989AbXD0Cya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 22:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXD0Cya
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 22:52:32 -0400
-Received: from aeimail.aei.ca ([206.123.6.84]:35701 "EHLO aeimail.aei.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753978AbXD0Cwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 22:52:31 -0400
-From: Ed Tomlinson <edt@aei.ca>
-To: Con Kolivas <kernel@kolivas.org>
-Subject: Re: [REPORT] First "glitch1" results, 2.6.21-rc7-git6-CFSv5 + SD  0.46
-Date: Thu, 26 Apr 2007 22:52:17 -0400
-User-Agent: KMail/1.9.5
-Cc: Bill Davidsen <davidsen@tmr.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel M/L <linux-kernel@vger.kernel.org>
-References: <462D2BDD.4040406@tmr.com> <46312116.1030506@tmr.com> <200704270856.17210.kernel@kolivas.org>
-In-Reply-To: <200704270856.17210.kernel@kolivas.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 26 Apr 2007 22:54:30 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36379 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753989AbXD0Cy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 22:54:28 -0400
+Date: Thu, 26 Apr 2007 19:53:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Chinner <dgc@sgi.com>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070426195357.597ffd7e.akpm@linux-foundation.org>
+In-Reply-To: <20070427022731.GF65285596@melbourne.sgi.com>
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704262252.17963.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 April 2007 18:56, Con Kolivas wrote:
-> On Friday 27 April 2007 08:00, Bill Davidsen wrote:
-> > Ingo Molnar wrote:
-> > > * Ed Tomlinson <edt@aei.ca> wrote:
-> > >>> SD 0.46		1-2 FPS
-> > >>> cfs v5 nice -19	219-233 FPS
-> > >>> cfs v5 nice 0 	1000-1996
-> > >>
-> > >>    cfs v5 nice -10  60-65 FPS
-> > >
-> > > the problem is, the glxgears portion of this test is an _inverse_
-> > > testcase.
-> > >
-> > > The reason? glxgears on true 3D hardware will _not_ use X, it will
-> > > directly use the 3D driver of the kernel. So by renicing X to -19 you
-> > > give the xterms more chance to show stuff - the performance of the
-> > > glxgears will 'degrade' - but that is what you asked for: glxgears is
-> > > 'just another CPU hog' that competes with X, it's not a "true" X client.
-> > >
-> > > if you are after glxgears performance in this test then you'll get the
-> > > best performance out of this by renicing X to +19 or even SCHED_BATCH.
-> >
-> > Several points on this...
-> >
-> > First, I don't think this is accelerated in the way you mean, the
-> > machine is a test server, with motherboard video using the 945G video
-> > driver. Given the limitations of the support in that setup, I don't
-> > think it qualified as "true 3D hardware," although I guess I could try
-> > using the vesafb version as a test.
-> >
-> > The 2nd thing I note is that on FC6 this scheduler seems to confuse
-> > 'top' to some degree, since the glxgears is shown as taking 51% of the
-> > CPU (one core), while the state breakdown shows about 73% in idle,
-> > waitio, and int. image attached.
+On Fri, 27 Apr 2007 12:27:31 +1000 David Chinner <dgc@sgi.com> wrote:
+
+> On Thu, Apr 26, 2007 at 07:04:38PM -0700, Andrew Morton wrote:
+> > On Tue, 24 Apr 2007 15:21:05 -0700 clameter@sgi.com wrote:
+> > 
+> > > This patchset modifies the Linux kernel so that larger block sizes than
+> > > page size can be supported. Larger block sizes are handled by using
+> > > compound pages of an arbitrary order for the page cache instead of
+> > > single pages with order 0.
+> > 
+> > Something I was looking for but couldn't find: suppose an application takes
+> > a pagefault against the third 4k page of an order-2 pagecache "page".  We
+> > need to instantiate a pte against find_get_page(offset/4)+3.  But these
+> > patches don't touch mm/memory.c at all and filemap_nopage() appears to
+> > return the zeroeth 4k page all the time in that case.
+> > 
+> > So.. what am I missing, and how does that part work?
 > 
-> top by itself certainly cannot be trusted to give true representation of the 
-> cpu usage I'm afraid. It's not as convoluted as, say, trying to track memory 
-> usage of an application, but top's resolution being tied to HZ accounting 
-> makes it not reliable in that regard.
-> >
-> > After I upgrade the kernel and cfs to the absolute latest I'll repeat
-> > this, as well as test with vesafb, and my planned run under heavy load.
+> "mmap not supported yet" ;)
+
+erk.  I suspect this will have its sticky paws all over core mm.
+
+
+> > Also, afaict your important requirements would be met by retaining
+> > PAGE_CACHE_SIZE=4k and simply ensuring that pagecache is populated by
+> > physically contiguous pages
 > 
-> I have a problem with your test case Bill. Its behaviour would depend on how 
-> gpu bound vs cpu bound vs accelerated vs non-accelerated your graphics card 
-> is. I get completely different results to those of the other testers given 
-> the different hardware configuration and I don't think my results are 
-> valuable. My problem with this testcase is - What would you define 
-> as "perfect" behaviour for your test case? It seems far too arbitrary.
+> Sure, that addresses the larger I/O side of things, but it doesn't address
+> the large filesystem blocksize issues that can only be solved with some kind
+> of page aggregation abstraction.
 
-Con,
+a) That wasn't a part of Christoph's original rationale list, so forgive
+   me for thinking it is not so important and got snuck in post-facto when
+   things got tough.
 
-One thing I did not mention in all this is that renicing the glxgears process to -10
-gets SD to give about 1000FPS, indeed you get most of this performance at -5 too.
-All in all SD does a very good job here.
+b) I don't immediately see why a filesystam cannot implement larger
+   blocksizes via this scheme - instantiate and lock four pages and go for
+   it.
 
-Get well soon!
-Ed
+> Compound pages and high order page cache
+> indexing solves this extremely neatly, regardless of whether the compound
+> page is contiguous or not.....
+
+We cannot say anything about neatness until we've seen mmap.
