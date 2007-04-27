@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbXD0TCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbXD0TC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757074AbXD0TCP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbXD0S7Y
+	id S1757103AbXD0TC7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbXD0S7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:59:24 -0400
-Received: from mx2.suse.de ([195.135.220.15]:35397 "EHLO mx2.suse.de"
+	Fri, 27 Apr 2007 14:59:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:50855 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757077AbXD0S7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:59:08 -0400
+	id S1757080AbXD0S7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:59:09 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Johannes Berg <johannes@sipsolutions.net>,
+Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 43/46] s2ram: add arch irq disable/enable hooks
-Date: Fri, 27 Apr 2007 11:53:57 -0700
-Message-Id: <11777002022552-git-send-email-gregkh@suse.de>
+Subject: [PATCH 45/46] drivers/base/attribute_container.c: use mutex instead of binary semaphore
+Date: Fri, 27 Apr 2007 11:53:59 -0700
+Message-Id: <11777002102105-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11777001971761-git-send-email-gregkh@suse.de>
+In-Reply-To: <11777002064008-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -62,100 +62,135 @@ References: <20070427185152.GA17121@kroah.com>
  <11777001891914-git-send-email-gregkh@suse.de>
  <11777001931075-git-send-email-gregkh@suse.de>
  <11777001971761-git-send-email-gregkh@suse.de>
+ <11777002022552-git-send-email-gregkh@suse.de>
+ <11777002064008-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johannes Berg <johannes@sipsolutions.net>
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-After some more discussion this patch replaces it:
+use mutex instead of binary semaphore in
+drivers/base/attribute_container.c
 
-From: Johannes Berg <johannes@sipsolutions.net>
-Subject: suspend: add arch irq disable/enable hooks
-
-For powermac, we need to do some things between suspending devices and
-device_power_off, for example setting the decrementer. This patch
-allows architectures to define arch_s2ram_{en,dis}able_irqs in their
-asm/suspend.h to have control over this step.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- include/linux/pm.h  |   18 ++++++++++++++++++
- kernel/power/main.c |   18 +++++++++++++++---
- 2 files changed, 33 insertions(+), 3 deletions(-)
+ drivers/base/attribute_container.c |   26 +++++++++++++-------------
+ 1 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index b0ab623..9bd86db 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -166,6 +166,24 @@ extern struct pm_ops *pm_ops;
- extern int pm_suspend(suspend_state_t state);
+diff --git a/drivers/base/attribute_container.c b/drivers/base/attribute_container.c
+index 2222073..1ec0654 100644
+--- a/drivers/base/attribute_container.c
++++ b/drivers/base/attribute_container.c
+@@ -62,7 +62,7 @@ EXPORT_SYMBOL_GPL(attribute_container_classdev_to_container);
  
+ static struct list_head attribute_container_list;
  
-+/**
-+ * arch_suspend_disable_irqs - disable IRQs for suspend
-+ *
-+ * Disables IRQs (in the default case). This is a weak symbol in the common
-+ * code and thus allows architectures to override it if more needs to be
-+ * done. Not called for suspend to disk.
-+ */
-+extern void arch_suspend_disable_irqs(void);
-+
-+/**
-+ * arch_suspend_enable_irqs - enable IRQs after suspend
-+ *
-+ * Enables IRQs (in the default case). This is a weak symbol in the common
-+ * code and thus allows architectures to override it if more needs to be
-+ * done. Not called for suspend to disk.
-+ */
-+extern void arch_suspend_enable_irqs(void);
-+
- /*
-  * Device power management
-  */
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index a064dfd..3062e94 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -111,13 +111,24 @@ static int suspend_prepare(suspend_state_t state)
- 	return error;
+-static DECLARE_MUTEX(attribute_container_mutex);
++static DEFINE_MUTEX(attribute_container_mutex);
+ 
+ /**
+  * attribute_container_register - register an attribute container
+@@ -77,9 +77,9 @@ attribute_container_register(struct attribute_container *cont)
+ 	klist_init(&cont->containers,internal_container_klist_get,
+ 		   internal_container_klist_put);
+ 		
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	list_add_tail(&cont->node, &attribute_container_list);
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
+ 
+ 	return 0;
  }
- 
-+/* default implementation */
-+void __attribute__ ((weak)) arch_suspend_disable_irqs(void)
-+{
-+	local_irq_disable();
-+}
-+
-+/* default implementation */
-+void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
-+{
-+	local_irq_enable();
-+}
- 
- int suspend_enter(suspend_state_t state)
+@@ -94,7 +94,7 @@ int
+ attribute_container_unregister(struct attribute_container *cont)
  {
- 	int error = 0;
--	unsigned long flags;
+ 	int retval = -EBUSY;
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	spin_lock(&cont->containers.k_lock);
+ 	if (!list_empty(&cont->containers.k_list))
+ 		goto out;
+@@ -102,7 +102,7 @@ attribute_container_unregister(struct attribute_container *cont)
+ 	list_del(&cont->node);
+  out:
+ 	spin_unlock(&cont->containers.k_lock);
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
+ 	return retval;
+ 		
+ }
+@@ -145,7 +145,7 @@ attribute_container_add_device(struct device *dev,
+ {
+ 	struct attribute_container *cont;
  
--	local_irq_save(flags);
-+	arch_suspend_disable_irqs();
-+	BUG_ON(!irqs_disabled());
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	list_for_each_entry(cont, &attribute_container_list, node) {
+ 		struct internal_container *ic;
  
- 	if ((error = device_power_down(PMSG_SUSPEND))) {
- 		printk(KERN_ERR "Some devices failed to power down\n");
-@@ -126,7 +137,8 @@ int suspend_enter(suspend_state_t state)
- 	error = pm_ops->enter(state);
- 	device_power_up();
-  Done:
--	local_irq_restore(flags);
-+	arch_suspend_enable_irqs();
-+	BUG_ON(irqs_disabled());
- 	return error;
+@@ -173,7 +173,7 @@ attribute_container_add_device(struct device *dev,
+ 			attribute_container_add_class_device(&ic->classdev);
+ 		klist_add_tail(&ic->node, &cont->containers);
+ 	}
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
  }
  
+ /* FIXME: can't break out of this unless klist_iter_exit is also
+@@ -211,7 +211,7 @@ attribute_container_remove_device(struct device *dev,
+ {
+ 	struct attribute_container *cont;
+ 
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	list_for_each_entry(cont, &attribute_container_list, node) {
+ 		struct internal_container *ic;
+ 		struct klist_iter iter;
+@@ -234,7 +234,7 @@ attribute_container_remove_device(struct device *dev,
+ 			}
+ 		}
+ 	}
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
+ }
+ 
+ /**
+@@ -255,7 +255,7 @@ attribute_container_device_trigger(struct device *dev,
+ {
+ 	struct attribute_container *cont;
+ 
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	list_for_each_entry(cont, &attribute_container_list, node) {
+ 		struct internal_container *ic;
+ 		struct klist_iter iter;
+@@ -273,7 +273,7 @@ attribute_container_device_trigger(struct device *dev,
+ 				fn(cont, dev, &ic->classdev);
+ 		}
+ 	}
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
+ }
+ 
+ /**
+@@ -295,12 +295,12 @@ attribute_container_trigger(struct device *dev,
+ {
+ 	struct attribute_container *cont;
+ 
+-	down(&attribute_container_mutex);
++	mutex_lock(&attribute_container_mutex);
+ 	list_for_each_entry(cont, &attribute_container_list, node) {
+ 		if (cont->match(cont, dev))
+ 			fn(cont, dev);
+ 	}
+-	up(&attribute_container_mutex);
++	mutex_unlock(&attribute_container_mutex);
+ }
+ 
+ /**
 -- 
 1.5.1.2
 
