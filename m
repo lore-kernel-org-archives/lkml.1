@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbXD0KOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755556AbXD0KPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbXD0KOD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXD0KOD
+	id S1755556AbXD0KPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXD0KPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:14:03 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55042 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755554AbXD0KOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:14:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2: hang in atomic copy)
-Date: Fri, 27 Apr 2007 12:18:05 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Nick Piggin <npiggin@suse.de>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-References: <20070425072350.GA6866@ucw.cz> <200704262102.38568.rjw@sisk.pl> <1177666915.7828.35.camel@johannes.berg>
-In-Reply-To: <1177666915.7828.35.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 27 Apr 2007 06:15:31 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:42338 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbXD0KPV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 06:15:21 -0400
+X-IronPort-AV: i="4.14,461,1170651600"; 
+   d="scan'208"; a="28470093:sNHT23620240"
+Subject: Re: [patch 00/33] 2.6.20-stable review
+From: "Wu, Bryan" <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20070426165445.GA1898@kroah.com>
+References: <20070426165445.GA1898@kroah.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704271218.07120.rjw@sisk.pl>
+Organization: Analog Devices, Inc.
+Date: Fri, 27 Apr 2007 18:15:54 +0800
+Message-Id: <1177668954.5969.18.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 April 2007 11:41, Johannes Berg wrote:
-> On Thu, 2007-04-26 at 21:02 +0200, Rafael J. Wysocki wrote:
+On Thu, 2007-04-26 at 09:54 -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.20.10 release.
+> There are 33 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> > Yes.  That's because we want to be able to repeat creating the image
-> > without closing the fd in some situations.
-> 
-> Oh yeah, I just checked and it's not in fact necessary. I'm just
-> confused.
-> 
-> > Still, we could use a global var 'platform_hibernation' or something like this,
-> > I think.  Then, we can do
-> > 
-> > #define platform_hibernation	0
-> > 
-> > on the architectures that don't need it and make ACPI use it instead of this
-> > "dynamic linking".
-> 
-> No, because acpi doesn't know at build time whether it can actually do
-> S4 or not.
+> These patches are sent out with a number of different people on the Cc:
+> line.  If you wish to be a reviewer, please email stable@kernel.org to
+> add your name to the list.  If you want to be off the reviewer list,
+> also email us.
 
-That's not a problem, I think.
+Hi Greg:
 
-1) We define platform_hibernation if CONFIG_ACPI is set.
+I am just wondering that is there any rule for stable kernel version
+release?
 
-2) In the ACPI code we do
+AFAIK, 2.6.x kernels are all stable release and 2.6.x.y is for stable
+tree bug fixing and long term supporting. But I found 2.6.16.y got 49
+version updating, it is more active than other stable release such as
+2.6.17 and 2.6.19. It looks like 2.6.16 is a long-long term supporting
+version and even number 2.6.x kernel is more active than odd number
+2.6.x kernel.
 
-if (can do S4)
-	platform_hibernation = 1;
+You know for some customer's product, they want to use the stable and
+long term support kernel instead to use the latest one. 
 
-3) We have functions arch_platform_prepare()/finish()/enter() that are defined
-to be noops for anything but ACPI systems and for ACPI systems they are
-defined like this:
+Could you please give us some idea about this regular?
 
-int arch_platform_enter(void)
-{
-	if (!platform_hibernation)
-		return 0;
-
-	...
-}
-
-I think it should work.
-
-Greetings,
-Rafael
+Thanks
+-Bryan Wu
