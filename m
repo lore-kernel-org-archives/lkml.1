@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbXD0Dsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755246AbXD0Dvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbXD0Dsf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 23:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbXD0Dsf
+	id S1755246AbXD0Dvc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 23:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbXD0Dvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 23:48:35 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47083 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755226AbXD0Dse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 23:48:34 -0400
-Subject: Re: [PATCH 1/1] IBM PPC EMAC driver:improved support for PHY,
-	resending
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Haran <jharan@Brocade.COM>
-Cc: ebs@ebshome.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46F9780F64AE9945815725F4C0C72CB802A6DF08@hq-exch-1.corp.brocade.com>
-References: <46F9780F64AE9945815725F4C0C72CB802A6DF08@hq-exch-1.corp.brocade.com>
-Content-Type: text/plain
-Date: Fri, 27 Apr 2007 13:48:02 +1000
-Message-Id: <1177645682.14873.292.camel@localhost.localdomain>
+	Thu, 26 Apr 2007 23:51:32 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38256
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755246AbXD0Dvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 23:51:31 -0400
+Date: Thu, 26 Apr 2007 20:51:39 -0700 (PDT)
+Message-Id: <20070426.205139.77239500.davem@davemloft.net>
+To: randy.dunlap@oracle.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de
+Subject: Re: [PATCH -mm] consolidate asm/const.h to linux/const.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070426205008.73a4075e.randy.dunlap@oracle.com>
+References: <20070426205008.73a4075e.randy.dunlap@oracle.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-04-26 at 18:18 -0700, Jeff Haran wrote:
-> From: Jeff Haran  <jharan@brocade.com>
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Thu, 26 Apr 2007 20:50:08 -0700
+
+> From: Randy Dunlap <randy.dunlap@oracle.com>
 > 
-> Resending with Outlook patch mangling hopefully corrected (Maybe I
-> should write a HOWTO, this was harder than fixing the driver).
+> Make a global linux/const.h header file instead of having multiple,
+> per-arch files, and convert current users of asm/const.h to use
+> linux/const.h.
+> 
+> Built on x86_64 and sparc64.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Note, sorry about that, still mangled :-(
-
-Just send it as an attachment ... and get yourself a linux desktop :-)
-
-Cheers,
-Ben.
-
+Signed-off-by: David S. Miller <davem@davemloft.net>
