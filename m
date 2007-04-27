@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbXD0TG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbXD0THA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbXD0TG7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 15:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757064AbXD0TGM
+	id S1757129AbXD0THA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 15:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757125AbXD0TFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 15:06:12 -0400
-Received: from ns.suse.de ([195.135.220.2]:50784 "EHLO mx1.suse.de"
+	Fri, 27 Apr 2007 15:05:52 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50788 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757091AbXD0S63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:58:29 -0400
+	id S1757042AbXD0S6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:58:36 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@stusta.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/46] the overdue removal of the mount/umount uevents
-Date: Fri, 27 Apr 2007 11:53:48 -0700
-Message-Id: <11777001642551-git-send-email-gregkh@suse.de>
+Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 37/46] Driver core: use mutex instead of semaphore in DMA pool handler
+Date: Fri, 27 Apr 2007 11:53:51 -0700
+Message-Id: <11777001773804-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1177700160896-git-send-email-gregkh@suse.de>
+In-Reply-To: <1177700172258-git-send-email-gregkh@suse.de>
 References: <20070427185152.GA17121@kroah.com>
  <1177700040520-git-send-email-gregkh@suse.de>
  <11777000433552-git-send-email-gregkh@suse.de>
@@ -51,113 +52,86 @@ References: <20070427185152.GA17121@kroah.com>
  <11777001521006-git-send-email-gregkh@suse.de>
  <1177700156641-git-send-email-gregkh@suse.de>
  <1177700160896-git-send-email-gregkh@suse.de>
+ <11777001642551-git-send-email-gregkh@suse.de>
+ <11777001682584-git-send-email-gregkh@suse.de>
+ <1177700172258-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-This patch contains the overdue removal of the mount/umount uevents.
+the DMA pool handler uses a semaphore as mutex. use the mutex API
+instead of the (binary) semaphore
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/feature-removal-schedule.txt |    9 ---------
- fs/super.c                                 |   12 ------------
- include/linux/kobject.h                    |    8 +++-----
- lib/kobject_uevent.c                       |    4 ----
- 4 files changed, 3 insertions(+), 30 deletions(-)
+ drivers/base/dmapool.c |   14 +++++++-------
+ 1 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 6da6636..ec0b484 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -134,15 +134,6 @@ Who:	Arjan van de Ven <arjan@linux.intel.com>
+diff --git a/drivers/base/dmapool.c b/drivers/base/dmapool.c
+index cd467c9..9406259 100644
+--- a/drivers/base/dmapool.c
++++ b/drivers/base/dmapool.c
+@@ -37,7 +37,7 @@ struct dma_page {	/* cacheable header for 'allocation' bytes */
  
- ---------------------------
+ #define	POOL_TIMEOUT_JIFFIES	((100 /* msec */ * HZ) / 1000)
  
--What:	mount/umount uevents
--When:	February 2007
--Why:	These events are not correct, and do not properly let userspace know
--	when a file system has been mounted or unmounted.  Userspace should
--	poll the /proc/mounts file instead to detect this properly.
--Who:	Greg Kroah-Hartman <gregkh@suse.de>
--
-----------------------------
--
- What:	USB driver API moves to EXPORT_SYMBOL_GPL
- When:	February 2008
- Files:	include/linux/usb.h, drivers/usb/core/driver.c
-diff --git a/fs/super.c b/fs/super.c
-index 60b1e50..8341e4e 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -725,16 +725,6 @@ static int test_bdev_super(struct super_block *s, void *data)
- 	return (void *)s->s_bdev == data;
- }
+-static DECLARE_MUTEX (pools_lock);
++static DEFINE_MUTEX (pools_lock);
  
--static void bdev_uevent(struct block_device *bdev, enum kobject_action action)
--{
--	if (bdev->bd_disk) {
--		if (bdev->bd_part)
--			kobject_uevent(&bdev->bd_part->kobj, action);
--		else
--			kobject_uevent(&bdev->bd_disk->kobj, action);
--	}
--}
--
- int get_sb_bdev(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data,
- 	int (*fill_super)(struct super_block *, void *, int),
-@@ -782,7 +772,6 @@ int get_sb_bdev(struct file_system_type *fs_type,
- 		}
+ static ssize_t
+ show_pools (struct device *dev, struct device_attribute *attr, char *buf)
+@@ -55,7 +55,7 @@ show_pools (struct device *dev, struct device_attribute *attr, char *buf)
+ 	size -= temp;
+ 	next += temp;
  
- 		s->s_flags |= MS_ACTIVE;
--		bdev_uevent(bdev, KOBJ_MOUNT);
+-	down (&pools_lock);
++	mutex_lock(&pools_lock);
+ 	list_for_each_entry(pool, &dev->dma_pools, pools) {
+ 		unsigned pages = 0;
+ 		unsigned blocks = 0;
+@@ -73,7 +73,7 @@ show_pools (struct device *dev, struct device_attribute *attr, char *buf)
+ 		size -= temp;
+ 		next += temp;
  	}
+-	up (&pools_lock);
++	mutex_unlock(&pools_lock);
  
- 	return simple_set_mnt(mnt, s);
-@@ -801,7 +790,6 @@ void kill_block_super(struct super_block *sb)
+ 	return PAGE_SIZE - size;
+ }
+@@ -143,7 +143,7 @@ dma_pool_create (const char *name, struct device *dev,
+ 	if (dev) {
+ 		int ret;
+ 
+-		down (&pools_lock);
++		mutex_lock(&pools_lock);
+ 		if (list_empty (&dev->dma_pools))
+ 			ret = device_create_file (dev, &dev_attr_pools);
+ 		else
+@@ -155,7 +155,7 @@ dma_pool_create (const char *name, struct device *dev,
+ 			kfree(retval);
+ 			retval = NULL;
+ 		}
+-		up (&pools_lock);
++		mutex_unlock(&pools_lock);
+ 	} else
+ 		INIT_LIST_HEAD (&retval->pools);
+ 
+@@ -231,11 +231,11 @@ pool_free_page (struct dma_pool *pool, struct dma_page *page)
+ void
+ dma_pool_destroy (struct dma_pool *pool)
  {
- 	struct block_device *bdev = sb->s_bdev;
+-	down (&pools_lock);
++	mutex_lock(&pools_lock);
+ 	list_del (&pool->pools);
+ 	if (pool->dev && list_empty (&pool->dev->dma_pools))
+ 		device_remove_file (pool->dev, &dev_attr_pools);
+-	up (&pools_lock);
++	mutex_unlock(&pools_lock);
  
--	bdev_uevent(bdev, KOBJ_UMOUNT);
- 	generic_shutdown_super(sb);
- 	sync_blockdev(bdev);
- 	close_bdev_excl(bdev);
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index a659a97..eb0e63e 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -42,11 +42,9 @@ enum kobject_action {
- 	KOBJ_ADD	= (__force kobject_action_t) 0x01,	/* exclusive to core */
- 	KOBJ_REMOVE	= (__force kobject_action_t) 0x02,	/* exclusive to core */
- 	KOBJ_CHANGE	= (__force kobject_action_t) 0x03,	/* device state change */
--	KOBJ_MOUNT	= (__force kobject_action_t) 0x04,	/* mount event for block devices (broken) */
--	KOBJ_UMOUNT	= (__force kobject_action_t) 0x05,	/* umount event for block devices (broken) */
--	KOBJ_OFFLINE	= (__force kobject_action_t) 0x06,	/* device offline */
--	KOBJ_ONLINE	= (__force kobject_action_t) 0x07,	/* device online */
--	KOBJ_MOVE	= (__force kobject_action_t) 0x08,	/* device move */
-+	KOBJ_OFFLINE	= (__force kobject_action_t) 0x04,	/* device offline */
-+	KOBJ_ONLINE	= (__force kobject_action_t) 0x05,	/* device online */
-+	KOBJ_MOVE	= (__force kobject_action_t) 0x06,	/* device move */
- };
- 
- struct kobject {
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index d9a3510..12e311d 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -42,10 +42,6 @@ static char *action_to_string(enum kobject_action action)
- 		return "remove";
- 	case KOBJ_CHANGE:
- 		return "change";
--	case KOBJ_MOUNT:
--		return "mount";
--	case KOBJ_UMOUNT:
--		return "umount";
- 	case KOBJ_OFFLINE:
- 		return "offline";
- 	case KOBJ_ONLINE:
+ 	while (!list_empty (&pool->page_list)) {
+ 		struct dma_page		*page;
 -- 
 1.5.1.2
 
