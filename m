@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbXD0AL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXD0ANQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753827AbXD0AL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbXD0AL0
+	id S1755200AbXD0ANQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXD0ANQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:11:26 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:43291 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbXD0ALY (ORCPT
+	Thu, 26 Apr 2007 20:13:16 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35887 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755200AbXD0ANO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:11:24 -0400
-Message-ID: <46313F99.6080402@zytor.com>
-Date: Thu, 26 Apr 2007 17:11:05 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 26 Apr 2007 20:13:14 -0400
+Date: Fri, 27 Apr 2007 02:13:24 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
+Message-ID: <20070427001324.GP3468@stusta.de>
+References: <20070426234742.GH3468@stusta.de> <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <20070426162530.bc30a1bb.akpm@linux-foundation.org>
-In-Reply-To: <20070426162530.bc30a1bb.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 26 Apr 2007 18:49:05 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
->>
->> If the tv_nsec value of either of the elements of the utimes parameter to utimensat() is UTIME_OMIT no update of that respective value is performed.
+On Thu, Apr 26, 2007 at 07:59:57PM -0400, Robert P. J. Day wrote:
+> On Fri, 27 Apr 2007, Adrian Bunk wrote:
 > 
-> ITYM "If the value of either of the elements..."
+> > This patch removes kernel 2.4 code.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> >
+> > ---
+> >
+> > This patch has been sent on:
+> > - 26 Mar 2007
+> >
+> >  drivers/scsi/nsp32.c |  109 +++++--------------------------------------
+> >  1 file changed, 13 insertions(+), 96 deletions(-)
+> >
+> > --- linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c.old	2007-03-25 20:27:34.000000000 +0200
+> > +++ linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c	2007-03-25 20:31:59.000000000 +0200
+> > @@ -49,10 +49,6 @@
+> >  #include <scsi/scsi_host.h>
+> >  #include <scsi/scsi_ioctl.h>
+> >
+> > -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0))
+> > -# include <linux/blk.h>
+> > -#endif
+> > -
 > 
-> +#define UTIME_NOW	((1l << 30) - 1l)
-> +#define UTIME_OMIT	((1l << 30) - 2l)
-> 
-> OK, so there's no collision on ts_nsec if unnormalised timespecs are
-> disallowed.
-> 
-> But there's a potential collision on ts_sec?  Do we know what date that
-> corresponds to?
+> i'm curious about the rules for removing code like this.  in the case
+> of drivers, isn't it possible that some driver source could be
+> relevant for both the 2.4 and 2.6 kernel source tree, and simply uses
+> that kind of preprocessor check to make sure it's being compiled
+> appropriately?
 
-"If the tv_nsec value" implies that these magic numbers have no impact
-on these.
+That's what it was for.
 
-I'm a bit leery of abusing the timespec value like this, though.  A
-flags field seem like it would be cleaner.
+> or are you doing something more sophisticated than simply checking the
+> kernel version being tested?
 
-Something else... if we're dickering with these interfaces, shouldn't we
-allow setting atime as well?
+No.
 
-	-hpa
+The point is:
+
+It seems this driver was once maintained for both 2.4 and 2.6 in one 
+file.
+
+As long as this is done, such version checks are OK.
+
+But if a driver is no longer actually maintained for both kernels these 
+checks become useless (and there quickly arised unconditional 2.6-only 
+code in such a driver) and can be removed.
+
+> rday
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
