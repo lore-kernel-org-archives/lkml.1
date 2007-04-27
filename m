@@ -1,58 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbXD0Ppz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbXD0PqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbXD0Ppz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXD0Ppz
+	id S1756014AbXD0PqG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbXD0PqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:45:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50223 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756015AbXD0Ppy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:45:54 -0400
-Subject: Re: Video for Linux deprecated drivers (VIDEO_V4L1)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Sunil Naidu <akula2.shark@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
-References: <8355959a0704270809i1de3766elbc54c7ede5f421db@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 27 Apr 2007 12:45:48 -0300
-Message-Id: <1177688748.5163.32.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 27 Apr 2007 11:46:05 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:44731 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756014AbXD0PqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:46:02 -0400
+Message-ID: <463219CD.5040203@hp.com>
+Date: Fri, 27 Apr 2007 11:42:05 -0400
+From: Peter Keilty <peter.keilty@hp.com>
+User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Daniel Walker <dwalker@mvista.com>
+Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>	 <1177621673.12796.121.camel@imap.mvista.com>  <46320ACD.6090704@hp.com> <1177688158.12796.125.camel@imap.mvista.com>
+In-Reply-To: <1177688158.12796.125.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sunil,
+Daniel Walker wrote:
 
-Em Sex, 2007-04-27 às 20:39 +0530, Sunil Naidu escreveu:
-> Hello,
-> 
-> I need add a device for a particular solution on a x86 box. Device is
-> Logitech QuickCam, USB based WebCam (has to be included because of the
-> change in the experiment specs).
-> 
-> To get the device working (capture images by a V4L application), need
-> to compile the driver (qc-usb) & insert the quickcam.ko module. But,
-> what the requirement says I need to enable the VIDEO_V4L1 support.
-> Then I need to select USB_QUICKCAM_MESSENGER driver under the V4L USB
-> devices. Till here it's fine.
-> 
-> But if I look at the kernel config, VIDEO_V4L1 is deprecated. If I
-> decide to enable VIDEO_V4L1_COMPAT, there isn't any
-> USB_QUICKCAM_MESSENGER driver under the V4L USB devices!
-> 
-> Should I select the VIDEO_V4L1 support to get the WebCam working or is
-> there any other way (work around) to get my WebCam working with
-> VIDEO_V4L1_COMPAT? Comments pl?
+>On Fri, 2007-04-27 at 10:38 -0400, Peter Keilty wrote:
+>  
+>
+>>Daniel Walker wrote:
+>>
+>>    
+>>
+>>>On Thu, 2007-04-26 at 16:26 -0400, Peter Keilty wrote:
+>>>
+>>> 
+>>>
+>>>      
+>>>
+>>>>+        .mask           = (1LL << 40) - 1,
+>>>>+        .mult           = 0, /*to be caluclated*/
+>>>>+        .shift          = 16,
+>>>>+        .is_continuous  = 1,
+>>>>};
+>>>>   
+>>>>
+>>>>        
+>>>>
+>>>You should use CLOCKSOURCE_MASK() here ..
+>>>
+>>> 
+>>>
+>>>      
+>>>
+>>It is correct in patch 3, I believe.
+>>    
+>>
+>
+>There's another spot that should use CLOCKSOURE_MASK() in the hpet I
+>think .
+>  
+>
+Correct that was change in patch 3 also.
 
-This driver were not yet ported to V4L2. So, if you need it, you will
-need to enable VIDEO_V4L1, until someone can port it to V4L2.
- 
-Cheers,
-Mauro
+>  
+>
+>>> 
+>>>
+>>>      
+>>>
+>>>>diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+>>>>index daa4940..a20b4d6 100644
+>>>>--- a/include/linux/clocksource.h
+>>>>+++ b/include/linux/clocksource.h
+>>>>@@ -61,6 +61,9 @@ struct clocksource {
+>>>>	u32 shift;
+>>>>	unsigned long flags;
+>>>>	cycle_t (*vread)(void);
+>>>>+#ifdef CONFIG_IA64
+>>>>+	void *fsys_mmio_ptr;	/* used by fsyscall asm code */
+>>>>+#endif
+>>>>   
+>>>>
+>>>>        
+>>>>
+>>>Could you explain in detail why this is needed?
+>>> 
+>>>
+>>>      
+>>>
+>>This ptr is needed to hold the mmio address to read the cycle value.
+>>The fast ia64 path utilizies a special gate page which can allow user
+>>code to execute small amount of kernel code, normal calling a function
+>>not done and so the address is need. The fast syscall path executes on
+>>user stack, between user/kernel state. And if the the fast path has to 
+>>fallback
+>>to the slow syscall code the vread will be needed and used.
+>>    
+>>
+>
+>There is a read(), and a vread() did you modify the slow syscall path to
+>use the vread()?
+>  
+>
+I miss type, read().
 
+>Daniel
+>
+>  
+>
