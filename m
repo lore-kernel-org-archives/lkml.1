@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbXD0VQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbXD0VRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbXD0VQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757315AbXD0VQ4
+	id S1757313AbXD0VRk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXD0VRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:16:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:33499 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757317AbXD0VQy (ORCPT
+	Fri, 27 Apr 2007 17:17:39 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:15812 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757313AbXD0VRi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:16:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ptvlHBBHlJzNAtaDAqe1nJqJjfeNAaWu9jL1D9HsBj/hCmBov9FeBy65puL+X755AHrgWx7DJ5Lqn/kcZ6rSZqfgNuc4bdNpI+xJyBrcSp2BLRHHAhov7eOOSJc0/CE+YkP2crC1l28PGwk/FXAdH4oQKVf8aI98hIvVkhsbZxw=
-Message-ID: <75b66ecd0704271416v535390b6t5d2d5677547b3ba2@mail.gmail.com>
-Date: Fri, 27 Apr 2007 17:16:53 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v6
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Gene Heskett" <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Con Kolivas" <kernel@kolivas.org>, "Nick Piggin" <npiggin@suse.de>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
-       "Willy Tarreau" <w@1wt.eu>, "Mark Lord" <lkml@rtr.ca>,
-       "Zach Carter" <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-In-Reply-To: <20070427130234.GA16558@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 27 Apr 2007 17:17:38 -0400
+Date: Fri, 27 Apr 2007 14:19:08 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Tim Hockin" <thockin@google.com>
+Cc: ak@muc.de, vojtech@suse.cz, linux-kernel@vger.kernel.org, akpm@google.com
+Subject: Re: [PATCH] x86_64: dynamic MCE poll interval
+Message-Id: <20070427141908.114bfe5a.randy.dunlap@oracle.com>
+In-Reply-To: <cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
+References: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
+	<cc96a5040704271128t60120aedvd439630b3b80b03@mail.gmail.com>
+	<cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070425214704.GA32572@elte.hu>
-	 <1177596399.14496.1.camel@localhost>
-	 <200704261041.04838.gene.heskett@gmail.com>
-	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
-	 <20070427130234.GA16558@elte.hu>
-X-Google-Sender-Auth: 67dc1f1a7f0a4e0c
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/27/07, Ingo Molnar <mingo@elte.hu> wrote:
-> ogg123 never skips. Then i cranked up the load to 50 infinite loops (!).
-> No problems whatsoever. No problems at 100 tasks either. No problems
-> with 250 (!) nice-0 infinite loops running either:
+On Fri, 27 Apr 2007 13:51:28 -0700 Tim Hockin wrote:
 
-Different soundcards support different ranges and defaults for buffer
-and period sizes and many naive apps don't bother to set a sane buffer
-size.  Check the PCM states under /proc/asound/ on both good and bad
-configs.
+> This is the third version of this patch.  The only change from the prior
+> version is to use time_after_eq().
+> 
+> diff -pruN linux-2.6.20/arch/x86_64/kernel/mce.c
+> linux-2.6.20+th/arch/x86_64/kernel/mce.c
+> --- linux-2.6.20/arch/x86_64/kernel/mce.c	2007-04-27 10:01:02.000000000 -0700
+> +++ linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 10:41:02.000000000 -0700
+> @@ -349,17 +351,30 @@ static void mcheck_timer(struct work_str
+>  	 * writes.
+>  	 */
+>  	if (notify_user && console_logged) {
+> +		static unsigned long last_print = 0;
 
-Lee
+Don't need to init statics to 0...
+
+> +		unsigned long now = jiffies;
+> +
+> +		/* if we logged an MCE, reduce the polling interval */
+> +		next_interval = max(next_interval/2, HZ/100);
+>  		notify_user = 0;
+>  		clear_bit(0, &console_logged);
+> -		printk(KERN_INFO "Machine check events logged\n");
+> +		if (time_after_eq(now, last_print + (check_interval*HZ))) {
+> +			last_print = now;
+> +			printk(KERN_INFO "Machine check events logged\n");
+> +		}
+> +	} else {
+> +		next_interval = min(next_interval*2, check_interval*HZ);
+>  	}
+> +
+> +	schedule_delayed_work(&mcheck_work, next_interval);
+>  }
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
