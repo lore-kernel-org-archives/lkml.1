@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbXD0LOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbXD0LPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617AbXD0LOY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755618AbXD0LOY
+	id S1755619AbXD0LPN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755628AbXD0LPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:14:24 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10317 "EHLO
+	Fri, 27 Apr 2007 07:15:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24586 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755617AbXD0LOX (ORCPT
+	with ESMTP id S1755619AbXD0LPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:14:23 -0400
+	Fri, 27 Apr 2007 07:15:09 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=Ww8ITiUTCsfw5JsbTVa3/2oInMbmXor4CLzOfBts23+9Z6GXQ6poFnSVOaymLpDPM
-	QJHlc9VZmzXq3ZnsdavVQ==
-Message-Id: <20070427111300.769553000@menage.corp.google.com>
-References: <20070427104607.252541000@menage.corp.google.com>
+	h=received:message-id:user-agent:date:from:to:cc:subject;
+	b=ENVcSaxVE7f24St7C7qpPBbLCIP+0MFNN1YHOGbbGX6xHJKNl2Y9ba+d2BZsMNM2c
+	gxR4ybJrJaXRr5FFOQ6dQ==
+Message-Id: <20070427104607.252541000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Fri, 27 Apr 2007 03:46:12 -0700
+Date: Fri, 27 Apr 2007 03:46:07 -0700
 From: menage@google.com
 To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
        vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
@@ -26,163 +24,105 @@ To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
 Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
        devel@openvz.org
-Subject: [PATCH 5/9] Containers (V9): Add container_clone() interface
-Content-Disposition: inline; filename=container_clone.patch
+Subject: [PATCH 0/9] Containers (V9): Generic Process Containers
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for container_clone(), a speculative interface
-to creating new containers intended to be used for systems such as
-namespace unsharing.
+--
+
+This is an update to my multi-hierarchy multi-subsystem generic
+process containers patch. Changes since V8 (April 6th) include:
+
+- The patchset has been rebased over 2.6.21-rc7-mm1
+
+- The patchset has been restructured based on feedback; more
+  functionality is now split out into separate patches where
+  practical.
+
+- The container_group structure has been renamed css_group since this
+  is more descriptive of its true function
+
+- Added a simplified file registration interface, and a simple
+  interface for the common operation of returning a single number to
+  userspace from a container control file
+
+- Added a simple "debug" subsystem that is both an example of how to
+  use the container system and a useful debugging tool for checking
+  reference counts, etc.
+
+Still TODO:
+
+- decide whether "Containers" is an acceptable name for the system
+given its usage by some other development groups, or whether something
+else (ProcessSets? ResourceGroups? TaskGroups?) would be better
+
+- decide whether merging css_group and nsproxy is desirable
+
+- add a hash-table based lookup for css_group objects.
+
+- use seq_file properly in container tasks files to avoid having to
+  allocate a big array for all the container's task pointers.
+
+- add back support for the "release agent" functionality
+
+- lots more testing
+
+- define standards for container file names
+
+Generic Process Containers
+--------------------------
+
+There have recently been various proposals floating around for
+resource management/accounting and other task grouping subsystems in
+the kernel, including ResGroups, User BeanCounters, NSProxy
+containers, and others.  These all need the basic abstraction of being
+able to group together multiple processes in an aggregate, in order to
+track/limit the resources permitted to those processes, or control
+other behaviour of the processes, and all implement this grouping in
+different ways.
+
+Already existing in the kernel is the cpuset subsystem; this has a
+process grouping mechanism that is mature, tested, and well documented
+(particularly with regards to synchronization rules).
+
+This patchset extracts the process grouping code from cpusets into a
+generic container system, and makes the cpusets code a client of the
+container system, along with a couple of simple example subsystems.
+
+The patch set is structured as follows:
+
+1) Basic container framework - filesystem and tracking structures
+
+2) Simple CPU Accounting example subsystem
+
+3) Support for the "tasks" control file
+
+4) Hooks for fork() and exit()
+
+5) Support for the container_clone() operation
+
+6) Add /proc reporting interface
+
+7) Make cpusets a container subsystem
+
+8) Share container subsystem pointer arrays between tasks with the
+   same assignments
+
+9) Simple container debugging subsystem
+
+The intention is that the various resource management and
+virtualization efforts can also become container clients, with the
+result that:
+
+- the userspace APIs are (somewhat) normalised
+
+- it's easier to test out e.g. the ResGroups CPU controller in
+ conjunction with the BeanCounters memory controller, or use either of
+them as the resource-control portion of a virtual server system.
+
+- the additional kernel footprint of any of the competing resource
+ management systems is substantially reduced, since it doesn't need
+ to provide process grouping/containment, hence improving their
+ chances of getting into the kernel
 
 Signed-off-by: Paul Menage <menage@google.com>
-
----
- include/linux/container.h |    2 
- kernel/container.c        |  121 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 123 insertions(+)
-
-Index: container-2.6.21-rc7-mm1/kernel/container.c
-===================================================================
---- container-2.6.21-rc7-mm1.orig/kernel/container.c
-+++ container-2.6.21-rc7-mm1/kernel/container.c
-@@ -1619,3 +1619,124 @@ void container_exit(struct task_struct *
- 	tsk->containers = init_task.containers;
- 	task_unlock(tsk);
- }
-+
-+static atomic_t namecnt;
-+static void get_unused_name(char *buf) {
-+	sprintf(buf, "node%d", atomic_inc_return(&namecnt));
-+}
-+
-+/**
-+ * container_clone - duplicate the current container in the hierarchy
-+ * that the given subsystem is attached to, and move this task into
-+ * the new child
-+ */
-+int container_clone(struct task_struct *tsk, struct container_subsys *subsys)
-+{
-+	struct dentry *dentry;
-+	int ret = 0;
-+	char nodename[32];
-+	struct container *parent, *child;
-+	struct inode *inode;
-+	struct css_group *cg;
-+	struct containerfs_root *root;
-+
-+	/* We shouldn't be called by an unregistered subsystem */
-+	BUG_ON(!subsys->active);
-+
-+	/* First figure out what hierarchy and container we're dealing
-+	 * with, and pin them so we can drop container_mutex */
-+	mutex_lock(&container_mutex);
-+ again:
-+	root = subsys->root;
-+	if (root == &rootnode) {
-+		printk(KERN_INFO
-+		       "Not cloning container for unused subsystem %s\n",
-+		       subsys->name);
-+		mutex_unlock(&container_mutex);
-+		return 0;
-+	}
-+	cg = &tsk->containers;
-+	parent = task_container(tsk, subsys->subsys_id);
-+	/* Pin the hierarchy */
-+	atomic_inc(&parent->root->sb->s_active);
-+
-+	mutex_unlock(&container_mutex);
-+
-+	/* Now do the VFS work to create a container */
-+	get_unused_name(nodename);
-+	inode = parent->dentry->d_inode;
-+
-+	/* Hold the parent directory mutex across this operation to
-+	 * stop anyone else deleting the new container */
-+	mutex_lock(&inode->i_mutex);
-+	dentry = container_get_dentry(parent->dentry, nodename);
-+	if (IS_ERR(dentry)) {
-+		printk(KERN_INFO
-+		       "Couldn't allocate dentry for %s: %ld\n", nodename,
-+		       PTR_ERR(dentry));
-+		ret = PTR_ERR(dentry);
-+		goto out_release;
-+	}
-+
-+	/* Create the container directory, which also creates the container */
-+	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
-+	child = __d_cont(dentry);
-+	dput(dentry);
-+	if (ret) {
-+		printk(KERN_INFO
-+		       "Failed to create container %s: %d\n", nodename,
-+		       ret);
-+		goto out_release;
-+	}
-+
-+	if (!child) {
-+		printk(KERN_INFO
-+		       "Couldn't find new container %s\n", nodename);
-+		ret = -ENOMEM;
-+		goto out_release;
-+	}
-+
-+	/* The container now exists. Retake container_mutex and check
-+	 * that we're still in the same state that we thought we
-+	 * were. */
-+	mutex_lock(&container_mutex);
-+	if ((root != subsys->root) ||
-+	    (parent != task_container(tsk, subsys->subsys_id))) {
-+		/* Aargh, we raced ... */
-+		mutex_unlock(&inode->i_mutex);
-+
-+		deactivate_super(parent->root->sb);
-+		/* The container is still accessible in the VFS, but
-+		 * we're not going to try to rmdir() it at this
-+		 * point. */
-+		printk(KERN_INFO
-+		       "Race in container_clone() - leaking container %s\n",
-+		       nodename);
-+		goto again;
-+	}
-+
-+	/* All seems fine. Finish by moving the task into the new container */
-+	ret = attach_task(child, tsk);
-+	mutex_unlock(&container_mutex);
-+
-+ out_release:
-+	mutex_unlock(&inode->i_mutex);
-+	deactivate_super(parent->root->sb);
-+	return ret;
-+}
-+
-+/* See if "cont" is a descendant of the current task's container in
-+ * the appropriate hierarchy */
-+
-+int container_is_descendant(const struct container *cont) {
-+	int ret;
-+	struct container *target;
-+	int subsys_id;
-+	get_first_subsys(cont, NULL, &subsys_id);
-+	target = task_container(current, subsys_id);
-+	while (cont != target && cont!= cont->top_container) {
-+		cont = cont->parent;
-+	}
-+	ret = (cont == target);
-+	return ret;
-+}
-Index: container-2.6.21-rc7-mm1/include/linux/container.h
-===================================================================
---- container-2.6.21-rc7-mm1.orig/include/linux/container.h
-+++ container-2.6.21-rc7-mm1/include/linux/container.h
-@@ -189,6 +189,8 @@ static inline struct container* task_con
- 
- int container_path(const struct container *cont, char *buf, int buflen);
- 
-+int container_clone(struct task_struct *tsk, struct container_subsys *ss);
-+
- #else /* !CONFIG_CONTAINERS */
- 
- static inline int container_init_early(void) { return 0; }
-
---
