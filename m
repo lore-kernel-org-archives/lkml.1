@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbXD0MKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755727AbXD0MLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755738AbXD0MKr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXD0MKq
+	id S1755727AbXD0MLc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXD0MLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:10:46 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:16376 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755721AbXD0MKn (ORCPT
+	Fri, 27 Apr 2007 08:11:32 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:54794 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755708AbXD0MLb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:10:43 -0400
-Date: Fri, 27 Apr 2007 14:10:03 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 0/5] fallocate system call
-Message-ID: <20070427121003.GA7808@osiris.boeblingen.de.ibm.com>
-References: <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426175056.GA25321@amitarora.in.ibm.com>
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Fri, 27 Apr 2007 08:11:31 -0400
+Message-Id: <20070427120607.477677076@szeredi.hu>
+References: <20070427120417.110164241@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Fri, 27 Apr 2007 14:04:27 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org, serue@us.ibm.com, viro@ftp.linux.org.uk,
+       linuxram@us.ibm.com, ebiederm@xmission.com, kzak@redhat.com
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: [patch 10/10] unprivileged mounts: add "no submounts" flag
+Content-Disposition: inline; filename=unprivileged-mounts-add-no-submounts-flag.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 11:20:56PM +0530, Amit K. Arora wrote:
-> Based on the discussion, this new patchset uses following as the
-> interface for fallocate() system call:
-> 
->  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-> 
-> It seems that only s390 architecture has a problem with such a layout of
-> arguments in fallocate(). Thus for s390, we plan to have a wrapper
-> (say, sys_s390_fallocate()) for the sys_fallocate(), which will get
-> called by glibc when an application issues a fallocate() system call
-> on s390. The s390 arch specific changes will be part of a separate
-> patch (PATCH 2/5). It will be great if some s390 expert can verify the
-> patch, since I have not been able to test it on s390 so far.
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-After long discussions where at least two possible implementations
-were suggested that would work on _all_ architectures you chose one
-which doesn't and causes extra effort.
+Add a new mount flag "nomnt", which denies submounts for the owner.
+This would be useful, if we want to support traditional /etc/fstab
+based user mounts.
 
-> It was also noted that minor changes might be required to strace code
-> to take care of "different arguments on s390" issue.
+In this case mount(8) would still have to be suid-root, to check the
+mountpoint against the user/users flag in /etc/fstab, but /etc/mtab
+would no longer be mandatory for storing the actual owner of the
+mount.
 
-This is not limited to strace...
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-Besides that the s390 backend looks ok.
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c	2007-04-27 12:57:11.000000000 +0200
++++ linux/fs/namespace.c	2007-04-27 12:57:14.000000000 +0200
+@@ -449,6 +449,7 @@ static int show_vfsmnt(struct seq_file *
+ 		{ MNT_NOATIME, ",noatime" },
+ 		{ MNT_NODIRATIME, ",nodiratime" },
+ 		{ MNT_RELATIME, ",relatime" },
++		{ MNT_NOMNT, ",nomnt" },
+ 		{ 0, NULL }
+ 	};
+ 	struct proc_fs_info *fs_infop;
+@@ -806,6 +807,9 @@ static bool permit_mount(struct nameidat
+ 	if (S_ISLNK(inode->i_mode))
+ 		return false;
+ 
++	if (nd->mnt->mnt_flags & MNT_NOMNT)
++		return false;
++
+ 	if (!is_mount_owner(nd->mnt, current->fsuid))
+ 		return false;
+ 
+@@ -1575,9 +1579,11 @@ long do_mount(char *dev_name, char *dir_
+ 		mnt_flags |= MNT_NODIRATIME;
+ 	if (flags & MS_RELATIME)
+ 		mnt_flags |= MNT_RELATIME;
++	if (flags & MS_NOMNT)
++		mnt_flags |= MNT_NOMNT;
+ 
+ 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+-		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME);
++		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME | MS_NOMNT);
+ 
+ 	/* ... and get the mountpoint */
+ 	retval = path_lookup(dir_name, LOOKUP_FOLLOW, &nd);
+Index: linux/include/linux/fs.h
+===================================================================
+--- linux.orig/include/linux/fs.h	2007-04-27 12:57:11.000000000 +0200
++++ linux/include/linux/fs.h	2007-04-27 12:57:14.000000000 +0200
+@@ -128,6 +128,7 @@ extern int dir_notify_enable;
+ #define MS_SHARED	(1<<20)	/* change to shared */
+ #define MS_RELATIME	(1<<21)	/* Update atime relative to mtime/ctime. */
+ #define MS_SETUSER	(1<<22) /* set mnt_uid to current user */
++#define MS_NOMNT	(1<<23) /* don't allow unprivileged submounts */
+ #define MS_ACTIVE	(1<<30)
+ #define MS_NOUSER	(1<<31)
+ 
+Index: linux/include/linux/mount.h
+===================================================================
+--- linux.orig/include/linux/mount.h	2007-04-27 12:57:01.000000000 +0200
++++ linux/include/linux/mount.h	2007-04-27 12:57:14.000000000 +0200
+@@ -28,6 +28,7 @@ struct mnt_namespace;
+ #define MNT_NOATIME	0x08
+ #define MNT_NODIRATIME	0x10
+ #define MNT_RELATIME	0x20
++#define MNT_NOMNT	0x40
+ 
+ #define MNT_SHRINKABLE	0x100
+ #define MNT_USER	0x200
+
+--
