@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbXD0Vuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbXD0Vx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbXD0Vuv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbXD0Vuu
+	id S1757222AbXD0Vx4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXD0Vx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:50:50 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55031 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757360AbXD0Vup (ORCPT
+	Fri, 27 Apr 2007 17:53:56 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53130 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757222AbXD0Vxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:50:45 -0400
-Date: Sat, 28 Apr 2007 03:19:25 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm 2/2] Introduce freezer flags
-Message-ID: <20070427214925.GB21224@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200704271737.31192.rjw@sisk.pl> <200704271740.17972.rjw@sisk.pl> <20070427214047.GA21224@in.ibm.com> <200704272349.36736.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704272349.36736.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Fri, 27 Apr 2007 17:53:54 -0400
+Date: Fri, 27 Apr 2007 22:55:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Lee Revell" <rlrevell@joe-job.com>
+Cc: "Daniel Hazelton" <dhazelton@enter.net>,
+       "Marat Buharov" <marat.buharov@gmail.com>,
+       "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       "Parav K Pandit" <Parav_Pandit@mindtree.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: assembly code in the loadable kernel module
+Message-ID: <20070427225534.45293566@the-village.bc.nu>
+In-Reply-To: <75b66ecd0704271431h6329955dj27819ee5f14c278c@mail.gmail.com>
+References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com>
+	<Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com>
+	<698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com>
+	<200704271212.07579.dhazelton@enter.net>
+	<75b66ecd0704271431h6329955dj27819ee5f14c278c@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 11:49:35PM +0200, Rafael J. Wysocki wrote:
-> > > -
-> > > +#ifdef CONFIG_FREEZER
-> > > +	/* Used by the process freezer, defined in freezer.h */
-> > > +	unsigned int freezer_flags;
-> > 
-> > unsigned long freezer_flags; ??
-> 
-> I guess so.
-> 
-> > Else it throws the following warnings.
-> 
-> On which arch is that?  I've tested on x86_64 ...
+> These employees should be using gmail (over https) rather than
+> clogging thousands of people's inboxes with garbage spewed from the
+> legal dept.
 
-I compile tested it on i386 with gcc v4.1.2.
+Its much more fun to write back to those people and inform them that
+their terms are not valid as a contract can only be entered by joint
+agreement and that by continuing to send email to you they clearly
+understand this.
 
-> 
-> 
-> Greetings,
-> Rafael
+Lawyers cost a lot per hour so if they are being a nuisance keep them
+employed ;)
 
-Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Alan
