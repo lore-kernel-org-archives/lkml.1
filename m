@@ -1,60 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbXD0RCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbXD0RCw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbXD0RCe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756352AbXD0RCe
+	id S1756382AbXD0RCw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbXD0RCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:02:34 -0400
-Received: from colin.muc.de ([193.149.48.1]:4597 "EHLO mail.muc.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756341AbXD0RCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:02:33 -0400
-Date: 27 Apr 2007 19:02:30 +0200
-Date: Fri, 27 Apr 2007 19:02:30 +0200
-From: Andi Kleen <ak@muc.de>
-To: Tim Hockin <thockin@google.com>
-Cc: vojtech@suse.cz, linux-kernel@vger.kernel.org, akpm@google.com
-Subject: Re: [PATCH] x86_64: dynamic MCE poll interval
-Message-ID: <20070427170230.GA4574@muc.de>
-References: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com> <20070427090917.GA24922@muc.de> <cc96a5040704270958x8bbdb55m2fff1a4a5e1e621@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 13:02:50 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:33652 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756366AbXD0RCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 13:02:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=olw2T9Dz8ETthAul6lNVRMveWKjFxDEo+bLMwPH3LllkZpoA/6ht68XztsE0Rgxyxo9Pbg3Wwliz9LazSrVoaNoisCjpUdgbHy3RXJp9KygRBpcmXS+Upu0tqIL6xRI8gA082pGjokQHVnJIhfr8SZZ5RKW8YrO+LfLRfljEOh4=
+Message-ID: <ed5aea430704271002i8d44a09o895bee2063954858@mail.gmail.com>
+Date: Fri, 27 Apr 2007 11:02:43 -0600
+From: "David Mosberger-Tang" <dmosberger@gmail.com>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Mike Stroyan" <mike.stroyan@hp.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rohit Seth" <rohitseth@google.com>, "Luck, Tony" <tony.luck@intel.com>,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704271437570.14794@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <cc96a5040704270958x8bbdb55m2fff1a4a5e1e621@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+References: <20070425205548.fd51b301.akpm@linux-foundation.org>
+	 <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com>
+	 <4631E49C.2030501@yahoo.com.au>
+	 <Pine.LNX.4.64.0704271437570.14794@blonde.wat.veritas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 09:58:14AM -0700, Tim Hockin wrote:
-> On 27 Apr 2007 11:09:17 +0200, Andi Kleen <ak@muc.de> wrote:
-> >On Thu, Apr 26, 2007 at 06:02:52PM -0700, Tim Hockin wrote:
-> >> Description:
-> >>  This patch makes the MCE poller adjust the polling interval dynamically.
-> >>  If we find an MCE, poll 2x faster (down to 10 ms).  When we stop finding
-> >>  MCEs, poll 2x slower (up to check_interval seconds).  The check_interval
-> >>  tunable becomes the max polling interval.
+My book has a fairly detailed discussion of how these operations were
+supposed to work and what the reasoning behind them was.
+Unfortunately, I don't have time to really participate this discussion
+at the moment, but I hope somebody else has access to the book and
+would (re-)read it for some background (not to claim that it got
+everything right 100% but to ensure that earlier mistakes are not
+repeated...).
+
+  --david
+
+On 4/27/07, Hugh Dickins <hugh@veritas.com> wrote:
+> On Fri, 27 Apr 2007, Nick Piggin wrote:
 > >
-> >Can you please fix the documentation then?
-> 
-> Which documentation, specifically? :)
-
-Documentation/x86_64/{boot-options.txt,machinecheck}
-
-> 
-> >> Result:
-> >>  If you start to take a lot of correctable errors (not exceptions), you
-> >>  log them faster and more accurately (less chance of overflowing the MCA
-> >>  registers).  If you don't take a lot of errors, you will see no change.
+> > But that's because of ia64's cache coherency implementation. I don't really
+> > follow the documentation to know whether it should be one way or the other,
+> > but surely it should be done either before or after the set_pte_at, not both.
 > >
-> >Makes sense.
+> > Anyway, how about fremap or mprotect, for example?
+> > ...
 > >
-> >AMD RevF can do this using the threshold interrupts too for DIMM errors
-> >too without any delays -- perhaps it would also make sense to configure
-> >this by default that it always triggers on all DIMM errors.
-> >Right now it is just an option in /sys
-> 
-> Can I look at this as a followon patch?  I have a number of mce
+> > OK, I'm still not sure that I understand why lazy_mmu_prot_update should be
+> > used rather than flush_icache_page (in concept, not ia64 implementation).
+> > Sure, flush_icache_page isn't given the pte, but let's assume we can change
+> > that.
+>
+> You're asking lots of good questions.  I wish the ia64 people would
+> know the answers, but from the length of time the "lazy_mmu_prot_update"
+> stuff took to get into the tree, and the length of time it's taken to be
+> found defective, I suspect they don't, and we'll have to guess for them.
+>
+> Some guesses I'm working with...
+>
+> I presume Mike and Anil are correct, that it needs to be done before
+> putting pte into page table, not left until after: but as you've
+> guessed, that needs to be done everywhere, not just in the two
+> places so far identified.
+>
+> When it was discussed last year (in connection with Peter's page
+> cleaning patches) it was thought to be a variant of update_mmu_cache()
+> (after setting pte), and we added the fremap one to accompany it;
+> but now it looks to be a variant of flush_icache_page() (before
+> setting pte).
+>
+> I believe lazy_mmu_prot_update(pteval) came into existence primarily
+> for mprotect's change_pte_range() case.  If ia64 filled in its
+> flush_icache_page(vma, page), that could have been used there
+> (checking 'vm_flags & VM_EXEC' instead of pte_exec): but that would
+> involve a relatively expensive(?) pte_page() in a place which doesn't
+> need to know the struct page for other cases.
+>
+> Well, not pte_page(), it needs to be vm_normal_page() doesn't it?
+> and ia64's current lazy_mmu_prot_update is unsafe when !pfn_valid.
+>
+> Some flush_icache_pages are already in place, others are not: do
+> we need to add some?  But those architectures which have a non-empty
+> flush_icache_page seem to have survived without the additional calls
+> - so they might be unnecessarily slowed down by additional calls.
+>
+> I believe that was the secondary reason for lazy_mmu_prot_update(),
+> perhaps better called ia64_flush_icache_page(): to allow calls to
+> be added where ia64 was (mistakenly) thought to want them, without
+> needing a protracted audit of how other architectures might be
+> impacted.
+>
+> But I'm still trying to make sense of it.
+>
+> Hugh
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-Sure.
 
--Andi
+-- 
+Mosberger Consulting LLC, http://www.mosberger-consulting.com/
