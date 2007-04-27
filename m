@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXD0Opi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXD0Orm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXD0Opi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbXD0Oph
+	id S1755945AbXD0Orm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:47:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbXD0Orl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:45:37 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:11729 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755937AbXD0OpR (ORCPT
+	Fri, 27 Apr 2007 10:47:41 -0400
+Received: from lazybastard.de ([212.112.238.170]:32769 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755889AbXD0Ork (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:45:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Qna8aO+ZQC2vn0fqZbOrj/bMnc4o+pejvCtaaNX5Z5jCt7RwUHUOpcGBZmf74bRNTrilOaaZsmFCMQiHION//dU2tN+8wFnCNOORr74qa/bczZP3YxTy7RldDtLMyu5fwyLLEzYH684IM4UrTvh7EH+OoIlStT/ObsTZovtF9fc=
-Message-ID: <8355959a0704270745i2c0b295u4185c7ac63503696@mail.gmail.com>
-Date: Fri, 27 Apr 2007 20:15:16 +0530
-From: "Sunil Naidu" <akula2.shark@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Enigma of Hardware Monitoring in 2.6.20.x or 2.6.21
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 10:47:40 -0400
+Date: Fri, 27 Apr 2007 16:43:28 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 0/5] fallocate system call
+Message-ID: <20070427144327.GC22949@lazybastard.org>
+References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070427121003.GA7808@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070427121003.GA7808@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 27 April 2007 14:10:03 +0200, Heiko Carstens wrote:
+> 
+> After long discussions where at least two possible implementations
+> were suggested that would work on _all_ architectures you chose one
+> which doesn't and causes extra effort.
 
-I am did compile those kernels to the best available hardware in a
-P-III machine. (Research experiment - P-III box is a part of Wireless
-stuff).
+I believe the long discussion also showed that every possible
+implementation has drawbacks.  To me this one appeared to be the best of
+many bad choices.
 
-I have this enigma called Hardware Monitoring support on many boards. Because:
+Is this implementation worse than we thought?
 
-a) Vendors don't give enough info - which chips are meant for Hardware
-Monitoring in a particular board, say in this case a P-III 810E or P4
-945 or Core2Duo 965/975 boards.
-b) Unfortunately, there isn't any reference available in the Config to
-select the chips for the respective boards. Example - for 810E - some
-x chip is to be enabled in that tree.
+Jörn
 
-How to solve this problem? How to know in Linux (any commands) whether
-H/W Mon is supported by 810E board or 945 board? (apart from digging
-from the manuals to narrow down the problem).
-
-I am willing to do something for this task (volunteer). Comments?
-
-~Akula2
+-- 
+The grand essentials of happiness are: something to do, something to
+love, and something to hope for.
+-- Allan K. Chalmers
