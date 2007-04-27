@@ -1,88 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbXD0Re7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbXD0RiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756094AbXD0Re7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756099AbXD0Re7
+	id S1756091AbXD0RiO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXD0RiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:34:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35608 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756089AbXD0Rew (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:34:52 -0400
-Date: Sat, 28 Apr 2007 03:34:32 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070427173432.GJ32602149@melbourne.sgi.com>
-References: <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com> <20070427002640.22a71d06.akpm@linux-foundation.org> <20070427163620.GI32602149@melbourne.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 13:38:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:42136 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756091AbXD0RiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 13:38:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=opdxmVipfYWCSvNP5fWutG/E82ZOCRLiAuS7/Q4NUQ7Hi8TtlHETrBO8rHezse8Cv83x3bk8T9paniZ69DJ30NzqkDLkyciABBOsYEMyNBmsL9x/w284AqXCV+WJT+cPx8SgX1Zh9XTZYVDxFOiAPnHkh1u4EkI3AiODh+EacYs=
+Message-ID: <6bffcb0e0704271038y7d099a7au7eae8a99b605cb2f@mail.gmail.com>
+Date: Fri, 27 Apr 2007 19:38:11 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Greg KH" <gregkh@suse.de>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Tejun Heo" <htejun@gmail.com>
+In-Reply-To: <20070427001246.GB5303@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070427163620.GI32602149@melbourne.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>
+	 <462FB8E6.9070501@googlemail.com> <463117DF.2020103@googlemail.com>
+	 <20070427001246.GB5303@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 02:36:20AM +1000, David Chinner wrote:
-> The test was writing a single 50GB file to a fresh filesystem, and
-> then reading it back. Run on two different dm stripes - a 4-disk
-> RAID) and a 8disk RAID0 stripe, with a stripe unit of 512k.  Disks
-> are 10krpm SAS, external jbod on PCI-X good for ~850MB/s read and
-> ~750MB/s write.  Server is 4p intel x86_64 with 16GB RAM.
-> 
->                     READ            WRITE
-> blksz  disks     tput   sys       tput    sys
-> -----  -----    -----   ----      -----  ----
->  4k      4       332     35s      203     76s
-> 64k      4       173     20s      273     21s
->  4k      8       403     35s      443     76s
-> 64k      8       634     21s      540     21s
-> 
-> Throughput in MB/s.
+On 27/04/07, Greg KH <gregkh@suse.de> wrote:
+> On Thu, Apr 26, 2007 at 11:21:35PM +0200, Michal Piotrowski wrote:
+> > Hi Greg,
+> >
+> > Michal Piotrowski napisa?(a):
+> > > Hi all,
+> > >
+> > > akpm@linux-foundation.org napisa?(a):
+> > >> The mm snapshot broken-out-2007-04-25-02-49.tar.gz has been uploaded to
+> > >>
+> > >>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-04-25-02-49.tar.gz
+> > >>
+> > >> It contains the following patches against 2.6.21-rc7:
+> > >>
+> > >
+> > > My network doesn't work
+> > >
+> > > $ ping 192.168.0.1
+> > > connect: Network is unreachable
+> > >
+> > > NIC:
+> > > 02:05.0 Ethernet controller: 3Com Corporation 3c940 10/100/1000Base-T [Marvell] (rev 12)
+> > >
+> > > quilt patches drivers/net/skge.c
+> > > patches/git-netdev-all.patch
+> > > patches/git-net.patch
+> > >
+> > > Bisection...
+> > >
+> >
+> > I tracked this problem down to your patches (kernel 2.6.21-rc7-mm2)
+> >
+> > gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
+> > gregkh-driver-sysfs-fix-error-handling-in-binattr-write.patch
+> > gregkh-driver-sysfs-move-release_sysfs_dirent-to-dirc.patch
+> > gregkh-driver-sysfs-flatten-cleanup-paths-in-sysfs_add_link-and-create_dir.patch
+> > gregkh-driver-sysfs-consolidate-sysfs_dirent-creation-functions.patch
+> > gregkh-driver-sysfs-add-sysfs_dirent-s_parent.patch
+> > gregkh-driver-sysfs-add-sysfs_dirent-s_name.patch
+> > gregkh-driver-sysfs-make-sysfs_dirent-s_element-a-union.patch
+> > gregkh-driver-sysfs-implement-kobj_sysfs_assoc_lock.patch
+> > gregkh-driver-sysfs-reimplement-symlink-using-sysfs_dirent-tree.patch
+> > gregkh-driver-sysfs-implement-bin_buffer.patch
+> > gregkh-driver-sysfs-implement-sysfs_dirent-active-reference-and-immediate-disconnect.patch
+> > gregkh-driver-sysfs-kill-attribute-file-orphaning.patch
+> > gregkh-driver-sysfs-kill-unnecessary-attribute-owner.patch
+> > gregkh-driver-sysfs-make-lockdep-ignore-s_active.patch
+> > gregkh-driver-sysfs-make-sysfs_put-ignore-null-sd.patch
+> > gregkh-driver-sysfs-rename-object_depth-to-sysfs_path_depth-and-make-it-global.patch
+> > gregkh-driver-sysfs-reimplement-sysfs_drop_dentry.patch
+> > gregkh-driver-sysfs-kill-sysfs_dirent-s_dentry.patch
+> > gregkh-driver-driver-core-make-uevent-environment-available-in-uevent-file.patch
+> >
+> > ABI breakage?
+>
+> I've dropped the gregkh-driver-sysfs-* patches listed above from my tree
+> as Tejun is reworking the series to handle all of the different changes
+> that have been needed as they have been tested, so you shouldn't have to
+> worry about them.
+>
+> But I would be interested in finding out why the above is breaking for
+> you.
 
-Some more information - stripe unit on the dm raid0 is 512k.
-I have not attempted to increase I/O sizes at all yet - these test are
-just demonstrating efficiency improvements in the filesystem.
+GOOD
+gregkh-driver-sysfs-reimplement-symlink-using-sysfs_dirent-tree.patch
+BAD
 
-These numbers for 32GB files.
+>
+> thanks,
+>
+> greg k-h
+>
 
-                    READ            WRITE
-disks  blksz     tput   sys       tput    sys
------  -----    -----   ----      -----  ----
-  1     4k        89     18s       57     44s
-  1    16k        46     13s       67     18s
-  1    64k        75     12s       68     12s
-  2     4k       179     20s      114     43s
-  2    16k        55     13s      132     18s
-  2    64k       126     12s      126     12s
-  4     4k       350     20s      214     43s
-  4    16k       350     14s      264     19s
-  4    64k       176     11s      266     12s
-  8     4k       415     21s      446     41s
-  8    16k       655     13s      518     19s
-  8    64k       664     12s      552     12s
- 12     4k       413     20s      633     33s
- 12    16k       736     14s      741     19s
- 12    64k       836     12s      743     12s
+Regards,
+Michal
 
-Throughput in MB/s.
-
-
-Consistent improvement across the write results, first time
-I've hit the limits of the PCI-X bus with a single buffered
-I/O thread doing either reads or writes.
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Michal K. K. Piotrowski
+LTG - Linux Testers Group (PL)
+(http://www.stardust.webpages.pl/ltg/)
+LTG - Linux Testers Group (EN)
+(http://www.stardust.webpages.pl/linux_testers_group_en/)
