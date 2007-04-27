@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbXD0LQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbXD0LQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755627AbXD0LQO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 07:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXD0LQN
+	id S1755632AbXD0LQR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 07:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXD0LQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 07:16:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:24647 "EHLO
+	Fri, 27 Apr 2007 07:16:17 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24651 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755627AbXD0LQK (ORCPT
+	with ESMTP id S1755634AbXD0LQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 07:16:10 -0400
+	Fri, 27 Apr 2007 07:16:14 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=K3sZkrLkpd///YXwCBA5vPoRQXecDiCyA8ZziQAfVv4pLPGW5zwFSOirNtsW/7vn5
-	levWFcRsI5H4AYnlN+VOA==
-Message-Id: <20070427111300.581636000@menage.corp.google.com>
+	b=IbXvsOcOhgH8YQkPhEkQwwmrhAbSv1MwwCN1KY297szWLXXx7CeMMA8GsG/I8aqwJ
+	0KnKSfr6GKtferYFVK/UQ==
+Message-Id: <20070427111300.947356000@menage.corp.google.com>
 References: <20070427104607.252541000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Fri, 27 Apr 2007 03:46:11 -0700
+Date: Fri, 27 Apr 2007 03:46:13 -0700
 From: menage@google.com
 To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
        vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
@@ -26,269 +26,212 @@ To: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
 Cc: ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
        devel@openvz.org
-Subject: [PATCH 4/9] Containers (V9): Add fork/exit hooks
-Content-Disposition: inline; filename=container_forkexit.patch
+Subject: [PATCH 6/9] Containers (V9): Add procfs interface
+Content-Disposition: inline; filename=container_proc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the necessary hooks to the fork() and exit() paths to
-ensure that new children inherit their parent's container assignments,
-and that exiting processes release reference counts on their
-containers.
+This patch adds:
+
+/proc/containers - general system info
+
+/proc/*/container - per-task container membership info
 
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
- include/linux/container.h |    6 ++
- kernel/container.c        |  126 ++++++++++++++++++++++++++++++++++++++++++++++
- kernel/exit.c             |    2 
- kernel/fork.c             |   14 ++++-
- 4 files changed, 146 insertions(+), 2 deletions(-)
+ fs/proc/base.c     |    7 ++
+ kernel/container.c |  128 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 135 insertions(+)
 
-Index: container-2.6.21-rc7-mm1/kernel/exit.c
+Index: container-2.6.21-rc7-mm1/fs/proc/base.c
 ===================================================================
---- container-2.6.21-rc7-mm1.orig/kernel/exit.c
-+++ container-2.6.21-rc7-mm1/kernel/exit.c
-@@ -32,6 +32,7 @@
- #include <linux/taskstats_kern.h>
- #include <linux/delayacct.h>
- #include <linux/cpuset.h>
-+#include <linux/container.h>
- #include <linux/syscalls.h>
- #include <linux/signal.h>
- #include <linux/posix-timers.h>
-@@ -939,6 +940,7 @@ fastcall NORET_TYPE void do_exit(long co
- 	__exit_fs(tsk);
- 	exit_thread();
- 	cpuset_exit(tsk);
-+	container_exit(tsk, 1);
- 	exit_keys(tsk);
- 
- 	if (group_dead && tsk->signal->leader)
-Index: container-2.6.21-rc7-mm1/kernel/fork.c
-===================================================================
---- container-2.6.21-rc7-mm1.orig/kernel/fork.c
-+++ container-2.6.21-rc7-mm1/kernel/fork.c
-@@ -30,6 +30,7 @@
- #include <linux/capability.h>
- #include <linux/cpu.h>
- #include <linux/cpuset.h>
-+#include <linux/container.h>
+--- container-2.6.21-rc7-mm1.orig/fs/proc/base.c
++++ container-2.6.21-rc7-mm1/fs/proc/base.c
+@@ -68,6 +68,7 @@
  #include <linux/security.h>
- #include <linux/swap.h>
- #include <linux/syscalls.h>
-@@ -962,6 +963,7 @@ static struct task_struct *copy_process(
- {
- 	int retval;
- 	struct task_struct *p = NULL;
-+	int container_callbacks_done = 0;
- 
- 	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
- 		return ERR_PTR(-EINVAL);
-@@ -1061,12 +1063,13 @@ static struct task_struct *copy_process(
- 	p->io_wait = NULL;
- 	p->audit_context = NULL;
- 	cpuset_fork(p);
-+	container_fork(p);
- #ifdef CONFIG_NUMA
-  	p->mempolicy = mpol_copy(p->mempolicy);
-  	if (IS_ERR(p->mempolicy)) {
-  		retval = PTR_ERR(p->mempolicy);
-  		p->mempolicy = NULL;
-- 		goto bad_fork_cleanup_cpuset;
-+ 		goto bad_fork_cleanup_container;
-  	}
- 	mpol_fix_fork_child_flag(p);
+ #include <linux/ptrace.h>
+ #include <linux/seccomp.h>
++#include <linux/container.h>
+ #include <linux/cpuset.h>
+ #include <linux/audit.h>
+ #include <linux/poll.h>
+@@ -1980,6 +1981,9 @@ static const struct pid_entry tgid_base_
+ #ifdef CONFIG_CPUSETS
+ 	REG("cpuset",     S_IRUGO, cpuset),
  #endif
-@@ -1176,6 +1179,12 @@ static struct task_struct *copy_process(
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
- 
-+	/* Now that the task is set up, run container callbacks if
-+	 * necessary. We need to run them before the task is visible
-+	 * on the tasklist. */
-+	container_fork_callbacks(p);
-+	container_callbacks_done = 1;
-+
- 	/* Need tasklist lock for parent etc handling! */
- 	write_lock_irq(&tasklist_lock);
- 
-@@ -1298,9 +1307,10 @@ bad_fork_cleanup_security:
- bad_fork_cleanup_policy:
- #ifdef CONFIG_NUMA
- 	mpol_free(p->mempolicy);
--bad_fork_cleanup_cpuset:
-+bad_fork_cleanup_container:
++#ifdef CONFIG_CONTAINERS
++	REG("container",  S_IRUGO, container),
++#endif
+ 	INF("oom_score",  S_IRUGO, oom_score),
+ 	REG("oom_adj",    S_IRUGO|S_IWUSR, oom_adjust),
+ #ifdef CONFIG_AUDITSYSCALL
+@@ -2270,6 +2274,9 @@ static const struct pid_entry tid_base_s
+ #ifdef CONFIG_CPUSETS
+ 	REG("cpuset",    S_IRUGO, cpuset),
  #endif
- 	cpuset_exit(p);
-+	container_exit(p, container_callbacks_done);
- 	delayacct_tsk_free(p);
- 	if (p->binfmt)
- 		module_put(p->binfmt->module);
-Index: container-2.6.21-rc7-mm1/include/linux/container.h
-===================================================================
---- container-2.6.21-rc7-mm1.orig/include/linux/container.h
-+++ container-2.6.21-rc7-mm1/include/linux/container.h
-@@ -18,6 +18,9 @@
- extern int container_init_early(void);
- extern int container_init(void);
- extern void container_init_smp(void);
-+extern void container_fork(struct task_struct *p);
-+extern void container_fork_callbacks(struct task_struct *p);
-+extern void container_exit(struct task_struct *p, int run_callbacks);
- 
- extern struct file_operations proc_container_operations;
- 
-@@ -191,6 +194,9 @@ int container_path(const struct containe
- static inline int container_init_early(void) { return 0; }
- static inline int container_init(void) { return 0; }
- static inline void container_init_smp(void) {}
-+static inline void container_fork(struct task_struct *p) {}
-+static inline void container_fork_callbacks(struct task_struct *p) {}
-+static inline void container_exit(struct task_struct *p, int callbacks) {}
- 
- static inline void container_lock(void) {}
- static inline void container_unlock(void) {}
++#ifdef CONFIG_CONTAINERS
++	REG("container",  S_IRUGO, container),
++#endif
+ 	INF("oom_score", S_IRUGO, oom_score),
+ 	REG("oom_adj",   S_IRUGO|S_IWUSR, oom_adjust),
+ #ifdef CONFIG_AUDITSYSCALL
 Index: container-2.6.21-rc7-mm1/kernel/container.c
 ===================================================================
 --- container-2.6.21-rc7-mm1.orig/kernel/container.c
 +++ container-2.6.21-rc7-mm1/kernel/container.c
-@@ -132,6 +132,34 @@ list_for_each_entry(_ss, &_root->subsys_
- #define for_each_root(_root) \
- list_for_each_entry(_root, &roots, root_list)
+@@ -247,6 +247,7 @@ static int container_mkdir(struct inode 
+ static int container_rmdir(struct inode *unused_dir, struct dentry *dentry);
+ static int container_populate_dir(struct container *cont);
+ static struct inode_operations container_dir_inode_operations;
++struct file_operations proc_containerstats_operations;
  
-+/* Each task_struct has an embedded css_group, so the get/put
-+ * operation simply takes a reference count on all the containers
-+ * referenced by subsystems in this css_group. This can end up
-+ * multiple-counting some containers, but that's OK - the ref-count is
-+ * just a busy/not-busy indicator; ensuring that we only count each
-+ * container once would require taking a global lock to ensure that no
-+ * subsystems moved between hierarchies while we were doing so.
-+ *
-+ * Possible TODO: decide at boot time based on the number of
-+ * registered subsystems and the number of CPUs or NUMA nodes whether
-+ * it's better for performance to ref-count every subsystem, or to
-+ * take a global lock and only add one ref count to each hierarchy.
-+ */
+ static struct backing_dev_info container_backing_dev_info = {
+ 	.ra_pages = 0,		/* No readahead */
+@@ -1507,6 +1508,7 @@ int __init container_init(void)
+ {
+ 	int err;
+ 	int i;
++	struct proc_dir_entry *entry;
+ 
+ 	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
+ 		struct container_subsys *ss = subsys[i];
+@@ -1518,10 +1520,136 @@ int __init container_init(void)
+ 	if (err < 0)
+ 		goto out;
+ 
++	entry = create_proc_entry("containers", 0, NULL);
++	if (entry)
++		entry->proc_fops = &proc_containerstats_operations;
 +
-+static void get_css_group(struct css_group *cg) {
-+	int i;
-+	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
-+		atomic_inc(&cg->subsys[i]->container->count);
-+	}
-+}
-+
-+static void put_css_group(struct css_group *cg) {
-+	int i;
-+	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
-+		atomic_dec(&cg->subsys[i]->container->count);
-+	}
-+}
-+
- /*
-  * There is one global container mutex. We also require taking
-  * task_lock() when dereferencing a task's container subsys pointers.
-@@ -1493,3 +1521,101 @@ int __init container_init(void)
  out:
  	return err;
  }
+ 
++/*
++ * proc_container_show()
++ *  - Print task's container paths into seq_file, one line for each hierarchy
++ *  - Used for /proc/<pid>/container.
++ *  - No need to task_lock(tsk) on this tsk->container reference, as it
++ *    doesn't really matter if tsk->container changes after we read it,
++ *    and we take container_mutex, keeping attach_task() from changing it
++ *    anyway.  No need to check that tsk->container != NULL, thanks to
++ *    the_top_container_hack in container_exit(), which sets an exiting tasks
++ *    container to top_container.
++ */
 +
-+/**
-+ * container_fork - attach newly forked task to its parents container.
-+ * @tsk: pointer to task_struct of forking parent process.
-+ *
-+ * Description: A task inherits its parent's container at fork().
-+ *
-+ * A pointer to the shared css_group was automatically copied in
-+ * fork.c by dup_task_struct().  However, we ignore that copy, since
-+ * it was not made under the protection of RCU or container_mutex, so
-+ * might no longer be a valid container pointer.  attach_task() might
-+ * have already changed current->container, allowing the previously
-+ * referenced container to be removed and freed.
-+ *
-+ * At the point that container_fork() is called, 'current' is the parent
-+ * task, and the passed argument 'child' points to the child task.
-+ **/
-+
-+void container_fork(struct task_struct *child)
++/* TODO: Use a proper seq_file iterator */
++static int proc_container_show(struct seq_file *m, void *v)
 +{
-+	rcu_read_lock();
-+	child->containers = rcu_dereference(current->containers);
-+	get_css_group(&child->containers);
-+	rcu_read_unlock();
-+}
++	struct pid *pid;
++	struct task_struct *tsk;
++	char *buf;
++	int retval;
++	struct containerfs_root *root;
 +
-+/**
-+ * container_fork_callbacks - called on a new task very soon before
-+ * adding it to the tasklist. No need to take any locks since no-one
-+ * can be operating on this task
-+ **/
++	retval = -ENOMEM;
++	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!buf)
++		goto out;
 +
-+void container_fork_callbacks(struct task_struct *child)
-+{
-+	if (need_forkexit_callback) {
-+		int i;
-+		for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
-+			struct container_subsys *ss = subsys[i];
-+			if (ss->fork) {
-+				ss->fork(ss, child);
-+			}
++	retval = -ESRCH;
++	pid = m->private;
++	tsk = get_pid_task(pid, PIDTYPE_PID);
++	if (!tsk)
++		goto out_free;
++
++	retval = 0;
++
++	mutex_lock(&container_mutex);
++
++	for_each_root(root) {
++		struct container_subsys *ss;
++		struct container *cont;
++		int subsys_id;
++		int count = 0;
++		/* Skip this hierarchy if it has no active subsystems */
++		if (!root->subsys_bits) continue;
++		for_each_subsys(root, ss) {
++			seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
 +		}
++		seq_putc(m, ':');
++		get_first_subsys(&root->top_container, NULL, &subsys_id);
++		cont = task_container(tsk, subsys_id);
++		retval = container_path(cont, buf, PAGE_SIZE);
++		if (retval < 0)
++			goto out_unlock;
++		seq_puts(m, buf);
++		seq_putc(m, '\n');
 +	}
++
++out_unlock:
++	mutex_unlock(&container_mutex);
++	put_task_struct(tsk);
++out_free:
++	kfree(buf);
++out:
++	return retval;
 +}
 +
-+/**
-+ * container_exit - detach container from exiting task
-+ * @tsk: pointer to task_struct of exiting process
-+ *
-+ * Description: Detach container from @tsk and release it.
-+ *
-+ * Note that containers marked notify_on_release force every task in
-+ * them to take the global container_mutex mutex when exiting.
-+ * This could impact scaling on very large systems.  Be reluctant to
-+ * use notify_on_release containers where very high task exit scaling
-+ * is required on large systems.
-+ *
-+ * the_top_container_hack:
-+ *
-+ *    Set the exiting tasks container to the root container (top_container).
-+ *
-+ *    We call container_exit() while the task is still competent to
-+ *    handle notify_on_release(), then leave the task attached to the
-+ *    root container in each hierarchy for the remainder of its exit.
-+ *
-+ *    To do this properly, we would increment the reference count on
-+ *    top_container, and near the very end of the kernel/exit.c do_exit()
-+ *    code we would add a second container function call, to drop that
-+ *    reference.  This would just create an unnecessary hot spot on
-+ *    the top_container reference count, to no avail.
-+ *
-+ *    Normally, holding a reference to a container without bumping its
-+ *    count is unsafe.   The container could go away, or someone could
-+ *    attach us to a different container, decrementing the count on
-+ *    the first container that we never incremented.  But in this case,
-+ *    top_container isn't going away, and either task has PF_EXITING set,
-+ *    which wards off any attach_task() attempts, or task is a failed
-+ *    fork, never visible to attach_task.
-+ *
-+ **/
++static int container_open(struct inode *inode, struct file *file)
++{
++	struct pid *pid = PROC_I(inode)->pid;
++	return single_open(file, proc_container_show, pid);
++}
 +
-+void container_exit(struct task_struct *tsk, int run_callbacks)
++struct file_operations proc_container_operations = {
++	.open		= container_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++/* Display information about each subsystem and each hierarchy */
++static int proc_containerstats_show(struct seq_file *m, void *v)
 +{
 +	int i;
-+	if (run_callbacks && need_forkexit_callback) {
-+		for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
-+			struct container_subsys *ss = subsys[i];
-+			if (ss->exit) {
-+				ss->exit(ss, tsk);
-+			}
++	struct containerfs_root *root;
++	mutex_lock(&container_mutex);
++	seq_puts(m, "Hierarchies:\n");
++	for_each_root(root) {
++		struct container_subsys *ss;
++		int first = 1;
++		seq_printf(m, "%p: bits=%lx containers=%d (", root,
++			   root->subsys_bits, root->number_of_containers);
++		for_each_subsys(root, ss) {
++			seq_printf(m, "%s%s", first ? "" : ", ", ss->name);
++			first = false;
 +		}
++		seq_putc(m, ')');
++		if (root->sb) {
++			seq_printf(m, " s_active=%d",
++				   atomic_read(&root->sb->s_active));
++		}
++		seq_putc(m, '\n');
 +	}
-+	/* Reassign the task to the init_css_group. */
-+	task_lock(tsk);
-+	put_css_group(&tsk->containers);
-+	tsk->containers = init_task.containers;
-+	task_unlock(tsk);
++	seq_puts(m, "Subsystems:\n");
++	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
++		struct container_subsys *ss = subsys[i];
++		seq_printf(m, "%d: name=%s hierarchy=%p\n",
++			   i, ss->name, ss->root);
++	}
++	mutex_unlock(&container_mutex);
++	return 0;
 +}
++
++static int containerstats_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, proc_containerstats_show, 0);
++}
++
++struct file_operations proc_containerstats_operations = {
++	.open = containerstats_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
+ /**
+  * container_fork - attach newly forked task to its parents container.
+  * @tsk: pointer to task_struct of forking parent process.
 
 --
