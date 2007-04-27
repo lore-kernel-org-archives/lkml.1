@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbXD0F14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXD0FcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbXD0F14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 01:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbXD0F14
+	id S1752979AbXD0FcM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 01:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXD0FcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 01:27:56 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:52598 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755228AbXD0F1z (ORCPT
+	Fri, 27 Apr 2007 01:32:12 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:2857 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbXD0FcL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 01:27:55 -0400
-Message-ID: <463189D3.3070805@zytor.com>
-Date: Thu, 26 Apr 2007 22:27:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 27 Apr 2007 01:32:11 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: Pin an IRQ to a particular CPU
+Date: Thu, 26 Apr 2007 22:31:28 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEJJDFAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Michael McConnell <soruk@eridani.co.uk>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: MAINTAINERS file out of date?
-References: <4631255F.9010902@eridani.co.uk> <463131FD.8020301@zytor.com>	<20070427010914.GA2570@localhost.localdomain>	<46314E0B.1020800@zytor.com>	<20070427023252.GA3797@localhost.localdomain>	<m1647ijvk1.fsf@ebiederm.dsl.xmission.com>	<4631873B.1000107@zytor.com> <m1tzv2ie4i.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1tzv2ie4i.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <2fe399760704261815i428105d4qddc2648688e694bc@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 26 Apr 2007 23:31:47 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 26 Apr 2007 23:31:48 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> "H. Peter Anvin" <hpa@zytor.com> writes:
-> 
->> A lot of that code (although, of course, not all) could be written in C,
->> though.  I'm thinking of taking a stab at rewriting it that way.
-> 
-> Is this using the .code16gcc?  Or are you thinking of some other
-> technique.  Requiring another C compiler to build the kernel would
-> be a pain to use.
 
-.code16gcc was what I was using.  There is a GSoC project that I'm
-mentoring to get 16-bit support for gcc, that will be possible to
-eventually migrate to (for code size) if/when it gets implemented and
-gets pushed out far enough, but that's for the future.
+> Hello,
+> 
+> In an effort to increase over all throughput of my Linux NFS file
+> server, I thought about trying to force an IRQ, for the NIC, to be
+> serviced by a particular CPU.  Is this possible?
+> 
+> TIA,
+> Phy
 
-	-hpa
+/proc/irq/*/smp_affinity
+
+I would recommend automatic balancing and leave it at that. This code automatically distributes IRQs to CPUs such that each IRQ can only be serviced by a single CPU and the IRQs are distributed over the CPU set.
+
+DS
+
+
