@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755722AbXD0Mge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbXD0Mje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755722AbXD0Mge (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 08:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbXD0Mge
+	id S1755748AbXD0Mje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 08:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbXD0Mje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 08:36:34 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:2874 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755722AbXD0Mgd (ORCPT
+	Fri, 27 Apr 2007 08:39:34 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:42266 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755748AbXD0Mjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 08:36:33 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: suspend2-devel@lists.suspend2.net
-Subject: Re: suspend2 merge
-Date: Fri, 27 Apr 2007 14:36:26 +0200
-User-Agent: KMail/1.9.6
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Con Kolivas <kernel@kolivas.org>,
-       Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-References: <20070419070437.GA25211@elte.hu> <20070425192512.GZ3468@stusta.de> <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org> (sfid-20070425_233551_691811_D5D99E0D)
-In-Reply-To: <alpine.LFD.0.98.0704251231111.9964@woody.linux-foundation.org>
+	Fri, 27 Apr 2007 08:39:32 -0400
+Message-ID: <4631EEFE.7060309@clusterfs.com>
+Date: Fri, 27 Apr 2007 18:09:26 +0530
+From: Manoj Joseph <manoj@clusterfs.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Marat Buharov <marat.buharov@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+ FS is under heavy write load (massive starvation)
+References: <1177660767.6567.41.camel@Homer.simpson.net>	 <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+In-Reply-To: <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704271436.27353.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 25 April 2007 schrieb Linus Torvalds:
+Marat Buharov wrote:
+> On 4/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>> Aside: why the heck do applications think that their data is so important
+>> that they need to fsync it all the time.  I used to run a kernel on my
+>> laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
+>> pleasurable.
+> 
+> So, if having fake fsync() and fdatasync() is pleasurable for laptop
+> and desktop, may be it's time to add option into Kconfig which
+> disables normal fsync behaviour in favor of robust desktop?
 
-> And that's a *fundamental* problem. If the STD people cannot even
-> realize that they have less to do with "suspend" than to "reboot", how
-> do you ever expect them to get anything to work, and not affect other
-> things negatively?
->
-> Yeah, I'm down on it. I'm down on it because every person involved with
-> the whole STD thing seems to have basically zero taste, and a total
-> inability to work with anybody else.
+Sure, a noop fsync/fdatasync would speed up some things. And I am sure 
+Andrew Morton knew what he was doing and the consequences.
 
-Hello Linus!
+But unless you care nothing about your data, you should not do it. It is 
+as simple as that. No, it does not give you a robust desktop!!
 
-I am no kernel developer. But I understand what you are trying to tell 
-here.
+-Manoj
 
-I agree that suspend to ram and snapshot should be handled differently by 
-drivers. And unlike schedulers - whether it be I/O or process related 
-ones - I think it should be quite easy to settle and decide on *one* 
-implementation for each feature. It least it doesn't look as difficult as 
-deciding on a scheduler which works for all the different workloads to 
-me.
-
-I do not believe that the reasons preventing this to happen until now are 
-of pure technical nature.
-
-I think snapshotting is a very important feature. I would patch it into my 
-kernels if it was removed. But then I am using suspend2 anyway.
-
-Regards,
 -- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+Manoj Joseph
+http://kerneljunkie.blogspot.com/
