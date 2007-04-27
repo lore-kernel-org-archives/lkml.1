@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbXD0PoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbXD0Poc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754235AbXD0PoQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755905AbXD0PoQ
+	id S1755953AbXD0Poc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbXD0Poc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:44:16 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37648 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754235AbXD0PoP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:44:15 -0400
-Date: Fri, 27 Apr 2007 08:41:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-cc: Alan Stern <stern@rowland.harvard.edu>, Nick Piggin <npiggin@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, suspend2-devel@lists.suspend2.net,
-       Mike Galbraith <efault@gmx.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
-In-Reply-To: <1177685391.3565.22.camel@johannes.berg>
-Message-ID: <alpine.LFD.0.98.0704270833270.9964@woody.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org>
-  <1177684764.3565.20.camel@johannes.berg>
- <1177685391.3565.22.camel@johannes.berg>
+	Fri, 27 Apr 2007 11:44:32 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33733 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755953AbXD0Po3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:44:29 -0400
+Message-ID: <46321A5A.2030602@austin.ibm.com>
+Date: Fri, 27 Apr 2007 10:44:26 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andy Whitcroft <apw@shadowen.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-kernel@vger.kernel.org
+Subject: Re: patch style checks
+References: <20070423141123.GA21174@skybase>	<20070425143011.57247c1d.akpm@linux-foundation.org>	<20070425172447.1576c399.akpm@linux-foundation.org>	<200704260232.06909.arnd@arndb.de> <20070425180611.25c563d4.akpm@linux-foundation.org> <463206E3.9040309@shadowen.org>
+In-Reply-To: <463206E3.9040309@shadowen.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, Johannes Berg wrote:
+>>
+>> Methinks it should do `exit 1' if anything was detected.
 > 
-> Eh, the point I actually wanted to make is that many drivers don't care
-> for the irqs disabled case and would have to add code to exclude it.
+> [Joel in case you'd not spotted this discussion, your
+> patchstylecheckemail script was found ...  Also this has produced a
+> little patch series improving the tool.  Where would you like that sent?]
 
-You really *really* want to do a two-phase thing, at least for the case I 
-care about. Whether that snapshotting thing does or not, I could care 
-less.
+Heh.  It's pretty crude but I've found it useful even as crude as it is.  I have been 
+doing library work instead of kernel work for a little more than a year so I haven't been 
+improving it.  That said, I'd be happy to see patches as I expect I'll do kernel work 
+again in the future.  I had made a project page for it here: 
+http://code.google.com/p/patchstylecheck/
 
-There's a damn good reason why the kernel uses 
+I'll maintain it if people want to send me patches.  I also added Andy to the svn 
+commiters list awhile back, so you could bug him as well.
 
-	/* phase 1 */
-	for_each_dev()
-		dev->suspend(dev);
+> 2.6.21-rc7-mm2 appears to contian some 4313 commits in total!!!  Of
+> these some 886 failed the style check; over 20%.  Obviously some of
+> these will be false positives, or actually better as they are than made
+> compliant.  I did have a quick look over a sample of the errors and bad
+> use of space at the start and end of line, plus overlength lines, and
+> the lack of spaces round operators seem to be the predominant errors
+> therein.
 
-	cli();
-	/* phase 2 */
-	for_each_dev()
-		dev->suspend_late(dev);
-
-(and the reverse case on resume).
-
-The reason is simply that there are two totally different cases: things 
-like disks etc want to spin down and do slow and high-level operations, 
-while things like USB controllers and console devices do *not* want to be 
-suspended early, because if you do, you lose debuggability.
-
-So some things really *really* want to be done when they know that there 
-isn't anything else going on any more, and they want to delay the shutdown 
-to the very end. While other things really *require* that they can send 
-requests that can take time, and cannot run with interrupts disabled.
-
-I actually think that "snapshot" is totally different, exactly because for 
-snapshotting, the slow operations like spinning down disks etc probably 
-don't really even exist, and would always be no-ops. But who knows..
-
-Anyway, I do have a final comment: 
-
-     DO NOT PASS "STATE FLAGS" TO DRIVERS 
-
-(or, even worse, assume that drivers would test "implicit" state by 
-calling the same function under two different states, and then have the 
-drivers test for "are interrupts disabled? Then I need to do something 
-else").
-
-If drivers are possibly going to do two different things, make it two 
-different entry-points. There's absolutely no downsides. It's _clearer_ to 
-the device writer when he gets called two different ways that it's not the 
-same case, and in case a particular device can do the same thing for both 
-cases, he can just set the function pointer to the same entry for both.
-
-Never EVER pass dynamic flags that modify behaviour. It's simply bad 
-programming. A function should do *one* thing, and do it well. 
-
-		Linus
+Whitespace damage is the predominant one I've seen as well.  When I was developing it I 
+fed it a number of lkml patches at random and fixed all the false positives I encountered.
