@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbXD0Uz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXD0U5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbXD0Uz4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757234AbXD0Uzy
+	id S1757247AbXD0U5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbXD0U5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:55:54 -0400
-Received: from waste.org ([66.93.16.53]:46010 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757238AbXD0Uzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:55:42 -0400
-Date: Fri, 27 Apr 2007 15:41:55 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@sw.ru>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: - maps2-add-proc-pid-pagemap-interface-fix.patch removed from -mm tree
-Message-ID: <20070427204155.GT11115@waste.org>
-References: <200704270814.l3R8EnFJ023047@shell0.pdx.osdl.net> <20070427104533.GA6001@localhost.sw.ru> <20070427132713.fc9d82c0.akpm@linux-foundation.org>
+	Fri, 27 Apr 2007 16:57:37 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43610 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757247AbXD0U5f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 16:57:35 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4632638D.2050004@s5r6.in-berlin.de>
+Date: Fri, 27 Apr 2007 22:56:45 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070427132713.fc9d82c0.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux1394-devel@lists.sourceforge.net
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Ben Collins <bcollins@debian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/30] Use menuconfig objects - IEEE1394
+References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 01:27:13PM -0700, Andrew Morton wrote:
-> On Fri, 27 Apr 2007 14:45:33 +0400
-> Alexey Dobriyan <adobriyan@sw.ru> wrote:
+Jan Engelhardt wrote on 2007-04-10:
+> Use menuconfigs instead of menus, so the whole menu can be disabled at        
+> once instead of going through all options.
 > 
-> > > maps2-add-proc-pid-pagemap-interface.patch
-> > 
-> > Ohhh, you're repeating december mincore() bug
-> > 2f77d107050abc14bc393b34bdb7b91cf670c250
-> > 
-> > pagemap_read() takes ->mmap_sem for reading
-> > walk_page_range
-> > pagemap_pte_range
-> > add_to_pagemap
-> > flush_pagemap
-> > copy_to_user
+> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 > 
-> argh.  I think it's always a bug to run uaccess functions while holding
-> mmap_sem, isn't it?
+> Index: linux-2.6.21-rc5/drivers/ieee1394/Kconfig
+> ===================================================================
+> --- linux-2.6.21-rc5.orig/drivers/ieee1394/Kconfig
+> +++ linux-2.6.21-rc5/drivers/ieee1394/Kconfig
+> @@ -1,8 +1,6 @@
+>  # -*- shell-script -*-
+>  
+> -menu "IEEE 1394 (FireWire) support"
+> -
+> -config IEEE1394
+> +menuconfig IEEE1394
+>  	tristate "IEEE 1394 (FireWire) support"
+>  	depends on PCI || BROKEN
+>  	select NET
+[...]
 
-Yep, looks that way.
+Unless there are objections, I will merge it into my queue of IEEE 1394
+updates for Linus.
 
-> I'll see if I can get something like this working as a -mm-only thing:
-
-I was wondering if there was a sensible way to do this. This looks
-pretty good.
- 
-> +	no+_mmap_sem();						\
-
-Except for this bit. Maybe put it in the same config bucket as might_sleep?
-
+(Personally, I still don't like it a lot. But perhaps only because I
+have to untangle some -mm differences for this.)
 -- 
-Mathematics is the supreme nostalgia of our time.
+Stefan Richter
+-=====-=-=== -=-- ==-==
+http://arcgraph.de/sr/
