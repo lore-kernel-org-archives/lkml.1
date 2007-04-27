@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXD0Qzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbXD0Qzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbXD0Qzj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 12:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756085AbXD0Qzj
+	id S1756081AbXD0Qzk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 12:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbXD0Qzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 12:55:39 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3272 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756078AbXD0QzX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 12:55:23 -0400
-Message-ID: <46322AFD.5000706@shadowen.org>
-Date: Fri, 27 Apr 2007 17:55:25 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 27 Apr 2007 12:55:40 -0400
+Received: from thunk.org ([69.25.196.29]:52421 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756081AbXD0Qz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 12:55:28 -0400
+Date: Fri, 27 Apr 2007 12:55:22 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Chinner <dgc@sgi.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070427165522.GI24852@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Chinner <dgc@sgi.com>, clameter@sgi.com,
+	linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Badari Pulavarty <pbadari@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2 -- PPC link failure
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4630A662.8090502@shadowen.org> <4630ABF2.1040305@shadowen.org> <4630EBFA.9000207@shadowen.org> <Pine.LNX.4.64.0704261123080.3560@schroedinger.engr.sgi.com> <4630F203.7020005@shadowen.org> <Pine.LNX.4.64.0704261210430.7441@schroedinger.engr.sgi.com> <46310216.2070608@shadowen.org> <Pine.LNX.4.64.0704261320090.5678@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0704261320090.5678@schroedinger.engr.sgi.com>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426221528.655d79cb.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 26 Apr 2007, Andy Whitcroft wrote:
-> 
->>> Gcc 3.3 works just fine on other platforms like i386. This is more likely 
->>> a platform issue. If we disable it then only for <= gcc 3.3 on ppc. If 
->>> problems crop up with other platforms then we can expand on it.
->> I was thinking that it would be nasty to have a set of platform
->> specific, compiler specific ifdefs in here.  I was more thinking of just
->> making this a BUG for all platforms.  This does result in slightly later
->> detection but this is a constant mode only, so any bad use of kmalloc()
->> would be picked up on first boot in testing always.
->>
->> I think that would be sufficient and safe even against the worst
->> optimiser (none).  Plus much less horrible to look at?
-> 
-> The build time detection is quite important for NUMA since structures keep 
-> growing. I'd like to keep that. In fact I would really like a build time 
-> detection. If a too large kmalloc occurs then the compile should stop at 
-> that point and the kernel should not link at all.
-> 
-> See my patch @ http://marc.info/?l=linux-kernel&m=117752927203466&w=2
+On Thu, Apr 26, 2007 at 10:15:28PM -0700, Andrew Morton wrote:
+> And hardware gets better.  If Intel & AMD come out with a 16k pagesize
+> option in a couple of years we'll look pretty dumb.  If the problems which
+> you're presently having with that controller get sorted out in the next
+> generation of the hardware, we'll also look pretty dumb.
 
-Yeah I played with that for a bit last night to no good effect.
-BUILD_BUG_ON simply becomes a noop if the optimiser doesn't really
-really know that the thing its talking about is a real constant.
+Unfortunately, this isn't a problem with hardware getting better, but
+a willingness to break backwards compatibility.
 
-I assume that if it cannot be sure that it should constant fold the
-number, it leaves it for runtime.  Then the optimiser sees that the
-thing is void and therefore removable and removes it.  So no error.
+x86_64 uses a 4k page size to avoid breaking 32-bit applications.  And
+unfortunately, iirc, even 64-bit applications are continuing to depend
+on 4k page alignments for things like the text and bss segments.  If
+the userspace ELF and other compiler/linker specifications were
+appropriate written so they could handle 16k pagesizes, maybe 5 years
+from now we could move to a 16k pagesize.  But this is going to
+require some coordination between the userspace binutils folks and
+AMD/Intel in order to plan such a migration.
 
-Perhaps we need to enlist someone from gcc-land to tell us how to figure
-out what its doing and massage it into working.
-
--apw
+							- Ted
