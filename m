@@ -1,107 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbXD0UC5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbXD0UF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbXD0UC5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:02:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757179AbXD0UC4
+	id S1757173AbXD0UF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbXD0UF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:02:56 -0400
-Received: from hu-out-0506.google.com ([72.14.214.229]:46262 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757174AbXD0UCy (ORCPT
+	Fri, 27 Apr 2007 16:05:57 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:16423 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757179AbXD0UFz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:02:54 -0400
+	Fri, 27 Apr 2007 16:05:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=WzPcYpKL+nUtH0CmuGE4mO7ewjtTyFnGtdPYkjokuDuSYwRUNhsd17Auwng+ifWImLFOS9nHNdltYRJP3Uf8jsc37OEzCu2VymYALrZHG2hQQsZzi+r4cFfpSs9lTo7AWoLKq3iUL8lIoccn9Jkc7niz3+/mTQcDVgDwNOGyQok=
-Date: Fri, 27 Apr 2007 22:02:47 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Miguel Ojeda <maxextreme@gmail.com>
-Cc: linux-kernel@vger.kernel.org, oliver pinter <oliver.pntr@gmail.com>,
-       Robert Hancock <hancockr@shaw.ca>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [BUG? -rc7] SMP: Just one CPU activated: P4 3GHz HT
-Message-ID: <20070427200247.GA7270@dreamland.darkstar.lan>
-References: <fa.2kDN6AWFnkWM37pP5//wKJmbvRQ@ifi.uio.no> <462BF4DF.7080401@shaw.ca> <653402b90704230111p50b72586te73c1288f12a0079@mail.gmail.com>
+        h=received:from:to:cc:references:in-reply-to:subject:date:message-id:mime-version:content-type:content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=XIqNfDgZkRQMsbH0JVY+BMrsLxX+89kG+CSF2ArmBOMAbdKL4uT8ixb0ZR++uM/vId2yhtUAVLsSier+qRnEyUSRCTKv6nW1ElxiomnViBiO5YhI397gTdIpxB85nCXO8RDEmdeEOT5ZwLVNkoFWzK/R29zKEGXOMigH+JGlTgo=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Andreas Dilger'" <adilger@clusterfs.com>
+Cc: "'Marat Buharov'" <marat.buharov@gmail.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Mike Galbraith'" <efault@gmx.de>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       "'Jens Axboe'" <jens.axboe@oracle.com>, <linux-ext4@vger.kernel.org>,
+       "'Alex Tomas'" <alex@clusterfs.com>
+References: <1177660767.6567.41.camel@Homer.simpson.net> <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com> <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org> <20070427193130.GD5967@schatzie.adilger.int> <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+Subject: RE: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS is under heavy write load (massive starvation)
+Date: Fri, 27 Apr 2007 13:05:42 -0700
+Message-ID: <03a701c78907$70470f30$50d52d90$@com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <653402b90704230111p50b72586te73c1288f12a0079@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+thread-index: AceJBdl8CnxA0fVxSNS9RwvhlCExJgAAW6Pg
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Il Mon, Apr 23, 2007 at 10:11:52AM +0200, Miguel Ojeda ha scritto: 
-> On 4/22/07, Luca Tettamanti <kronos.it@gmail.com> wrote:
-> >Probably the two siblings are enumerated only in ACPI tables. If you
-> >disable ACPI the kernel won't be aware of the second "core".
-> >
-> >Luca
-> >--
-> >"Su cio` di cui non si puo` parlare e` bene tacere".
-> > Ludwig Wittgenstein
-> >
+The idea has not died and some NAS/file server vendors have already been
+doing this for some time. (I am not sure but is WAFS the same thing?)
+
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> owner@vger.kernel.org] On Behalf Of Linus Torvalds
+> Sent: Friday, April 27, 2007 12:51 PM
+> To: Andreas Dilger
+> Cc: Marat Buharov; Andrew Morton; Mike Galbraith; LKML; Jens Axboe;
+> linux-ext4@vger.kernel.org; Alex Tomas
+> Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose
+> when FS is under heavy write load (massive starvation)
 > 
-> On 4/23/07, Robert Hancock <hancockr@shaw.ca> wrote:
-> >
-> >You didn't enable ACPI, it's needed for almost all systems to detect HT
-> >and also for many systems to detect multi-cores as well.
-> >
-> >Aside from that, in general I would say that on any modern x86 system
-> >ACPI should always be enabled. In many cases it seems the BIOS code is
-> >not tested much without ACPI anymore, so going without ACPI can be
-> >problematic.
-> >
-> >--
-> >Robert Hancock      Saskatoon, SK, Canada
-> >To email, remove "nospam" from hancockr@nospamshaw.ca
-> >Home Page: http://www.roberthancock.com/
-> >
-> >
 > 
-> Thanks all of you. It seems the problem is ACPI, however, should not
-> it be noted in some way? Maybe at Documentation/smp.txt, maybe at the
-> help section at CONFIG_SMP, maybe a "depends on ..."
->
-> Or maybe CONFIG_SMP should enable some bits of the ACPI code needed to
-> detect such additional cores.
+> 
+> On Fri, 27 Apr 2007, Andreas Dilger wrote:
+> >
+> > It's true that this is a "feature" of ext3 with data=ordered (the
+> default),
+> > but I suspect the same thing is now true in reiserfs too.
+> 
+> Oh, well.. Journalling sucks.
+> 
+> I was actually _really_ hoping that somebody would come along and tell
+> everybody that this whole journal-logging is stupid, and that it's just
+> better to not ever re-write blocks on disk, but instead write to new
+> blocks with version numbers (and not re-use old blocks until new
+> versions
+> are stable on disk).
+> 
+> There was even somebody who did something like that for a PhD thesis, I
+> forget the details (and it apparently died when the thesis was
+> presumably
+> accepted ;).
+> 
+> 			Linus
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-"depends on" is too strong. There exists architecture without ACPI but
-with SMP support; even in the x86 world a number of systems still
-support both MPS and ACPI.
-
-Mentioning it in the help text should be enough. Roman, are you in
-charge for the KConfig files?
-
----
-SMP support in modern systems often relies on ACPI being active; add a
-couple of lines in the help text for CONFIG_SMP
-
-Signed-Off-By: Luca Tettamanti <kronos.it@gmail.com>
----
-
- arch/i386/Kconfig |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index 53d6237..48ef899 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -111,6 +111,9 @@ config SMP
- 	  Y to "Enhanced Real Time Clock Support", below. The "Advanced Power
- 	  Management" code will be disabled if you say Y here.
- 
-+	  Note that ACPI is often required to support newer multi-core CPUs
-+	  and HT on Intel P4 processors.
-+
- 	  See also the <file:Documentation/smp.txt>,
- 	  <file:Documentation/i386/IO-APIC.txt>,
- 	  <file:Documentation/nmi_watchdog.txt> and the SMP-HOWTO available at
-
-
-
-
-Luca
--- 
-"Vorrei morire ucciso dagli agi. Vorrei che di me si dicesse: ``Com'è
-morto?'' ``Gli è scoppiato il portafogli''" -- Marcello Marchesi
