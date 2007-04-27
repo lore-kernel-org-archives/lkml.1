@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbXD0V0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbXD0Vab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbXD0V0W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbXD0VZz
+	id S1757330AbXD0Vab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbXD0Vab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:25:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58672 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757334AbXD0VZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:25:37 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: Re: Back to the future.
-Date: Fri, 27 Apr 2007 23:24:42 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177654110.4737.91.camel@nigel.suspend2.net> <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200704272324.43359.rjw@sisk.pl>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 27 Apr 2007 17:30:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38579 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757330AbXD0Vaa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:30:30 -0400
+Date: Fri, 27 Apr 2007 22:34:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: torvalds@osdl.org
+Subject: Re: Driver core: warn when userspace writes to the uevent file in a
+ non-supported way
+Message-ID: <20070427223411.01cfecae@the-village.bc.nu>
+In-Reply-To: <200704272059.l3RKxUYn024215@hera.kernel.org>
+References: <200704272059.l3RKxUYn024215@hera.kernel.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27 April 2007 08:18, Pekka J Enberg wrote:
-> On Fri, 27 Apr 2007, Nigel Cunningham wrote:
-> > COW is a possibility, but I understood (perhaps wrongly) that Linus was
-> > thinking of a single syscall or such like to prepare the snapshot. If
-> > you're going to start doing things like this, won't that mean you'd then
-> > have to update/redo the snapshot or somehow nullify the effect of
-> > anything the programs does so that doing it again after the snapshot is
-> > restored doesn't cause problems?
+>     In the future we will allow the uevent type to be written to the uevent
+>     file to trigger the different types of uevents.  But for now, as we only
+>     support the ADD event, warn if userspace tries to write anything else to
+>     this file.
+>     
+>     Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  drivers/base/core.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> No. The snapshot is just that. A snapshot in time. From kernel point of 
-> view, it doesn't matter one bit what when you did it or if the state has 
-> changed before you resume. It's up to userspace to make sure the user 
-> doesn't do real work while the snapshot is being written to disk and 
-> machine is shut down.
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 72c6ee5..f69305c 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -296,6 +296,9 @@ out:
+>  static ssize_t store_uevent(struct device *dev, struct device_attribute *attr,
+>  			    const char *buf, size_t count)
+>  {
+> +	if (memcmp(buf, "add", 3) != 0)
+> +		dev_err(dev, "uevent: unsupported action-string; this will "
+> +			"be ignored in a future kernel version");
 
-Why do you think that keeping the user space frozen after 'snapshot' is a bad
-idea?  I think that solves many of the problems you're discussing.
-
-Greetings,
-Rafael
-
+Warnings good, lack of rate limiting extremely bad indeed.
