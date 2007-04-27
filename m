@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbXD0KWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755563AbXD0KYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbXD0KWQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 06:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXD0KWQ
+	id S1755563AbXD0KYg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 06:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbXD0KYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 06:22:16 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:29849 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755569AbXD0KWP (ORCPT
+	Fri, 27 Apr 2007 06:24:35 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:43279 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755563AbXD0KYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 06:22:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=w4B6NJDYgdQbiHlqh21O3cSC8TEEdj17nndHbTBRZVTpF8tY9w5IXoxnmgJn4wEobH2JbQJE5kd+Lvss84ZOESStWA2DLZmilZzrdirtsTspWuWAGuEaAjV/NcddV2sfn4cWfUzXiKklNA/k4phWf8Gw1BjNhEF8Jw3aJfBC0Rc=  ;
-X-YMail-OSG: sntqw1oVM1nUKA08Z7xaF9jC5YxRAUVeGsNOuIRy0axkomorLqDTFWRTZ05eGGbQ.rW4gmKuzQ--
-Message-ID: <4631CECF.4030301@yahoo.com.au>
-Date: Fri, 27 Apr 2007 20:22:07 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, David Chinner <dgc@sgi.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <m1hcr3oi0m.fsf@ebiederm.dsl.xmission.com> <46303A98.9000605@yahoo.com.au> <Pine.LNX.4.64.0704252337390.30340@schroedinger.engr.sgi.com> <46304C74.9040304@yahoo.com.au> <Pine.LNX.4.64.0704260003450.30731@schroedinger.engr.sgi.com> <46305177.7060102@yahoo.com.au> <Pine.LNX.4.64.0704260017430.31003@schroedinger.engr.sgi.com> <463057D9.9030804@yahoo.com.au> <20070426145310.GH19966@holomorphy.com> <m1ejm7kndn.fsf@ebiederm.dsl.xmission.com> <20070427003216.GM19966@holomorphy.com>
-In-Reply-To: <20070427003216.GM19966@holomorphy.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 06:24:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=e/lRAXfPPiV7yxoRS5DoguTCECziqBZGJ1sTNlQ8k5ShOxjNrQqDn05gZSTHPp3YTLdLPsHUQI+4lCszz6YOR3hyR+nDRb6bGr2f//qGO6vZCwwu4izNPniQRzfOKvx8K/+Bgv/Oc4SKKSCP3fDC0bTa6kzGkBeaA0oVQp0krI4=
+Date: Fri, 27 Apr 2007 18:28:35 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Michael McConnell <soruk@eridani.co.uk>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: MAINTAINERS file out of date?
+Message-ID: <20070427102835.GA11449@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: "H. Peter Anvin" <hpa@zytor.com>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Michael McConnell <soruk@eridani.co.uk>,
+	linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
+References: <4631255F.9010902@eridani.co.uk> <463131FD.8020301@zytor.com> <20070427010914.GA2570@localhost.localdomain> <46314E0B.1020800@zytor.com> <20070427023252.GA3797@localhost.localdomain> <m1647ijvk1.fsf@ebiederm.dsl.xmission.com> <4631873B.1000107@zytor.com> <m1tzv2ie4i.fsf@ebiederm.dsl.xmission.com> <463189D3.3070805@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463189D3.3070805@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> William Lee Irwin III <wli@holomorphy.com> writes:
-> 
->>>In memory as on disk, contiguity matters a lot for performance.
-> 
-> 
-> On Thu, Apr 26, 2007 at 12:21:24PM -0600, Eric W. Biederman wrote:
-> 
->>Not nearly so much though.  In memory you don't have seeks to avoid.
->>On disks avoiding seeks is everything.
-> 
-> 
-> I readily concede that seeks are most costly. Yet memory contiguity
-> remains rather influential.
-> 
-> Witness the fact that I'm now being called upon a second time to
-> adjust the order in which mm/page_alloc.c returns pages for the
-> sake of implicitly establishing IO contiguity (or otherwise
-> determining why things are coming out backward now).
+On Thu, Apr 26, 2007 at 10:27:47PM -0700, H. Peter Anvin wrote:
+>Eric W. Biederman wrote:
+>> "H. Peter Anvin" <hpa@zytor.com> writes:
+>> 
+>>> A lot of that code (although, of course, not all) could be written in C,
+>>> though.  I'm thinking of taking a stab at rewriting it that way.
+>> 
+>> Is this using the .code16gcc?  Or are you thinking of some other
+>> technique.  Requiring another C compiler to build the kernel would
+>> be a pain to use.
+>
+>.code16gcc was what I was using.  There is a GSoC project that I'm
+>mentoring to get 16-bit support for gcc, that will be possible to
+>eventually migrate to (for code size) if/when it gets implemented and
+>gets pushed out far enough, but that's for the future.
+>
+>	-hpa
 
-Just a random aside question... doesn't Oracle db do direct IO from
-hugepages?
+Thanks! I will take a look at that file.
 
--- 
-SUSE Labs, Novell Inc.
+Maybe we can rewrite them in C, use a 16-bit C compiler to generate AT&T asm code and finally push the asm code in the kernel source tree. But perhaps there is no such ideal compiler. ;)
+
