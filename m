@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757873AbXD0XQG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXD0XQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757873AbXD0XQG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 19:16:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbXD0XQF
+	id S1757298AbXD0XQM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 19:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbXD0XQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 19:16:05 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54887 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757873AbXD0XQC (ORCPT
+	Fri, 27 Apr 2007 19:16:11 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:50938 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757298AbXD0XQJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 19:16:02 -0400
-Date: Sat, 28 Apr 2007 00:19:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Benedikt Spranger <b.spranger@linutronix.de>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Flaws with "UIO: Add the User IO core code"
-Message-ID: <20070428001923.15074234@the-village.bc.nu>
-In-Reply-To: <11777142582534-git-send-email-gregkh@suse.de>
-References: <20070427224957.GA17967@kroah.com>
-	<11777142582534-git-send-email-gregkh@suse.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Apr 2007 19:16:09 -0400
+Message-ID: <4632842F.20101@zytor.com>
+Date: Fri, 27 Apr 2007 16:15:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utimensat implementation
+References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <20070426162530.bc30a1bb.akpm@linux-foundation.org> <46313F99.6080402@zytor.com> <46314A08.9000209@redhat.com> <46314AAD.9010300@zytor.com> <46314C3B.3040908@redhat.com>
+In-Reply-To: <46314C3B.3040908@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static ssize_t uio_read(struct file *filep, char __user *buf,
-> +			size_t count, loff_t *ppos)
-> +{
-> +	struct uio_listener *listener = filep->private_data;
-> +	struct uio_device *idev = listener->dev;
-> +	DECLARE_WAITQUEUE(wait, current);
-> +	ssize_t retval;
-> +	int event_count;
-> +
-> +	if (idev->info->irq == UIO_IRQ_NONE)
-> +		return -EIO;
-> +
-> +	if (count != sizeof(int))
-> +		return -EINVAL;
+Ulrich Drepper wrote:
+> H. Peter Anvin wrote:
+>> Primarily to let a backup program restore the full state of the filesystem.
+> 
+> Is this wanted?  Or needed?  I would think there are good reasons why
+> this hasn't been done so far.  Intrusion detection is one reason I can
+> think of.
 
-AFAIK we don't currently have any platform that runs binaries with
-different sizes of "int" but this is a) an unsigned value anyway, and b)
-should be a fixed type (eg u32)
+Well, dump/restore -- the traditional Unix backup solution -- went "the
+back way" to restore the times in the filesystem.
 
-Otherwise it looks ok at the momenmt, although there is a real nasty
-waiting for anyone who tries to use it. At the point open is possible or
-IRQs can be enabled you are safe in the core merged as idev->info is
-always valid, but any driver module trying to go back via info->uio_dev
-has a NULL pointer for an early IRQ or open event.
+The main use of atime seems to be to figure out when something can be
+automatically deleted.  Anyone else have other usage scenarios?
 
-This means that the fasync support in the current code is basically
-unusable until this is fixed
+	-hpa
 
-Alan
