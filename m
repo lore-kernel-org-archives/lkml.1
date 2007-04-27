@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbXD0Hg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXD0Hny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbXD0Hg7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 03:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755447AbXD0Hg7
+	id S1754098AbXD0Hny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 03:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbXD0Hny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 03:36:59 -0400
-Received: from smtp-105-friday.nerim.net ([62.4.16.105]:2313 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755431AbXD0Hg6 (ORCPT
+	Fri, 27 Apr 2007 03:43:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59373 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754098AbXD0Hnx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 03:36:58 -0400
-Date: Fri, 27 Apr 2007 09:37:33 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: William Heimbigner <icxcnika@mar.tar.cc>, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: linux-2.6.21-rc7-mm2 fails to compile
-Message-ID: <20070427093733.71013d73@hyperion.delvare>
-In-Reply-To: <20070426175420.f2caae1a.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0704262358550.25153@server.thyself>
-	<20070426175420.f2caae1a.akpm@linux-foundation.org>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Fri, 27 Apr 2007 03:43:53 -0400
+Date: Fri, 27 Apr 2007 00:43:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070427004340.1d723852.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704270031590.5501@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+	<20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+	<20070426235542.bad7035a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704270020280.5501@schroedinger.engr.sgi.com>
+	<20070427002947.ebe7e7ac.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704270031590.5501@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 17:54:20 -0700, Andrew Morton wrote:
-> On Fri, 27 Apr 2007 00:00:15 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
-> 
-> > Output leading up to the error:
-> > 
-> >    CC      drivers/macintosh/macio-adb.o
-> >    LD      drivers/macintosh/built-in.o
-> >    CC [M]  drivers/macintosh/apm_emu.o
-> >    CC [M]  drivers/macintosh/therm_windtunnel.o
-> > drivers/macintosh/therm_windtunnel.c: In function 'therm_of_remove':
-> > drivers/macintosh/therm_windtunnel.c:462: error: void value not ignored as it 
-> > ought to be
-> > drivers/macintosh/therm_windtunnel.c:463: warning: control reaches end of 
-> > non-void function
-> > make[2]: *** [drivers/macintosh/therm_windtunnel.o] Error 1
-> > make[1]: *** [drivers/macintosh] Error 2
-> > make: *** [drivers] Error 2
-> > 
-> > This is on an iMac G3 powerpc.
-> 
-> i2c_del_driver() was changed to reutrn void in the i2c tree.
-> 
-> --- a/drivers/macintosh/therm_windtunnel.c~fix-jdelvare-i2c-i2c-del-driver-returns-void-on-powerpc
-> +++ a/drivers/macintosh/therm_windtunnel.c
-> @@ -459,7 +459,8 @@ therm_of_probe( struct of_device *dev, c
->  static int
->  therm_of_remove( struct of_device *dev )
->  {
-> -	return i2c_del_driver( &g4fan_driver );
-> +	i2c_del_driver( &g4fan_driver );
-> +	return 0;
->  }
->  
->  static struct of_device_id therm_of_match[] = {{
-> _
+On Fri, 27 Apr 2007 00:35:19 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-Sorry for the trouble and thanks for reporting. I've merged the fix
-above in the original patch now.
+> On Fri, 27 Apr 2007, Andrew Morton wrote:
+> 
+> > On Fri, 27 Apr 2007 00:22:26 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+> > 
+> > > I will submit pieces to mm depending on the 
+> > > outcome of our discussions.
+> 
+> > There's a ludicrous amount of MM work pending in -mm.  It would probably be
+> > less work at your end to see what ends up landing in 2.6.22-rc1.
+> 
+> I am aware of that and thats why I kept this against upstream. The need 
+> right now is for justification and explanation. I had to go 
+> through a head spinning series of VM layers to get an idea how to do 
+> this in a clean way and then had to make additional passes to do minimal 
+> modifications to get this working so that it is testable.
 
--- 
-Jean Delvare
+OK.
+
+Don't get me wrong - I do think this is neat code and is a good way of
+addressing the problem.  (I'm surprised that the mmap protopatch didn't
+touch rmap.c).
+
+But I don't think it's a slam dunk and I would like you to appreciate the
+constraints which I believe we operate under.  And I don't think we've
+adequately considered alternative solutions to the immediate performance problems.
+
+> Performance tests please...
+
+On various HBAs, please ;)
