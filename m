@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbXD0Oax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbXD0Obl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755923AbXD0Oax (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbXD0Oax
+	id S1755873AbXD0Obl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbXD0Obl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:30:53 -0400
-Received: from 85-218-34-145.dclient.lsne.ch ([85.218.34.145]:42639 "EHLO vdr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755923AbXD0Oaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:30:52 -0400
-X-Greylist: delayed 12002 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Apr 2007 10:30:51 EDT
-Date: Fri, 27 Apr 2007 13:10:47 +0200
-From: Gregoire Favre <Gregoire.Favre@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
-Subject: More than 2Gb problem (dvb related) ?
-Message-ID: <20070427111047.GB10284@gmail.com>
+	Fri, 27 Apr 2007 10:31:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:54662 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755873AbXD0Obj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 10:31:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IAgE3OlYH+ZmReyJ2Dy07w8uYEqn2HEAT0+L+UQevN4j7PSc/5KCVD/lieoPr+A5YNPWCQuy43qU3hbgv1hlpspXbKP5i1Sv5tKXA1ahRWBNxSPPTZGQgjEPOoTATOVeKZy4sgc9aGb4WXOE7KN9raqKAtthL3c78Z+/zhX9xj0=
+Message-ID: <8355959a0704270731k97da30anf1c010f7ae3dc18c@mail.gmail.com>
+Date: Fri, 27 Apr 2007 20:01:37 +0530
+From: "Sunil Naidu" <akula2.shark@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21 - something wrong with dmesg.
+Cc: "Frederik Deweerdt" <deweerdt@free.fr>,
+       "Alistair John Strachan" <s0348365@sms.ed.ac.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <200704261535.46568.s0348365@sms.ed.ac.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Operating-System: Linux 2.6.21
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <8355959a0704260514s39afa1ecj3e7e077e482769a8@mail.gmail.com>
+	 <20070426130339.GB16833@slug>
+	 <200704261535.46568.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 4/26/07, Alistair John Strachan <s0348365@sms.ed.ac.uk> wrote:
+> >
+> > Don't you need to increase CONFIG_LOG_BUF_SHIFT ?
 
-I have a computer (mother Asus Commando) with 4x1Gb Ram.
+Yep, I need to. But, have to enable the Kernel Debug (DEBUG_KERNEL) to
+increase the value from default 14 value to 15/16. I feel that this
+might increase the kernel size?
 
-If I start without the BIOS remap memory, my BIOS and linux just see 2Gb
-of ram, and DVB apps works just great.
+Ummm, is it possible to move CONFIG_LOG_BUF_SHIFT under the General
+Setup area? (say, down the Kernel .config support - IKCONFIG).
 
-When I enable the remapping of the memory, my BIOS and linux just see
-the whole 4Gb but then, I can tune to any transponder without problem,
-but I am unable to get a TS...
+Comments pl?
 
-I have tested it with vdr/kaffeine/mplayer.
+> (Also, does Andrew really need to be CCed twice?)
 
-szap/kaffeine/vdr get the lock just well.
+I agree with you - my apologies to Andrew ;-) (shall bug him @ linux
+foundation only)
 
-I had already asked about this on just linux-dvb ml, but maybe I am the
-first one to try DVB with a system with more than 2 Gb as I didn't
-receive any further info as someone get it working or not with such
-amount of ram.
-
-Anyone got an idea on what could be done to solve this issue ?
-
-PLEASE CC to me all message in lkml as I am not subscribed to this ml :)
--- 
-Grégoire FAVRE  http://gregoire.favre.googlepages.com  http://www.gnupg.org
-               http://picasaweb.google.com/Gregoire.Favre
+> Alistair.
+~Akula2
