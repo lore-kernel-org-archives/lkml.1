@@ -1,134 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbXD0VDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbXD0VDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757245AbXD0VDF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbXD0VDE
+	id S1757293AbXD0VDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757292AbXD0VDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:03:04 -0400
-Received: from gretel.pobox.com ([208.58.1.197]:60627 "EHLO gretel.pobox.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757245AbXD0VDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:03:01 -0400
-X-Greylist: delayed 1889 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Apr 2007 17:03:01 EDT
-Message-ID: <46325A6F.4050705@pobox.com>
-Date: Fri, 27 Apr 2007 16:17:51 -0400
-From: "Alan D. Brunelle" <Alan.Brunelle@pobox.com>
-Reply-To: Alan.Brunelle@pobox.com
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Fri, 27 Apr 2007 17:03:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:30200 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757293AbXD0VD2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 17:03:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=OLGDonVWGJv1YYGhVlVZgxYOqinoprma3qLEWQQFsDBYdNbGcVK8czcRCx8ILgSjY
+	Zjg/+m6Xd51sCpYAt1pZg==
+Message-ID: <cc96a5040704271403p5b0d833v8c28a9dae7f4d110@mail.gmail.com>
+Date: Fri, 27 Apr 2007 14:03:22 -0700
+From: "Tim Hockin" <thockin@google.com>
+To: ak@muc.de, vojtech@suse.cz
+Subject: Re: [PATCH] x86_64: dynamic MCE poll interval
+Cc: linux-kernel@vger.kernel.org, akpm@google.com
+In-Reply-To: <cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH linux-2.6-block.git] Fix blktrace trace ordering for plug
- branch
-Content-Type: multipart/mixed;
- boundary="------------020605070204010906010503"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
+	 <cc96a5040704271128t60120aedvd439630b3b80b03@mail.gmail.com>
+	 <cc96a5040704271351jd25cfe0md72b64d49906d796@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020605070204010906010503
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Sorry, Gmail mangles whitespace unless you do just the right thing.
+Let me work around it.  Proper patch coming.
 
-The attached patch will correct the ordering of trace output between 
-request queue insertions (I) and unplug calls (U). Right now the insert 
-precedes the unplug, which just isn't right:
 
- 65,128  0        1    67.699868965  7882  Q   R 0 + 1 [aiod]
- 65,128  0        2    67.699876462  7882  G   R 0 + 1 [aiod]
- 65,128  0        3    67.699878286  7882  P   W [aiod]
- 65,128  0        4    67.699880491  7882  I   R 0 + 1 [aiod]
- 65,128  0        5    67.699887589  7882  U   R [aiod] 1
- 65,128  0        6    67.699898317    54  D   R 0 + 1 [kblockd/0]
- 65,128  2      153    67.700126590     0  C   R 0 + 1 [0]
-
-With the patch provided the unplug comes first:
-
- 65,128  3        1     0.000000000  7045  Q   R 0 + 1 [aiod]
- 65,128  3        2     0.000002295  7045  G   R 0 + 1 [aiod]
- 65,128  3        3     0.000002617  7045  P   W [aiod]
- 65,128  3        4     0.000003685  7045  U   R [aiod] 1
- 65,128  3        5     0.000004107  7045  I   R 0 + 1 [aiod]
- 65,128  3        6     0.000009491    57  D   R 0 + 1 [kblockd/3]
- 65,128  2        1     0.000232447     0  C   R 0 + 1 [0]
-
-Jens: If you agree, the patch can be applied to your plug branch for 
-git://git.kernel.dk/data/git/linux-2.6-block.git
-
-Thanks,
-Alan
-
---------------020605070204010906010503
-Content-Type: text/x-patch;
- name="fix-unplug-order.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-unplug-order.patch"
-
-From: Alan D. Brunelle <Alan.Brunelle@hp.com>
-
-Fix unplug/insert trace inversion problem.
-
-Signed-off-by: Alan D. Brunelle <Alan.Brunelle@hp.com>
----
- block/ll_rw_blk.c      |    8 ++++----
- include/linux/blkdev.h |    1 +
- 2 files changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 46d29f7..3bec97f 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -2981,6 +2981,7 @@ out_unlock:
- 		if (bio_data_dir(bio) == WRITE && ioc->qrcu_idx == -1)
- 			ioc->qrcu_idx = qrcu_read_lock(&q->qrcu);
- 		list_add_tail(&req->queuelist, &ioc->plugged_list);
-+		ioc->plugged_list_len++;
- 	}
- 
- out:
-@@ -3720,7 +3721,6 @@ void blk_unplug_current(void)
- 	struct io_context *ioc = current->io_context;
- 	struct request *req;
- 	request_queue_t *q;
--	int nr_unplug;
- 
- 	if (!ioc)
- 		return;
-@@ -3735,19 +3735,19 @@ void blk_unplug_current(void)
- 	if (list_empty(&ioc->plugged_list))
- 		goto out;
- 
--	nr_unplug = 0;
-+	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL, ioc->plugged_list_len);
-+
- 	spin_lock_irq(q->queue_lock);
- 	do {
- 		req = list_entry_rq(ioc->plugged_list.next);
- 		list_del_init(&req->queuelist);
- 		add_request(q, req);
--		nr_unplug++;
- 	} while (!list_empty(&ioc->plugged_list));
-+	ioc->plugged_list_len = 0;
- 
- 	spin_unlock_irq(q->queue_lock);
- 
- 	queue_delayed_work(kblockd_workqueue, &q->delay_work, 0);
--	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL, nr_unplug);
- 
- out:
- 	/*
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index f8cdd44..848564c 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -113,6 +113,7 @@ struct io_context {
- 	 */
- 	int plugged;
- 	int qrcu_idx;
-+	int plugged_list_len;
- 	struct list_head plugged_list;
- 	struct request_queue *plugged_queue;
- 
-
---------------020605070204010906010503--
+On 4/27/07, Tim Hockin <thockin@google.com> wrote:
+> From: Tim Hockin <thockin@google.com>
+>
+> Background:
+>  We've found that MCEs (specifically DRAM SBEs) tend to come in bunches,
+>  especially when we are trying really hard to stress the system out.  The
+>  current MCE poller uses a static interval which does not care whether it
+>  has or has not found MCEs recently.
+>
+> Description:
+>  This patch makes the MCE poller adjust the polling interval dynamically.
+>  If we find an MCE, poll 2x faster (down to 10 ms).  When we stop finding
+>  MCEs, poll 2x slower (up to check_interval seconds).  The check_interval
+>  tunable becomes the max polling interval.  The "Machine check events
+>  logged" printk() is rate limited to the check_interval, which should be
+>  identical behavior to the old functionality.
+>
+> Result:
+>  If you start to take a lot of correctable errors (not exceptions), you
+>  log them faster and more accurately (less chance of overflowing the MCA
+>  registers).  If you don't take a lot of errors, you will see no change.
+>
+> Alternatives:
+>  I considered simply reducing the polling interval to 10 ms immediately
+>  and keeping it there as long as we continue to find errors.  This felt a
+>  bit heavy handed, but does perform significantly better for the default
+>  check_interval of 5 minutes (we're using a few seconds when testing for
+>  DRAM errors).  I could be convinced to go with this, if anyone felt it
+>  was not too aggressive.
+>
+> Testing:
+>  I used an error-injecting DIMM to create lots of correctable DRAM errors
+>  and verified that the polling interval accelerates.  The printk() only
+>  happens once per check_interval seconds.
+>
+> Patch:
+>  This patch is against 2.6.21-rc7.
+>
+> Signed-Off-By: Tim Hockin <thockin@google.com>
+>
+> ---
+>
+> This is the third version of this patch.  The only change from the prior
+> version is to use time_after_eq().
+>
+> diff -pruN linux-2.6.20/Documentation/x86_64/machinecheck
+> linux-2.6.20+th/Documentation/x86_64/machinecheck
+> --- linux-2.6.20/Documentation/x86_64/machinecheck      2007-04-24
+> 23:36:03.000000000 -0700
+> +++ linux-2.6.20+th/Documentation/x86_64/machinecheck   2007-04-27
+> 10:11:10.000000000 -0700
+> @@ -36,7 +36,12 @@ between all CPUs.
+>
+>  check_interval
+>         How often to poll for corrected machine check errors, in seconds
+> -       (Note output is hexademical). Default 5 minutes.
+> +       (Note output is hexademical). Default 5 minutes.  When the poller
+> +       finds MCEs it triggers an exponential speedup (poll more often) on
+> +       the polling interval.  When the poller stops finding MCEs, it
+> +       triggers an exponential backoff (poll less often) on the polling
+> +       interval. The check_interval variable is both the initial and
+> +       maximum polling interval.
+>
+>  tolerant
+>         Tolerance level. When a machine check exception occurs for a non
+> diff -pruN linux-2.6.20/arch/x86_64/kernel/mce.c
+> linux-2.6.20+th/arch/x86_64/kernel/mce.c
+> --- linux-2.6.20/arch/x86_64/kernel/mce.c       2007-04-27 10:01:02.000000000 -0700
+> +++ linux-2.6.20+th/arch/x86_64/kernel/mce.c    2007-04-27 10:41:02.000000000 -0700
+> @@ -323,10 +323,13 @@ void mce_log_therm_throt_event(unsigned
+>  #endif /* CONFIG_X86_MCE_INTEL */
+>
+>  /*
+> - * Periodic polling timer for "silent" machine check errors.
+> + * Periodic polling timer for "silent" machine check errors.  If the
+> + * poller finds an MCE, poll 2x faster.  When the poller finds no more
+> + * errors, poll 2x slower (up to check_interval seconds).
+>   */
+>
+>  static int check_interval = 5 * 60; /* 5 minutes */
+> +static int next_interval; /* in jiffies */
+>  static void mcheck_timer(struct work_struct *work);
+>  static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
+>
+> @@ -339,7 +342,6 @@ static void mcheck_check_cpu(void *info)
+>  static void mcheck_timer(struct work_struct *work)
+>  {
+>         on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
+> -       schedule_delayed_work(&mcheck_work, check_interval * HZ);
+>
+>         /*
+>          * It's ok to read stale data here for notify_user and
+> @@ -349,17 +351,30 @@ static void mcheck_timer(struct work_str
+>          * writes.
+>          */
+>         if (notify_user && console_logged) {
+> +               static unsigned long last_print = 0;
+> +               unsigned long now = jiffies;
+> +
+> +               /* if we logged an MCE, reduce the polling interval */
+> +               next_interval = max(next_interval/2, HZ/100);
+>                 notify_user = 0;
+>                 clear_bit(0, &console_logged);
+> -               printk(KERN_INFO "Machine check events logged\n");
+> +               if (time_after_eq(now, last_print + (check_interval*HZ))) {
+> +                       last_print = now;
+> +                       printk(KERN_INFO "Machine check events logged\n");
+> +               }
+> +       } else {
+> +               next_interval = min(next_interval*2, check_interval*HZ);
+>         }
+> +
+> +       schedule_delayed_work(&mcheck_work, next_interval);
+>  }
+>
+>
+>  static __init int periodic_mcheck_init(void)
+>  {
+> -       if (check_interval)
+> -               schedule_delayed_work(&mcheck_work, check_interval*HZ);
+> +       next_interval = check_interval * HZ;
+> +       if (next_interval)
+> +               schedule_delayed_work(&mcheck_work, next_interval);
+>         return 0;
+>  }
+>  __initcall(periodic_mcheck_init);
+> @@ -597,12 +612,13 @@ static int mce_resume(struct sys_device
+>  /* Reinit MCEs after user configuration changes */
+>  static void mce_restart(void)
+>  {
+> -       if (check_interval)
+> +       if (next_interval)
+>                 cancel_delayed_work(&mcheck_work);
+>         /* Timer race is harmless here */
+>         on_each_cpu(mce_init, NULL, 1, 1);
+> -       if (check_interval)
+> -               schedule_delayed_work(&mcheck_work, check_interval*HZ);
+> +       next_interval = check_interval * HZ;
+> +       if (next_interval)
+> +               schedule_delayed_work(&mcheck_work, next_interval);
+>  }
+>
+>  static struct sysdev_class mce_sysclass = {
+>
