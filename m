@@ -1,293 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbXD0S4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbXD0S43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754393AbXD0S4Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbXD0S4Z
+	id S1754377AbXD0S43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757020AbXD0S42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:56:25 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35187 "EHLO mx2.suse.de"
+	Fri, 27 Apr 2007 14:56:28 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35189 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754377AbXD0S4X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:56:23 -0400
+	id S1754377AbXD0S41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:56:27 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/46] driver core: fix namespace issue with devices assigned to classes
-Date: Fri, 27 Apr 2007 11:53:16 -0700
-Message-Id: <11777000433552-git-send-email-gregkh@suse.de>
+Cc: Dmitriy Monakhov <dmonakhov@sw.ru>,
+       Monakhov Dmitriy <dmonakhov@openvz.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/46] driver core: fix device_add error path
+Date: Fri, 27 Apr 2007 11:53:15 -0700
+Message-Id: <1177700040520-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <1177700040520-git-send-email-gregkh@suse.de>
+In-Reply-To: <20070427185152.GA17121@kroah.com>
 References: <20070427185152.GA17121@kroah.com>
- <1177700040520-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Dmitriy Monakhov <dmonakhov@sw.ru>
 
-  - uses a kset in "struct class" to keep track of all directories
-    belonging to this class
-  - merges with the /sys/devices/virtual logic.
-  - removes the namespace-dir if the last member of that class
-    leaves the directory.
+ - At the moment we jump here device was't added to
+   dev->class->devices list yet.
 
-There may be locking or refcounting fixes left, I stopped when it seemed
-to work with network and sound modules. :)
-
-From: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Monakhov Dmitriy <dmonakhov@openvz.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/class.c    |    2 +-
- drivers/base/core.c     |   82 +++++++++++++++++++++++++++++++++++++----------
- include/linux/device.h  |    3 +-
- include/linux/kobject.h |    2 +
- lib/kobject.c           |   12 ++++++-
- lib/kobject_uevent.c    |   16 ++++++---
- 6 files changed, 89 insertions(+), 28 deletions(-)
+ drivers/base/core.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/base/class.c b/drivers/base/class.c
-index d596812..80bbb20 100644
---- a/drivers/base/class.c
-+++ b/drivers/base/class.c
-@@ -145,6 +145,7 @@ int class_register(struct class * cls)
- 	INIT_LIST_HEAD(&cls->children);
- 	INIT_LIST_HEAD(&cls->devices);
- 	INIT_LIST_HEAD(&cls->interfaces);
-+	kset_init(&cls->class_dirs);
- 	init_MUTEX(&cls->sem);
- 	error = kobject_set_name(&cls->subsys.kset.kobj, "%s", cls->name);
- 	if (error)
-@@ -163,7 +164,6 @@ int class_register(struct class * cls)
- void class_unregister(struct class * cls)
- {
- 	pr_debug("device class '%s': unregistering\n", cls->name);
--	kobject_unregister(cls->virtual_dir);
- 	remove_class_attrs(cls);
- 	subsystem_unregister(&cls->subsys);
- }
 diff --git a/drivers/base/core.c b/drivers/base/core.c
-index db3a151..658eae5 100644
+index d7fcf82..db3a151 100644
 --- a/drivers/base/core.c
 +++ b/drivers/base/core.c
-@@ -477,34 +477,58 @@ static struct kobject * get_device_parent(struct device *dev,
- 	return NULL;
- }
- #else
--static struct kobject * virtual_device_parent(struct device *dev)
-+static struct kobject *virtual_device_parent(struct device *dev)
- {
--	if (!dev->class)
--		return ERR_PTR(-ENODEV);
--
--	if (!dev->class->virtual_dir) {
--		static struct kobject *virtual_dir = NULL;
-+	static struct kobject *virtual_dir = NULL;
- 
--		if (!virtual_dir)
--			virtual_dir = kobject_add_dir(&devices_subsys.kset.kobj, "virtual");
--		dev->class->virtual_dir = kobject_add_dir(virtual_dir, dev->class->name);
--	}
-+	if (!virtual_dir)
-+		virtual_dir = kobject_add_dir(&devices_subsys.kset.kobj, "virtual");
- 
--	return dev->class->virtual_dir;
-+	return virtual_dir;
- }
- 
- static struct kobject * get_device_parent(struct device *dev,
- 					  struct device *parent)
- {
--	/* if this is a class device, and has no parent, create one */
--	if ((dev->class) && (parent == NULL)) {
--		return virtual_device_parent(dev);
--	} else if (parent)
-+	if (dev->class) {
-+		struct kobject *kobj = NULL;
-+		struct kobject *parent_kobj;
-+		struct kobject *k;
-+
-+		/*
-+		 * If we have no parent, we live in "virtual".
-+		 * Class-devices with a bus-device as parent, live
-+		 * in a class-directory to prevent namespace collisions.
-+		 */
-+		if (parent == NULL)
-+			parent_kobj = virtual_device_parent(dev);
-+		else if (parent->class)
-+			return &parent->kobj;
-+		else
-+			parent_kobj = &parent->kobj;
-+
-+		/* find our class-directory at the parent and reference it */
-+		spin_lock(&dev->class->class_dirs.list_lock);
-+		list_for_each_entry(k, &dev->class->class_dirs.list, entry)
-+			if (k->parent == parent_kobj) {
-+				kobj = kobject_get(k);
-+				break;
-+			}
-+		spin_unlock(&dev->class->class_dirs.list_lock);
-+		if (kobj)
-+			return kobj;
-+
-+		/* or create a new class-directory at the parent device */
-+		return kobject_kset_add_dir(&dev->class->class_dirs,
-+					    parent_kobj, dev->class->name);
-+	}
-+
-+	if (parent)
- 		return &parent->kobj;
- 	return NULL;
- }
--
+@@ -677,15 +677,6 @@ int device_add(struct device *dev)
  #endif
-+
- static int setup_parent(struct device *dev, struct device *parent)
- {
- 	struct kobject *kobj;
-@@ -541,7 +565,6 @@ int device_add(struct device *dev)
- 	pr_debug("DEV: registering device: ID = '%s'\n", dev->bus_id);
- 
- 	parent = get_device(dev->parent);
--
- 	error = setup_parent(dev, parent);
- 	if (error)
- 		goto Error;
-@@ -787,6 +810,31 @@ void device_del(struct device * dev)
- 		/* remove the device from the class list */
- 		list_del_init(&dev->node);
- 		up(&dev->class->sem);
-+
-+		/* If we live in a parent class-directory, unreference it */
-+		if (dev->kobj.parent->kset == &dev->class->class_dirs) {
-+			struct device *d;
-+			int other = 0;
-+
-+			/*
-+			 * if we are the last child of our class, delete
-+			 * our class-directory at this parent
-+			 */
-+			down(&dev->class->sem);
-+			list_for_each_entry(d, &dev->class->devices, node) {
-+				if (d == dev)
-+					continue;
-+				if (d->kobj.parent == dev->kobj.parent) {
-+					other = 1;
-+					break;
-+				}
-+			}
-+			if (!other)
-+				kobject_del(dev->kobj.parent);
-+
-+			kobject_put(dev->kobj.parent);
-+			up(&dev->class->sem);
-+		}
- 	}
- 	device_remove_file(dev, &dev->uevent_attr);
- 	device_remove_groups(dev);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 5cf30e9..de0e73e 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -181,10 +181,9 @@ struct class {
- 	struct list_head	children;
- 	struct list_head	devices;
- 	struct list_head	interfaces;
-+	struct kset		class_dirs;
- 	struct semaphore	sem;	/* locks both the children and interfaces lists */
- 
--	struct kobject		*virtual_dir;
--
- 	struct class_attribute		* class_attrs;
- 	struct class_device_attribute	* class_dev_attrs;
- 	struct device_attribute		* dev_attrs;
-diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-index b850e03..d37cd7f 100644
---- a/include/linux/kobject.h
-+++ b/include/linux/kobject.h
-@@ -89,6 +89,8 @@ extern void kobject_unregister(struct kobject *);
- extern struct kobject * kobject_get(struct kobject *);
- extern void kobject_put(struct kobject *);
- 
-+extern struct kobject *kobject_kset_add_dir(struct kset *kset,
-+					    struct kobject *, const char *);
- extern struct kobject *kobject_add_dir(struct kobject *, const char *);
- 
- extern char * kobject_get_path(struct kobject *, gfp_t);
-diff --git a/lib/kobject.c b/lib/kobject.c
-index 057921c..f664551 100644
---- a/lib/kobject.c
-+++ b/lib/kobject.c
-@@ -488,13 +488,15 @@ static struct kobj_type dir_ktype = {
- };
- 
- /**
-- *	kobject_add_dir - add sub directory of object.
-+ *	kobject__kset_add_dir - add sub directory of object.
-+ *	@kset:		kset the directory is belongs to.
-  *	@parent:	object in which a directory is created.
-  *	@name:	directory name.
-  *
-  *	Add a plain directory object as child of given object.
-  */
--struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
-+struct kobject *kobject_kset_add_dir(struct kset *kset,
-+				     struct kobject *parent, const char *name)
- {
- 	struct kobject *k;
- 	int ret;
-@@ -506,6 +508,7 @@ struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
- 	if (!k)
- 		return NULL;
- 
-+	k->kset = kset;
- 	k->parent = parent;
- 	k->ktype = &dir_ktype;
- 	kobject_set_name(k, name);
-@@ -520,6 +523,11 @@ struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
- 	return k;
- }
- 
-+struct kobject *kobject_add_dir(struct kobject *parent, const char *name)
-+{
-+	return kobject_kset_add_dir(NULL, parent, name);
-+}
-+
- /**
-  *	kset_init - initialize a kset for use
-  *	@k:	kset 
-diff --git a/lib/kobject_uevent.c b/lib/kobject_uevent.c
-index 82fc179..4122f38 100644
---- a/lib/kobject_uevent.c
-+++ b/lib/kobject_uevent.c
-@@ -115,6 +115,16 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 			return 0;
+ 			sysfs_remove_link(&dev->kobj, "device");
  		}
- 
-+	/* originating subsystem */
-+	if (uevent_ops && uevent_ops->name)
-+		subsystem = uevent_ops->name(kset, kobj);
-+	else
-+		subsystem = kobject_name(&kset->kobj);
-+	if (!subsystem) {
-+		pr_debug("unset subsytem caused the event to drop!\n");
-+		return 0;
-+	}
-+
- 	/* environment index */
- 	envp = kzalloc(NUM_ENVP * sizeof (char *), GFP_KERNEL);
- 	if (!envp)
-@@ -134,12 +144,6 @@ int kobject_uevent_env(struct kobject *kobj, enum kobject_action action,
- 		goto exit;
- 	}
- 
--	/* originating subsystem */
--	if (uevent_ops && uevent_ops->name)
--		subsystem = uevent_ops->name(kset, kobj);
--	else
--		subsystem = kobject_name(&kset->kobj);
 -
- 	/* event environemnt for helper process only */
- 	envp[i++] = "HOME=/";
- 	envp[i++] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+-		down(&dev->class->sem);
+-		/* notify any interfaces that the device is now gone */
+-		list_for_each_entry(class_intf, &dev->class->interfaces, node)
+-			if (class_intf->remove_dev)
+-				class_intf->remove_dev(dev, class_intf);
+-		/* remove the device from the class list */
+-		list_del_init(&dev->node);
+-		up(&dev->class->sem);
+ 	}
+  ueventattrError:
+ 	device_remove_file(dev, &dev->uevent_attr);
 -- 
 1.5.1.2
 
