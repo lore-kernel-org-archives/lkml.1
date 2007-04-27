@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755200AbXD0ANQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbXD0AP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755200AbXD0ANQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbXD0ANQ
+	id S1752319AbXD0AP2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbXD0AP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:13:16 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35887 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755200AbXD0ANO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:13:14 -0400
-Date: Fri, 27 Apr 2007 02:13:24 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
-Message-ID: <20070427001324.GP3468@stusta.de>
-References: <20070426234742.GH3468@stusta.de> <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
+	Thu, 26 Apr 2007 20:15:28 -0400
+Received: from ns2.suse.de ([195.135.220.15]:49704 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752319AbXD0AP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Apr 2007 20:15:27 -0400
+Date: Thu, 26 Apr 2007 17:12:46 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Message-ID: <20070427001246.GB5303@suse.de>
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <462FB8E6.9070501@googlemail.com> <463117DF.2020103@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <463117DF.2020103@googlemail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 26, 2007 at 07:59:57PM -0400, Robert P. J. Day wrote:
-> On Fri, 27 Apr 2007, Adrian Bunk wrote:
+On Thu, Apr 26, 2007 at 11:21:35PM +0200, Michal Piotrowski wrote:
+> Hi Greg,
 > 
-> > This patch removes kernel 2.4 code.
-> >
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> >
-> > ---
-> >
-> > This patch has been sent on:
-> > - 26 Mar 2007
-> >
-> >  drivers/scsi/nsp32.c |  109 +++++--------------------------------------
-> >  1 file changed, 13 insertions(+), 96 deletions(-)
-> >
-> > --- linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c.old	2007-03-25 20:27:34.000000000 +0200
-> > +++ linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c	2007-03-25 20:31:59.000000000 +0200
-> > @@ -49,10 +49,6 @@
-> >  #include <scsi/scsi_host.h>
-> >  #include <scsi/scsi_ioctl.h>
-> >
-> > -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0))
-> > -# include <linux/blk.h>
-> > -#endif
-> > -
+> Michal Piotrowski napisa?(a):
+> > Hi all,
+> > 
+> > akpm@linux-foundation.org napisa?(a):
+> >> The mm snapshot broken-out-2007-04-25-02-49.tar.gz has been uploaded to
+> >>
+> >>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-04-25-02-49.tar.gz
+> >>
+> >> It contains the following patches against 2.6.21-rc7:
+> >>
+> > 
+> > My network doesn't work
+> > 
+> > $ ping 192.168.0.1
+> > connect: Network is unreachable
+> > 
+> > NIC: 
+> > 02:05.0 Ethernet controller: 3Com Corporation 3c940 10/100/1000Base-T [Marvell] (rev 12)
+> > 
+> > quilt patches drivers/net/skge.c
+> > patches/git-netdev-all.patch
+> > patches/git-net.patch
+> > 
+> > Bisection...
+> > 
 > 
-> i'm curious about the rules for removing code like this.  in the case
-> of drivers, isn't it possible that some driver source could be
-> relevant for both the 2.4 and 2.6 kernel source tree, and simply uses
-> that kind of preprocessor check to make sure it's being compiled
-> appropriately?
+> I tracked this problem down to your patches (kernel 2.6.21-rc7-mm2)
+> 
+> gregkh-driver-sysfs-fix-i_ino-handling-in-sysfs.patch
+> gregkh-driver-sysfs-fix-error-handling-in-binattr-write.patch
+> gregkh-driver-sysfs-move-release_sysfs_dirent-to-dirc.patch
+> gregkh-driver-sysfs-flatten-cleanup-paths-in-sysfs_add_link-and-create_dir.patch
+> gregkh-driver-sysfs-consolidate-sysfs_dirent-creation-functions.patch
+> gregkh-driver-sysfs-add-sysfs_dirent-s_parent.patch
+> gregkh-driver-sysfs-add-sysfs_dirent-s_name.patch
+> gregkh-driver-sysfs-make-sysfs_dirent-s_element-a-union.patch
+> gregkh-driver-sysfs-implement-kobj_sysfs_assoc_lock.patch
+> gregkh-driver-sysfs-reimplement-symlink-using-sysfs_dirent-tree.patch
+> gregkh-driver-sysfs-implement-bin_buffer.patch
+> gregkh-driver-sysfs-implement-sysfs_dirent-active-reference-and-immediate-disconnect.patch
+> gregkh-driver-sysfs-kill-attribute-file-orphaning.patch
+> gregkh-driver-sysfs-kill-unnecessary-attribute-owner.patch
+> gregkh-driver-sysfs-make-lockdep-ignore-s_active.patch
+> gregkh-driver-sysfs-make-sysfs_put-ignore-null-sd.patch
+> gregkh-driver-sysfs-rename-object_depth-to-sysfs_path_depth-and-make-it-global.patch
+> gregkh-driver-sysfs-reimplement-sysfs_drop_dentry.patch
+> gregkh-driver-sysfs-kill-sysfs_dirent-s_dentry.patch
+> gregkh-driver-driver-core-make-uevent-environment-available-in-uevent-file.patch
+> 
+> ABI breakage?
 
-That's what it was for.
+I've dropped the gregkh-driver-sysfs-* patches listed above from my tree
+as Tejun is reworking the series to handle all of the different changes
+that have been needed as they have been tested, so you shouldn't have to
+worry about them.
 
-> or are you doing something more sophisticated than simply checking the
-> kernel version being tested?
+But I would be interested in finding out why the above is breaking for
+you.
 
-No.
+thanks,
 
-The point is:
-
-It seems this driver was once maintained for both 2.4 and 2.6 in one 
-file.
-
-As long as this is done, such version checks are OK.
-
-But if a driver is no longer actually maintained for both kernels these 
-checks become useless (and there quickly arised unconditional 2.6-only 
-code in such a driver) and can be removed.
-
-> rday
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
