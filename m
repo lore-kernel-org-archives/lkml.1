@@ -1,178 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbXD0S3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXD0S3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756985AbXD0S3D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 14:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbXD0S3C
+	id S1756989AbXD0S3w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 14:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757000AbXD0S3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 14:29:02 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:38386 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756985AbXD0S27 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 14:28:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=NPiRweFyW3d0M+t/kCBzMZ4bEqaZkIICiW/D1FQ1c6S2wwmOXvqCH81xpKNqYyEwk
-	RZ4GzmO4ZC2YaaVwOy7RQ==
-Message-ID: <cc96a5040704271128t60120aedvd439630b3b80b03@mail.gmail.com>
-Date: Fri, 27 Apr 2007 11:28:43 -0700
-From: "Tim Hockin" <thockin@google.com>
-To: ak@muc.de, vojtech@suse.cz
-Subject: Re: [PATCH] x86_64: dynamic MCE poll interval
-Cc: linux-kernel@vger.kernel.org, akpm@google.com
-In-Reply-To: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
+	Fri, 27 Apr 2007 14:29:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58031 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756987AbXD0S3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 14:29:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [linux-pm] driver power operations (was Re: suspend2 merge)
+Date: Fri, 27 Apr 2007 20:34:11 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Alan Stern <stern@rowland.harvard.edu>, Nick Piggin <npiggin@suse.de>,
+       Ingo Molnar <mingo@elte.hu>, suspend2-devel@lists.suspend2.net,
+       Mike Galbraith <efault@gmx.de>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Con Kolivas <kernel@kolivas.org>, Adrian Bunk <bunk@stusta.de>,
+       Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
+References: <Pine.LNX.4.44L0.0704271008540.3430-100000@iolanthe.rowland.org> <200704271720.08150.rjw@sisk.pl> <alpine.LFD.0.98.0704270842430.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704270842430.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <cc96a5040704261802v2bcb3a59k9d44da8d615a6779@mail.gmail.com>
+Message-Id: <200704272034.12535.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Hockin <thockin@google.com>
+On Friday, 27 April 2007 17:52, Linus Torvalds wrote:
+> 
+> On Fri, 27 Apr 2007, Rafael J. Wysocki wrote:
+> > 
+> > I think we can use 'stages' and pass them as arguments to the functions.
+> 
+> No, no NOOOO!
+> 
+> If you use stages, just describe them in the function name instead.	
+> 
+> > quiesce(PREPARE) -- that may be needed for drivers that allocate much memory
+> > before quiescing devices (if any)
+> > ...
+> > quiesce(PRE_SNAPSHOT)
+> > ...
+> > quiesce(PRE_SNAPSHOT_IRQ_OFF)
+> 
+> There is *no* advantage to this (and _lots_ of disadvantages) compared to 
+> saying
+> 
+> 	dev->snapshot_prepare(dev);
+> 	dev->snapshot_freeze(dev);
+> 	dev->snapshot(dev)
+> 
+> The latter is
+>  - more readable
+>  - MUCH easier for programmers to write readable code for (if-statements 
+>    and case-statements are *by*definition* more complicated to parse both 
+>    for humans and for CPU's - static information is good)
+>  - allows for the different stages to have different arguments, and 
+>    somewhat related to that, to have better static C type checking.
+> 
+> Look here, which one is more readable:
+> 
+> 	int some_mixed_function(int arg)
+> 	{
+> 		do_one_thing();
+> 		if (arg == SLEEP)
+> 			do_another_thing();
+> 		else
+> 			do_yet_another_thing();
+> 	}
+> 
+> or
+> 
+> 	int do_sleep(void)
+> 	{
+> 		do_one_thing();
+> 		do_another_thing();
+> 	}
+> 
+> 	int prepare_to_sleep(void)
+> 	{
+> 		do_one_thing();
+> 		do_yet_another_thing();
+> 	}
+> 
+> and quite frankly, while the second case may take more lines of code, 
+> anybody who says that it's not clearer what it does (because it can 
+> "self-document" with function names etc) is either lying, or just a really 
+> bad programmer. The second case is also likely faster and probably not 
+> larger code-size-wise either, since it does static decisions _statically_ 
+> (since all callers are realistically going to use a constant argument 
+> anyway, and the argument really is static).
+> 
+> Finally, the second case is *much* easier to fix, exactly because it 
+> doesn't mix up the cases. You can change the arguments, you can have 
+> totally different locking, you don't need things like
+> 
+> 	int gfp = (arg == SLEEP) ? GFP_ATOMIC : GFP_KERNEL;
+> 
+> etc, and it's just more logical.
+> 
+> So don't overload a function. That's the *bug* with the current 
+> "dev->suspend()" interface already. Don't re-create it. The current one 
+> overloads two *totally*different* operations onto one function. 
+> 
+> Just don't do it. Not in the suspend part, not *ever*.
 
-Background:
- We've found that MCEs (specifically DRAM SBEs) tend to come in bunches,
- especially when we are trying really hard to stress the system out.  The
- current MCE poller uses a static interval which does not care whether it
- has or has not found MCEs recently.
+OK, I won't.
 
-Description:
- This patch makes the MCE poller adjust the polling interval dynamically.
- If we find an MCE, poll 2x faster (down to 10 ms).  When we stop finding
- MCEs, poll 2x slower (up to check_interval seconds).  The check_interval
- tunable becomes the max polling interval.  The "Machine check events
- logged" printk() is rate limited to the check_interval, which should be
- identical behavior to the old functionality.
-
-Result:
- If you start to take a lot of correctable errors (not exceptions), you
- log them faster and more accurately (less chance of overflowing the MCA
- registers).  If you don't take a lot of errors, you will see no change.
-
-Alternatives:
- I considered simply reducing the polling interval to 10 ms immediately
- and keeping it there as long as we continue to find errors.  This felt a
- bit heavy handed, but does perform significantly better for the default
- check_interval of 5 minutes (we're using a few seconds when testing for
- DRAM errors).  I could be convinced to go with this, if anyone felt it
- was not too aggressive.
-
-Testing:
- I used an error-injecting DIMM to create lots of correctable DRAM errors
- and verified that the polling interval accelerates.  The printk() only
- happens once per check_interval seconds.
-
-Patch:
- This patch is against 2.6.21-rc7.
-
-Signed-Off-By: Tim Hockin <thockin@google.com>
-
----
-
-This is the second version of this patch.  The more I think about the
-alternative described above, the more I like it, but I recognize that
-it is heavy-handed.  If correctable errors matter that much to you,
-you can start with a small check_interval, I suppose.
-
-
-diff -pruN linux-2.6.20/Documentation/x86_64/machinecheck
-linux-2.6.20+th/Documentation/x86_64/machinecheck
---- linux-2.6.20/Documentation/x86_64/machinecheck	2007-04-24
-23:36:03.000000000 -0700
-+++ linux-2.6.20+th/Documentation/x86_64/machinecheck	2007-04-27
-10:11:10.000000000 -0700
-@@ -36,7 +36,12 @@ between all CPUs.
-
- check_interval
- 	How often to poll for corrected machine check errors, in seconds
--	(Note output is hexademical). Default 5 minutes.
-+	(Note output is hexademical). Default 5 minutes.  When the poller
-+	finds MCEs it triggers an exponential speedup (poll more often) on
-+	the polling interval.  When the poller stops finding MCEs, it
-+	triggers an exponential backoff (poll less often) on the polling
-+	interval. The check_interval variable is both the initial and
-+	maximum polling interval.
-
- tolerant
- 	Tolerance level. When a machine check exception occurs for a non
-diff -pruN linux-2.6.20/arch/x86_64/kernel/mce.c
-linux-2.6.20+th/arch/x86_64/kernel/mce.c
---- linux-2.6.20/arch/x86_64/kernel/mce.c	2007-04-27 10:01:02.000000000 -0700
-+++ linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 10:41:02.000000000 -0700
-@@ -323,10 +323,13 @@ void mce_log_therm_throt_event(unsigned
- #endif /* CONFIG_X86_MCE_INTEL */
-
- /*
-- * Periodic polling timer for "silent" machine check errors.
-+ * Periodic polling timer for "silent" machine check errors.  If the
-+ * poller finds an MCE, poll 2x faster.  When the poller finds no more
-+ * errors, poll 2x slower (up to check_interval seconds).
-  */
-
- static int check_interval = 5 * 60; /* 5 minutes */
-+static int next_interval; /* in jiffies */
- static void mcheck_timer(struct work_struct *work);
- static DECLARE_DELAYED_WORK(mcheck_work, mcheck_timer);
-
-@@ -339,7 +342,6 @@ static void mcheck_check_cpu(void *info)
- static void mcheck_timer(struct work_struct *work)
- {
- 	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
--	schedule_delayed_work(&mcheck_work, check_interval * HZ);
-
- 	/*
- 	 * It's ok to read stale data here for notify_user and
-@@ -349,17 +351,30 @@ static void mcheck_timer(struct work_str
- 	 * writes.
- 	 */
- 	if (notify_user && console_logged) {
-+		static unsigned long last_print = 0;
-+		unsigned long now = jiffies;
-+
-+		/* if we logged an MCE, reduce the polling interval */
-+		next_interval = max(next_interval/2, HZ/100);
- 		notify_user = 0;
- 		clear_bit(0, &console_logged);
--		printk(KERN_INFO "Machine check events logged\n");
-+		if ((now - last_print) >= check_interval*HZ) {
-+			last_print = now;
-+			printk(KERN_INFO "Machine check events logged\n");
-+		}
-+	} else {
-+		next_interval = min(next_interval*2, check_interval*HZ);
- 	}
-+
-+	schedule_delayed_work(&mcheck_work, next_interval);
- }
-
-
- static __init int periodic_mcheck_init(void)
- {
--	if (check_interval)
--		schedule_delayed_work(&mcheck_work, check_interval*HZ);
-+	next_interval = check_interval * HZ;
-+	if (next_interval)
-+		schedule_delayed_work(&mcheck_work, next_interval);
- 	return 0;
- }
- __initcall(periodic_mcheck_init);
-@@ -597,12 +612,13 @@ static int mce_resume(struct sys_device
- /* Reinit MCEs after user configuration changes */
- static void mce_restart(void)
- {
--	if (check_interval)
-+	if (next_interval)
- 		cancel_delayed_work(&mcheck_work);
- 	/* Timer race is harmless here */
- 	on_each_cpu(mce_init, NULL, 1, 1);
--	if (check_interval)
--		schedule_delayed_work(&mcheck_work, check_interval*HZ);
-+	next_interval = check_interval * HZ;
-+	if (next_interval)
-+		schedule_delayed_work(&mcheck_work, next_interval);
- }
-
- static struct sysdev_class mce_sysclass = {
+Greetings,
+Rafael
