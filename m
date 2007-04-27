@@ -1,71 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbXD0GTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXD0GUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755373AbXD0GTX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755377AbXD0GTX
+	id S1753968AbXD0GUs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbXD0GUs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:19:23 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:42888 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755373AbXD0GTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:19:21 -0400
-Message-ID: <4631962E.5050701@drzeus.cx>
-Date: Fri, 27 Apr 2007 08:20:30 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-9408-1177654760-0001-2"
-To: Madhusudhan c <cr.madhusudhan@gmail.com>
-CC: linux-kernel@vger.kernel.org, philipl@overt.org
-Subject: Re: MMCv4 support (8-bit support missing)
-References: <ff1613620704162359w62df9e0ao6c43215a767bd706@mail.gmail.com>	 <4625DAFC.4000208@drzeus.cx>	 <ff1613620704180453t69585e21h5c31a4fe908d0aac@mail.gmail.com>	 <46262953.3040801@drzeus.cx>	 <ff1613620704190704n2cf37c9dv43536bb8fc0d4c79@mail.gmail.com>	 <462797EE.2050808@drzeus.cx>	 <ff1613620704200421w1e1aeea5r5acc3a7c0c548b96@mail.gmail.com>	 <462D8FA2.5010609@drzeus.cx> <ff1613620704252034j2474f3f8j73eaa66f4499d258@mail.gmail.com>
-In-Reply-To: <ff1613620704252034j2474f3f8j73eaa66f4499d258@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
+	Fri, 27 Apr 2007 02:20:48 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:38439 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbXD0GUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 02:20:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=PZ2KUNIkwJn52kkPQdOiEwG8C6g943iI2fXxvadsP4rGjxhO+50BHBjenEOEc0DSB
+	iuHKECgT5YJ3GKC/ro1Iw==
+Date: Thu, 26 Apr 2007 23:18:17 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <ak@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       "Martin J. Bligh" <mbligh@mbligh.org>, linux-kernel@vger.kernel.org
+Subject: [patch -mm] oom: fix constraint deadlock
+Message-ID: <Pine.LNX.4.64.0704262243370.3461@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Fixes a deadlock in the OOM killer for allocations that are not
+__GFP_HARDWALL.
 
---=_hera.drzeus.cx-9408-1177654760-0001-2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Before the OOM killer checks for the allocation constraint, it takes
+callback_mutex.
 
-Madhusudhan c wrote:
->=20
-> Philip asked me about the access to the 8-bit controller. We might not
-> be able to provide you direct access to the hardware platform as it
-> requires involvement of business managers and so on. But can I be of
-> help by testing your code on our platform and leting you know the
-> results?
->=20
+constrained_alloc() iterates through each zone in the allocation zonelist
+and calls cpuset_zone_allowed_softwall() to determine whether an
+allocation for gfp_mask is possible.  If a zone's node is not in the
+OOM-triggering task's mems_allowed, it is not exiting, and we did not
+fail on a __GFP_HARDWALL allocation, cpuset_zone_allowed_softwall()
+attempts to take callback_mutex to check the nearest exclusive ancestor
+of current's cpuset.  This results in deadlock.
 
-Sure. Or you'll construct a patch for that yourselves. It should be fairl=
-y
-trivial to extend the current stuff.
+We now take callback_mutex after iterating through the zonelist since we
+don't need it yet.
 
-Will this driver be submitted upstream? I'm not too fond of merging featu=
-res in
-the mmc layer that no in-kernel driver uses.
+Cc: Andi Kleen <ak@suse.de>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <clameter@engr.sgi.com>
+Cc: Martin J. Bligh <mbligh@mbligh.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/oom_kill.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-Rgds
-Pierre
-
-
-
---=_hera.drzeus.cx-9408-1177654760-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGMZYu7b8eESbyJLgRAltwAKCFZWQp+3L+3q2ceT7RPt5rJoKDmQCcDABj
-+eou+tMhCDF2hioG1JJF+IM=
-=IUl2
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-9408-1177654760-0001-2--
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -397,6 +397,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+ 	struct task_struct *p;
+ 	unsigned long points = 0;
+ 	unsigned long freed = 0;
++	int constraint;
+ 
+ 	blocking_notifier_call_chain(&oom_notify_list, 0, &freed);
+ 	if (freed > 0)
+@@ -411,14 +412,15 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+ 		show_mem();
+ 	}
+ 
+-	cpuset_lock();
+-	read_lock(&tasklist_lock);
+-
+ 	/*
+ 	 * Check if there were limitations on the allocation (only relevant for
+ 	 * NUMA) that may require different handling.
+ 	 */
+-	switch (constrained_alloc(zonelist, gfp_mask)) {
++	constraint = constrained_alloc(zonelist, gfp_mask);
++	cpuset_lock();
++	read_lock(&tasklist_lock);
++
++	switch (constraint) {
+ 	case CONSTRAINT_MEMORY_POLICY:
+ 		oom_kill_process(current, points,
+ 				"No available memory (MPOL_BIND)");
