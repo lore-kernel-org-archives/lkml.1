@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXD0Puh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbXD0Pvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022AbXD0Puh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbXD0Pug
+	id S1756027AbXD0Pvu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbXD0Pvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:50:36 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:36865 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756022AbXD0PuJ (ORCPT
+	Fri, 27 Apr 2007 11:51:50 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:58927 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbXD0Pvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:50:09 -0400
-Date: Fri, 27 Apr 2007 16:50:06 +0100
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH] Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu fix
-Message-ID: <20070427155005.GA20839@skynet.ie>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <200704261724.46027.ak@suse.de> <20070426154518.GG16909@skynet.ie> <200704270239.13895.ak@suse.de> <20070427085958.GA3645@skynet.ie>
+	Fri, 27 Apr 2007 11:51:49 -0400
+Date: Fri, 27 Apr 2007 08:55:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Sunil Naidu" <akula2.shark@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Frederik Deweerdt" <deweerdt@free.fr>,
+       "Alistair John Strachan" <s0348365@sms.ed.ac.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: Linux 2.6.21 - something wrong with dmesg.
+Message-Id: <20070427085500.1c4b267c.randy.dunlap@oracle.com>
+In-Reply-To: <8355959a0704270731k97da30anf1c010f7ae3dc18c@mail.gmail.com>
+References: <8355959a0704260514s39afa1ecj3e7e077e482769a8@mail.gmail.com>
+	<20070426130339.GB16833@slug>
+	<200704261535.46568.s0348365@sms.ed.ac.uk>
+	<8355959a0704270731k97da30anf1c010f7ae3dc18c@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070427085958.GA3645@skynet.ie>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (27/04/07 09:59), Mel Gorman didst pronounce:
-> On (27/04/07 02:39), Andi Kleen didst pronounce:
-> > 
-> > 
-> > > That's vdso.lds.S, not vdso.lds. The VDSO_TEXT_OFFSET is still 0x400.
-> > > This is what I should have posted the last time
-> > > 
-> > > --- build/arch/x86_64/vdso/voffset.h.orig	2007-04-26 08:43:31.523739878 -0700
-> > > +++ build/arch/x86_64/vdso/voffset.h	2007-04-26 08:43:38.839579356 -0700
-> > > @@ -1 +1 @@
-> > > -#define VDSO_TEXT_OFFSET 0x500
-> > > +#define VDSO_TEXT_OFFSET 0x400
-> > 
-> > It's definitely 0x400 here. Is your patch reversed and you want 0x500? 
-> > 
+On Fri, 27 Apr 2007 20:01:37 +0530 Sunil Naidu wrote:
+
+> On 4/26/07, Alistair John Strachan <s0348365@sms.ed.ac.uk> wrote:
+> > >
+> > > Don't you need to increase CONFIG_LOG_BUF_SHIFT ?
 > 
-> Sorry, that patch is reversed. It's 0x500 it needs to be to work here.
+> Yep, I need to. But, have to enable the Kernel Debug (DEBUG_KERNEL) to
+> increase the value from default 14 value to 15/16. I feel that this
+> might increase the kernel size?
 > 
+> Ummm, is it possible to move CONFIG_LOG_BUF_SHIFT under the General
+> Setup area? (say, down the Kernel .config support - IKCONFIG).
+> 
+> Comments pl?
 
-What I should have done in the first place..... Sorry for the noise.
+Yes, that would be OK.  Can you submit a patch for that?
 
-=======
+> > (Also, does Andrew really need to be CCed twice?)
+> 
+> I agree with you - my apologies to Andrew ;-) (shall bug him @ linux
+> foundation only)
 
-The machine elm3b6 on test.kernel.org had problems with the patch
-x86_64-mm-vdso.patch. The fix is two-fold. The first patch fixes a compile
-problem by adding -m64.  This patch updates VDSO_TEXT_OFFSET so that the
-linker does not complain.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- voffset.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.21-rc7-mm2-quilt/arch/x86_64/vdso/voffset.h
-===================================================================
---- linux-2.6.21-rc7-mm2-quilt.orig/arch/x86_64/vdso/voffset.h	2007-04-27 10:35:09.000000000 +0100
-+++ linux-2.6.21-rc7-mm2-quilt/arch/x86_64/vdso/voffset.h	2007-04-27 10:35:12.000000000 +0100
-@@ -1 +1 @@
--#define VDSO_TEXT_OFFSET 0x400
-+#define VDSO_TEXT_OFFSET 0x500
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
