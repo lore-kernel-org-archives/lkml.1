@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbXD0GCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbXD0GDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755370AbXD0GCL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 02:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbXD0GCL
+	id S1753881AbXD0GDm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 02:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbXD0GDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 02:02:11 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44875 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbXD0GCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 02:02:09 -0400
-From: Neil Brown <neilb@suse.de>
-To: Ulrich Drepper <drepper@redhat.com>
-Date: Fri, 27 Apr 2007 16:01:55 +1000
-Message-ID: <17969.37331.20590.635169@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 02:03:42 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:38532 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbXD0GDl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 02:03:41 -0400
+Subject: Re: [ANNOUNCE] battery2 git repository
+From: David Woodhouse <dwmw2@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Anton Vorontsov <cbou@mail.ru>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070427000928.GA5303@suse.de>
+References: <20070426232902.GA10423@zarina>  <20070427000928.GA5303@suse.de>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 07:03:34 +0100
+Message-Id: <1177653814.2755.466.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-In-Reply-To: message from Ulrich Drepper on Thursday April 26
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
-	<17969.22692.855242.359680@notabene.brown>
-	<46315C61.30001@redhat.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday April 26, drepper@redhat.com wrote:
-> Neil Brown wrote:
-> > Does it also specify how to find out what granularity is used by the
-> > filesystem?  I had a need for this just recently and couldn't see any
-> > way to extract it.
-> 
-> That's still on the table.  We might end up with an fpathconf() solution.
+On Thu, 2007-04-26 at 17:09 -0700, Greg KH wrote:
+> So, I'm still not quite understanding this, is David giving up on his
+> code now that you have pulled his changes into your tree?  Or is there
+> some reason there are still two competing versions here?
 
-Ok, that makes sense.  Thanks.  Glad it is under consideration.
+Anton hasn't pulled my changes -- it's a separate implementation,
+although very similar. In return for the account on git.infradead.org he
+said he was going to port the two drivers I already had (PMU and OLPC)
+to his framework.
 
-NeilBrown
+I have no particular attachment to my own version. I'm perfectly happy
+just to use Anton's. Mine's still present just for reference, and hasn't
+actually been touched in months -- I haven't had the time.
+
+-- 
+dwmw2
+
