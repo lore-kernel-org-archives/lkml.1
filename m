@@ -1,78 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbXD0AA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755301AbXD0AB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755300AbXD0AA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Apr 2007 20:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751661AbXD0AA6
+	id S1755301AbXD0AB1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Apr 2007 20:01:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXD0AB1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Apr 2007 20:00:58 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:42694 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755295AbXD0AA4 (ORCPT
+	Thu, 26 Apr 2007 20:01:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:11923 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755301AbXD0ABZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Apr 2007 20:00:56 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Thu, 26 Apr 2007 19:59:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Adrian Bunk <bunk@stusta.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, James.Bottomley@SteelEye.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] drivers/scsi/nsp32.c: remove kernel 2.4 code
-In-Reply-To: <20070426234742.GH3468@stusta.de>
-Message-ID: <Pine.LNX.4.64.0704261955450.14047@localhost.localdomain>
-References: <20070426234742.GH3468@stusta.de>
+	Thu, 26 Apr 2007 20:01:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OwEQ6tI2fSWbdy2Zdwuba19n5I/JY/Y0VwV5QM2VT9wi1PkuVXD0+swzw80Dk/XFIO/+aWASb0NfoY169HWisUos47akMUt3ie4POcUsyK0k3RyAYAjZhvWBNTy8dr5BhVG9oXmsxc3I2UsVCXXK/NNHhC1TeVRoJsoHn5VUvvc=
+Message-ID: <f4e013870704261701j3833369dv828fd9aaccb10c23@mail.gmail.com>
+Date: Thu, 26 Apr 2007 17:01:19 -0700
+From: "Mark Hull-Richter" <mhullrich@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Request for clarification on disk i/o limitations
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Adrian Bunk wrote:
+I'm studying the behavior of the page cache vs. direct i/o in the
+kernel (so far up to 2.6.9-42.0.10 for CentOS 4.4, moving to 2.6.18
+for CentOS 5 soon).
 
-> This patch removes kernel 2.4 code.
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
->
-> ---
->
-> This patch has been sent on:
-> - 26 Mar 2007
->
->  drivers/scsi/nsp32.c |  109 +++++--------------------------------------
->  1 file changed, 13 insertions(+), 96 deletions(-)
->
-> --- linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c.old	2007-03-25 20:27:34.000000000 +0200
-> +++ linux-2.6.21-rc4-mm1/drivers/scsi/nsp32.c	2007-03-25 20:31:59.000000000 +0200
-> @@ -49,10 +49,6 @@
->  #include <scsi/scsi_host.h>
->  #include <scsi/scsi_ioctl.h>
->
-> -#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0))
-> -# include <linux/blk.h>
-> -#endif
-> -
+I have found that large I/O requests get broken up differently between
+direct i/o and cached i/o (not surprising, but it's the way they're
+broken up that puzzles me).
 
-i'm curious about the rules for removing code like this.  in the case
-of drivers, isn't it possible that some driver source could be
-relevant for both the 2.4 and 2.6 kernel source tree, and simply uses
-that kind of preprocessor check to make sure it's being compiled
-appropriately?
+While both direct and cached i/o break the i/o requests down to page
+sized chunks, these are subsequently merged back together until a
+limit is reached.  For direct i/o on my SCSI disks, that limit is 88
+segments, or 704 sectors (352k of a 512k block), so when direct i/os
+of 512k chunks are performed via dd, each 512k i/o usually gets broken
+into one 704 sector chunk and one 320 sector chunk.
 
-or are you doing something more sophisticated than simply checking the
-kernel version being tested?
+However, when this same kind of i/o is done through the page cache,
+the pages also get chunked together, and each 704 sector chunk limits
+the size of an i/o sent to the scheduler, but this time, the 704
+sector chunks typically get merged into a 1408 sector chunk because
+the limiting factor here is a maximum sectors per i/o size of 2048.
 
-rday
+My question is: what is the relationship between the hardware segment
+limit (enforced in ll_new_segment and __bio_add_page) of 88 pages per
+segment and the hardware maximum sectors per i/o of 2048 (enforced by
+ll_back_merge, and also ll_front_merge, though I haven't seen that one
+happen yet)?  Where do these limits come from and why don't they
+match?
+
+(The other subject of my study is why EMC NAS devices take at least 2x
+as long as SCSI "DAS" disks, and why paged i/o appears to be no more
+than 1/2 the speed of direct i/o on both types of disk, specifically
+for large i/os (>256k chunks.)
+
+Please reply with CC to me directly as I am still not on the list (but
+I will be soon.)
+
+Thanks.
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Mark Hull-Richter, Linux Kernel Engineer
+DATAllegro (www.datallegro.com)
+85 Enterprise, Second Floor, Aliso Viejo, CA  92656
+949-680-3082 - Office     949-330-7691 - fax
