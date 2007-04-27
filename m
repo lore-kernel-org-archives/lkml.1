@@ -1,85 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757319AbXD0VUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbXD0VVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757319AbXD0VUK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 17:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757320AbXD0VUK
+	id S1757323AbXD0VVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 17:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbXD0VVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 17:20:10 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46102 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757319AbXD0VUI (ORCPT
+	Fri, 27 Apr 2007 17:21:11 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48255 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757323AbXD0VVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 17:20:08 -0400
-Date: Fri, 27 Apr 2007 14:19:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Suparna Bhattacharya <suparna@in.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>, Benjamin LaHaise <bcrl@kvack.org>
-Subject: Re: [patch 12/13] signal/timer/event fds v10 - eventfd wire up
- x86_64 arch ...
-Message-Id: <20070427141941.a7891c62.akpm@linux-foundation.org>
-In-Reply-To: <send-serie.davidel@xmailserver.org.10599.1175553997.12>
-References: <send-serie.davidel@xmailserver.org.10599.1175553997.12>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 17:21:09 -0400
+Date: Fri, 27 Apr 2007 14:18:36 -0700
+From: Greg KH <greg@kroah.com>
+To: "VE (HOME)" <ve@vetienne.net>, jkosina@suse.cz
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, fubar@us.ibm.com
+Subject: USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
+Message-ID: <20070427211836.GC5917@kroah.com>
+References: <200704262058.33087.ve@vetienne.net> <20070426211146.f370cf81.akpm@linux-foundation.org> <010a01c788ae$0a7d0140$5601a8c0@apws2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <010a01c788ae$0a7d0140$5601a8c0@apws2>
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Apr 2007 15:46:31 -0700
-Davide Libenzi <davidel@xmailserver.org> wrote:
+On Fri, Apr 27, 2007 at 11:25:46AM +0200, VE (HOME) wrote:
+>  Andrew Morton wrote:
+> > On Thu, 26 Apr 2007 20:58:32 +0200 Vincent ETIENNE <ve@vetienne.net>
+> > wrote:
+> >
+> >
+> > This was due to locking bustage in the net tree.  It should be fixed
+> > in 2.6.21-rc7-mm2.
+> 
+>  I have tried this version. Same problem ( see 
+>  http://mail1.vetienne.net/linux/dmesg-2.6.21-rc7-mm2.log )
+>  But also a new problem with USB keyboard/mouse
+> 
+>  BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
+> 
+>  Call Trace:
+>  [<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
+>  [<ffffffff8044ab12>] hid_probe+0x4d/0xbad
+>  [<ffffffff8021d7cd>] default_wake_function+0x0/0xe
+>  [<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
+>  [<ffffffff80403411>] usb_match_one_id+0x26/0x82
+>  [<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
+>  [<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
+>  [<ffffffff80391de4>] __driver_attach+0x0/0x93
+>  [<ffffffff80391e3e>] __driver_attach+0x5a/0x93
+>  [<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
+>  [<ffffffff80391433>] bus_add_driver+0x7b/0x19d
+>  [<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
+>  [<ffffffff8064d2d3>] hid_init+0x28/0x4e
+>  [<ffffffff8063460b>] kernel_init+0x162/0x2d2
+>  [<ffffffff8020a338>] child_rip+0xa/0x12
+>  [<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
+>  [<ffffffff806344a9>] kernel_init+0x0/0x2d2
+>  [<ffffffff8020a32e>] child_rip+0x0/0x12
+> 
+>  input: ServerEngines SE USB Device as 
+>  /devices/pci0000:00/0000:00:1d.2/usb4/4-2/4-2:1.0/input/input2
+>  input: USB HID v1.11 Keyboard [ServerEngines SE USB Device] on 
+>  usb-0000:00:1d.2-2
+>  BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
+> 
+>  Call Trace:
+>  [<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
+>  [<ffffffff8044ab12>] hid_probe+0x4d/0xbad
+>  [<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
+>  [<ffffffff80403411>] usb_match_one_id+0x26/0x82
+>  [<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
+>  [<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
+>  [<ffffffff80391de4>] __driver_attach+0x0/0x93
+>  [<ffffffff80391e3e>] __driver_attach+0x5a/0x93
+>  [<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
+>  [<ffffffff80391433>] bus_add_driver+0x7b/0x19d
+>  [<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
+>  [<ffffffff8064d2d3>] hid_init+0x28/0x4e
+>  [<ffffffff8063460b>] kernel_init+0x162/0x2d2
+>  [<ffffffff8020a338>] child_rip+0xa/0x12
+>  [<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
+>  [<ffffffff806344a9>] kernel_init+0x0/0x2d2
+>  [<ffffffff8020a32e>] child_rip+0x0/0x12
 
-> This patch wire the eventfd system call to the x86_64 architecture.
-> 
-> 
-> 
-> Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> 
-> 
-> - Davide
-> 
-> 
-> 
-> Index: linux-2.6.21-rc5.fds/arch/x86_64/ia32/ia32entry.S
-> ===================================================================
-> --- linux-2.6.21-rc5.fds.orig/arch/x86_64/ia32/ia32entry.S	2007-04-02 15:06:40.000000000 -0700
-> +++ linux-2.6.21-rc5.fds/arch/x86_64/ia32/ia32entry.S	2007-04-02 15:06:46.000000000 -0700
-> @@ -721,4 +721,5 @@
->  	.quad sys_epoll_pwait
->  	.quad sys_signalfd		/* 320 */
->  	.quad sys_timerfd
-> +	.quad sys_eventfd
->  ia32_syscall_end:		
-> Index: linux-2.6.21-rc5.fds/include/asm-x86_64/unistd.h
-> ===================================================================
-> --- linux-2.6.21-rc5.fds.orig/include/asm-x86_64/unistd.h	2007-04-02 15:06:40.000000000 -0700
-> +++ linux-2.6.21-rc5.fds/include/asm-x86_64/unistd.h	2007-04-02 15:06:46.000000000 -0700
-> @@ -623,8 +623,10 @@
->  __SYSCALL(__NR_signalfd, sys_signalfd)
->  #define __NR_timerfd		281
->  __SYSCALL(__NR_timerfd, sys_timerfd)
-> +#define __NR_eventfd		282
-> +__SYSCALL(__NR_eventfd, sys_eventfd)
->  
-> -#define __NR_syscall_max __NR_timerfd
-> +#define __NR_syscall_max __NR_eventfd
->  
->  #ifndef __NO_STUBS
->  #define __ARCH_WANT_OLD_READDIR
+Jiri, any thoughts about this?  This looks like it comes from your tree
+as 2.6.21 doesn't have the drivers/hid/usbhid/ directory...
 
-General point: the first hunk here which wires up the 32-bit entry point
-should arguably be part of the "wire up i386" patch, not the "wire up
-x86_64" patch.
+thanks,
 
-This is not a clear-cut thing.  The problem with the approach you've taken
-here is that if we wire up i386 and not x86_64's i386 table (for example)
-there are ways in which intervening patches can accidentally get i386 and
-x86_64 emulation's syscall tables out of sync.  And, of course, 32-bit
-applications will run on i386 but won't run on x86_64 or vice-versa.
-
-So I think the best way to avoid all such problems is to always wire up
-i386 and x86_64 (both 32- and 64-bit) in the same patch.
-
+greg k-h
