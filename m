@@ -1,114 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbXD0JMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbXD0JXK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbXD0JMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 05:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbXD0JMa
+	id S1755513AbXD0JXK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 05:23:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbXD0JXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 05:12:30 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42119 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755507AbXD0JM2 (ORCPT
+	Fri, 27 Apr 2007 05:23:10 -0400
+Received: from mail1.vetienne.net ([87.98.219.23]:3195 "EHLO
+	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755513AbXD0JXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 05:12:28 -0400
-Date: Fri, 27 Apr 2007 02:11:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "l l" <happyarch@gmail.com>
-Cc: "Adrian Bunk" <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: linux-2.6.21 and __udivid3
-Message-Id: <20070427021135.0e8afbc1.akpm@linux-foundation.org>
-In-Reply-To: <768a59a70704261756x5b588ef0y3a3ac9460e437b89@mail.gmail.com>
-References: <768a59a70704260824s584bb20fs8d4554dcca2d4c27@mail.gmail.com>
-	<20070426175526.GR3468@stusta.de>
-	<768a59a70704261730hbe4a987oa54f65e85d0ceda4@mail.gmail.com>
-	<768a59a70704261756x5b588ef0y3a3ac9460e437b89@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Apr 2007 05:23:09 -0400
+Message-ID: <010a01c788ae$0a7d0140$5601a8c0@apws2>
+From: "VE \(HOME\)" <ve@vetienne.net>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, <fubar@us.ibm.com>,
+       <bonding-devel@lists.sourceforge.net>
+References: <200704262058.33087.ve@vetienne.net> <20070426211146.f370cf81.akpm@linux-foundation.org>
+Subject: Re: [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
+Date: Fri, 27 Apr 2007 11:25:46 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 09:56:03 +0900 "l l" <happyarch@gmail.com> wrote:
+Andrew Morton wrote:
+> On Thu, 26 Apr 2007 20:58:32 +0200 Vincent ETIENNE <ve@vetienne.net>
+> wrote:
+>
+>
+> This was due to locking bustage in the net tree.  It should be fixed
+> in 2.6.21-rc7-mm2.
 
-> Here is another compilation failure.
-> 
-> make
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CHK     include/linux/compile.h
->   CC [M]  drivers/w1/w1.o
-> drivers/w1/w1.c: In function 'w1_slave_read_id':
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> drivers/w1/w1.c:118: error: cannot take address of bit-field 'family'
-> make[2]: *** [drivers/w1/w1.o] Error 1
-> make[1]: *** [drivers/w1] Error 2
-> make: *** [drivers] Error 2
+I have tried this version. Same problem ( see 
+http://mail1.vetienne.net/linux/dmesg-2.6.21-rc7-mm2.log )
+But also a new problem with USB keyboard/mouse
 
-hm,
+BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
 
-		memcpy(buf, (u8 *)&sl->reg_num, count);
+Call Trace:
+[<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
+[<ffffffff8044ab12>] hid_probe+0x4d/0xbad
+[<ffffffff8021d7cd>] default_wake_function+0x0/0xe
+[<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
+[<ffffffff80403411>] usb_match_one_id+0x26/0x82
+[<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
+[<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
+[<ffffffff80391de4>] __driver_attach+0x0/0x93
+[<ffffffff80391e3e>] __driver_attach+0x5a/0x93
+[<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
+[<ffffffff80391433>] bus_add_driver+0x7b/0x19d
+[<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
+[<ffffffff8064d2d3>] hid_init+0x28/0x4e
+[<ffffffff8063460b>] kernel_init+0x162/0x2d2
+[<ffffffff8020a338>] child_rip+0xa/0x12
+[<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
+[<ffffffff806344a9>] kernel_init+0x0/0x2d2
+[<ffffffff8020a32e>] child_rip+0x0/0x12
 
-and
+input: ServerEngines SE USB Device as 
+/devices/pci0000:00/0000:00:1d.2/usb4/4-2/4-2:1.0/input/input2
+input: USB HID v1.11 Keyboard [ServerEngines SE USB Device] on 
+usb-0000:00:1d.2-2
+BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
 
-struct w1_reg_num
-{
-#if defined(__LITTLE_ENDIAN_BITFIELD)
-	__u64	family:8,
-		id:48,
-		crc:8;
-#elif defined(__BIG_ENDIAN_BITFIELD)
-	__u64	crc:8,
-		id:48,
-		family:8;
-#else
-#error "Please fix <asm/byteorder.h>"
-#endif
-};
+Call Trace:
+[<ffffffff8044bbcb>] usbhid_lookup_quirk+0x63/0xea
+[<ffffffff8044ab12>] hid_probe+0x4d/0xbad
+[<ffffffff8029d0b6>] sysfs_new_dirent+0x79/0xaa
+[<ffffffff80403411>] usb_match_one_id+0x26/0x82
+[<ffffffff80403fe6>] usb_probe_interface+0x7d/0xa5
+[<ffffffff80391cb9>] driver_probe_device+0xf6/0x17f
+[<ffffffff80391de4>] __driver_attach+0x0/0x93
+[<ffffffff80391e3e>] __driver_attach+0x5a/0x93
+[<ffffffff8039110c>] bus_for_each_dev+0x43/0x6e
+[<ffffffff80391433>] bus_add_driver+0x7b/0x19d
+[<ffffffff80403b06>] usb_register_driver+0x7e/0xe1
+[<ffffffff8064d2d3>] hid_init+0x28/0x4e
+[<ffffffff8063460b>] kernel_init+0x162/0x2d2
+[<ffffffff8020a338>] child_rip+0xa/0x12
+[<ffffffff80343d5c>] acpi_ds_init_one_object+0x0/0x7c
+[<ffffffff806344a9>] kernel_init+0x0/0x2d2
+[<ffffffff8020a32e>] child_rip+0x0/0x12
 
-the compiler is being a bit pedantic there, IMO.  What version of gcc are
-you using?
 
-Does this help?
+And also a strange problem : dhcp server and dns server was started before 
+bond0 was completly up ( eth0 and eth1 was declared down at this time and 
+up a few times later : was not the case with later 2.6.21-rc6-mm1 )
 
-
---- a/drivers/w1/w1.h~w1-build-fix
-+++ a/drivers/w1/w1.h
-@@ -22,19 +22,23 @@
- #ifndef __W1_H
- #define __W1_H
- 
--struct w1_reg_num
--{
-+struct w1_reg_num {
-+	union {
-+		__u64 unused;	/* So gcc will permit pointers to this struct */
-+		struct {
- #if defined(__LITTLE_ENDIAN_BITFIELD)
--	__u64	family:8,
--		id:48,
--		crc:8;
-+			__u64	family:8,
-+				id:48,
-+				crc:8;
- #elif defined(__BIG_ENDIAN_BITFIELD)
--	__u64	crc:8,
--		id:48,
--		family:8;
-+			__u64	crc:8,
-+				id:48,
-+				family:8;
- #else
- #error "Please fix <asm/byteorder.h>"
- #endif
-+		};
-+	};
- };
- 
- #ifdef __KERNEL__
-_
+Vincent 
 
