@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbXD0U5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbXD0U7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbXD0U5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 16:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757241AbXD0U5h
+	id S1757283AbXD0U7z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 16:59:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757291AbXD0U7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 16:57:37 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43610 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757247AbXD0U5f (ORCPT
+	Fri, 27 Apr 2007 16:59:55 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43752 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757289AbXD0U7x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 16:57:35 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4632638D.2050004@s5r6.in-berlin.de>
-Date: Fri, 27 Apr 2007 22:56:45 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: linux1394-devel@lists.sourceforge.net
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Ben Collins <bcollins@debian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 13/30] Use menuconfig objects - IEEE1394
-References: <Pine.LNX.4.61.0704102046520.32056@yvahk01.tjqt.qr> <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0704102316160.32056@yvahk01.tjqt.qr>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Apr 2007 16:59:53 -0400
+Date: Fri, 27 Apr 2007 13:59:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [PATCH] v3: utimensat implementation
+Message-Id: <20070427135905.d99d6780.akpm@linux-foundation.org>
+In-Reply-To: <463207BC.1060907@redhat.com>
+References: <200704270308.l3R38axl031062@devserv.devel.redhat.com>
+	<20070427005010.d58ac519.akpm@linux-foundation.org>
+	<463207BC.1060907@redhat.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote on 2007-04-10:
-> Use menuconfigs instead of menus, so the whole menu can be disabled at        
-> once instead of going through all options.
-> 
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-> 
-> Index: linux-2.6.21-rc5/drivers/ieee1394/Kconfig
-> ===================================================================
-> --- linux-2.6.21-rc5.orig/drivers/ieee1394/Kconfig
-> +++ linux-2.6.21-rc5/drivers/ieee1394/Kconfig
-> @@ -1,8 +1,6 @@
->  # -*- shell-script -*-
->  
-> -menu "IEEE 1394 (FireWire) support"
-> -
-> -config IEEE1394
-> +menuconfig IEEE1394
->  	tristate "IEEE 1394 (FireWire) support"
->  	depends on PCI || BROKEN
->  	select NET
-[...]
+On Fri, 27 Apr 2007 07:25:00 -0700
+Ulrich Drepper <drepper@redhat.com> wrote:
 
-Unless there are objections, I will merge it into my queue of IEEE 1394
-updates for Linus.
+> Andrew Morton wrote:
+> > there's a little bit of intersection with lutimesat() there.
+> 
+> I totally forgot about this.  Please do not merge the current lutimesat
+> patch.  We have to change it to lutimensat() the same way this new
+> utimensat() improves over futimesat().
 
-(Personally, I still don't like it a lot. But perhaps only because I
-have to untangle some -mm differences for this.)
--- 
-Stefan Richter
--=====-=-=== -=-- ==-==
-http://arcgraph.de/sr/
+OK.
+
+> Do yo have the broken out patch somewhere?  I'll make the change and
+> merge it with the utimensat patch.
+
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/
+
+contains
+
+lutimesat-simplify-utime2.patch
+lutimesat-extend-do_utimes-with-flags.patch
+lutimesat-actual-syscall-and-wire-up-on-i386.patch
+lutimesat-compat-syscall-and-wire-up-on-x86_64.patch
+
+in that patching order.
+
+I'll drop those four and will grab utimensat v3.
