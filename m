@@ -1,111 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbXD0OJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbXD0OKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755834AbXD0OJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 10:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbXD0OJl
+	id S1755880AbXD0OKQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 10:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbXD0OHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 10:09:41 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:59710 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755934AbXD0OJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 10:09:23 -0400
-Date: Fri, 27 Apr 2007 16:09:15 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] AVR32 update
-Message-ID: <20070427160915.1ad41159@dhcp-252-105.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 10:07:17 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:65480 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755883AbXD0OFA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 10:05:00 -0400
+Message-Id: <20070427140518.900497763@de.ibm.com>
+References: <20070427140503.087958775@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 27 Apr 2007 16:05:33 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>,
+       Stefan Haberland <stefan.haberland@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 30/38] sclp: fix coding style.
+Content-Disposition: inline; filename=133-sclp-coding.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+From: Stefan Haberland <stefan.haberland@de.ibm.com>
 
-Please pull the 'for-linus' branch of
+Use only capital letters for defines.
 
-  git://www.atmel.no/~hskinnemoen/linux/kernel/avr32.git for-linus
+Cc: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+Signed-off-by: Stefan Haberland <stefan.haberland@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-to receive the following updates. This includes support for the
-ATNGW100 Network Gateway reference design and a nice assortment of
-cleanups, fixes and optimizations.
+ drivers/s390/char/sclp.c         |    2 -
+ drivers/s390/char/sclp.h         |   72 +++++++++++++++++++--------------------
+ drivers/s390/char/sclp_cpi.c     |    4 +-
+ drivers/s390/char/sclp_quiesce.c |    2 -
+ drivers/s390/char/sclp_rw.c      |   16 ++++----
+ drivers/s390/char/sclp_sdias.c   |    6 +--
+ drivers/s390/char/sclp_tty.c     |    6 +--
+ drivers/s390/char/sclp_vt220.c   |    8 ++--
+ 8 files changed, 58 insertions(+), 58 deletions(-)
 
-Haavard Skinnemoen (16):
-      [AVR32] Add basic HMATRIX support
-      [AVR32] Add mach-specific Kconfig
-      [AVR32] Don't enable clocks with no users
-      [AVR32] Clean up asm/sysreg.h
-      [AVR32] Clean up cpu identification and add features bitmap
-      [AVR32] Clean up exception handling code
-      [AVR32] Fix NMI handler
-      [AVR32] Make I/O access macros work with external devices
-      [AVR32] Move setup_bootmem() from mm/init.c to kernel/setup.c
-      [AVR32] Simplify early handling of memory regions
-      [AVR32] Reserve framebuffer memory in early_parse_fbmem()
-      [AVR32] Get rid of board_setup_fbmem()
-      [AVR32] Use memcpy/memset in memcpy_{from,to}_io and memset_io
-      [AVR32] Board code for ATNGW100
-      [AVR32] Optimize the TLB miss handler
-      [AVR32] Fix compile error with gcc 4.1
+Index: quilt-2.6/drivers/s390/char/sclp.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp.c	2007-04-27 16:04:59.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp.c	2007-04-27 16:05:00.000000000 +0200
+@@ -511,7 +511,7 @@
+ }
+ 
+ static struct sclp_register sclp_state_change_event = {
+-	.receive_mask = EvTyp_StateChange_Mask,
++	.receive_mask = EVTYP_STATECHANGE_MASK,
+ 	.receiver_fn = sclp_state_change_cb
+ };
+ 
+Index: quilt-2.6/drivers/s390/char/sclp_cpi.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_cpi.c	2007-04-27 16:01:49.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_cpi.c	2007-04-27 16:05:00.000000000 +0200
+@@ -46,7 +46,7 @@
+ /* Event type structure for write message and write priority message */
+ static struct sclp_register sclp_cpi_event =
+ {
+-	.send_mask = EvTyp_CtlProgIdent_Mask
++	.send_mask = EVTYP_CTLPROGIDENT_MASK
+ };
+ 
+ MODULE_LICENSE("GPL");
+@@ -201,7 +201,7 @@
+ 		       "console.\n");
+ 		return -EINVAL;
+ 	}
+-	if (!(sclp_cpi_event.sclp_send_mask & EvTyp_CtlProgIdent_Mask)) {
++	if (!(sclp_cpi_event.sclp_send_mask & EVTYP_CTLPROGIDENT_MASK)) {
+ 		printk(KERN_WARNING "cpi: no control program identification "
+ 		       "support\n");
+ 		sclp_unregister(&sclp_cpi_event);
+Index: quilt-2.6/drivers/s390/char/sclp.h
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp.h	2007-04-27 16:04:59.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp.h	2007-04-27 16:05:00.000000000 +0200
+@@ -19,35 +19,35 @@
+ #define MAX_KMEM_PAGES (sizeof(unsigned long) << 3)
+ #define MAX_CONSOLE_PAGES	4
+ 
+-#define EvTyp_OpCmd		0x01
+-#define EvTyp_Msg		0x02
+-#define EvTyp_StateChange	0x08
+-#define EvTyp_PMsgCmd		0x09
+-#define EvTyp_CntlProgOpCmd	0x20
+-#define EvTyp_CntlProgIdent	0x0B
+-#define EvTyp_SigQuiesce	0x1D
+-#define EvTyp_VT220Msg		0x1A
+-#define EvTyp_SDIAS		0x1C
+-
+-#define EvTyp_OpCmd_Mask	0x80000000
+-#define EvTyp_Msg_Mask		0x40000000
+-#define EvTyp_StateChange_Mask	0x01000000
+-#define EvTyp_PMsgCmd_Mask	0x00800000
+-#define EvTyp_CtlProgOpCmd_Mask	0x00000001
+-#define EvTyp_CtlProgIdent_Mask	0x00200000
+-#define EvTyp_SigQuiesce_Mask	0x00000008
+-#define EvTyp_VT220Msg_Mask	0x00000040
+-#define EvTyp_SDIAS_Mask	0x00000010
+-
+-#define GnrlMsgFlgs_DOM		0x8000
+-#define GnrlMsgFlgs_SndAlrm	0x4000
+-#define GnrlMsgFlgs_HoldMsg	0x2000
+-
+-#define LnTpFlgs_CntlText	0x8000
+-#define LnTpFlgs_LabelText	0x4000
+-#define LnTpFlgs_DataText	0x2000
+-#define LnTpFlgs_EndText	0x1000
+-#define LnTpFlgs_PromptText	0x0800
++#define EVTYP_OPCMD		0x01
++#define EVTYP_MSG		0x02
++#define EVTYP_STATECHANGE	0x08
++#define EVTYP_PMSGCMD		0x09
++#define EVTYP_CNTLPROGOPCMD	0x20
++#define EVTYP_CNTLPROGIDENT	0x0B
++#define EVTYP_SIGQUIESCE	0x1D
++#define EVTYP_VT220MSG		0x1A
++#define EVTYP_SDIAS		0x1C
++
++#define EVTYP_OPCMD_MASK	0x80000000
++#define EVTYP_MSG_MASK		0x40000000
++#define EVTYP_STATECHANGE_MASK	0x01000000
++#define EVTYP_PMSGCMD_MASK	0x00800000
++#define EVTYP_CTLPROGOPCMD_MASK	0x00000001
++#define EVTYP_CTLPROGIDENT_MASK	0x00200000
++#define EVTYP_SIGQUIESCE_MASK	0x00000008
++#define EVTYP_VT220MSG_MASK	0x00000040
++#define EVTYP_SDIAS_MASK	0x00000010
++
++#define GNRLMSGFLGS_DOM		0x8000
++#define GNRLMSGFLGS_SNDALRM	0x4000
++#define GNRLMSGFLGS_HOLDMSG	0x2000
++
++#define LNTPFLGS_CNTLTEXT	0x8000
++#define LNTPFLGS_LABELTEXT	0x4000
++#define LNTPFLGS_DATATEXT	0x2000
++#define LNTPFLGS_ENDTEXT	0x1000
++#define LNTPFLGS_PROMPTTEXT	0x0800
+ 
+ typedef unsigned int sclp_cmdw_t;
+ 
+@@ -58,15 +58,15 @@
+ #define SCLP_CMDW_READ_SCP_INFO_FORCED	0x00120001
+ 
+ #define GDS_ID_MDSMU		0x1310
+-#define GDS_ID_MDSRouteInfo	0x1311
+-#define GDS_ID_AgUnWrkCorr	0x1549
+-#define GDS_ID_SNACondReport	0x1532
++#define GDS_ID_MDSROUTEINFO	0x1311
++#define GDS_ID_AGUNWRKCORR	0x1549
++#define GDS_ID_SNACONDREPORT	0x1532
+ #define GDS_ID_CPMSU		0x1212
+-#define GDS_ID_RoutTargInstr	0x154D
+-#define GDS_ID_OpReq		0x8070
+-#define GDS_ID_TextCmd		0x1320
++#define GDS_ID_ROUTTARGINSTR	0x154D
++#define GDS_ID_OPREQ		0x8070
++#define GDS_ID_TEXTCMD		0x1320
+ 
+-#define GDS_KEY_SelfDefTextMsg	0x31
++#define GDS_KEY_SELFDEFTEXTMSG	0x31
+ 
+ typedef u32 sccb_mask_t;	/* ATTENTION: assumes 32bit mask !!! */
+ 
+Index: quilt-2.6/drivers/s390/char/sclp_quiesce.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_quiesce.c	2007-04-27 16:01:49.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_quiesce.c	2007-04-27 16:05:00.000000000 +0200
+@@ -43,7 +43,7 @@
+ }
+ 
+ static struct sclp_register sclp_quiesce_event = {
+-	.receive_mask = EvTyp_SigQuiesce_Mask,
++	.receive_mask = EVTYP_SIGQUIESCE_MASK,
+ 	.receiver_fn = sclp_quiesce_handler
+ };
+ 
+Index: quilt-2.6/drivers/s390/char/sclp_rw.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_rw.c	2007-04-27 16:01:49.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_rw.c	2007-04-27 16:05:00.000000000 +0200
+@@ -30,7 +30,7 @@
+ 
+ /* Event type structure for write message and write priority message */
+ static struct sclp_register sclp_rw_event = {
+-	.send_mask = EvTyp_Msg_Mask | EvTyp_PMsgCmd_Mask
++	.send_mask = EVTYP_MSG_MASK | EVTYP_PMSGCMD_MASK
+ };
+ 
+ /*
+@@ -64,7 +64,7 @@
+ 	memset(sccb, 0, sizeof(struct write_sccb));
+ 	sccb->header.length = sizeof(struct write_sccb);
+ 	sccb->msg_buf.header.length = sizeof(struct msg_buf);
+-	sccb->msg_buf.header.type = EvTyp_Msg;
++	sccb->msg_buf.header.type = EVTYP_MSG;
+ 	sccb->msg_buf.mdb.header.length = sizeof(struct mdb);
+ 	sccb->msg_buf.mdb.header.type = 1;
+ 	sccb->msg_buf.mdb.header.tag = 0xD4C4C240;	/* ebcdic "MDB " */
+@@ -114,7 +114,7 @@
+ 	memset(mto, 0, sizeof(struct mto));
+ 	mto->length = sizeof(struct mto);
+ 	mto->type = 4;	/* message text object */
+-	mto->line_type_flags = LnTpFlgs_EndText; /* end text */
++	mto->line_type_flags = LNTPFLGS_ENDTEXT; /* end text */
+ 
+ 	/* set pointer to first byte after struct mto. */
+ 	buffer->current_line = (char *) (mto + 1);
+@@ -215,7 +215,7 @@
+ 		case '\a':	/* bell, one for several times	*/
+ 			/* set SCLP sound alarm bit in General Object */
+ 			buffer->sccb->msg_buf.mdb.go.general_msg_flags |=
+-				GnrlMsgFlgs_SndAlrm;
++				GNRLMSGFLGS_SNDALRM;
+ 			break;
+ 		case '\t':	/* horizontal tabulator	 */
+ 			/* check if new mto needs to be created */
+@@ -452,12 +452,12 @@
+ 		return -EIO;
+ 
+ 	sccb = buffer->sccb;
+-	if (sclp_rw_event.sclp_send_mask & EvTyp_Msg_Mask)
++	if (sclp_rw_event.sclp_send_mask & EVTYP_MSG_MASK)
+ 		/* Use normal write message */
+-		sccb->msg_buf.header.type = EvTyp_Msg;
+-	else if (sclp_rw_event.sclp_send_mask & EvTyp_PMsgCmd_Mask)
++		sccb->msg_buf.header.type = EVTYP_MSG;
++	else if (sclp_rw_event.sclp_send_mask & EVTYP_PMSGCMD_MASK)
+ 		/* Use write priority message */
+-		sccb->msg_buf.header.type = EvTyp_PMsgCmd;
++		sccb->msg_buf.header.type = EVTYP_PMSGCMD;
+ 	else
+ 		return -ENOSYS;
+ 	buffer->request.command = SCLP_CMDW_WRITE_EVENT_DATA;
+Index: quilt-2.6/drivers/s390/char/sclp_sdias.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_sdias.c	2007-04-27 16:04:59.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_sdias.c	2007-04-27 16:05:00.000000000 +0200
+@@ -30,7 +30,7 @@
+ static struct debug_info *sdias_dbf;
+ 
+ static struct sclp_register sclp_sdias_register = {
+-	.send_mask = EvTyp_SDIAS_Mask,
++	.send_mask = EVTYP_SDIAS_MASK,
+ };
+ 
+ struct sdias_evbuf {
+@@ -118,7 +118,7 @@
+ 
+ 	sccb.hdr.length = sizeof(sccb);
+ 	sccb.evbuf.hdr.length = sizeof(struct sdias_evbuf);
+-	sccb.evbuf.hdr.type = EvTyp_SDIAS;
++	sccb.evbuf.hdr.type = EVTYP_SDIAS;
+ 	sccb.evbuf.event_qual = EQ_SIZE;
+ 	sccb.evbuf.data_id = DI_FCP_DUMP;
+ 	sccb.evbuf.event_id = 4712;
+@@ -177,7 +177,7 @@
+ 
+ 	sccb.hdr.length = sizeof(sccb);
+ 	sccb.evbuf.hdr.length = sizeof(struct sdias_evbuf);
+-	sccb.evbuf.hdr.type = EvTyp_SDIAS;
++	sccb.evbuf.hdr.type = EVTYP_SDIAS;
+ 	sccb.evbuf.hdr.flags = 0;
+ 	sccb.evbuf.event_qual = EQ_STORE_DATA;
+ 	sccb.evbuf.data_id = DI_FCP_DUMP;
+Index: quilt-2.6/drivers/s390/char/sclp_tty.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_tty.c	2007-04-27 16:01:49.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_tty.c	2007-04-27 16:05:00.000000000 +0200
+@@ -648,7 +648,7 @@
+ 	subvec = start;
+ 	while (subvec < end) {
+ 		subvec = find_gds_subvector(subvec, end,
+-					    GDS_KEY_SelfDefTextMsg);
++					    GDS_KEY_SELFDEFTEXTMSG);
+ 		if (!subvec)
+ 			break;
+ 		sclp_eval_selfdeftextmsg((struct gds_subvector *)(subvec + 1),
+@@ -664,7 +664,7 @@
+ 
+ 	vec = start;
+ 	while (vec < end) {
+-		vec = find_gds_vector(vec, end, GDS_ID_TextCmd);
++		vec = find_gds_vector(vec, end, GDS_ID_TEXTCMD);
+ 		if (!vec)
+ 			break;
+ 		sclp_eval_textcmd((struct gds_subvector *)(vec + 1),
+@@ -703,7 +703,7 @@
+ 
+ static struct sclp_register sclp_input_event =
+ {
+-	.receive_mask = EvTyp_OpCmd_Mask | EvTyp_PMsgCmd_Mask,
++	.receive_mask = EVTYP_OPCMD_MASK | EVTYP_PMSGCMD_MASK,
+ 	.state_change_fn = sclp_tty_state_change,
+ 	.receiver_fn = sclp_tty_receiver
+ };
+Index: quilt-2.6/drivers/s390/char/sclp_vt220.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/sclp_vt220.c	2007-04-27 16:01:49.000000000 +0200
++++ quilt-2.6/drivers/s390/char/sclp_vt220.c	2007-04-27 16:05:00.000000000 +0200
+@@ -99,8 +99,8 @@
+ 
+ /* Registration structure for our interest in SCLP event buffers */
+ static struct sclp_register sclp_vt220_register = {
+-	.send_mask		= EvTyp_VT220Msg_Mask,
+-	.receive_mask		= EvTyp_VT220Msg_Mask,
++	.send_mask		= EVTYP_VT220MSG_MASK,
++	.receive_mask		= EVTYP_VT220MSG_MASK,
+ 	.state_change_fn	= NULL,
+ 	.receiver_fn		= sclp_vt220_receiver_fn
+ };
+@@ -202,7 +202,7 @@
+ static int
+ __sclp_vt220_emit(struct sclp_vt220_request *request)
+ {
+-	if (!(sclp_vt220_register.sclp_send_mask & EvTyp_VT220Msg_Mask)) {
++	if (!(sclp_vt220_register.sclp_send_mask & EVTYP_VT220MSG_MASK)) {
+ 		request->sclp_req.status = SCLP_REQ_FAILED;
+ 		return -EIO;
+ 	}
+@@ -284,7 +284,7 @@
+ 	sccb->header.length = sizeof(struct sclp_vt220_sccb);
+ 	sccb->header.function_code = SCLP_NORMAL_WRITE;
+ 	sccb->header.response_code = 0x0000;
+-	sccb->evbuf.type = EvTyp_VT220Msg;
++	sccb->evbuf.type = EVTYP_VT220MSG;
+ 	sccb->evbuf.length = sizeof(struct evbuf_header);
+ 
+ 	return request;
 
-Hans-Christian Egtvedt (3):
-      [AVR32] Add nwait and tdf parameters to SMC configuration
-      [AVR32] Change system timer from count-compare to Timer/Counter 0
-      [AVR32] Put cpu in sleep 0 when idle.
+-- 
+blue skies,
+   Martin.
 
-Mathieu Desnoyers (1):
-      avr32: remove unneeded cast in atomic.h
+"Reality continues to ruin my life." - Calvin.
 
-Robert P. J. Day (1):
-      AVR32: Remove useless config option "GENERIC_BUST_SPINLOCK".
-
- arch/avr32/Kconfig                      |   13 +-
- arch/avr32/Makefile                     |    1 +
- arch/avr32/boards/atngw100/Makefile     |    1 +
- arch/avr32/boards/atngw100/flash.c      |   95 +++
- arch/avr32/boards/atngw100/setup.c      |  124 ++++
- arch/avr32/boards/atstk1000/atstk1002.c |    4 +-
- arch/avr32/boards/atstk1000/setup.c     |   30 -
- arch/avr32/configs/atngw100_defconfig   | 1085 +++++++++++++++++++++++++++++++
- arch/avr32/kernel/cpu.c                 |   64 ++-
- arch/avr32/kernel/entry-avr32b.S        |  124 +++--
- arch/avr32/kernel/module.c              |   11 +-
- arch/avr32/kernel/process.c             |  193 +++++-
- arch/avr32/kernel/setup.c               |  484 +++++++++++----
- arch/avr32/kernel/time.c                |  150 +++--
- arch/avr32/kernel/traps.c               |  421 ++++---------
- arch/avr32/kernel/vmlinux.lds.c         |    9 +-
- arch/avr32/mach-at32ap/Kconfig          |   31 +
- arch/avr32/mach-at32ap/Makefile         |    1 +
- arch/avr32/mach-at32ap/at32ap7000.c     |   70 ++-
- arch/avr32/mach-at32ap/hmatrix.h        |  182 ++++++
- arch/avr32/mach-at32ap/hsmc.c           |   23 +
- arch/avr32/mach-at32ap/time-tc.c        |  218 +++++++
- arch/avr32/mm/fault.c                   |  116 ++---
- arch/avr32/mm/init.c                    |  238 -------
- include/asm-avr32/arch-at32ap/io.h      |   39 ++
- include/asm-avr32/arch-at32ap/smc.h     |   22 +
- include/asm-avr32/arch-at32ap/time.h    |  112 ++++
- include/asm-avr32/atomic.h              |    2 +-
- include/asm-avr32/bug.h                 |   50 ++-
- include/asm-avr32/io.h                  |  326 +++++-----
- include/asm-avr32/processor.h           |   15 +-
- include/asm-avr32/setup.h               |   13 +-
- include/asm-avr32/sysreg.h              |  543 +++++++---------
- include/asm-avr32/system.h              |   13 +-
- include/asm-avr32/thread_info.h         |    2 +
- include/asm-avr32/uaccess.h             |   13 +-
- 36 files changed, 3435 insertions(+), 1403 deletions(-)
- create mode 100644 arch/avr32/boards/atngw100/Makefile
- create mode 100644 arch/avr32/boards/atngw100/flash.c
- create mode 100644 arch/avr32/boards/atngw100/setup.c
- create mode 100644 arch/avr32/configs/atngw100_defconfig
- create mode 100644 arch/avr32/mach-at32ap/Kconfig
- create mode 100644 arch/avr32/mach-at32ap/hmatrix.h
- create mode 100644 arch/avr32/mach-at32ap/time-tc.c
- create mode 100644 include/asm-avr32/arch-at32ap/io.h
- create mode 100644 include/asm-avr32/arch-at32ap/time.h
