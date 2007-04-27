@@ -1,252 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756333AbXD0RGX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756759AbXD0RHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756333AbXD0RGX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 13:06:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756710AbXD0RGW
+	id S1756759AbXD0RHI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 13:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbXD0RHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 13:06:22 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:37377 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756327AbXD0RGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 13:06:19 -0400
-Date: Fri, 27 Apr 2007 13:06:17 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] e1000 fixes
-Message-ID: <20070427170617.GA3302@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 13:07:06 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:31414 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756363AbXD0RGu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 13:06:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P+8gulKIc7FiuE0/o1X2jdDqexT6vg/u5ELc0yfvVgF3T/b2OoitL+IuNRCFGuj1cjmY1d8lVjo2hNux5H7js0iJkDMQ/tzEMw6rlsqAa3VFnWVerVaNzDGPWmRH1DhcTr7qLwFDgsQOnom4JRNEkdI/1MwgT88g3asGHLkzyBQ=
+Message-ID: <c03d1bd00704271006h4af83a0p99c37c6416b4c846@mail.gmail.com>
+Date: Fri, 27 Apr 2007 22:36:48 +0530
+From: "Gautham Shenoy" <ego.lkml@gmail.com>
+To: "Dominik Brodowski" <linux@dominikbrodowski.net>,
+       "Dave Jones" <davej@redhat.com>,
+       "Nish Aravamudan" <nish.aravamudan@gmail.com>,
+       "William Heimbigner" <icxcnika@mar.tar.cc>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       Dhaval <dhaval.giani@gmail.com>
+Subject: Re: [RFC] [PATCH] cpufreq: allow full selection of default governors
+In-Reply-To: <20070427122444.GA3714@isilmar.linta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+References: <Pine.LNX.4.64.0704242057430.25153@server.thyself>
+	 <20070424211253.GG23598@redhat.com>
+	 <29495f1d0704241505p62140160o52d83e383106bf8e@mail.gmail.com>
+	 <20070425000327.GG22267@redhat.com>
+	 <20070427015410.GA9650@isilmar.linta.de>
+	 <20070427060957.GA4726@redhat.com>
+	 <20070427122444.GA3714@isilmar.linta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 4/27/07, Dominik Brodowski <linux@dominikbrodowski.net> wrote:
+> On Fri, Apr 27, 2007 at 02:09:57AM -0400, Dave Jones wrote:
+> > On Thu, Apr 26, 2007 at 09:54:10PM -0400, Dominik Brodowski wrote:
+> >  > On Tue, Apr 24, 2007 at 08:03:27PM -0400, Dave Jones wrote:
+> >  > > On Tue, Apr 24, 2007 at 03:05:36PM -0700, Nish Aravamudan wrote:
+> >  > >  > On 4/24/07, Dave Jones <davej@redhat.com> wrote:
+> >  > >  > > On Tue, Apr 24, 2007 at 09:03:23PM +0000, William Heimbigner wrote:
+> >  > >  > >  > The following patches should allow selection of conservative, powersave, and
+> >  > >  > >  > ondemand in the kernel configuration.
+> >  > >  > >
+> >  > >  > > This has been rejected several times already.
+> >  > >  > > Ondemand and conservative isn't a viable governor for all cpufreq
+> >  > >  > > implementations (ie, ones with high switching latencies).
+> >  > >  >
+> >  > >  > This piques my curiosity -- some governors don't work with some
+> >  > >  > cpufreq implementations. Are those implementations in the kernel or in
+> >  > >  > userspace? If in the kernel, then perhaps there should be some
+> >  > >  > dependency expressed there in Kconfig between cpufreq implementation
+> >  > >  > and the available governors
+> >  > >
+> >  > > it can't be solved that easily. powernow-k8 for example is fine to
+> >  > > use with ondemand on newer systems, where the latency is low.
+> >  > > On older models however, it isn't.
+> >  > >
+> >  > >  > > Also, see the
+> >  > >  > > comment in the Kconfig a few lines above where you are adding this.
+> >  > >  >
+> >  > >  > Are these governors unfixable? If
+> >  > >
+> >  > > tbh, I've forgotten the original issues that caused the comment
+> >  > > to be placed there. Dominik ?
+> >  >
+> >  > Not unfixable, but: cpufreq is currently[*] built around the assumption that
+> >  > at least one governor is correctly initialized or can be brought to work
+> >  > when a CPU is registered with the cpufreq core.
+> >
+> > It would have to take something fairly spectacular though for performance or
+> > powersave to fail registration. Can you remember why we chose not to allow those?
+>
+> performance _is_ allowed; powersave would be possible -- but then those who
+> accidentally enable it on elanfreq might wait 100 times as long for the
+> system to boot, with gx-suspmod it might even be 255 times as long -- okay,
+> by default it's just 20 times as long, but still...
 
-Please pull from 'e1000-fixes' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git e1000-fixes
+I agree!
 
-to receive the following updates:
+Let a stable governor like performance or userspace be the default to
+get the cpufreq up and running during boot up, and later on have some
+init script switch
+to a preferred governor like powersave/ondemand/conservative.
 
- drivers/net/e1000/e1000_main.c |  104 ++++++++++++++++++++++------------------
- 1 files changed, 58 insertions(+), 46 deletions(-)
+Changing governor is just a matter of loading the appropriate module
+and echoing the appropriate value into
+/sys/devices/*/cpufreq/scaling_governor. Hardly takes any time.
 
-Auke Kok (1):
-      e1000: FIX: be ready for incoming irq at pci_request_irq
+William, Is there a specific reason why you would want
+powersave/ondemand/conservative to be activate during the system boot
+up?
 
-Bruce Allan (1):
-      e1000: FIX: firmware handover bits
-
-Mark Huth (1):
-      e1000: FIX: Stop raw interrupts disabled nag from RT
-
-diff --git a/drivers/net/e1000/e1000_main.c b/drivers/net/e1000/e1000_main.c
-index b28a915..eb3ff1f 100644
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -409,25 +409,21 @@ e1000_release_hw_control(struct e1000_adapter *adapter)
- {
- 	uint32_t ctrl_ext;
- 	uint32_t swsm;
--	uint32_t extcnf;
- 
- 	/* Let firmware taken over control of h/w */
- 	switch (adapter->hw.mac_type) {
--	case e1000_82571:
--	case e1000_82572:
--	case e1000_80003es2lan:
--		ctrl_ext = E1000_READ_REG(&adapter->hw, CTRL_EXT);
--		E1000_WRITE_REG(&adapter->hw, CTRL_EXT,
--				ctrl_ext & ~E1000_CTRL_EXT_DRV_LOAD);
--		break;
- 	case e1000_82573:
- 		swsm = E1000_READ_REG(&adapter->hw, SWSM);
- 		E1000_WRITE_REG(&adapter->hw, SWSM,
- 				swsm & ~E1000_SWSM_DRV_LOAD);
-+		break;
-+	case e1000_82571:
-+	case e1000_82572:
-+	case e1000_80003es2lan:
- 	case e1000_ich8lan:
--		extcnf = E1000_READ_REG(&adapter->hw, CTRL_EXT);
-+		ctrl_ext = E1000_READ_REG(&adapter->hw, CTRL_EXT);
- 		E1000_WRITE_REG(&adapter->hw, CTRL_EXT,
--				extcnf & ~E1000_CTRL_EXT_DRV_LOAD);
-+				ctrl_ext & ~E1000_CTRL_EXT_DRV_LOAD);
- 		break;
- 	default:
- 		break;
-@@ -450,26 +446,21 @@ e1000_get_hw_control(struct e1000_adapter *adapter)
- {
- 	uint32_t ctrl_ext;
- 	uint32_t swsm;
--	uint32_t extcnf;
- 
- 	/* Let firmware know the driver has taken over */
- 	switch (adapter->hw.mac_type) {
--	case e1000_82571:
--	case e1000_82572:
--	case e1000_80003es2lan:
--		ctrl_ext = E1000_READ_REG(&adapter->hw, CTRL_EXT);
--		E1000_WRITE_REG(&adapter->hw, CTRL_EXT,
--				ctrl_ext | E1000_CTRL_EXT_DRV_LOAD);
--		break;
- 	case e1000_82573:
- 		swsm = E1000_READ_REG(&adapter->hw, SWSM);
- 		E1000_WRITE_REG(&adapter->hw, SWSM,
- 				swsm | E1000_SWSM_DRV_LOAD);
- 		break;
-+	case e1000_82571:
-+	case e1000_82572:
-+	case e1000_80003es2lan:
- 	case e1000_ich8lan:
--		extcnf = E1000_READ_REG(&adapter->hw, EXTCNF_CTRL);
--		E1000_WRITE_REG(&adapter->hw, EXTCNF_CTRL,
--				extcnf | E1000_EXTCNF_CTRL_SWFLAG);
-+		ctrl_ext = E1000_READ_REG(&adapter->hw, CTRL_EXT);
-+		E1000_WRITE_REG(&adapter->hw, CTRL_EXT,
-+				ctrl_ext | E1000_CTRL_EXT_DRV_LOAD);
- 		break;
- 	default:
- 		break;
-@@ -522,14 +513,15 @@ e1000_release_manageability(struct e1000_adapter *adapter)
- 	}
- }
- 
--int
--e1000_up(struct e1000_adapter *adapter)
-+/**
-+ * e1000_configure - configure the hardware for RX and TX
-+ * @adapter = private board structure
-+ **/
-+static void e1000_configure(struct e1000_adapter *adapter)
- {
- 	struct net_device *netdev = adapter->netdev;
- 	int i;
- 
--	/* hardware has been reset, we need to reload some things */
--
- 	e1000_set_multi(netdev);
- 
- 	e1000_restore_vlan(adapter);
-@@ -548,14 +540,20 @@ e1000_up(struct e1000_adapter *adapter)
- 	}
- 
- 	adapter->tx_queue_len = netdev->tx_queue_len;
-+}
-+
-+int e1000_up(struct e1000_adapter *adapter)
-+{
-+	/* hardware has been reset, we need to reload some things */
-+	e1000_configure(adapter);
-+
-+	clear_bit(__E1000_DOWN, &adapter->flags);
- 
- #ifdef CONFIG_E1000_NAPI
--	netif_poll_enable(netdev);
-+	netif_poll_enable(adapter->netdev);
- #endif
- 	e1000_irq_enable(adapter);
- 
--	clear_bit(__E1000_DOWN, &adapter->flags);
--
- 	/* fire a link change interrupt to start the watchdog */
- 	E1000_WRITE_REG(&adapter->hw, ICS, E1000_ICS_LSC);
- 	return 0;
-@@ -640,15 +638,15 @@ e1000_down(struct e1000_adapter *adapter)
- 	 * reschedule our watchdog timer */
- 	set_bit(__E1000_DOWN, &adapter->flags);
- 
-+#ifdef CONFIG_E1000_NAPI
-+	netif_poll_disable(netdev);
-+#endif
- 	e1000_irq_disable(adapter);
- 
- 	del_timer_sync(&adapter->tx_fifo_stall_timer);
- 	del_timer_sync(&adapter->watchdog_timer);
- 	del_timer_sync(&adapter->phy_info_timer);
- 
--#ifdef CONFIG_E1000_NAPI
--	netif_poll_disable(netdev);
--#endif
- 	netdev->tx_queue_len = adapter->tx_queue_len;
- 	adapter->link_speed = 0;
- 	adapter->link_duplex = 0;
-@@ -1410,21 +1408,17 @@ e1000_open(struct net_device *netdev)
- 		return -EBUSY;
- 
- 	/* allocate transmit descriptors */
--	if ((err = e1000_setup_all_tx_resources(adapter)))
-+	err = e1000_setup_all_tx_resources(adapter);
-+	if (err)
- 		goto err_setup_tx;
- 
- 	/* allocate receive descriptors */
--	if ((err = e1000_setup_all_rx_resources(adapter)))
--		goto err_setup_rx;
--
--	err = e1000_request_irq(adapter);
-+	err = e1000_setup_all_rx_resources(adapter);
- 	if (err)
--		goto err_req_irq;
-+		goto err_setup_rx;
- 
- 	e1000_power_up_phy(adapter);
- 
--	if ((err = e1000_up(adapter)))
--		goto err_up;
- 	adapter->mng_vlan_id = E1000_MNG_VLAN_NONE;
- 	if ((adapter->hw.mng_cookie.status &
- 			  E1000_MNG_DHCP_COOKIE_STATUS_VLAN_SUPPORT)) {
-@@ -1437,12 +1431,33 @@ e1000_open(struct net_device *netdev)
- 	    e1000_check_mng_mode(&adapter->hw))
- 		e1000_get_hw_control(adapter);
- 
-+	/* before we allocate an interrupt, we must be ready to handle it.
-+	 * Setting DEBUG_SHIRQ in the kernel makes it fire an interrupt
-+	 * as soon as we call pci_request_irq, so we have to setup our
-+	 * clean_rx handler before we do so.  */
-+	e1000_configure(adapter);
-+
-+	err = e1000_request_irq(adapter);
-+	if (err)
-+		goto err_req_irq;
-+
-+	/* From here on the code is the same as e1000_up() */
-+	clear_bit(__E1000_DOWN, &adapter->flags);
-+
-+#ifdef CONFIG_E1000_NAPI
-+	netif_poll_enable(netdev);
-+#endif
-+
-+	e1000_irq_enable(adapter);
-+
-+	/* fire a link status change interrupt to start the watchdog */
-+	E1000_WRITE_REG(&adapter->hw, ICS, E1000_ICS_LSC);
-+
- 	return E1000_SUCCESS;
- 
--err_up:
--	e1000_power_down_phy(adapter);
--	e1000_free_irq(adapter);
- err_req_irq:
-+	e1000_release_hw_control(adapter);
-+	e1000_power_down_phy(adapter);
- 	e1000_free_all_rx_resources(adapter);
- err_setup_rx:
- 	e1000_free_all_tx_resources(adapter);
-@@ -3363,12 +3378,9 @@ e1000_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
- 	    (adapter->hw.mac_type == e1000_82573))
- 		e1000_transfer_dhcp_info(adapter, skb);
- 
--	local_irq_save(flags);
--	if (!spin_trylock(&tx_ring->tx_lock)) {
-+	if (!spin_trylock_irqsave(&tx_ring->tx_lock, flags))
- 		/* Collision - tell upper layer to requeue */
--		local_irq_restore(flags);
- 		return NETDEV_TX_LOCKED;
--	}
- 
- 	/* need: count + 2 desc gap to keep tail from touching
- 	 * head, otherwise try next time */
+>
+>         Dominik
+> -
+Regards
+gautham.
