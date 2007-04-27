@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbXD0PbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbXD0Pfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbXD0PbS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 11:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbXD0PbS
+	id S1756000AbXD0Pfi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 11:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756006AbXD0Pfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:31:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42107 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755998AbXD0PbQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:31:16 -0400
-Date: Fri, 27 Apr 2007 08:30:55 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Marat Buharov <marat.buharov@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-In-Reply-To: <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
-References: <1177660767.6567.41.camel@Homer.simpson.net> 
- <20070427013350.d0d7ac38.akpm@linux-foundation.org>
- <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+	Fri, 27 Apr 2007 11:35:38 -0400
+Received: from mx2.suse.de ([195.135.220.15]:49038 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756000AbXD0PfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 11:35:22 -0400
+Date: Fri, 27 Apr 2007 08:32:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Tejun Heo <htejun@gmail.com>, maneesh@in.ibm.com,
+       dmitry.torokhov@gmail.com, cornelia.huck@de.ibm.com, oneukum@suse.de,
+       rpurdie@rpsys.net, James.Bottomley@SteelEye.com,
+       stern@rowland.harvard.edu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/14] sysfs: fix i_ino handling in sysfs
+Message-ID: <20070427153245.GA10999@suse.de>
+References: <11760923274128-git-send-email-htejun@gmail.com> <463216EA.20203@sandeen.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463216EA.20203@sandeen.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Apr 2007, Marat Buharov wrote:
->
-> On 4/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Aside: why the heck do applications think that their data is so important
-> > that they need to fsync it all the time.  I used to run a kernel on my
-> > laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
-> > pleasurable.
+On Fri, Apr 27, 2007 at 10:29:46AM -0500, Eric Sandeen wrote:
+>  Tejun Heo wrote:
+> > Inode number handling was incorrect in two ways.
+> > 1. sysfs uses the inode number allocated by new_inode() and never
+> >    hashes it.  When reporting the inode number, it uses iunique() if
+> >    inode is inaccessible.  This is incorrect because iunique() assumes
+> >    the inodes are hashed.  This can cause duplicate inode numbers and
+> >    the condition is likely to happen because new_inode() and iunique()
+> >    use separate increasing static counters to scan for empty slot.
+> > 2. sysfs_dirent->s_dentry can go away anytime and can't be referenced
+> >    unless the caller knows the dentry is not and not going to be
+> >    deleted.
+> > This patch makes sysfs report the pointer to sysfs_dirent as ino.
+> > ino_t is always as big as or larger than unsigned long && sysfs_dirent
+> > hierarchy is the internal representation of the sysfs tree, so it
+> > makes sense and simple to implement.
 > 
-> So, if having fake fsync() and fdatasync() is pleasurable for laptop
-> and desktop, may be it's time to add option into Kconfig which
-> disables normal fsync behaviour in favor of robust desktop?
+>  what about 32-bit stats from 32-bit apps on 64-bit systems?  This will make 
+>  64-bit inode numbers commonplace in sysfs; will this cause problems?  it 
+>  seems that if they get truncated to 32 bits the possibility of duplicate 
+>  inode nrs will come back...
 
-This really is an ext3 issue, not "fsync()".
+Yes, this turned out to be a problem as the ppc people found out :)
 
-On a good filesystem, when you do "fsync()" on a file, nothing at all 
-happens to any other files. On ext3, it seems to sync the global journal, 
-which means that just about *everything* that writes even a single byte 
-(well, at least anything journalled, which would be all the normal 
-directory ops etc) to disk will just *stop* dead cold!
+Tejun had some follow-on patches fixing this issue up.
 
-It's horrid. And it really is ext3, not "fsync()".
+thanks,
 
-I used to run reiserfs, and it had its problems, but this was the 
-"feature" of ext3 that I've disliked most. If you run a MUA with local 
-mail, it will do fsync's for most things, and things really hickup if you 
-are doing some other writes at the same time. In contrast, with reiser, if 
-you did a big untar or some other big write, if somebody fsync'ed a small 
-file, it wasn't even a blip on the radar - the fsync would sync just that 
-small thing.
-
-Maybe I'm wrong on the exact details (I'm not really up on the ext3 
-journal handling ;^), but you don't even have to know about any internals 
-at all: you can just test it. Gaak.
-
-			Linus
+greg k-h
