@@ -1,272 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbXD0NjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbXD0Njd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbXD0NjR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 09:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755831AbXD0NjR
+	id S1755828AbXD0Njd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 09:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXD0Njc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 09:39:17 -0400
-Received: from keetweej.vanheusden.com ([213.84.46.114]:41718 "EHLO
-	keetweej.vanheusden.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbXD0NjP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 09:39:15 -0400
-Date: Fri, 27 Apr 2007 15:39:12 +0200
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Cc: udovdh@xs4all.nl
-Subject: [2.6.21] possible circular locking dependency detected IN FILESYSTEM CODE (ext3)
-Message-ID: <20070427133912.GN1021@vanheusden.com>
+	Fri, 27 Apr 2007 09:39:32 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:39921 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755831AbXD0Nj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 09:39:29 -0400
+Message-ID: <4631FC30.2060602@hp.com>
+Date: Fri, 27 Apr 2007 09:35:44 -0400
+From: Peter Keilty <peter.keilty@hp.com>
+User-Agent: Mozilla Thunderbird 1.0RC1 (X11/20041209)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sat Apr 28 13:36:06 CEST 2007
-X-Message-Flag: MultiTail - tail on steroids
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: linux-ia64@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com> <20070427010253.GV6602@sequoia.sous-sol.org>
+In-Reply-To: <20070427010253.GV6602@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Chris Wright wrote:
 
-Running 2.6.21 on a P4 with HT and 2GB of ram. One filesystem which is
-ext3. After 2+ hours of uptime I got the following circular locking
-dependency in my dmesg output:
+>* Peter Keilty (peter.keilty@hp.com) wrote:
+>  
+>
+>>diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+>>index 6077300..35ad71f 100644
+>>--- a/drivers/acpi/processor_idle.c
+>>+++ b/drivers/acpi/processor_idle.c
+>>@@ -480,10 +480,12 @@ #endif
+>> 		/* Get end time (ticks) */
+>> 		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+>> 
+>>+#ifndef CONFIG_IA64
+>> #ifdef CONFIG_GENERIC_TIME
+>> 		/* TSC halts in C2, so notify users */
+>> 		mark_tsc_unstable();
+>> #endif
+>>+#endif
+>>    
+>>
+>
+>Is this a better description of the dependency?
+>
+>  #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
+>  
+>
+yes, ok.
 
-[ 7429.853775] =======================================================
-[ 7429.853884] [ INFO: possible circular locking dependency detected ]
-[ 7429.853939] 2.6.21 #1
-[ 7429.854005] -------------------------------------------------------
-[ 7429.854058] moo/5453 is trying to acquire lock:
-[ 7429.854112]  (tty_mutex){--..}, at: [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.854286]
-[ 7429.854287] but task is already holding lock:
-[ 7429.854413]  (&s->s_dquot.dqptr_sem){----}, at: [<c109e3e4>] dquot_alloc_space+0x50/0x189
-[ 7429.854423]
-[ 7429.854424] which lock already depends on the new lock.
-[ 7429.854426]
-[ 7429.854427]
-[ 7429.854428] the existing dependency chain (in reverse order) is:
-[ 7429.854431]
-[ 7429.854432] -> #4 (&s->s_dquot.dqptr_sem){----}:
-[ 7429.854437]        [<c103983e>] check_prev_add+0x15b/0x281
-[ 7429.854445]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.854452]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.854460]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.854468]        [<c1033dbf>] down_read+0x2b/0x3d
-[ 7429.854477]        [<c109e3e4>] dquot_alloc_space+0x50/0x189
-[ 7429.854490]        [<c10af496>] ext3_new_blocks+0x44b/0x5a2
-[ 7429.854497]        [<c10b1a28>] ext3_alloc_blocks+0x40/0xdf
-[ 7429.854505]        [<c10b1b17>] ext3_alloc_branch+0x50/0x21b
-[ 7429.854512]        [<c10b1ff5>] ext3_get_blocks_handle+0x1b8/0x367
-[ 7429.854519]        [<c10b231e>] ext3_getblk+0x97/0x228
-[ 7429.854530]        [<c10b24c9>] ext3_bread+0x1a/0x78
-[ 7429.854536]        [<c10b760a>] ext3_mkdir+0xf4/0x270
-[ 7429.854545]        [<c1077cb6>] vfs_mkdir+0xb3/0x161
-[ 7429.854553]        [<c1077df0>] sys_mkdirat+0x8c/0xc4
-[ 7429.854560]        [<c1077e48>] sys_mkdir+0x20/0x22
-[ 7429.854570]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.854578]        [<ffffffff>] 0xffffffff
-[ 7429.854600]
-[ 7429.854600] -> #3 (&ei->truncate_mutex){--..}:
-[ 7429.854608]        [<c103983e>] check_prev_add+0x15b/0x281
-[ 7429.854616]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.854623]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.854630]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.854637]        [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.854647]        [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.854654]        [<c10b3b97>] ext3_truncate+0x170/0x468
-[ 7429.854661]        [<c105dea4>] vmtruncate+0xa6/0x116
-[ 7429.854669]        [<c108276f>] inode_setattr+0x145/0x16c
-[ 7429.854678]        [<c10b4ab9>] ext3_setattr+0x150/0x22f
-[ 7429.854690]        [<c1082ae8>] notify_change+0x352/0x386
-[ 7429.854697]        [<c106ccf6>] do_truncate+0x52/0x75
-[ 7429.854705]        [<c10771aa>] may_open+0x1ec/0x231
-[ 7429.854713]        [<c1077368>] open_namei+0xda/0x59b
-[ 7429.854720]        [<c106d95e>] do_filp_open+0x2c/0x53
-[ 7429.854731]        [<c106dc93>] do_sys_open+0x52/0xd8
-[ 7429.854738]        [<c106dd35>] sys_open+0x1c/0x1e
-[ 7429.854745]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.854752]        [<ffffffff>] 0xffffffff
-[ 7429.854760]
-[ 7429.854761] -> #2 (&inode->i_alloc_sem){--..}:
-[ 7429.854770]        [<c103983e>] check_prev_add+0x15b/0x281
-[ 7429.854777]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.854784]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.854792]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.854798]        [<c1033e55>] down_write+0x2b/0x45
-[ 7429.854808]        [<c1082a6f>] notify_change+0x2d9/0x386
-[ 7429.854818]        [<c106ccf6>] do_truncate+0x52/0x75
-[ 7429.854826]        [<c10771aa>] may_open+0x1ec/0x231
-[ 7429.854834]        [<c1077368>] open_namei+0xda/0x59b
-[ 7429.854842]        [<c106d95e>] do_filp_open+0x2c/0x53
-[ 7429.854850]        [<c106dc93>] do_sys_open+0x52/0xd8
-[ 7429.854860]        [<c106dd35>] sys_open+0x1c/0x1e
-[ 7429.854867]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.854874]        [<ffffffff>] 0xffffffff
-[ 7429.854882]
-[ 7429.854883] -> #1 (&sysfs_inode_imutex_key){--..}:
-[ 7429.854887]        [<c103983e>] check_prev_add+0x15b/0x281
-[ 7429.854895]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.854902]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.854910]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.854917]        [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.854924]        [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.854934]        [<c10ac0b7>] remove_dir+0x2c/0xf1
-[ 7429.854942]        [<c10ac184>] sysfs_remove_subdir+0x8/0xa
-[ 7429.854950]        [<c10ad58b>] sysfs_remove_group+0x67/0x78
-[ 7429.854957]        [<c1154f44>] dpm_sysfs_remove+0x12/0x16
-[ 7429.854966]        [<c11546b3>] device_pm_remove+0x21/0x62
-[ 7429.854977]        [<c114e700>] device_del+0x89/0x1dd
-[ 7429.854984]        [<c114e85f>] device_unregister+0xb/0x15
-[ 7429.854992]        [<c114ea5a>] device_destroy+0x8d/0x9a
-[ 7429.854999]        [<c113a453>] vcs_remove_sysfs+0x1c/0x39
-[ 7429.855007]        [<c1140bd9>] con_close+0x5e/0x6b
-[ 7429.855017]        [<c11329d6>] release_dev+0x4c4/0x6ce
-[ 7429.855025]        [<c1133059>] tty_release+0x12/0x1c
-[ 7429.855033]        [<c106f67d>] __fput+0x145/0x16e
-[ 7429.855040]        [<c106f536>] fput+0x19/0x1b
-[ 7429.855046]        [<c106ddb6>] filp_close+0x3c/0x75
-[ 7429.855056]        [<c106de58>] sys_close+0x69/0xb4
-[ 7429.855064]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.855070]        [<ffffffff>] 0xffffffff
-[ 7429.855081]
-[ 7429.855082] -> #0 (tty_mutex){--..}:
-[ 7429.855085]        [<c1039717>] check_prev_add+0x34/0x281
-[ 7429.855098]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.855105]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.855112]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.855120]        [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.855127]        [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855134]        [<c109dd5a>] print_warning+0x8c/0x15d
-[ 7429.855144]        [<c109e518>] dquot_alloc_space+0x184/0x189
-[ 7429.855151]        [<c10af496>] ext3_new_blocks+0x44b/0x5a2
-[ 7429.855162]        [<c10b1a28>] ext3_alloc_blocks+0x40/0xdf
-[ 7429.855169]        [<c10b1b17>] ext3_alloc_branch+0x50/0x21b
-[ 7429.855177]        [<c10b1ff5>] ext3_get_blocks_handle+0x1b8/0x367
-[ 7429.855184]        [<c10b221c>] ext3_get_block+0x78/0xe3
-[ 7429.855195]        [<c108f265>] __block_prepare_write+0x168/0x408
-[ 7429.855202]        [<c108fd47>] block_prepare_write+0x28/0x3b
-[ 7429.855210]        [<c10b26c8>] ext3_prepare_write+0xe3/0x17e
-[ 7429.855218]        [<c1052a29>] generic_file_buffered_write+0x1b1/0x611
-[ 7429.855226]        [<c1053137>] __generic_file_aio_write_nolock+0x2ae/0x5ad
-[ 7429.855239]        [<c105353f>] generic_file_aio_write+0x58/0xc4
-[ 7429.855246]        [<c10b02d3>] ext3_file_write+0x2d/0xba
-[ 7429.855253]        [<c106e73f>] do_sync_write+0xc7/0x116
-[ 7429.855260]        [<c106e8e6>] vfs_write+0x158/0x15d
-[ 7429.855266]        [<c106e98c>] sys_write+0x3d/0x64
-[ 7429.855275]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.855282]        [<ffffffff>] 0xffffffff
-[ 7429.855290]
-[ 7429.855291] other info that might help us debug this:
-[ 7429.855293]
-[ 7429.855296] 3 locks held by moo/5453:
-[ 7429.855297]  #0:  (&inode->i_mutex){--..}, at: [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855305]  #1:  (&ei->truncate_mutex){--..}, at: [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855312]  #2:  (&s->s_dquot.dqptr_sem){----}, at: [<c109e3e4>] dquot_alloc_space+0x50/0x189
-[ 7429.855323]
-[ 7429.855324] stack backtrace:
-[ 7429.855326]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
-[ 7429.855331]  [<c1004d7b>] show_trace+0x12/0x14
-[ 7429.855335]  [<c1004e75>] dump_stack+0x16/0x18
-[ 7429.855339]  [<c103908e>] print_circular_bug_tail+0x6f/0x71
-[ 7429.855343]  [<c1039717>] check_prev_add+0x34/0x281
-[ 7429.855347]  [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.855350]  [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.855355]  [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.855362]  [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.855366]  [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855370]  [<c109dd5a>] print_warning+0x8c/0x15d
-[ 7429.855374]  [<c109e518>] dquot_alloc_space+0x184/0x189
-[ 7429.855378]  [<c10af496>] ext3_new_blocks+0x44b/0x5a2
-[ 7429.855382]  [<c10b1a28>] ext3_alloc_blocks+0x40/0xdf
-[ 7429.855386]  [<c10b1b17>] ext3_alloc_branch+0x50/0x21b
-[ 7429.855007]        [<c1140bd9>] con_close+0x5e/0x6b
-[ 7429.855017]        [<c11329d6>] release_dev+0x4c4/0x6ce
-[ 7429.855025]        [<c1133059>] tty_release+0x12/0x1c
-[ 7429.855033]        [<c106f67d>] __fput+0x145/0x16e
-[ 7429.855040]        [<c106f536>] fput+0x19/0x1b
-[ 7429.855046]        [<c106ddb6>] filp_close+0x3c/0x75
-[ 7429.855056]        [<c106de58>] sys_close+0x69/0xb4
-[ 7429.855064]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.855070]        [<ffffffff>] 0xffffffff
-[ 7429.855081]
-[ 7429.855082] -> #0 (tty_mutex){--..}:
-[ 7429.855085]        [<c1039717>] check_prev_add+0x34/0x281
-[ 7429.855098]        [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.855105]        [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.855112]        [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.855120]        [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.855127]        [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855134]        [<c109dd5a>] print_warning+0x8c/0x15d
-[ 7429.855144]        [<c109e518>] dquot_alloc_space+0x184/0x189
-[ 7429.855151]        [<c10af496>] ext3_new_blocks+0x44b/0x5a2
-[ 7429.855162]        [<c10b1a28>] ext3_alloc_blocks+0x40/0xdf
-[ 7429.855169]        [<c10b1b17>] ext3_alloc_branch+0x50/0x21b
-[ 7429.855177]        [<c10b1ff5>] ext3_get_blocks_handle+0x1b8/0x367
-[ 7429.855184]        [<c10b221c>] ext3_get_block+0x78/0xe3
-[ 7429.855195]        [<c108f265>] __block_prepare_write+0x168/0x408
-[ 7429.855202]        [<c108fd47>] block_prepare_write+0x28/0x3b
-[ 7429.855210]        [<c10b26c8>] ext3_prepare_write+0xe3/0x17e
-[ 7429.855218]        [<c1052a29>] generic_file_buffered_write+0x1b1/0x611
-[ 7429.855226]        [<c1053137>] __generic_file_aio_write_nolock+0x2ae/0x5ad
-[ 7429.855239]        [<c105353f>] generic_file_aio_write+0x58/0xc4
-[ 7429.855246]        [<c10b02d3>] ext3_file_write+0x2d/0xba
-[ 7429.855253]        [<c106e73f>] do_sync_write+0xc7/0x116
-[ 7429.855260]        [<c106e8e6>] vfs_write+0x158/0x15d
-[ 7429.855266]        [<c106e98c>] sys_write+0x3d/0x64
-[ 7429.855275]        [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.855282]        [<ffffffff>] 0xffffffff
-[ 7429.855290]
-[ 7429.855291] other info that might help us debug this:
-[ 7429.855293]
-[ 7429.855296] 3 locks held by moo/5453:
-[ 7429.855297]  #0:  (&inode->i_mutex){--..}, at: [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855305]  #1:  (&ei->truncate_mutex){--..}, at: [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855312]  #2:  (&s->s_dquot.dqptr_sem){----}, at: [<c109e3e4>] dquot_alloc_space+0x50/0x189
-[ 7429.855323]
-[ 7429.855324] stack backtrace:
-[ 7429.855326]  [<c1004d53>] show_trace_log_lvl+0x1a/0x30
-[ 7429.855331]  [<c1004d7b>] show_trace+0x12/0x14
-[ 7429.855335]  [<c1004e75>] dump_stack+0x16/0x18
-[ 7429.855339]  [<c103908e>] print_circular_bug_tail+0x6f/0x71
-[ 7429.855343]  [<c1039717>] check_prev_add+0x34/0x281
-[ 7429.855347]  [<c10399ef>] check_prevs_add+0x8b/0xe8
-[ 7429.855350]  [<c103b3bf>] __lock_acquire+0x692/0xb81
-[ 7429.855355]  [<c103bd16>] lock_acquire+0x62/0x81
-[ 7429.855362]  [<c120d400>] __mutex_lock_slowpath+0x75/0x28c
-[ 7429.855366]  [<c120d37f>] mutex_lock+0x8/0xa
-[ 7429.855370]  [<c109dd5a>] print_warning+0x8c/0x15d
-[ 7429.855374]  [<c109e518>] dquot_alloc_space+0x184/0x189
-[ 7429.855378]  [<c10af496>] ext3_new_blocks+0x44b/0x5a2
-[ 7429.855382]  [<c10b1a28>] ext3_alloc_blocks+0x40/0xdf
-[ 7429.855386]  [<c10b1b17>] ext3_alloc_branch+0x50/0x21b
-[ 7429.855389]  [<c10b1ff5>] ext3_get_blocks_handle+0x1b8/0x367
-[ 7429.855393]  [<c10b221c>] ext3_get_block+0x78/0xe3
-[ 7429.855400]  [<c108f265>] __block_prepare_write+0x168/0x408
-[ 7429.855405]  [<c108fd47>] block_prepare_write+0x28/0x3b
-[ 7429.855409]  [<c10b26c8>] ext3_prepare_write+0xe3/0x17e
-[ 7429.855412]  [<c1052a29>] generic_file_buffered_write+0x1b1/0x611
-[ 7429.855417]  [<c1053137>] __generic_file_aio_write_nolock+0x2ae/0x5ad
-[ 7429.855422]  [<c105353f>] generic_file_aio_write+0x58/0xc4
-[ 7429.855426]  [<c10b02d3>] ext3_file_write+0x2d/0xba
-[ 7429.855430]  [<c106e73f>] do_sync_write+0xc7/0x116
-[ 7429.855433]  [<c106e8e6>] vfs_write+0x158/0x15d
-[ 7429.855440]  [<c106e98c>] sys_write+0x3d/0x64
-[ 7429.855445]  [<c1003f74>] syscall_call+0x7/0xb
-[ 7429.855449]  =======================
+>  
+>
+>> 		/* Re-enable interrupts */
+>> 		local_irq_enable();
+>> 		current_thread_info()->status |= TS_POLLING;
+>>@@ -522,10 +524,12 @@ #endif
+>> 			acpi_set_register(ACPI_BITREG_ARB_DISABLE, 0);
+>> 		}
+>> 
+>>+#ifndef CONFIG_IA64
+>> #ifdef CONFIG_GENERIC_TIME
+>> 		/* TSC halts in C3, so notify users */
+>> 		mark_tsc_unstable();
+>> #endif
+>>+#endif
+>>    
+>>
+>
+>ditto
+>
+>  
+>
+>> 		/* Re-enable interrupts */
+>> 		local_irq_enable();
+>> 		current_thread_info()->status |= TS_POLLING;
+>>diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+>>index 0be700f..5ea7d3e 100644
+>>--- a/drivers/char/hpet.c
+>>+++ b/drivers/char/hpet.c
+>>@@ -29,6 +29,7 @@ #include <linux/wait.h>
+>> #include <linux/bcd.h>
+>> #include <linux/seq_file.h>
+>> #include <linux/bitops.h>
+>>+#include <linux/clocksource.h>
+>> 
+>> #include <asm/current.h>
+>> #include <asm/uaccess.h>
+>>@@ -51,8 +52,34 @@ #define	HPET_DRIFT	(500)
+>> 
+>> #define HPET_RANGE_SIZE		1024	/* from HPET spec */
+>> 
+>>+#if BITS_PER_LONG == 64
+>>+#define	write_counter(V, MC)	writeq(V, MC)
+>>+#define	read_counter(MC)	readq(MC)
+>>+#else
+>>+#define	write_counter(V, MC) 	writel(V, MC)
+>>+#define	read_counter(MC)	readl(MC)
+>>+#endif
+>>+
+>> static u32 hpet_nhpet, hpet_max_freq = HPET_USER_FREQ;
+>> 
+>>+static void __iomem *hpet_mc_ptr;
+>>    
+>>
+>
+>CodingStyle nit: we don't need all this _ptr...
+>
+>  
+>
+>>+static cycle_t read_hpet(void)
+>>+{
+>>+	return (cycle_t)read_counter((void __iomem *)hpet_mc_ptr);
+>>+}
+>>+
+>>+static struct clocksource clocksource_hpet = {
+>>+        .name           = "hpet",
+>>+        .rating         = 300,
+>>+        .read           = read_hpet,
+>>+        .mask           = 0xffffffffffffffffLL,
+>>+        .mult           = 0, /*to be caluclated*/
+>>+        .shift          = 10,
+>>+        .is_continuous  = 1,
+>>+};
+>>+static struct clocksource *hpet_clocksource_p;
+>>    
+>>
+>
+>and _p naming.
+>
+>  
+>
+>>+
+>> /* A lock for concurrent access by app and isr hpet activity. */
+>> static DEFINE_SPINLOCK(hpet_lock);
+>> /* A lock for concurrent intermodule access to hpet and isr hpet activity. */
+>>@@ -79,7 +106,7 @@ struct hpets {
+>> 	struct hpets *hp_next;
+>> 	struct hpet __iomem *hp_hpet;
+>> 	unsigned long hp_hpet_phys;
+>>-	struct time_interpolator *hp_interpolator;
+>>+	struct clocksource *hp_clocksource;
+>> 	unsigned long long hp_tick_freq;
+>> 	unsigned long hp_delta;
+>> 	unsigned int hp_ntimer;
+>>@@ -94,13 +121,6 @@ #define	HPET_IE			0x0002	/* interrupt en
+>> #define	HPET_PERIODIC		0x0004
+>> #define	HPET_SHARED_IRQ		0x0008
+>> 
+>>-#if BITS_PER_LONG == 64
+>>-#define	write_counter(V, MC)	writeq(V, MC)
+>>-#define	read_counter(MC)	readq(MC)
+>>-#else
+>>-#define	write_counter(V, MC) 	writel(V, MC)
+>>-#define	read_counter(MC)	readl(MC)
+>>-#endif
+>> 
+>> #ifndef readq
+>> static inline unsigned long long readq(void __iomem *addr)
+>>@@ -737,27 +757,6 @@ static ctl_table dev_root[] = {
+>> 
+>> static struct ctl_table_header *sysctl_header;
+>> 
+>>-static void hpet_register_interpolator(struct hpets *hpetp)
+>>-{
+>>-#ifdef	CONFIG_TIME_INTERPOLATION
+>>-	struct time_interpolator *ti;
+>>-
+>>-	ti = kzalloc(sizeof(*ti), GFP_KERNEL);
+>>-	if (!ti)
+>>-		return;
+>>-
+>>-	ti->source = TIME_SOURCE_MMIO64;
+>>-	ti->shift = 10;
+>>-	ti->addr = &hpetp->hp_hpet->hpet_mc;
+>>-	ti->frequency = hpetp->hp_tick_freq;
+>>-	ti->drift = HPET_DRIFT;
+>>-	ti->mask = -1;
+>>-
+>>-	hpetp->hp_interpolator = ti;
+>>-	register_time_interpolator(ti);
+>>-#endif
+>>-}
+>>-
+>> /*
+>>  * Adjustment for when arming the timer with
+>>  * initial conditions.  That is, main counter
+>>@@ -909,7 +908,14 @@ int hpet_alloc(struct hpet_data *hdp)
+>> 	}
+>> 
+>> 	hpetp->hp_delta = hpet_calibrate(hpetp);
+>>-	hpet_register_interpolator(hpetp);
+>>+
+>>+	if (!hpet_clocksource_p) {
+>>+        	clocksource_hpet.fsys_mmio_ptr = hpet_mc_ptr = &hpetp->hp_hpet->hpet_mc;
+>>+        	clocksource_hpet.mult = clocksource_hz2mult(hpetp->hp_tick_freq,
+>>+						clocksource_hpet.shift);
+>>+        	clocksource_register(&clocksource_hpet);
+>>+		hpet_clocksource_p = hpetp->hp_clocksource = &clocksource_hpet;
+>>+	}
+>>    
+>>
+>
+>This looks like a change in behaviour for non-ia64.  Now i386 and x86_64
+>will get this clocksource twice (and this one has a higher rating).
+>Doesn't look like this will even compile since fsys_mmio_ptr (more
+>  
+>
+Yes need to change setting for  fsys_mmio just for ia64.
+I will check the load multiple clocksources, before it was limited.
 
-
-Folkert van Heusden
-
--- 
-www.biglumber.com <- site where one can exchange PGP key signatures 
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+>extraneous _ptr suffix) is ia64 only?  And sparc64 is left out in
+>the cold.
+>
+>  
+>
+>> 	return 0;
+>> }
+>>@@ -995,7 +1001,7 @@ static int hpet_acpi_add(struct acpi_dev
+>> 
+>> static int hpet_acpi_remove(struct acpi_device *device, int type)
+>> {
+>>-	/* XXX need to unregister interpolator, dealloc mem, etc */
+>>+	/* XXX need to unregister clocksource, dealloc mem, etc */
+>> 	return -EINVAL;
+>> }
+>> 
+>>diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+>>index daa4940..a20b4d6 100644
+>>--- a/include/linux/clocksource.h
+>>+++ b/include/linux/clocksource.h
+>>@@ -61,6 +61,9 @@ struct clocksource {
+>> 	u32 shift;
+>> 	unsigned long flags;
+>> 	cycle_t (*vread)(void);
+>>+#ifdef CONFIG_IA64
+>>+	void *fsys_mmio_ptr;	/* used by fsyscall asm code */
+>>+#endif
+>> 
+>> 	/* timekeeping specific data, ignore */
+>> 	cycle_t cycle_last, cycle_interval;
+>>    
+>>
