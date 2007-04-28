@@ -1,125 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbXD1GZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbXD1G3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754744AbXD1GZa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbXD1GZa
+	id S1754747AbXD1G3F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXD1G3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:25:30 -0400
-Received: from smtp102.plus.mail.re2.yahoo.com ([206.190.53.27]:38438 "HELO
-	smtp102.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756130AbXD1GZ1 (ORCPT
+	Sat, 28 Apr 2007 02:29:05 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2060 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754747AbXD1G3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:25:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=qYxgv3GjvFMZTXUu58rP4grbn+lD/zRKKaw4OnUrceJ+7YDBfSSJmOL9F4Em0qGYbUZEMtn+cbv8BLYtEjl1617CD/X8rNWuptTMKhcMpSdZDkOThdapw3bMK3wmGhb0QSjil9DI9lQvT4KvKVaqls6Y/7Dfn9aqtaS83OV/pQY=  ;
-X-YMail-OSG: lKLM2nMVM1mXcAUQErH7WpW2Ts6vIXzoUWzeE6n2WIXSojdvOK54l4pW2JffDfsTq11TraVZNQ--
-Date: Sat, 28 Apr 2007 08:25:17 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized spinlock. was: Re: 2.6.21-rc7-mm2
-Message-ID: <20070428062516.GB4957@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426182519.GA4532@gollum.tnic> <20070427172230.94b82829.akpm@linux-foundation.org> <20070428055740.GA4957@gollum.tnic>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Sat, 28 Apr 2007 02:29:03 -0400
+Date: Sat, 28 Apr 2007 16:28:39 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private data
+Message-ID: <20070428062839.GA6535@gondor.apana.org.au>
+References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070428055740.GA4957@gollum.tnic>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <463286D9.7090609@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 07:57:40AM +0200, Borislav Petkov wrote:
-> On Fri, Apr 27, 2007 at 05:22:30PM -0700, Andrew Morton wrote:
-> > On Thu, 26 Apr 2007 20:25:19 +0200
-> > Borislav Petkov <bbpetkov@yahoo.de> wrote:
-> > 
-> > > 
-> > > Remove build warning mm/memory.c:1491: warning: 'ptl' may be used uninitialized in this function.
-> > > The spinlock pointer is assigned to null since it gets overwritten right away in
-> > > pte_alloc_map_lock().
-> > > 
-> > > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-> > > ---
-> > > 
-> > > Index: linux-mm/mm/memory.c
-> > > ===================================================================
-> > > --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
-> > > +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
-> > > @@ -1488,7 +1488,7 @@
-> > >         pte_t *pte;
-> > >         int err;
-> > >         struct page *pmd_page;
-> > > -       spinlock_t *ptl;
-> > > +       spinlock_t *ptl = NULL;
-> > > 
-> > >         pte = (mm == &init_mm) ?
-> > >                 pte_alloc_kernel(pmd, addr) :
-> > > 
-> > 
-> > yes, I've been staring unhappily at this for some time.
-> > 
-> > Your change adds seven bytes of text to this function for no runtime
-> > benefit, just to fix a build-time warning.  It's a general problem.
-> > 
-> > 
-> > Often we just leave the warning in place and curse gcc each time it flies
-> > past.  Sometimes the code can be restructured in a sensible fashion to
-> > avoid the warning; often it cannot.
-> > 
-> > But I don't think I want to put up with a warning coming out of core MM all
-> > the time so let's go with the following silliness which adds no additional
-> > runtime cost.
-> > 
-> > --- a/mm/memory.c~add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix
-> > +++ a/mm/memory.c
-> > @@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
-> >  	pte_t *pte;
-> >  	int err;
-> >  	struct page *pmd_page;
-> > -	spinlock_t *ptl;
-> > +	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
-> >  
-> >  	pte = (mm == &init_mm) ?
-> >  		pte_alloc_kernel(pmd, addr) :
-> > _
+On Fri, Apr 27, 2007 at 04:27:21PM -0700, Jeremy Fitzhardinge wrote:
+> Herbert Xu wrote:
+> > They can be applied separately so you don't need the dom0 part for your
+> > tree.
 > 
-> Yeah,
-> I saw in other places that usually a NULL/0 is assigned to such a type of pointer. 
-> However, writing code which looks pretty silly just to shut up gcc is pretty
-> senseless, IMHO. Isn't there such a tweak in gcc to say that this pointer is
-> going to be assigned to later on, so don't issue a warning. Something like 
-> 
-> __attribute__ __address_will_be_overwritten_so_don't_bother_warning_me__?
-> 
-> /me going to read gcc docs...
+> Great, thanks.
 
-Sorry, no such thing in the docs to do
+BTW, the version I posted to you is missing the following line.
 
-spinlock_t __attribute__((__uninitialized__)) *ptl;
-
-in order to suppress warnings. But if function size is our concern here, even
-shorter would be:
-
-Index: linux-mm/mm/memory.c
-===================================================================
---- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
-+++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
-@@ -1488,7 +1488,7 @@
-        pte_t *pte;
-        int err;
-        struct page *pmd_page;
--       spinlock_t *ptl;
-+       spinlock_t *ptl = 0;
-
-        pte = (mm == &init_mm) ?
-                pte_alloc_kernel(pmd, addr) :
-
-
-
+Cheers,
 -- 
-Regards/Gruß,
-    Boris.
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+--- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
++++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
+@@ -89,6 +89,7 @@
+ 	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
+ 	if (skb->h.raw >= skb->tail)
+ 		goto out;
++	skb->csum_start = skb->h.raw - skb->head;
+ 	switch (skb->nh.iph->protocol) {
+ 	case IPPROTO_TCP:
+ 		skb->csum_offset = offsetof(struct tcphdr, check);
