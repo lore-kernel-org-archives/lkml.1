@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161862AbXD1Q5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756405AbXD1REI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161862AbXD1Q5S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 12:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161863AbXD1Q5S
+	id S1756405AbXD1REI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXD1REI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 12:57:18 -0400
-Received: from aa012msr.fastwebnet.it ([85.18.95.72]:48742 "EHLO
-	aa012msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161862AbXD1Q5R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 12:57:17 -0400
-Date: Sat, 28 Apr 2007 18:56:08 +0200
-From: Paolo Ornati <ornati@fastwebnet.it>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthias Andree <matthias.andree@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-Message-ID: <20070428185608.6b7bbf3f@localhost>
-In-Reply-To: <alpine.LFD.0.98.0704280928530.9964@woody.linux-foundation.org>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	<alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
-	<20070427113117.98c4f88b.akpm@linux-foundation.org>
-	<20070428085148.GC31196@merlin.emma.line.org>
-	<alpine.LFD.0.98.0704280928530.9964@woody.linux-foundation.org>
-X-Mailer: Claws Mail 2.6.1 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+	Sat, 28 Apr 2007 13:04:08 -0400
+Received: from www.osadl.org ([213.239.205.134]:52324 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756405AbXD1REH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:04:07 -0400
+Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Meyer <thomas.mey@web.de>
+In-Reply-To: <463375E5.5040108@googlemail.com>
+References: <463375E5.5040108@googlemail.com>
+Content-Type: text/plain
+Date: Sat, 28 Apr 2007 19:06:11 +0200
+Message-Id: <1177779971.7646.271.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 09:30:06 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Sat, 2007-04-28 at 18:27 +0200, Michal Piotrowski wrote:
+> Subject    : Bad interaction between dynticks and amarok?
+> References : http://lkml.org/lkml/2007/4/26/307
+> Submitter  : Thomas Meyer <thomas.mey@web.de>
+> Status     : Unknow
 
-> There are worse examples. Try connecting some flash disk over USB-1, and 
-> untar to it. Ugh.
-> 
-> I'd love to have some per-device dirty limit, but it's harder than it 
-> should be.
+Michal,
 
-this one should help:
+I don't think this is a regression. What Thomas wanted to point out is,
+that the amarok / sound device is making the positive effect of dynticks
+moot, as it starts to trigger useless interrupts.
 
-Patch: per device dirty throttling
-http://lwn.net/Articles/226709/
+Thomas, is my interpretation correct ? Did you check, which interrupt
+was increasing - i.e. was it the soundcard one ?
 
--- 
-	Paolo Ornati
-	Linux 2.6.21-cfs-v7-g13fe02de on x86_64
+	tglx
+
+
+
