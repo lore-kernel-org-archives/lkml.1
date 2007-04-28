@@ -1,135 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161771AbXD1I4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161775AbXD1I7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161771AbXD1I4P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 04:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161775AbXD1I4P
+	id S1161775AbXD1I7E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 04:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161778AbXD1I7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 04:56:15 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:57855 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161771AbXD1I4N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 04:56:13 -0400
-Date: Sat, 28 Apr 2007 01:55:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070428015555.73b50b8c.akpm@linux-foundation.org>
-In-Reply-To: <1177749176.28223.34.camel@twins>
-References: <20070426190438.3a856220.akpm@linux-foundation.org>
-	<20070427022731.GF65285596@melbourne.sgi.com>
-	<20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
-	<20070427002640.22a71d06.akpm@linux-foundation.org>
-	<20070427163620.GI32602149@melbourne.sgi.com>
-	<20070427173432.GJ32602149@melbourne.sgi.com>
-	<20070427121108.9ee05710.akpm@linux-foundation.org>
-	<4632A6DF.7080301@yahoo.com.au>
-	<1177747448.28223.26.camel@twins>
-	<20070428012251.fae10a71.akpm@linux-foundation.org>
-	<1177749176.28223.34.camel@twins>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Apr 2007 04:59:04 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:38195 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161775AbXD1I7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 04:59:01 -0400
+Message-ID: <46330CD1.8040306@simon.arlott.org.uk>
+Date: Sat, 28 Apr 2007 09:58:57 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH (rev 2)] cxacru: Cleanup sysfs attribute code
+References: <462E730F.3090401@simon.arlott.org.uk>	<200704250919.50382.duncan.sands@math.u-psud.fr>	<11882.simon.1177499883@5ec7c279.invalid>	<462FA0D0.9040901@simon.arlott.org.uk> <20070428005028.54f1b621.akpm@linux-foundation.org>
+In-Reply-To: <20070428005028.54f1b621.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 10:32:56 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-
-> On Sat, 2007-04-28 at 01:22 -0700, Andrew Morton wrote:
-> > On Sat, 28 Apr 2007 10:04:08 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > > 
-> > > > The other thing is that we can batch up pagecache page insertions for bulk
-> > > > writes as well (that is. write(2) with buffer size > page size). I should
-> > > > have a patch somewhere for that as well if anyone interested.
-> > > 
-> > > Together with the optimistic locking from my concurrent pagecache that
-> > > should bring most of the gains:
-> > > 
-> > > sequential insert of 8388608 items:
-> > > 
-> > > CONFIG_RADIX_TREE_CONCURRENT=n
-> > > 
-> > > [ffff81007d7f60c0] insert 0 done in 15286 ms
-> > > 
-> > > CONFIG_RADIX_TREE_OPTIMISTIC=y
-> > > 
-> > > [ffff81006b36e040] insert 0 done in 3443 ms
-> > > 
-> > > only 4.4 times faster, and more scalable, since we don't bounce the
-> > > upper level locks around.
-> > 
-> > I'm not sure what we're looking at here.  radix-tree changes?  Locking
-> > changes?  Both?
+On 28/04/07 08:50, Andrew Morton wrote:
+> On Wed, 25 Apr 2007 19:41:20 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
+>> This changes the format of unknown status values to be less verbose and 
+>> uses an array instead of several different snprintf calls. Since only 
+>> enum values are assigned to it, poll_state is changed from int to enum. 
+>> Use abs() for dB values instead of two almost identical return lines.
+>> ...
+>> +	static char *str[] = { "no", "yes" };
+>> +	if (unlikely(value >= ARRAY_SIZE(str)))
+>> +		return snprintf(buf, PAGE_SIZE, "%u\n", value);
+>> +	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
 > 
-> Both, the radix tree is basically node locked, and all modifying
-> operations are taught to node lock their way around the radix tree.
-> This, as Christoph pointed out, will suck on SMP because all the node
-> locks will bounce around like mad.
+> Should a bool be displayed as "true" or "false"?
+
+The only attribute that uses this is line_startable... I suppose 
+it could return true/false - I just happened to use yes/no.
+
+>> +		return snprintf(buf, PAGE_SIZE, "%u\n", value);
 > 
-> So what I did was couple that with an 'optimistic' RCU lookup of the
-> highest node that _needs_ to be locked for the operation to succeed,
-> lock that node, verify it is indeed still the node we need, and proceed
-> as normal (node locked). This avoid taking most/all of the upper level
-> node locks; esp for insert, which typically only needs one lock.
-
-hm.  Maybe if we were taking the lock once per N pages rather than once per
-page, we could avoid such trickiness.
-
-> > If we have a whole pile of pages to insert then there are obvious gains
-> > from not taking the lock once per page (gang insert).  But I expect there
-> > will also be gains from not walking down the radix tree once per page too:
-> > walk all the way down and populate all the way to the end of the node.
+> To be completely pedantic: we shouldn't be printing u32's with %u.  Because
+> %u assumes that u32 is implemented as unsigned int.  Only it's an opaque
+> type and we don't know what actual C type the architecture chose to use.
 > 
-> Yes, it will be even faster if we could batch insert a whole leaf node.
-> That would save 2^6 - 1 tree traversals and lock/unlock cycles.
-> Certainly not unwanted.
-> 
-> > The implementation could get a bit tricky, handling pages which a racer
-> > instantiated when we dropped the lock, and suitably adjusting ->index.  Not
-> > rocket science though.
-> 
-> *nod*
-> 
-> > The depth of the radix tree matters (ie, the file size).  'twould be useful
-> > to always describe the tree's size when publishing microbenchmark results
-> > like this.
-> 
-> Right, this was with two such sequences of 2^23, so 2^24 elements in
-> total, with 0 offset, which gives: 24/6 = 4 levels.
+> It happens to work OK on all architectures and I expect it always will, so
+> no change is needed, but there you have it.
 
-Where an element would be a page, so we're talking about a 64GB file with
-4k pagesize?
+Ok.
 
-Gosh that tree has huge fanout.  We fiddled around a bit with
-RADIX_TREE_MAP_SHIFT in the early days.  Changing it by quite large amounts
-didn't appear to have much effect on anything, actually.
+> u64's and %llu _are_ incompatible on some architectures and I get to fix
+> that about 1000000 times.
 
-btw, regarding __do_page_cache_readahead(): that function is presently
-optimised for file rereads - if all pages are present it'll only take the
-lock once.  The first version of it was optimised the other way around - it
-took the lock once for uncached file reads (no pages present), but once per
-page for rereads.  I made this change because Anton Blanchard had some
-workload which hurt, and we figured that rereads are the common case, and
-uncached reads are limited by disk speed anyway.
-
-Thinking about it, I guess that was a correct decision, but we did
-pessimise these read-a-gargantuan-file cases.
-
-But we could actually implement both flavours and pick the right one to
-call based upon the hit-rate metrics which the readahead code is
-maintaining (or add new ones).
-
-Of course, gang-populate would be better.
+-- 
+Simon Arlott
