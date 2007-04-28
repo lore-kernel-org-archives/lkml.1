@@ -1,75 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751980AbXD1XVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbXD1XZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751980AbXD1XVO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbXD1XVO
+	id S1752969AbXD1XZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbXD1XZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:21:14 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:36446 "EHLO proxima.lp0.eu"
+	Sat, 28 Apr 2007 19:25:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:37576 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbXD1XVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:21:13 -0400
-Message-ID: <4633D6E3.5060602@simon.arlott.org.uk>
-Date: Sun, 29 Apr 2007 00:21:07 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	id S1752548AbXD1XZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 19:25:03 -0400
+Message-ID: <4633D7D5.4050404@goop.org>
+Date: Sat, 28 Apr 2007 16:25:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       herbert@gondor.apana.org.au
-Subject: Re: [PATCH] crypto: Use padlock.ko only as a module
-References: <463379FA.9080004@simon.arlott.org.uk> <20070428153707.50f1644a.randy.dunlap@oracle.com>
-In-Reply-To: <20070428153707.50f1644a.randy.dunlap@oracle.com>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix PSE pagetable construction
+References: <4632AE54.7030200@goop.org>	<m1zm4tghyf.fsf@ebiederm.dsl.xmission.com>	<200704281229.48597.ak@suse.de> <46335A26.4020109@goop.org> <m1bqh8friu.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1bqh8friu.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/04/07 23:37, Randy Dunlap wrote:
-> On Sat, 28 Apr 2007 17:44:42 +0100 Simon Arlott wrote:
-> 
->> The padlock.ko module is completely useless when compiled in 
->> because it can't do anything and gets run too early to output 
->> anything useful.
->> --- a/drivers/crypto/Makefile
->> +++ b/drivers/crypto/Makefile
->> @@ -1,4 +1,6 @@
->> -obj-$(CONFIG_CRYPTO_DEV_PADLOCK) += padlock.o
->> +ifeq ($(CONFIG_CRYPTO_DEV_PADLOCK),m)
->> +obj-m += padlock.o
->> +endif
->>  obj-$(CONFIG_CRYPTO_DEV_PADLOCK_AES) += padlock-aes.o
->>  obj-$(CONFIG_CRYPTO_DEV_PADLOCK_SHA) += padlock-sha.o
->>  obj-$(CONFIG_CRYPTO_DEV_GEODE) += geode-aes.o
-> 
-> I think that we prefer to enforce config symbols in Kconfig files,
-> not in Makefiles.  E.g.,
+Eric W. Biederman wrote:
+> Except for Xen my patch should work incrementally.
 
-No, that would cause the wrong behaviour in this case. The two 
-modules that depend on it for no reason work fine compiled in.
+Yes, your patch is good.  I have it in my series followed by the
+appropriate Xen patch, and it boots OK both Xen and native.
 
-Ideally I'd just remove that module completely, all it does is 
-trigger the loading of the other two modules when modules are 
-used - so I'll submit a patch for that instead.
+    J
 
-> ---
->  drivers/crypto/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-2621-pv.orig/drivers/crypto/Kconfig
-> +++ linux-2621-pv/drivers/crypto/Kconfig
-> @@ -2,7 +2,7 @@ menu "Hardware crypto devices"
->  
->  config CRYPTO_DEV_PADLOCK
->  	tristate "Support for VIA PadLock ACE"
-> -	depends on X86_32
-> +	depends on X86_32 && m
->  	select CRYPTO_ALGAPI
->  	default m
->  	help
-
-
--- 
-Simon Arlott
