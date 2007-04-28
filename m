@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161309AbXD1WdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXD1Web@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161309AbXD1WdG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 18:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161366AbXD1WdG
+	id S1161276AbXD1Web (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 18:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161333AbXD1Web
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 18:33:06 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37624 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161309AbXD1WdE (ORCPT
+	Sat, 28 Apr 2007 18:34:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35992 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161276AbXD1Wea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:33:04 -0400
-Date: Sun, 29 Apr 2007 00:33:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Neil Brown <neilb@suse.de>
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
+	Sat, 28 Apr 2007 18:34:30 -0400
+Date: Sat, 28 Apr 2007 15:33:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.21
-Message-ID: <20070428223314.GD3468@stusta.de>
-References: <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <46339BC7.6050802@mbligh.org> <17971.50834.907414.761549@notabene.brown>
+In-Reply-To: <20070428195320.GZ3468@stusta.de>
+Message-ID: <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+ <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de>
+ <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+ <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com>
+ <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
+ <20070426224148.69b91b2e.diegocg@gmail.com>
+ <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
+ <20070428195320.GZ3468@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <17971.50834.907414.761549@notabene.brown>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 08:11:30AM +1000, Neil Brown wrote:
-> On Saturday April 28, mbligh@mbligh.org wrote:
->...
-> > As Andrew has pointed out before though - even though he forwards
-> > the bugs, nobody does anything with it. The sad truth seems to be
-> > that people have very little interest in fixing bugs when they are
-> > reported - it's not sexy, I guess.
+
+
+On Sat, 28 Apr 2007, Adrian Bunk wrote:
 > 
-> Not sexy, and also not at all easy.   A lot of the interesting bugs
-> seem to be subtle interactions between separate parts of the kernel -
-> one part making an assumption or exhibiting a behaviour that the other
-> part didn't expect.  And we all know that writing bug^Wcode is easier
-> than removing bugs.  I can spend hour and hours reading through code
-> trying to get the big picture, and end up finding a one-line change
-> that then needs documenting, testing and external review.  It's not
-> easy.
-> 
-> > I'm still unconvinced the users or the tool are the problem, but if it
-> > makes you happier, we can do that.
-> 
-> No, they aren't the problem.  Bugs are the problem.  But they might be
-> a more effective part of the solution.
-> 
-> My perception of the kernel bugzilla is that visibility is very low.
-> 
-> I think there is value in weekly reminders, and I wouldn't mind seeing
-> a weekly Email on linux-kernel with something like a list of open bugs
-> that have not seen any activity in between 1 and 2 weeks.  It might
-> get someone out-of-area interested, and might be noticed by someone
-> who thinks they are in-area and get them wondering why they didn't
-> find out when the bug was first reported.
+> We are already quite good at ignoring bug reports that come through 
+> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
+> than 1600 open bugs because this tells how bad we are at handling bugs.
 
-The 100 kB email limit has to be lifted for this... 
+No, it just shows that bugzilla doesn't matter for most of the kernel.
 
-More seriously, there are > 1000 open bugs in the kernel Bugzilla 
-without any activity during the last 2 weeks.
+Don't say that "bugzilla tells how bad we are at handling bugs". It tells 
+how bad *bugzilla* is for handling bugs, nothing more.
 
-The problem is usually either "Not sexy, and also not at all easy." or
-"no maintainer".
+Trying to play politics by pointing to bugzilla is pointless. Bugzilla is 
+used for a few subsystems (ACPI seems to use it actively, for example), 
+but I doubt most developers use it.
 
-Technology can assist, but there are non-technical problems you can't 
-solve through technology.
+Would be be good to have a better bug-tracking setup? Yes. But I think it 
+takes man-power, and it would take something *fundamentally* better than 
+bugzilla.
 
-> NeilBrown
+Maybe the new "http://kernelnewbies.org/known_regressions" thing will 
+evolve to something worth tracking. Right now, bugzilla isn't it (although 
+it can be a useful tracking place for individual bugs, *once* you've found 
+and gotten the right developer involved - but that's a huge step that 
+bugzilla generally does *not* do for us).
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+			Linus
