@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754432AbXD1Xsf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbXD1XvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754432AbXD1Xsf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:48:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXD1Xsf
+	id S1754434AbXD1XvA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbXD1XvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:48:35 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4171 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754432AbXD1Xse (ORCPT
+	Sat, 28 Apr 2007 19:51:00 -0400
+Received: from c-24-22-8-126.hsd1.mn.comcast.net ([24.22.8.126]:56989 "EHLO
+	laptopd505.fenrus.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754434AbXD1Xu7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:48:34 -0400
-Message-ID: <4633DD55.1020006@shadowen.org>
-Date: Sun, 29 Apr 2007 00:48:37 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: bbpetkov@yahoo.de, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized spinlock.
- was: Re: 2.6.21-rc7-mm2
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<20070426182519.GA4532@gollum.tnic> <20070427172230.94b82829.akpm@linux-foundation.org>
-In-Reply-To: <20070427172230.94b82829.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Apr 2007 19:50:59 -0400
+X-Greylist: delayed 500 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 19:50:59 EDT
+Subject: Re: Please revert [PATCH] user of the jiffies rounding patch: Slab
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704281632001.12695@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704281403140.12122@schroedinger.engr.sgi.com>
+	 <4633D1A2.6010002@linux.intel.com>
+	 <Pine.LNX.4.64.0704281632001.12695@schroedinger.engr.sgi.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Sat, 28 Apr 2007 16:40:30 -0700
+Message-Id: <1177803630.3477.3.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 26 Apr 2007 20:25:19 +0200
-> Borislav Petkov <bbpetkov@yahoo.de> wrote:
-> 
->> Remove build warning mm/memory.c:1491: warning: 'ptl' may be used uninitialized in this function.
->> The spinlock pointer is assigned to null since it gets overwritten right away in
->> pte_alloc_map_lock().
->>
->> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
->> ---
->>
->> Index: linux-mm/mm/memory.c
->> ===================================================================
->> --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
->> +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
->> @@ -1488,7 +1488,7 @@
->>         pte_t *pte;
->>         int err;
->>         struct page *pmd_page;
->> -       spinlock_t *ptl;
->> +       spinlock_t *ptl = NULL;
->>
->>         pte = (mm == &init_mm) ?
->>                 pte_alloc_kernel(pmd, addr) :
->>
-> 
-> yes, I've been staring unhappily at this for some time.
-> 
-> Your change adds seven bytes of text to this function for no runtime
-> benefit, just to fix a build-time warning.  It's a general problem.
-> 
-> 
-> Often we just leave the warning in place and curse gcc each time it flies
-> past.  Sometimes the code can be restructured in a sensible fashion to
-> avoid the warning; often it cannot.
-> 
-> But I don't think I want to put up with a warning coming out of core MM all
-> the time so let's go with the following silliness which adds no additional
-> runtime cost.
-> 
-> --- a/mm/memory.c~add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix
-> +++ a/mm/memory.c
-> @@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
->  	pte_t *pte;
->  	int err;
->  	struct page *pmd_page;
-> -	spinlock_t *ptl;
-> +	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
->  
->  	pte = (mm == &init_mm) ?
->  		pte_alloc_kernel(pmd, addr) :
-> _
-> 
+On Sat, 2007-04-28 at 16:35 -0700, Christoph Lameter wrote:
 
-Perhaps we should have some kind definition helper.
+> Hmmm... Yes but that looks like it comes from a different function. Slab
+> calls
+> 
+>  __round_jiffies_relative(HZ, cpu))
+> 
+> And its description says:
+> 
+> /**
+>  *
+>  * The exact rounding is skewed for each processor to avoid all
+>  * processors firing at the exact same time, which could lead
+>  * to lock contention or spurious cache line bouncing.
 
-#define suppress_unused(x) x = x
 
-	spinlock_t *suppress_unused(ptl);
+> This is exactly the wrong thing to do.
 
-Perhaps?
 
--apw
+is it?
+
