@@ -1,106 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030918AbXD1CQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030917AbXD1CST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030918AbXD1CQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030932AbXD1CQZ
+	id S1030917AbXD1CST (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030931AbXD1CST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:16:25 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:24896 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030919AbXD1CQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:16:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=fNi2FerFGN/hHxtwnbdQ89iKiYq/7UOM9HhEawMkwO1InnBzJiP2mIzWgmqP5TTLOAKbfPTmw5jGN9Wr0deHAs4sa9ENk+pvf01gGthvnrWUBWixuZjGeWsrPPCkKi59FDxH+QVVW9Tq+GkCRDZt6VFPFrBMM2R41sRWaq0M6D0=  ;
-X-YMail-OSG: QX9syr0VM1n0DYiuN1kP1qrguU3_Sw7Y4opWFo1yyAvOK2NzLBYCy4TPA.Xwn2nYA6Z9nJcJsw--
-Message-ID: <4632AE64.90900@yahoo.com.au>
-Date: Sat, 28 Apr 2007 12:16:04 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Fri, 27 Apr 2007 22:18:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:44385 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030917AbXD1CSR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:18:17 -0400
+Message-ID: <4632AEE9.80809@goop.org>
+Date: Fri, 27 Apr 2007 19:18:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Mike Stroyan <mike.stroyan@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rohit Seth <rohitseth@google.com>, "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <20070425205548.fd51b301.akpm@linux-foundation.org> <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com> <4631E49C.2030501@yahoo.com.au> <Pine.LNX.4.64.0704271437570.14794@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0704271437570.14794@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, Dan Hecht <dhecht@vmware.com>,
+       john stultz <johnstul@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: Add a sched_clock paravirt_op
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Fri, 27 Apr 2007, Nick Piggin wrote:
-> 
->>But that's because of ia64's cache coherency implementation. I don't really
->>follow the documentation to know whether it should be one way or the other,
->>but surely it should be done either before or after the set_pte_at, not both.
->>
->>Anyway, how about fremap or mprotect, for example?
->>... 
->>
->>OK, I'm still not sure that I understand why lazy_mmu_prot_update should be
->>used rather than flush_icache_page (in concept, not ia64 implementation).
->>Sure, flush_icache_page isn't given the pte, but let's assume we can change
->>that.
-> 
-> 
-> You're asking lots of good questions.  I wish the ia64 people would
-> know the answers, but from the length of time the "lazy_mmu_prot_update"
-> stuff took to get into the tree, and the length of time it's taken to be
-> found defective, I suspect they don't, and we'll have to guess for them.
-> 
-> Some guesses I'm working with...
-> 
-> I presume Mike and Anil are correct, that it needs to be done before
-> putting pte into page table, not left until after: but as you've
-> guessed, that needs to be done everywhere, not just in the two
-> places so far identified.
-> 
-> When it was discussed last year (in connection with Peter's page
-> cleaning patches) it was thought to be a variant of update_mmu_cache()
-> (after setting pte), and we added the fremap one to accompany it;
-> but now it looks to be a variant of flush_icache_page() (before
-> setting pte).
+The tsc-based get_scheduled_cycles interface is not a good match for
+Xen's runstate accounting, which reports everything in nanoseconds.
 
-Right. I think.
+This patch replaces this interface with a sched_clock interface, which
+matches both Xen and VMI's requirements.
 
+In order to do this, we:
+   1. replace get_scheduled_cycles with sched_clock
+   2. hoist cycles_2_ns into a common header
+   3. update vmi accordingly
 
-> I believe lazy_mmu_prot_update(pteval) came into existence primarily
-> for mprotect's change_pte_range() case.  If ia64 filled in its
-> flush_icache_page(vma, page), that could have been used there
-> (checking 'vm_flags & VM_EXEC' instead of pte_exec): but that would
-> involve a relatively expensive(?) pte_page() in a place which doesn't
-> need to know the struct page for other cases.
+One thing to note: because sched_clock is implemented as a weak
+function in kernel/sched.c, we must define a real function in order to
+override this weak binding.  This means the usual paravirt_ops
+technique of using an inline function won't work in this case.
 
-Well, I think we could always add a pte argument to flush_icache_page...
-Then, there might be logic to have a flush_lazy_icache_page when
-changing protections, but that operation (currently called
-lazy_mmu_prot_update) really doesn't seem like it should be called in
-all the other places that it is, flush_icache_page should be used for
-that.
+[ This is against Andi's patch queue.  It fixes the x86-64 build problem. ]
 
-But AFAIKS, if we really want correctness, flush_icache_page should go
-away and be implemented in flush_dcache_page.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Dan Hecht <dhecht@vmware.com>
+Cc: john stultz <johnstul@us.ibm.com>
 
+---
+ arch/i386/kernel/paravirt.c    |    2 -
+ arch/i386/kernel/sched-clock.c |   43 +++++++++++++----------------------
+ arch/i386/kernel/vmi.c         |    2 -
+ arch/i386/kernel/vmiclock.c    |    6 ++--
+ include/asm-i386/paravirt.h    |    7 ++++-
+ include/asm-i386/sched-clock.h |   49 ++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/timer.h       |    2 -
+ include/asm-i386/vmi_time.h    |    2 -
+ include/asm-x86_64/timer.h     |    2 -
+ 9 files changed, 79 insertions(+), 36 deletions(-)
 
-> Well, not pte_page(), it needs to be vm_normal_page() doesn't it?
-> and ia64's current lazy_mmu_prot_update is unsafe when !pfn_valid.
-> 
-> Some flush_icache_pages are already in place, others are not: do
-> we need to add some?  But those architectures which have a non-empty
-> flush_icache_page seem to have survived without the additional calls
-> - so they might be unnecessarily slowed down by additional calls.
+===================================================================
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -268,7 +268,7 @@ struct paravirt_ops paravirt_ops = {
+ 	.write_msr = native_write_msr_safe,
+ 	.read_tsc = native_read_tsc,
+ 	.read_pmc = native_read_pmc,
+-	.get_scheduled_cycles = native_read_tsc,
++	.sched_clock = native_sched_clock,
+ 	.get_cpu_khz = native_calculate_cpu_khz,
+ 	.load_tr_desc = native_load_tr_desc,
+ 	.set_ldt = native_set_ldt,
+===================================================================
+--- a/arch/i386/kernel/sched-clock.c
++++ b/arch/i386/kernel/sched-clock.c
+@@ -35,29 +35,8 @@
+  *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
+  */
+ 
+-#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+-
+-struct sc_data {
+-	unsigned cyc2ns_scale;
+-	unsigned unstable;
+-	unsigned long long sync_base;		/* TSC or jiffies at syncpoint*/
+-	unsigned long long ns_base;		/* nanoseconds at sync point */
+-	unsigned long long last_val;		/* Last returned value */
+-};
+-
+-static DEFINE_PER_CPU(struct sc_data, sc_data) =
++DEFINE_PER_CPU(struct sc_data, sc_data) =
+ 	{ .unstable = 1, .sync_base = INITIAL_JIFFIES };
+-
+-static inline u64 cycles_2_ns(struct sc_data *sc, u64 cyc)
+-{
+-	u64 ns;
+-
+-	cyc -= sc->sync_base;
+-	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+-	ns += sc->ns_base;
+-
+-	return ns;
+-}
+ 
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+@@ -79,7 +58,7 @@ static inline u64 cycles_2_ns(struct sc_
+  * per CPU. This state is protected against parallel state changes
+  * with interrupts off.
+  */
+-unsigned long long sched_clock(void)
++unsigned long long native_sched_clock(void)
+ {
+ 	unsigned long long r;
+ 	struct sc_data *sc = &get_cpu_var(sc_data);
+@@ -98,8 +77,8 @@ unsigned long long sched_clock(void)
+ 		sc->last_val = r;
+ 		local_irq_restore(flags);
+ 	} else {
+-		get_scheduled_cycles(r);
+-		r = cycles_2_ns(sc, r);
++		rdtscll(r);
++		r = cycles_2_ns(r);
+ 		sc->last_val = r;
+ 	}
+ 
+@@ -107,6 +86,18 @@ unsigned long long sched_clock(void)
+ 
+ 	return r;
+ }
++
++/* We need to define a real function for sched_clock, to override the
++   weak default version */
++#ifdef CONFIG_PARAVIRT
++unsigned long long sched_clock(void)
++{
++	return paravirt_sched_clock();
++}
++#else
++unsigned long long sched_clock(void)
++	__attribute__((alias("native_sched_clock")));
++#endif
+ 
+ /* Resync with new CPU frequency */
+ static void resync_sc_freq(struct sc_data *sc, unsigned int newfreq)
+@@ -124,7 +115,7 @@ static void resync_sc_freq(struct sc_dat
+ 	   because sched_clock callers should be able to tolerate small
+ 	   errors. */
+ 	sc->ns_base = ktime_to_ns(ktime_get());
+-	get_scheduled_cycles(sc->sync_base);
++	rdtscll(sc->sync_base);
+ 	sc->cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR) / newfreq;
+ }
+ 
+===================================================================
+--- a/arch/i386/kernel/vmi.c
++++ b/arch/i386/kernel/vmi.c
+@@ -890,7 +890,7 @@ static inline int __init activate_vmi(vo
+ 		paravirt_ops.setup_boot_clock = vmi_time_bsp_init;
+ 		paravirt_ops.setup_secondary_clock = vmi_time_ap_init;
+ #endif
+-		paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles;
++		paravirt_ops.sched_clock = vmi_sched_clock;
+  		paravirt_ops.get_cpu_khz = vmi_cpu_khz;
+ 
+ 		/* We have true wallclock functions; disable CMOS clock sync */
+===================================================================
+--- a/arch/i386/kernel/vmiclock.c
++++ b/arch/i386/kernel/vmiclock.c
+@@ -65,9 +65,9 @@ int vmi_set_wallclock(unsigned long now)
+ }
+ 
+ /* paravirt_ops.get_scheduled_cycles = vmi_get_sched_cycles */
+-unsigned long long vmi_get_sched_cycles(void)
+-{
+-	return vmi_timer_ops.get_cycle_counter(VMI_CYCLES_AVAILABLE);
++unsigned long long vmi_sched_clock(void)
++{
++	return cycles_2_ns(vmi_timer_ops.get_cycle_counter(VMI_CYCLES_AVAILABLE));
+ }
+ 
+ /* paravirt_ops.get_cpu_khz = vmi_cpu_khz */
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -116,7 +116,7 @@ struct paravirt_ops
+ 
+ 	u64 (*read_tsc)(void);
+ 	u64 (*read_pmc)(void);
+- 	u64 (*get_scheduled_cycles)(void);
++ 	unsigned long long (*sched_clock)(void);
+ 	unsigned long (*get_cpu_khz)(void);
+ 
+ 	/* Segment descriptor handling */
+@@ -573,7 +573,10 @@ static inline u64 paravirt_read_tsc(void
+ 
+ #define rdtscll(val) (val = paravirt_read_tsc())
+ 
+-#define get_scheduled_cycles(val) (val = paravirt_ops.get_scheduled_cycles())
++static inline unsigned long long paravirt_sched_clock(void)
++{
++	return PVOP_CALL0(unsigned long long, sched_clock);
++}
+ #define calculate_cpu_khz() (paravirt_ops.get_cpu_khz())
+ 
+ #define write_tsc(val1,val2) wrmsr(0x10, val1, val2)
+===================================================================
+--- /dev/null
++++ b/include/asm-i386/sched-clock.h
+@@ -0,0 +1,49 @@
++#ifndef _ASM_SCHED_CLOCK_H
++#define _ASM_SCHED_CLOCK_H
++
++/* Accellerators for sched_clock()
++ * convert from cycles(64bits) => nanoseconds (64bits)
++ *  basic equation:
++ *		ns = cycles / (freq / ns_per_sec)
++ *		ns = cycles * (ns_per_sec / freq)
++ *		ns = cycles * (10^9 / (cpu_khz * 10^3))
++ *		ns = cycles * (10^6 / cpu_khz)
++ *
++ *	Then we use scaling math (suggested by george@mvista.com) to get:
++ *		ns = cycles * (10^6 * SC / cpu_khz) / SC
++ *		ns = cycles * cyc2ns_scale / SC
++ *
++ *	And since SC is a constant power of two, we can convert the div
++ *  into a shift.
++ *
++ *  We can use khz divisor instead of mhz to keep a better percision, since
++ *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
++ *  (mathieu.desnoyers@polymtl.ca)
++ *
++ *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++ */
++struct sc_data {
++	unsigned cyc2ns_scale;
++	unsigned unstable;
++	unsigned long long sync_base;		/* TSC or jiffies at syncpoint*/
++	unsigned long long ns_base;		/* nanoseconds at sync point */
++	unsigned long long last_val;		/* Last returned value */
++};
++
++DECLARE_PER_CPU(struct sc_data, sc_data);
++
++#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
++
++static inline unsigned long long cycles_2_ns(unsigned long long cyc)
++{
++	const struct sc_data *sc = &__get_cpu_var(sc_data);
++	unsigned long long ns;
++
++	cyc -= sc->sync_base;
++	ns = (cyc * sc->cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
++	ns += sc->ns_base;
++
++	return ns;
++}
++
++#endif	/* _ASM_SCHED_CLOCK_H */
+===================================================================
+--- a/include/asm-i386/timer.h
++++ b/include/asm-i386/timer.h
+@@ -2,6 +2,7 @@
+ #define _ASMi386_TIMER_H
+ #include <linux/init.h>
+ #include <linux/pm.h>
++#include <asm/sched-clock.h>
+ 
+ #define TICK_SIZE (tick_nsec / 1000)
+ 
+@@ -15,7 +16,6 @@ extern int recalibrate_cpu_khz(void);
+ extern int recalibrate_cpu_khz(void);
+ 
+ #ifndef CONFIG_PARAVIRT
+-#define get_scheduled_cycles(val) rdtscll(val)
+ #define calculate_cpu_khz() native_calculate_cpu_khz()
+ #endif
+ 
+===================================================================
+--- a/include/asm-i386/vmi_time.h
++++ b/include/asm-i386/vmi_time.h
+@@ -49,7 +49,7 @@ extern void __init vmi_time_init(void);
+ extern void __init vmi_time_init(void);
+ extern unsigned long vmi_get_wallclock(void);
+ extern int vmi_set_wallclock(unsigned long now);
+-extern unsigned long long vmi_get_sched_cycles(void);
++extern unsigned long long vmi_sched_clock(void);
+ extern unsigned long vmi_cpu_khz(void);
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+===================================================================
+--- a/include/asm-x86_64/timer.h
++++ b/include/asm-x86_64/timer.h
+@@ -1,1 +1,1 @@
+-#define get_scheduled_cycles(x) rdtscll(x)
++#include <asm-i386/sched-clock.h>
 
-Well flush_icache seems to be intended solely to bring icache in sync
-with dcache modifications, but they try to skimp out on most of the
-flushes required to handle dcache aliases... but really, I don't think
-that is possible to do 100% correctly.
-
--- 
-SUSE Labs, Novell Inc.
