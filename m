@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbXD1VFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030190AbXD1VGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbXD1VFb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 17:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030190AbXD1VFb
+	id S1030190AbXD1VGs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXD1VGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 17:05:31 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:39326 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753018AbXD1VF2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 17:05:28 -0400
-X-IronPort-AV: i="4.14,465,1170662400"; 
-   d="scan'208"; a="416709590:sNHT43379360"
-To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21-git2] sk_buff changes break Cisco VPN client
-X-Message-Flag: Warning: May contain useful information
-References: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 28 Apr 2007 14:05:27 -0700
-In-Reply-To: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com> (Alessandro Suardi's message of "Sat, 28 Apr 2007 22:38:45 +0200")
-Message-ID: <ada647gmcq0.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Apr 2007 21:05:27.0398 (UTC) FILETIME=[F2464060:01C789D8]
-Authentication-Results: sj-dkim-8; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim8002 verified; ); 
+	Sat, 28 Apr 2007 17:06:48 -0400
+Received: from www.osadl.org ([213.239.205.134]:53881 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753152AbXD1VGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 17:06:46 -0400
+Subject: Re: Flaws with "UIO: Add the User IO core code" (with patch)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, torvalds@osdl.org,
+       Benedikt Spranger <b.spranger@linutronix.de>
+In-Reply-To: <200704282303.06727.hjk@linutronix.de>
+References: <20070427224957.GA17967@kroah.com>
+	 <200704282052.45489.hjk@linutronix.de>
+	 <20070428212416.5768cc04@the-village.bc.nu>
+	 <200704282303.06727.hjk@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 28 Apr 2007 23:08:51 +0200
+Message-Id: <1177794532.7646.313.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is really a problem for Cisco support, not the kernel people.
-(And despite my email address I really have no idea who looks after
-the VPN client).
+On Sat, 2007-04-28 at 23:03 +0200, Hans-Jürgen Koch wrote:
+> Am Samstag 28 April 2007 22:24 schrieb Alan Cox:
+> > > > AFAIK we don't currently have any platform that runs binaries with
+> > > > different sizes of "int" but this is a) an unsigned value anyway, and b)
+> > > > should be a fixed type (eg u32)
+> > > 
+> > > I reviewed the code once more and find it OK. There is only one legal
+> > > value for the parameter "count" of uio_read(), and that's sizeof(int).
+> > 
+> > If you are a box with multiple supported binary types how big is an
+> > "int". We use explicit sizes to ensure that uio_read() will work when/if
+> > we get platforms which support binaries with differing ideas of the size
+> > of "int". Thus it should use s32 or s64 or similar.
+> 
+> Here's a fix to that effect:
 
-However I can suggest vpnc (http://www.unix-ag.uni-kl.de/~massar/vpnc/)
-as an alternative.  I'm not forced to use Cisco VPN access any more,
-but when I tried it, vpnc was tons better than the Cisco product.
+Can you please add a matching paragraph to the documentation ?
 
- - R.
+	tglx
+
+
