@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163465AbXD1SWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163473AbXD1SXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163465AbXD1SWc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163467AbXD1SWc
+	id S1163473AbXD1SXm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163475AbXD1SXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:22:32 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39440 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163330AbXD1SW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:22:28 -0400
-Date: Sat, 28 Apr 2007 11:19:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Jeff Mahoney <jeffm@suse.com>, Vincent Frentzel <zcecc22@ucl.ac.uk>,
-       Riccardo Ricci <rricci@nuovanetmore.it>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       Giorgio Lando <patroclo7@gmail.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       H??kan Lindqvist <lindqvist@netstar.se>,
-       Fran??ois Valenduc <francois.valenduc@skynet.be>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>,
-       stable@kernel.org, Len Brown <len.brown@intel.com>,
-       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Francois SIMOND <curio@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, reiserfs-dev@namesys.com
-Subject: Re: [stable] 2.6.21 known regressions (v2) (for -stable team)
-Message-ID: <20070428181933.GA9811@kroah.com>
-References: <463375E5.5040108@googlemail.com> <200704281252.20381.gene.heskett@gmail.com>
-MIME-Version: 1.0
+	Sat, 28 Apr 2007 14:23:42 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:40054 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163473AbXD1SXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:23:41 -0400
+Date: Sat, 28 Apr 2007 14:23:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] SCSI: use irq_handler_t where appropriate
+Message-ID: <20070428182340.GA17508@havoc.gtf.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704281252.20381.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 12:52:19PM -0400, Gene Heskett wrote:
-> On Saturday 28 April 2007, Michal Piotrowski wrote:
-> >Hi all,
-> >
-> >Here is a list of known regressions reported after 2.6.21 release.
-> >
-> >Feel free to add new regressions/remove fixed etc.
-> >http://kernelnewbies.org/known_regressions
-> >
-> I went here, but without a login the page is immutable
-> 
-> Therefore I'll add it here
-> 
-> Subject		:proprietary belkin upsd turns into cpu hog
-> Submitter	:gene.heskett@gmail.com
-> Reference	:something changed in how /dev/ttyUSB's handle 1 and 2 byte messages 
-> from pl2303 usb<->serial adaptors.
 
-Last time this came up, I asked you to enable debugging in the driver to
-see the data flow through it and find out if it really is the driver at
-fault here.
+Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-Did you do this?  Did anything happen that was "odd"?
-
-Can you do a 'git bisect' of Linus's tree to try to track down the
-issue?
-
-> Also, assignation of ttyUSB#'s is volatile depending on phase of the
-> moon when booted.
-
-That's always been the case, ever since the 2.2 kernel releases.  Please
-use udev if you want persistent device names for your tty USB devices.
-
-thanks,
-
-greg k-h
+diff --git a/drivers/scsi/aacraid/aacraid.h b/drivers/scsi/aacraid/aacraid.h
+index 39ecd0d..ccdf57e 100644
+--- a/drivers/scsi/aacraid/aacraid.h
++++ b/drivers/scsi/aacraid/aacraid.h
+@@ -499,7 +499,7 @@ struct adapter_ops
+ 	int  (*adapter_check_health)(struct aac_dev *dev);
+ 	/* Transport operations */
+ 	int  (*adapter_ioremap)(struct aac_dev * dev, u32 size);
+-	irqreturn_t (*adapter_intr)(int irq, void *dev_id);
++	irq_handler_t adapter_intr;
+ 	/* Packet operations */
+ 	int  (*adapter_deliver)(struct fib * fib);
+ 	int  (*adapter_bounds)(struct aac_dev * dev, struct scsi_cmnd * cmd, u64 lba);
+diff --git a/drivers/scsi/qla2xxx/qla_isr.c b/drivers/scsi/qla2xxx/qla_isr.c
+index 280aa23..e3c77d7 100644
+--- a/drivers/scsi/qla2xxx/qla_isr.c
++++ b/drivers/scsi/qla2xxx/qla_isr.c
+@@ -1632,7 +1632,7 @@ struct qla_init_msix_entry {
+ 	uint16_t entry;
+ 	uint16_t index;
+ 	const char *name;
+-	irqreturn_t (*handler)(int, void *);
++	irq_handler_t handler;
+ };
+ 
+ static struct qla_init_msix_entry imsix_entries[QLA_MSIX_ENTRIES] = {
