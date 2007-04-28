@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161194AbXD1GyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXD1HBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161194AbXD1GyN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXD1GyN
+	id S1751366AbXD1HBH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:01:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXD1HBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:54:13 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:41172 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161194AbXD1GyL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:54:11 -0400
-Date: Fri, 27 Apr 2007 23:54:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bbpetkov@yahoo.de
-Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
- spinlock. was: Re: 2.6.21-rc7-mm2
-Message-Id: <20070427235409.c464455f.akpm@linux-foundation.org>
-In-Reply-To: <20070428062516.GB4957@gollum.tnic>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<20070426182519.GA4532@gollum.tnic>
-	<20070427172230.94b82829.akpm@linux-foundation.org>
-	<20070428055740.GA4957@gollum.tnic>
-	<20070428062516.GB4957@gollum.tnic>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 03:01:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57970 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751366AbXD1HBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 03:01:05 -0400
+Date: Sat, 28 Apr 2007 09:00:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Hazelton <dhazelton@enter.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: progress meter in s2disk (was Re: Back to the future.)
+Message-ID: <20070428070039.GG2994@elf.ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org> <200704280344.49674.rjw@sisk.pl> <200704272251.57407.dhazelton@enter.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704272251.57407.dhazelton@enter.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 08:25:17 +0200 Borislav Petkov <bbpetkov@yahoo.de> wrote:
+Hi!
 
-> > __attribute__ __address_will_be_overwritten_so_don't_bother_warning_me__?
-> > 
-> > /me going to read gcc docs...
+> > > > > It's doubly bad, because that idiocy has also infected s2ram. Again,
+> > > > > another thing that really makes no sense at all - and we do it not
+> > > > > just for snapshotting, but for s2ram too. Can you tell me *why*?
+> > > >
+> > > > Why we freeze tasks at all or why we freeze kernel threads?
+> > >
+> > > In many ways, "at all".
+> > >
+> > > I _do_ realize the IO request queue issues, and that we cannot actually
+> > > do s2ram with some devices in the middle of a DMA. So we want to be able
+> > > to avoid *that*, there's no question about that. And I suspect that
+> > > stopping user threads and then waiting for a sync is practically one of
+> > > the easier ways to do so.
+> > >
+> <snip>
 > 
-> Sorry, no such thing in the docs to do
-> 
-> spinlock_t __attribute__((__uninitialized__)) *ptl;
-> 
-> in order to suppress warnings.
+> Apparently I *CANNOT* wrap my head around this - if just because my laptop, 
+> running a vendor 2.6.17 kernel does s2ram perfectly, at least, it does when 
+> using the "Upstart" init system rather than the classical SysV init system. I 
+> have tried it with the classical init and the suspend isn't triggered by the 
+> buttons that used to do it. I didn't try 'echo ram > /sys/power/state', but I 
+> have a feeling that would have worked as well. I have problems with s2disk, 
+> but thats because I keep my swap partition small - I try to keep it at or 
+> around 256M when I have more than half a gig of Ram in a system. Perhaps one 
+> of these days I'll grab a multi-gig flash disk, set it up as a swap partition 
+> and try it again. (every time I've tried s2disk I wind up running out of disk 
+> space - and this is with nothing but X running. Any kind of progress meter 
+> for when the system is doing s2disk would be nice - every time I've tried it 
+> all I see for the nearly 2 minutes before the s2disk attempt ends is a black 
+> screen. I say 2 minutes because thats how long it takes for it to learn that 
+> there isn't enough space on the swap-partition to save the image)
 
-Bummer.  Thanks for checking.
-
-> But if function size is our concern here, even
-> shorter would be:
-> 
-> Index: linux-mm/mm/memory.c
-> ===================================================================
-> --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
-> +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
-> @@ -1488,7 +1488,7 @@
->         pte_t *pte;
->         int err;
->         struct page *pmd_page;
-> -       spinlock_t *ptl;
-> +       spinlock_t *ptl = 0;
-> 
->         pte = (mm == &init_mm) ?
->                 pte_alloc_kernel(pmd, addr) :
-
-hm, that'll have the same seven-byte cost as `= NULL;', won't it?
+Just turn up console loglevel to see the messages.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
