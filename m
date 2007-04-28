@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161866AbXD1RHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXD1RLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161866AbXD1RHd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXD1RHd
+	id S1756460AbXD1RLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbXD1RLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:07:33 -0400
-Received: from ik-out-1112.google.com ([66.249.90.181]:32869 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756438AbXD1RHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:07:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=YOPk5tzTKxrN22qTNanftkgvfWDSO90O0S32avOkh2963KWsgIerlK5Yg6FKB6ouo6ga9FlKjS6dBlKRxnRH8GWT9T/2XKgNlAtwTIQ6ltxAAtFqLHVW51YHGT1VQp+YPTBEwweXouhFPq9r8mDztUTGSLWdU1jTY3c5JO+GK4g=
-Message-ID: <46337F56.3010904@gmail.com>
-Date: Sat, 28 Apr 2007 20:07:34 +0300
-From: Sergey Yanovich <ynvich@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Alex Dubov <oakad@yahoo.com>
-CC: linux-kernel@vger.kernel.org, Pierre Ossman <drzeus-list@drzeus.cx>
-Subject: Re: [mmc] alternative TI FM MMC/SD driver for 2.6.21-rc7
-References: <257974.51495.qm@web36707.mail.mud.yahoo.com>
-In-Reply-To: <257974.51495.qm@web36707.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 13:11:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42974 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756460AbXD1RLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:11:18 -0400
+Date: Sat, 28 Apr 2007 13:11:01 -0400
+From: Dave Jones <davej@redhat.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070428171101.GC20646@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Matt Mackall <mpm@selenic.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	linux-kernel@vger.kernel.org
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070428161136.GL11166@waste.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Dubov wrote:
-> I prepared a tarball with 2.6.21 compatible driver (tifm-0.8e on berlios).
-This is "good enough" to withdraw my patch. I have filed it to
-http://bugzilla.kernel.org/attachment.cgi?id=11312&action=view
+On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
+ > > I'm all ears for additional regexps, bug reports or other suggestions.
+ > 
+ > Neat.
+ > 
+ > Does it check for:
+ > 
+ > functions marked extern?
+ > pulling in external functions or variables without a header file?
+ > return used as a function, eg return(foo);?
 
-in bug 8052
-http://bugzilla.kernel.org/show_bug.cgi?id=8052
+These sound a little more tricky than just dumb regexps.
+I don't want to expand this to a fullblown C parser (given
+that we have sparse which can do a better job), but I don't
+object to adding some extra code to give the searches more
+context.
 
-which seems to be resolved by the patch.
+	Dave
 
- > I don't see any problems on stock 2.6.21.1.
-
-
-Well, this version seem to ignore cards which are present at
-load.
-
-I have this output:
-~$ check once
-Loading module tifm_sd ...
-Checking for a card at /dev/mmcblk0p1 ...
-failed.
-
-for this script:
-http://bugzilla.kernel.org/attachment.cgi?id=11317&action=view
-
-and you can can see this bug for more details:
-http://bugzilla.kernel.org/show_bug.cgi?id=8393
-
+-- 
+http://www.codemonkey.org.uk
