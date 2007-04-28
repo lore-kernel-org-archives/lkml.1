@@ -1,31 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163436AbXD1SOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163430AbXD1SOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163436AbXD1SOm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163295AbXD1Rwi
+	id S1163430AbXD1SOn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163439AbXD1SOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:52:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38585 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 14:14:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38617 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163279AbXD1Rwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:52:33 -0400
+	id S1163299AbXD1Rwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:42 -0400
 From: Andi Kleen <ak@suse.de>
-Message-Id: <20070428752.712152000@suse.de>
-To: linux-kernel@vger.kernel.org, patches@x86-64.org
-Subject: [PATCH] [0/35] Some x86 2.6.22 candidate patches for review
-Date: Sat, 28 Apr 2007 19:52:23 +0200 (CEST)
+References: <20070428752.712152000@suse.de>
+In-Reply-To: <20070428752.712152000@suse.de>
+To: "Bryan O'Sullivan" <bos@pathscale.com>, Andi Kleen <ak@suse.de>,
+       Roland Dreier <rolandd@cisco.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [8/35] x86_64: a memcpy that tries to reduce cache pressure
+Message-Id: <20070428175232.5A688151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Here are some 2.6.22 candidate x86 patches for review. I will be posting more 
-over a few days.
+From: "Bryan O'Sullivan" <bos@pathscale.com>
 
-This first batch has:
-- Ingo's genapic rework. Now we always use physical mode on x86-64.
-- Lots of minor stuff
+This copy routine is memcpy-compatible, but on some architectures will use
+cache-bypassing loads to avoid bringing the source data into the cache.
 
-Please review.
+One case where this is useful is when a device issues a DMA to a memory
+region, and the CPU must copy the DMAed data elsewhere before doing any work
+with it.  Since the source data is read-once, write-never from the CPU's
+perspective, caching the data at those addresses can only evict potentially
+useful data.
 
--Andi
+We provide an x86_64 implementation that uses SSE non-temporal loads, and a
+generic version that falls back to plain memcpy.
 
+Implementors for other arches should not use cache-bypassing stores to the
+destination, as in most cases, the destination is accessed almost immediately
+after a copy finishes.
+
+[akpm@osdl.org: add module export]
+[akpm@osdl.org: remove an ARCH_HAS_foo]
+Signed-off-by: Bryan O'Sullivan <bryan.osullivan@qlogic.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Roland Dreier <rolandd@cisco.com>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ arch/x86_64/kernel/x8664_ksyms.c       |    2 
+ arch/x86_64/lib/Makefile               |    1 
+ arch/x86_64/lib/memcpy_uncached_read.S |  142 +++++++++++++++++++++++++++++++++
+ include/asm-x86_64/string.h            |    2 
+ include/linux/string.h                 |    3 
+ 5 files changed, 150 insertions(+)
+
+Index: linux/arch/x86_64/kernel/x8664_ksyms.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/x8664_ksyms.c
++++ linux/arch/x86_64/kernel/x8664_ksyms.c
+@@ -8,6 +8,7 @@
+ #include <asm/processor.h>
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
++#include <asm/string.h>
+ 
+ EXPORT_SYMBOL(kernel_thread);
+ 
+@@ -54,6 +55,7 @@ extern void * __memcpy(void *,const void
+ EXPORT_SYMBOL(memset);
+ EXPORT_SYMBOL(memcpy);
+ EXPORT_SYMBOL(__memcpy);
++EXPORT_SYMBOL(memcpy_uncached_read);
+ 
+ EXPORT_SYMBOL(empty_zero_page);
+ EXPORT_SYMBOL(init_level4_pgt);
+Index: linux/arch/x86_64/lib/Makefile
+===================================================================
+--- linux.orig/arch/x86_64/lib/Makefile
++++ linux/arch/x86_64/lib/Makefile
+@@ -11,3 +11,4 @@ lib-y := csum-partial.o csum-copy.o csum
+ 	usercopy.o getuser.o putuser.o  \
+ 	thunk.o clear_page.o copy_page.o bitstr.o bitops.o
+ lib-y += memcpy.o memmove.o memset.o copy_user.o rwlock.o copy_user_nocache.o
++lib-y += memcpy_uncached_read.o
+Index: linux/arch/x86_64/lib/memcpy_uncached_read.S
+===================================================================
+--- /dev/null
++++ linux/arch/x86_64/lib/memcpy_uncached_read.S
+@@ -0,0 +1,142 @@
++/*
++ * Copyright (c) 2006 QLogic Corporation.  All Rights Reserved.
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++/*
++ * memcpy_uncached_read - memcpy-compatible copy routine, using streaming loads
++ * @dest: destination address
++ * @src: source address (will not be cached)
++ * @count: number of bytes to copy
++ *
++ * Use streaming loads and normal stores for a special-case copy where
++ * we know we won't be reading the source again, but will be reading the
++ * destination again soon.
++ */
++	.text
++	.p2align 4,,15
++	/* rdi  destination, rsi source, rdx count */
++	.globl	memcpy_uncached_read
++	.type	memcpy_uncached_read, @function
++memcpy_uncached_read:
++	movq	%rdi, %rax
++.L5:
++	cmpq	$15, %rdx
++	ja	.L34
++.L3:
++	cmpl	$8, %edx	/* rdx is 0..15 */
++	jbe	.L9
++.L6:
++	testb	$8, %dxl	/* rdx is 3,5,6,7,9..15 */
++	je	.L13
++	movq	(%rsi), %rcx
++	addq	$8, %rsi
++	movq	%rcx, (%rdi)
++	addq	$8, %rdi
++.L13:
++	testb	$4, %dxl
++	je	.L15
++	movl	(%rsi), %ecx
++	addq	$4, %rsi
++	movl	%ecx, (%rdi)
++	addq	$4, %rdi
++.L15:
++	testb	$2, %dxl
++	je	.L17
++	movzwl	(%rsi), %ecx
++	addq	$2, %rsi
++	movw	%cx, (%rdi)
++	addq	$2, %rdi
++.L17:
++	testb	$1, %dxl
++	je	.L33
++.L1:
++	movzbl	(%rsi), %ecx
++	movb	%cl, (%rdi)
++.L33:
++	ret
++.L34:
++	cmpq	$63, %rdx	/* rdx is > 15 */
++	ja	.L64
++	movl	$16, %ecx	/* rdx is 16..63 */
++.L25:
++	movq	8(%rsi), %r8
++	movq	(%rsi), %r9
++	addq	%rcx, %rsi
++	movq	%r8, 8(%rdi)
++	movq	%r9, (%rdi)
++	addq	%rcx, %rdi
++	subq	%rcx, %rdx
++	cmpl	%edx, %ecx	/* is rdx >= 16? */
++	jbe	.L25
++	jmp	.L3		/* rdx is 0..15 */
++	.p2align 4,,7
++.L64:
++	movl	$64, %ecx
++.L42:
++	prefetchnta	128(%rsi)
++	movq	(%rsi), %r8
++	movq	8(%rsi), %r9
++	movq	16(%rsi), %r10
++	movq	24(%rsi), %r11
++	subq	%rcx, %rdx
++	movq	%r8, (%rdi)
++	movq	32(%rsi), %r8
++	movq	%r9, 8(%rdi)
++	movq	40(%rsi), %r9
++	movq	%r10, 16(%rdi)
++	movq	48(%rsi), %r10
++	movq	%r11, 24(%rdi)
++	movq	56(%rsi), %r11
++	addq	%rcx, %rsi
++	movq	%r8, 32(%rdi)
++	movq	%r9, 40(%rdi)
++	movq	%r10, 48(%rdi)
++	movq	%r11, 56(%rdi)
++	addq	%rcx, %rdi
++	cmpq	%rdx, %rcx	/* is rdx >= 64? */
++	jbe	.L42
++	sfence
++	orl	%edx, %edx
++	je	.L33
++	jmp	.L5
++.L9:
++	jmp	*.L12(,%rdx,8)	/* rdx is 0..8 */
++	.section	.rodata
++	.align 8
++	.align 4
++.L12:
++	.quad	.L33
++	.quad	.L1
++	.quad	.L2
++	.quad	.L6
++	.quad	.L4
++	.quad	.L6
++	.quad	.L6
++	.quad	.L6
++	.quad	.L8
++	.text
++.L2:
++	movzwl	(%rsi), %ecx
++	movw	%cx, (%rdi)
++	ret
++.L4:
++	movl	(%rsi), %ecx
++	movl	%ecx, (%rdi)
++	ret
++.L8:
++	movq	(%rsi), %rcx
++	movq	%rcx, (%rdi)
++	ret
+Index: linux/include/asm-x86_64/string.h
+===================================================================
+--- linux.orig/include/asm-x86_64/string.h
++++ linux/include/asm-x86_64/string.h
+@@ -39,6 +39,8 @@ extern void *__memcpy(void *to, const vo
+ 		 __ret = __builtin_memcpy((dst),(src),__len);	\
+ 	   __ret; }) 
+ 
++extern void *memcpy_uncached_read(void *to, const void *from, size_t len);
++#define memcpy_uncached_read memcpy_uncached_read
+ 
+ #define __HAVE_ARCH_MEMSET
+ void *memset(void *s, int c, size_t n);
+Index: linux/include/linux/string.h
+===================================================================
+--- linux.orig/include/linux/string.h
++++ linux/include/linux/string.h
+@@ -85,6 +85,9 @@ extern void * memset(void *,int,__kernel
+ #ifndef __HAVE_ARCH_MEMCPY
+ extern void * memcpy(void *,const void *,__kernel_size_t);
+ #endif
++#ifndef memcpy_uncached_read
++#define memcpy_uncached_read(dest, src, count) memcpy((dest), (src), (count))
++#endif
+ #ifndef __HAVE_ARCH_MEMMOVE
+ extern void * memmove(void *,const void *,__kernel_size_t);
+ #endif
