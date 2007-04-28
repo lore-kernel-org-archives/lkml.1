@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753395AbXD1Joa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbXD1Jq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753395AbXD1Joa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 05:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbXD1Jo3
+	id S1753959AbXD1Jq2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 05:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXD1Jq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 05:44:29 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46007 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753395AbXD1Jo2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 05:44:28 -0400
-Date: Sat, 28 Apr 2007 10:48:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mike Mattie <codermattie@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: htpt366 PCI latency value is really high
-Message-ID: <20070428104811.574de77b@the-village.bc.nu>
-In-Reply-To: <20070427230950.33d4d040@reforged>
-References: <20070426064927.13d0ed72@reforged>
-	<4630B789.3040402@ru.mvista.com>
-	<20070427230950.33d4d040@reforged>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sat, 28 Apr 2007 05:46:28 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:37412 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753959AbXD1Jq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 05:46:27 -0400
+Message-ID: <4633183A.9050706@drzeus.cx>
+Date: Sat, 28 Apr 2007 11:47:38 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+To: nucleodyne@comcast.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Winbond SD/MMC controller
+References: <042620070647.21264.46304AE50000DBB80000531022007510900A02970B010A040C9A02@comcast.net>
+In-Reply-To: <042620070647.21264.46304AE50000DBB80000531022007510900A02970B010A040C9A02@comcast.net>
+X-Mime-Autoconverted: from 8bit to 7bit by courier 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> I have ran with a setting of 40 for a couple of days without any trouble.
-> There are many reasons a card would default to a higher level, but in
-> the end it is basically tuning the card for a server application.
+nucleodyne@comcast.net wrote:
+> Is there a linux driver for Winbond W86L388D SD/MMC controller?
 > 
-> A warning that some cards default to high PCI latency values; settings that 
-> can interfere with latency sensitive devices such as sounds cards - this 
-> could be a help to others.  
 
-A warning that there are quite a few cards that subtly corrupt your data
-if you don't have the latency set to values to work around chip errata is
-also worth making.
+Not that I've seen, no.
 
-You fiddle with PCI latency values at your peril, and preferably with the
-data sheet and errata docs to hand.
+> The data sheet is available at:
+> http://www.winbond-usa.com/products/winbond_products/pdfs/PCIC/W86L388D_20051117.pdf
 
-Alan
+I'm afraid that's just a summary. As you can see, there is no listing of the
+meaning of those registers.
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
