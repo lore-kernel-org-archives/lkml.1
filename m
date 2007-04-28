@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbXD1Xkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbXD1Xmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbXD1Xkx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXD1Xkx
+	id S1754412AbXD1Xmx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXD1Xmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:40:53 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53847 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754419AbXD1Xkv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:40:51 -0400
-Date: Sat, 28 Apr 2007 16:40:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Markus Rechberger <mrechberger@gmail.com>
-cc: Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0704281629440.9964@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
-  <20070426125802.GL3468@stusta.de>  <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
-  <4630DB24.4030005@redhat.com>  <20070426201325.8a1ebda3.diegocg@gmail.com>
-  <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> 
- <20070426224148.69b91b2e.diegocg@gmail.com> 
- <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> 
- <20070428195320.GZ3468@stusta.de>  <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
- <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+	Sat, 28 Apr 2007 19:42:53 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:44976 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754410AbXD1Xmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 19:42:51 -0400
+From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v7
+Date: Sun, 29 Apr 2007 02:42:39 +0300
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>,
+       Gene Heskett <gene.heskett@gmail.com>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, Kasper Sandberg <lkml@metanurb.dk>,
+       buddabrod <buddabrod@gmail.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>
+References: <20070428152539.GA21601@elte.hu> <200704282220.17689.caglar@pardus.org.tr> <20070428192446.GA18822@elte.hu>
+In-Reply-To: <20070428192446.GA18822@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart2963150.HxmyGSsPr3";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704290242.43741.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart2963150.HxmyGSsPr3
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+28 Nis 2007 Cts tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
+=C4=B1:=20
+> * S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr> wrote:
+> > If you want some more output/info etc. please just say, i have both v6
+> > and v7 available.
+>
+> could you try the auto-renice patch ontop of -v7:
+>
+>   http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-auto-renice.patch
+>
+> does this make it behave like -v6?
 
-On Sun, 29 Apr 2007, Markus Rechberger wrote:
-> 
-> I totally disagree here, bugzilla is a very good tool. If someone is
-> too lazy to look at it it's his problem.
+Ingo, please ignore my first report until i found a proper way to reproduce=
+=20
+the slowness cause currently CFS-v7, CFS-v7 + "renice patch", CFS-v7 + reni=
+ce=20
++ your private mail suggestions and CFS-v6 + "PI support for futexes patch"=
+=20
+seems works equally (which is a good thing so X renicing seems really not=20
+needed, and there were no regression instead of my daydreams) or im too tir=
+ed=20
+to understand the differences.
 
-You must be doing things very differently from a lot of other people if 
-you think that's the case.
+=2D-=20
+S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
 
-> Kernel Janitors can pick out some bugs which aren't addressed by
-> anyone or got left behind.
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
 
-IF that happened, it would actually be great. That's what I'm arguing for. 
-And it was basically what Adrian was doing!
+--nextPart2963150.HxmyGSsPr3
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> How else should bugs get handled, sending them to the lkml?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-Actually, looking at Adrian's regression lists, yes. lkml worked better 
-than bugzilla did. By at _least_ a factor of two.
+iD8DBQBGM9vzy7E6i0LKo6YRAnCrAJ4yYHLaBRYT+FO352MPR6/yTdlViwCePlid
+z4P3GI0swdQFqb1SAGpVRmM=
+=7/mL
+-----END PGP SIGNATURE-----
 
-> I'm 100% sure some bugreports will also get lost then, but on the lkml
-> they'll very likely remain lost whereas in the bugzilla they'll remain
-> as open.
-
-What's the difference between bugzilla and lkml.org? Both have search 
-buttons. Both archive the old stuff. Both can be pointed to.
-
-> what are your suggestions to improve a bugreporting tool, I'm very
-> sure that many people, especially people who want to get into existing
-> projects here, would love to contribute.
-
-I don't know what the perfect setup is, but I do know that bugzilla is 
-very close to be totally useless for the top-level maintainers.
-
-Try to think like a person who doesn't maintain *one* specific file in the 
-kernel, but who can actually make a good judgement about a lot of things, 
-or at least funnel a problem report to the right person?
-
-And now, imagine that that person is also fairly busy (exactly *because* 
-he's not looking at a single file, he may be maintaining a huge subsystem 
-that has multiple submaintainers etc).
-
-And ask yourself whether bugzilla really helps.
-
-> I'd say this is a personal opinion, some people will get along with it
-> and some of them will not...
-
-I think bugzilla really only works for very "directed" issues. If you 
-already know exactly which driver is affected (which is often wrong 
-anyway: some of the bugs that were due timer breakage got blamed as disk 
-hangs!) it's almost totally useless.
-
-And yes, maybe that's why you have a much higher opinion of bugzilla than 
-I do. To _me_ bugzilla is a total mess. There's absolutely _zero_ useful 
-information there. And I'm pretty certain that is true of a *lot* of other 
-people too. But if you have a small project, or you maintain a very 
-specific (and clearly delineated) part of a big project, bugzilla probably 
-looks a lot more palatable.
-
-			Linus
+--nextPart2963150.HxmyGSsPr3--
