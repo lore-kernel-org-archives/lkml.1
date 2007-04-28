@@ -1,38 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163484AbXD1S3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163487AbXD1SbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163484AbXD1S3d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163485AbXD1S3d
+	id S1163487AbXD1SbN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163490AbXD1SbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:29:33 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57886 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163484AbXD1S3b (ORCPT
+	Sat, 28 Apr 2007 14:31:12 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:41833 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1163487AbXD1SbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:29:31 -0400
-Date: Sat, 28 Apr 2007 20:29:28 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: lkml777@123mail.org
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, linux-kernel@vger.kernel.org,
-       Eric Hopper <hopper@omnifarious.org>,
-       William Heimbigner <icxcnika@mar.tar.cc>,
-       Alex Zarochentsev <zam@namesys.com>, Andi Kleen <andi@firstfloor.org>,
-       Rik van Riel <riel@redhat.com>, Edward Shishkin <edward@namesys.com>
-Subject: Re: Question about Reiser4 (how to boot it?)
-Message-ID: <20070428182928.GA8436@one.firstfloor.org>
-References: <462E17AF.7090604@namesys.com> <20070424193921.GA17129@one.firstfloor.org> <462F6717.70508@namesys.com> <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com> <1177564182.15467.1186637743@webmail.messagingengine.com> <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com> <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com> <1177658163.8094.1186854037@webmail.messagingengine.com> <b6a2187b0704270937g18f305cdxfdd54349fb73f3ea@mail.gmail.com> <1177717116.1762.1186993177@webmail.messagingengine.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177717116.1762.1186993177@webmail.messagingengine.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 28 Apr 2007 14:31:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:from:message-id:to:cc:subject:date:mime-version:
+	content-type:content-transfer-encoding:x-mailer:in-reply-to:x-mimeole:thread-index;
+	b=gIjLyu5gkHEtvaklzK3VHEaWCia48Uc1bWZrLg5Gq08Ndjuw+aL2khwtHCBjNUsxw
+	xsnSciMSUiyYxcxt3/i+w==
+From: Rohit Seth <rohitseth@google.com>
+Message-Id: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
+To: "'Nick Piggin'" <nickpiggin@yahoo.com.au>,
+       "'Hugh Dickins'" <hugh@veritas.com>
+Cc: "'Mike Stroyan'" <mike.stroyan@hp.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Luck, Tony'" <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+Date: Sat, 28 Apr 2007 11:30:40 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook, Build 11.0.6353
+In-Reply-To: <4632E3B0.6050101@yahoo.com.au>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Thread-Index: AceJWwJ7OfGpU9drRvC+mKpMTBDgKwAZrNNA
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> By any chance did you do that?
+Hi Nick, 
 
-It will likely work with lilo -- it is file system independent as 
-long as the file system implements the IOC_UNPACK ioctl, which
-r4 seems to.
+-----Original Message-----
+From: Nick Piggin [mailto:nickpiggin@yahoo.com.au] 
+Sent: Friday, April 27, 2007 11:03 PM
+To: Hugh Dickins
+Cc: rohitseth@google.com; Mike Stroyan; Andrew Morton; Luck, Tony;
+linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
 
--Andi
+Hugh Dickins wrote:
+> On Sat, 28 Apr 2007, Nick Piggin wrote:
+> 
+>>OIC, you need a virtual address to evict the icache, so you can't 
+>>flush at flush_dcache time? Or does ia64 have an instruction to flush 
+>>the whole icache? (it would be worth testing, to see how much 
+>>performance suffers).
+> 
+> 
+> I'm puzzled by that remark: the ia64 flush_icache_range always has a 
+> virtual address, it uses the kernel virtual address; it takes no 
+> interest in whether there's a user virtual address.
+
+>I _think_ what it is doing is actually flushing dcache lines dirtied 
+>via the kernel virtual address (yes, I think flush_icache
+> in lazy_mmu_prot_update is actually just flushing the dcache, but 
+>I could be wrong? [*]).
+
+It is invalidating any entries (containing same physical address) in both I
+and D caches.  Any dirty lines in D cache are written back to memory before
+getting invalidated (ofcourse).
+
+> There are supposedly no icache lines at that point[**]:
+
+For this bug to trigger there has to be a (stale) entry in icache containing
+the old contents of a page that just got updated by kernel as explicit
+copying of data (DMAs are coherent on ia64, meaning if a device were to
+write to memory then architecture guarnatees that both I and D caches are
+invalidated).
+
+> the bug fix at the start of this thread 
+>is due to icache lines becoming present before the flush.
+
+For this mail thread, the old contents were not flushed out of icache when
+the old mapping was removed.  And they were still present when the free page
+got mapped again.
+
+Cheers,
+-rohit
+
