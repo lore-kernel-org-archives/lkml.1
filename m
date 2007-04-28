@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030956AbXD1DEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030963AbXD1DIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030956AbXD1DEv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 23:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030961AbXD1DEu
+	id S1030963AbXD1DIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 23:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030968AbXD1DIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 23:04:50 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:37493 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030956AbXD1DEt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 23:04:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=cYUOSCQ8EH3O4AxngZXa5awom3aJXw6aaz8WQWRRwCCLIQBYUmh+Po4WnpRLxeClixrfHCiqMBm3yJ+pb/TUr3f/OfYMqfZV7hkEIHhWthXTR2I4WjhDgCXWlEoCpmJ9wJYoTjEPdg36pHzohWX6dxTCadvO+Tyoqo1a0xc2G6I=  ;
-X-YMail-OSG: cLy9cKAVM1m6.HeWn6ef6PrZt.2yoPxSBwccWTizLnyolx28
-Message-ID: <4632B9C8.40400@yahoo.com.au>
-Date: Sat, 28 Apr 2007 13:04:40 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: rohitseth@google.com, Mike Stroyan <mike.stroyan@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <20070425205548.fd51b301.akpm@linux-foundation.org>	 <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com>	 <4631E49C.2030501@yahoo.com.au> <1177723479.13482.371.camel@galaxy.corp.google.com> <4632AAB4.6030303@yahoo.com.au>
-In-Reply-To: <4632AAB4.6030303@yahoo.com.au>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 23:08:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39570 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030963AbXD1DIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 23:08:16 -0400
+Date: Fri, 27 Apr 2007 23:08:05 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: checkpatch, a patch checking script.
+Message-ID: <20070428030805.GA13331@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	linux-kernel@vger.kernel.org
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070425200207.77a2721a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
+On Wed, Apr 25, 2007 at 08:02:07PM -0700, Andrew Morton wrote:
 
-> What if you were to say remove all the PG_arch_1 code, and do something
-> really simple like flush icache in flush_dcache_page? Would performance
-> suffer horribly?
+ > > Yep, I was going to mention your scripts but you beat me to it.
+ > > 
+ > > I'll be glad to help maintain such animals if wanted.
+ > > 
+ > wanted ;)
+ > 
+ > At least, it would be interesting to investigate the usefulness.  I suspect
+ > it will prove to be very useful for the little things.
 
-OIC, you need a virtual address to evict the icache, so you can't
-flush at flush_dcache time? Or does ia64 have an instruction to
-flush the whole icache? (it would be worth testing, to see how much
-performance suffers).
+Randy and I got together and hashed out a first cut at this.
+(Randy actually gutted quite a lot of what I originally wrote, so deserves
+ much kudos for improving this beyond my initial crappy version).
+You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
+There's also a git clonable tree there (only http right now).
+
+http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
+what fell out of running it on my mbox of lkml from the past month.
+Some of them are kinda noisy, and perhaps should be moved under --pedantic
+
+I'm all ears for additional regexps, bug reports or other suggestions.
+
+Before wiring this up to a procmail rule to scan every patch, I think it's
+probably a better idea to flesh it out a bit more.
+
+	Dave
 
 -- 
-SUSE Labs, Novell Inc.
+http://www.codemonkey.org.uk
