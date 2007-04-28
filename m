@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751571AbXD1Gpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161221AbXD1GuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751571AbXD1Gpn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXD1Gpn
+	id S1161221AbXD1GuW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161206AbXD1GuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:45:43 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:41363 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751571AbXD1Gpm (ORCPT
+	Sat, 28 Apr 2007 02:50:21 -0400
+Received: from mga06.intel.com ([134.134.136.21]:35088 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161199AbXD1GuK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:45:42 -0400
-X-IronPort-AV: i="4.14,464,1170651600"; 
-   d="scan'208"; a="36739607:sNHT22450036"
-Subject: Re: [patch 00/33] 2.6.20-stable review
-From: Bryan WU <bryan.wu@analog.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20070428054800.GA6267@suse.de>
-References: <20070426165445.GA1898@kroah.com>
-	 <1177668954.5969.18.camel@roc-desktop> <20070427151314.GA10281@suse.de>
-	 <1177734084.9029.10.camel@roc-desktop>  <20070428054800.GA6267@suse.de>
-Content-Type: text/plain
-Date: Sat, 28 Apr 2007 14:46:16 +0800
-Message-Id: <1177742776.9029.17.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 02:50:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,464,1170662400"; 
+   d="scan'208";a="235494593"
+Date: Fri, 27 Apr 2007 23:50:06 -0700
+From: Valerie Henson <val_henson@linux.intel.com>
+To: J??rn Engel <joern@lazybastard.org>
+Cc: Jan Kara <jack@suse.cz>, David Chinner <dgc@sgi.com>,
+       Amit Gud <gud@ksu.edu>, Nikita Danilov <nikita@clusterfs.com>,
+       David Lang <david.lang@digitalinsight.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
+       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
+Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
+Message-ID: <20070428065006.GA21945@nifty>
+References: <Pine.LNX.4.64.0704230544450.1682@camaro.cis.ksu.edu> <17965.60841.900376.524639@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <462E7C47.8080604@ksu.edu> <20070425105434.GX32602149@melbourne.sgi.com> <20070425230344.GC16129@nifty> <20070426084738.GA21666@atrey.karlin.mff.cuni.cz> <20070427050742.GC20286@nifty> <20070427105334.GB22949@lazybastard.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427105334.GB22949@lazybastard.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-27 at 22:48 -0700, Greg KH wrote:
-> On Sat, Apr 28, 2007 at 12:21:24PM +0800, Bryan WU wrote:
-> > On Fri, 2007-04-27 at 08:13 -0700, Greg KH wrote:
-> > > On Fri, Apr 27, 2007 at 06:15:54PM +0800, Wu, Bryan wrote:
-> > > > 
-> > > > You know for some customer's product, they want to use the stable and
-> > > > long term support kernel instead to use the latest one. 
-> > > 
-> > > Then they should get that support from a vendor, not from the kernel.org
-> > > releases :)
-> > > 
-> > 
-> > Yeah, but we are the vendor as you mentioned. -:))
+On Fri, Apr 27, 2007 at 12:53:34PM +0200, J??rn Engel wrote:
 > 
-> Ah, then you already know what to do :)
+> All this would get easier if continuation inodes were known to be rare.
+> You can ditch the doubly-linked list in favor of a pointer to the main
+> inode then - traversing the list again is cheap, after all.  And you can
+> just try to read the same block once for every continuation inode.
 > 
-> > If we wanna to release a kernel to customer product development, how to
-> > choose the stable version?
-> 
-> That's up to you.
-> 
-> > Currently, we always followed the kernel release cycle/rules and give
-> > customer the latest stable version.
-> 
-> Ok, then what has really changed here?  We've been doing this .y release
-> thing (also called -stable) for about 2 years now, nothing is different
-> this week from last.
-> 
-> Confused,
+> If those lists can get long and you need a mapping from offset to
+> continuation inode on the medium, you are basically fscked.  Storing the
+> mapping requires space.  You need the mapping only when space (in some
+> chunk) gets tight and you allocate continuation inodes.  So either you
+> don't need the mapping or you don't have a good place to put it.
 
-It's clear to me. Thanks.
+Any mapping structure will have to be pre-allocated.
 
-You know, because the kernel development is so active and so many stable
-versions release, it is very hard to decide use which version for mass
-production, especially some embedded systems which does not often
-upgrade. 
+> Having a mapping in memory is also questionable.  Either you scan the
+> whole file on first access and spend a long time for large files.  Or
+> you create the mapping on the fly.  In that case the page cache will
+> already give you a 90% solution for free.
 
-I know it is an old topic, sorry for confusing.
-Thanks
--Bryan
+So in my secret heart of hearts, I do indeed hope that cnodes are rare
+enough that we don't actually have to do anything smart to make them
+go fast.  Either having no fast lookup structure or creating it in
+memory as needed would be the nicest solution.  However, since I can't
+guarantee this will be the case, it's nice to have some idea of what
+we'll do if this does become important.
+
+> You should spend a lot of effort trying to minimize cnodes. ;)
+
+Yep.  It's much better to optimize away most cnodes instead of trying
+to make the go fast.
+
+-VAL
