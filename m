@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161504AbXD1HVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965452AbXD1HYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161504AbXD1HVX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 03:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161534AbXD1HVX
+	id S965452AbXD1HYg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXD1HYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 03:21:23 -0400
-Received: from mail1.vetienne.net ([87.98.219.23]:3040 "EHLO
-	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161504AbXD1HVW convert rfc822-to-8bit (ORCPT
+	Sat, 28 Apr 2007 03:24:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:9987 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965452AbXD1HYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 03:21:22 -0400
-From: Vincent ETIENNE <ve@vetienne.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
-Date: Sat, 28 Apr 2007 09:21:18 +0200
-User-Agent: KMail/1.9.6
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Paul Walmsley <paul@booyaka.com>
-References: <200704262058.33087.ve@vetienne.net> <20070427211836.GC5917@kroah.com> <Pine.LNX.4.64.0704280024170.7370@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0704280024170.7370@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Sat, 28 Apr 2007 03:24:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=ImPgBjs9bi5MXObvADVmxKGIOhIQIXxxO4w9typCYYdMsRBmHtB5+b7qCjATGu3oCwSDcCFzbb+xdUoXKGloGely5L6TGArvTzkMrrnxxKAKB6IXt7hB9nYR+QdYP77zWreDPaYEz+9xhgg+tSOXZPGlVIKveVPWX6hb0gIw9CI=
+Date: Sat, 28 Apr 2007 16:18:49 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Neil Brown <neilb@suse.de>
+Subject: [PATCH] sunrpc: fix error path in module_init
+Message-ID: <20070428071849.GA9545@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org, Neil Brown <neilb@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704280921.19265.ve@vetienne.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Saturday 28 April 2007 00:42:45 Jiri Kosina, vous avez écrit :
-> On Fri, 27 Apr 2007, Greg KH wrote:
-> > >  BUG: at drivers/hid/usbhid/hid-quirks.c:480 usbhid_exists_dquirk()
->
-> [ .. stacktraces stripped .. ]
->
-> > Jiri, any thoughts about this?  This looks like it comes from your tree
-> > as 2.6.21 doesn't have the drivers/hid/usbhid/ directory...
->
-> Paul (author of the corresponding patch) added to CC.
->
-> This BUG (it's in fact a warning) is this one:
->
->        WARN_ON(idVendor == 0);
->
-> I now don't immediately see how this could happen - the vendor ID seems to
-> be propagated properly from hid_probe() (nothing has been changed in this
-> codepath), so this would mean that hid_probe() has been passed
-> usb_interface for which
-> le16_to_cpu(interface_to_usbdev(intf).dev->descriptor.idVendor) is equal
-> to zero ...  and this definitely shouldn't happen for any sane device
-> (could the original poster please verify with lsusb, just to be 100%
-> sure?).
+This patch fixes error code paths in sunrpc.
 
-You could download the result of lsusb -vvv from 
-http://mail1.vetienne.net/linux/lsusb.log
+register_rpc_pipefs() needs to clean up rpc_inode_cache
+by kmem_cache_destroy() on register_filesystem() failure.
 
->
-> It would also help if the original poster, who is able to reproduce this
-> WARN_ON, would verify whether hid_probe() is really being passed such
-> strange usb_interface from upper USB layer ... please see the patch below,
-> and send me the output if possible.
->
-> Paul, do you have any idea? In fact, what was your reason for putting this
-> WARN_ON() there? Did you ever meet any condition when idVendor == 0
-> appears there?
->
-> Thanks.
->
-> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> index f929dee..2a77d8b 100644
-> --- a/drivers/hid/usbhid/hid-core.c
-> +++ b/drivers/hid/usbhid/hid-core.c
-> @@ -984,6 +984,8 @@ static int hid_probe(struct usb_interfac
->  	dbg("HID probe called for ifnum %d",
->  			intf->altsetting->desc.bInterfaceNumber);
->
-> +	printk(KERN_DEBUG "DEBUG - hid_probe: idVendor: %x\n",
-> +			le16_to_cpu(interface_to_usbdev(intf)->descriptor.idVendor));
->  	if (!(hid = usb_hid_configure(intf)))
->  		return -ENODEV;
+init_sunrpc() needs to unregister rpc_pipe_fs by unregister_rpc_pipefs()
+when rpc_init_mempool() returns error.
 
-With your patch it seems like idVendor passed is 0. You could see it there ;
+Cc: Neil Brown <neilb@suse.de>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
-http://mail1.vetienne.net/linux/dmesg.2.6.21-rc7-mm2+patch-usbhid
+---
+ net/sunrpc/rpc_pipe.c    |    9 ++++++++-
+ net/sunrpc/sunrpc_syms.c |    6 ++++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-I could confirm that the keyboard is working ( yesterday i was just behind the 
-box due to test on the network ). But i don't remember if the keyboard is USB 
-or PS2 (i only have ssh access to the box for the next 3/4 days)
-
-  Vincent
+Index: 2.6-mm/net/sunrpc/rpc_pipe.c
+===================================================================
+--- 2.6-mm.orig/net/sunrpc/rpc_pipe.c
++++ 2.6-mm/net/sunrpc/rpc_pipe.c
+@@ -845,6 +845,8 @@ init_once(void * foo, struct kmem_cache 
+ 
+ int register_rpc_pipefs(void)
+ {
++	int err;
++
+ 	rpc_inode_cachep = kmem_cache_create("rpc_inode_cache",
+ 				sizeof(struct rpc_inode),
+ 				0, (SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT|
+@@ -852,7 +854,12 @@ int register_rpc_pipefs(void)
+ 				init_once, NULL);
+ 	if (!rpc_inode_cachep)
+ 		return -ENOMEM;
+-	register_filesystem(&rpc_pipe_fs_type);
++	err = register_filesystem(&rpc_pipe_fs_type);
++	if (err) {
++		kmem_cache_destroy(rpc_inode_cachep);
++		return err;
++	}
++
+ 	return 0;
+ }
+ 
+Index: 2.6-mm/net/sunrpc/sunrpc_syms.c
+===================================================================
+--- 2.6-mm.orig/net/sunrpc/sunrpc_syms.c
++++ 2.6-mm/net/sunrpc/sunrpc_syms.c
+@@ -146,9 +146,11 @@ init_sunrpc(void)
+ 	int err = register_rpc_pipefs();
+ 	if (err)
+ 		goto out;
+-	err = rpc_init_mempool() != 0;
+-	if (err)
++	err = rpc_init_mempool();
++	if (err) {
++		unregister_rpc_pipefs();
+ 		goto out;
++	}
+ #ifdef RPC_DEBUG
+ 	rpc_register_sysctl();
+ #endif
