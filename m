@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161728AbXD1Imd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161702AbXD1Ioi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161728AbXD1Imd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 04:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161725AbXD1Imd
+	id S1161702AbXD1Ioi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 04:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161742AbXD1Ioh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 04:42:33 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48414 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161706AbXD1Imb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 04:42:31 -0400
-Date: Sat, 28 Apr 2007 09:42:25 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] h8300 generic irq
-Message-ID: <20070428084225.GA22480@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Sat, 28 Apr 2007 04:44:37 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38464 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161697AbXD1Iof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 04:44:35 -0400
+X-Authenticated: #428038
+X-Provags-ID: V01U2FsdGVkX1816BdwxNA14IJriuoIYgGkso+68MmwwtTvpvU1GF
+	CdXVaxLfqfWCYE
+Date: Sat, 28 Apr 2007 10:44:29 +0200
+From: Matthias Andree <matthias.andree@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Marat Buharov <marat.buharov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+	FS is under heavy write load (massive starvation)
+Message-ID: <20070428084429.GA31196@merlin.emma.line.org>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Marat Buharov <marat.buharov@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <m2abwvttya.wl%ysato@users.sourceforge.jp> <20070427190935.68606a3a.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net> <20070427013350.d0d7ac38.akpm@linux-foundation.org> <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com> <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070427190935.68606a3a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+X-PGP-Key: http://home.pages.de/~mandree/keys/GPGKEY.asc
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 07:09:35PM -0700, Andrew Morton wrote:
-> > +/*
-> > + * h8300 interrupt controler implementation
-> > + */
-> > +struct irq_chip h8300irq_chip = {
-> > +	.name		= "H8300-INTC",
-> > +	.startup	= h8300_startup_irq,
-> > +	.shutdown	= h8300_shutdown_irq,
-> > +	.enable		= h8300_enable_irq,
-> > +	.disable	= h8300_disable_irq,
-> > +	.ack		= NULL,
-> > +	.end		= h8300_end_irq,
-> > +};
+On Fri, 27 Apr 2007, Linus Torvalds wrote:
+
 > 
-> I think this could have static scope.
+> 
+> On Fri, 27 Apr 2007, Marat Buharov wrote:
+> >
+> > On 4/27/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > Aside: why the heck do applications think that their data is so important
+> > > that they need to fsync it all the time.  I used to run a kernel on my
+> > > laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
+> > > pleasurable.
+> > 
+> > So, if having fake fsync() and fdatasync() is pleasurable for laptop
+> > and desktop, may be it's time to add option into Kconfig which
+> > disables normal fsync behaviour in favor of robust desktop?
+> 
+> This really is an ext3 issue, not "fsync()".
+> 
+> On a good filesystem, when you do "fsync()" on a file, nothing at all 
+> happens to any other files. On ext3, it seems to sync the global journal, 
 
-Pluse there's not need to set .ack to NULL explicitly.
+This behavior has been in Linux and sort of official since the early
+2.4.X days - remember the discussion on fsync()ing directory changes for
+MTAs that led to the mount option "dirsync" for ext?fs so that rename(),
+link() and stuff like that became synchronous even without fsync()ing
+the parent directory? I can look up archive references if need be.
 
+Surely four years ago, if not five (this is from the top of my head, not
+a quotable fact I verified from the LKML archives though).
+
+> I used to run reiserfs, and it had its problems, but this was the 
+> "feature" of ext3 that I've disliked most. If you run a MUA with local 
+> mail, it will do fsync's for most things, and things really hickup if you 
+> are doing some other writes at the same time. In contrast, with reiser, if 
+> you did a big untar or some other big write, if somebody fsync'ed a small 
+> file, it wasn't even a blip on the radar - the fsync would sync just that 
+> small thing.
+
+It's not as though I'd recommend reiserfs. I have seen one major
+corruption recently in openSUSE 10.2 with ext3, but I've had constant
+headaches with reiserfs since the day it went into S.u.S.E. kernels at
+the time until I switched away from reiserfs some years ago.
+
+-- 
+Matthias Andree
