@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbXD1RFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbXD1RH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756420AbXD1RFh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756419AbXD1RFf
+	id S1756440AbXD1RH2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXD1RH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:05:35 -0400
-Received: from mail.suse.de ([195.135.220.2]:60211 "EHLO mx1.suse.de"
+	Sat, 28 Apr 2007 13:07:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42517 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756417AbXD1RFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:05:05 -0400
-Date: Fri, 27 Apr 2007 16:55:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Anton Vorontsov <cbou@mail.ru>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ANNOUNCE] battery2 git repository
-Message-ID: <20070427235553.GC24476@suse.de>
-References: <20070426232902.GA10423@zarina> <20070427000928.GA5303@suse.de> <1177653814.2755.466.camel@pmac.infradead.org>
-MIME-Version: 1.0
+	id S1756439AbXD1RHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:07:25 -0400
+Date: Sat, 28 Apr 2007 13:06:44 -0400
+From: Dave Jones <davej@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070428170644.GB20646@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andi Kleen <andi@firstfloor.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	linux-kernel@vger.kernel.org
+References: <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070427221803.2a117c23.akpm@linux-foundation.org> <p73tzv022qw.fsf@bingen.suse.de> <20070428030213.4787031f.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1177653814.2755.466.camel@pmac.infradead.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070428030213.4787031f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 07:03:34AM +0100, David Woodhouse wrote:
-> On Thu, 2007-04-26 at 17:09 -0700, Greg KH wrote:
-> > So, I'm still not quite understanding this, is David giving up on his
-> > code now that you have pulled his changes into your tree?  Or is there
-> > some reason there are still two competing versions here?
-> 
-> Anton hasn't pulled my changes -- it's a separate implementation,
-> although very similar. In return for the account on git.infradead.org he
-> said he was going to port the two drivers I already had (PMU and OLPC)
-> to his framework.
+On Sat, Apr 28, 2007 at 03:02:13AM -0700, Andrew Morton wrote:
 
-Hopefully he took the driver model fixes you did.  Anton, care to send a
-new set of patches, so we can review them?
+ > This little checking tool should have both "error" and "warning" levels -
+ > AKA "fix this" and "think about this" levels.  BUG_ON would be a warning
+ > thing.
 
-thanks,
+There's a -pedantic option there just for this.  I'll move BUG_ON under it.
+What's the consensus on the u32 thing, move that too, or drop completely?
 
-greg k-h
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
