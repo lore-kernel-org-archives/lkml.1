@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163277AbXD1Rqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163291AbXD1Rwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163277AbXD1Rqf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163278AbXD1Rqf
+	id S1163291AbXD1Rwe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163289AbXD1Rwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:46:35 -0400
-Received: from mail.tnnet.fi ([217.112.240.26]:55496 "EHLO mail.tnnet.fi"
+	Sat, 28 Apr 2007 13:52:33 -0400
+Received: from ns.suse.de ([195.135.220.2]:34397 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163277AbXD1Rqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:46:34 -0400
-X-Greylist: delayed 1210 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 13:46:33 EDT
-Message-ID: <463383B6.C3B5AE2C@users.sourceforge.net>
-Date: Sat, 28 Apr 2007 20:26:14 +0300
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: Gisle =?iso-8859-1?Q?S=E6lensminde?= 
-	<Gisle.Salensminde@bccs.uib.no>
-Cc: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
-Subject: Re: entropy of /dev/random vs. openssl rand
-References: <20070428110652.GI13982@tatooine.rebelbase.local> <463345DA.7010106@cbu.uib.no>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	id S1163287AbXD1Rwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:32 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428752.712152000@suse.de>
+In-Reply-To: <20070428752.712152000@suse.de>
+To: Andrew Morton <akpm@osdl.org>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andi Kleen <ak@suse.de>, "Li, Shaohua" <shaohua.li@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [2/35] x86_64: revert x86_64-mm-add-genapic_force
+Message-Id: <20070428175225.E8441151EA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gisle Sælensminde wrote:
-> Some people argue that a periodically reseeded cryptographic-quality
-> random number generator is as secure as a true random number generator for
-> all practical purposes.
-[snip]
-> I personally can't think of any realistic scenario where /dev/random would
-> make you safe while /dev/urandom would make you sorry.
 
-No problem if cryptographic-quality random number generator is reseeded
-using high quality entropy. But saving/reseeding PRNG using a plaintext file
-as most distros seem to do at shutdown and boot does not count as secure.
-/dev/urandom state may be predictable for some time after boot. /dev/random
-at least waits for new entropy before handing out random bits, and avoids
-that predictable state pitfall.
+From: Andrew Morton <akpm@osdl.org>
 
-Do most distros attempt to overwrite /var/lib/urandom/random-seed or
-whatever after it has been used to reseed /dev/urandom? Does any distro
-attempt to overwrite that file?
-  
-For the record, loop-AES versions of mount/losetup/swapon that set up random
-key loop devices, use /dev/urandom. But they also attempt to work-around
-possibly predictable boot-time /dev/urandom bits. The work-around is
-basically random-seed save/restore (to backing device) but with 20
-overwrites of saved-state after it has been used to create new encryption
-keys. See source for more details.
+This is obsoleted by new Ingo genapic patches.
 
--- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: "Li, Shaohua" <shaohua.li@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+
+ arch/x86_64/kernel/genapic.c |    9 +--------
+ include/asm-x86_64/genapic.h |    2 +-
+ 2 files changed, 2 insertions(+), 9 deletions(-)
+
+Index: linux/arch/x86_64/kernel/genapic.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/genapic.c
++++ linux/arch/x86_64/kernel/genapic.c
+@@ -33,7 +33,7 @@ extern struct genapic apic_flat;
+ extern struct genapic apic_physflat;
+ 
+ struct genapic *genapic = &apic_flat;
+-struct genapic *genapic_force;
++
+ 
+ /*
+  * Check the APIC IDs in bios_cpu_apicid and choose the APIC mode.
+@@ -46,13 +46,6 @@ void __init clustered_apic_check(void)
+ 	u8 cluster_cnt[NUM_APIC_CLUSTERS];
+ 	int max_apic = 0;
+ 
+-	/* genapic selection can be forced because of certain quirks.
+-	 */
+-	if (genapic_force) {
+-		genapic = genapic_force;
+-		goto print;
+-	}
+-
+ #if defined(CONFIG_ACPI)
+ 	/*
+ 	 * Some x86_64 machines use physical APIC mode regardless of how many
+Index: linux/include/asm-x86_64/genapic.h
+===================================================================
+--- linux.orig/include/asm-x86_64/genapic.h
++++ linux/include/asm-x86_64/genapic.h
+@@ -30,6 +30,6 @@ struct genapic {
+ };
+ 
+ 
+-extern struct genapic *genapic, *genapic_force, apic_flat;
++extern struct genapic *genapic;
+ 
+ #endif
