@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030501AbXD1TSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXD1TTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030501AbXD1TSo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030657AbXD1TSo
+	id S1754799AbXD1TTT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbXD1TTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:18:44 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:37482 "EHLO
+	Sat, 28 Apr 2007 15:19:18 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37486 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030501AbXD1TSm (ORCPT
+	with ESMTP id S1754799AbXD1TTQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:18:42 -0400
-Date: Sat, 28 Apr 2007 21:18:51 +0200
+	Sat, 28 Apr 2007 15:19:16 -0400
+Date: Sat, 28 Apr 2007 21:19:27 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: davidhart@tqmcube.com,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 8392] New: Hard Lock Subsequent to Boot
-Message-ID: <20070428191851.GM3468@stusta.de>
-References: <200704281634.l3SGYhJX014704@fire-2.osdl.org> <20070428115906.86e93af6.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, Grant Coady <gcoady@gmail.com>
+Subject: [-mm patch] i386: enable 4k stacks by default
+Message-ID: <20070428191927.GN3468@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070428115906.86e93af6.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 11:59:06AM -0700, Andrew Morton wrote:
->...
-> 3: Performa a git bisection search, find the buggy patch.  This is quite a
->    lot of work, and I hate asking people to do it because we don't (afaik)
->    have any particularly good documentation on how to perform it.
+4k stacks have become a well-tested feature used fore a long time in
+Fedora and even in RHEL 4.
 
+Defaulting to 4k stacks in -mm kernel will give some more testing
+coverage and should show whether there are problems left.
 
-The text I'm using for telling people how to bisect is:
+Keeping the option for now should make the people happy who want to use
+the experimental -mm kernel but don't trust the well-tested 4k stacks.
 
-<--  snip  -->
+Additionally, make it more obvious that available stack space is not 
+being halved.
 
-# install git and cogito on your computer
+Signed-off-by: Grant Coady <gcoady@gmail.com>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-# clone Linus' tree:
-cg-clone \ 
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+---
 
-# start bisecting:
-cd linux-2.6
-git bisect start
-git bisect bad v2.6.21
-git bisect good v2.6.20
-cp /path/to/.config .
+This is the original patch that does not the opposite of what it should do.
 
-# start a round
-make oldconfig
-make
-# install kernel, check whether it's good or bad, then:
-git bisect [bad|good]
-# start next round
+This patch has been sent on:
+- 14 Jan 2006
+- 5 Jan 2006
 
+ Kconfig.debug |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-After at about 12 reboots you'll have found the guilty commit
-("...  is first bad commit").
-
-
-More information on git bisecting:
-  man git-bisect
-
-<--  snip  -->
-
-
-Is this text understandable?
-
-If not, what is missing?
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- linux-2.6.15a/arch/i386/Kconfig.debug	2005-10-28 10:02:08.000000000 +1000
++++ linux-2.6.15b/arch/i386/Kconfig.debug	2006-01-05 09:39:22.000000000 +1100
+@@ -53,14 +53,15 @@
+ 	  of memory corruptions.
+ 
+ config 4KSTACKS
+-	bool "Use 4Kb for kernel stacks instead of 8Kb"
+-	depends on DEBUG_KERNEL
++	bool "Use 4Kb + 4Kb for kernel stacks instead of 8Kb" if DEBUG_KERNEL
++	default y
+ 	help
+ 	  If you say Y here the kernel will use a 4Kb stacksize for the
+ 	  kernel stack attached to each process/thread. This facilitates
+ 	  running more threads on a system and also reduces the pressure
+ 	  on the VM subsystem for higher order allocations. This option
+-	  will also use IRQ stacks to compensate for the reduced stackspace.
++	  will also use separate 4Kb IRQ stacks to compensate for the 
++	  reduced stackspace.
+ 
+ config X86_FIND_SMP_CONFIG
+ 	bool
 
