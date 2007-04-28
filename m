@@ -1,26 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030900AbXD1CB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030901AbXD1CJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030900AbXD1CB7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030910AbXD1CB7
+	id S1030901AbXD1CJy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030915AbXD1CJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:01:59 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44890 "EHLO
+	Fri, 27 Apr 2007 22:09:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:45978 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030900AbXD1CB5 (ORCPT
+	by vger.kernel.org with ESMTP id S1030901AbXD1CJx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:01:57 -0400
-Date: Fri, 27 Apr 2007 19:01:43 -0700
+	Fri, 27 Apr 2007 22:09:53 -0400
+Date: Fri, 27 Apr 2007 19:09:35 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>,
-       "Dominik Brodowski" <linux@dominikbrodowski.net>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Message-Id: <20070427190143.d597dd38.akpm@linux-foundation.org>
-In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
-References: <20070425171533.22efa133.akpm@linux-foundation.org>
-	<D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] h8300 generic irq
+Message-Id: <20070427190935.68606a3a.akpm@linux-foundation.org>
+In-Reply-To: <m2abwvttya.wl%ysato@users.sourceforge.jp>
+References: <m2abwvttya.wl%ysato@users.sourceforge.jp>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,107 +25,98 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007 11:21:01 +0200
-"Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com> wrote:
+On Thu, 26 Apr 2007 17:34:37 +0900
+Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
 
-> As pointed to by Peter, and also as indicated by a judicious output in
-> dmesg, the 4th parameter should be 0x969aa4f2. Please find below the
-> corrected patch:
+> h8300 using generic irq handler patch.
 > 
-> Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 > 
-> ===================================================================
-> --- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c	2007-04-15
-> 21:08:02.000000000 +0200
-> +++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c	2007-04-26
-> 11:13:13.000000000 +0200
-> @@ -399,6 +399,7 @@
->  	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
-> 0x3489e003),
->  	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
->  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
-> 0x2a54d4b1),
-> +	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
-> 0x969aa4f2),
->  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
-> 0xf54a91c8),
->  	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
->  	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
-> 0x212bb918),
-> ===================================================================
 
-This one-liner is turning into a fiasco.  All the top-posting and
-word-wrapped patches aren't helping :(
+Minor things:
 
-I presently have two patches.  Please check them.
+>
+> --- /dev/null
+> +++ b/arch/h8300/kernel/irq.c
+> @@ -0,0 +1,211 @@
+> +/*
+> + * linux/arch/h8300/kernel/irq.c
+> + *
+> + * Copyright 2007 Yoshinori Sato <ysato@users.sourceforge.jp>
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/types.h>
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/kernel_stat.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/init.h>
+> +#include <linux/random.h>
+> +#include <linux/bootmem.h>
+> +#include <linux/irq.h>
+> +
+> +#include <asm/system.h>
+> +#include <asm/traps.h>
+> +#include <asm/io.h>
+> +#include <asm/setup.h>
+> +#include <asm/errno.h>
+> +
+> +/*#define DEBUG*/
+> +
+> +extern unsigned long *interrupt_redirect_table;
+> +extern const int h8300_saved_vectors[];
+> +extern const unsigned long h8300_trap_table[];
+> +int h8300_enable_irq_pin(unsigned int irq);
+> +void h8300_disable_irq_pin(unsigned int irq);
 
+Please always avoid putting extern declarations into C files.  Please them
+in a header file which is visible tot he definition site asw well as all
+callers/users.
 
-ide-cs-recognize-2gb-compactflash-from-transcend.patch:
+For something which is defined in assembly code (like
+interrupt_redirect_table) it isn't so clear, because we cannot do
+typechecking.  But I think it's still best to include the declaration in a
+header file so that we only have to declare it once.  Plus it _is_ a global
+symbol.
 
+> +
+> +/*
+> + * h8300 interrupt controler implementation
+> + */
+> +struct irq_chip h8300irq_chip = {
+> +	.name		= "H8300-INTC",
+> +	.startup	= h8300_startup_irq,
+> +	.shutdown	= h8300_shutdown_irq,
+> +	.enable		= h8300_enable_irq,
+> +	.disable	= h8300_disable_irq,
+> +	.ack		= NULL,
+> +	.end		= h8300_end_irq,
+> +};
 
-From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+I think this could have static scope.
 
-Without the following patch, the kernel does not automatically detect
-2GB CompactFlash cards from Transcend.
+> +void ack_bad_irq(unsigned int irq)
+> +{
+> +	printk("unexpected IRQ trap at vector %02x\n", irq);
+> +}
 
-Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+printks should generally have facility levels (KERN_*)
 
- drivers/ide/legacy/ide-cs.c |    2 ++
- 1 files changed, 2 insertions(+)
+> +		panic("interrupt vector serup failed.");
 
-diff -puN drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend drivers/ide/legacy/ide-cs.c
---- a/drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend
-+++ a/drivers/ide/legacy/ide-cs.c
-@@ -401,6 +401,8 @@ static struct pcmcia_device_id ide_ids[]
- 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 0x3489e003),
- 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1, 0x2a54d4b1),
-+	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0xf54a91c8),
-+	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0x969aa4f2),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1, 0xf54a91c8),
- 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
- 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 0x212bb918),
-_
+typo
 
+> +	for ( i = 0; i < NR_IRQS; i++) {
 
-Is this really supposed to add a TS2GCF120 entry with the same IDs as
-TS4GCF120?
+	for (i = 0
 
+> +		if (i == *saved_vector) {
+> +			ramvec_p++;
+> +			saved_vector++;
+> +		} else {
+> +			if ( i < NR_TRAPS ) {
 
+			if (i < NR_TRAPS)
 
-
-
-And pata_pcmcia-recognize-2gb-compactflash-from-transcend.patch:
-
-From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
-
-Allow the pata_pcmcia driver to automatically detect 2GB CompactFlash cards
-from Transcend.
-
-Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
-Cc: "Peter Stuge" <stuge-linux-pcmcia@cdy.org>
-Acked-by: Alan Cox <alan@redhat.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/ata/pata_pcmcia.c |    1 +
- 1 files changed, 1 insertion(+)
-
-diff -puN drivers/ata/pata_pcmcia.c~pata_pcmcia-recognize-2gb-compactflash-from-transcend drivers/ata/pata_pcmcia.c
---- a/drivers/ata/pata_pcmcia.c~pata_pcmcia-recognize-2gb-compactflash-from-transcend
-+++ a/drivers/ata/pata_pcmcia.c
-@@ -396,6 +396,7 @@ static struct pcmcia_device_id pcmcia_de
- 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 0x3489e003),
- 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1, 0x2a54d4b1),
-+	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0x969aa4f2),
- 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1, 0xf54a91c8),
- 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
- 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 0x212bb918),
-_
 
