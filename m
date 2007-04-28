@@ -1,95 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXD1SxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbXD1S7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbXD1SxO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbXD1SxO
+	id S1756096AbXD1S7U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXD1S7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:53:14 -0400
-Received: from www.osadl.org ([213.239.205.134]:48596 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754017AbXD1SxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:53:12 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Flaws with "UIO: Add the User IO core code" (with patch)
-Date: Sat, 28 Apr 2007 20:52:45 +0200
-User-Agent: KMail/1.9.5
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, Thomas Gleixner <tglx@linutronix.de>,
-       Benedikt Spranger <b.spranger@linutronix.de>
-References: <20070427224957.GA17967@kroah.com> <11777142582534-git-send-email-gregkh@suse.de> <20070428001923.15074234@the-village.bc.nu>
-In-Reply-To: <20070428001923.15074234@the-village.bc.nu>
-Organization: Linutronix
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 28 Apr 2007 14:59:20 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51291 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756096AbXD1S7S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:59:18 -0400
+Date: Sat, 28 Apr 2007 11:59:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: davidhart@tqmcube.com
+Cc: "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 8392] New: Hard Lock Subsequent to Boot
+Message-Id: <20070428115906.86e93af6.akpm@linux-foundation.org>
+In-Reply-To: <200704281634.l3SGYhJX014704@fire-2.osdl.org>
+References: <200704281634.l3SGYhJX014704@fire-2.osdl.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704282052.45489.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 28 April 2007 01:19 schrieb Alan Cox:
-> > +static ssize_t uio_read(struct file *filep, char __user *buf,
-> > +			size_t count, loff_t *ppos)
-> > +{
-> > +	struct uio_listener *listener = filep->private_data;
-> > +	struct uio_device *idev = listener->dev;
-> > +	DECLARE_WAITQUEUE(wait, current);
-> > +	ssize_t retval;
-> > +	int event_count;
-> > +
-> > +	if (idev->info->irq == UIO_IRQ_NONE)
-> > +		return -EIO;
-> > +
-> > +	if (count != sizeof(int))
-> > +		return -EINVAL;
+
+(please reply via email, retaining all cc's)
+
+On Sat, 28 Apr 2007 09:34:43 -0700 bugme-daemon@bugzilla.kernel.org wrote:
+
+> http://bugzilla.kernel.org/show_bug.cgi?id=8392
 > 
-> AFAIK we don't currently have any platform that runs binaries with
-> different sizes of "int" but this is a) an unsigned value anyway, and b)
-> should be a fixed type (eg u32)
-
-I reviewed the code once more and find it OK. There is only one legal
-value for the parameter "count" of uio_read(), and that's sizeof(int).
-The data that is actually read is the element "event" of struct uio_device,
-which is of type atomic_t. The latter has the size of an int.
-
-Unfortunately, the fact that the read count _must_ be sizeof(int) is not
-mentioned in the documentation. I'll send a patch for that ASAP.
-
+>            Summary: Hard Lock Subsequent to Boot
+>     Kernel Version: 2.6.21/2,6,21.1
+>             Status: NEW
+>           Severity: blocking
+>              Owner: other_other@kernel-bugs.osdl.org
+>          Submitter: davidhart@tqmcube.com
 > 
-> Otherwise it looks ok at the momenmt, although there is a real nasty
-> waiting for anyone who tries to use it. At the point open is possible or
-> IRQs can be enabled you are safe in the core merged as idev->info is
-> always valid, but any driver module trying to go back via info->uio_dev
-> has a NULL pointer for an early IRQ or open event.
+> 
+> Most recent kernel where this bug did *NOT* occur:
+> 2.6.20.8
+> 
+> Distribution:
+> Fedora Core 6
+> 
+> Hardware Environment:
+> Sony Vaio 2.4gh/512 mb
+> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 645xx (rev 03)
+> 00:01.0 PCI bridge: Silicon Integrated Systems [SiS] SG86C202
+> 00:02.0 ISA bridge: Silicon Integrated Systems [SiS] SiS963 [MuTIOL Media IO]
+> (rev 14)
+> 00:02.1 SMBus: Silicon Integrated Systems [SiS] SiS961/2 SMBus Controller
+> 00:02.5 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE]
+> 00:02.6 Modem: Silicon Integrated Systems [SiS] AC'97 Modem Controller (rev a0)
+> 00:02.7 Multimedia audio controller: Silicon Integrated Systems [SiS] AC'97
+> Sound Controller (rev a0)
+> 00:03.0 USB Controller: Silicon Integrated Systems [SiS] USB 1.0 Controller (rev 0f)
+> 00:03.1 USB Controller: Silicon Integrated Systems [SiS] USB 1.0 Controller (rev 0f)
+> 00:03.2 USB Controller: Silicon Integrated Systems [SiS] USB 1.0 Controller (rev 0f)
+> 00:03.3 USB Controller: Silicon Integrated Systems [SiS] USB 2.0 Controller
+> 00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] SiS900 PCI Fast
+> Ethernet (rev 90)
+> 00:07.0 Ethernet controller: Atheros Communications, Inc. AR5212 802.11abg NIC
+> (rev 01)
+> 00:0a.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev aa)
+> 00:0a.1 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev aa)
+> 00:0a.2 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 02)
+> 01:00.0 VGA compatible controller: nVidia Corporation NV17 [GeForce4 420 Go]
+> (rev a3)
+> Software Environment:
+> 
+> KDE.
+> Kernel compiled with full debugging
+> Standard nv driver - NOT nvidia.
+> 
+> Problem Description:
+> 
+> Kernel boots. X starts. Hard lock occurs immediately on launching an
+> application. Complete freeze  stops logging (no panic or error messages. No
+> debug information whatsoever. Neither SysReq nor alt-ctl-del are responsive.
+> 
+> Steps to reproduce:
+> 
+> Boot into X. Launch any application (web, mail client, etc).
 
-This patch should fix it:
+Lovely regression.
 
+If you have time, there are a couple of things to do here:
 
-Index: linux-2.6.22-rc/drivers/uio/uio.c
-===================================================================
---- linux-2.6.22-rc.orig/drivers/uio/uio.c	2007-04-28 20:01:02.000000000 +0200
-+++ linux-2.6.22-rc/drivers/uio/uio.c	2007-04-28 20:15:00.000000000 +0200
-@@ -633,6 +633,8 @@
- 	if (ret)
- 		goto err_uio_dev_add_attributes;
- 
-+	info->uio_dev = idev;
-+
- 	if (idev->info->irq >= 0) {
- 		ret = request_irq(idev->info->irq, uio_interrupt,
- 				  idev->info->irq_flags, idev->info->name, idev);
-@@ -640,7 +642,6 @@
- 			goto err_request_irq;
- 	}
- 
--	info->uio_dev = idev;
- 	return 0;
- 
- err_request_irq:
+1: Watch virtual terminal #1 while starting that appliction.  ie: in an
+   xterm (assuming you can open one) do
 
+	sleep 5; mozilla
 
-Thanks for your review,
-Hans
+   then do a quick alt-shift-F1 before the sleep expires.  See if
+   anything comes up on the console.
+
+2: get netconsole working: see Documentation/networking/netconsole.txt
+
+3: Performa a git bisection search, find the buggy patch.  This is quite a
+   lot of work, and I hate asking people to do it because we don't (afaik)
+   have any particularly good documentation on how to perform it.
 
