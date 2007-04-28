@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030998AbXD1DNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbXD1DQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030998AbXD1DNA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 23:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030977AbXD1DNA
+	id S932114AbXD1DQn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 23:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932255AbXD1DQn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 23:13:00 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:47963 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030968AbXD1DM7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 23:12:59 -0400
-Subject: [PATCH -rt] yet another irq storm
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Fri, 27 Apr 2007 23:12:44 -0400
-Message-Id: <1177729964.19619.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Apr 2007 23:16:43 -0400
+Received: from holomorphy.com ([66.93.40.71]:36293 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932114AbXD1DQm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 23:16:42 -0400
+Date: Fri, 27 Apr 2007 20:16:25 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070428031625.GW31925@holomorphy.com>
+References: <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <17969.55533.59287.509889@cargo.ozlabs.ibm.com> <4631E173.7000204@yahoo.com.au> <Pine.LNX.4.64.0704270507110.21003@schroedinger.engr.sgi.com> <4631EBC8.4060003@yahoo.com.au> <20070427133947.GB4152@infradead.org> <4632B121.3030005@yahoo.com.au> <20070428023901.GT19966@holomorphy.com> <4632B672.90609@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4632B672.90609@yahoo.com.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Must be global warming, I'm getting a lot more irq storms than usual.
+William Lee Irwin III wrote:
+>> What sort of strategy do you intend to use to speculatively populate
+>> the pagecache with contiguous pages?
 
-Now that I switched over to x86_64, I booted up and got another irq
-storm. So I added my previous patch and it didn't fix it.  Looking
-further, I found that the mask and unmask is done directly in the
-x86_64/io_apic.c file.
+On Sat, Apr 28, 2007 at 12:50:26PM +1000, Nick Piggin wrote:
+> Andrew outlined it.
 
-This patch does basically the same thing as my previous patch, but to
-the x86_64/io_apic.c file.
+I'd like to suggest a few straightforward additions to the proposal:
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.21-rt1/arch/x86_64/kernel/io_apic.c
-===================================================================
---- linux-2.6.21-rt1.orig/arch/x86_64/kernel/io_apic.c
-+++ linux-2.6.21-rt1/arch/x86_64/kernel/io_apic.c
-@@ -1437,7 +1437,8 @@ static void ack_apic_level(unsigned int 
- 	irq_complete_move(irq);
- #if defined(CONFIG_GENERIC_PENDING_IRQ) || defined(CONFIG_IRQBALANCE)
- 	/* If we are moving the irq we need to mask it */
--	if (unlikely(irq_desc[irq].status & IRQ_MOVE_PENDING)) {
-+	if (unlikely(irq_desc[irq].status & IRQ_MOVE_PENDING) &&
-+	    !(irq_desc[irq].status & IRQ_INPROGRESS)) {
- 		do_unmask_irq = 1;
- 		mask_IO_APIC_irq(irq);
- 	}
+(1) the interface to the page allocator tries to allocate N pages where
+	(a) N is a power of 2
+	(b) some effort is made to get contiguity
+	(c) some effort is made to fall back to lesser contiguity
+	(d) some effort is made to get N pages even with no contiguity
+(2) a corresponding group freeing interface to the page allocator
+(3) Pass the pages around in a list or similar so that O(1) instead of
+	O(pages) splice operations under the lock suffice for passing
+	them around. Dissecting compound pages outside locks helps.
 
 
+-- wli
