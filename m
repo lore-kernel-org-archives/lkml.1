@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbXD1ATb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757956AbXD1AWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbXD1ATb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 20:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbXD1ATb
+	id S1757956AbXD1AWf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 20:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757957AbXD1AWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 20:19:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52275 "EHLO
+	Fri, 27 Apr 2007 20:22:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33464 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757937AbXD1ATa (ORCPT
+	by vger.kernel.org with ESMTP id S1757956AbXD1AWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 20:19:30 -0400
-Date: Fri, 27 Apr 2007 17:18:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <alpine.LFD.0.98.0704271647340.9964@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.98.0704271706100.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280041.17617.rjw@sisk.pl>
- <alpine.LFD.0.98.0704271612380.9964@woody.linux-foundation.org>
- <200704280145.26253.rjw@sisk.pl>
- <alpine.LFD.0.98.0704271647340.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 27 Apr 2007 20:22:33 -0400
+Date: Fri, 27 Apr 2007 17:22:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: bbpetkov@yahoo.de
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
+ spinlock. was: Re: 2.6.21-rc7-mm2
+Message-Id: <20070427172230.94b82829.akpm@linux-foundation.org>
+In-Reply-To: <20070426182519.GA4532@gollum.tnic>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<20070426182519.GA4532@gollum.tnic>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 26 Apr 2007 20:25:19 +0200
+Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
-
-On Fri, 27 Apr 2007, Linus Torvalds wrote:
 > 
-> The "let's stop all kernel threads" is superstition. It's the same kind of 
-> superstition that made people write "sync" three times before turning off 
-> the power in the olden times. It's the kind of superstition that comes 
-> from "we don't do things right, so let's be vewy vewy quiet and _pray_ 
-> that it works when we are beign quiet".
+> Remove build warning mm/memory.c:1491: warning: 'ptl' may be used uninitialized in this function.
+> The spinlock pointer is assigned to null since it gets overwritten right away in
+> pte_alloc_map_lock().
+> 
+> Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> ---
+> 
+> Index: linux-mm/mm/memory.c
+> ===================================================================
+> --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
+> +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
+> @@ -1488,7 +1488,7 @@
+>         pte_t *pte;
+>         int err;
+>         struct page *pmd_page;
+> -       spinlock_t *ptl;
+> +       spinlock_t *ptl = NULL;
+> 
+>         pte = (mm == &init_mm) ?
+>                 pte_alloc_kernel(pmd, addr) :
+> 
 
-Side note: while I think things should probably *work* even with user 
-processes going full bore while a snapshot it taken, I'll freely admit 
-that I'll follow that superstition far enough that I think it's probably a 
-good idea to try to quiesce the system to _some_ degree, and that stopping 
-user programs is a good idea. Partly because the whole memory shrinking 
-thing, and partly just because we should do the snapshot with hw IO queues 
-empty.
+yes, I've been staring unhappily at this for some time.
 
-But I don't think it would necessarily be wrong (and in many ways it would 
-probably be *right*) to do that IO queue stopping at the queue level 
-rather than at a process level. Why stop processes just becasue you want 
-to clean out IO queues? They are two totally different things!
+Your change adds seven bytes of text to this function for no runtime
+benefit, just to fix a build-time warning.  It's a general problem.
 
-		Linus
+
+Often we just leave the warning in place and curse gcc each time it flies
+past.  Sometimes the code can be restructured in a sensible fashion to
+avoid the warning; often it cannot.
+
+But I don't think I want to put up with a warning coming out of core MM all
+the time so let's go with the following silliness which adds no additional
+runtime cost.
+
+--- a/mm/memory.c~add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix
++++ a/mm/memory.c
+@@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
+ 	pte_t *pte;
+ 	int err;
+ 	struct page *pmd_page;
+-	spinlock_t *ptl;
++	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
+ 
+ 	pte = (mm == &init_mm) ?
+ 		pte_alloc_kernel(pmd, addr) :
+_
+
