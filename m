@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbXD1PO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbXD1PQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753153AbXD1PO1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 11:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbXD1PO1
+	id S1753928AbXD1PQX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 11:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754059AbXD1PQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 11:14:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52005 "EHLO mail.dvmed.net"
+	Sat, 28 Apr 2007 11:16:23 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:56276 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753153AbXD1PO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 11:14:26 -0400
-Message-ID: <463364CF.20801@garzik.org>
-Date: Sat, 28 Apr 2007 11:14:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-CC: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Greg KH <greg@kroah.com>
-Subject: Re: [DOC] Fix wrong identifier name in Documentation/driver-model/devres.txt
-References: <200704260926.33826.eike-kernel@sf-tec.de>
-In-Reply-To: <200704260926.33826.eike-kernel@sf-tec.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S1753928AbXD1PQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 11:16:21 -0400
+Date: Sat, 28 Apr 2007 20:53:27 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070428152327.GE14716@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070425214704.GA32572@elte.hu> <20070428124516.GA27292@in.ibm.com> <20070428135338.GA8207@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070428135338.GA8207@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rolf Eike Beer wrote:
-> Above and below we talk about my_midlayer_create_something, I assume that is
-> also meant here.
+On Sat, Apr 28, 2007 at 03:53:38PM +0200, Ingo Molnar wrote:
+> > Won't it help if you update rq->rb_leftmost above from the value 
+> > returned by rb_first(), so that subsequent calls to first_fair will be 
+> > sped up?
 > 
-> Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
-> 
-> ---
-> commit bb5f6ef5bbbdc0233690fe3ba6d5787a6aab9b33
-> tree cd948e03b4add89be6e648d31b7778c64a51e8d2
-> parent 64aa7c3136258d3abc76354b5f83b9a9575169c0
-> author Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 26 Apr 2007 09:23:39 +0200
-> committer Rolf Eike Beer <eike-kernel@sf-tec.de> Thu, 26 Apr 2007 09:23:39 +0200
-> 
->  Documentation/driver-model/devres.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
-> index 5163b85..6c8d8f2 100644
-> --- a/Documentation/driver-model/devres.txt
-> +++ b/Documentation/driver-model/devres.txt
-> @@ -182,7 +182,7 @@ For example, you can do something like the following.
->  
->  	...
->  
-> -	devres_close_group(dev, my_midlayer_something);
-> +	devres_close_group(dev, my_midlayer_create_something);
->  	return 0;
+> yeah, indeed. Would you like to do a patch for that?
 
-hmmm.
+My pleasure :)
 
-Now that devres is in the kernel, I don't think I am the best person to 
-merge these sort of patches.  Certainly I can, and I know the code from 
-my original review and subsequent usage, but I think the patch is more 
-appropriate for Greg, going through normal maintainership channels.
+With the patch below applied, I ran a "time -p make -s -j10 bzImage"
+test.
 
-IOW, I think devres is too generic to be queued via libata-dev.git.
+2.6.20 + cfs-v6			-> 186.45 (real)
+2.6.20 + cfs-v6 + this_patch	-> 184.55 (real)
 
-Tejun, comments?
-
-	Jeff
+or about ~1% improvement in real wall-clock time. This was with the default 
+sched_granularity_ns of 6000000. I suspect larger the value of
+sched_granularity_ns and the number of (SCHED_NORMAL) tasks in system, better 
+the benefit from this caching.
 
 
+Cache value returned by rb_first(), for faster subsequent lookups.
+
+Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
+
+
+---
+
+
+diff -puN kernel/sched_fair.c~speedup kernel/sched_fair.c
+--- linux-2.6.21/kernel/sched_fair.c~speedup	2007-04-28 19:28:08.000000000 +0530
++++ linux-2.6.21-vatsa/kernel/sched_fair.c	2007-04-28 19:34:55.000000000 +0530
+@@ -86,7 +86,9 @@ static inline struct rb_node * first_fai
+ {
+ 	if (rq->rb_leftmost)
+ 		return rq->rb_leftmost;
+-	return rb_first(&rq->tasks_timeline);
++	/* Cache the value returned by rb_first() */
++	rq->rb_leftmost = rb_first(&rq->tasks_timeline);
++	return rq->rb_leftmost;
+ }
+ 
+ static struct task_struct * __pick_next_task_fair(struct rq *rq)
+_
+
+
+
+
+	
+
+-- 
+Regards,
+vatsa
