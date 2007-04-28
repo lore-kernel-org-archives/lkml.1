@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161155AbXD1SRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161217AbXD1SRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161155AbXD1SRZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163299AbXD1SQB
+	id S1161217AbXD1SRe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163452AbXD1SP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:16:01 -0400
-Received: from holomorphy.com ([66.93.40.71]:59534 "EHLO holomorphy.com"
+	Sat, 28 Apr 2007 14:15:58 -0400
+Received: from ns1.suse.de ([195.135.220.2]:34418 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163442AbXD1SOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:14:51 -0400
-Date: Sat, 28 Apr 2007 11:15:23 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] hugetlbfs: add NULL check in hugetlb_zero_setup()
-Message-ID: <20070428181523.GX31925@holomorphy.com>
-References: <20070428071923.GB9545@APFDCB5C> <20070428145039.GX19966@holomorphy.com> <20070428161856.GA9662@APFDCB5C> <20070428162948.GA9717@APFDCB5C>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070428162948.GA9717@APFDCB5C>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1163290AbXD1Rwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:36 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428752.712152000@suse.de>
+In-Reply-To: <20070428752.712152000@suse.de>
+To: "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [11/35] x86_64: adjust inclusion of asm/vsyscall32.h
+Message-Id: <20070428175235.8D639151D1@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 01:29:48AM +0900, Akinobu Mita wrote:
-> If hugetlbfs module_init() fails, hugetlbfs_vfsmount
-> is not initialized and shmget() with SHM_HUGETLB flag will
-> cause NULL pointer dereference.
-> Cc: William Irwin <wli@holomorphy.com>
-> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-> Index: 2.6-mm/fs/hugetlbfs/inode.c
-> ===================================================================
-> --- 2.6-mm.orig/fs/hugetlbfs/inode.c
-> +++ 2.6-mm/fs/hugetlbfs/inode.c
-> @@ -740,6 +740,9 @@ struct file *hugetlb_zero_setup(size_t s
->  	char buf[16];
->  	static atomic_t counter;
->  
-> +	if (!hugetlbfs_vfsmount)
-> +		return ERR_PTR(-ENOENT);
-> +
->  	if (!can_do_hugetlb_shm())
->  		return ERR_PTR(-EPERM);
 
-Putting some thought into this, the failure to set up the vfsmount
-for shm should be reported noisily, the failure to register the
-filesystem should be noticed so as not to oops later in the init
-function (I guess one could panic() if he wanted to), and the
-attempt at kern_mount() should be conditional on SysV IPC.
+From: "Jan Beulich" <jbeulich@novell.com>
+Avoid including asm/vsyscall32.h in virtually every source file.
 
-I'll take this check, which should be made no matter what, and do
-a patch for the init function along the lines described above if
-you don't do it yourself first. I don't need the patch credits, so
-feel free to grab the free patch line if you want it.
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-Acked-by: William Irwin <bill.irwin@oracle.com>
+---
+ arch/x86_64/ia32/syscall32.c |    1 +
+ include/asm-x86_64/fixmap.h  |    1 -
+ 2 files changed, 1 insertion(+), 1 deletion(-)
 
-
--- wli
+Index: linux/arch/x86_64/ia32/syscall32.c
+===================================================================
+--- linux.orig/arch/x86_64/ia32/syscall32.c
++++ linux/arch/x86_64/ia32/syscall32.c
+@@ -13,6 +13,7 @@
+ #include <asm/proto.h>
+ #include <asm/tlbflush.h>
+ #include <asm/ia32_unistd.h>
++#include <asm/vsyscall32.h>
+ 
+ extern unsigned char syscall32_syscall[], syscall32_syscall_end[];
+ extern unsigned char syscall32_sysenter[], syscall32_sysenter_end[];
+Index: linux/include/asm-x86_64/fixmap.h
+===================================================================
+--- linux.orig/include/asm-x86_64/fixmap.h
++++ linux/include/asm-x86_64/fixmap.h
+@@ -15,7 +15,6 @@
+ #include <asm/apicdef.h>
+ #include <asm/page.h>
+ #include <asm/vsyscall.h>
+-#include <asm/vsyscall32.h>
+ 
+ /*
+  * Here we define all the compile-time 'special' virtual
