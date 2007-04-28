@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031113AbXD1GBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161204AbXD1GDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031113AbXD1GBL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031118AbXD1GBL
+	id S1161204AbXD1GDo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161359AbXD1GDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:01:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60718 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031113AbXD1GBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:01:09 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Steven Whitehouse <swhiteho@redhat.com>, Andi Kleen <ak@suse.de>,
-       Shai Fultheim <shai@scalex86.org>,
-       Ravikiran Thirumalai <kiran@scalex86.org>
-Subject: Re: ACPI build problem (2.6.21 CONFIG_X86_64_ACPI_NUMA)
-Date: Sat, 28 Apr 2007 01:59:46 -0400
-User-Agent: KMail/1.9.5
-References: <1177593963.5462.12.camel@quoit.chygwyn.com>
-In-Reply-To: <1177593963.5462.12.camel@quoit.chygwyn.com>
-Cc: linux-kernel@vger.kernel.org
+	Sat, 28 Apr 2007 02:03:44 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:37657 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161204AbXD1GDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 02:03:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=FoNof8PqeH3jltU7JkLejp2UPtMcJSOVznHE7/pAZoNbPmRTnGoKy5mVkJEdpkdrwmdS5ONwLhmD/0Ss1jnVm1AYfEFAzpuT1aUKxmnmFe/boxm/C4KmNVpPMO/sjBZG5qS22aahyV4/UqOcpwWivmPb6yYl1W8twyTSPtl3um4=  ;
+X-YMail-OSG: zRDN9aAVM1kN2CzsINrPboTUSQIWj2bVYaU51JJphRqCxsk9WwXnMNXd1u4z4mXBsBZL2.VLeA--
+Message-ID: <4632E3B0.6050101@yahoo.com.au>
+Date: Sat, 28 Apr 2007 16:03:28 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Hugh Dickins <hugh@veritas.com>
+CC: rohitseth@google.com, Mike Stroyan <mike.stroyan@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+References: <20070425205548.fd51b301.akpm@linux-foundation.org>  <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com>  <4631E49C.2030501@yahoo.com.au> <1177723479.13482.371.camel@galaxy.corp.google.com> <4632AAB4.6030303@yahoo.com.au> <4632B9C8.40400@yahoo.com.au> <Pine.LNX.4.64.0704280616470.9554@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0704280616470.9554@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704280159.46337.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 April 2007 09:26, you wrote:
-> Hi,
+Hugh Dickins wrote:
+> On Sat, 28 Apr 2007, Nick Piggin wrote:
 > 
-> With the attached kernel config I get the following build errors. They
-> go away if I turn power management support on:
+>>OIC, you need a virtual address to evict the icache, so you can't
+>>flush at flush_dcache time? Or does ia64 have an instruction to
+>>flush the whole icache? (it would be worth testing, to see how much
+>>performance suffers).
 > 
-> drivers/built-in.o: In function `acpi_bus_generate_event':
-> /home/steve/gfs2-2.6-fixes.git/drivers/acpi/bus.c:294: undefined
-> reference to `event_is_open'
-> drivers/built-in.o: In function `acpi_bus_get_power':
-> /home/steve/gfs2-2.6-fixes.git/drivers/acpi/bus.c:160: undefined
-> reference to `acpi_power_get_inferred_state'
-> drivers/built-in.o: In function `acpi_bus_set_power':
-> /home/steve/gfs2-2.6-fixes.git/drivers/acpi/bus.c:230: undefined
-> reference to `acpi_power_transition'
-> /home/steve/gfs2-2.6-fixes.git/drivers/acpi/bus.c:252: undefined
-> reference to `acpi_power_transition'
-> make: *** [.tmp_vmlinux1] Error 1
 > 
-> This is with my gfs2 tree which is basically 2.6.21 plus a few patches
-> which only affect gfs2/dlm, so its upstream to all intents and purposes.
+> I'm puzzled by that remark: the ia64 flush_icache_range always has
+> a virtual address, it uses the kernel virtual address; it takes no
+> interest in whether there's a user virtual address.
 
-CONFIG_ACPI depends on CONFIG_PM, yet this build fails because you have
-CONFIG_ACPI=y and CONFIG_PM=n
+I _think_ what it is doing is actually flushing dcache lines dirtied
+via the kernel virtual address (yes, I think flush_icache in
+lazy_mmu_prot_update is actually just flushing the dcache, but I could
+be wrong? [*]). There are supposedly no icache lines at that point[**]:
+the bug fix at the start of this thread is due to icache lines
+becoming present before the flush.
 
-Unfortunately kconfig doesn't trace dependencies when "select" is used,
-making select sort of evil.  Ie. select can't target anything which
-itself has dependencies.
+[*] and if I'm right, that means that icache fills don't see dirty
+dcache, but rather always load from memory? I hope someone can
+answer these questions?
 
-In 2.6.15, b0bd35e622ffbda2c01dc67a0381c6a18817a29a added the select below,
-and subsequently ACPI became dependent on PM, which broke your build.
-Technically, this could have broken your build in other ways too
-since ACPI already had other dependencies.
+[**] except due to _existing_ executable mappings, of course, but they
+seem to have been comprehensively disregarded...
 
-+# Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
-+
-+config X86_64_ACPI_NUMA
-+       bool "ACPI NUMA detection"
-+       depends on NUMA
-+       select ACPI 
-+       select ACPI_NUMA
-+       default y
-+       help
-+	 Enable ACPI SRAT based node topology detection.
-
-If you de-select CONFIG_X86_64_ACPI_NUMA then the select goes away
-and kconfig should work properly.
-
-It isn't immediately clear to me how the NUMA Kconfig patch is a step
-forward, but perhaps the authors can comment.
-
--Len
+-- 
+SUSE Labs, Novell Inc.
