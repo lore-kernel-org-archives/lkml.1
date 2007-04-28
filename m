@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030413AbXD1VMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030810AbXD1VOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030413AbXD1VMm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 17:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030726AbXD1VMm
+	id S1030810AbXD1VOo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030819AbXD1VOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 17:12:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:62934 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030413AbXD1VMk (ORCPT
+	Sat, 28 Apr 2007 17:14:44 -0400
+Received: from www.osadl.org ([213.239.205.134]:46092 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030810AbXD1VOn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 17:12:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=f9OcxpKsLnmpi+92mmuFkMnO1UIVtMzIrjfFf/Eqdb2gHsn2c07ZEOAqzkE1PaqweeIp6zdLbhEk8YLDxowu5OLn1DglsqCTQYnd5fquJ86FNQVTE04cywdT7MrkyaZ4tnXvnpRO1JW79n17aeJuefCqdaF18PCIpgJE504zoig=
-Message-ID: <75b66ecd0704281412x33352e97kc9c646ea594ef9ee@mail.gmail.com>
-Date: Sat, 28 Apr 2007 17:12:34 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS is under heavy write load (massive starvation)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Mike Galbraith" <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz>
+	Sat, 28 Apr 2007 17:14:43 -0400
+From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
+Organization: Linutronix
+To: tglx@linutronix.de
+Subject: Re: Flaws with "UIO: Add the User IO core code"
+Date: Sat, 28 Apr 2007 23:14:15 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, torvalds@osdl.org,
+       Benedikt Spranger <b.spranger@linutronix.de>
+References: <20070427224957.GA17967@kroah.com> <200704282303.06727.hjk@linutronix.de> <1177794532.7646.313.camel@localhost.localdomain>
+In-Reply-To: <1177794532.7646.313.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	 <20070427013350.d0d7ac38.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz>
-X-Google-Sender-Auth: e35a2cc71c28a908
+Message-Id: <200704282314.15274.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/28/07, Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
-> I most wonder, why vim fsyncs its swapfile regularly (blocking typing
-> during that) and doesn't fsync the resulting file on :w  :-/
+Am Samstag 28 April 2007 23:08 schrieb Thomas Gleixner:
+> On Sat, 2007-04-28 at 23:03 +0200, Hans-Jürgen Koch wrote:
+> > Am Samstag 28 April 2007 22:24 schrieb Alan Cox:
+> > > > > AFAIK we don't currently have any platform that runs binaries with
+> > > > > different sizes of "int" but this is a) an unsigned value anyway, and b)
+> > > > > should be a fixed type (eg u32)
+> > > > 
+> > > > I reviewed the code once more and find it OK. There is only one legal
+> > > > value for the parameter "count" of uio_read(), and that's sizeof(int).
+> > > 
+> > > If you are a box with multiple supported binary types how big is an
+> > > "int". We use explicit sizes to ensure that uio_read() will work when/if
+> > > we get platforms which support binaries with differing ideas of the size
+> > > of "int". Thus it should use s32 or s64 or similar.
+> > 
+> > Here's a fix to that effect:
+> 
+> Can you please add a matching paragraph to the documentation ?
+> 
 
-Never seen this.  Why would fsync block typing unless vim was doing
-disk IO for every keystroke?
+Yes, I'll add a "How to write userspace code" section tomorrow. I'll send a 
+patch as soon as it's ready.
 
-Lee
+Hans
+ 
