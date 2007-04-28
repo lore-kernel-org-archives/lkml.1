@@ -1,97 +1,1481 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXD1WMH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030905AbXD1WMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031123AbXD1WMH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 18:12:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031116AbXD1WMG
+	id S1030905AbXD1WMX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 18:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030970AbXD1WMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 18:12:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48819 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030905AbXD1WMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:12:03 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Martin J. Bligh" <mbligh@mbligh.org>
-Date: Sun, 29 Apr 2007 08:11:30 +1000
+	Sat, 28 Apr 2007 18:12:23 -0400
+Received: from [70.254.190.220] ([70.254.190.220]:44366 "EHLO server.willdawg"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030905AbXD1WMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 18:12:15 -0400
+Date: Sat, 28 Apr 2007 22:12:13 +0000 (GMT)
+From: William Heimbigner <icxcnika@mar.tar.cc>
+X-X-Sender: icxcnika@server.thyself
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Alexey Dobriyan <adobriyan@sw.ru>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PANIC: 2.6.21-rc7-mm2, Kernel access of bad area, sig: 11
+In-Reply-To: <20070428145926.a550a1c1.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704282201310.25153@server.thyself>
+References: <Pine.LNX.4.64.0704282135580.25153@server.thyself>
+ <20070428145926.a550a1c1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17971.50834.907414.761549@notabene.brown>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: message from Martin J. Bligh on Saturday April 28
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
-	<20070426040806.GJ3468@stusta.de>
-	<20070426125802.GL3468@stusta.de>
-	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
-	<4630DB24.4030005@redhat.com>
-	<20070426201325.8a1ebda3.diegocg@gmail.com>
-	<alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
-	<20070426224148.69b91b2e.diegocg@gmail.com>
-	<alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
-	<46339BC7.6050802@mbligh.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday April 28, mbligh@mbligh.org wrote:
-> 
-> Yes, human involvement from someone with half a brain would be better.
-> Andrew does a lot of that. Not a particularly good use of talent really.
-> but still.
+On Sat, 28 Apr 2007, Andrew Morton wrote:
 
-I think more than half a brain is needed to do this well.  You need a
-reasonable understanding of how all the bits of the kernel work
-together so that you have a good chance of sending the bug in the right
-direction.  You need a good understanding of the kernel community and
-various sub communities so that you know who might be both able and
-willing to deal with the bug.  And it wouldn't hurt to have a good
-over-view of the current 'hot' areas of the kernel so you know if it
-is really worth suggesting "try with the latest -mm" or not.
-And you need good people skills.
+> On Sat, 28 Apr 2007 21:40:19 +0000 (GMT) William Heimbigner <icxcnika@mar.tar.cc> wrote:
+>
+>> This bug occurs in linux-2.6.21-rc7-mm2, and does not occur in 2.6.21-rc7
+>> ARCH is powerpc
+>>
+>> dmesg output, captured via netconsole:
+>> [    0.000000] Using PowerMac machine description
+>> [    0.000000] Total memory = 128MB; using 256kB for hash table (at c7fc0000)
+>> [    0.000000] Linux version 2.6.21-rc7-mm2 (root@console) (gcc version 4.1.1 (Gentoo 4.1.1-r3)) #3 SMP PREEMPT Sat Apr 28 14:29:54 CDT 2007
+>> [    0.000000] Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0xc0
+>> [    0.000000] Mapped at 0xfdfc0000
+>> [    0.000000] Found a Pangea mac-io controller, rev: 0, mapped at 0xfdf40000
+>> [    0.000000] PowerMac motherboard: iMac "Flower Power"
+>
+> It ran OK on my G5.  Can you send the config please?
 
-So I think you really need a lot of up-to-date knowledge to do this
-well.  Because of Andrew's position as a funnel, he has a lot of that
-knowledge.  It would be really nice if he had some help though.  And I
-really think that would mean finding someone in the community who
-would rather be coding (and currently are) and convincing them that
-there is a higher calling for them.  Finding someone out side or on
-the edge of the community is less likely to be effective.
+grep -v "is not set" .config:
+#
+# Automatically generated make config: don't edit
+# Linux kernel version: 2.6.21-rc7-mm2
+# Sat Apr 28 14:04:08 2007
+#
+CONFIG_PPC_PM_NEEDS_RTC_LIB=y
+CONFIG_PPC32=y
+CONFIG_PPC_MERGE=y
+CONFIG_MMU=y
+CONFIG_GENERIC_HARDIRQS=y
+CONFIG_IRQ_PER_CPU=y
+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
+CONFIG_ARCH_HAS_ILOG2_U32=y
+CONFIG_GENERIC_HWEIGHT=y
+CONFIG_GENERIC_CALIBRATE_DELAY=y
+CONFIG_GENERIC_FIND_NEXT_BIT=y
+CONFIG_PPC=y
+CONFIG_EARLY_PRINTK=y
+CONFIG_GENERIC_NVRAM=y
+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
+CONFIG_PPC_OF=y
+CONFIG_PPC_UDBG_16550=y
+CONFIG_GENERIC_TBSYNC=y
+CONFIG_AUDIT_ARCH=y
+CONFIG_GENERIC_BUG=y
 
-> 
-> As Andrew has pointed out before though - even though he forwards
-> the bugs, nobody does anything with it. The sad truth seems to be
-> that people have very little interest in fixing bugs when they are
-> reported - it's not sexy, I guess.
+#
+# Processor support
+#
+CONFIG_CLASSIC32=y
+CONFIG_6xx=y
+CONFIG_PPC_FPU=y
+CONFIG_ALTIVEC=y
+CONFIG_PPC_STD_MMU=y
+CONFIG_PPC_STD_MMU_32=y
+CONFIG_SMP=y
+CONFIG_NR_CPUS=2
+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 
-Not sexy, and also not at all easy.   A lot of the interesting bugs
-seem to be subtle interactions between separate parts of the kernel -
-one part making an assumption or exhibiting a behaviour that the other
-part didn't expect.  And we all know that writing bug^Wcode is easier
-than removing bugs.  I can spend hour and hours reading through code
-trying to get the big picture, and end up finding a one-line change
-that then needs documenting, testing and external review.  It's not
-easy.
+#
+# Code maturity level options
+#
+CONFIG_EXPERIMENTAL=y
+CONFIG_LOCK_KERNEL=y
+CONFIG_INIT_ENV_ARG_LIMIT=32
 
-> I'm still unconvinced the users or the tool are the problem, but if it
-> makes you happier, we can do that.
+#
+# General setup
+#
+CONFIG_LOCALVERSION=""
+CONFIG_SWAP=y
+CONFIG_SWAP_PREFETCH=y
+CONFIG_SYSVIPC=y
+CONFIG_IPC_NS=y
+CONFIG_SYSVIPC_SYSCTL=y
+CONFIG_POSIX_MQUEUE=y
+CONFIG_BSD_PROCESS_ACCT=y
+CONFIG_BSD_PROCESS_ACCT_V3=y
+CONFIG_AUDIT=y
+CONFIG_AUDITSYSCALL=y
+CONFIG_IKCONFIG=y
+CONFIG_IKCONFIG_PROC=y
+CONFIG_SYSFS_DEPRECATED=y
+CONFIG_BLK_DEV_INITRD=y
+CONFIG_INITRAMFS_SOURCE=""
+CONFIG_SYSCTL=y
+CONFIG_EMBEDDED=y
+CONFIG_SYSCTL_SYSCALL=y
+CONFIG_KALLSYMS=y
+CONFIG_HOTPLUG=y
+CONFIG_PRINTK=y
+CONFIG_BUG=y
+CONFIG_ELF_CORE=y
+CONFIG_BASE_FULL=y
+CONFIG_FUTEX=y
+CONFIG_ANON_INODES=y
+CONFIG_EPOLL=y
+CONFIG_SIGNALFD=y
+CONFIG_TIMERFD=y
+CONFIG_EVENTFD=y
+CONFIG_SHMEM=y
+CONFIG_VM_EVENT_COUNTERS=y
+CONFIG_PROC_SMAPS=y
+CONFIG_PROC_CLEAR_REFS=y
+CONFIG_PROC_PAGEMAP=y
+CONFIG_PROC_KPAGEMAP=y
+CONFIG_SLUB=y
+CONFIG_RT_MUTEXES=y
+CONFIG_BASE_SMALL=0
 
-No, they aren't the problem.  Bugs are the problem.  But they might be
-a more effective part of the solution.
+#
+# Loadable module support
+#
+CONFIG_MODULES=y
+CONFIG_MODULE_UNLOAD=y
+CONFIG_MODULE_FORCE_UNLOAD=y
+CONFIG_MODVERSIONS=y
+CONFIG_MODULE_SRCVERSION_ALL=y
+CONFIG_KMOD=y
+CONFIG_STOP_MACHINE=y
 
-My perception of the kernel bugzilla is that visibility is very low.
+#
+# Block layer
+#
+CONFIG_BLOCK=y
 
-I think there is value in weekly reminders, and I wouldn't mind seeing
-a weekly Email on linux-kernel with something like a list of open bugs
-that have not seen any activity in between 1 and 2 weeks.  It might
-get someone out-of-area interested, and might be noticed by someone
-who thinks they are in-area and get them wondering why they didn't
-find out when the bug was first reported.
+#
+# IO Schedulers
+#
+CONFIG_IOSCHED_NOOP=y
+CONFIG_IOSCHED_AS=y
+CONFIG_IOSCHED_DEADLINE=y
+CONFIG_IOSCHED_CFQ=y
+CONFIG_DEFAULT_CFQ=y
+CONFIG_DEFAULT_IOSCHED="cfq"
 
-NeilBrown
+#
+# Platform support
+#
+CONFIG_PPC_MULTIPLATFORM=y
+CONFIG_PPC_CHRP=y
+CONFIG_PPC_PMAC=y
+CONFIG_PPC_NATIVE=y
+CONFIG_MPIC=y
+CONFIG_PPC_I8259=y
+CONFIG_PPC_RTAS=y
+CONFIG_RTAS_PROC=y
+CONFIG_PPC_MPC106=y
+
+#
+# CPU Frequency support
+#
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_TABLE=y
+CONFIG_CPU_FREQ_STAT=y
+CONFIG_CPU_FREQ_STAT_DETAILS=y
+CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+CONFIG_CPU_FREQ_GOV_USERSPACE=y
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+CONFIG_CPU_FREQ_PMAC=y
+CONFIG_TAU=y
+
+#
+# Kernel options
+#
+CONFIG_HZ_1000=y
+CONFIG_HZ=1000
+CONFIG_PREEMPT=y
+CONFIG_PREEMPT_BKL=y
+CONFIG_BINFMT_ELF=y
+CONFIG_HOTPLUG_CPU=y
+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+CONFIG_KEXEC=y
+CONFIG_ARCH_FLATMEM_ENABLE=y
+CONFIG_ARCH_POPULATES_NODE_MAP=y
+CONFIG_SELECT_MEMORY_MODEL=y
+CONFIG_FLATMEM_MANUAL=y
+CONFIG_FLATMEM=y
+CONFIG_FLAT_NODE_MEM_MAP=y
+CONFIG_SPLIT_PTLOCK_CPUS=4
+CONFIG_RESOURCES_64BIT=y
+CONFIG_ZONE_DMA_FLAG=1
+CONFIG_ADAPTIVE_READAHEAD=y
+CONFIG_DEBUG_READAHEAD=y
+CONFIG_PROC_DEVICETREE=y
+CONFIG_PM=y
+CONFIG_PM_DEBUG=y
+CONFIG_PM_SYSFS_DEPRECATED=y
+CONFIG_SECCOMP=y
+CONFIG_ISA_DMA_API=y
+
+#
+# Bus options
+#
+CONFIG_ISA=y
+CONFIG_ZONE_DMA=y
+CONFIG_GENERIC_ISA_DMA=y
+CONFIG_PPC_INDIRECT_PCI=y
+CONFIG_PCI=y
+CONFIG_PCI_DOMAINS=y
+CONFIG_PCIEPORTBUS=y
+CONFIG_PCCARD=y
+CONFIG_PCMCIA=y
+CONFIG_PCMCIA_LOAD_CIS=y
+CONFIG_CARDBUS=y
+
+#
+# PC-card bridges
+#
+CONFIG_PCMCIA_PROBE=y
+
+#
+# Advanced setup
+#
+
+#
+# Default settings for advanced configuration options are used
+#
+CONFIG_HIGHMEM_START=0xfe000000
+CONFIG_LOWMEM_SIZE=0x30000000
+CONFIG_KERNEL_START=0xc0000000
+CONFIG_TASK_SIZE=0x80000000
+CONFIG_BOOT_LOAD=0x00800000
+
+#
+# Networking
+#
+CONFIG_NET=y
+
+#
+# Networking options
+#
+CONFIG_PACKET=y
+CONFIG_UNIX=y
+CONFIG_XFRM=y
+CONFIG_XFRM_USER=y
+CONFIG_NET_KEY=y
+CONFIG_INET=y
+CONFIG_IP_MULTICAST=y
+CONFIG_IP_FIB_HASH=y
+CONFIG_SYN_COOKIES=y
+CONFIG_INET_AH=y
+CONFIG_INET_ESP=y
+CONFIG_INET_TUNNEL=m
+CONFIG_INET_XFRM_MODE_BEET=y
+CONFIG_INET_DIAG=y
+CONFIG_INET_TCP_DIAG=y
+CONFIG_TCP_CONG_ADVANCED=y
+CONFIG_TCP_CONG_BIC=m
+CONFIG_TCP_CONG_CUBIC=y
+CONFIG_TCP_CONG_WESTWOOD=m
+CONFIG_TCP_CONG_HTCP=m
+CONFIG_TCP_CONG_HSTCP=m
+CONFIG_TCP_CONG_HYBLA=m
+CONFIG_TCP_CONG_VEGAS=m
+CONFIG_TCP_CONG_SCALABLE=m
+CONFIG_TCP_CONG_LP=m
+CONFIG_TCP_CONG_VENO=m
+CONFIG_DEFAULT_CUBIC=y
+CONFIG_DEFAULT_TCP_CONG="cubic"
+CONFIG_TCP_MD5SIG=y
+CONFIG_IPV6=y
+CONFIG_IPV6_PRIVACY=y
+CONFIG_IPV6_ROUTER_PREF=y
+CONFIG_INET6_AH=m
+CONFIG_INET6_ESP=m
+CONFIG_INET6_IPCOMP=m
+CONFIG_INET6_XFRM_TUNNEL=m
+CONFIG_INET6_TUNNEL=m
+CONFIG_INET6_XFRM_MODE_TRANSPORT=m
+CONFIG_INET6_XFRM_MODE_TUNNEL=m
+CONFIG_INET6_XFRM_MODE_BEET=m
+CONFIG_IPV6_SIT=m
+CONFIG_NETWORK_SECMARK=y
+CONFIG_NETFILTER=y
+
+#
+# Core Netfilter Configuration
+#
+CONFIG_NETFILTER_NETLINK=m
+CONFIG_NETFILTER_NETLINK_QUEUE=m
+CONFIG_NETFILTER_NETLINK_LOG=m
+CONFIG_NF_CONNTRACK_ENABLED=m
+CONFIG_NF_CONNTRACK=m
+CONFIG_NF_CT_ACCT=y
+CONFIG_NF_CONNTRACK_MARK=y
+CONFIG_NF_CONNTRACK_SECMARK=y
+CONFIG_NF_CONNTRACK_EVENTS=y
+CONFIG_NF_CT_PROTO_GRE=m
+CONFIG_NF_CT_PROTO_SCTP=m
+CONFIG_NF_CONNTRACK_AMANDA=m
+CONFIG_NF_CONNTRACK_FTP=m
+CONFIG_NF_CONNTRACK_H323=m
+CONFIG_NF_CONNTRACK_IRC=m
+CONFIG_NF_CONNTRACK_NETBIOS_NS=m
+CONFIG_NF_CONNTRACK_PPTP=m
+CONFIG_NF_CONNTRACK_SIP=m
+CONFIG_NF_CONNTRACK_TFTP=m
+CONFIG_NF_CT_NETLINK=m
+CONFIG_NETFILTER_XTABLES=m
+CONFIG_NETFILTER_XT_TARGET_CLASSIFY=m
+CONFIG_NETFILTER_XT_TARGET_CONNMARK=m
+CONFIG_NETFILTER_XT_TARGET_DSCP=m
+CONFIG_NETFILTER_XT_TARGET_MARK=m
+CONFIG_NETFILTER_XT_TARGET_NFQUEUE=m
+CONFIG_NETFILTER_XT_TARGET_NFLOG=m
+CONFIG_NETFILTER_XT_TARGET_NOTRACK=m
+CONFIG_NETFILTER_XT_TARGET_SECMARK=m
+CONFIG_NETFILTER_XT_TARGET_CONNSECMARK=m
+CONFIG_NETFILTER_XT_MATCH_COMMENT=m
+CONFIG_NETFILTER_XT_MATCH_CONNBYTES=m
+CONFIG_NETFILTER_XT_MATCH_CONNMARK=m
+CONFIG_NETFILTER_XT_MATCH_CONNTRACK=m
+CONFIG_NETFILTER_XT_MATCH_DCCP=m
+CONFIG_NETFILTER_XT_MATCH_DSCP=m
+CONFIG_NETFILTER_XT_MATCH_ESP=m
+CONFIG_NETFILTER_XT_MATCH_HELPER=m
+CONFIG_NETFILTER_XT_MATCH_LENGTH=m
+CONFIG_NETFILTER_XT_MATCH_LIMIT=m
+CONFIG_NETFILTER_XT_MATCH_MAC=m
+CONFIG_NETFILTER_XT_MATCH_MARK=m
+CONFIG_NETFILTER_XT_MATCH_POLICY=m
+CONFIG_NETFILTER_XT_MATCH_MULTIPORT=m
+CONFIG_NETFILTER_XT_MATCH_PKTTYPE=m
+CONFIG_NETFILTER_XT_MATCH_QUOTA=m
+CONFIG_NETFILTER_XT_MATCH_REALM=m
+CONFIG_NETFILTER_XT_MATCH_SCTP=m
+CONFIG_NETFILTER_XT_MATCH_STATE=m
+CONFIG_NETFILTER_XT_MATCH_STATISTIC=m
+CONFIG_NETFILTER_XT_MATCH_STRING=m
+CONFIG_NETFILTER_XT_MATCH_TCPMSS=m
+CONFIG_NETFILTER_XT_MATCH_HASHLIMIT=m
+
+#
+# IP: Netfilter Configuration
+#
+CONFIG_NF_CONNTRACK_IPV4=m
+CONFIG_NF_CONNTRACK_PROC_COMPAT=y
+CONFIG_IP_NF_QUEUE=m
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_IPRANGE=m
+CONFIG_IP_NF_MATCH_TOS=m
+CONFIG_IP_NF_MATCH_RECENT=m
+CONFIG_IP_NF_MATCH_ECN=m
+CONFIG_IP_NF_MATCH_AH=m
+CONFIG_IP_NF_MATCH_TTL=m
+CONFIG_IP_NF_MATCH_OWNER=m
+CONFIG_IP_NF_MATCH_ADDRTYPE=m
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+CONFIG_IP_NF_TARGET_LOG=m
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_NF_NAT=m
+CONFIG_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=m
+CONFIG_IP_NF_TARGET_REDIRECT=m
+CONFIG_IP_NF_TARGET_NETMAP=m
+CONFIG_IP_NF_TARGET_SAME=m
+CONFIG_NF_NAT_SNMP_BASIC=m
+CONFIG_NF_NAT_PROTO_GRE=m
+CONFIG_NF_NAT_FTP=m
+CONFIG_NF_NAT_IRC=m
+CONFIG_NF_NAT_TFTP=m
+CONFIG_NF_NAT_AMANDA=m
+CONFIG_NF_NAT_PPTP=m
+CONFIG_NF_NAT_H323=m
+CONFIG_NF_NAT_SIP=m
+CONFIG_IP_NF_MANGLE=m
+CONFIG_IP_NF_TARGET_TOS=m
+CONFIG_IP_NF_TARGET_ECN=m
+CONFIG_IP_NF_TARGET_TTL=m
+CONFIG_IP_NF_TARGET_CLUSTERIP=m
+CONFIG_IP_NF_RAW=m
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+CONFIG_IP_NF_ARP_MANGLE=m
+
+#
+# IPv6: Netfilter Configuration (EXPERIMENTAL)
+#
+CONFIG_NF_CONNTRACK_IPV6=m
+CONFIG_IP6_NF_QUEUE=m
+CONFIG_IP6_NF_IPTABLES=m
+CONFIG_IP6_NF_MATCH_RT=m
+CONFIG_IP6_NF_MATCH_OPTS=m
+CONFIG_IP6_NF_MATCH_FRAG=m
+CONFIG_IP6_NF_MATCH_HL=m
+CONFIG_IP6_NF_MATCH_OWNER=m
+CONFIG_IP6_NF_MATCH_IPV6HEADER=m
+CONFIG_IP6_NF_MATCH_AH=m
+CONFIG_IP6_NF_MATCH_EUI64=m
+CONFIG_IP6_NF_FILTER=m
+CONFIG_IP6_NF_TARGET_LOG=m
+CONFIG_IP6_NF_TARGET_REJECT=m
+CONFIG_IP6_NF_MANGLE=m
+CONFIG_IP6_NF_TARGET_HL=m
+CONFIG_IP6_NF_RAW=m
+
+#
+# QoS and/or fair queueing
+#
+CONFIG_NET_CLS_ROUTE=y
+
+#
+# Network testing
+#
+CONFIG_NET_PKTGEN=m
+
+#
+# Wireless
+#
+CONFIG_WIRELESS_EXT=y
+CONFIG_IEEE80211=m
+CONFIG_IEEE80211_CRYPT_WEP=m
+CONFIG_IEEE80211_CRYPT_CCMP=m
+CONFIG_IEEE80211_CRYPT_TKIP=m
+CONFIG_IEEE80211_SOFTMAC=m
+
+#
+# Device Drivers
+#
+
+#
+# Generic Driver Options
+#
+CONFIG_PREVENT_FIRMWARE_BUILD=y
+CONFIG_FW_LOADER=y
+CONFIG_CONNECTOR=y
+CONFIG_PROC_EVENTS=y
+CONFIG_PNP=y
+
+#
+# Protocols
+#
+CONFIG_ISAPNP=y
+
+#
+# Block devices
+#
+CONFIG_BLK_DEV_LOOP=y
+CONFIG_BLK_DEV_CRYPTOLOOP=m
+CONFIG_BLK_DEV_NBD=m
+CONFIG_BLK_DEV_UB=m
+CONFIG_BLK_DEV_RAM=y
+CONFIG_BLK_DEV_RAM_COUNT=16
+CONFIG_BLK_DEV_RAM_SIZE=4096
+CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
+
+#
+# Misc devices
+#
+CONFIG_BLINK=m
+CONFIG_IDE=y
+CONFIG_IDE_MAX_HWIFS=4
+CONFIG_BLK_DEV_IDE=y
+
+#
+# Please see Documentation/ide.txt for help/info on IDE drives
+#
+CONFIG_BLK_DEV_IDEDISK=y
+CONFIG_BLK_DEV_IDECD=y
+CONFIG_BLK_DEV_IDEFLOPPY=y
+CONFIG_BLK_DEV_IDESCSI=y
+CONFIG_IDE_PROC_FS=y
+
+#
+# IDE chipset support/bugfixes
+#
+CONFIG_BLK_DEV_IDEPCI=y
+CONFIG_IDEPCI_SHARE_IRQ=y
+CONFIG_IDEPCI_PCIBUS_ORDER=y
+CONFIG_BLK_DEV_GENERIC=y
+CONFIG_BLK_DEV_IDEDMA_PCI=y
+CONFIG_BLK_DEV_PDC202XX_NEW=y
+CONFIG_BLK_DEV_SL82C105=y
+CONFIG_BLK_DEV_IDE_PMAC=y
+CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+CONFIG_BLK_DEV_IDEDMA_PMAC=y
+CONFIG_BLK_DEV_IDEDMA=y
+
+#
+# SCSI device support
+#
+CONFIG_SCSI=y
+CONFIG_SCSI_NETLINK=y
+CONFIG_SCSI_PROC_FS=y
+
+#
+# SCSI support type (disk, tape, CD-ROM)
+#
+CONFIG_BLK_DEV_SD=y
+CONFIG_CHR_DEV_SG=y
+
+#
+# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
+#
+CONFIG_SCSI_CONSTANTS=y
+CONFIG_SCSI_WAIT_SCAN=m
+
+#
+# SCSI Transports
+#
+CONFIG_SCSI_SPI_ATTRS=y
+CONFIG_SCSI_FC_ATTRS=y
+
+#
+# SCSI low-level drivers
+#
+CONFIG_SCSI_AIC7XXX=m
+CONFIG_AIC7XXX_CMDS_PER_DEVICE=253
+CONFIG_AIC7XXX_RESET_DELAY_MS=15000
+CONFIG_AIC7XXX_DEBUG_ENABLE=y
+CONFIG_AIC7XXX_DEBUG_MASK=0
+CONFIG_AIC7XXX_REG_PRETTY_PRINT=y
+CONFIG_SCSI_AIC7XXX_OLD=m
+CONFIG_SCSI_SYM53C8XX_2=y
+CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
+CONFIG_SCSI_SYM53C8XX_DEFAULT_TAGS=16
+CONFIG_SCSI_SYM53C8XX_MAX_TAGS=64
+CONFIG_SCSI_SYM53C8XX_MMIO=y
+CONFIG_SCSI_MESH=y
+CONFIG_SCSI_MESH_SYNC_RATE=5
+CONFIG_SCSI_MESH_RESET_DELAY_MS=4000
+CONFIG_SCSI_MAC53C94=y
+
+#
+# PCMCIA SCSI adapter support
+#
+
+#
+# Multi-device support (RAID and LVM)
+#
+
+#
+# Fusion MPT device support
+#
+
+#
+# IEEE 1394 (FireWire) support
+#
+CONFIG_IEEE1394=m
+
+#
+# Subsystem Options
+#
+
+#
+# Device Drivers
+#
+CONFIG_IEEE1394_PCILYNX=m
+CONFIG_IEEE1394_OHCI1394=m
+
+#
+# Protocol Drivers
+#
+CONFIG_IEEE1394_VIDEO1394=m
+CONFIG_IEEE1394_SBP2=m
+CONFIG_IEEE1394_ETH1394_ROM_ENTRY=y
+CONFIG_IEEE1394_ETH1394=m
+CONFIG_IEEE1394_DV1394=m
+CONFIG_IEEE1394_RAWIO=m
+CONFIG_I2O=y
+CONFIG_I2O_LCT_NOTIFY_ON_CHANGES=y
+CONFIG_I2O_EXT_ADAPTEC=y
+CONFIG_I2O_CONFIG=y
+CONFIG_I2O_CONFIG_OLD_IOCTL=y
+CONFIG_I2O_BUS=y
+CONFIG_I2O_BLOCK=y
+CONFIG_I2O_SCSI=y
+CONFIG_I2O_PROC=y
+
+#
+# Macintosh device drivers
+#
+CONFIG_ADB=y
+CONFIG_ADB_CUDA=y
+CONFIG_ADB_PMU=y
+CONFIG_ADB_PMU_LED=y
+CONFIG_ADB_PMU_LED_IDE=y
+CONFIG_PMAC_APM_EMU=m
+CONFIG_PMAC_MEDIABAY=y
+CONFIG_PMAC_BACKLIGHT=y
+CONFIG_PMAC_BACKLIGHT_LEGACY=y
+CONFIG_ADB_MACIO=y
+CONFIG_INPUT_ADBHID=y
+CONFIG_MAC_EMUMOUSEBTN=y
+CONFIG_THERM_ADT746X=m
+CONFIG_WINDFARM=m
+
+#
+# Network device support
+#
+CONFIG_NETDEVICES=y
+CONFIG_DUMMY=m
+CONFIG_TUN=m
+
+#
+# Ethernet (10 or 100Mbit)
+#
+CONFIG_NET_ETHERNET=y
+CONFIG_MII=y
+CONFIG_MACE=y
+CONFIG_BMAC=y
+CONFIG_SUNGEM=y
+
+#
+# Tulip family network device support
+#
+CONFIG_NETDEV_1000=y
+CONFIG_NETDEV_10000=y
+CONFIG_MLX4_DEBUG=y
+
+#
+# Wireless LAN
+#
+
+#
+# PCMCIA network device support
+#
+
+#
+# Wan interfaces
+#
+CONFIG_PPP=m
+CONFIG_PPP_MULTILINK=y
+CONFIG_PPP_FILTER=y
+CONFIG_PPP_ASYNC=m
+CONFIG_PPP_SYNC_TTY=m
+CONFIG_PPP_DEFLATE=m
+CONFIG_PPP_BSDCOMP=m
+CONFIG_PPP_MPPE=m
+CONFIG_PPPOE=m
+CONFIG_SLIP=m
+CONFIG_SLHC=m
+CONFIG_NETCONSOLE=y
+CONFIG_NETPOLL=y
+CONFIG_NETPOLL_RX=y
+CONFIG_NETPOLL_TRAP=y
+CONFIG_NET_POLL_CONTROLLER=y
+
+#
+# ISDN subsystem
+#
+
+#
+# Telephony Support
+#
+
+#
+# Input device support
+#
+CONFIG_INPUT=y
+
+#
+# Userland interfaces
+#
+CONFIG_INPUT_MOUSEDEV=y
+CONFIG_INPUT_MOUSEDEV_PSAUX=y
+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
+CONFIG_INPUT_EVDEV=y
+
+#
+# Input Device Drivers
+#
+CONFIG_INPUT_KEYBOARD=y
+CONFIG_INPUT_MOUSE=y
+CONFIG_INPUT_MISC=y
+CONFIG_INPUT_PCSPKR=y
+
+#
+# Hardware I/O ports
+#
+CONFIG_SERIO=y
+CONFIG_SERIO_I8042=m
+CONFIG_SERIO_SERPORT=m
+CONFIG_SERIO_PCIPS2=m
+CONFIG_SERIO_LIBPS2=m
+CONFIG_SERIO_RAW=m
+
+#
+# Character devices
+#
+CONFIG_VT=y
+CONFIG_VT_CONSOLE=y
+CONFIG_HW_CONSOLE=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+
+#
+# Serial drivers
+#
+CONFIG_SERIAL_8250=m
+CONFIG_SERIAL_8250_PCI=m
+CONFIG_SERIAL_8250_PNP=m
+CONFIG_SERIAL_8250_NR_UARTS=4
+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+
+#
+# Non-8250 serial port support
+#
+CONFIG_SERIAL_CORE=m
+CONFIG_SERIAL_PMACZILOG=m
+CONFIG_SERIAL_OF_PLATFORM=m
+CONFIG_UNIX98_PTYS=y
+CONFIG_LEGACY_PTYS=y
+CONFIG_LEGACY_PTY_COUNT=32
+CONFIG_HVC_DRIVER=y
+CONFIG_HVC_RTAS=y
+
+#
+# IPMI
+#
+CONFIG_IPMI_HANDLER=y
+CONFIG_IPMI_DEVICE_INTERFACE=y
+CONFIG_IPMI_SI=y
+CONFIG_IPMI_WATCHDOG=y
+CONFIG_IPMI_POWEROFF=y
+
+#
+# Watchdog Cards
+#
+CONFIG_HW_RANDOM=m
+CONFIG_NVRAM=y
+CONFIG_GEN_RTC=y
+CONFIG_AGP=y
+CONFIG_AGP_UNINORTH=m
+CONFIG_DRM=y
+CONFIG_DRM_R128=y
+CONFIG_DRM_RADEON=y
+
+#
+# PCMCIA character devices
+#
+CONFIG_RAW_DRIVER=m
+CONFIG_MAX_RAW_DEVS=16
+
+#
+# TPM devices
+#
+CONFIG_DEVPORT=y
+CONFIG_I2C=y
+CONFIG_I2C_BOARDINFO=y
+CONFIG_I2C_CHARDEV=m
+
+#
+# I2C Algorithms
+#
+CONFIG_I2C_ALGOBIT=y
+
+#
+# I2C Hardware Bus support
+#
+CONFIG_I2C_ISA=m
+CONFIG_I2C_POWERMAC=y
+
+#
+# Miscellaneous I2C Chip support
+#
+
+#
+# SPI support
+#
+
+#
+# Hardware Monitoring support
+#
+CONFIG_HWMON=y
+CONFIG_HWMON_VID=m
+CONFIG_SENSORS_ABITUGURU=m
+CONFIG_SENSORS_AD7418=m
+CONFIG_SENSORS_ADM1021=m
+CONFIG_SENSORS_ADM1025=m
+CONFIG_SENSORS_ADM1026=m
+CONFIG_SENSORS_ADM1029=m
+CONFIG_SENSORS_ADM1031=m
+CONFIG_SENSORS_ADM9240=m
+CONFIG_SENSORS_AMS=m
+CONFIG_SENSORS_AMS_PMU=y
+CONFIG_SENSORS_AMS_I2C=y
+CONFIG_SENSORS_ASB100=m
+CONFIG_SENSORS_ATXP1=m
+CONFIG_SENSORS_DS1621=m
+CONFIG_SENSORS_F71805F=m
+CONFIG_SENSORS_FSCHER=m
+CONFIG_SENSORS_FSCPOS=m
+CONFIG_SENSORS_GL518SM=m
+CONFIG_SENSORS_GL520SM=m
+CONFIG_SENSORS_IT87=m
+CONFIG_SENSORS_LM63=m
+CONFIG_SENSORS_LM75=m
+CONFIG_SENSORS_LM77=m
+CONFIG_SENSORS_LM78=m
+CONFIG_SENSORS_LM80=m
+CONFIG_SENSORS_LM83=m
+CONFIG_SENSORS_LM85=m
+CONFIG_SENSORS_LM87=m
+CONFIG_SENSORS_LM90=m
+CONFIG_SENSORS_LM92=m
+CONFIG_SENSORS_MAX1619=m
+CONFIG_SENSORS_MAX6650=m
+CONFIG_SENSORS_PC87360=m
+CONFIG_SENSORS_PC87427=m
+CONFIG_SENSORS_SIS5595=m
+CONFIG_SENSORS_SMSC47M1=m
+CONFIG_SENSORS_SMSC47M192=m
+CONFIG_SENSORS_SMSC47B397=m
+CONFIG_SENSORS_VIA686A=m
+CONFIG_SENSORS_VT1211=m
+CONFIG_SENSORS_VT8231=m
+CONFIG_SENSORS_W83781D=m
+CONFIG_SENSORS_W83791D=m
+CONFIG_SENSORS_W83792D=m
+CONFIG_SENSORS_W83793=m
+CONFIG_SENSORS_W83L785TS=m
+CONFIG_SENSORS_W83627HF=m
+CONFIG_SENSORS_W83627EHF=m
+
+#
+# Multifunction device drivers
+#
+
+#
+# Multimedia devices
+#
+CONFIG_VIDEO_DEV=m
+CONFIG_VIDEO_V4L1=y
+CONFIG_VIDEO_V4L1_COMPAT=y
+CONFIG_VIDEO_V4L2=y
+
+#
+# Video Capture Adapters
+#
+
+#
+# Video Capture Adapters
+#
+CONFIG_VIDEO_HELPER_CHIPS_AUTO=y
+
+#
+# V4L USB devices
+#
+
+#
+# Radio Adapters
+#
+
+#
+# Digital Video Broadcasting Devices
+#
+
+#
+# Graphics support
+#
+CONFIG_BACKLIGHT_LCD_SUPPORT=y
+CONFIG_BACKLIGHT_CLASS_DEVICE=y
+CONFIG_LCD_CLASS_DEVICE=m
+
+#
+# Display device support
+#
+CONFIG_DISPLAY_SUPPORT=y
+
+#
+# Display hardware drivers
+#
+CONFIG_FB=y
+CONFIG_FIRMWARE_EDID=y
+CONFIG_FB_DDC=y
+CONFIG_FB_CFB_FILLRECT=y
+CONFIG_FB_CFB_COPYAREA=y
+CONFIG_FB_CFB_IMAGEBLIT=y
+CONFIG_FB_DEFERRED_IO=y
+CONFIG_FB_MACMODES=y
+CONFIG_FB_BACKLIGHT=y
+CONFIG_FB_MODE_HELPERS=y
+
+#
+# Frame buffer hardware drivers
+#
+CONFIG_FB_OF=y
+CONFIG_FB_CONTROL=y
+CONFIG_FB_PLATINUM=y
+CONFIG_FB_VALKYRIE=y
+CONFIG_FB_CT65550=y
+CONFIG_FB_RADEON=y
+CONFIG_FB_RADEON_I2C=y
+CONFIG_FB_RADEON_BACKLIGHT=y
+CONFIG_FB_ATY128=y
+CONFIG_FB_ATY128_BACKLIGHT=y
+
+#
+# Console display driver support
+#
+CONFIG_VGA_CONSOLE=y
+CONFIG_VGACON_SOFT_SCROLLBACK=y
+CONFIG_VGACON_SOFT_SCROLLBACK_SIZE=4096
+CONFIG_DUMMY_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE=y
+CONFIG_FRAMEBUFFER_CONSOLE_ROTATION=y
+CONFIG_FONTS=y
+CONFIG_FONT_8x8=y
+CONFIG_FONT_8x16=y
+CONFIG_FONT_6x11=y
+CONFIG_FONT_7x14=y
+CONFIG_FONT_PEARL_8x8=y
+CONFIG_FONT_ACORN_8x8=y
+CONFIG_FONT_MINI_4x6=y
+CONFIG_FONT_SUN8x16=y
+CONFIG_FONT_SUN12x22=y
+CONFIG_FONT_10x18=y
+
+#
+# Logo configuration
+#
+CONFIG_LOGO=y
+CONFIG_LOGO_LINUX_MONO=y
+
+#
+# Sound
+#
+CONFIG_SOUND=y
+
+#
+# Advanced Linux Sound Architecture
+#
+CONFIG_SND=y
+CONFIG_SND_TIMER=y
+CONFIG_SND_PCM=y
+CONFIG_SND_SEQUENCER=m
+CONFIG_SND_SEQ_DUMMY=m
+CONFIG_SND_OSSEMUL=y
+CONFIG_SND_MIXER_OSS=m
+CONFIG_SND_PCM_OSS=m
+CONFIG_SND_PCM_OSS_PLUGINS=y
+CONFIG_SND_SEQUENCER_OSS=y
+CONFIG_SND_SUPPORT_OLD_API=y
+CONFIG_SND_VERBOSE_PROCFS=y
+
+#
+# Generic devices
+#
+
+#
+# ISA devices
+#
+
+#
+# PCI devices
+#
+
+#
+# ALSA PowerMac devices
+#
+CONFIG_SND_POWERMAC=y
+
+#
+# Apple Onboard Audio driver
+#
+CONFIG_SND_AOA=m
+CONFIG_SND_AOA_FABRIC_LAYOUT=m
+CONFIG_SND_AOA_ONYX=m
+CONFIG_SND_AOA_TAS=m
+CONFIG_SND_AOA_TOONIE=m
+CONFIG_SND_AOA_SOUNDBUS=m
+CONFIG_SND_AOA_SOUNDBUS_I2S=m
+
+#
+# USB devices
+#
+
+#
+# PCMCIA devices
+#
+
+#
+# System on Chip audio support
+#
+
+#
+# Open Sound System
+#
+
+#
+# HID Devices
+#
+CONFIG_HID=y
+
+#
+# USB Input Devices
+#
+CONFIG_USB_HID=y
+CONFIG_USB_HIDINPUT_POWERBOOK=y
+
+#
+# USB support
+#
+CONFIG_USB_ARCH_HAS_HCD=y
+CONFIG_USB_ARCH_HAS_OHCI=y
+CONFIG_USB_ARCH_HAS_EHCI=y
+CONFIG_USB=y
+
+#
+# Miscellaneous USB options
+#
+CONFIG_USB_DEVICEFS=y
+CONFIG_USB_DYNAMIC_MINORS=y
+
+#
+# USB Host Controller Drivers
+#
+CONFIG_USB_EHCI_HCD=y
+CONFIG_USB_EHCI_SPLIT_ISO=y
+CONFIG_USB_EHCI_ROOT_HUB_TT=y
+CONFIG_USB_EHCI_TT_NEWSCHED=y
+CONFIG_USB_ISP116X_HCD=y
+CONFIG_USB_OHCI_HCD=y
+CONFIG_USB_OHCI_HCD_PPC_OF=y
+CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+CONFIG_USB_OHCI_HCD_PCI=y
+CONFIG_USB_OHCI_BIG_ENDIAN_DESC=y
+CONFIG_USB_OHCI_BIG_ENDIAN_MMIO=y
+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+CONFIG_USB_UHCI_HCD=y
+CONFIG_USB_SL811_HCD=y
+
+#
+# USB Device Class drivers
+#
+CONFIG_USB_ACM=m
+CONFIG_USB_PRINTER=m
+
+#
+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
+#
+
+#
+# may also be needed; see USB_STORAGE Help for more information
+#
+CONFIG_USB_STORAGE=y
+
+#
+# USB Input Devices
+#
+
+#
+# USB Imaging devices
+#
+
+#
+# USB Network Adapters
+#
+CONFIG_USB_MON=y
+
+#
+# USB port drivers
+#
+
+#
+# USB Serial Converter support
+#
+CONFIG_USB_SERIAL=y
+CONFIG_USB_SERIAL_CONSOLE=y
+CONFIG_USB_SERIAL_GENERIC=y
+CONFIG_USB_SERIAL_PL2303=y
+
+#
+# USB Miscellaneous drivers
+#
+
+#
+# USB DSL modem support
+#
+
+#
+# USB Gadget Support
+#
+
+#
+# MMC/SD Card support
+#
+
+#
+# LED devices
+#
+CONFIG_NEW_LEDS=y
+CONFIG_LEDS_CLASS=y
+
+#
+# LED drivers
+#
+
+#
+# LED Triggers
+#
+CONFIG_LEDS_TRIGGERS=y
+CONFIG_LEDS_TRIGGER_TIMER=m
+CONFIG_LEDS_TRIGGER_IDE_DISK=y
+CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+
+#
+# InfiniBand support
+#
+
+#
+# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
+#
+
+#
+# Real Time Clock
+#
+CONFIG_RTC_LIB=y
+CONFIG_RTC_CLASS=m
+
+#
+# RTC interfaces
+#
+CONFIG_RTC_INTF_SYSFS=y
+CONFIG_RTC_INTF_PROC=y
+CONFIG_RTC_INTF_DEV=y
+
+#
+# I2C RTC drivers
+#
+CONFIG_RTC_DRV_DS1307=m
+CONFIG_RTC_DRV_DS1672=m
+CONFIG_RTC_DRV_RS5C372=m
+CONFIG_RTC_DRV_ISL1208=m
+CONFIG_RTC_DRV_X1205=m
+CONFIG_RTC_DRV_PCF8563=m
+CONFIG_RTC_DRV_PCF8583=m
+
+#
+# SPI RTC drivers
+#
+
+#
+# Platform RTC drivers
+#
+CONFIG_RTC_DRV_DS1553=m
+CONFIG_RTC_DRV_DS1742=m
+CONFIG_RTC_DRV_M48T86=m
+CONFIG_RTC_DRV_V3020=m
+
+#
+# on-CPU RTC drivers
+#
+
+#
+# DMA Engine support
+#
+
+#
+# DMA Clients
+#
+
+#
+# DMA Devices
+#
+
+#
+# Auxiliary Display support
+#
+
+#
+# Virtualization
+#
+
+#
+# Userspace I/O
+#
+
+#
+# File systems
+#
+CONFIG_EXT2_FS=m
+CONFIG_EXT3_FS=m
+CONFIG_EXT3_FS_XATTR=y
+CONFIG_EXT3_FS_POSIX_ACL=y
+CONFIG_JBD=m
+CONFIG_FS_MBCACHE=m
+CONFIG_REISERFS_FS=y
+CONFIG_REISERFS_PROC_INFO=y
+CONFIG_REISERFS_FS_XATTR=y
+CONFIG_REISERFS_FS_POSIX_ACL=y
+CONFIG_REISERFS_FS_SECURITY=y
+CONFIG_FS_POSIX_ACL=y
+CONFIG_INOTIFY=y
+CONFIG_INOTIFY_USER=y
+CONFIG_DNOTIFY=y
+CONFIG_AUTOFS4_FS=m
+CONFIG_FUSE_FS=m
+
+#
+# CD-ROM/DVD Filesystems
+#
+CONFIG_ISO9660_FS=y
+CONFIG_JOLIET=y
+CONFIG_ZISOFS=y
+CONFIG_UDF_FS=m
+CONFIG_UDF_NLS=y
+
+#
+# DOS/FAT/NT Filesystems
+#
+CONFIG_FAT_FS=y
+CONFIG_VFAT_FS=y
+CONFIG_FAT_DEFAULT_CODEPAGE=437
+CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+
+#
+# Pseudo filesystems
+#
+CONFIG_PROC_FS=y
+CONFIG_PROC_KCORE=y
+CONFIG_PROC_SYSCTL=y
+CONFIG_SYSFS=y
+CONFIG_TMPFS=y
+CONFIG_RAMFS=y
+
+#
+# Miscellaneous filesystems
+#
+CONFIG_HFS_FS=m
+CONFIG_HFSPLUS_FS=m
+
+#
+# Network File Systems
+#
+CONFIG_NFS_FS=y
+CONFIG_NFS_V3=y
+CONFIG_NFS_V3_ACL=y
+CONFIG_NFS_V4=y
+CONFIG_NFSD=m
+CONFIG_NFSD_V2_ACL=y
+CONFIG_NFSD_V3=y
+CONFIG_NFSD_V3_ACL=y
+CONFIG_NFSD_V4=y
+CONFIG_NFSD_TCP=y
+CONFIG_LOCKD=y
+CONFIG_LOCKD_V4=y
+CONFIG_EXPORTFS=m
+CONFIG_NFS_ACL_SUPPORT=y
+CONFIG_NFS_COMMON=y
+CONFIG_SUNRPC=y
+CONFIG_SUNRPC_GSS=y
+CONFIG_RPCSEC_GSS_KRB5=y
+CONFIG_SMB_FS=m
+
+#
+# Partition Types
+#
+CONFIG_PARTITION_ADVANCED=y
+CONFIG_MAC_PARTITION=y
+CONFIG_MSDOS_PARTITION=y
+CONFIG_BSD_DISKLABEL=y
+CONFIG_MINIX_SUBPARTITION=y
+CONFIG_SOLARIS_X86_PARTITION=y
+CONFIG_UNIXWARE_DISKLABEL=y
+
+#
+# Native Language Support
+#
+CONFIG_NLS=y
+CONFIG_NLS_DEFAULT="iso8859-1"
+CONFIG_NLS_CODEPAGE_437=y
+CONFIG_NLS_CODEPAGE_1250=m
+CONFIG_NLS_CODEPAGE_1251=m
+CONFIG_NLS_ASCII=m
+CONFIG_NLS_ISO8859_1=y
+CONFIG_NLS_ISO8859_2=m
+CONFIG_NLS_ISO8859_3=m
+CONFIG_NLS_ISO8859_4=m
+CONFIG_NLS_UTF8=m
+
+#
+# Distributed Lock Manager
+#
+
+#
+# Library routines
+#
+CONFIG_BITREVERSE=y
+CONFIG_CRC_CCITT=m
+CONFIG_CRC32=y
+CONFIG_LIBCRC32C=m
+CONFIG_ZLIB_INFLATE=y
+CONFIG_ZLIB_DEFLATE=m
+CONFIG_TEXTSEARCH=y
+CONFIG_TEXTSEARCH_KMP=m
+CONFIG_TEXTSEARCH_BM=m
+CONFIG_TEXTSEARCH_FSM=m
+CONFIG_PLIST=y
+CONFIG_HAS_IOMEM=y
+CONFIG_HAS_IOPORT=y
+CONFIG_HAS_DMA=y
+
+#
+# Instrumentation Support
+#
+
+#
+# Kernel hacking
+#
+CONFIG_PRINTK_TIME=y
+CONFIG_MAGIC_SYSRQ=y
+CONFIG_UNUSED_SYMBOLS=y
+CONFIG_DEBUG_FS=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+CONFIG_LOG_BUF_SHIFT=21
+CONFIG_DETECT_SOFTLOCKUP=y
+CONFIG_SCHEDSTATS=y
+CONFIG_TIMER_STATS=y
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_RT_MUTEX_TESTER=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_SPINLOCK_SLEEP=y
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_INFO=y
+CONFIG_DEBUG_VM=y
+CONFIG_DEBUG_LIST=y
+CONFIG_FORCED_INLINING=y
+CONFIG_FAULT_INJECTION=y
+CONFIG_FAILSLAB=y
+CONFIG_FAIL_PAGE_ALLOC=y
+CONFIG_FAIL_MAKE_REQUEST=y
+CONFIG_FAULT_INJECTION_DEBUG_FS=y
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUG_STACK_USAGE=y
+CONFIG_DEBUG_PAGEALLOC=y
+CONFIG_DEBUGGER=y
+CONFIG_XMON=y
+CONFIG_XMON_DISASSEMBLY=y
+CONFIG_BOOTX_TEXT=y
+
+#
+# Security options
+#
+CONFIG_CRYPTO=y
+CONFIG_CRYPTO_ALGAPI=y
+CONFIG_CRYPTO_BLKCIPHER=y
+CONFIG_CRYPTO_HASH=y
+CONFIG_CRYPTO_MANAGER=y
+CONFIG_CRYPTO_HMAC=y
+CONFIG_CRYPTO_MD5=y
+CONFIG_CRYPTO_SHA1=y
+CONFIG_CRYPTO_ECB=m
+CONFIG_CRYPTO_CBC=y
+CONFIG_CRYPTO_DES=y
+CONFIG_CRYPTO_AES=m
+CONFIG_CRYPTO_ARC4=m
+CONFIG_CRYPTO_DEFLATE=m
+CONFIG_CRYPTO_MICHAEL_MIC=m
+
+>> ...
+>> [   27.030444] input: PMU as /class/input/input4
+>> [   27.052675] ReiserFS: hda4: found reiserfs format "3.6" with standard journal
+>> [   27.058960] ReiserFS: hda4: using ordered data mode
+>> [   27.078108] ReiserFS: hda4: journal params: device hda4, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
+>> [   27.099024] ReiserFS: hda4: checking transaction log (hda4)
+>> [   27.195147] ReiserFS: hda4: Using r5 hash to sort names
+>> [   27.201477] VFS: Mounted root (reiserfs filesystem) readonly.
+>> [   27.207715] Freeing unused kernel memory: 248k init
+>> [  156.166766] Oops: Kernel access of bad area, sig: 11 [#1]
+>> [  156.167014] PREEMPT SMP NR_CPUS=2 DEBUG_PAGEALLOC PowerMac
+>> [  156.167267] Modules linked in: nfsd exportfs pmac_zilog serial_core ohci1394 ieee1394 uninorth_agp
+>> [  156.167711] NIP: c0068ce4 LR: c0068cdc CTR: 00000000
+>> [  156.167892] REGS: c0583a40 TRAP: 0300   Not tainted  (2.6.21-rc7-mm2)
+>> [  156.168118] MSR: 00001032 <ME,IR,DR>  CR: 42202022  XER: 00000000
+>> [  156.168467] DAR: 00000000, DSISR: 42000000
+>> [  156.168617] TASK = c0550260[0] 'swapper' THREAD: c0582000 CPU: 0
+>> [  156.168840] GPR00: 00000000 c0583af0 c0550260 00000783 c059bc88 00000001 c0488ec0 c059bc80
+>> [  156.169272] GPR08: c0460713 c0488e77 00000000 c0488b70 00003da3 00000000 0023f96c c0590000
+>> [  156.169705] GPR16: c0590000 0023f964 c0590000 00000000 00001032 00000000 c0583eb0 c0590000
+>> [  156.170145] GPR24: c0583b18 00000000 00000000 00000000 c0583b28 c000a1e4 c0583b2c c059bc80
+>> [  156.170594] NIP [c0068ce4] kallsyms_lookup+0x64/0xa4
+>> [  156.170806] LR [c0068cdc] kallsyms_lookup+0x5c/0xa4
+>> [  156.170997] Call Trace:
+>> [  156.171093] [c0583af0] [c0068cb4] kallsyms_lookup+0x34/0xa4 (unreliable)
+>> [  156.171384] --- Exception: c0583bb0 at 0xc0583ba0
+>> [  156.171578]     LR = draw_byte+0x34/0x1d0
+>> [  156.171723] [c0583b10] [c002ebd0] xmon_show_stack+0x2b8/0x330 (unreliable)
+>> [  156.172017] [c0583c10] [c003053c] cmds+0xa20/0x1600
+>> [  156.172235] [c0583ca0] [c0031448] xmon_core+0x32c/0x734
+>> [  156.172452] [c0583d60] [c00319fc] xmon+0x2c/0x68
+>> [  156.172647] [c0583e20] [c0031b40] xmon_irq+0x50/0x6c
+>> [  156.172856] [c0583e40] [c0073828] handle_IRQ_event+0x5c/0xb0
+>> [  156.173090] [c0583e60] [c00755dc] handle_fasteoi_irq+0xac/0x174
+>> [  156.173333] [c0583e80] [c0006be4] do_IRQ+0xec/0x130
+>> [  156.179644] [c0583ea0] [c0014fe8] ret_from_except+0x0/0x14
+>> [  156.185827] --- Exception: 501 at cpu_idle<hand copied begins here>+0xfc/0x1dc
+>>                     LR = cpu_idle+0xfc/0x1dc
+>>                 [c0583f60] [c000a24c] cpu_idle+0x164/0x1dc (unreliable)
+>>                 [c0583f80] [c0003cc4] rest_init+0x74/0x88
+>>                 [c0583fa0] [c050fb68] start_kernel+0x310/0x394
+>>                 [c0583ff0] [000037b4] 0x37b4
+>>
+>> This occurs after pressing the programmer switch to generate an NMI.
+>
+> Can you expand on this?  Do you mean that hitting the NMI switch is what
+> caused this crash?
+
+Correct. The oops/panic occurs immediately after pushing the programmer switch.
+
+> Does a G5 have a programmer switch?  If so, how does this programmer
+> switch it?
+
+I do not belive so. There is a way to trigger an NMI in OS X via setting 
+boot-args="debug=0x4" in the nvram. If this is set, the power button becomes a 
+programmer switch. Apple removed the programmers switch after the PowerMac G4.
+It looks something like:
+_  _
+  \/
+
+inside a circle.
+
+> If you compiled with CONFIG_DEBUG_INFO could you please do
+>
+> gdb vmlinux
+> (gdb) l *0xc0068ce4
+
+(gdb) l *0xc0068ce4
+0xc0068ce4 is in kallsyms_lookup (kallsyms.c:260).
+255                     unsigned long pos;
+256
+257                     pos = get_symbol_pos(addr, symbolsize, offset);
+258                     /* Grab name */
+259                     kallsyms_expand_symbol(get_symbol_offset(pos), namebuf);
+260                     *modname = NULL;
+261                     return namebuf;
+262             }
+263
+264             /* see if it's in a module */
+
+> Patches which touch kallsyms.c in -mm are:
+>
+> extend-print_symbol-capability
+> simplify-module_get_kallsym-by-dropping-length-arg
+> simplify-kallsyms_lookup
+> fix-race-between-rmmod-and-cat-proc-kallsyms
+> fix-race-between-cat-proc-wchan-and-rmmod-et-al
+> fix-race-between-cat-proc-slab_allocators-and-rmmod
+> kallsyms-cleanup-use-seq_release_private-where-appropriate
+
+
+William Heimbigner
+icxcnika@mar.tar.cc
