@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161161AbXD1FuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031049AbXD1Fux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161161AbXD1FuO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 01:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161148AbXD1FuL
+	id S1031049AbXD1Fux (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 01:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031059AbXD1Fuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 01:50:11 -0400
-Received: from ns1.suse.de ([195.135.220.2]:53765 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161143AbXD1FuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 01:50:04 -0400
-Date: Fri, 27 Apr 2007 22:48:00 -0700
-From: Greg KH <gregkh@suse.de>
-To: Bryan WU <bryan.wu@analog.com>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/33] 2.6.20-stable review
-Message-ID: <20070428054800.GA6267@suse.de>
-References: <20070426165445.GA1898@kroah.com> <1177668954.5969.18.camel@roc-desktop> <20070427151314.GA10281@suse.de> <1177734084.9029.10.camel@roc-desktop>
+	Sat, 28 Apr 2007 01:50:52 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:42164 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161139AbXD1Fuj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 01:50:39 -0400
+X-IronPort-AV: i="4.14,464,1170662400"; 
+   d="scan'208"; a="141743683:sNHT44044146"
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Jones <davej@redhat.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+X-Message-Flag: Warning: May contain useful information
+References: <20070423141123.GA21174@skybase>
+	<20070423104534.51bac974.akpm@linux-foundation.org>
+	<20070425112133.4ae86399.randy.dunlap@oracle.com>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com>
+	<20070425200207.77a2721a.akpm@linux-foundation.org>
+	<20070428030805.GA13331@redhat.com>
+	<20070427221803.2a117c23.akpm@linux-foundation.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 27 Apr 2007 22:50:37 -0700
+In-Reply-To: <20070427221803.2a117c23.akpm@linux-foundation.org> (Andrew Morton's message of "Fri, 27 Apr 2007 22:18:03 -0700")
+Message-ID: <adaodl9m4ia.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177734084.9029.10.camel@roc-desktop>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+X-OriginalArrivalTime: 28 Apr 2007 05:50:37.0940 (UTC) FILETIME=[259BA340:01C78959]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 12:21:24PM +0800, Bryan WU wrote:
-> On Fri, 2007-04-27 at 08:13 -0700, Greg KH wrote:
-> > On Fri, Apr 27, 2007 at 06:15:54PM +0800, Wu, Bryan wrote:
-> > > 
-> > > You know for some customer's product, they want to use the stable and
-> > > long term support kernel instead to use the latest one. 
-> > 
-> > Then they should get that support from a vendor, not from the kernel.org
-> > releases :)
-> > 
-> 
-> Yeah, but we are the vendor as you mentioned. -:))
+ > box:/usr/src/25> ~/checkpatch.pl patches/git-infiniband.patch 
 
-Ah, then you already know what to do :)
+Yup, I ran this too.
 
-> If we wanna to release a kernel to customer product development, how to
-> choose the stable version?
+ > Checking patches/git-infiniband.patch:  signoffs = 113
+ > Use WARN_ON & Recovery code rather than BUG() and BUG_ON()
+ > 8143:+  BUG_ON(mlx4_ib_alloc_db_from_pgdir(pgdir, db, order));
+ > 12629:+ BUG_ON(cmd->free_head < 0);
+ > 16580:+         BUG_ON(index < dev->caps.num_mgms);
+ > 16665:+                 BUG_ON(amgm_index_to_free < dev->caps.num_mgms);
+ > 16681:+         BUG_ON(index < dev->caps.num_mgms);
 
-That's up to you.
+I agree -- killing the kernel for a driver bug is dump.  I'll remove
+all these BUGs before merging.
 
-> Currently, we always followed the kernel release cycle/rules and give
-> customer the latest stable version.
+ > Don't init statics to 0/NULL:
+ > 10333:+         path->static_rate = 0;
 
-Ok, then what has really changed here?  We've been doing this .y release
-thing (also called -stable) for about 2 years now, nothing is different
-this week from last.
+This is a false positive/opportunity for script improvement, obviously.
 
-Confused,
+ > 15461:+static int msi_x = 0;
+ > 16113:+ static int mlx4_version_printed = 0;
 
-greg k-h
+Already zapped these.
+
+ - R.
