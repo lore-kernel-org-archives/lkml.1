@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754682AbXD1FU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbXD1FX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754682AbXD1FU3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 01:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030782AbXD1FU2
+	id S1754685AbXD1FX1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 01:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXD1FX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 01:20:28 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:5096 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754681AbXD1FUR (ORCPT
+	Sat, 28 Apr 2007 01:23:27 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51570 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754685AbXD1FX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 01:20:17 -0400
-Date: Sat, 28 Apr 2007 06:20:02 +0100 (BST)
+	Sat, 28 Apr 2007 01:23:26 -0400
+Date: Sat, 28 Apr 2007 06:13:39 +0100 (BST)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: rohitseth@google.com, Mike Stroyan <mike.stroyan@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Luck, Tony" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-In-Reply-To: <4632B9C8.40400@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0704280616470.9554@blonde.wat.veritas.com>
-References: <20070425205548.fd51b301.akpm@linux-foundation.org> 
- <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com> 
- <4631E49C.2030501@yahoo.com.au> <1177723479.13482.371.camel@galaxy.corp.google.com>
- <4632AAB4.6030303@yahoo.com.au> <4632B9C8.40400@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@sw.ru>,
+       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: - maps2-add-proc-pid-pagemap-interface-fix.patch removed from
+ -mm tree
+In-Reply-To: <20070427143131.60d0afc1.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704280607330.9554@blonde.wat.veritas.com>
+References: <200704270814.l3R8EnFJ023047@shell0.pdx.osdl.net>
+ <20070427104533.GA6001@localhost.sw.ru> <20070427132713.fc9d82c0.akpm@linux-foundation.org>
+ <20070427204155.GT11115@waste.org> <20070427143131.60d0afc1.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 28 Apr 2007 05:20:15.0239 (UTC) FILETIME=[E7318970:01C78954]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAB2luYm94AG1pa2Uuc3Ryb3lhbkBocC5jb20AbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwBsaW51eC1pYTY0QHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAHRvbnkubHVja0BpbnRlbC5jb20Abmlja3BpZ2dpbkB5YWhvby5jb20uYXUAcm9oaXRzZXRoQGdvb2dsZS5jb20A
+X-OriginalArrivalTime: 28 Apr 2007 05:13:51.0641 (UTC) FILETIME=[028D2090:01C78954]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWRvYnJpeWFuQHN3LnJ1AG1wbUBzZWxlbmljLmNvbQBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAG5pY2twaWdnaW5AeWFob28uY29tLmF1AA==
 X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Nick Piggin wrote:
+On Fri, 27 Apr 2007, Andrew Morton wrote:
 > 
-> OIC, you need a virtual address to evict the icache, so you can't
-> flush at flush_dcache time? Or does ia64 have an instruction to
-> flush the whole icache? (it would be worth testing, to see how much
-> performance suffers).
+> hm, could do.  might_sleep() is intertwined with preempt in complex ways,
+> but we did decouple that at the config level.  no_mmap_sem() will dtrt for
+> all preempt settings.
+> 
+> But I'll be keeping this as a -mm-only debug patch (which brings us up to
+> about thirty of 'em), so I think it's best to make it unconfigurable so we
+> get maximum coverage.
+> 
+> That's if it actually works.  I haven't tried running it yet, and I have a
+> feeling that running it might cause a big "doh" moment.  We'll see.
 
-I'm puzzled by that remark: the ia64 flush_icache_range always has
-a virtual address, it uses the kernel virtual address; it takes no
-interest in whether there's a user virtual address.
+Yes, I'm expecting the crucial
+
+> +	WARN_ON(rwsem_is_locked(&mm->mmap_sem))
+
+to give a bogus warning every time another thread (or /proc,
+or swapoff, or whatever) happens to have this mmap_sem locked.
+might_sleep() is quite different, works on our thread's info.
 
 Hugh
