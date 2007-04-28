@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030936AbXD1Cuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030953AbXD1CwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030936AbXD1Cuj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030952AbXD1Cuj
+	id S1030953AbXD1CwM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:52:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030954AbXD1CwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:50:39 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:20130 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030936AbXD1Cuf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:50:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=P8L3VC46DF1/KFdCl3cbCpsz1i2MVEiYoVkNPny4d/m7PJvxHWzsOW/C8cJ7umzIwjuGIdPZV+Gs6+GbeFMop8TVTLqbC12ydU1QFReYI1q5vip7ZR7B7AixVlKrrRG7jeB7rrlXg2nzupVaXmYJOyve+aNWRKDA0HthjoUDEyU=  ;
-X-YMail-OSG: 8FjGm7UVM1l7.uGct0XAKLvAMvOSgoKNqHoaTb05CfZknTW50AmHlnl0Ha_qBPtd.Oz8VH.B7g--
-Message-ID: <4632B672.90609@yahoo.com.au>
-Date: Sat, 28 Apr 2007 12:50:26 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Fri, 27 Apr 2007 22:52:11 -0400
+Received: from keil-draco.com ([216.193.185.50]:50440 "EHLO mail"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030953AbXD1CwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:52:09 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Back to the future.
+Date: Fri, 27 Apr 2007 22:51:57 -0400
+User-Agent: KMail/1.9.6
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Pavel Machek <pavel@ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org> <200704280344.49674.rjw@sisk.pl>
+In-Reply-To: <200704280344.49674.rjw@sisk.pl>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-References: <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <17969.55533.59287.509889@cargo.ozlabs.ibm.com> <4631E173.7000204@yahoo.com.au> <Pine.LNX.4.64.0704270507110.21003@schroedinger.engr.sgi.com> <4631EBC8.4060003@yahoo.com.au> <20070427133947.GB4152@infradead.org> <4632B121.3030005@yahoo.com.au> <20070428023901.GT19966@holomorphy.com>
-In-Reply-To: <20070428023901.GT19966@holomorphy.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704272251.57407.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> On Sat, Apr 28, 2007 at 12:27:45PM +1000, Nick Piggin wrote:
-> 
->>I guess 10% isn't a small amount. Though it would be nice to have
->>before/after numbers for Linux. And, like Andrew was saying, we could
->>just _attempt_ to put contiguous pages in pagecache rather than
->>_require_ it. Which is still robust under fragmentation, and benefits
->>everyone, not just files with a large pagecache size.
-> 
-> 
-> What sort of strategy do you intend to use to speculatively populate
-> the pagecache with contiguous pages?
+On Friday 27 April 2007 21:44:48 Rafael J. Wysocki wrote:
+> On Saturday, 28 April 2007 03:12, Linus Torvalds wrote:
+> > On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
+> > > > It's doubly bad, because that idiocy has also infected s2ram. Again,
+> > > > another thing that really makes no sense at all - and we do it not
+> > > > just for snapshotting, but for s2ram too. Can you tell me *why*?
+> > >
+> > > Why we freeze tasks at all or why we freeze kernel threads?
+> >
+> > In many ways, "at all".
+> >
+> > I _do_ realize the IO request queue issues, and that we cannot actually
+> > do s2ram with some devices in the middle of a DMA. So we want to be able
+> > to avoid *that*, there's no question about that. And I suspect that
+> > stopping user threads and then waiting for a sync is practically one of
+> > the easier ways to do so.
+> >
+<snip>
 
-Andrew outlined it.
+Apparently I *CANNOT* wrap my head around this - if just because my laptop, 
+running a vendor 2.6.17 kernel does s2ram perfectly, at least, it does when 
+using the "Upstart" init system rather than the classical SysV init system. I 
+have tried it with the classical init and the suspend isn't triggered by the 
+buttons that used to do it. I didn't try 'echo ram > /sys/power/state', but I 
+have a feeling that would have worked as well. I have problems with s2disk, 
+but thats because I keep my swap partition small - I try to keep it at or 
+around 256M when I have more than half a gig of Ram in a system. Perhaps one 
+of these days I'll grab a multi-gig flash disk, set it up as a swap partition 
+and try it again. (every time I've tried s2disk I wind up running out of disk 
+space - and this is with nothing but X running. Any kind of progress meter 
+for when the system is doing s2disk would be nice - every time I've tried it 
+all I see for the nearly 2 minutes before the s2disk attempt ends is a black 
+screen. I say 2 minutes because thats how long it takes for it to learn that 
+there isn't enough space on the swap-partition to save the image)
 
--- 
-SUSE Labs, Novell Inc.
+DRH
