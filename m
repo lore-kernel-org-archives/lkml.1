@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753810AbXD1TFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbXD1TH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753810AbXD1TFp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964821AbXD1TFo
+	id S1753925AbXD1TH3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXD1TH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:05:44 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:32892 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1754006AbXD1TFN (ORCPT
+	Sat, 28 Apr 2007 15:07:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:53107 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753925AbXD1TH0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:05:13 -0400
-Date: Sat, 28 Apr 2007 11:28:06 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Oliver Neukum <oliver@neukum.org>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Sat, 28 Apr 2007 15:07:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=KFD3yh6JEENchnKQA8RRlDEtOscT6CwsVT8vITRQ+mzs95yC7LDgrhAw3N8X4wJTRnyraz4bmOV+3mkrdo3J2UzvnPo6Ls3aNww9CvDc+4kf33AOkuP9J3Tku/F2Ty6cw71ejfPdAmV1NdirEK0Qo7y1XQ5qo2CSZbwJclUi6qU=
+Date: Sat, 28 Apr 2007 21:06:49 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, stable@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <200704280858.26615.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.63.0704281118550.11638@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <1177718250.4737.222.camel@nigel.suspend2.net> 
- <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
- <200704280858.26615.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-667593041-1177784886=:11638"
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org,
+       =?ISO-8859-1?B?SOVrYW4=?= Lindqvist <lindqvist@netstar.se>,
+       Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       =?ISO-8859-1?B?RnJhbudvaXM=?= Valenduc 
+	<francois.valenduc@skynet.be>,
+       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
+Message-Id: <20070428210649.de34a681.diegocg@gmail.com>
+In-Reply-To: <46338C5B.4010809@m3y3r.de>
+References: <463375E5.5040108@googlemail.com>
+	<46338C5B.4010809@m3y3r.de>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+El Sat, 28 Apr 2007 20:03:07 +0200, Thomas Meyer <thomas@m3y3r.de> escribió:
 
---8323328-667593041-1177784886=:11638
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+> Please remove this from the regression list. This seems to be an
+> userspace only problem and is not related to any kernel driver:
+> amarok and/or audacious seems to repeatedly read/write to the X socket:
 
-On Sat, 28 Apr 2007, Oliver Neukum wrote:
-
-> Am Samstag, 28. April 2007 01:50 schrieb David Lang:
->> 3. make mounted filesystems read-only (possibly with snapshot/checkpoint)
->> 4. unpause
->> 5. save image (with full userspace available, including network)
->> 6. shutdown system (throw away all userspace memory, no need to do graceful
->>     shutdown or nice kill signals, revert filesystem to snapshot/checkpoint if
->>     needed)
->
-> And then you'll have people wonder why the server which sent out all
-> those files has no log entries. You'd have to selectively unfreeze user
-> space, which is a cure worse than the desease.
->
-> Simply throwing away user space work is a bug. And no, you cannot say that
-> it'll be redone away, as you are throwing away accepted input, too.
-
-when you are doing a suspend-to-disk I disagree with you. whoever is doing the 
-suspend knows what is going on, and they can decide what needs to be done.
-
-the only case where you have 'unexpected' work being thrown away is if you are 
-suspending a network server, and the process of suspending it is going to cut 
-all the network connections anyway so it's not a seamless process. In this case 
-it's fair to let the sysadmin choose between loosing some logs or doing some 
-other step to prevent this from happening (which could be to shutdown the 
-network service, or load a iptables rule to block the service)
-
-however, most of the uses of suspend-to-disk are going to be single-user 
-machines and in that case telling the user that anything that they do after 
-issuing the suspend is going to be lost is a perfectly sane thing to do.
-
-and for that matter, if the snapshot is cheap enough, some people may choose to 
-cron the snapshot portion of a suspend-to-disk evvery few min as a safety net 
-for something going wrong. In this case they really do want all of userspace to 
-keep working after the snapshot.
-
-David Lang
---8323328-667593041-1177784886=:11638--
+OK - I added it just to be sure that there wasn't any dynticks regression,
+it's gone now.
