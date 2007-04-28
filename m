@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbXD1VV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030819AbXD1VWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753641AbXD1VV7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 17:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbXD1VV7
+	id S1030819AbXD1VWd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030824AbXD1VWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 17:21:59 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55529 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753641AbXD1VV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 17:21:57 -0400
-To: Greg KH <greg@kroah.com>
-Cc: Gene Heskett <gene.heskett@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Jeff Mahoney <jeffm@suse.com>, Vincent Frentzel <zcecc22@ucl.ac.uk>,
-       Riccardo Ricci <rricci@nuovanetmore.it>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       David Brownell <david-b@pacbell.net>,
-       Giorgio Lando <patroclo7@gmail.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       H??kan Lindqvist <lindqvist@netstar.se>,
-       Fran??ois Valenduc <francois.valenduc@skynet.be>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>,
-       stable@kernel.org, Len Brown <len.brown@intel.com>,
-       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Francois SIMOND <curio@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, reiserfs-dev@namesys.com
-Subject: Re: [stable] 2.6.21 known regressions (v2) (for -stable team)
-References: <463375E5.5040108@googlemail.com>
-	<200704281252.20381.gene.heskett@gmail.com>
-	<20070428181933.GA9811@kroah.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 28 Apr 2007 23:21:54 +0200
-In-Reply-To: <20070428181933.GA9811@kroah.com> (Greg KH's message of "Sat, 28 Apr 2007 11:19:33 -0700")
-Message-ID: <m3647gchzh.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Apr 2007 17:22:33 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:39188 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1030819AbXD1VWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 17:22:32 -0400
+Date: Sat, 28 Apr 2007 22:26:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [2.6.21-git2] sk_buff changes break Cisco VPN client
+Message-ID: <20070428222623.1deac950@the-village.bc.nu>
+In-Reply-To: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
+References: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH <greg@kroah.com> writes:
+On Sat, 28 Apr 2007 22:38:45 +0200
+"Alessandro Suardi" <alessandro.suardi@gmail.com> wrote:
 
->> Also, assignation of ttyUSB#'s is volatile depending on phase of the
->> moon when booted.
->
-> That's always been the case, ever since the 2.2 kernel releases.  Please
-> use udev if you want persistent device names for your tty USB devices.
+> skb_set_timestamp I can figure out, but the rest is a bit
+>  too hard for me... if anyone has already an idea of how
+>  to fix this, I'd be most grateful.
+> 
+> Cisco VPN client builds and works fine under 2.6.21 vanilla.
 
-I don't know how udev (or anything) could help here. AFAIK the
-converters have no serial numbers and no other means to
-differentiate.
--- 
-Krzysztof Halasa
+Perhaps if cisco included full source they could get their code merged,
+in the meantime why not throw it away and use vpnclient like everyone
+else ?
