@@ -1,100 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030752AbXD1BLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030773AbXD1BMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030752AbXD1BLX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 21:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030773AbXD1BLX
+	id S1030773AbXD1BMV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 21:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030795AbXD1BMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 21:11:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59518 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030752AbXD1BLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 21:11:22 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Back to the future.
-Date: Sat, 28 Apr 2007 03:15:28 +0200
-User-Agent: KMail/1.9.5
-Cc: nigel@nigel.suspend2.net, Linus Torvalds <torvalds@linux-foundation.org>,
+	Fri, 27 Apr 2007 21:12:20 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60454 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030773AbXD1BMT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 21:12:19 -0400
+Date: Fri, 27 Apr 2007 18:12:04 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
        Pekka J Enberg <penberg@cs.helsinki.fi>,
        LKML <linux-kernel@vger.kernel.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177711666.4737.176.camel@nigel.suspend2.net> <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com>
-In-Reply-To: <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com>
+Subject: Re: Back to the future.
+In-Reply-To: <200704280300.22604.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280145.26253.rjw@sisk.pl>
+ <alpine.LFD.0.98.0704271647340.9964@woody.linux-foundation.org>
+ <200704280300.22604.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704280315.29488.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 28 April 2007 03:03, Kyle Moffett wrote:
-> On Apr 27, 2007, at 18:07:46, Nigel Cunningham wrote:
-> > Hi.
-> >
-> > On Fri, 2007-04-27 at 14:44 -0700, Linus Torvalds wrote:
-> >> It makes it harder to debug (wouldn't it be *nice* to just ssh in,  
-> >> and do
-> >> 	gdb -p <snapshotter>
-> >
-> > Make the machine being suspended a VM and you can already do that.
+
+
+On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
 > 
-> >> when something goes wrong?) but we also *depend* on user space for  
-> >> various things (the same way we depend on kernel threads, and why  
-> >> it has been such a total disaster to try to freeze the kernel  
-> >> threads too!). For example, if you want to do graphical stuff,  
-> >> just using X would be quite nice,  wouldn't it?
-> >
-> > But in doing so you make the contents of the disk inconsistent with  
-> > the state you've just snapshotted, leading to filesystem  
-> > corruption. Even if you modify filesystems to do checkpointing  
-> > (which is what we're really talking about), you still also have the  
-> > problem that your snapshot has to be stored somewhere before you  
-> > write it to disk, so you also have to either [snip]
+> > It's doubly bad, because that idiocy has also infected s2ram. Again, 
+> > another thing that really makes no sense at all - and we do it not just 
+> > for snapshotting, but for s2ram too. Can you tell me *why*?
 > 
-> Actually, it's a lot simpler than that.  We can just combine the  
-> device-mapper snapshot with a VM+kernel snapshot system call and be  
-> almost done:
+> Why we freeze tasks at all or why we freeze kernel threads?
+
+In many ways, "at all".
+
+I _do_ realize the IO request queue issues, and that we cannot actually do 
+s2ram with some devices in the middle of a DMA. So we want to be able to 
+avoid *that*, there's no question about that. And I suspect that stopping 
+user threads and then waiting for a sync is practically one of the easier 
+ways to do so.
+
+So in practice, the "at all" may become a "why freeze kernel threads?" and 
+freezing user threads I don't find really objectionable.
+
+But as Paul pointed out, Linux on the old powerpc Mac hardware was 
+actually rather famous for having working (and reliable) suspend long 
+before it worked even remotely reliably on PC's. And they didn't do even
+that.
+
+(They didn't have ACPI, and they had a much more limited set of devices, 
+but the whole process freezer is really about neither of those issues. The 
+wild and wacky PC hardware has its problems, but that's _one_ thing we 
+can't blame PC hardware for ;)
+
+> > 	git grep create_freezeable_workthread
 > 
->    sys_snapshot(dev_t snapblockdev, int __user *snapshotfd);
+> s/workthread/workqueue/
+
+Yes.
+
+> > and ponder the end results of that grep. If you don't see something wrong, 
+> > you're blind.
 > 
-> When sys_snapshot is run, the kernel does:
-> 
-> 1)  Sequentially freeze mounted filesystems using blockdev freezing.   
-> If it's an fs that doesn't support freezing then either fail or force- 
-> remount-ro that fs and downgrade all its filedescriptors to RO.   
-> Doesn't need extra locking since process which try to do IO either  
-> succeed before the freeze call returns for that blockdev or sleep on  
-> the unfreeze of that blockdev.  Filesystems are synchronized and made  
-> clean.
-> 2)  Iterate over the userspace process list, freezing each process  
-> and remapping all of its pages copy-on-write.  Any device-specific  
-> pages need to have state saved by that device.
+> This was a mistake, quite unrelated to the point you're making.
 
-Why do you want to do 2) after 1) and not vice versa?
+Did you actually _do_ the "grep" (with the fixed argument)?
 
-> 3)  All processes (except kernel threads) are now frozen.
-> 4)  Kernel should save internal state corresponding to current  
-> userspace state.  The kernel also swaps out excess pages to free up  
-> enough RAM and prepares the snapshot file-descriptor with copies of  
-> kernel memory and the original (pre-COW) mapped userspace pages.
-> 5)  Kernel substitutes filesystems for either a device-mapper  
-> snapshot with snapblockdev as backing storage or union with tmpfs and  
-> remounts the underlying filesystems as read-only.
-> 6)  Kernel unfreezes all userspace processes and returns the snapshot  
-> FD to userspace (where it can be read from).
+I had two totally independent points. #1 was that you yourself have been 
+fixing bugs in this area. #2 was the result of that grep. It's absolutely 
+_empty_ except for the define to add that interface.
 
-Okay, but how do we do the error recovery if, for example, the image cannot
-be saved?
+NOBODY USES IT!
 
-> Then userspace can do whatever it wants.  Any changes to filesystems  
-> mounted at the time of snapshot will be discarded at shutdown.   
-> Freshly mounted filesystems won't have the union or COW thing done,  
-> and so you can write your snapshot to a compressed encrypted file on  
-> a USB key if you want to, you just have to unmount it before the  
-> snapshot() syscall and remount it right afterwards.
+Now, grep for the same interface that creates _non_freezeable workqueues.
 
-This seems to be a good idea.
+Put another way:
 
-Greetings,
-Rafael
+	[torvalds@woody linux]$ git grep create_workqueue | wc -l
+	35
+
+	[torvalds@woody linux]$ git grep create_freezeable_workqueue | wc -l
+	1
+
+and that _one_ hit you get for the "freezeable" case is not actually a 
+user, it's the definition!
+
+Ie my point is, nobody wants freezeable kernel threads. Absolutely nobody.
+
+Yet we have all this support for freezing them (or rather, we freeze them 
+by default, and then we have all this support for _not_ doing that wrong 
+default thing!)
+
+So yes, I think it would be interesting to just stop freezing kernel 
+threads. Totally.
+
+		Linus
