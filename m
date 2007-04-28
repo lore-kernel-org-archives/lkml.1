@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163303AbXD1SNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163433AbXD1SNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163303AbXD1SNF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163430AbXD1SNE
+	id S1163433AbXD1SNb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:13:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163301AbXD1SNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:13:04 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38638 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 14:13:09 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38622 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163303AbXD1Rwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:52:47 -0400
+	id S1163300AbXD1Rwm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:42 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070428752.712152000@suse.de>
 In-Reply-To: <20070428752.712152000@suse.de>
-To: "Jan Beulich" <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+To: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
        patches@x86-64.org
-Subject: [PATCH] [18/35] x86_64: a few missing entry.S annotations
-Message-Id: <20070428175243.1A28D1518D@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:52:43 +0200 (CEST)
+Subject: [PATCH] [13/35] i386: No need to use -traditional for processing asm in i386/kernel/
+Message-Id: <20070428175237.B1AC6151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:37 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Jan Beulich" <jbeulich@novell.com>
-Signed-off-by: Jan Beulich <jbeulich@novell.com>
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+No need to use -traditional for processing asm in i386/kernel/
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/entry.S |    5 +++++
- 1 file changed, 5 insertions(+)
+ arch/i386/kernel/Makefile |    2 --
+ arch/i386/kernel/entry.S  |    2 +-
+ include/asm-i386/percpu.h |    4 ++--
+ 3 files changed, 3 insertions(+), 5 deletions(-)
 
-Index: linux/arch/x86_64/kernel/entry.S
+Index: linux/arch/i386/kernel/Makefile
 ===================================================================
---- linux.orig/arch/x86_64/kernel/entry.S
-+++ linux/arch/x86_64/kernel/entry.S
-@@ -701,6 +701,7 @@ END(spurious_interrupt)
- 	CFI_ADJUST_CFA_OFFSET 8
- 	pushq %rax	/* push real oldrax to the rdi slot */ 
- 	CFI_ADJUST_CFA_OFFSET 8
-+	CFI_REL_OFFSET rax,0
- 	leaq  \sym(%rip),%rax
- 	jmp error_entry
- 	CFI_ENDPROC
-@@ -710,6 +711,7 @@ END(spurious_interrupt)
- 	XCPT_FRAME
- 	pushq %rax
- 	CFI_ADJUST_CFA_OFFSET 8
-+	CFI_REL_OFFSET rax,0
- 	leaq  \sym(%rip),%rax
- 	jmp error_entry
- 	CFI_ENDPROC
-@@ -817,6 +819,7 @@ paranoid_schedule\trace:
-  */ 		  				
- KPROBE_ENTRY(error_entry)
- 	_frame RDI
-+	CFI_REL_OFFSET rax,0
- 	/* rdi slot contains rax, oldrax contains error code */
- 	cld	
- 	subq  $14*8,%rsp
-@@ -824,6 +827,7 @@ KPROBE_ENTRY(error_entry)
- 	movq %rsi,13*8(%rsp)
- 	CFI_REL_OFFSET	rsi,RSI
- 	movq 14*8(%rsp),%rsi	/* load rax from rdi slot */
-+	CFI_REGISTER	rax,rsi
- 	movq %rdx,12*8(%rsp)
- 	CFI_REL_OFFSET	rdx,RDX
- 	movq %rcx,11*8(%rsp)
-@@ -857,6 +861,7 @@ error_swapgs:	
- 	swapgs
- error_sti:	
- 	movq %rdi,RDI(%rsp) 	
-+	CFI_REL_OFFSET	rdi,RDI
- 	movq %rsp,%rdi
- 	movq ORIG_RAX(%rsp),%rsi	/* get error code */ 
- 	movq $-1,ORIG_RAX(%rsp)
+--- linux.orig/arch/i386/kernel/Makefile
++++ linux/arch/i386/kernel/Makefile
+@@ -43,8 +43,6 @@ obj-$(CONFIG_VMI)		+= vmi.o vmitime.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o
+ obj-y				+= pcspeaker.o
+ 
+-EXTRA_AFLAGS   := -traditional
+-
+ obj-$(CONFIG_SCx200)		+= scx200.o
+ 
+ # vsyscall.o contains the vsyscall DSO images as __initdata.
+Index: linux/arch/i386/kernel/entry.S
+===================================================================
+--- linux.orig/arch/i386/kernel/entry.S
++++ linux/arch/i386/kernel/entry.S
+@@ -635,7 +635,7 @@ ENTRY(name)				\
+ 	SAVE_ALL;			\
+ 	TRACE_IRQS_OFF			\
+ 	movl %esp,%eax;			\
+-	call smp_/**/name;		\
++	call smp_##name;		\
+ 	jmp ret_from_intr;		\
+ 	CFI_ENDPROC;			\
+ ENDPROC(name)
+Index: linux/include/asm-i386/percpu.h
+===================================================================
+--- linux.orig/include/asm-i386/percpu.h
++++ linux/include/asm-i386/percpu.h
+@@ -20,10 +20,10 @@
+ #ifdef CONFIG_SMP
+ #define PER_CPU(var, cpu) \
+ 	movl __per_cpu_offset(,cpu,4), cpu;	\
+-	addl $per_cpu__/**/var, cpu;
++	addl $per_cpu__##var, cpu;
+ #else /* ! SMP */
+ #define PER_CPU(var, cpu) \
+-	movl $per_cpu__/**/var, cpu;
++	movl $per_cpu__##var, cpu;
+ #endif	/* SMP */
+ 
+ #endif /* !__ASSEMBLY__ */
