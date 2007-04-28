@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbXD1Npg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbXD1Npe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbXD1Npg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbXD1Nk1
+	id S1756213AbXD1Npe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 09:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756219AbXD1Nke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:40:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:45348 "EHLO
+	Sat, 28 Apr 2007 09:40:34 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:45359 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756195AbXD1Njq (ORCPT
+	with ESMTP id S1756220AbXD1Njv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:39:46 -0400
+	Sat, 28 Apr 2007 09:39:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=mkxFCrCZM9nqiwVE9zBViwTs/xDaQ5TZLQzlMqcjPBpbIhqvU0pJeeoik1fJdPb/P80qOgqz6iFaLVA82g2XaX6PBJo5oeY2C+ryhOt42vEv912EOUm1cg/9woX8T/nV67MOqgj8tmkgdELVvbouB9skeyWxC+a7vQKqgqjENso=
-Subject: [PATCHSET] sysfs: sysfs rework, take #2
-In-Reply-To: 
+        b=D54fdZ+fTTRXMfoAvSijHXr+Nyjn6CTHibuEqurVWmaKM9/sCNOAoufddv8uzUo3Y1yUZkDhaBkR2Ox9Azru5ZHDXkigSSjYhMFM0jmsV27t/kRn9+tQked/5jekOontw3tr+I8ZXGThlt+CvUV9dEzERfi7RlkD2RezAoti+Ks=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 07/21] sysfs: fix error handling in binattr write()
+In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Sat, 28 Apr 2007 22:39:35 +0900
-Message-Id: <11777675753460-git-send-email-htejun@gmail.com>
+Date: Sat, 28 Apr 2007 22:39:40 +0900
+Message-Id: <11777675801406-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,53 +32,76 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCHSET] sysfs: sysfs rework, take #2
+Error handling in fs/sysfs/bin.c:write() was wrong because size_t
+count is used to receive return value from flush_write() which is
+negative on failure.
 
-Hello, all.
+This patch updates write() such that int variable is used instead.
+read() is updated the same way for consistency.
 
-This is respin of syswork rework patchset in gregkh patch series.
-Changes are...
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/bin.c |   21 ++++++++-------------
+ 1 files changed, 8 insertions(+), 13 deletions(-)
 
-* ida implemented and used to allocate sysfs_dirent inode numbers
-  instead of using pointer values which caused problems on certain
-  configurations including 32bit userland on 64bit kernel.
-
-* reordered patches a bit such that minor updates added later are now
-  in the front of the patchset.
-
-* 09-sysfs-flatten-and-fix-sysfs_rename_dir-error_handling added.
-
-* 12-sysfs-add-sysfs_dirent-s_name now updates syfs_rename_dir() such
-  that the renaming is reflected in sd->s_name.  This fixes netif
-  rename problem.
-
-* lockdep annotation updated to handle sysfs nodes deleting other
-  nodes properlyand merged into 17-sysfs-implement-sysfs_dirent-
-  active-references-and-immediate-disconnect
-
-* patches which fix fallouts of kill-attr-owner conversion were added
-  19-sysfs-kill-unnecessary-attribute-owner.  Source tree is scanned
-  with grep and brace matching perl script and more fallouts have been
-  converted.
-
-* reimplement-sysfs_drop_dentry() patches are completely redone.  This
-  was necessary because there was no way to look up the dentry
-  matching a sysfs_dirent for shadow directories, not without getting
-  the hands all dirty with dcache internals.  Please read descriptions
-  of patch #20 and 21 for more info.  This fixes two races conditions
-  around sysfs dentry/inode reclamation which triggers BUG_ON().
-
-All the known regrssions are fixed.  I think I've got all the
-attr->owner but haven't verified with cross compiling yet, just
-allyesconfig on x86-64 and i386.  I'll try to setup some cross compile
-environments tomorrow and follow up if I can find more fallouts.
-
-The patches are against Linus's master branch of the day -
-b9099ff63c75216d6ca10bce5a1abcd9293c27e6
-
-Thanks.
-
---
-tejun
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index 8ea2a51..606267a 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -33,16 +33,13 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
+ }
+ 
+ static ssize_t
+-read(struct file * file, char __user * userbuf, size_t count, loff_t * off)
++read(struct file *file, char __user *userbuf, size_t bytes, loff_t *off)
+ {
+ 	char *buffer = file->private_data;
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	int size = dentry->d_inode->i_size;
+ 	loff_t offs = *off;
+-	int ret;
+-
+-	if (count > PAGE_SIZE)
+-		count = PAGE_SIZE;
++	int count = min_t(size_t, bytes, PAGE_SIZE);
+ 
+ 	if (size) {
+ 		if (offs > size)
+@@ -51,10 +48,9 @@ read(struct file * file, char __user * userbuf, size_t count, loff_t * off)
+ 			count = size - offs;
+ 	}
+ 
+-	ret = fill_read(dentry, buffer, offs, count);
+-	if (ret < 0) 
+-		return ret;
+-	count = ret;
++	count = fill_read(dentry, buffer, offs, count);
++	if (count < 0)
++		return count;
+ 
+ 	if (copy_to_user(userbuf, buffer, count))
+ 		return -EFAULT;
+@@ -78,16 +74,15 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
+ 	return attr->write(kobj, buffer, offset, count);
+ }
+ 
+-static ssize_t write(struct file * file, const char __user * userbuf,
+-		     size_t count, loff_t * off)
++static ssize_t write(struct file *file, const char __user *userbuf,
++		     size_t bytes, loff_t *off)
+ {
+ 	char *buffer = file->private_data;
+ 	struct dentry *dentry = file->f_path.dentry;
+ 	int size = dentry->d_inode->i_size;
+ 	loff_t offs = *off;
++	int count = min_t(size_t, bytes, PAGE_SIZE);
+ 
+-	if (count > PAGE_SIZE)
+-		count = PAGE_SIZE;
+ 	if (size) {
+ 		if (offs > size)
+ 			return 0;
+-- 
+1.5.0.3
 
 
