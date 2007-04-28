@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbXD1Ciw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030433AbXD1CuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbXD1Ciw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXD1Ciw
+	id S1030433AbXD1CuW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXD1CuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:38:52 -0400
-Received: from holomorphy.com ([66.93.40.71]:33546 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451AbXD1Civ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:38:51 -0400
-Date: Fri, 27 Apr 2007 19:39:01 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070428023901.GT19966@holomorphy.com>
-References: <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <17969.55533.59287.509889@cargo.ozlabs.ibm.com> <4631E173.7000204@yahoo.com.au> <Pine.LNX.4.64.0704270507110.21003@schroedinger.engr.sgi.com> <4631EBC8.4060003@yahoo.com.au> <20070427133947.GB4152@infradead.org> <4632B121.3030005@yahoo.com.au>
+	Fri, 27 Apr 2007 22:50:22 -0400
+Received: from sj-iport-4.cisco.com ([171.68.10.86]:29389 "EHLO
+	sj-iport-4.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030433AbXD1CuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:50:21 -0400
+X-IronPort-AV: i="4.14,463,1170662400"; 
+   d="scan'208"; a="56867583:sNHT42900408"
+To: akpm@linux-foundation.org, gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: commit 45cd8d8e -- why?
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 27 Apr 2007 19:50:19 -0700
+Message-ID: <ada647hnrf8.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4632B121.3030005@yahoo.com.au>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 28 Apr 2007 02:50:19.0290 (UTC) FILETIME=[F530A7A0:01C7893F]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 12:27:45PM +1000, Nick Piggin wrote:
-> I guess 10% isn't a small amount. Though it would be nice to have
-> before/after numbers for Linux. And, like Andrew was saying, we could
-> just _attempt_ to put contiguous pages in pagecache rather than
-> _require_ it. Which is still robust under fragmentation, and benefits
-> everyone, not just files with a large pagecache size.
+The changelog says:
 
-What sort of strategy do you intend to use to speculatively populate
-the pagecache with contiguous pages?
+    fs/sysfs/bin.c: In function 'read':
+    fs/sysfs/bin.c:77: warning: format '%zd' expects type 'signed size_t', but argument 4 has type 'int'
 
+but the signature of the function read() is
 
--- wli
+    read(struct file * file, char __user * userbuf, size_t count, loff_t * off)
+
+and git blame seems to show it was always thus -- ie count was always size_t.
+
+And now on x86-64 and ia64 with gcc 4.1 at least, I get:
+
+    fs/sysfs/bin.c: In function 'read':
+    fs/sysfs/bin.c:62: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
+
+Andrew, what compiler were you using to get that warning?  Should we
+revert commit 45cd8d8e?
+
+ - R.
