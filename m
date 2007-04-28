@@ -1,50 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163383AbXD1SD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163363AbXD1SE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163383AbXD1SD6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163354AbXD1SD6
+	id S1163363AbXD1SE4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163393AbXD1SEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:03:58 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39181 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163383AbXD1SDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:03:35 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH] x86: fix PSE pagetable construction
-Date: Sat, 28 Apr 2007 20:03:29 +0200
-User-Agent: KMail/1.9.6
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <4632AE54.7030200@goop.org> <200704281229.48597.ak@suse.de> <m1r6q4e7kk.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6q4e7kk.fsf@ebiederm.dsl.xmission.com>
+	Sat, 28 Apr 2007 14:04:54 -0400
+Received: from www17.your-server.de ([213.133.104.17]:4582 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1163388AbXD1SEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:04:05 -0400
+Message-ID: <46338C5B.4010809@m3y3r.de>
+Date: Sat, 28 Apr 2007 20:03:07 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org,
+       =?UTF-8?B?SMOla2FuIExpbmRxdmlzdA==?= <lindqvist@netstar.se>,
+       Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       =?UTF-8?B?RnJhbsOnb2lzIFZhbGVuZHVj?= <francois.valenduc@skynet.be>,
+       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
+References: <463375E5.5040108@googlemail.com>
+In-Reply-To: <463375E5.5040108@googlemail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704282003.30118.ak@suse.de>
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 April 2007 19:23:55 Eric W. Biederman wrote:
-> Andi Kleen <ak@suse.de> writes:
-> 
-> >> My preference would be for whoever had:
-> >> paravirt_ops-hooks-to-set-up-initial-pagetable.patch
-> >
-> > That would be very messy because there are many followup dependencies.
-> >
-> > But once we have a good fix aggreed by everybody I can merge it into the 
-> > initial patch then.
-> 
-> I don't see Xen patches merged yet in your tree yet.
+Michal Piotrowski schrieb:
+> Subject    : Bad interaction between dynticks and amarok?
+> References : http://lkml.org/lkml/2007/4/26/307
+> Submitter  : Thomas Meyer <thomas.mey@web.de>
+> Status     : Unknow
+>
+>   
+Please remove this from the regression list. This seems to be an
+userspace only problem and is not related to any kernel driver:
+amarok and/or audacious seems to repeatedly read/write to the X socket:
 
-Hmm, I thought you were talking about paravirt-initial-pagetable ?
+tail of the strace of audacious:
+gettimeofday({1177782978, 24491}, NULL) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 581502867}) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 581614815}) = 0
+select(4, [3], [3], NULL, NULL)         = 1 (out [3])
+writev(3,
+[{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\240\4\20\0L\0\20\0"..., 40}], 1)
+= 40
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 25286}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 33242}, NULL) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 33475}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 1) = 0
+gettimeofday({1177782978, 36548}, NULL) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 593554129}) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 36921}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 46572}, NULL) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 603578038}) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 603689148}) = 0
+select(4, [3], [3], NULL, NULL)         = 1 (out [3])
+writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\0\4 \0L\0\20\0\23"...,
+40}], 1) = 40
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 47341}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 56566}, NULL) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 56799}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 0) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 613921380}) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 57282}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 67696}, NULL) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 624704202}) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 624817966}) = 0
+select(4, [3], [3], NULL, NULL)         = 1 (out [3])
+writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0P\4
+\0L\0\20\0\23\0"..., 40}], 1) = 40
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 68476}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 76564}, NULL) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 76796}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 0) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 633919963}) = 0
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 77280}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
+gettimeofday({1177782978, 86898}, NULL) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 643911329}) = 0
+clock_gettime(CLOCK_MONOTONIC, {224, 644025581}) = 0
+select(4, [3], [3], NULL, NULL)         = 1 (out [3])
+writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\240\4
+\0L\0\20\0\23"..., 40}], 1) = 40
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 87702}, NULL) = 0
+poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN, revents=POLLIN}], 2,
+9) = 1
+read(3, "\n\3P\v\4\0\200\2\0\0\0\0\210v\274\277r\300\10\10x\35!"...,
+4096) = 96
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
+temporarily unavailable)
+gettimeofday({1177782978, 90108}, NULL) = 0
+gettimeofday({1177782978, 90163}, NULL) = 0
 
-That one is in my tree already. The Xen patches that are still outstanding
-iirc are all addons patches, as they don't impact existing code paths anymore.
+But i didn't have a look at what is going on here. But running amarok
+and/or audacious (without playing a song!) adds 50-70 more interrupts to
+the timer interrupt.
 
--Andi
+with kind regards
+thomas
+
