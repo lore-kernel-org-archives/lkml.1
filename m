@@ -1,71 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750888AbXD1N7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXD1OHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750888AbXD1N7b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXD1N7b
+	id S1751010AbXD1OHF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 10:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXD1OHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:59:31 -0400
-Received: from ihemail3.lucent.com ([135.245.0.37]:46294 "EHLO
-	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbXD1N7a convert rfc822-to-8bit (ORCPT
+	Sat, 28 Apr 2007 10:07:05 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:44582 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbXD1OHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:59:30 -0400
-Content-class: urn:content-classes:message
+	Sat, 28 Apr 2007 10:07:03 -0400
+Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=default; d=booyaka.com;
+  b=Zy8oLdTGJfgql6/qX0I038yfmtW4tmGhrlYt05hb3zIbS5HUnzPcS3EdQLd85yXz4UzlLZxyZUnXJpCsWXOaEDcVj6l6nT/biSbY8HoqVtRNhR3LebYnYA43mtTtIznyOUmhEGHnyzXH6AZVtsDru1lPcnJBoSTcr0qYMH6e4Ld4PqcUJxS1WktgZJI6M/oQYOLx/ZOnHNb83mWeojIdxiTstQeHqyEmX3Bem6VFzT0HvKca89rhVuQ2rQ9ocGnWDEB+xYzFSSiACn5D/tCsXrqGhc0111v8tw1lu8pFHHlPwt552g9Vecj7aFqFwZ0+cviak0OQQgaAAG9mVfuZvQ==  ;
+Date: Sat, 28 Apr 2007 08:07:02 -0600 (MDT)
+From: Paul Walmsley <paul@booyaka.com>
+To: Vincent ETIENNE <ve@vetienne.net>
+cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
+In-Reply-To: <200704280921.19265.ve@vetienne.net>
+Message-ID: <Pine.LNX.4.64.0704280804070.21519@utopia.booyaka.com>
+References: <200704262058.33087.ve@vetienne.net> <20070427211836.GC5917@kroah.com>
+ <Pine.LNX.4.64.0704280024170.7370@jikos.suse.cz> <200704280921.19265.ve@vetienne.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6249.0
-Subject: RE: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same time?
-Date: Sat, 28 Apr 2007 21:58:49 +0800
-Message-ID: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF6F87@exch03.qd.lucent.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same time?
-Thread-Index: AceJnQJlOXT1UurZSRqK+djRWrvjtAAAFLzg
-From: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 28 Apr 2007 13:58:50.0160 (UTC) FILETIME=[5921B300:01C7899D]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 28 Apr 2007, Vincent ETIENNE wrote:
 
-#define GFP_ATOMIC      (__GFP_HIGH)
-#define GFP_NOIO        (__GFP_WAIT)
-#define GFP_NOFS        (__GFP_WAIT | __GFP_IO)
-#define GFP_KERNEL      (__GFP_WAIT | __GFP_IO | __GFP_FS)
+> With your patch it seems like idVendor passed is 0. You could see it there ;
+>
+> http://mail1.vetienne.net/linux/dmesg.2.6.21-rc7-mm2+patch-usbhid
+>
+> I could confirm that the keyboard is working ( yesterday i was just behind the
+> box due to test on the network ). But i don't remember if the keyboard is USB
+> or PS2 (i only have ssh access to the box for the next 3/4 days)
 
------Original Message-----
-From: Robert P. J. Day [mailto:rpjday@mindspring.com]
-Sent: Saturday, April 28, 2007 9:41 PM
-To: Linux Kernel Mailing List
-Subject: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
-time?
+It seems that OpenBSD users are reporting similar problems:
+
+http://article.gmane.org/gmane.os.openbsd.misc/122526
+
+http://www.mail-archive.com/misc@openbsd.org/msg38200.html
 
 
-
-  i'd always assumed that the type flags of GFP_ATOMIC and GFP_KERNEL
-were mutually exclusive when it came to calling kmalloc(), at least
-based on everything i'd read.  so i'm not sure how to interpret the
-following:
-
-drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
-
-  clarification?
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+- Paul
