@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbXD1Xmx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbXD1Xpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbXD1Xmx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:42:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXD1Xmx
+	id S1754426AbXD1Xpf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXD1Xpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:42:53 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:44976 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754410AbXD1Xmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:42:51 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v7
-Date: Sun, 29 Apr 2007 02:42:39 +0300
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, Willy Tarreau <w@1wt.eu>,
-       Gene Heskett <gene.heskett@gmail.com>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, Kasper Sandberg <lkml@metanurb.dk>,
-       buddabrod <buddabrod@gmail.com>, Srivatsa Vaddagiri <vatsa@in.ibm.com>
-References: <20070428152539.GA21601@elte.hu> <200704282220.17689.caglar@pardus.org.tr> <20070428192446.GA18822@elte.hu>
-In-Reply-To: <20070428192446.GA18822@elte.hu>
+	Sat, 28 Apr 2007 19:45:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50298 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754425AbXD1Xpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 19:45:34 -0400
+Date: Sat, 28 Apr 2007 16:45:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: Back to the future.
+In-Reply-To: <200704290103.38409.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.98.0704281640480.9964@woody.linux-foundation.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704281950.30405.rjw@sisk.pl>
+ <alpine.LFD.0.98.0704281421140.9964@woody.linux-foundation.org>
+ <200704290103.38409.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2963150.HxmyGSsPr3";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704290242.43741.caglar@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2963150.HxmyGSsPr3
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-28 Nis 2007 Cts tarihinde, Ingo Molnar =C5=9Funlar=C4=B1 yazm=C4=B1=C5=9Ft=
-=C4=B1:=20
-> * S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr> wrote:
-> > If you want some more output/info etc. please just say, i have both v6
-> > and v7 available.
->
-> could you try the auto-renice patch ontop of -v7:
->
->   http://people.redhat.com/mingo/cfs-scheduler/sched-cfs-auto-renice.patch
->
-> does this make it behave like -v6?
 
-Ingo, please ignore my first report until i found a proper way to reproduce=
-=20
-the slowness cause currently CFS-v7, CFS-v7 + "renice patch", CFS-v7 + reni=
-ce=20
-+ your private mail suggestions and CFS-v6 + "PI support for futexes patch"=
-=20
-seems works equally (which is a good thing so X renicing seems really not=20
-needed, and there were no regression instead of my daydreams) or im too tir=
-ed=20
-to understand the differences.
+On Sun, 29 Apr 2007, Rafael J. Wysocki wrote:
+> 
+> OK, more precisely: fs-related threads should not try to process their queues,
+> etc., after the snapshot is done, because that may cause some fs data to be
+> written at that time and then the fs in question may be corrupted after the
+> restore.  Not all of the I/O in general, fs data.
 
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+But that's not true _either_. That's only true because right now I think 
+we cannot even suspend to a swapfile (I might be wrong). 
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+If you have a swapfile on a filesystem, you'd need those fs queues 
+running!
 
---nextPart2963150.HxmyGSsPr3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> Well, I'm not sure whether or not that still would have been the case if we had
+> stopped to freeze kernel threads for the hibernation/suspend.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
+Did you miss the email where Paul pointed out that Mac/PowerPC didn't use 
+to do any of this? And apparently never had any issues with it? And 
+probably worked more reliably several years ago than suspend/hibernation 
+does _today_?
 
-iD8DBQBGM9vzy7E6i0LKo6YRAnCrAJ4yYHLaBRYT+FO352MPR6/yTdlViwCePlid
-z4P3GI0swdQFqb1SAGpVRmM=
-=7/mL
------END PGP SIGNATURE-----
+Ie we do have history of _not_ freezing things.  The freezing came later, 
+and came with the subsystem that had more problems..
 
---nextPart2963150.HxmyGSsPr3--
+		Linus
