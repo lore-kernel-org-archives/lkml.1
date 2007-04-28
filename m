@@ -1,63 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbXD1GYK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbXD1GZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbXD1GYK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:24:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXD1GYK
+	id S1754744AbXD1GZa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbXD1GZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:24:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43742 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754737AbXD1GYI (ORCPT
+	Sat, 28 Apr 2007 02:25:30 -0400
+Received: from smtp102.plus.mail.re2.yahoo.com ([206.190.53.27]:38438 "HELO
+	smtp102.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756130AbXD1GZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:24:08 -0400
-Date: Fri, 27 Apr 2007 23:24:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Sat, 28 Apr 2007 02:25:27 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=qYxgv3GjvFMZTXUu58rP4grbn+lD/zRKKaw4OnUrceJ+7YDBfSSJmOL9F4Em0qGYbUZEMtn+cbv8BLYtEjl1617CD/X8rNWuptTMKhcMpSdZDkOThdapw3bMK3wmGhb0QSjil9DI9lQvT4KvKVaqls6Y/7Dfn9aqtaS83OV/pQY=  ;
+X-YMail-OSG: lKLM2nMVM1mXcAUQErH7WpW2Ts6vIXzoUWzeE6n2WIXSojdvOK54l4pW2JffDfsTq11TraVZNQ--
+Date: Sat, 28 Apr 2007 08:25:17 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <20070427223632.52def99e.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704272319170.7610@schroedinger.engr.sgi.com>
-References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
- <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
- <20070426235542.bad7035a.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
- <20070427002640.22a71d06.akpm@linux-foundation.org>
- <20070427163620.GI32602149@melbourne.sgi.com> <20070427173432.GJ32602149@melbourne.sgi.com>
- <20070427121108.9ee05710.akpm@linux-foundation.org>
- <20070428031739.GK32602149@melbourne.sgi.com> <20070427215634.325606a9.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0704272158360.7342@schroedinger.engr.sgi.com>
- <20070427223632.52def99e.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized spinlock. was: Re: 2.6.21-rc7-mm2
+Message-ID: <20070428062516.GB4957@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426182519.GA4532@gollum.tnic> <20070427172230.94b82829.akpm@linux-foundation.org> <20070428055740.GA4957@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070428055740.GA4957@gollum.tnic>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Andrew Morton wrote:
-
-> Your patch *is* a workaround.  It's a workaround for small CPU pagesize. 
-> It's a workaround for suboptimal VFS anf filesystem implementations.  It's
-> a workaround for a disk adapter which has suboptimal readahead and
-> writeback caching implementations.
+On Sat, Apr 28, 2007 at 07:57:40AM +0200, Borislav Petkov wrote:
+> On Fri, Apr 27, 2007 at 05:22:30PM -0700, Andrew Morton wrote:
+> > On Thu, 26 Apr 2007 20:25:19 +0200
+> > Borislav Petkov <bbpetkov@yahoo.de> wrote:
+> > 
+> > > 
+> > > Remove build warning mm/memory.c:1491: warning: 'ptl' may be used uninitialized in this function.
+> > > The spinlock pointer is assigned to null since it gets overwritten right away in
+> > > pte_alloc_map_lock().
+> > > 
+> > > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> > > ---
+> > > 
+> > > Index: linux-mm/mm/memory.c
+> > > ===================================================================
+> > > --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
+> > > +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
+> > > @@ -1488,7 +1488,7 @@
+> > >         pte_t *pte;
+> > >         int err;
+> > >         struct page *pmd_page;
+> > > -       spinlock_t *ptl;
+> > > +       spinlock_t *ptl = NULL;
+> > > 
+> > >         pte = (mm == &init_mm) ?
+> > >                 pte_alloc_kernel(pmd, addr) :
+> > > 
+> > 
+> > yes, I've been staring unhappily at this for some time.
+> > 
+> > Your change adds seven bytes of text to this function for no runtime
+> > benefit, just to fix a build-time warning.  It's a general problem.
+> > 
+> > 
+> > Often we just leave the warning in place and curse gcc each time it flies
+> > past.  Sometimes the code can be restructured in a sensible fashion to
+> > avoid the warning; often it cannot.
+> > 
+> > But I don't think I want to put up with a warning coming out of core MM all
+> > the time so let's go with the following silliness which adds no additional
+> > runtime cost.
+> > 
+> > --- a/mm/memory.c~add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix
+> > +++ a/mm/memory.c
+> > @@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
+> >  	pte_t *pte;
+> >  	int err;
+> >  	struct page *pmd_page;
+> > -	spinlock_t *ptl;
+> > +	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
+> >  
+> >  	pte = (mm == &init_mm) ?
+> >  		pte_alloc_kernel(pmd, addr) :
+> > _
 > 
-> See?  I can spin too.
+> Yeah,
+> I saw in other places that usually a NULL/0 is assigned to such a type of pointer. 
+> However, writing code which looks pretty silly just to shut up gcc is pretty
+> senseless, IMHO. Isn't there such a tweak in gcc to say that this pointer is
+> going to be assigned to later on, so don't issue a warning. Something like 
+> 
+> __attribute__ __address_will_be_overwritten_so_don't_bother_warning_me__?
+> 
+> /me going to read gcc docs...
 
-Of course anyone can spin. The veracity of the statements is the important 
-thing.
- 
-> Fact is, this change has *costs*.  And you're completely ignoring them,
-> trying to spin them away.  It ain't working and it never will.  I'm seeing
-> no serious attempt to think about how we can reduce those costs while
-> retaining most of the benefits.
+Sorry, no such thing in the docs to do
 
-Well okay my work is "no serious attempt". How encouraging. Then "It does 
-not work" despite the fact that we were able to run benchmarks on it,  after 
-only a weeks worth of work (where most of my time was actually spend on 
-something else). 
+spinlock_t __attribute__((__uninitialized__)) *ptl;
 
+in order to suppress warnings. But if function size is our concern here, even
+shorter would be:
+
+Index: linux-mm/mm/memory.c
+===================================================================
+--- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
++++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
+@@ -1488,7 +1488,7 @@
+        pte_t *pte;
+        int err;
+        struct page *pmd_page;
+-       spinlock_t *ptl;
++       spinlock_t *ptl = 0;
+
+        pte = (mm == &init_mm) ?
+                pte_alloc_kernel(pmd, addr) :
+
+
+
+-- 
+Regards/Gruﬂ,
+    Boris.
