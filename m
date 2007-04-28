@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163418AbXD1SLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163420AbXD1SL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163418AbXD1SLN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163420AbXD1SLD
+	id S1163420AbXD1SL7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163430AbXD1SL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:11:03 -0400
-Received: from www17.your-server.de ([213.133.104.17]:1376 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163411AbXD1SKp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:10:45 -0400
-Message-ID: <46338DF8.8010901@m3y3r.de>
-Date: Sat, 28 Apr 2007 20:10:00 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
+	Sat, 28 Apr 2007 14:11:57 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53081 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163425AbXD1SLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:11:53 -0400
+Message-ID: <46338E61.1080708@garzik.org>
+Date: Sat, 28 Apr 2007 14:11:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: tglx@linutronix.de
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Meyer <thomas.mey@web.de>
-Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
-References: <463375E5.5040108@googlemail.com> <1177779971.7646.271.camel@localhost.localdomain>
-In-Reply-To: <1177779971.7646.271.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+References: <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070427221803.2a117c23.akpm@linux-foundation.org> <p73tzv022qw.fsf@bingen.suse.de> <20070428030213.4787031f.akpm@linux-foundation.org> <20070428170644.GB20646@redhat.com>
+In-Reply-To: <20070428170644.GB20646@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner schrieb:
-> On Sat, 2007-04-28 at 18:27 +0200, Michal Piotrowski wrote:
->   
->> Subject    : Bad interaction between dynticks and amarok?
->> References : http://lkml.org/lkml/2007/4/26/307
->> Submitter  : Thomas Meyer <thomas.mey@web.de>
->> Status     : Unknow
->>     
->
-> Michal,
->
-> I don't think this is a regression. What Thomas wanted to point out is,
-> that the amarok / sound device is making the positive effect of dynticks
-> moot, as it starts to trigger useless interrupts.
->
-> Thomas, is my interpretation correct ? Did you check, which interrupt
-> was increasing - i.e. was it the soundcard one ?
->   
-No, it wasn't the soundcard one. but i had this effect with amarok and
-audacious... so, i guessed... which was wrong.
+Dave Jones wrote:
+> On Sat, Apr 28, 2007 at 03:02:13AM -0700, Andrew Morton wrote:
+> 
+>  > This little checking tool should have both "error" and "warning" levels -
+>  > AKA "fix this" and "think about this" levels.  BUG_ON would be a warning
+>  > thing.
+> 
+> There's a -pedantic option there just for this.  I'll move BUG_ON under it.
+> What's the consensus on the u32 thing, move that too, or drop completely?
 
-It's the timer interrupt (+50-70 timer interrupts). But i'm not sure
-what both applications are doing, while they are "idle"...
+Not answering your question directly, but FWIW:  In day to day coding 
+and email, I strongly advocate the use of u8/u16/u32 over the C99 
+size-based types.
 
-with kind regards
-thomas
+Simple, direct (read: easiest to review), and less typing.
+
+	Jeff
+
 
