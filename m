@@ -1,109 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030935AbXD1CVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030940AbXD1CYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030935AbXD1CVz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030936AbXD1CVy
+	id S1030940AbXD1CYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030949AbXD1CYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:21:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:49714 "EHLO mail.goop.org"
+	Fri, 27 Apr 2007 22:24:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:49743 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030935AbXD1CVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:21:50 -0400
-Message-ID: <4632AFBF.8020602@goop.org>
-Date: Fri, 27 Apr 2007 19:21:51 -0700
+	id S1030940AbXD1CX7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:23:59 -0400
+Message-ID: <4632B040.1080008@goop.org>
+Date: Fri, 27 Apr 2007 19:24:00 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>, Keir Fraser <Keir.Fraser@cl.cam.ac.uk>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] use elfnote.h to generate vsyscall notes
+Subject: [PATCH] Add kvasprintf()
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use existing elfnote.h to generate vsyscall notes, rather than doing
-it locally.  Changes elfnote.h a bit to suite, since this is the first
-asm user, and it wasn't quite right.
+Add a kvasprintf() function to compliment kasprintf().
+
+[ No in-tree users yet, but I have some coming up. ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Keir Fraser <keir@xensource.com>
 
 ---
- arch/i386/kernel/vsyscall-note.S |   23 ++++++-----------------
- include/linux/elfnote.h          |   18 +++++++++++++-----
- 2 files changed, 19 insertions(+), 22 deletions(-)
+ include/linux/kernel.h |    1 +
+ lib/vsprintf.c         |   28 ++++++++++++++++++++--------
+ 2 files changed, 21 insertions(+), 8 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/vsyscall-note.S
-+++ b/arch/i386/kernel/vsyscall-note.S
-@@ -3,23 +3,12 @@
-  * Here we can supply some information useful to userland.
-  */
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -121,6 +121,7 @@ extern int vscnprintf(char *buf, size_t 
+ 	__attribute__ ((format (printf, 3, 0)));
+ extern char *kasprintf(gfp_t gfp, const char *fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
++extern char *kvasprintf(gfp_t gfp, const char *fmt, va_list args);
  
--#include <linux/uts.h>
- #include <linux/version.h>
-+#include <linux/elfnote.h>
- 
--#define ASM_ELF_NOTE_BEGIN(name, flags, vendor, type)			      \
--	.section name, flags;						      \
--	.balign 4;							      \
--	.long 1f - 0f;		/* name length */			      \
--	.long 3f - 2f;		/* data length */			      \
--	.long type;		/* note type */				      \
--0:	.asciz vendor;		/* vendor name */			      \
--1:	.balign 4;							      \
--2:
--
--#define ASM_ELF_NOTE_END						      \
--3:	.balign 4;		/* pad out section */			      \
--	.previous
--
--	ASM_ELF_NOTE_BEGIN(".note.kernel-version", "a", UTS_SYSNAME, 0)
-+/* Ideally this would use UTS_NAME, but using a quoted string here
-+   doesn't work. Remember to change this when changing the
-+   kernel's name. */
-+ELFNOTE_START(Linux, 0, "a")
- 	.long LINUX_VERSION_CODE
--	ASM_ELF_NOTE_END
-+ELFNOTE_END
+ extern int sscanf(const char *, const char *, ...)
+ 	__attribute__ ((format (scanf, 2, 3)));
 ===================================================================
---- a/include/linux/elfnote.h
-+++ b/include/linux/elfnote.h
-@@ -38,17 +38,25 @@
-  * e.g. ELFNOTE(XYZCo, 42, .asciz, "forty-two")
-  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
-  */
--#define ELFNOTE(name, type, desctype, descdata)	\
--.pushsection .note.name, "",@note	;	\
-+#define ELFNOTE_START(name, type, flags)	\
-+.pushsection .note.name, flags,@note	;	\
-   .align 4				;	\
-   .long 2f - 1f		/* namesz */	;	\
--  .long 4f - 3f		/* descsz */	;	\
-+  .long 4484f - 3f	/* descsz */	;	\
-   .long type				;	\
- 1:.asciz #name				;	\
- 2:.align 4				;	\
--3:desctype descdata			;	\
--4:.align 4				;	\
-+3:
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -851,22 +851,34 @@ EXPORT_SYMBOL(sscanf);
+ 
+ 
+ /* Simplified asprintf. */
+-char *kasprintf(gfp_t gfp, const char *fmt, ...)
+-{
+-	va_list ap;
++char *kvasprintf(gfp_t gfp, const char *fmt, va_list ap)
++{
+ 	unsigned int len;
+ 	char *p;
+-
+-	va_start(ap, fmt);
+-	len = vsnprintf(NULL, 0, fmt, ap);
+-	va_end(ap);
++	va_list aq;
 +
-+#define ELFNOTE_END				\
-+4484:.align 4				;	\
- .popsection				;
++	va_copy(aq, ap);
++	len = vsnprintf(NULL, 0, fmt, aq);
++	va_end(aq);
+ 
+ 	p = kmalloc(len+1, gfp);
+ 	if (!p)
+ 		return NULL;
 +
-+#define ELFNOTE(name, type, desc)		\
-+	ELFNOTE_START(name, type, "")		\
-+		desc			;	\
-+	ELFNOTE_END
++	vsnprintf(p, len+1, fmt, ap);
 +
- #else	/* !__ASSEMBLER__ */
- #include <linux/elf.h>
- /*
++	return p;
++}
++
++char *kasprintf(gfp_t gfp, const char *fmt, ...)
++{
++	va_list ap;
++	char *p;
++
+ 	va_start(ap, fmt);
+-	vsnprintf(p, len+1, fmt, ap);
++	p = kvasprintf(gfp, fmt, ap);
+ 	va_end(ap);
++
+ 	return p;
+ }
+ 
 
 
