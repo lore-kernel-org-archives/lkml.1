@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbXD1RLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbXD1RLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756460AbXD1RLT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756467AbXD1RLT
+	id S1756472AbXD1RLk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbXD1RLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:11:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42974 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756460AbXD1RLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:11:18 -0400
-Date: Sat, 28 Apr 2007 13:11:01 -0400
-From: Dave Jones <davej@redhat.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-ID: <20070428171101.GC20646@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Matt Mackall <mpm@selenic.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	linux-kernel@vger.kernel.org
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070428161136.GL11166@waste.org>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 28 Apr 2007 13:11:40 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:56591 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756467AbXD1RLj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:11:39 -0400
+Date: Sat, 28 Apr 2007 19:11:37 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+In-Reply-To: <20070428163740.GA17061@elte.hu>
+Message-ID: <Pine.LNX.4.64.0704281909320.14529@artax.karlin.mff.cuni.cz>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+ <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0704280824420.2502@artax.karlin.mff.cuni.cz>
+ <alpine.LFD.0.98.0704280849150.9964@woody.linux-foundation.org>
+ <20070428163740.GA17061@elte.hu>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
- > > I'm all ears for additional regexps, bug reports or other suggestions.
- > 
- > Neat.
- > 
- > Does it check for:
- > 
- > functions marked extern?
- > pulling in external functions or variables without a header file?
- > return used as a function, eg return(foo);?
+> So perhaps if there's any privileged reads going on then we should limit
+> writes to a depth of 2 at most, with some timeout mechanism that would
 
-These sound a little more tricky than just dumb regexps.
-I don't want to expand this to a fullblown C parser (given
-that we have sparse which can do a better job), but I don't
-object to adding some extra code to give the searches more
-context.
+SCSI has a "high priority" bit in the command block, so you can just set 
+it --- but I am not sure how well do disks support it.
 
-	Dave
+Mikulas
 
--- 
-http://www.codemonkey.org.uk
+> gradually allow the deepening of the hardware queue, as long as no
+> highprio reads come inbetween? With 2 pending requests and even assuming
+> worst-case seeks the user-visible latency would be on the order of 20-30
+> msecs, which is at the edge of human perception. The problem comes when
+> a hardware queue of 32-64 entries starves that one highprio read which
+> then results in a 2+ seconds latency.
+>
+> 	Ingo
+>
