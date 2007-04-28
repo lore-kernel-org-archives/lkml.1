@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161359AbXD1HHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161143AbXD1HNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161359AbXD1HHk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 03:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161427AbXD1HHk
+	id S1161143AbXD1HNG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161408AbXD1HNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 03:07:40 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:41728 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161359AbXD1HHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 03:07:39 -0400
-Date: Sat, 28 Apr 2007 09:07:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: ego@in.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm 2/2] Introduce freezer flags
-Message-ID: <20070428070716.GH2994@elf.ucw.cz>
-References: <200704271737.31192.rjw@sisk.pl> <200704280009.19639.rjw@sisk.pl> <20070427220710.GC2994@elf.ucw.cz> <200704280056.53831.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704280056.53831.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sat, 28 Apr 2007 03:13:06 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33057 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161143AbXD1HNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 03:13:02 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/BinZLwHXBVviWV8zzDexZLJrIHSLRuRnOYirFYz
+	YTOleUJcU/xzEU
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+	FS is under heavy write load (massive starvation)
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20070428000142.2acab38a.akpm@linux-foundation.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	 <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
+	 <1177734305.6266.7.camel@Homer.simpson.net>
+	 <1177741953.6268.18.camel@Homer.simpson.net>
+	 <20070428000142.2acab38a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 28 Apr 2007 09:12:58 +0200
+Message-Id: <1177744378.6667.9.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > > > +#ifdef CONFIG_FREEZER
-> > > > > > +	/* Used by the process freezer, defined in freezer.h */
-> > > > > > +	unsigned int freezer_flags;
-> > > > > 
-> > > > > unsigned long freezer_flags; ??
-> > > > 
-> > > > I guess so.
-> > > 
-> > > Still, on x86_64, for example, we'll waste 4 bytes by using 'unsigned long'
-> > > here, which I wouldn't like to do.
-> > > 
-> > > Is it acceptable to use explicit type casting in set_bit() and friends?
-> > 
-> > I'm afraid set_bit & friends are only defined on unsigned long.
+On Sat, 2007-04-28 at 00:01 -0700, Andrew Morton wrote:
+> On Sat, 28 Apr 2007 08:32:32 +0200 Mike Galbraith <efault@gmx.de> wrote:
 > 
-> On x86_64 they are defined on anything, even on huge bitmaps.
+> > On Sat, 2007-04-28 at 06:25 +0200, Mike Galbraith wrote:
+
+> > As promised, I tested with a kernel that I know for fact that I have
+> > tested heavy IO on previously, and behavior was identically horrid, so
+> > it's not something new that snuck in ~recently, my disk just got a _lot_
+> > fuller in the meantime (12k mp3s munch a lot).
 > 
-> > You can cast, but you may run into some nasty surprise... like damaging
-> > surrounding bytes on 64-bit architectures != x86_64.
-> 
-> Let's use unsigned long, then, but I'm not really happy with that.
+> Just to clarify here - you're saying that some older kernel is as sucky as
+> 2.6.21, and that (presumably) dropping the dirty ratios makes things a bit
+> better on the old kernel as well?
 
-Ask the architecture people, but comments like
+I didn't drop dirty ratios, only verified that behavior was just as
+horrible as 2.6.21.
 
-/data/l/linux/include/linux/agpgart.h:  long access_flags;      /* long req'd for set_bit --RR */
+> Actually, I'm surprised that data=writeback didn't help much.  If the
+> present theories are correct it should have helped quite a lot, because in
+> data=writeback mode fsync(small-file) will not cause
+> fdatasync(everything-else).
 
-Make me think long is needed.
+data=writeback did help quite noticeably, just not enough.
 
- * bitmaps provide bit arrays that consume one or more unsigned
- * longs.  The bitmap interface and available operations are listed
- * here, in bitmap.h
+	-Mike
 
-...I'm afraid we need ulongs.
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
