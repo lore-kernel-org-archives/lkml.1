@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031916AbXD1R6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031937AbXD1R6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031916AbXD1R6M (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031932AbXD1R5n
+	id S1031937AbXD1R6T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031236AbXD1R6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:57:43 -0400
-Received: from waste.org ([66.93.16.53]:41174 "EHLO waste.org"
+	Sat, 28 Apr 2007 13:58:13 -0400
+Received: from smtp21.orange.fr ([80.12.242.46]:14444 "EHLO smtp21.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163307AbXD1R5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:57:32 -0400
-Date: Sat, 28 Apr 2007 12:44:39 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Matt Ranon <mranon@javadevices.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux maillist <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE][PATCH] Kcli - Kernel command line interface.
-Message-ID: <20070428174439.GM11166@waste.org>
-References: <617125.34935.qm@web88104.mail.re2.yahoo.com>
+	id S1031935AbXD1R54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:57:56 -0400
+X-ME-UUID: 20070428175752869.D45481C0008C@mwinf2127.orange.fr
+Message-ID: <46338AFB.1090308@wanadoo.fr>
+Date: Sat, 28 Apr 2007 19:57:15 +0200
+From: Thibaud Hulin <hulin.thibaud@wanadoo.fr>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <617125.34935.qm@web88104.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-kernel@vger.kernel.org
+Subject: Your /etc/kernel-img.conf needs to be updated
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 23, 2007 at 06:12:19PM -0700, Matt Ranon wrote:
-> However, our reasons for Kcli are:
-> 1) Our devices ship with no user space, and we want the development
-> environment to be as close as possible to the final product.
+Hello !
+I'm triying to compile the kernel 2.6.19.
+The compilation happens good, but when I install the .deb on Debian 
+testing, I get an out error state 1 :
 
-I hope that means your devices have full source code available under
-the GPL. Even if they do, kcli will probably encourage other folks to
-abuse the kernel license.
+Préparation du remplacement de linux-image-2.6.19.070428 2.6.19.suspend2
+(en utilisant linux-image-2.6.19.070428_2.6.19.suspend2_i386.deb) ...
+Ok, Aborting
+dpkg : erreur de traitement de
+linux-image-2.6.19.070428_2.6.19.suspend2_i386.deb (--install) :
+  le sous-processus pre-installation script a retourné une erreur de
+sortie d'état 1
+Running postrm hook script /sbin/update-grub.
+Your /etc/kernel-img.conf needs to be updated. Read grub's NEWS.Debian[1]
+file and follow its instructions.
 
-> 2) Getting debug information with user space calls require context 
-> switches and data copies, which changes the real time profile and can mask
-> bugs.
 
-Probably no worse than whatever I/O interface you're likely to use
-with this. Reminds me of a particular "world-famous filesystem
-developer" who eventually figured out that his serial console was the
-cause of most of the filesystem latency glitches he was hitting.
+update-grub works normally, but don't change anything.
+Where can I find informations about /etc/kernel-img.conf and grub's 
+NEWS.Debian[1] ?
 
-> 3) To use user space, we would need cross compiled libc's, special
-> builds of gcc, root file systems, flash storage to store it all, and all 
-> sorts of things which make life a lot more complicated than it needs 
-> to be for us. We are quite capable of producing all these things, but,
-> we just don't see the point in it. Our way, we just have a gcc capable 
-> of cross compiling the kernel and it is so simple.
+I don't understand what I must do.
 
-Please familiarize yourself with initramfs and klibc. You can attach
-an arbitrary minimal filesystem to the kernel image. You don't need a
-special compiler, flash, etc., and the kernel build system will build
-the filesystem image (a cpio archive) for you.
+Thanks for help,
+Thibaud.
 
-> 4) For us, it is the opposite argument. We would need to be convinced
-> that having user space is worth all the overhead. Not just CPU
-> overhead, but all the overheads.
-
-Moving stuff to userspace usually has negative overhead because it's
-pageable, easier to maintain, and easier to debug.
-
-> 5) We like it in the kernel, we find it to be warm and fuzzy. Whereas,
-> user space is a cold, dark, and rainy place, and we just don't want to
-> go there. :)
-
-I once spent a few weeks getting OpenSSH serving multiple clients on
-vxWorks and I'm happy I'll never have to touch a kernel without
-userspace again.
-
-I think there probably is a place for some basic debugging and
-introspection, including dumping address ranges, looking up symbols
-and the like, but a debugger is different than a command interpreter.
-
--- 
-Mathematics is the supreme nostalgia of our time.
