@@ -1,41 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163288AbXD1SWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163465AbXD1SWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163288AbXD1SWX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163330AbXD1SWX
+	id S1163465AbXD1SWc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163467AbXD1SWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:22:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40067 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163288AbXD1SWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:22:21 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] i386: introduce voyager smp_ops, fix voyager build
-Date: Sat, 28 Apr 2007 20:22:11 +0200
-User-Agent: KMail/1.9.6
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
+	Sat, 28 Apr 2007 14:22:32 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39440 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1163330AbXD1SW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:22:28 -0400
+Date: Sat, 28 Apr 2007 11:19:33 -0700
+From: Greg KH <greg@kroah.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Jeff Mahoney <jeffm@suse.com>, Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       Riccardo Ricci <rricci@nuovanetmore.it>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Giorgio Lando <patroclo7@gmail.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       H??kan Lindqvist <lindqvist@netstar.se>,
+       Fran??ois Valenduc <francois.valenduc@skynet.be>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>,
+       stable@kernel.org, Len Brown <len.brown@intel.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-References: <463382E5.9060701@goop.org>
-In-Reply-To: <463382E5.9060701@goop.org>
+       Francois SIMOND <curio@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, reiserfs-dev@namesys.com
+Subject: Re: [stable] 2.6.21 known regressions (v2) (for -stable team)
+Message-ID: <20070428181933.GA9811@kroah.com>
+References: <463375E5.5040108@googlemail.com> <200704281252.20381.gene.heskett@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704282022.11321.ak@suse.de>
+In-Reply-To: <200704281252.20381.gene.heskett@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 April 2007 19:22:45 Jeremy Fitzhardinge wrote:
-> This adds an smp_ops for voyager, and hooks things up appropriately.
-> This is the first baby-step to making subarch runtime switchable.
+On Sat, Apr 28, 2007 at 12:52:19PM -0400, Gene Heskett wrote:
+> On Saturday 28 April 2007, Michal Piotrowski wrote:
+> >Hi all,
+> >
+> >Here is a list of known regressions reported after 2.6.21 release.
+> >
+> >Feel free to add new regressions/remove fixed etc.
+> >http://kernelnewbies.org/known_regressions
+> >
+> I went here, but without a login the page is immutable
+> 
+> Therefore I'll add it here
+> 
+> Subject		:proprietary belkin upsd turns into cpu hog
+> Submitter	:gene.heskett@gmail.com
+> Reference	:something changed in how /dev/ttyUSB's handle 1 and 2 byte messages 
+> from pl2303 usb<->serial adaptors.
 
-James, does it actually work?
+Last time this came up, I asked you to enable debugging in the driver to
+see the data flow through it and find out if it really is the driver at
+fault here.
 
+Did you do this?  Did anything happen that was "odd"?
 
--Andi
+Can you do a 'git bisect' of Linus's tree to try to track down the
+issue?
+
+> Also, assignation of ttyUSB#'s is volatile depending on phase of the
+> moon when booted.
+
+That's always been the case, ever since the 2.2 kernel releases.  Please
+use udev if you want persistent device names for your tty USB devices.
+
+thanks,
+
+greg k-h
