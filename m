@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965818AbXD1NOA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750954AbXD1NRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965818AbXD1NOA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030766AbXD1NOA
+	id S1750954AbXD1NRg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 09:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbXD1NRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:14:00 -0400
-Received: from dtp.xs4all.nl ([80.126.206.180]:32652 "HELO abra2.bitwizard.nl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S965818AbXD1NNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:13:45 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 09:13:44 EDT
-Date: Sat, 28 Apr 2007 15:07:02 +0200
-From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-To: linux-kernel@vger.kernel.org
-Subject: nbd hangs in 2.6.21
-Message-ID: <20070428130702.GA23589@bitwizard.nl>
+	Sat, 28 Apr 2007 09:17:36 -0400
+Received: from alf.uib.no ([129.177.30.3]:50514 "EHLO alf.uib.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750954AbXD1NRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 09:17:34 -0400
+X-Greylist: delayed 977 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 09:17:34 EDT
+Message-ID: <463345DA.7010106@cbu.uib.no>
+Date: Sat, 28 Apr 2007 15:02:18 +0200
+From: =?ISO-8859-1?Q?Gisle_S=E6lensminde?= 
+	<Gisle.Salensminde@bccs.uib.no>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: BitWizard.nl
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
+Subject: Re: entropy of /dev/random vs. openssl rand
+References: <20070428110652.GI13982@tatooine.rebelbase.local>
+In-Reply-To: <20070428110652.GI13982@tatooine.rebelbase.local>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-checked-clean: by exiscan on alf
+X-Scanner: 72f0619d9e40c430147a5af79c7d1a0d http://tjinfo.uib.no/virus.html
+X-UiB-SpamFlag: Not scanned (1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+markus reichelt wrote:
+> Hi,
+>
+> I need to create a moderate amount of v3 keys for loop-aes and wonder
+> how/if the "openssl rand" implementation differs significantly from
+> /dev/random concerning entropy.
+>
+> In case /dev/random and "openssl rand" are somewhat comparable, I
+> would just use the latter to create the keys.
+>
+>   
+Openssl actually uses /dev/urandom to generate random bytes on Linux and other systems that support it, possibly with some further filtering. On systems without a random device, a configuration file is used instead, since openssl is supposed to be compatible over a wide range of systems. Openssl rand should therefore be equivalent with the non-blocking /dev/urandom on Linux.
 
-Hi,
+from openssl crypto/rand/rand_unix.c:
 
-I've been doing some work with nbd-servers, but it seems they are
-a bit unreliable right now. It seems to be the kernel side that
-is locking up. 
+ /* Use a random entropy pool device. Linux, FreeBSD and OpenBSD
+  * have this. Use /dev/urandom if you can as /dev/random may block
+  * if it runs out of random entries.  */
 
-Doing things like 
+> However, I certainly don't want to use a /dev/urandom look-alike.
+>
+>   
 
-dd if=/dev/zero of=filesys bs=1k count=1 seek=1024000
-nbd-server 1234 `pwd`/filesys 
+Whether the blocking behaviour of /dev/random is desirable is a matter of discussion. Some people argue that a periodically reseeded cryptographic-quality random number generator is as secure as a true random number generator for all practical purposes. It does then not make sense with a blocking generator like /dev/random. This view is much disputed, as can be seen if you read the archives of the Linux kernel mailing list. I personally can't think of any realistic scenario where /dev/random would make you safe while /dev/urandom would make you sorry. Some people seem to think differently, including you apparently  :-) , while the openssl people seem more concerned about the blocking behaviour of /dev/random. 
 
-and then 
+-Gisle
 
-nbd-client othersystem 1234 /dev/nd0 
-mke2fs /dev/nd0
-mount /dev/nd0 /mnt
-cp -r /usr/src/linux/ /mnt/test1
-cp -r /usr/src/linux/ /mnt/test2
-sync
 
-will usually do the trick: The sync will hang in disk-wait and never
-come out of it. 
-
-In my case "othersystem" is running 2.6.20. I don't think it is
-causing the problems: the nbd-server is simply waiting for the next
-request. I also tried a different codebase: nbdsvr. Same thing. 
-
-Anybody else see this?
-
-	Roger. 
-
--- 
-** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
-*-- BitWizard writes Linux device drivers for any device you may have! --*
-Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
-Does it sit on the couch all day? Is it unemployed? Please be specific! 
-Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
