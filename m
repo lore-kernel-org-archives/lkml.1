@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbXD1Wpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbXD1Wrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754403AbXD1Wpn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 18:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbXD1Wpn
+	id S1754289AbXD1Wrr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 18:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbXD1Wrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 18:45:43 -0400
-Received: from [70.254.190.220] ([70.254.190.220]:46449 "EHLO server.willdawg"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754367AbXD1WpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:45:04 -0400
-Date: Sat, 28 Apr 2007 22:45:03 +0000 (GMT)
-From: William Heimbigner <icxcnika@mar.tar.cc>
-X-X-Sender: icxcnika@server.thyself
-To: Lee Revell <rlrevell@joe-job.com>
-cc: tglx@linutronix.de, matthieu castet <castet.matthieu@free.fr>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: High Resolution Timer DOS
-In-Reply-To: <75b66ecd0704281537s54134967ybc3ddef0b87b6bf5@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0704282244130.25153@server.thyself>
-References: <4633C269.9050806@free.fr>  <1177798389.7646.320.camel@localhost.localdomain>
- <75b66ecd0704281537s54134967ybc3ddef0b87b6bf5@mail.gmail.com>
+	Sat, 28 Apr 2007 18:47:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34976 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754265AbXD1Wrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 18:47:46 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Miguel Freitas" <mfreitas@gmail.com>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: bug in RLIMIT_SIGPENDING
+In-Reply-To: Miguel Freitas's message of  Saturday, 28 April 2007 19:00:14 -0300 <f9eabcda0704281500l58c3b791s97c499822b577140@mail.gmail.com>
+X-Zippy-Says: How do you explain Wayne Newton's POWER over millions?  It's th'
+   MOUSTACHE...  Have you ever noticed th' way it radiates SINCERITY,
+   HONESTY & WARMTH?  It's a MOUSTACHE you want to take HOME and
+   introduce to NANCY SINATRA!
+Message-Id: <20070428224743.6D12A1801A4@magilla.sf.frob.com>
+Date: Sat, 28 Apr 2007 15:47:43 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Lee Revell wrote:
+I don't think there is any reason to think the accounting is wrong.  The
+accounted number of queue entries is 1.  The -1 (~0ul) displayed is the
+maximum for your process, which is RLIM_INFINITY.
 
-> On 4/28/07, Thomas Gleixner <tglx@linutronix.de> wrote:
->>
->>  Well, it is not really a DoS. The rescheduling of the process is limited
->>  by the scheduler and the available CPU time (depending on the number of
->>  runnable tasks in the system).
->
-> Shouldn't an unprivileged process be rate limited somehow to avoid
-> flooding the machine with interrupts?  We restrict nonroot users from
-> setting the RTC interrupt rate higher than 64Hz for a similar reason
-> (granted, this limit dates back to the 486 days and should probably be
-> increased to 1024 Hz).
+Nothing in what you've reported so far points positively towards a signals
+issue per se.  First, you should see if you simply have a livelock
+situation.  That is, your signal handler is running many times and never
+letting fork complete.  Try setting the itimer to a much larger value like
+one second, and see if the problem still occurs.  If not, you may just be
+having timer signals going off too fast to finish a fork in between.  If
+this is the case and it seems like fork should not take as long as it does,
+then you can look into how long fork is really taking and why.
 
-Isn't that what /etc/security/limits.conf is for?
-Just limit the CPU usage.
+If in fact your signal handler does not run many times, then the issue is
+stranger.
 
-> Root and SCHED_FIFO tasks could be exempt from rate limiting, to avoid
-> the need to introduce a new rlimit which would take years for
-> userspace to catch up to.
->
-> Lee
 
-William Heimbigner
-icxcnika@mar.tar.cc
+Thanks,
+Roland
