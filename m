@@ -1,61 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161276AbXD1Web@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031125AbXD1Wf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161276AbXD1Web (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 18:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161333AbXD1Web
+	id S1031125AbXD1Wf3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 18:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031138AbXD1Wf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 18:34:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35992 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161276AbXD1Wea (ORCPT
+	Sat, 28 Apr 2007 18:35:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:33544 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031125AbXD1Wf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:34:30 -0400
-Date: Sat, 28 Apr 2007 15:33:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070428195320.GZ3468@stusta.de>
-Message-ID: <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
- <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de>
- <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
- <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com>
- <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
- <20070426224148.69b91b2e.diegocg@gmail.com>
- <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
- <20070428195320.GZ3468@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 28 Apr 2007 18:35:27 -0400
+Date: Sat, 28 Apr 2007 15:37:07 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       herbert@gondor.apana.org.au
+Subject: Re: [PATCH] crypto: Use padlock.ko only as a module
+Message-Id: <20070428153707.50f1644a.randy.dunlap@oracle.com>
+In-Reply-To: <463379FA.9080004@simon.arlott.org.uk>
+References: <463379FA.9080004@simon.arlott.org.uk>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 28 Apr 2007 17:44:42 +0100 Simon Arlott wrote:
 
-
-On Sat, 28 Apr 2007, Adrian Bunk wrote:
+> The padlock.ko module is completely useless when compiled in 
+> because it can't do anything and gets run too early to output 
+> anything useful:
 > 
-> We are already quite good at ignoring bug reports that come through 
-> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
-> than 1600 open bugs because this tells how bad we are at handling bugs.
+> [    6.052000] padlock: No VIA PadLock drivers have been loaded.
+> [    6.052000] padlock: Using VIA PadLock ACE for AES algorithm.
+> [    6.052000] padlock: Using VIA PadLock ACE for SHA1/SHA256 algorithms.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> ---
+>  drivers/crypto/Makefile |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
+> index 6059cf8..f0f7a73 100644
+> --- a/drivers/crypto/Makefile
+> +++ b/drivers/crypto/Makefile
+> @@ -1,4 +1,6 @@
+> -obj-$(CONFIG_CRYPTO_DEV_PADLOCK) += padlock.o
+> +ifeq ($(CONFIG_CRYPTO_DEV_PADLOCK),m)
+> +obj-m += padlock.o
+> +endif
+>  obj-$(CONFIG_CRYPTO_DEV_PADLOCK_AES) += padlock-aes.o
+>  obj-$(CONFIG_CRYPTO_DEV_PADLOCK_SHA) += padlock-sha.o
+>  obj-$(CONFIG_CRYPTO_DEV_GEODE) += geode-aes.o
+> -- 
 
-No, it just shows that bugzilla doesn't matter for most of the kernel.
+I think that we prefer to enforce config symbols in Kconfig files,
+not in Makefiles.  E.g.,
 
-Don't say that "bugzilla tells how bad we are at handling bugs". It tells 
-how bad *bugzilla* is for handling bugs, nothing more.
+---
+ drivers/crypto/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Trying to play politics by pointing to bugzilla is pointless. Bugzilla is 
-used for a few subsystems (ACPI seems to use it actively, for example), 
-but I doubt most developers use it.
+--- linux-2621-pv.orig/drivers/crypto/Kconfig
++++ linux-2621-pv/drivers/crypto/Kconfig
+@@ -2,7 +2,7 @@ menu "Hardware crypto devices"
+ 
+ config CRYPTO_DEV_PADLOCK
+ 	tristate "Support for VIA PadLock ACE"
+-	depends on X86_32
++	depends on X86_32 && m
+ 	select CRYPTO_ALGAPI
+ 	default m
+ 	help
 
-Would be be good to have a better bug-tracking setup? Yes. But I think it 
-takes man-power, and it would take something *fundamentally* better than 
-bugzilla.
 
-Maybe the new "http://kernelnewbies.org/known_regressions" thing will 
-evolve to something worth tracking. Right now, bugzilla isn't it (although 
-it can be a useful tracking place for individual bugs, *once* you've found 
-and gotten the right developer involved - but that's a huge step that 
-bugzilla generally does *not* do for us).
-
-			Linus
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
