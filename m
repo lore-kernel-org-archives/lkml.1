@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbXD1QYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756380AbXD1QZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754787AbXD1QYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 12:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXD1QYW
+	id S1756380AbXD1QZm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 12:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbXD1QZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 12:24:22 -0400
-Received: from waste.org ([66.93.16.53]:53402 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787AbXD1QYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 12:24:21 -0400
-Date: Sat, 28 Apr 2007 11:11:36 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-ID: <20070428161136.GL11166@waste.org>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com>
-MIME-Version: 1.0
+	Sat, 28 Apr 2007 12:25:41 -0400
+Received: from nz-out-0506.google.com ([64.233.162.235]:1765 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756379AbXD1QYn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 12:24:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=UJKkT1zCO1z1Zd7uOeGAysTmpOFkodhMaOcslHH/k2yCQqgyj9ZGtDXYnb2NeHKw4QMzMYfhNpUNn11XlwENtgCOWRMhdYjPFRuyICfhjDlfqexv4aXerdDv6/f8s8I+RzR/nBn+807goWxn+jd2c/PPZEQVhO2AGeKWBkyAh5o=
+Date: Sun, 29 Apr 2007 01:18:56 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] hugetlbfs: fix error path in module_init
+Message-ID: <20070428161856.GA9662@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20070428071923.GB9545@APFDCB5C> <20070428145039.GX19966@holomorphy.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070428030805.GA13331@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070428145039.GX19966@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 11:08:05PM -0400, Dave Jones wrote:
-> On Wed, Apr 25, 2007 at 08:02:07PM -0700, Andrew Morton wrote:
+On Sat, Apr 28, 2007 at 07:50:39AM -0700, William Lee Irwin III wrote:
+> On Sat, Apr 28, 2007 at 04:19:23PM +0900, Akinobu Mita wrote:
+> > init_hugetlbfs_fs() needs to unregister hugetlbfs
+> > when kern_mount() returns error.
+> > Cc: William Irwin <wli@holomorphy.com>
+> > Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 > 
->  > > Yep, I was going to mention your scripts but you beat me to it.
->  > > 
->  > > I'll be glad to help maintain such animals if wanted.
->  > > 
->  > wanted ;)
->  > 
->  > At least, it would be interesting to investigate the usefulness.  I suspect
->  > it will prove to be very useful for the little things.
-> 
-> Randy and I got together and hashed out a first cut at this.
-> (Randy actually gutted quite a lot of what I originally wrote, so deserves
->  much kudos for improving this beyond my initial crappy version).
-> You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
-> There's also a git clonable tree there (only http right now).
-> 
-> http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
-> what fell out of running it on my mbox of lkml from the past month.
-> Some of them are kinda noisy, and perhaps should be moved under --pedantic
-> 
-> I'm all ears for additional regexps, bug reports or other suggestions.
+> This patch resolves a clear failure to error check.
 
-Neat.
+I reconsider this patch. It was wrong. Because it is overkill to
+unregister filesystem just for hugetlbfs_vfsmount mount failure.
+Because hugetlbfs_vfsmount is only used for shumget() system call
+and also there is some race condition between register_filesystem()
+and unregister_filesystem(). (it's not likely happen though)
 
-Does it check for:
+So what we can do for hugetlbfs module_init failure is
+adding NULL check for hugetlbfs_vfsmount in hugetlb_zero_setup().
 
-functions marked extern?
-pulling in external functions or variables without a header file?
-return used as a function, eg return(foo);?
-
--- 
-Mathematics is the supreme nostalgia of our time.
