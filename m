@@ -1,45 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161537AbXD1H3s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXD1Hoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161537AbXD1H3s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 03:29:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965496AbXD1H3s
+	id S965513AbXD1Hoq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965521AbXD1Hop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 03:29:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:50794 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965461AbXD1H3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 03:29:47 -0400
-Message-ID: <4632F7EE.6080101@goop.org>
-Date: Sat, 28 Apr 2007 00:29:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 28 Apr 2007 03:44:45 -0400
+Received: from wx-out-0506.google.com ([66.249.82.225]:60115 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965513AbXD1Hoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 03:44:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HUQ/s3QBwhwNsPcyW7pK/c1niFfd1KliRHlkJ0lbiwOESk9IH8b5I8dM7FjYgsafFujFWMCW0QG9KWvrPUReLeOKFcs7liN9gO3OnjGj+IdxI8CvOk+Lr5J/Xvqgh5XXlJ6Sqo4pN2OIG0SaA9fAHMPi1rUI3HlPGtrTjse/Zhg=
+Message-ID: <b6fcc0a0704280044i3ff820b6w343bd73c7a08f708@mail.gmail.com>
+Date: Sat, 28 Apr 2007 11:44:43 +0400
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Akinobu Mita" <akinobu.mita@gmail.com>
+Subject: Re: [PATCH] hugetlbfs: fix error path in module_init
+Cc: linux-kernel@vger.kernel.org, "William Irwin" <wli@holomorphy.com>
+In-Reply-To: <20070428071923.GB9545@APFDCB5C>
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] use elfnote.h to generate vsyscall notes
-References: <20070428071615.242FC1801A4@magilla.sf.frob.com>
-In-Reply-To: <20070428071615.242FC1801A4@magilla.sf.frob.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070428071923.GB9545@APFDCB5C>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
-> Please don't change the section name that way. 
+On 4/28/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
+> init_hugetlbfs_fs() needs to unregister hugetlbfs
+> when kern_mount() returns error.
 
-Does the section name matter? I've been operating under the assumption
-that it doesn't, other that needing to start with .note. Using
-.note.vendor means that all the vendor's notes will get grouped
-properly, but other than that it seems much of a muchness.
-
->  I don't see why the macros
-> should do differently than what was in vsyscall-note.S to begin with.
->   
-Well, passing the section name seems redundant unless its actually
-needed. In this case it will go from .note.kernel-version to
-.note.Linux, but it will end up being called .note in the final vdso
-regardless.
-
-J
+HUGETLBFS is bool, so __init function should panic more and
+__exit function should be removed. Or someone is planning
+making it tristate?
