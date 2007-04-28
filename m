@@ -1,57 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754113AbXD1TKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbXD1TSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754113AbXD1TKu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXD1TKu
+	id S1754129AbXD1TSQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXD1TSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:10:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34502 "EHLO ogre.sisk.pl"
+	Sat, 28 Apr 2007 15:18:16 -0400
+Received: from mail.tmr.com ([64.65.253.246]:49318 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754784AbXD1TKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:10:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Lang <david.lang@digitalinsight.com>
-Subject: Re: Back to the future.
-Date: Sat, 28 Apr 2007 21:14:48 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <20070428085000.GA3293@elf.ucw.cz> <Pine.LNX.4.63.0704281130200.11638@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0704281130200.11638@qynat.qvtvafvgr.pbz>
+	id S1754129AbXD1TSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 15:18:15 -0400
+Message-ID: <46339E0C.4070109@tmr.com>
+Date: Sat, 28 Apr 2007 15:18:36 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Josh Triplett <josh@kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-kernel@vger.kernel.org
+Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
+   hang in atomic copy)
+References: 20070425232806.GL17387@elf.ucw.cz <4630DF19.3060805@kernel.org> <alpine.LFD.0.98.0704261036120.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704261036120.9964@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704282114.49815.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 28 April 2007 20:32, David Lang wrote:
-> On Sat, 28 Apr 2007, Pavel Machek wrote:
-> 
-> >>
-> >> We freeze user space processes for the reasons that you have quoted above.
-> >>
-> >> Why we freeze kernel threads in there too is a good question, but not for me to
-> >> answer.  I don't know.  Pavel should know, I think.
-> >
-> > We do not want kernel threads running:
-> >
-> > a) they may hold some locks and deadlock suspend
-> >
-> > b) they may do some writes to disk, leading to corruption
-> >
-> > We could solve a) by carefully auditing suspend lock usage to make
-> > sure deadlocks are impossible even with kernel threads running.
-> 
-> remember that we are doing suspend-to-disk, after we do the snapshot we will be 
-> doing a shutdown. that should simplify the locking issues
+Linus Torvalds wrote:
 
-That's assuming that we won't need to cancel the hibernation.
+> (And for me personally, I'd love to have all my machines "sleep" by 
+> default, but wake up by eithernet and keyboard - I'd love for my screen 
+> saver to literally put the machine to sleep, but not have to worry about 
+> touching a keyboard - just ssh'ing into them should still wake up. It's 
+> *technically* doable, but it's just a pain to do right now)
+> 
+And timer somehow so cron jobs could still run. Ideal for critical but 
+rarely used machines like fallover servers, the user documentation 
+download site, or similar.
 
-Greetings,
-Rafael
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
