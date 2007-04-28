@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbXD1XAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbXD1XEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbXD1XAg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754433AbXD1XAf
+	id S1754358AbXD1XEI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbXD1XEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:00:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35165 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbXD1W7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:59:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Sat, 28 Apr 2007 19:04:08 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37644 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754358AbXD1XEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 19:04:05 -0400
+Date: Sun, 29 Apr 2007 01:04:16 +0200
+From: Adrian Bunk <bunk@stusta.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Back to the future.
-Date: Sun, 29 Apr 2007 01:03:37 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704281950.30405.rjw@sisk.pl> <alpine.LFD.0.98.0704281421140.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704281421140.9964@woody.linux-foundation.org>
+Cc: Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070428230416.GF3468@stusta.de>
+References: <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200704290103.38409.rjw@sisk.pl>
+In-Reply-To: <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 28 April 2007 23:25, Linus Torvalds wrote:
+On Sat, Apr 28, 2007 at 03:33:39PM -0700, Linus Torvalds wrote:
 > 
-> On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
-> > > 
-> > > The freezer has *caused* those deadlocks (eg by stopping threads that were 
-> > > needed for the suspend writeouts to succeed!), not solved them.
+> 
+> On Sat, 28 Apr 2007, Adrian Bunk wrote:
 > > 
-> > I can't remember anything like this, but I believe you have a specific test
-> > case in mind.
+> > We are already quite good at ignoring bug reports that come through 
+> > linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
+> > than 1600 open bugs because this tells how bad we are at handling bugs.
 > 
-> Ehh.. Why do you thik we _have_ that PF_NOFREEZE thing in the first place?
+> No, it just shows that bugzilla doesn't matter for most of the kernel.
+> 
+> Don't say that "bugzilla tells how bad we are at handling bugs". It tells 
+> how bad *bugzilla* is for handling bugs, nothing more.
+> 
+> Trying to play politics by pointing to bugzilla is pointless. Bugzilla is 
+> used for a few subsystems (ACPI seems to use it actively, for example), 
+> but I doubt most developers use it.
+> 
+> Would be be good to have a better bug-tracking setup? Yes. But I think it 
+> takes man-power, and it would take something *fundamentally* better than 
+> bugzilla.
 
-Well, I don't know why exactly it had been originally introduced.  Currently,
-it is used by the threads that should be running after the snapshot is done
-(they are not only I/O threads).
+Bugzilla has an email interface.
+Andrew forwards bugs from Bugzilla to developers.
 
-> Rafael, you really don't know what you're talking about, do you?
+There might be small room for improvements, but I don't see how 
+man-power or technology could make a big difference in this area.
 
-I think I know.
+> Maybe the new "http://kernelnewbies.org/known_regressions" thing will 
+> evolve to something worth tracking. Right now, bugzilla isn't it (although 
+> it can be a useful tracking place for individual bugs, *once* you've found 
+> and gotten the right developer involved - but that's a huge step that 
+> bugzilla generally does *not* do for us).
 
-> Just _look_ at them. It's the IO threads etc that shouldn't be frozen, 
-> exactly *because* they do IO. You claim that kernel threads shouldn't do 
-> IO, but that's the point: if you cannot do IO when snapshotting to disk,  
-> here's a damn big clue for you: how do you think that snapshot is going to 
-> get written?
+"*once* you've found and gotten the right developer involved" is the 
+real problem, not how to track bugs.
 
-OK, more precisely: fs-related threads should not try to process their queues,
-etc., after the snapshot is done, because that may cause some fs data to be
-written at that time and then the fs in question may be corrupted after the
-restore.  Not all of the I/O in general, fs data.
+And not only a developer active in this area, more important a 
+developer who knows the subsystem/driver involved *and is willing
+to work on bug reports*.
 
-Still, that alone probably is not a good enough reason for freezing all kernel
-threads.
+*This* is *the* problem.
+And no change in bug tracking will help with this problem.
 
-> I *guarantee* you that we've had a lot more problems with threads that 
-> should *not* have been frozen than with those hypothetical threads that 
-> you think should have been frozen.
+> 			Linus
 
-Well, I'm not sure whether or not that still would have been the case if we had
-stopped to freeze kernel threads for the hibernation/suspend.  I just see
-potential problems that I've mentioned in the previous message and I don't see
-any evidence that they cannot occur.
+cu
+Adrian
 
-Greetings,
-Rafael
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
