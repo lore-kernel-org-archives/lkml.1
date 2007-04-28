@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163402AbXD1SI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163413AbXD1SJk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163402AbXD1SI6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163377AbXD1SAz
+	id S1163413AbXD1SJk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:09:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163409AbXD1SJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:00:55 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:58075 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163335AbXD1Rzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:55:36 -0400
-Date: Sat, 28 Apr 2007 19:55:34 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-In-Reply-To: <alpine.LFD.0.98.0704280849150.9964@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704281937110.14529@artax.karlin.mff.cuni.cz>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
- <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
- <Pine.LNX.4.64.0704280824420.2502@artax.karlin.mff.cuni.cz>
- <alpine.LFD.0.98.0704280849150.9964@woody.linux-foundation.org>
-X-Personality-Disorder: Schizoid
+	Sat, 28 Apr 2007 14:09:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53036 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163377AbXD1SJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:09:10 -0400
+Message-ID: <46338DBA.2050404@garzik.org>
+Date: Sat, 28 Apr 2007 14:08:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Simon Arlott <simon@arlott.org>, Dave Jones <davej@codemonkey.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: Re: [PATCH] [16/35] i386: Add an option for the VIA C7 which sets
+ appropriate L1 cache
+References: <20070428752.712152000@suse.de> <20070428175240.E6704151CA@wotan.suse.de>
+In-Reply-To: <20070428175240.E6704151CA@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> From: Simon Arlott <simon@arlott.org>
+> 
+> The VIA C7 is a 686 (with TSC) that supports MMX, SSE and SSE2, it also has
+> a cache line length of 64 according to
+> http://www.digit-life.com/articles2/cpu/rmma-via-c7.html.  This patch sets
+> gcc to -march=686 and select s the correct cache shift.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Dave Jones <davej@codemonkey.org.uk>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Has it been verified in the field that this CPU supports CMOV?
+
+	Jeff
 
 
-On Sat, 28 Apr 2007, Linus Torvalds wrote:
-
->> The main problem is that if the user extracts tar archive, tar eventually
->> blocks on writeback I/O --- O.K. But if bash attempts to write one page to
->> .bash_history file at the same time, it blocks too --- bad, the user is
->> annoyed.
->
-> Right, but it's actually very unlikely. Think about it: the person who
-> extracts the tar-archive is perhaps dirtying a thousand pages, while the
-> .bash_history writeback is doing a single one. Which process do you think
-> is going to hit the "oops, we went over the limit" case 99.9% of the time?
-
-Both. See balance_dirty_pages --- you loop there if
-global_page_state(NR_FILE_DIRTY) + global_page_state(NR_UNSTABLE_NFS) + 
-global_page_state(NR_WRITEBACK) is over limit.
-
-So tar gets there first, start writeback, blocks. Innocent process calling 
-one small write() gets there too (while writeback has not yet finished), 
-sees that the expression is over limit and blocks too.
-
-Really, you go to ballance_dirty_pages with 1/8 probability, so small 
-writers will block with that probability --- better than blocking always, 
-but still annoying.
-
-> The _really_ annoying problem is when you just have absolutely tons of
-> memory dirty, and you start doing the writeback: if you saturate the IO
-> queues totally, it simply doesn't matter _who_ starts the writeback,
-> because anybody who needs to do any IO at all (not necessarily writing) is
-> going to be blocked.
-
-I saw this writeback problem on machine that had a lot of memory (1G), 
-internal fast disk where the distribution was installed and very slow 
-external SCSI disk (6MB/s or so). When I did heavy write on the external 
-disk and writeback started, the computer almost completely locked up --- 
-any process trying to write anything to the fast disk blocked until 
-writeback on the slow disk finishes.
-(that machine had some old RHEL kernel and it is not mine so I can't test 
-new kernels on it --- but the above fragment of code shows that the 
-problem still exists today)
-
-Mikulas
 
