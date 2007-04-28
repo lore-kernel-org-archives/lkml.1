@@ -1,89 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbXD1AlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXD1Amn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbXD1AlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 20:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757971AbXD1AlU
+	id S1757975AbXD1Amn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 20:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757974AbXD1Amn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 20:41:20 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757970AbXD1AlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 20:41:18 -0400
-Date: Fri, 27 Apr 2007 17:40:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Lang <david.lang@digitalinsight.com>
-cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
-Message-ID: <alpine.LFD.0.98.0704271728460.9964@woody.linux-foundation.org>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <200704280041.17617.rjw@sisk.pl>  <alpine.LFD.0.98.0704271612380.9964@woody.linux-foundation.org>
-  <200704280145.26253.rjw@sisk.pl> <1177718250.4737.222.camel@nigel.suspend2.net>
- <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 27 Apr 2007 20:42:43 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:38349 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757971AbXD1Aml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 20:42:41 -0400
+Date: Fri, 27 Apr 2007 20:42:39 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: [git patches] net driver fixes
+Message-ID: <20070428004239.GA19791@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+As mentioned previously, the big batch queued for 2.6.22 is coming
+after the dust settles.
 
-On Fri, 27 Apr 2007, David Lang wrote:
-> 
-> all that's needed for the snapshot is to prevent userspace from scheduling,
 
-Strictly speaking, all you *really* want to make sure is not so much that 
-user-space isn't scheduling, as the fact that all device IO buffers must 
-be empty.
+Stable@kernel.org folks:  the sis900 patch should be in 2.6.21.x
 
-We can trivially snapshot an active user-space, and in fact it would 
-probably be hard to do a snapshot in a way that it could even *know* or 
-care about whether there are user-space processes running at the time of 
-the snapshot.
 
-So that's not the real problem.
+Please pull from 'upstream-linus' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
-What we obviously *cannot* snapshot is if some particular device is in the 
-middle of being written to or read from, and has outstanding commands on 
-the device itself (as opposed to just queued to the driver). So what we do 
-want to make sure happens is that there are no IO queues that are active.
+to receive the following updates:
 
-And the best way to make sure that there are no IO queues active is to 
-make sure that there are no new read or write-requests. And *that* you can 
-do two ways:
+ drivers/net/sis900.c      |    9 +++++----
+ drivers/usb/net/pegasus.c |   10 ----------
+ drivers/usb/net/pegasus.h |    3 +--
+ 3 files changed, 6 insertions(+), 16 deletions(-)
 
- - actually intercepting the read/write requests. Probably not too hard, 
-   we could literally do it in the IO scheduler (and probably much more 
-   easily than doing it in the process scheduler), but the easy cases will 
-   only cover the block device layer, and character devices don't have the 
-   same kind of scheduler you can trap IO in.
+Dan Williams (1):
+      usb-net/pegasus: simplify carrier detection
 
- - we also don't want to generate new data that needs to be snapshotted, 
-   so we want to trap people who write even just to the page cache and 
-   turn pages dirty. Again, we could probably do it at *that* point (ie 
-   trapping them when they try to dirty a page), and it would be more 
-   logical, but again, there are other cases of people who generate more 
-   data (just any memory allocation obviously is a special case of 
-   generating more data to be snapshotted),
+Neil Horman (1):
+      sis900: Allocate rx replacement buffer before rx operation
 
-so I do agree that we want to stop producing new data to be snapshotted, 
-and we want to stop producing new read-requests. But kernel threads really 
-do neither: in an idle system, kernel threads are idle too. A kernel 
-thread is not like a user program that actually generates data - they only 
-tend to act on behalf of other processes' needs.
-
-So I think that what snapshotting really *wants* to stop is not schedulign 
-per se, but IO. And stopping user processes (as opposed to kernel threads) 
-is probably a good way to get there.
-
-In fact, I'd argue that you want to stop user space and then encourage 
-some kernel threads to *start* running, notably things like bdflush should 
-probably be kicked to clean up some dirty stuff as part of the "shrink 
-data to be snapshotted" part. Trying to free memory will do that on its 
-own, of course.
-
-			Linus
-
+diff --git a/drivers/net/sis900.c b/drivers/net/sis900.c
+index dea0126..2cb2e15 100644
+--- a/drivers/net/sis900.c
++++ b/drivers/net/sis900.c
+@@ -1753,6 +1753,7 @@ static int sis900_rx(struct net_device *net_dev)
+ 			sis_priv->rx_ring[entry].cmdsts = RX_BUF_SIZE;
+ 		} else {
+ 			struct sk_buff * skb;
++			struct sk_buff * rx_skb;
+ 
+ 			pci_unmap_single(sis_priv->pci_dev,
+ 				sis_priv->rx_ring[entry].bufptr, RX_BUF_SIZE,
+@@ -1786,10 +1787,10 @@ static int sis900_rx(struct net_device *net_dev)
+ 			}
+ 
+ 			/* give the socket buffer to upper layers */
+-			skb = sis_priv->rx_skbuff[entry];
+-			skb_put(skb, rx_size);
+-			skb->protocol = eth_type_trans(skb, net_dev);
+-			netif_rx(skb);
++			rx_skb = sis_priv->rx_skbuff[entry];
++			skb_put(rx_skb, rx_size);
++			rx_skb->protocol = eth_type_trans(rx_skb, net_dev);
++			netif_rx(rx_skb);
+ 
+ 			/* some network statistics */
+ 			if ((rx_status & BCAST) == MCAST)
+diff --git a/drivers/usb/net/pegasus.c b/drivers/usb/net/pegasus.c
+index 1ad4ee5..a05fd97 100644
+--- a/drivers/usb/net/pegasus.c
++++ b/drivers/usb/net/pegasus.c
+@@ -847,16 +847,6 @@ static void intr_callback(struct urb *urb)
+ 		 * d[0].NO_CARRIER kicks in only with failed TX.
+ 		 * ... so monitoring with MII may be safest.
+ 		 */
+-		if (pegasus->features & TRUST_LINK_STATUS) {
+-			if (d[5] & LINK_STATUS)
+-				netif_carrier_on(net);
+-			else
+-				netif_carrier_off(net);
+-		} else {
+-			/* Never set carrier _on_ based on ! NO_CARRIER */
+-			if (d[0] & NO_CARRIER)
+-				netif_carrier_off(net);	
+-		}
+ 
+ 		/* bytes 3-4 == rx_lostpkt, reg 2E/2F */
+ 		pegasus->stats.rx_missed_errors += ((d[3] & 0x7f) << 8) | d[4];
+diff --git a/drivers/usb/net/pegasus.h b/drivers/usb/net/pegasus.h
+index c7aadb4..c746782 100644
+--- a/drivers/usb/net/pegasus.h
++++ b/drivers/usb/net/pegasus.h
+@@ -11,7 +11,6 @@
+ 
+ #define	PEGASUS_II		0x80000000
+ #define	HAS_HOME_PNA		0x40000000
+-#define	TRUST_LINK_STATUS	0x20000000
+ 
+ #define	PEGASUS_MTU		1536
+ #define	RX_SKBS			4
+@@ -204,7 +203,7 @@ PEGASUS_DEV( "AEI USB Fast Ethernet Adapter", VENDOR_AEILAB, 0x1701,
+ PEGASUS_DEV( "Allied Telesyn Int. AT-USB100", VENDOR_ALLIEDTEL, 0xb100,
+ 		DEFAULT_GPIO_RESET | PEGASUS_II )
+ PEGASUS_DEV( "Belkin F5D5050 USB Ethernet", VENDOR_BELKIN, 0x0121,
+-		DEFAULT_GPIO_RESET | PEGASUS_II | TRUST_LINK_STATUS )
++		DEFAULT_GPIO_RESET | PEGASUS_II )
+ PEGASUS_DEV( "Billionton USB-100", VENDOR_BILLIONTON, 0x0986,
+ 		DEFAULT_GPIO_RESET )
+ PEGASUS_DEV( "Billionton USBLP-100", VENDOR_BILLIONTON, 0x0987,
