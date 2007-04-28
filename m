@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965769AbXD1LSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbXD1LXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965769AbXD1LSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbXD1LSk
+	id S1754114AbXD1LXq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXD1LXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:18:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42905 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbXD1LSj (ORCPT
+	Sat, 28 Apr 2007 07:23:46 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:38922 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754114AbXD1LXp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:18:39 -0400
-Date: Sat, 28 Apr 2007 13:18:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Dave Jones <davej@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-ID: <20070428111835.GA4471@one.firstfloor.org>
-References: <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070427221803.2a117c23.akpm@linux-foundation.org> <p73tzv022qw.fsf@bingen.suse.de> <20070428030213.4787031f.akpm@linux-foundation.org> <20070428111504.24641d03@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070428111504.24641d03@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 28 Apr 2007 07:23:45 -0400
+In-Reply-To: <20070427144434.970de79f.akpm@linux-foundation.org>
+References: <200704271742.l3RHgPTH019561@fire-2.osdl.org> <20070427144434.970de79f.akpm@linux-foundation.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <18bbbf39d8da8a578ab7eab477f500c1@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       Truxton Fulton <trux@truxton.com>, linux-kernel@vger.kernel.org,
+       lee-in-berlin@web.de
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [Bugme-new] [Bug 8378] New: Averatec 3156X laptop doesn't reboot with kernels > 2.6.13.5 (responsible commit found)
+Date: Sat, 28 Apr 2007 13:23:17 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 11:15:04AM +0100, Alan Cox wrote:
-> > > The warning is bogus imho. How do you write recovery code for internal
-> > > broken code logic? 
-> > 
-> > Yes, it is marginal.  But people do very often reach for BUG_ON() where
-> > they could have at least partly recovered in some fashion - enough for the
-> > info to hit the logs so we have a better chance of fixing it.
-> 
-> At least one way to handle BUG_ON() type situations more cleanly (for
-> some anyway) is to fake a hot-unplug/plug event. Thats something that
+That patch says
 
-That would have a high risk of deadlock on some lost lock.
+> +               outb(0x60, 0x64);       /* write Controller Command 
+> Byte */
+> +               udelay(50);
+> +               kb_wait();
+> +               udelay(50);
+> +               outb(0x14, 0x60);       /* set "System flag" */
 
--Andi
+so the comment doesn't agree with the code: it sets
+all flags in the command byte, not just the system
+flag.  Perhaps importantly, it disables the keyboard
+clock.  Why not do a read-modify-write sequence instead?
+Something like
+
+                outb(0x20, 0x64);       /* read Controller Command Byte 
+*/
+                udelay(50);
+                kb_wait();
+                udelay(50);
+                u8 cmd = inb(0x60);
+                udelay(50);
+                kb_wait();
+                udelay(50);
+                outb(0x60, 0x64);       /* write Controller Command Byte 
+*/
+                udelay(50);
+                kb_wait();
+                udelay(50);
+                outb(cmd | 0x04, 0x60); /* set "System flag" */
+
+Segher
+
