@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbXD1Fgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932760AbXD1Fp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754688AbXD1Fgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 01:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbXD1Fgq
+	id S932760AbXD1Fp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 01:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXD1Fp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 01:36:46 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37902 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754688AbXD1Fgo (ORCPT
+	Sat, 28 Apr 2007 01:45:56 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:40494 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932561AbXD1Fpy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 01:36:44 -0400
-Date: Fri, 27 Apr 2007 22:36:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+	Sat, 28 Apr 2007 01:45:54 -0400
+X-Greylist: delayed 516 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 01:45:54 EDT
+Date: Sat, 28 Apr 2007 07:45:52 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Bill Huey <billh@gnuppy.monkey.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andreas Dilger <adilger@clusterfs.com>,
+       Marat Buharov <marat.buharov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
        Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070427223632.52def99e.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704272158360.7342@schroedinger.engr.sgi.com>
-References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
-	<20070427002640.22a71d06.akpm@linux-foundation.org>
-	<20070427163620.GI32602149@melbourne.sgi.com>
-	<20070427173432.GJ32602149@melbourne.sgi.com>
-	<20070427121108.9ee05710.akpm@linux-foundation.org>
-	<20070428031739.GK32602149@melbourne.sgi.com>
-	<20070427215634.325606a9.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704272158360.7342@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Alex Tomas <alex@clusterfs.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+In-Reply-To: <Pine.LNX.4.64.0704280708500.9055@artax.karlin.mff.cuni.cz>
+Message-ID: <Pine.LNX.4.64.0704280740010.16264@artax.karlin.mff.cuni.cz>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+ <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+ <698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+ <alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+ <20070427193130.GD5967@schatzie.adilger.int>
+ <alpine.LFD.0.98.0704271246550.9964@woody.linux-foundation.org>
+ <20070427201235.GA11170@gnuppy.monkey.org> <Pine.LNX.4.64.0704280708500.9055@artax.karlin.mff.cuni.cz>
+X-Personality-Disorder: Schizoid
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 22:08:17 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Fri, 27 Apr 2007, Andrew Morton wrote:
-> 
-> > My (repeated) point is that if we populate pagecache with physically-contiguous 4k
-> > pages in this manner then bio+block will be able to create much larger SG lists.
-> 
-> True but the "if" becomes exceedingly rare the longer the system was in 
-> operation. 64k implies 16 pages in sequence. This is going to be a bit 
-> difficult to get.
 
-Nonsense.  We need higher-order allocations whichever scheme is used.
+On Sat, 28 Apr 2007, Mikulas Patocka wrote:
 
-And lumpy reclaim in the moveable zone should be extremely reliable.  It
-_should_ be the case that it can only be defeated by excessive use of
-mlock.  But we've seen no testing to either confirm or refute that.
+> On Fri, 27 Apr 2007, Bill Huey wrote:
+> Hi
+>
+> SpadFS doesn't write to unallocated parts like log filesystems (LFS) or 
+> phase tree filesystems (TUX2);
 
-> Then there is the overhead of handling these pages. 
-> Which may be not significant given growing processor capabilities in some 
-> usage cases. In others like a synchronized application running on a large 
-> number of nodes this is likely introduce random delays between processor 
-> to processor communication that will significantly impair performance.
+--- BTW, I don't think that writing to unallocated parts of disk is good 
+idea. These filesystems have cool write benchmarks, but one subtle (and 
+unbenchmarkable) problem:
+They group files according to time when they were created and not 
+according to directory hierarchy.
+When the user has directory with project files and he edited different 
+files at different times, normal filesystems will place the files near 
+each other (so that "grep blabla *" is fast) and log-structured 
+filesystems will scatter the files over the whole disk.
 
-Well, who knows.
-
-> And then there is the long list of features that cannot be accomplished 
-> with such an approach like mounting a volume with large block size, 
-> handling CD/DVDs, getting rid of various shim layers etc.
-
-There are disadvantages against which this must be traded off.
-
-And if the volume which is mounted with the large page option also has a
-lot of small files on it, we've gone and dramatically deoptimised the
-user's machine.  It would have been better to make the 4k-page
-implementation faster, rather than working around existing inefficiencies.
-
-> I'd also like to have much higher orders of allocations for scientific 
-> applications that require an extremely large I/O rate. For those we 
-> could f.e. dedicate memory nodes that will only use a very high page 
-> order to prevent fragmentation. E.g. 1G pages is certainly something that 
-> lots of our customers would find beneficial (and they are actually 
-> already using those types of pages in the form of huge pages but with 
-> limited capabilities).
-> 
-> But then we are sadly again trying to find another workaround that 
-> will not get us there and will not allow the flexibility in the 
-> VM that would make things much easier for lots of usage scenarios.
-
-Your patch *is* a workaround.  It's a workaround for small CPU pagesize. 
-It's a workaround for suboptimal VFS anf filesystem implementations.  It's
-a workaround for a disk adapter which has suboptimal readahead and
-writeback caching implementations.
-
-See?  I can spin too.
-
-Fact is, this change has *costs*.  And you're completely ignoring them,
-trying to spin them away.  It ain't working and it never will.  I'm seeing
-no serious attempt to think about how we can reduce those costs while
-retaining most of the benefits.
+Mikulas
