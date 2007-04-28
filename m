@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXD1LFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbXD1LFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbXD1LFQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbXD1LFP
+	id S1754003AbXD1LFU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbXD1LFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:05:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:49337 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753967AbXD1LFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:05:13 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Back to the future.
-To: Pavel Machek <pavel@ucw.cz>, David Lang <david.lang@digitalinsight.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Sat, 28 Apr 2007 13:04:45 +0200
-References: <8e5l8-7SD-21@gated-at.bofh.it> <8e6Ka-1uR-3@gated-at.bofh.it> <8e6TS-1Id-11@gated-at.bofh.it> <8efu9-6mF-1@gated-at.bofh.it> <8ekWV-6FF-33@gated-at.bofh.it> <8el6y-6Sj-5@gated-at.bofh.it> <8elpT-7wY-21@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1HhkjN-0000nb-6D@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX183vXBxaFwsPryrpWJpVqhxA4PpjtKAyjlyQSn
- fSFvNouS/N+Ezc4RJic67/vAAJJGzYQP8D0vWP0IQFX0Xvs+VW
- IqAp1rfEWNNVCsamgcQZQ==
+	Sat, 28 Apr 2007 07:05:20 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:60502 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754003AbXD1LFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 07:05:18 -0400
+Date: Sat, 28 Apr 2007 13:05:07 +0200 (MEST)
+Message-Id: <200704281105.l3SB57ZY005672@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org
+Subject: Re: sky2 regression in 2.6.21: Asus P5B-E Plus ethernet adapter no more supported
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> wrote:
-
->> I also don't like the idea of storing this in the swap partition for a
->> couple of reasons.
+On Thu, 26 Apr 2007 15:50:50 -0700, Stephen Hemminger wrote:
+>On Thu, 26 Apr 2007 23:24:18 +0200
+>Francois SIMOND <curio@free.fr> wrote:
+>
+>> Hello,
 >> 
->> 1. on many modern linux systems the swap partition is not large enough.
->> 
->> for example, on my boxes with 16G or ram I only allocate 2G of swap
->> space
-> 
-> WTF? So allocate larger swap partition. You just told me disks are big
-> enough.
+>> Lastest sky2 update between 2.6.21-rc7 and 2.6.21 final disables the support of the integrated ethernet adapter build on the Asus P5B-E Plus motherboard.
+>
+>
+>But the same hardware dies horribly on Gigabyte GA-965P motherboards.
+>Could you send me full lspci -vvx output. I'll re-enable it for Asus and add a block
+>for the Gigabyte boards. (sigh)
 
-1) Repartitioning is sometimes not an option.
-2) What happens, if the swap space gets used?
+Same thing on my ASUS P5B-E Plus. sky2 worked with 2.6.20/2.6.21-rc[1-7]
+but 2.6.21 final killed it.
 
-I want to be sure I can suspend my {server,laptop} in case of power running
-out. Using swap is only an option for desktops.
+Regarding the alleged data corruption issues: I regularly do
+multi-gigabyte data transfers over my lan to my P5B-E Plus,
+followed by md5sum integrity checks, and I've never seen the
+P5B-E Plus' sky2 cause any problems.
 
->> 2. it's too easy for other things to stomp on your swap partition.
->> 
->>   for example: booting from a live CD that finds and uses swap
->> partitions
-> 
-> That's a feature. If you are booting from live CD, you _want_ to erase
-> any hibernation image.
+lspci -vvx -n:
 
-NACK. You want to keep all partitions related to the hibernated system
-read-only. That's completely different from destroying all your unsafed
-data and possibly long-running tasks.
--- 
-Top 100 things you don't want the sysadmin to say:
-51. YEEEHA!!!  What a CRASH!!!
+02:00.0 Class 0200: 11ab:4364 (rev 12)
+	Subsystem: 1043:81f8
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+	Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 0, Cache Line Size 08
+	Interrupt: pin A routed to IRQ 17
+	Region 0: Memory at ff8fc000 (64-bit, non-prefetchable) [size=16K]
+	Region 2: I/O ports at a800 [size=256]
+	Expansion ROM at ff8c0000 [disabled] [size=128K]
+	Capabilities: [48] Power Management version 3
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] Vital Product Data
+	Capabilities: [5c] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [e0] Express Legacy Endpoint IRQ 0
+		Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTag-
+		Device: Latency L0s unlimited, L1 unlimited
+		Device: AtnBtn- AtnInd- PwrInd-
+		Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+		Device: RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+		Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+		Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s L1, Port 0
+		Link: Latency L0s <256ns, L1 unlimited
+		Link: ASPM Disabled RCB 128 bytes CommClk+ ExtSynch-
+		Link: Speed 2.5Gb/s, Width x1
+00: ab 11 64 43 07 00 10 00 12 00 00 02 08 00 00 00
+10: 04 c0 8f ff 00 00 00 00 01 a8 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 43 10 f8 81
+30: 00 00 8c ff 48 00 00 00 00 00 00 00 0a 01 00 00
 
-Friß, Spammer: C@rzlmn.7eggert.dyndns.org D9GLNDg@Zk.7eggert.dyndns.org
+/Mikael
