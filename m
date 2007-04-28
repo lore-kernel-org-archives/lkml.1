@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161187AbXD1FuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161161AbXD1FuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161187AbXD1FuJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 01:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161161AbXD1FuI
+	id S1161161AbXD1FuO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 01:50:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161148AbXD1FuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 01:50:08 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52188 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161115AbXD1Ftn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 01:49:43 -0400
-Date: Fri, 27 Apr 2007 22:48:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@sw.ru>,
-       linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: - maps2-add-proc-pid-pagemap-interface-fix.patch removed from
- -mm tree
-Message-Id: <20070427224844.8d6d5503.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704280607330.9554@blonde.wat.veritas.com>
-References: <200704270814.l3R8EnFJ023047@shell0.pdx.osdl.net>
-	<20070427104533.GA6001@localhost.sw.ru>
-	<20070427132713.fc9d82c0.akpm@linux-foundation.org>
-	<20070427204155.GT11115@waste.org>
-	<20070427143131.60d0afc1.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704280607330.9554@blonde.wat.veritas.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 01:50:11 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53765 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161143AbXD1FuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 01:50:04 -0400
+Date: Fri, 27 Apr 2007 22:48:00 -0700
+From: Greg KH <gregkh@suse.de>
+To: Bryan WU <bryan.wu@analog.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/33] 2.6.20-stable review
+Message-ID: <20070428054800.GA6267@suse.de>
+References: <20070426165445.GA1898@kroah.com> <1177668954.5969.18.camel@roc-desktop> <20070427151314.GA10281@suse.de> <1177734084.9029.10.camel@roc-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177734084.9029.10.camel@roc-desktop>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 06:13:39 +0100 (BST) Hugh Dickins <hugh@veritas.com> wrote:
-
-> On Fri, 27 Apr 2007, Andrew Morton wrote:
+On Sat, Apr 28, 2007 at 12:21:24PM +0800, Bryan WU wrote:
+> On Fri, 2007-04-27 at 08:13 -0700, Greg KH wrote:
+> > On Fri, Apr 27, 2007 at 06:15:54PM +0800, Wu, Bryan wrote:
+> > > 
+> > > You know for some customer's product, they want to use the stable and
+> > > long term support kernel instead to use the latest one. 
 > > 
-> > hm, could do.  might_sleep() is intertwined with preempt in complex ways,
-> > but we did decouple that at the config level.  no_mmap_sem() will dtrt for
-> > all preempt settings.
+> > Then they should get that support from a vendor, not from the kernel.org
+> > releases :)
 > > 
-> > But I'll be keeping this as a -mm-only debug patch (which brings us up to
-> > about thirty of 'em), so I think it's best to make it unconfigurable so we
-> > get maximum coverage.
-> > 
-> > That's if it actually works.  I haven't tried running it yet, and I have a
-> > feeling that running it might cause a big "doh" moment.  We'll see.
 > 
-> Yes, I'm expecting the crucial
-> 
-> > +	WARN_ON(rwsem_is_locked(&mm->mmap_sem))
-> 
-> to give a bogus warning every time another thread (or /proc,
-> or swapoff, or whatever) happens to have this mmap_sem locked.
-> might_sleep() is quite different, works on our thread's info.
-> 
+> Yeah, but we are the vendor as you mentioned. -:))
 
-Yes.  lockdep has a way of working out if this task already has a
-particular lock for reading or writing, but it isn't immediately obvious
-how to extract that.
+Ah, then you already know what to do :)
 
-I guess a simple hack would be do do a down_read() on it.  If it's already
-held for reading, lockdep should warn.  If it's already held for writing
-someone will notice.
+> If we wanna to release a kernel to customer product development, how to
+> choose the stable version?
 
-Oh well, it's not my top priority.
+That's up to you.
+
+> Currently, we always followed the kernel release cycle/rules and give
+> customer the latest stable version.
+
+Ok, then what has really changed here?  We've been doing this .y release
+thing (also called -stable) for about 2 years now, nothing is different
+this week from last.
+
+Confused,
+
+greg k-h
