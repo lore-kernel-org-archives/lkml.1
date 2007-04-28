@@ -1,145 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163363AbXD1SE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163393AbXD1SGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163363AbXD1SE4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163393AbXD1SEy
+	id S1163393AbXD1SGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163326AbXD1SBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:04:54 -0400
-Received: from www17.your-server.de ([213.133.104.17]:4582 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163388AbXD1SEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:04:05 -0400
-Message-ID: <46338C5B.4010809@m3y3r.de>
-Date: Sat, 28 Apr 2007 20:03:07 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
-       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       netdev@vger.kernel.org,
-       =?UTF-8?B?SMOla2FuIExpbmRxdmlzdA==?= <lindqvist@netstar.se>,
-       Vincent Frentzel <zcecc22@ucl.ac.uk>,
-       =?UTF-8?B?RnJhbsOnb2lzIFZhbGVuZHVj?= <francois.valenduc@skynet.be>,
-       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
-       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
-References: <463375E5.5040108@googlemail.com>
-In-Reply-To: <463375E5.5040108@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+	Sat, 28 Apr 2007 14:01:06 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38979 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163343AbXD1R7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:59:00 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428758.455116000@suse.de>
+In-Reply-To: <20070428758.455116000@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [12/22] x86_64: wakeup.S misc cleanups
+Message-Id: <20070428175859.51F56151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:58:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski schrieb:
-> Subject    : Bad interaction between dynticks and amarok?
-> References : http://lkml.org/lkml/2007/4/26/307
-> Submitter  : Thomas Meyer <thomas.mey@web.de>
-> Status     : Unknow
->
->   
-Please remove this from the regression list. This seems to be an
-userspace only problem and is not related to any kernel driver:
-amarok and/or audacious seems to repeatedly read/write to the X socket:
 
-tail of the strace of audacious:
-gettimeofday({1177782978, 24491}, NULL) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 581502867}) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 581614815}) = 0
-select(4, [3], [3], NULL, NULL)         = 1 (out [3])
-writev(3,
-[{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\240\4\20\0L\0\20\0"..., 40}], 1)
-= 40
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 25286}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 33242}, NULL) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 33475}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 1) = 0
-gettimeofday({1177782978, 36548}, NULL) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 593554129}) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 36921}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 46572}, NULL) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 603578038}) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 603689148}) = 0
-select(4, [3], [3], NULL, NULL)         = 1 (out [3])
-writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\0\4 \0L\0\20\0\23"...,
-40}], 1) = 40
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 47341}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 56566}, NULL) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 56799}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 0) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 613921380}) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 57282}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 67696}, NULL) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 624704202}) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 624817966}) = 0
-select(4, [3], [3], NULL, NULL)         = 1 (out [3])
-writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0P\4
-\0L\0\20\0\23\0"..., 40}], 1) = 40
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 68476}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 76564}, NULL) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 76796}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 0) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 633919963}) = 0
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 77280}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN}], 2, 9) = 0
-gettimeofday({1177782978, 86898}, NULL) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 643911329}) = 0
-clock_gettime(CLOCK_MONOTONIC, {224, 644025581}) = 0
-select(4, [3], [3], NULL, NULL)         = 1 (out [3])
-writev(3, [{"\221\3\n\0\3\0\200\2#\0\200\2\0\6@\0\240\4
-\0L\0\20\0\23"..., 40}], 1) = 40
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 87702}, NULL) = 0
-poll([{fd=4, events=POLLIN}, {fd=3, events=POLLIN, revents=POLLIN}], 2,
-9) = 1
-read(3, "\n\3P\v\4\0\200\2\0\0\0\0\210v\274\277r\300\10\10x\35!"...,
-4096) = 96
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-read(3, 0x80da6c8, 4096)                = -1 EAGAIN (Resource
-temporarily unavailable)
-gettimeofday({1177782978, 90108}, NULL) = 0
-gettimeofday({1177782978, 90163}, NULL) = 0
+From: Vivek Goyal <vgoyal@in.ibm.com>
 
-But i didn't have a look at what is going on here. But running amarok
-and/or audacious (without playing a song!) adds 50-70 more interrupts to
-the timer interrupt.
 
-with kind regards
-thomas
+o Various cleanups. One of the main purpose of cleanups is that make
+  wakeup.S as close as possible to trampoline.S.
 
+o Following are the changes
+	- Indentations for comments.
+	- Changed the gdt table to compact form and to resemble the
+	  one in trampoline.S
+	- Take the jump to 32bit from real mode using ljmpl. Makes code
+	  more readable.
+	- After enabling long mode, directly take a long jump for 64bit
+	  mode. No need to take an extra jump to "reach_comaptibility_mode"
+	- Stack is not used after real mode. So don't load stack in
+ 	  32 bit mode.
+	- No need to enable PGE here.
+	- No need to do extra EFER read, anyway we trash the read contents.
+	- No need to enable system call (EFER_SCE). Anyway it will be 
+	  enabled when original EFER is restored.
+	- No need to set MP, ET, NE, WP, AM bits in cr0. Very soon we will
+  	  reload the original cr0 while restroing the processor state.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+
+ arch/x86_64/kernel/acpi/wakeup.S |  112 +++++++++++++--------------------------
+ 1 file changed, 40 insertions(+), 72 deletions(-)
+
+Index: linux/arch/x86_64/kernel/acpi/wakeup.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
++++ linux/arch/x86_64/kernel/acpi/wakeup.S
+@@ -30,11 +30,12 @@ wakeup_code:
+ 	cld
+ 	# setup data segment
+ 	movw	%cs, %ax
+-	movw	%ax, %ds					# Make ds:0 point to wakeup_start
++	movw	%ax, %ds		# Make ds:0 point to wakeup_start
+ 	movw	%ax, %ss
+-	mov	$(wakeup_stack - wakeup_code), %sp		# Private stack is needed for ASUS board
++					# Private stack is needed for ASUS board
++	mov	$(wakeup_stack - wakeup_code), %sp
+ 
+-	pushl	$0						# Kill any dangerous flags
++	pushl	$0			# Kill any dangerous flags
+ 	popfl
+ 
+ 	movl	real_magic - wakeup_code, %eax
+@@ -45,7 +46,7 @@ wakeup_code:
+ 	jz	1f
+ 	lcall   $0xc000,$3
+ 	movw	%cs, %ax
+-	movw	%ax, %ds					# Bios might have played with that
++	movw	%ax, %ds		# Bios might have played with that
+ 	movw	%ax, %ss
+ 1:
+ 
+@@ -75,9 +76,12 @@ wakeup_code:
+ 	jmp	1f
+ 1:
+ 
+-	.byte 0x66, 0xea			# prefix + jmpi-opcode
+-	.long	wakeup_32 - __START_KERNEL_map
+-	.word	__KERNEL_CS
++	ljmpl   *(wakeup_32_vector - wakeup_code)
++
++	.balign 4
++wakeup_32_vector:
++	.long   wakeup_32 - __START_KERNEL_map
++	.word   __KERNEL32_CS, 0
+ 
+ 	.code32
+ wakeup_32:
+@@ -96,65 +100,50 @@ wakeup_32:
+ 	jnc	bogus_cpu
+ 	movl	%edx,%edi
+ 	
+-	movw	$__KERNEL_DS, %ax
+-	movw	%ax, %ds
+-	movw	%ax, %es
+-	movw	%ax, %fs
+-	movw	%ax, %gs
++	movl	$__KERNEL_DS, %eax
++	movl	%eax, %ds
+ 
+-	movw	$__KERNEL_DS, %ax	
+-	movw	%ax, %ss
+-
+-	mov	$(wakeup_stack - __START_KERNEL_map), %esp
+ 	movl	saved_magic - __START_KERNEL_map, %eax
+ 	cmpl	$0x9abcdef0, %eax
+ 	jne	bogus_32_magic
+ 
++	movw	$0x0e00 + 'i', %ds:(0xb8012)
++	movb	$0xa8, %al	;  outb %al, $0x80;
++
+ 	/*
+ 	 * Prepare for entering 64bits mode
+ 	 */
+ 
+-	/* Enable PAE mode and PGE */
++	/* Enable PAE */
+ 	xorl	%eax, %eax
+ 	btsl	$5, %eax
+-	btsl	$7, %eax
+ 	movl	%eax, %cr4
+ 
+ 	/* Setup early boot stage 4 level pagetables */
+ 	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
+ 	movl	%eax, %cr3
+ 
+-	/* Setup EFER (Extended Feature Enable Register) */
+-	movl	$MSR_EFER, %ecx
+-	rdmsr
+-	/* Fool rdmsr and reset %eax to avoid dependences */
+-	xorl	%eax, %eax
+ 	/* Enable Long Mode */
++	xorl    %eax, %eax
+ 	btsl	$_EFER_LME, %eax
+-	/* Enable System Call */
+-	btsl	$_EFER_SCE, %eax
+ 
+-	/* No Execute supported? */	
++	/* No Execute supported? */
+ 	btl	$20,%edi
+ 	jnc     1f
+ 	btsl	$_EFER_NX, %eax
+-1:	
+ 				
+ 	/* Make changes effective */
++1:	movl    $MSR_EFER, %ecx
++	xorl    %edx, %edx
+ 	wrmsr
+-	wbinvd
+ 
+ 	xorl	%eax, %eax
+ 	btsl	$31, %eax			/* Enable paging and in turn activate Long Mode */
+ 	btsl	$0, %eax			/* Enable protected mode */
+-	btsl	$1, %eax			/* Enable MP */
+-	btsl	$4, %eax			/* Enable ET */
+-	btsl	$5, %eax			/* Enable NE */
+-	btsl	$16, %eax			/* Enable WP */
+-	btsl	$18, %eax			/* Enable AM */
+ 
+ 	/* Make changes effective */
+ 	movl	%eax, %cr0
++
+ 	/* At this point:
+ 		CR4.PAE must be 1
+ 		CS.L must be 0
+@@ -162,11 +151,6 @@ wakeup_32:
+ 		Next instruction must be a branch
+ 		This must be on identity-mapped page
+ 	*/
+-	jmp	reach_compatibility_mode
+-reach_compatibility_mode:
+-	movw	$0x0e00 + 'i', %ds:(0xb8012)
+-	movb	$0xa8, %al	;  outb %al, $0x80; 	
+-		
+ 	/*
+ 	 * At this point we're in long mode but in 32bit compatibility mode
+ 	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
+@@ -174,24 +158,19 @@ reach_compatibility_mode:
+ 	 * the new gdt/idt that has __KERNEL_CS with CS.L = 1.
+ 	 */
+ 
+-	movw	$0x0e00 + 'n', %ds:(0xb8014)
+-	movb	$0xa9, %al	;  outb %al, $0x80
+-	
+-	/* Load new GDT with the 64bit segment using 32bit descriptor */
+-	movl	$(pGDT32 - __START_KERNEL_map), %eax
+-	lgdt	(%eax)
+-
+-	movl    $(wakeup_jumpvector - __START_KERNEL_map), %eax
+ 	/* Finally jump in 64bit mode */
+-	ljmp	*(%eax)
++	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
+ 
+-wakeup_jumpvector:
+-	.long	wakeup_long64 - __START_KERNEL_map
+-	.word	__KERNEL_CS
++	.balign 4
++wakeup_long64_vector:
++	.long   wakeup_long64 - __START_KERNEL_map
++	.word   __KERNEL_CS, 0
+ 
+ .code64
+ 
+-	/*	Hooray, we are in Long 64-bit mode (but still running in low memory) */
++	/* Hooray, we are in Long 64-bit mode (but still running in
++	 * low memory)
++	 */
+ wakeup_long64:
+ 	/*
+ 	 * We must switch to a new descriptor in kernel space for the GDT
+@@ -201,6 +180,9 @@ wakeup_long64:
+ 	 */
+ 	lgdt	cpu_gdt_descr - __START_KERNEL_map
+ 
++	movw	$0x0e00 + 'n', %ds:(0xb8014)
++	movb	$0xa9, %al	;  outb %al, $0x80
++
+ 	movw	$0x0e00 + 'u', %ds:(0xb8016)
+ 	
+ 	nop
+@@ -227,33 +209,19 @@ wakeup_long64:
+ 
+ 	.align	64	
+ gdta:
++	/* Its good to keep gdt in sync with one in trampoline.S */
+ 	.word	0, 0, 0, 0			# dummy
+-
+-	.word	0, 0, 0, 0			# unused
+-
+-	.word	0xFFFF				# 4Gb - (0x100000*0x1000 = 4Gb)
+-	.word	0				# base address = 0
+-	.word	0x9B00				# code read/exec. ??? Why I need 0x9B00 (as opposed to 0x9A00 in order for this to work?)
+-	.word	0x00CF				# granularity = 4096, 386
+-						#  (+5th nibble of limit)
+-
+-	.word	0xFFFF				# 4Gb - (0x100000*0x1000 = 4Gb)
+-	.word	0				# base address = 0
+-	.word	0x9200				# data read/write
+-	.word	0x00CF				# granularity = 4096, 386
+-						#  (+5th nibble of limit)
+-# this is 64bit descriptor for code
+-	.word	0xFFFF
+-	.word	0
+-	.word	0x9A00				# code read/exec
+-	.word	0x00AF				# as above, but it is long mode and with D=0
++	/* ??? Why I need the accessed bit set in order for this to work? */
++	.quad   0x00cf9b000000ffff              # __KERNEL32_CS
++	.quad   0x00af9b000000ffff              # __KERNEL_CS
++	.quad   0x00cf93000000ffff              # __KERNEL_DS
+ 
+ idt_48a:
+ 	.word	0				# idt limit = 0
+ 	.word	0, 0				# idt base = 0L
+ 
+ gdt_48a:
+-	.word	0x8000				# gdt limit=2048,
++	.word	0x800				# gdt limit=2048,
+ 						#  256 GDT entries
+ 	.word	0, 0				# gdt base (filled in later)
+ 	
+@@ -263,7 +231,7 @@ video_mode:	.quad 0
+ video_flags:	.quad 0
+ 
+ bogus_real_magic:
+-	movb	$0xba,%al	;  outb %al,$0x80		
++	movb	$0xba,%al	;  outb %al,$0x80
+ 	jmp bogus_real_magic
+ 
+ bogus_32_magic:
