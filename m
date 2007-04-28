@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbXD1LGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965769AbXD1LSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbXD1LGm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbXD1LGl
+	id S965769AbXD1LSk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbXD1LSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:06:41 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:45589 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754055AbXD1LGk (ORCPT
+	Sat, 28 Apr 2007 07:18:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42905 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbXD1LSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:06:40 -0400
-Date: Sat, 28 Apr 2007 13:06:52 +0200
-From: markus reichelt <ml@mareichelt.de>
-Subject: entropy of /dev/random vs. openssl rand
-To: linux-crypto@nl.linux.org
-Cc: linux-kernel@vger.kernel.org
-Mail-followup-to: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
-Message-id: <20070428110652.GI13982@tatooine.rebelbase.local>
-Organization: still stuck in reorganization mode
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="G6nVm6DDWH/FONJq"
-Content-disposition: inline
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 28 Apr 2007 07:18:39 -0400
+Date: Sat, 28 Apr 2007 13:18:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Dave Jones <davej@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070428111835.GA4471@one.firstfloor.org>
+References: <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070427221803.2a117c23.akpm@linux-foundation.org> <p73tzv022qw.fsf@bingen.suse.de> <20070428030213.4787031f.akpm@linux-foundation.org> <20070428111504.24641d03@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070428111504.24641d03@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 28, 2007 at 11:15:04AM +0100, Alan Cox wrote:
+> > > The warning is bogus imho. How do you write recovery code for internal
+> > > broken code logic? 
+> > 
+> > Yes, it is marginal.  But people do very often reach for BUG_ON() where
+> > they could have at least partly recovered in some fashion - enough for the
+> > info to hit the logs so we have a better chance of fixing it.
+> 
+> At least one way to handle BUG_ON() type situations more cleanly (for
+> some anyway) is to fake a hot-unplug/plug event. Thats something that
 
---G6nVm6DDWH/FONJq
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+That would have a high risk of deadlock on some lost lock.
 
-Hi,
-
-I need to create a moderate amount of v3 keys for loop-aes and wonder
-how/if the "openssl rand" implementation differs significantly from
-/dev/random concerning entropy.
-
-In case /dev/random and "openssl rand" are somewhat comparable, I
-would just use the latter to create the keys.
-
-However, I certainly don't want to use a /dev/urandom look-alike.
-
-Any feedback appreciated.
-
---=20
-left blank, right bald
-
---G6nVm6DDWH/FONJq
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFGMyrMLMyTO8Kj/uQRAo2lAJ0UQndyKu7yIvKPESzkPBRVtpboQQCfYHqf
-7P8qcer8lnWoEACPJGBN6+I=
-=7ASw
------END PGP SIGNATURE-----
-
---G6nVm6DDWH/FONJq--
-
+-Andi
