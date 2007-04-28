@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031556AbXD1Qwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031567AbXD1Q4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031556AbXD1Qwn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 12:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031557AbXD1Qwn
+	id S1031567AbXD1Q4v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 12:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031566AbXD1Q4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 12:52:43 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44687 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031556AbXD1Qwm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 12:52:42 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46337BD2.7000701@s5r6.in-berlin.de>
-Date: Sat, 28 Apr 2007 18:52:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: random thoughts on DEPRECATED and OBSOLETE
-References: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 28 Apr 2007 12:56:51 -0400
+Received: from www.osadl.org ([213.239.205.134]:47600 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031564AbXD1Q4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 12:56:50 -0400
+Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>
+In-Reply-To: <463375E5.5040108@googlemail.com>
+References: <463375E5.5040108@googlemail.com>
+Content-Type: text/plain
+Date: Sat, 28 Apr 2007 18:58:53 +0200
+Message-Id: <1177779533.7646.264.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> http://fsdev.net/wiki/index.php?title=Maturity_levels
+On Sat, 2007-04-28 at 18:27 +0200, Michal Piotrowski wrote:
+> Hi all,
 > 
-> rday
-> 
+> Here is a list of known regressions reported after 2.6.21 release.
 
-A few comments:
+Michal, thanks for stepping up !
 
-  - Your argument should include what the benefits of exposing
-    DEPRECATED and OBSOLETE as machine-parsable tags are.
+> Subject    : 2.6.21 - BUG: at arch/i386/kernel/smp.c:177 send_IPI_mask_bitmask()
+> References : http://lkml.org/lkml/2007/4/27/621
+> Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+> Status     : unknown
 
-  - "...it's not really experimental but nonetheless claims to be. Bad
-    craziness all around."
-    Won't adding more maturity levels increase craziness?  All of the
-    levels except BROKEN are highly subjective.  And such tags can and
-    will become outdated.
+Len,
 
-  - How is the proposed "maturity" keyword to be used?  Will
-        maturity EXPERIMENTAL
-    replace
-        config EXPERIMENTAL
-    or
-        depends on EXPERIMENTAL
-    ?  One of your examples for the usage of the keyword, "maturity
-    OBSOLETE && BROKEN", indicates it is the latter.
+clockevents_notify() is called with the power verify information for an
+offline CPU. I can handle this in the clockevents code, but I think acpi
+is the correct place.
 
-  - In case it is the latter, didn't you mean by this example "maturity
-    OBSOLETE | BROKEN" rather than "maturity OBSOLETE && BROKEN"?
+Thanks,
 
-  - I sometimes voiced my opinion that the Kconfig language and files
-    should stick to reflect the mere dependencies, while presentation
-    should be left to the UIs.  The "maturity" directive is basically
-    a variant of "config" or "depends on" with added presentational
-    information.  Of course everybody is entitled to have a different
-    opinion and ask for more presentational markup in Kconfig.
+	tglx
 
-  - Something /can/ sensibly be DEPRECATED and OBSOLETE at the same
-    time.
-    (This also means the correct term is not maturity /levels/, but
-    maturity attributes or the like.)
--- 
-Stefan Richter
--=====-=-=== -=-- ===--
-http://arcgraph.de/sr/
+
+
