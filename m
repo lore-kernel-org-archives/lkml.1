@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754069AbXD1Ujb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbXD1Un6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754069AbXD1Ujb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 16:39:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbXD1Ujb
+	id S1752354AbXD1Un6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 16:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbXD1Un6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 16:39:31 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54214 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbXD1Uj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 16:39:28 -0400
-Message-ID: <4633B0F3.2000408@garzik.org>
-Date: Sat, 28 Apr 2007 16:39:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 28 Apr 2007 16:43:58 -0400
+Received: from mail1.vetienne.net ([87.98.219.23]:4976 "EHLO
+	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbXD1Un5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 16:43:57 -0400
+From: Vincent ETIENNE <ve@vetienne.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [linux-usb-devel] USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
+Date: Sat, 28 Apr 2007 22:43:54 +0200
+User-Agent: KMail/1.9.6
+Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Paul Walmsley <paul@booyaka.com>
+References: <Pine.LNX.4.44L0.0704281547260.14565-100000@netrider.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0704281547260.14565-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Andi Kleen <ak@suse.de>, patches@x86-64.org,
-       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org> <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704282243.54950.ve@vetienne.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No specific concern; the patch description did not say that bootloader 
-people had ACK'd the change, or describe the testing regimen.
+Le Saturday 28 April 2007 21:50:30 Alan Stern, vous avez écrit :
+> No, it isn't a problem in the USB core.  The device itself is messed up;
+> it really does report idVendor and idProduct both equal to 0.
+>
+> Jiri, don't worry about all those other devices in the listing that also
+> have idVendor and idProduct set to 0.  They aren't real devices at all;
+> they are virtual root hubs.  You'll see what I mean if you look at their
+> iManufacturer, iProduct, and iSerial strings.
+>
+> Alan Stern
 
-Just reading the patch, the impact and preparation were unknowns.
 
-	Jeff
-
-
-
+So is it just a scary trace but without consequence that i could ignored ? 
+May i ask you what is the device which is messed up ? ( Maybe should i change 
+it ? )
