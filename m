@@ -1,69 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163395AbXD1SGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163326AbXD1SGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163395AbXD1SGS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163394AbXD1SGL
+	id S1163326AbXD1SGG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163320AbXD1SBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:06:11 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:34937 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163395AbXD1SFn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:05:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:from:message-id:to:cc:subject:date:mime-version:
-	content-type:content-transfer-encoding:x-mailer:in-reply-to:x-mimeole:thread-index;
-	b=T0yLZqB+r8FENIXwnOFy8tLNiQpB2ku0HCg5sWqCi+cjFEhHeHvbgueOwU58IxxKm
-	Tk7G61WERyfYlu0ehCwqQ==
-From: Rohit Seth <rohitseth@google.com>
-Message-Id: <200704281805.l3SI5JQx030827@smtp.corp.google.com>
-To: "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Nick Piggin'" <nickpiggin@yahoo.com.au>
-Cc: "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: RE: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-Date: Sat, 28 Apr 2007 11:05:09 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook, Build 11.0.6353
-In-Reply-To: <Pine.LNX.4.64.0704280616470.9554@blonde.wat.veritas.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AceJVO7MN/eed43FSZW1lOthvAsgrQAaecbQ
+	Sat, 28 Apr 2007 14:01:02 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38977 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163344AbXD1R67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:58:59 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428758.455116000@suse.de>
+In-Reply-To: <20070428758.455116000@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [11/22] x86_64: wakeup.S rename registers to reflect right names
+Message-Id: <20070428175858.3F825151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:58:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+From: Vivek Goyal <vgoyal@in.ibm.com>
+
+
+o Use appropriate names for 64bit regsiters.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+---
+
+ arch/x86_64/kernel/acpi/wakeup.S |   36 ++++++++++++++++++------------------
+ include/asm-x86_64/suspend.h     |   12 ++++++------
+ 2 files changed, 24 insertions(+), 24 deletions(-)
+
+Index: linux/arch/x86_64/kernel/acpi/wakeup.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
++++ linux/arch/x86_64/kernel/acpi/wakeup.S
+@@ -211,16 +211,16 @@ wakeup_long64:
+ 	movw	%ax, %es
+ 	movw	%ax, %fs
+ 	movw	%ax, %gs
+-	movq	saved_esp, %rsp
++	movq	saved_rsp, %rsp
  
-
------Original Message-----
-From: Hugh Dickins [mailto:hugh@veritas.com] 
-Sent: Friday, April 27, 2007 10:20 PM
-To: Nick Piggin
-Cc: rohitseth@google.com; Mike Stroyan; Andrew Morton; Luck, Tony;
-linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-
-On Sat, 28 Apr 2007, Nick Piggin wrote:
-> 
-> OIC, you need a virtual address to evict the icache, so you can't 
-> flush at flush_dcache time? Or does ia64 have an instruction to flush 
-> the whole icache? (it would be worth testing, to see how much 
-> performance suffers).
-
-IIRC, there is a PAL call to flush the whole cache (but that is quite a
-heavy call).  Though you really don't need to be doing this.
-
->I'm puzzled by that remark: the ia64 flush_icache_range always has a 
->virtual address, it uses the kernel virtual address; it takes 
->no interest in whether there's a user virtual address.
-
-Caches on Itanium are physical.  So, it doesn't matter what virtual address
-you use to flush a cache line, cache line containing specific physical
-memory will be flushed.  For the cases where you have virtual caches,
-update_mmu_cache is the API to use.
-
--rohit
-
+ 	movw	$0x0e00 + 'x', %ds:(0xb8018)
+-	movq	saved_ebx, %rbx
+-	movq	saved_edi, %rdi
+-	movq	saved_esi, %rsi
+-	movq	saved_ebp, %rbp
++	movq	saved_rbx, %rbx
++	movq	saved_rdi, %rdi
++	movq	saved_rsi, %rsi
++	movq	saved_rbp, %rbp
+ 
+ 	movw	$0x0e00 + '!', %ds:(0xb801a)
+-	movq	saved_eip, %rax
++	movq	saved_rip, %rax
+ 	jmp	*%rax
+ 
+ .code32
+@@ -408,13 +408,13 @@ do_suspend_lowlevel:
+ 	movq %r15, saved_context_r15(%rip)
+ 	pushfq ; popq saved_context_eflags(%rip)
+ 
+-	movq	$.L97, saved_eip(%rip)
++	movq	$.L97, saved_rip(%rip)
+ 
+-	movq %rsp,saved_esp
+-	movq %rbp,saved_ebp
+-	movq %rbx,saved_ebx
+-	movq %rdi,saved_edi
+-	movq %rsi,saved_esi
++	movq %rsp,saved_rsp
++	movq %rbp,saved_rbp
++	movq %rbx,saved_rbx
++	movq %rdi,saved_rdi
++	movq %rsi,saved_rsi
+ 
+ 	addq	$8, %rsp
+ 	movl	$3, %edi
+@@ -461,12 +461,12 @@ do_suspend_lowlevel:
+ 	
+ .data
+ ALIGN
+-ENTRY(saved_ebp)	.quad	0
+-ENTRY(saved_esi)	.quad	0
+-ENTRY(saved_edi)	.quad	0
+-ENTRY(saved_ebx)	.quad	0
++ENTRY(saved_rbp)	.quad	0
++ENTRY(saved_rsi)	.quad	0
++ENTRY(saved_rdi)	.quad	0
++ENTRY(saved_rbx)	.quad	0
+ 
+-ENTRY(saved_eip)	.quad	0
+-ENTRY(saved_esp)	.quad	0
++ENTRY(saved_rip)	.quad	0
++ENTRY(saved_rsp)	.quad	0
+ 
+ ENTRY(saved_magic)	.quad	0
+Index: linux/include/asm-x86_64/suspend.h
+===================================================================
+--- linux.orig/include/asm-x86_64/suspend.h
++++ linux/include/asm-x86_64/suspend.h
+@@ -45,12 +45,12 @@ extern unsigned long saved_context_eflag
+ extern void fix_processor_context(void);
+ 
+ #ifdef CONFIG_ACPI_SLEEP
+-extern unsigned long saved_eip;
+-extern unsigned long saved_esp;
+-extern unsigned long saved_ebp;
+-extern unsigned long saved_ebx;
+-extern unsigned long saved_esi;
+-extern unsigned long saved_edi;
++extern unsigned long saved_rip;
++extern unsigned long saved_rsp;
++extern unsigned long saved_rbp;
++extern unsigned long saved_rbx;
++extern unsigned long saved_rsi;
++extern unsigned long saved_rdi;
+ 
+ /* routines for saving/restoring kernel state */
+ extern int acpi_save_state_mem(void);
