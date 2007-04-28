@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965826AbXD1NoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbXD1Npb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965826AbXD1NoX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbXD1Nki
+	id S1756222AbXD1Npb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 09:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756195AbXD1Nk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:40:38 -0400
+	Sat, 28 Apr 2007 09:40:28 -0400
 Received: from nz-out-0506.google.com ([64.233.162.234]:45348 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756236AbXD1Nj6 (ORCPT
+	with ESMTP id S1756213AbXD1Njr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:39:58 -0400
+	Sat, 28 Apr 2007 09:39:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=LpJr7bbUHVKnDCFFdvXbzEHAsp3rXwC5Oho4KSYraU8unsM+rLFoFSHCvDzRioA0YpYkbct2aEGLL1VS9VPoxQY4YGnaSBMVZ09OJaCU+PlJjPC85A6tY2h431GKTq8dJMsNqO/wFY8I6QmMjrVchnAmbvVtNpQzKBlnsD/b5Gw=
+        b=SYCMd136ZQMCDa1zxEZgE3oAmmNisQ3tSdh0IvwoBUEnc0cZ6k+kaNskfeVv99E/dc/bq2MfDrFkcpOWE4Tm9X9gjBVeKtBUonl3BLuh0giG/aLzWDy96kUgVjZKmpPMx0KDPs2O5CTTZfnE4UE5F0rjqkrF11HM5Z3xKfYLZbc=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 09/21] sysfs: flatten and fix sysfs_rename_dir() error handling
+Subject: [PATCH 04/21] sysfs: move release_sysfs_dirent() to dir.c
 In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Sat, 28 Apr 2007 22:39:41 +0900
-Message-Id: <11777675813047-git-send-email-htejun@gmail.com>
+Date: Sat, 28 Apr 2007 22:39:40 +0900
+Message-Id: <11777675801892-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -32,116 +32,70 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Error handling in sysfs_rename_dir() was broken.
-
-* When lookup_one_len() fails, 0 is returned.
-
-* If parent inode check fails, returns with inode mutex and rename
-  rwsem held.
-
-This patch fixes the above bugs and flattens error handling such that
-it's more readable and easier to modify.
+There is no reason this function should be inlined and soon to follow
+sysfs object reference simplification will make it heavier.  Move it
+to dir.c.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/dir.c |   73 +++++++++++++++++++++++++++++++------------------------
- 1 files changed, 41 insertions(+), 32 deletions(-)
+ fs/sysfs/dir.c   |   12 ++++++++++++
+ fs/sysfs/sysfs.h |   13 +------------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 0dca2c4..df057da 100644
+index 85a6686..4dc4322 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -434,8 +434,9 @@ void sysfs_remove_dir(struct kobject * kobj)
- int sysfs_rename_dir(struct kobject * kobj, struct dentry *new_parent,
- 		     const char *new_name)
+@@ -14,6 +14,18 @@
+ 
+ DECLARE_RWSEM(sysfs_rename_sem);
+ 
++void release_sysfs_dirent(struct sysfs_dirent * sd)
++{
++	if (sd->s_type & SYSFS_KOBJ_LINK) {
++		struct sysfs_symlink * sl = sd->s_element;
++		kfree(sl->link_name);
++		kobject_put(sl->target_kobj);
++		kfree(sl);
++	}
++	kfree(sd->s_iattr);
++	kmem_cache_free(sysfs_dir_cachep, sd);
++}
++
+ static void sysfs_d_iput(struct dentry * dentry, struct inode * inode)
  {
--	int error = 0;
-+	int error;
- 	struct dentry * new_dentry;
-+	struct sysfs_dirent *sd, *parent_sd;
+ 	struct sysfs_dirent * sd = dentry->d_fsdata;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index a77c57e..3b8aae0 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -17,6 +17,7 @@ extern void sysfs_delete_inode(struct inode *inode);
+ extern struct inode * sysfs_new_inode(mode_t mode, struct sysfs_dirent *);
+ extern int sysfs_create(struct dentry *, int mode, int (*init)(struct inode *));
  
- 	if (!new_parent)
- 		return -EFAULT;
-@@ -444,40 +445,48 @@ int sysfs_rename_dir(struct kobject * kobj, struct dentry *new_parent,
- 	mutex_lock(&new_parent->d_inode->i_mutex);
- 
- 	new_dentry = lookup_one_len(new_name, new_parent, strlen(new_name));
--	if (!IS_ERR(new_dentry)) {
--		/* By allowing two different directories with the
--		 * same d_parent we allow this routine to move
--		 * between different shadows of the same directory
--		 */
--		if (kobj->dentry->d_parent->d_inode != new_parent->d_inode)
--			return -EINVAL;
--		else if (new_dentry->d_parent->d_inode != new_parent->d_inode)
--			error = -EINVAL;
--		else if (new_dentry == kobj->dentry)
--			error = -EINVAL;
--		else if (!new_dentry->d_inode) {
--			error = kobject_set_name(kobj, "%s", new_name);
--			if (!error) {
--				struct sysfs_dirent *sd, *parent_sd;
--
--				d_add(new_dentry, NULL);
--				d_move(kobj->dentry, new_dentry);
--
--				sd = kobj->dentry->d_fsdata;
--				parent_sd = new_parent->d_fsdata;
--
--				list_del_init(&sd->s_sibling);
--				list_add(&sd->s_sibling, &parent_sd->s_children);
--			}
--			else
--				d_drop(new_dentry);
--		} else
--			error = -EEXIST;
--		dput(new_dentry);
-+	if (IS_ERR(new_dentry)) {
-+		error = PTR_ERR(new_dentry);
-+		goto out_unlock;
- 	}
-+
-+	/* By allowing two different directories with the same
-+	 * d_parent we allow this routine to move between different
-+	 * shadows of the same directory
-+	 */
-+	error = -EINVAL;
-+	if (kobj->dentry->d_parent->d_inode != new_parent->d_inode ||
-+	    new_dentry->d_parent->d_inode != new_parent->d_inode ||
-+	    new_dentry == kobj->dentry)
-+		goto out_dput;
-+
-+	error = -EEXIST;
-+	if (new_dentry->d_inode)
-+		goto out_dput;
-+
-+	error = kobject_set_name(kobj, "%s", new_name);
-+	if (error)
-+		goto out_drop;
-+
-+	d_add(new_dentry, NULL);
-+	d_move(kobj->dentry, new_dentry);
-+
-+	sd = kobj->dentry->d_fsdata;
-+	parent_sd = new_parent->d_fsdata;
-+
-+	list_del_init(&sd->s_sibling);
-+	list_add(&sd->s_sibling, &parent_sd->s_children);
-+
-+	error = 0;
-+	goto out_unlock;
-+
-+ out_drop:
-+	d_drop(new_dentry);
-+ out_dput:
-+	dput(new_dentry);
-+ out_unlock:
- 	mutex_unlock(&new_parent->d_inode->i_mutex);
- 	up_write(&sysfs_rename_sem);
--
- 	return error;
++extern void release_sysfs_dirent(struct sysfs_dirent * sd);
+ extern int sysfs_dirent_exist(struct sysfs_dirent *, const unsigned char *);
+ extern int sysfs_make_dirent(struct sysfs_dirent *, struct dentry *, void *,
+ 				umode_t, int);
+@@ -97,18 +98,6 @@ static inline struct kobject *sysfs_get_kobject(struct dentry *dentry)
+ 	return kobj;
  }
  
+-static inline void release_sysfs_dirent(struct sysfs_dirent * sd)
+-{
+-	if (sd->s_type & SYSFS_KOBJ_LINK) {
+-		struct sysfs_symlink * sl = sd->s_element;
+-		kfree(sl->link_name);
+-		kobject_put(sl->target_kobj);
+-		kfree(sl);
+-	}
+-	kfree(sd->s_iattr);
+-	kmem_cache_free(sysfs_dir_cachep, sd);
+-}
+-
+ static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
+ {
+ 	if (sd) {
 -- 
 1.5.0.3
 
