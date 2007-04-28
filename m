@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030468AbXD1EUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXD1EZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030468AbXD1EUw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 00:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030580AbXD1EUw
+	id S1030181AbXD1EZV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 00:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXD1EZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 00:20:52 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:45299 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030468AbXD1EUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 00:20:51 -0400
-X-IronPort-AV: i="4.14,463,1170651600"; 
-   d="scan'208"; a="36730952:sNHT22608838"
-Subject: Re: [patch 00/33] 2.6.20-stable review
-From: Bryan WU <bryan.wu@analog.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20070427151314.GA10281@suse.de>
-References: <20070426165445.GA1898@kroah.com>
-	 <1177668954.5969.18.camel@roc-desktop>  <20070427151314.GA10281@suse.de>
+	Sat, 28 Apr 2007 00:25:20 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43357 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030181AbXD1EZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 00:25:19 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+2M8UMMOq2B7vA805dCkYz0Xt0rAnCB2saHOeOvE
+	oOyS8ZMOAASfFf
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+	FS is under heavy write load (massive starvation)
+From: Mike Galbraith <efault@gmx.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	 <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
 Content-Type: text/plain
-Date: Sat, 28 Apr 2007 12:21:24 +0800
-Message-Id: <1177734084.9029.10.camel@roc-desktop>
+Date: Sat, 28 Apr 2007 06:25:05 +0200
+Message-Id: <1177734305.6266.7.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-04-27 at 08:13 -0700, Greg KH wrote:
-> On Fri, Apr 27, 2007 at 06:15:54PM +0800, Wu, Bryan wrote:
-> > 
-> > You know for some customer's product, they want to use the stable and
-> > long term support kernel instead to use the latest one. 
+On Fri, 2007-04-27 at 08:18 -0700, Linus Torvalds wrote:
+
+> Actually, you don't need to apply the patch - just do
 > 
-> Then they should get that support from a vendor, not from the kernel.org
-> releases :)
-> 
+> 	echo 5 > /proc/sys/vm/dirty_background_ratio
+> 	echo 10 > /proc/sys/vm/dirty_ratio
 
-Yeah, but we are the vendor as you mentioned. -:))
+That seems to have done the trick.  Amarok and GUI aren't exactly speed
+demons while writeout is happening, but they are not hanging for
+eternities.
 
-If we wanna to release a kernel to customer product development, how to
-choose the stable version? Currently, we always followed the kernel
-release cycle/rules and give customer the latest stable version.
-
-Thank you Greg
--Bryan
+	-Mike
 
