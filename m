@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbXD1IQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXD1IRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751630AbXD1IQs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 04:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbXD1IQr
+	id S1752151AbXD1IRf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 04:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030413AbXD1IRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 04:16:47 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44016 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751630AbXD1IQp (ORCPT
+	Sat, 28 Apr 2007 04:17:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51568 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752068AbXD1IRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 04:16:45 -0400
-Date: Sat, 28 Apr 2007 01:16:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Roland Dreier <rdreier@cisco.com>, Dave Jones <davej@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-Id: <20070428011625.0f048426.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0704280956190.506@yvahk01.tjqt.qr>
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-	<20070425143011.57247c1d.akpm@linux-foundation.org>
-	<20070425172447.1576c399.akpm@linux-foundation.org>
-	<20070426003911.GA19383@redhat.com>
-	<4630109F.6090002@oracle.com>
-	<20070425200207.77a2721a.akpm@linux-foundation.org>
-	<20070428030805.GA13331@redhat.com>
-	<20070427221803.2a117c23.akpm@linux-foundation.org>
-	<adak5vxm459.fsf@cisco.com>
-	<Pine.LNX.4.61.0704280956190.506@yvahk01.tjqt.qr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 28 Apr 2007 04:17:08 -0400
+Date: Sat, 28 Apr 2007 09:16:58 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Christoph Lameter <clameter@sgi.com>, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070428081658.GA19281@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Christoph Lameter <clameter@sgi.com>,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+	Mel Gorman <mel@skynet.ie>,
+	William Lee Irwin III <wli@holomorphy.com>,
+	Jens Axboe <jens.axboe@oracle.com>,
+	Badari Pulavarty <pbadari@gmail.com>,
+	Maxim Levitsky <maximlevitsky@gmail.com>
+References: <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <17969.55533.59287.509889@cargo.ozlabs.ibm.com> <4631E173.7000204@yahoo.com.au> <Pine.LNX.4.64.0704270507110.21003@schroedinger.engr.sgi.com> <4631EBC8.4060003@yahoo.com.au> <20070427133947.GB4152@infradead.org> <4632B121.3030005@yahoo.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4632B121.3030005@yahoo.com.au>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 10:01:00 +0200 (MEST) Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+On Sat, Apr 28, 2007 at 12:27:45PM +1000, Nick Piggin wrote:
+> And that wasn't due to the 128 sg limit?
 
-> And since when is uint32_t wrong? What makes u32 or __u32 better?
+No, that was due to aacraid really liking sg lists as small as possible
+where every entry covers areas as big as possible.  The driver really
+liked physical merging once wli changed the page allocator to return
+pages in the right order. 
 
-There's not much to be said in favour of u32, really.  Except it's shorter
-and I can never remember where the underscore goes in uint_32t.
+> I guess 10% isn't a small amount. Though it would be nice to have
+> before/after numbers for Linux.
 
-If kernel used u_int32_t globally then the world would probably be a better
-place.  But using just the one name has its advantages from a consistency
-POV.
+I'll try to find the old thread.
 
-box:/usr/src/linux-2.6.21> grep -r '[   \(]u32' . | wc -l
-39599
-box:/usr/src/linux-2.6.21> grep -r '[   \(]uint32_t' . | wc -l 
-5132
-
-CodingStyle permits either variant, fwiw.
