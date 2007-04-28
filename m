@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031909AbXD1Rzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031842AbXD1Rzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031909AbXD1Rzp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163310AbXD1RxV
+	id S1031842AbXD1Rzo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163311AbXD1RxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:53:21 -0400
-Received: from ns.suse.de ([195.135.220.2]:34445 "EHLO mx1.suse.de"
+	Sat, 28 Apr 2007 13:53:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38664 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163321AbXD1Rw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:52:59 -0400
+	id S1163315AbXD1Rwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:54 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070428752.712152000@suse.de>
 In-Reply-To: <20070428752.712152000@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-Subject: [PATCH] [32/35] x86_64: Remove unused set_seg_base
-Message-Id: <20070428175258.1E765151D1@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:52:58 +0200 (CEST)
+To: linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: [PATCH] [28/35] x86: Drop cc-options call for all options supported in gcc 3.2+
+Message-Id: <20070428175253.CB22E151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-The set_seg_base function isn't used anywhere (2.6.21-rc3-git1)
+The kernel only supports gcc 3.2+ now so it doesn't make sense
+anymore to explicitely check for options this compiler version
+already has.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+This actually fixes a bug. The -mprefered-stack-boundary check
+never worked because gcc rightly complains
+
+  CC      arch/i386/kernel/asm-offsets.s
+cc1: -mpreferred-stack-boundary=2 is not between 4 and 12
+
+We just never saw the error because of cc-options.
+I changed it to 4 to actually work.
+
+Tested by compiling i386 and x86-64 defconfig with gcc 3.2.
+
+Should speed up the build time a tiny bit and improve
+stack usage on i386 slightly.
+
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- include/asm-x86_64/desc.h |   10 ----------
- 1 file changed, 10 deletions(-)
+ Makefile           |    2 +-
+ arch/i386/Makefile |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux/include/asm-x86_64/desc.h
+Index: linux/Makefile
 ===================================================================
---- linux.orig/include/asm-x86_64/desc.h
-+++ linux/include/asm-x86_64/desc.h
-@@ -107,16 +107,6 @@ static inline void set_ldt_desc(unsigned
- 			      DESC_LDT, size * 8 - 1);
- }
+--- linux.orig/Makefile
++++ linux/Makefile
+@@ -491,7 +491,7 @@ endif
+ include $(srctree)/arch/$(ARCH)/Makefile
  
--static inline void set_seg_base(unsigned cpu, int entry, void *base)
--{ 
--	struct desc_struct *d = &cpu_gdt(cpu)[entry];
--	u32 addr = (u32)(u64)base;
--	BUG_ON((u64)base >> 32); 
--	d->base0 = addr & 0xffff;
--	d->base1 = (addr >> 16) & 0xff;
--	d->base2 = (addr >> 24) & 0xff;
--} 
--
- #define LDT_entry_a(info) \
- 	((((info)->base_addr & 0x0000ffff) << 16) | ((info)->limit & 0x0ffff))
- /* Don't allow setting of the lm bit. It is useless anyways because 
+ ifdef CONFIG_FRAME_POINTER
+-CFLAGS		+= -fno-omit-frame-pointer $(call cc-option,-fno-optimize-sibling-calls,)
++CFLAGS		+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+ else
+ CFLAGS		+= -fomit-frame-pointer
+ endif
+Index: linux/arch/i386/Makefile
+===================================================================
+--- linux.orig/arch/i386/Makefile
++++ linux/arch/i386/Makefile
+@@ -34,7 +34,7 @@ CHECKFLAGS	+= -D__i386__
+ CFLAGS += -pipe -msoft-float -mregparm=3 -freg-struct-return
+ 
+ # prevent gcc from keeping the stack 16 byte aligned
+-CFLAGS += $(call cc-option,-mpreferred-stack-boundary=2)
++CFLAGS += -mpreferred-stack-boundary=4
+ 
+ # CPU-specific tuning. Anything which can be shared with UML should go here.
+ include $(srctree)/arch/i386/Makefile.cpu
