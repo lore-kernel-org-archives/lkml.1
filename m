@@ -1,49 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbXD1JQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbXD1JU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbXD1JQc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 05:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbXD1JQb
+	id S1753400AbXD1JU7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 05:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXD1JU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 05:16:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55190 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbXD1JQa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 05:16:30 -0400
-Date: Sat, 28 Apr 2007 12:16:28 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Oliver Neukum <oliver@neukum.org>
-cc: David Lang <david.lang@digitalinsight.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sat, 28 Apr 2007 05:20:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60717 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161761AbXD1JU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 05:20:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Back to the future.
-In-Reply-To: <200704280858.26615.oliver@neukum.org>
-Message-ID: <Pine.LNX.4.64.0704281209230.17428@sbz-30.cs.Helsinki.FI>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
- <1177718250.4737.222.camel@nigel.suspend2.net>
- <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
- <200704280858.26615.oliver@neukum.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sat, 28 Apr 2007 11:24:56 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280344.49674.rjw@sisk.pl> <20070428085000.GA3293@elf.ucw.cz>
+In-Reply-To: <20070428085000.GA3293@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704281124.57106.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Oliver Neukum wrote:
-> And then you'll have people wonder why the server which sent out all
-> those files has no log entries. You'd have to selectively unfreeze user
-> space, which is a cure worse than the desease.
+On Saturday, 28 April 2007 10:50, Pavel Machek wrote:
+> Hi!
 > 
-> Simply throwing away user space work is a bug. And no, you cannot say that
-> it'll be redone away, as you are throwing away accepted input, too.
+> > > In many ways, "at all".
+> > > 
+> > > I _do_ realize the IO request queue issues, and that we cannot actually do 
+> > > s2ram with some devices in the middle of a DMA. So we want to be able to 
+> > > avoid *that*, there's no question about that. And I suspect that stopping 
+> > > user threads and then waiting for a sync is practically one of the easier 
+> > > ways to do so.
+> > > 
+> > > So in practice, the "at all" may become a "why freeze kernel threads?" and 
+> > > freezing user threads I don't find really objectionable.
+> > > 
+> > > But as Paul pointed out, Linux on the old powerpc Mac hardware was 
+> > > actually rather famous for having working (and reliable) suspend long 
+> > > before it worked even remotely reliably on PC's. And they didn't do even
+> > > that.
+> > > 
+> > > (They didn't have ACPI, and they had a much more limited set of devices, 
+> > > but the whole process freezer is really about neither of those issues. The 
+> > > wild and wacky PC hardware has its problems, but that's _one_ thing we 
+> > > can't blame PC hardware for ;)
+> > 
+> > We freeze user space processes for the reasons that you have quoted above.
+> > 
+> > Why we freeze kernel threads in there too is a good question, but not for me to
+> > answer.  I don't know.  Pavel should know, I think.
+> 
+> We do not want kernel threads running:
+> 
+> a) they may hold some locks and deadlock suspend
 
-It's not a bug, it's a feature =). While I totally agree with you that for 
-the common case, you probably do want to avoid work in the userspace after 
-taking the snapshot, it is something that should be solved separately. 
-There is absolutely nothing wrong with taking a snapshot, doing some work, 
-and then resuming to the snapshot and thus "losing" some the work (this 
-is useful for debugging, for example).
+Yeah, the same issue as with the hibernation and I do think it's _real_.
 
-				Pekka
+> b) they may do some writes to disk, leading to corruption
+
+Hmm, is that an issue in the suspend (aka s2ram) case?
+
+> We could solve a) by carefully auditing suspend lock usage to make
+> sure deadlocks are impossible even with kernel threads running.
+
+Yes, we can, but for now it's not been done yet.
+
+Greetings,
+Rafael
