@@ -1,41 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbXD1Q0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXD1Q1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756408AbXD1Q0E (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 12:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbXD1Q0C
+	id S965865AbXD1Q1N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 12:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965880AbXD1Q1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 12:26:02 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55137 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756400AbXD1Q0A (ORCPT
+	Sat, 28 Apr 2007 12:27:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56889 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965865AbXD1Q1K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 12:26:00 -0400
-Date: Sat, 28 Apr 2007 17:29:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
- time?
-Message-ID: <20070428172939.35689110@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.64.0704281006380.25313@localhost.localdomain>
-References: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF6F87@exch03.qd.lucent.com>
-	<Pine.LNX.4.64.0704281006380.25313@localhost.localdomain>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 12:27:10 -0400
+Date: Sat, 28 Apr 2007 09:24:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bryan WU <bryan.wu@analog.com>
+cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/33] 2.6.20-stable review
+In-Reply-To: <1177742776.9029.17.camel@roc-desktop>
+Message-ID: <alpine.LFD.0.98.0704280908230.9964@woody.linux-foundation.org>
+References: <20070426165445.GA1898@kroah.com>  <1177668954.5969.18.camel@roc-desktop>
+ <20070427151314.GA10281@suse.de>  <1177734084.9029.10.camel@roc-desktop> 
+ <20070428054800.GA6267@suse.de> <1177742776.9029.17.camel@roc-desktop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> > drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
-> >
-> >   clarification?
+
+
+On Sat, 28 Apr 2007, Bryan WU wrote:
 > 
-> oh, i'm *aware* of the definitions of those flags, but every single
-> source i've ever read has *strongly* suggested that you don't use
+> You know, because the kernel development is so active and so many stable
+> versions release, it is very hard to decide use which version for mass
+> production, especially some embedded systems which does not often
+> upgrade. 
 
-I don't believe either of those is doing what the author intended 8).
+I actually think that one of the advantages (at least that was the _plan_) 
+of having kernel releases every two-to-three months is that for vendors 
+who don't upgrade very often, you should always have a choice of few 
+kernels to decide on - you can simply decide to go with a less recent 
+kernel that you've been testing for a while. 
 
-Alan
+And with a fairly short release cycle, even if you decide that "hey, we 
+just don't know enough about the latest kernel, so let's go with the <n-1> 
+release", you won't be _totally_ behind the times. Yeah, you'll be using 
+something older, but it will be just two months older, not "totally 
+ancient".
+
+In other words, the fact that the kernel developers cut releases fairly 
+often should mean that vendors can much more easily decide on their own 
+release cycle _independently_ of the kernel release cycle, because at any 
+point in time, you always have *some* kernel release that isn't horribly 
+old, and that you can have a few months of knowledge about.
+
+Compare that to a release cycle of every two years or something (eg a 
+major gcc release), where if you're unlucky, you have the choice between 
+"recent and all the features, but it's not seen a lot of testing yet", or 
+"really quite old and stable, and we'll look bad for packaging it when 
+people know there is a much more recent release".
+
+In that kind of situation, a downstream vendor just doesn't have a lot of 
+good choices: delay the release until you know more about the package, or 
+ship a really old version, or ship a new and scary one. All three are "big 
+choices", and you can just pray you do the right one.
+
+In contrast, the kernel release cycle has been geared to making those 
+choices "small and inconsequential". Right now, you can basically choose 
+between any of 
+ - 2.6.19.7
+ - 2.6.20.10
+ - 2.6.21.1
+and none of them are horribly old, and you can base your choice on just 
+how adventurous you are _and_ on being familiar with two of them.
+
+For example, I think 2.6.20 was a good release, and so my gut feel is that 
+2.6.20.10 is probably preferable over the 2.6.19-based one, but if you 
+want to live on the edge, you'd pick 2.6.21.1, and if you want to go for 
+having a _loong_ time of being comfy with something, you might decide to 
+go with 2.6.16.49 that Adrian has been maintaining.
+
+In other words, having tight development releases just makes all these 
+choices easier. There's more choice, for sure, and that could feel scary, 
+but at the same time, it should result in less of a "choice between two 
+evils" kind of situation, and more of a "I *can* make an informed choice 
+if I just spend some effort on it".
+
+At least that was the plan. From everything I've heard, most people are 
+pretty happy with the 2.6.x development model. You cannot please 
+everybody, but the release frequency means that developers feel like they 
+can work on relevant stuff all the time, and vendors can always choose 
+something that is known stable and not horribly ancient.
+
+			Linus
