@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751010AbXD1OHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXD1OI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751010AbXD1OHF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 10:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXD1OHF
+	id S1752346AbXD1OI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 10:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXD1OI5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 10:07:05 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:44582 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbXD1OHD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 10:07:03 -0400
-Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=default; d=booyaka.com;
-  b=Zy8oLdTGJfgql6/qX0I038yfmtW4tmGhrlYt05hb3zIbS5HUnzPcS3EdQLd85yXz4UzlLZxyZUnXJpCsWXOaEDcVj6l6nT/biSbY8HoqVtRNhR3LebYnYA43mtTtIznyOUmhEGHnyzXH6AZVtsDru1lPcnJBoSTcr0qYMH6e4Ld4PqcUJxS1WktgZJI6M/oQYOLx/ZOnHNb83mWeojIdxiTstQeHqyEmX3Bem6VFzT0HvKca89rhVuQ2rQ9ocGnWDEB+xYzFSSiACn5D/tCsXrqGhc0111v8tw1lu8pFHHlPwt552g9Vecj7aFqFwZ0+cviak0OQQgaAAG9mVfuZvQ==  ;
-Date: Sat, 28 Apr 2007 08:07:02 -0600 (MDT)
-From: Paul Walmsley <paul@booyaka.com>
-To: Vincent ETIENNE <ve@vetienne.net>
-cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
-In-Reply-To: <200704280921.19265.ve@vetienne.net>
-Message-ID: <Pine.LNX.4.64.0704280804070.21519@utopia.booyaka.com>
-References: <200704262058.33087.ve@vetienne.net> <20070427211836.GC5917@kroah.com>
- <Pine.LNX.4.64.0704280024170.7370@jikos.suse.cz> <200704280921.19265.ve@vetienne.net>
+	Sat, 28 Apr 2007 10:08:57 -0400
+Received: from holomorphy.com ([66.93.40.71]:60965 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752346AbXD1OI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 10:08:56 -0400
+Date: Sat, 28 Apr 2007 07:09:07 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070428140907.GU19966@holomorphy.com>
+References: <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com> <20070427002640.22a71d06.akpm@linux-foundation.org> <20070427163620.GI32602149@melbourne.sgi.com> <20070427173432.GJ32602149@melbourne.sgi.com> <20070427121108.9ee05710.akpm@linux-foundation.org> <4632A6DF.7080301@yahoo.com.au> <1177747448.28223.26.camel@twins> <20070428012251.fae10a71.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070428012251.fae10a71.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Vincent ETIENNE wrote:
+On Sat, 28 Apr 2007 10:04:08 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>> only 4.4 times faster, and more scalable, since we don't bounce the
+>> upper level locks around.
 
-> With your patch it seems like idVendor passed is 0. You could see it there ;
->
-> http://mail1.vetienne.net/linux/dmesg.2.6.21-rc7-mm2+patch-usbhid
->
-> I could confirm that the keyboard is working ( yesterday i was just behind the
-> box due to test on the network ). But i don't remember if the keyboard is USB
-> or PS2 (i only have ssh access to the box for the next 3/4 days)
+On Sat, Apr 28, 2007 at 01:22:51AM -0700, Andrew Morton wrote:
+> I'm not sure what we're looking at here.  radix-tree changes?  Locking
+> changes?  Both?
+> If we have a whole pile of pages to insert then there are obvious gains
+> from not taking the lock once per page (gang insert).  But I expect there
+> will also be gains from not walking down the radix tree once per page too:
+> walk all the way down and populate all the way to the end of the node.
 
-It seems that OpenBSD users are reporting similar problems:
+The gang allocation affair would may also want to make the calls into
+the page allocator batched. For instance, grab enough compound pages to
+build the gang under the lock, since we're going to blow the per-cpu
+lists with so many pages, then break the compound pages up outside the
+zone->lock.
 
-http://article.gmane.org/gmane.os.openbsd.misc/122526
+I think it'd be good to have some corresponding tactics for freeing as
+well.
 
-http://www.mail-archive.com/misc@openbsd.org/msg38200.html
 
-
-- Paul
+-- wli
