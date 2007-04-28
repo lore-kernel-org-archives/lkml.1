@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161778AbXD1I7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbXD1JAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161778AbXD1I7X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 04:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161787AbXD1I7X
+	id S1753532AbXD1JAk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 05:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbXD1JAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 04:59:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50416 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161778AbXD1I7U (ORCPT
+	Sat, 28 Apr 2007 05:00:39 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:35765 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753400AbXD1JAc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 04:59:20 -0400
-Date: Sat, 28 Apr 2007 01:59:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Andree <matthias.andree@gmx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-Message-Id: <20070428015912.6108dbd5.akpm@linux-foundation.org>
-In-Reply-To: <20070428085148.GC31196@merlin.emma.line.org>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	<alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
-	<20070427113117.98c4f88b.akpm@linux-foundation.org>
-	<20070428085148.GC31196@merlin.emma.line.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 05:00:32 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: David Lang <david.lang@digitalinsight.com>
+Subject: Re: Back to the future.
+Date: Sat, 28 Apr 2007 08:58:25 +0200
+User-Agent: KMail/1.9.1
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177718250.4737.222.camel@nigel.suspend2.net> <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704280858.26615.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 10:51:48 +0200 Matthias Andree <matthias.andree@gmx.de> wrote:
+Am Samstag, 28. April 2007 01:50 schrieb David Lang:
+> 3. make mounted filesystems read-only (possibly with snapshot/checkpoint)
+> 4. unpause
+> 5. save image (with full userspace available, including network)
+> 6. shutdown system (throw away all userspace memory, no need to do graceful
+>     shutdown or nice kill signals, revert filesystem to snapshot/checkpoint if
+>     needed)
 
-> On Fri, 27 Apr 2007, Andrew Morton wrote:
-> 
-> > But none of this explains a 20-minute hang, unless a *lot* of fsyncs are
-> > being performed, perhaps.
-> 
-> Another thing that is rather unpleasant (haven't yet tried fiddling with
-> the dirty limits) is UDF to DVD-RAM - try rsyncing /home to a DVD-RAM,
-> that's going to leave you with tons of dirty buffers that clear slowly
-> -- "watch -n 1 grep -i dirty /proc/meminfo" is boring, but elucidating...
-> 
+And then you'll have people wonder why the server which sent out all
+those files has no log entries. You'd have to selectively unfreeze user
+space, which is a cure worse than the desease.
 
-yes, a few people are attacking that from various angles at present.  It's
-tricky - writeback has to juggle a lot of balls.  We'll get there.
+Simply throwing away user space work is a bug. And no, you cannot say that
+it'll be redone away, as you are throwing away accepted input, too.
 
+	Regards
+		Oliver
