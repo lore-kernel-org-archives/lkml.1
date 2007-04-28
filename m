@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030963AbXD1DIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030998AbXD1DNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030963AbXD1DIR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 23:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030968AbXD1DIR
+	id S1030998AbXD1DNA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 23:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030977AbXD1DNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 23:08:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39570 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030963AbXD1DIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 23:08:16 -0400
-Date: Fri, 27 Apr 2007 23:08:05 -0400
-From: Dave Jones <davej@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: checkpatch, a patch checking script.
-Message-ID: <20070428030805.GA13331@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	linux-kernel@vger.kernel.org
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
+	Fri, 27 Apr 2007 23:13:00 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:47963 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030968AbXD1DM7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 23:12:59 -0400
+Subject: [PATCH -rt] yet another irq storm
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 23:12:44 -0400
+Message-Id: <1177729964.19619.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070425200207.77a2721a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 25, 2007 at 08:02:07PM -0700, Andrew Morton wrote:
+Must be global warming, I'm getting a lot more irq storms than usual.
 
- > > Yep, I was going to mention your scripts but you beat me to it.
- > > 
- > > I'll be glad to help maintain such animals if wanted.
- > > 
- > wanted ;)
- > 
- > At least, it would be interesting to investigate the usefulness.  I suspect
- > it will prove to be very useful for the little things.
+Now that I switched over to x86_64, I booted up and got another irq
+storm. So I added my previous patch and it didn't fix it.  Looking
+further, I found that the mask and unmask is done directly in the
+x86_64/io_apic.c file.
 
-Randy and I got together and hashed out a first cut at this.
-(Randy actually gutted quite a lot of what I originally wrote, so deserves
- much kudos for improving this beyond my initial crappy version).
-You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
-There's also a git clonable tree there (only http right now).
+This patch does basically the same thing as my previous patch, but to
+the x86_64/io_apic.c file.
 
-http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
-what fell out of running it on my mbox of lkml from the past month.
-Some of them are kinda noisy, and perhaps should be moved under --pedantic
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-I'm all ears for additional regexps, bug reports or other suggestions.
+Index: linux-2.6.21-rt1/arch/x86_64/kernel/io_apic.c
+===================================================================
+--- linux-2.6.21-rt1.orig/arch/x86_64/kernel/io_apic.c
++++ linux-2.6.21-rt1/arch/x86_64/kernel/io_apic.c
+@@ -1437,7 +1437,8 @@ static void ack_apic_level(unsigned int 
+ 	irq_complete_move(irq);
+ #if defined(CONFIG_GENERIC_PENDING_IRQ) || defined(CONFIG_IRQBALANCE)
+ 	/* If we are moving the irq we need to mask it */
+-	if (unlikely(irq_desc[irq].status & IRQ_MOVE_PENDING)) {
++	if (unlikely(irq_desc[irq].status & IRQ_MOVE_PENDING) &&
++	    !(irq_desc[irq].status & IRQ_INPROGRESS)) {
+ 		do_unmask_irq = 1;
+ 		mask_IO_APIC_irq(irq);
+ 	}
 
-Before wiring this up to a procmail rule to scan every patch, I think it's
-probably a better idea to flesh it out a bit more.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
