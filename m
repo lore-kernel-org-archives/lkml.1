@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030981AbXD1Drk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030974AbXD1Dta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030981AbXD1Drk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 23:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030984AbXD1Drk
+	id S1030974AbXD1Dta (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 23:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030984AbXD1Dta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 23:47:40 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:36834 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1030981AbXD1Drj (ORCPT
+	Fri, 27 Apr 2007 23:49:30 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38817 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030974AbXD1Dt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 23:47:39 -0400
-Date: Sat, 28 Apr 2007 05:47:49 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-ID: <20070428034749.GG3468@stusta.de>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <ada1wi5npam.fsf@cisco.com>
+	Fri, 27 Apr 2007 23:49:29 -0400
+Date: Fri, 27 Apr 2007 20:49:28 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: David Chinner <dgc@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <20070428031739.GK32602149@melbourne.sgi.com>
+Message-ID: <Pine.LNX.4.64.0704272047550.7119@schroedinger.engr.sgi.com>
+References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
+ <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+ <20070426235542.bad7035a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
+ <20070427002640.22a71d06.akpm@linux-foundation.org>
+ <20070427163620.GI32602149@melbourne.sgi.com> <20070427173432.GJ32602149@melbourne.sgi.com>
+ <20070427121108.9ee05710.akpm@linux-foundation.org>
+ <20070428031739.GK32602149@melbourne.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <ada1wi5npam.fsf@cisco.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 08:36:17PM -0700, Roland Dreier wrote:
->...
-> Also, it would be nice to be able to do something like
+On Sat, 28 Apr 2007, David Chinner wrote:
+
+> > 1-disk and 2-disk read throughput fell by an improbable amount, which makes
+> > me cautious about the other numbers.
 > 
->     git diff v2.6.20..|perl ~/checkpatch.pl -
->...
+> For read, yes, and it's because something is going wrong with the
+> I/O size - it looks like readahead thrashing of some kind even
+> with 4k pages tests.
 
-  perl ~/checkpatch.pl <(git diff v2.6.20..)
-
->  - R.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Yup. I seem to have a problem in that area with my patches. Somehow the
+nr of page is shifted by page order. I do not completely understand what 
+is going on there yet.
 
