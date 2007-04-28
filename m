@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXD1HBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752654AbXD1HBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751366AbXD1HBH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 03:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXD1HBH
+	id S1752654AbXD1HBP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbXD1HBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 03:01:07 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:57970 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751366AbXD1HBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 03:01:05 -0400
-Date: Sat, 28 Apr 2007 09:00:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Daniel Hazelton <dhazelton@enter.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: progress meter in s2disk (was Re: Back to the future.)
-Message-ID: <20070428070039.GG2994@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org> <200704280344.49674.rjw@sisk.pl> <200704272251.57407.dhazelton@enter.net>
+	Sat, 28 Apr 2007 03:01:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38593 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753084AbXD1HBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 03:01:12 -0400
+Date: Sat, 28 Apr 2007 00:01:30 -0700
+From: Greg KH <gregkh@suse.de>
+To: Bryan WU <bryan.wu@analog.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/33] 2.6.20-stable review
+Message-ID: <20070428070130.GA8055@suse.de>
+References: <20070426165445.GA1898@kroah.com> <1177668954.5969.18.camel@roc-desktop> <20070427151314.GA10281@suse.de> <1177734084.9029.10.camel@roc-desktop> <20070428054800.GA6267@suse.de> <1177742776.9029.17.camel@roc-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704272251.57407.dhazelton@enter.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <1177742776.9029.17.camel@roc-desktop>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > > It's doubly bad, because that idiocy has also infected s2ram. Again,
-> > > > > another thing that really makes no sense at all - and we do it not
-> > > > > just for snapshotting, but for s2ram too. Can you tell me *why*?
-> > > >
-> > > > Why we freeze tasks at all or why we freeze kernel threads?
-> > >
-> > > In many ways, "at all".
-> > >
-> > > I _do_ realize the IO request queue issues, and that we cannot actually
-> > > do s2ram with some devices in the middle of a DMA. So we want to be able
-> > > to avoid *that*, there's no question about that. And I suspect that
-> > > stopping user threads and then waiting for a sync is practically one of
-> > > the easier ways to do so.
-> > >
-> <snip>
+On Sat, Apr 28, 2007 at 02:46:16PM +0800, Bryan WU wrote:
 > 
-> Apparently I *CANNOT* wrap my head around this - if just because my laptop, 
-> running a vendor 2.6.17 kernel does s2ram perfectly, at least, it does when 
-> using the "Upstart" init system rather than the classical SysV init system. I 
-> have tried it with the classical init and the suspend isn't triggered by the 
-> buttons that used to do it. I didn't try 'echo ram > /sys/power/state', but I 
-> have a feeling that would have worked as well. I have problems with s2disk, 
-> but thats because I keep my swap partition small - I try to keep it at or 
-> around 256M when I have more than half a gig of Ram in a system. Perhaps one 
-> of these days I'll grab a multi-gig flash disk, set it up as a swap partition 
-> and try it again. (every time I've tried s2disk I wind up running out of disk 
-> space - and this is with nothing but X running. Any kind of progress meter 
-> for when the system is doing s2disk would be nice - every time I've tried it 
-> all I see for the nearly 2 minutes before the s2disk attempt ends is a black 
-> screen. I say 2 minutes because thats how long it takes for it to learn that 
-> there isn't enough space on the swap-partition to save the image)
+> You know, because the kernel development is so active and so many stable
+> versions release, it is very hard to decide use which version for mass
+> production, especially some embedded systems which does not often
+> upgrade. 
 
-Just turn up console loglevel to see the messages.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It is difficult.  But you need to just spend the time and test and
+verify that the kernel you pick works for your needs.
+
+And then, after choosing that, you need to monitor the newer releases
+for bugfixes and security updates that affect your customers, and then
+backport them and provide them to your customers in a method by which
+they can easily and securely update their machines.
+
+It's not the simplest business to be in, that's for sure, but then
+again, it's no different from any other OS provider, except the fact
+that we are moving faster, and providing more features and fixes than
+anyone ever has before in the history of computing :)
+
+Welcome to the community, if there's anything we can do to help out,
+please let us know, we are all in this together for the long haul.
+
+greg k-h
