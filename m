@@ -1,78 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031050AbXD1RPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbXD1RRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031050AbXD1RPa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbXD1ROm
+	id S1756496AbXD1RRh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756497AbXD1RRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:14:42 -0400
-Received: from dns1.vpop.net ([216.193.240.2]:61738 "EHLO mail.vpop.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756488AbXD1ROl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:14:41 -0400
-In-Reply-To: <20070428045018.ff1260da.akpm@linux-foundation.org>
-References: <20070424100203.GB16473@2ka.mipt.ru> <20070425174643.f1fc189d.akpm@linux-foundation.org> <50E54C86-53FA-4FEE-83ED-AB0BF2E56F48@vpop.net> <20070428045018.ff1260da.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: multipart/mixed; boundary=Apple-Mail-1--242703432
-Message-Id: <7DC5A400-017E-4478-922D-1648E4F1F098@vpop.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org
-From: Matt Reimer <mreimer@vpop.net>
-Subject: Re: [2/2] Driver for the Maxim DS1WM, a 1-wire bus master ASIC core.
-Date: Sat, 28 Apr 2007 10:14:35 -0700
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.2)
+	Sat, 28 Apr 2007 13:17:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:37689 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756496AbXD1RRf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:17:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
+        b=uMEpvFqOLYkUVRD2caL8cEoftlDejfn5u1sBWhLpllL6CVnYdeJS3g0N4RaRupW9XExl3V3BHi9/DRQceSBaxp8p0jKcE8xUTFjILEF3Xwzv8WwGQZq7ErUXj9HXlnPfD+ICxIJ93i9BE0bTdKKksqZjrnVdczUS9y+m+4hvA1g=
+Subject: [PATCH] Re: More than 2Gb problem (dvb related) ?
+From: Jon Burgess <jburgess777@googlemail.com>
+To: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org
+Cc: Markus Rechberger <mrechberger@gmail.com>,
+       Gregoire Favre <Gregoire.Favre@gmail.com>, linux-kernel@vger.kernel.org,
+       Lee Revell <rlrevell@joe-job.com>
+In-Reply-To: <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com>
+References: <20070427111047.GB10284@gmail.com>
+	 <d9def9db0704271346i1556c59dgad222d5de7d919f6@mail.gmail.com>
+	 <1177711220.26292.20.camel@localhost.localdomain>
+	 <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com>
+Content-Type: multipart/mixed; boundary="=-1Uh6ORzNGQ+bY5sZUrAC"
+Date: Sat, 28 Apr 2007 18:17:32 +0100
+Message-Id: <1177780652.7152.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---Apple-Mail-1--242703432
+--=-1Uh6ORzNGQ+bY5sZUrAC
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset=US-ASCII;
-	delsp=yes;
-	format=flowed
 
-On Apr 28, 2007, at 4:50 AM, Andrew Morton wrote:
+On Fri, 2007-04-27 at 18:06 -0400, Lee Revell wrote:
+> On 4/27/07, Jon Burgess <jburgess777@googlemail.com> wrote:
+> > Interesting - I see similar symptoms after upgrading my PC:
+> > * old PC was AMD Athlon 64 3000 w/ 2GB of RAM which had no issues
+> > * new PC is a Intel Core 2 Duo w/ 4GB of RAM and fails in the way you
+> > describe.
+> 
+> Driver using an incorrect DMA mask?
+> 
+> Lee
 
-> i386 `make allmodconfig' has a few issues.
->
-> ERROR: "clk_get" [drivers/w1/masters/ds1wm.ko] undefined!
-> ERROR: "clk_put" [drivers/w1/masters/ds1wm.ko] undefined!
-> ERROR: "clk_disable" [drivers/w1/masters/ds1wm.ko] undefined!
-> ERROR: "clk_enable" [drivers/w1/masters/ds1wm.ko] undefined!
-> ERROR: "clk_get_rate" [drivers/w1/masters/ds1wm.ko] undefined!
+It appears the problem is that the driver is using streamed PCI and
+needs to explicitly sync the data otherwise it breaks when the SWIOTLB
+is in use. A call to pci_unmap_sg() was missing too.
 
-Attached is a patch to fix this. AFAIK only ARM platforms presently  
-use DS1WM and implement linux/clk.h.
+This patch is against the current v4l-dvb HG tree.
 
-Matt
+I've only tested the change with a budget-ci card.
 
+	Jon
 
---Apple-Mail-1--242703432
-Content-Transfer-Encoding: quoted-printable
-Content-Type: application/octet-stream;
-	x-unix-mode=0644;
-	name=0001-Make-CONFIG_MASTER_DS1WM-depend-on-ARM.patch
-Content-Disposition: attachment;
-	filename=0001-Make-CONFIG_MASTER_DS1WM-depend-on-ARM.patch
+Signed-off-by: Jon Burgess <jburgess777@googlemail.com>
 
-=46rom=2061511610faf651adc9d09311f4f054737d1a68d8=20Mon=20Sep=2017=20=
-00:00:00=202001=0AFrom:=20Matt=20Reimer=20<mreimer@vpop.net>=0ADate:=20=
-Sat,=2028=20Apr=202007=2010:11:35=20-0700=0ASubject:=20[PATCH]=20Make=20=
-CONFIG_MASTER_DS1WM=20depend=20on=20ARM=0A=0AMake=20CONFIG_MASTER_DS1WM=20=
-depend=20on=20ARM=20as=20that's=20apparently=20the=20only=0Aother=20=
-platform=20that=20implements=20linux/clk.h,=20and=20as=20far=20as=20I=20=
-know,=20is=0Athe=20only=20other=20platform=20presently=20using=20DS1WM.=0A=
-=0ASigned-off-by:=20Matt=20Reimer=20<mreimer@vpop.net>=0A---=0A=20=
-drivers/w1/masters/Kconfig=20|=20=20=20=202=20+-=0A=201=20files=20=
-changed,=201=20insertions(+),=201=20deletions(-)=0A=0Adiff=20--git=20=
-a/drivers/w1/masters/Kconfig=20b/drivers/w1/masters/Kconfig=0Aindex=20=
-cad5c54..8f77933=20100644=0A---=20a/drivers/w1/masters/Kconfig=0A+++=20=
-b/drivers/w1/masters/Kconfig=0A@@=20-37,7=20+37,7=20@@=20config=20=
-W1_MASTER_DS2482=0A=20=0A=20config=20W1_MASTER_DS1WM=0A=20=09tristate=20=
-"Maxim=20DS1WM=201-wire=20busmaster"=0A-=09depends=20on=20W1=0A+=09=
-depends=20on=20W1=20&&=20ARM=0A=20=09help=0A=20=09=20=20Say=20Y=20here=20=
-to=20enable=20the=20DS1WM=201-wire=20driver,=20such=20as=20that=0A=20=09=20=
-=20in=20HP=20iPAQ=20devices=20like=20h5xxx,=20h2200,=20and=20ASIC3-based=20=
-like=0A--=20=0A1.5.1.1=0A=0A=
+--=-1Uh6ORzNGQ+bY5sZUrAC
+Content-Disposition: attachment; filename=dvb-dma-sync.patch
+Content-Type: text/x-patch; name=dvb-dma-sync.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
---Apple-Mail-1--242703432--
+diff -r a8b2a0738f4e linux/drivers/media/common/saa7146_core.c
+--- a/linux/drivers/media/common/saa7146_core.c	Thu Apr 19 17:07:37 2007 -0300
++++ b/linux/drivers/media/common/saa7146_core.c	Sat Apr 28 17:44:38 2007 +0100
+@@ -152,6 +152,7 @@ char *saa7146_vmalloc_build_pgtable(stru
+ 		return NULL;
+ 	}
+ 
++	pt->nents = pages;
+ 	slen = pci_map_sg(pci,pt->slist,pages,PCI_DMA_FROMDEVICE);
+ 	if (0 != saa7146_pgtable_build_single(pci, pt, pt->slist, slen)) {
+ 		return NULL;
+@@ -165,6 +166,7 @@ void saa7146_pgtable_free(struct pci_dev
+ 	if (NULL == pt->cpu)
+ 		return;
+ 	pci_free_consistent(pci, pt->size, pt->cpu, pt->dma);
++	pci_unmap_sg(pci, pt->slist, pt->nents, PCI_DMA_FROMDEVICE);
+ 	pt->cpu = NULL;
+ 	kfree(pt->slist);
+ 	pt->slist = NULL;
+diff -r a8b2a0738f4e linux/drivers/media/dvb/ttpci/av7110.c
+--- a/linux/drivers/media/dvb/ttpci/av7110.c	Thu Apr 19 17:07:37 2007 -0300
++++ b/linux/drivers/media/dvb/ttpci/av7110.c	Sat Apr 28 17:10:38 2007 +0100
+@@ -1246,6 +1246,9 @@ static void vpeirq(unsigned long data)
+ 	if (!budget->feeding1 || (newdma == olddma))
+ 		return;
+ 
++	/* Ensure streamed PCI data is synced to CPU */
++	pci_dma_sync_sg_for_cpu(budget->dev->pci, budget->pt.slist, budget->pt.nents, PCI_DMA_FROMDEVICE);
++	
+ #if 0 /* keep */
+ 	/* track rps1 activity */
+ 	printk("vpeirq: %02x Event Counter 1 0x%04x\n",
+diff -r a8b2a0738f4e linux/drivers/media/dvb/ttpci/budget-core.c
+--- a/linux/drivers/media/dvb/ttpci/budget-core.c	Thu Apr 19 17:07:37 2007 -0300
++++ b/linux/drivers/media/dvb/ttpci/budget-core.c	Sat Apr 28 17:09:13 2007 +0100
+@@ -184,6 +184,9 @@ static void vpeirq(unsigned long data)
+ 	if (budget->feeding == 0 || newdma == olddma)
+ 		return;
+ 
++	/* Ensure streamed PCI data is synced to CPU */
++	pci_dma_sync_sg_for_cpu(budget->dev->pci, budget->pt.slist, budget->pt.nents, PCI_DMA_FROMDEVICE);
++	
+ 	if (newdma > olddma) {	/* no wraparound, dump olddma..newdma */
+ 		count = newdma - olddma;
+ 		dvb_dmx_swfilter_packets(&budget->demux, mem + olddma, count / 188);
+diff -r a8b2a0738f4e linux/include/media/saa7146.h
+--- a/linux/include/media/saa7146.h	Thu Apr 19 17:07:37 2007 -0300
++++ b/linux/include/media/saa7146.h	Sat Apr 28 17:27:36 2007 +0100
+@@ -70,6 +70,7 @@ struct saa7146_pgtable {
+ 	unsigned long	offset;
+ 	/* used for custom pagetables (used for example by budget dvb cards) */
+ 	struct scatterlist *slist;
++	int             nents;
+ };
+ 
+ struct saa7146_pci_extension_data {
+
+--=-1Uh6ORzNGQ+bY5sZUrAC--
+
