@@ -1,36 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030278AbXD1Uzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbXD1VAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030278AbXD1Uzt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 16:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030351AbXD1Uzt
+	id S1756116AbXD1VAp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbXD1VAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 16:55:49 -0400
-Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:38215
-	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1030278AbXD1Uzs (ORCPT
+	Sat, 28 Apr 2007 17:00:45 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:4096 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430AbXD1VAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 16:55:48 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 16:55:48 EDT
-Date: Sat, 28 Apr 2007 13:49:07 -0700
-From: Phil Oester <kernel@linuxace.com>
-To: Alessandro Suardi <alessandro.suardi@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.21-git2] sk_buff changes break Cisco VPN client
-Message-ID: <20070428204907.GA20485@linuxace.com>
-References: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
-Mime-Version: 1.0
+	Sat, 28 Apr 2007 17:00:31 -0400
+X-IronPort-AV: i="4.14,465,1170662400"; 
+   d="scan'208"; a="141919634:sNHT42390873"
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, davidhart@tqmcube.com,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 8392] New: Hard Lock Subsequent to Boot
+X-Message-Flag: Warning: May contain useful information
+References: <200704281634.l3SGYhJX014704@fire-2.osdl.org>
+	<20070428115906.86e93af6.akpm@linux-foundation.org>
+	<20070428191851.GM3468@stusta.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 28 Apr 2007 14:00:29 -0700
+In-Reply-To: <20070428191851.GM3468@stusta.de> (Adrian Bunk's message of "Sat, 28 Apr 2007 21:18:51 +0200")
+Message-ID: <adaabwsmcya.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+X-OriginalArrivalTime: 28 Apr 2007 21:00:29.0960 (UTC) FILETIME=[40FCD080:01C789D8]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 10:38:45PM +0200, Alessandro Suardi wrote:
-> skb_set_timestamp I can figure out, but the rest is a bit
-> too hard for me... if anyone has already an idea of how
-> to fix this, I'd be most grateful.
+ > # install git and cogito on your computer
+ > 
+ > # clone Linus' tree:
+ > cg-clone \ 
+ > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-Did you ask Cisco?
+Why the cogito installation?  It looks like cg-clone is the only
+cogito command you use, and git-clone is a trivial replacement.
 
-Phil
+ - R.
