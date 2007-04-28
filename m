@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbXD1Xge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbXD1Xio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbXD1Xge (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754386AbXD1Xge
+	id S1752989AbXD1Xio (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbXD1Xio
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:36:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46511 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753201AbXD1Xgd (ORCPT
+	Sat, 28 Apr 2007 19:38:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47775 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752989AbXD1Xin (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:36:33 -0400
-Date: Sat, 28 Apr 2007 16:35:55 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: akpm@osdl.org, linux-kernel@vger.kernel
-Subject: Re: Please revert [PATCH] user of the jiffies rounding patch: Slab
-In-Reply-To: <4633D1A2.6010002@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0704281632001.12695@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704281403140.12122@schroedinger.engr.sgi.com>
- <4633D1A2.6010002@linux.intel.com>
+	Sat, 28 Apr 2007 19:38:43 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Sat, 28 Apr 2007 19:38:33 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: random thoughts on DEPRECATED and OBSOLETE
+In-Reply-To: <4633CA7F.6010505@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0704281933160.29552@localhost.localdomain>
+References: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
+ <46337BD2.7000701@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281320560.27098@localhost.localdomain>
+ <4633ACE4.50004@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281635190.28274@localhost.localdomain>
+ <4633CA7F.6010505@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Arjan van de Ven wrote:
+On Sun, 29 Apr 2007, Stefan Richter wrote:
 
-> Christoph Lameter wrote:
-> > The slab reaper takes global locks. If one makes all cache reapers fire at
-> > the same time as this patch does then there will be a lot of contention that
-> > may result lots of interrupt holdoffs since some locks are taken
-> > with interrupts disabled. The vm statistics counters are updated
-> > and will content for global cachelines if this is done.
-> 
-> > I'd suggest to use a staggered per cpu approach instead that runs multiple
-> > per cpu timers at once. But every batch of these timers must be run at an
-> > offset from each other. Not at the same time please.
-> 
-> from kernel/timer.c
-> 
-> 107
-> 108         /*
-> 109          * We don't want all cpus firing their timers at once hitting the
-> 110          * same lock or cachelines, so we skew each extra cpu with an
-> extra
-> 111          * 3 jiffies. This 3 jiffies came originally from the mm/ code
-> which
-> 112          * already did this.
-> 113          * The skew is done by adding 3*cpunr, then round, then subtract
-> this
-> 114          * extra offset again.
-> 115          */
-> 116         j += cpu * 3;
-> 
-> 
-> isn't 3 jiffies distance per cpu enough for this already ??
-> That's what it used to be before as well...
+> I see a discussion on OBSOLETE vs. BROKEN there, which even ended in
+> a consensus, but I do not see an explicit discussion on OBSOLETE vs.
+> DEPRECATED.
 
-Hmmm... Yes but that looks like it comes from a different function. Slab
-calls
+i think this online definition matches what i have in mind:
 
- __round_jiffies_relative(HZ, cpu))
+http://www.google.com/search?hl=en&rls=GGGL,GGGL:2006-10,GGGL:en&defl=en&q=define:Deprecated&sa=X&oi=glossary_definition&ct=title
 
-And its description says:
+"A deprecated element or attribute is one that has been outdated by
+newer constructs. Deprecated elements are defined in the reference
+manual in appropriate locations, but are clearly marked as deprecated.
+Deprecated elements may become obsolete in future versions of HTML. We
+recommend that authors avoid using deprecated elements and attributes
+whenever practical."
 
-/**
- * __round_jiffies_relative - function to round jiffies to a full second
- * @j: the time in (relative) jiffies that should be rounded
- * @cpu: the processor number on which the timeout will happen
- *
- * __round_jiffies_relative() rounds a time delta  in the future (in jiffies)
- * up or down to (approximately) full seconds. This is useful for timers
- * for which the exact time they fire does not matter too much, as long as
- * they fire approximately every X seconds.
- *
- * By rounding these timers to whole seconds, all such timers will fire
- * at the same time, rather than at various times spread out. The goal
- * of this is to have the CPU wake up less, which saves power.
- *
- * The exact rounding is skewed for each processor to avoid all
- * processors firing at the exact same time, which could lead
- * to lock contention or spurious cache line bouncing.
- *
- * The return value is the rounded version of the @j parameter.
- */
+  note carefully how deprecated elements can still be used, but their
+use is discouraged and they *may become obsolete*.  that's exactly
+what i was getting at.  deprecated stuff *might* still be used;
+obsolete stuff *shouldn't* be used.
 
-This is exactly the wrong thing to do.
+rday
 
+p.s.  just FYI, even *i'm* getting bored of this.  :-)
