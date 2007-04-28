@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbXD1LEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbXD1LFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753865AbXD1LEZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbXD1LEZ
+	id S1753967AbXD1LFQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754003AbXD1LFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:04:25 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:21865 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753865AbXD1LEY (ORCPT
+	Sat, 28 Apr 2007 07:05:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:49337 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753967AbXD1LFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:04:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=O0st7RqjFhZweDWElCEai46PjZeRu4i9Trgrk+WCI8+F2otr+vmJvMXxNhWX0omLMiaiL8o+n43FSIcsEqO+Go+pQOvn6SScCZyqTvWer+VefL9qesU4n7XeaaVuOAV3H1W3+GwqfH5V6epYf4pU/7tZeXJ7tqzdSgFBdKQHJY8=
-Date: Sat, 28 Apr 2007 19:58:38 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, William Irwin <wli@holomorphy.com>
-Subject: Re: [PATCH] hugetlbfs: fix error path in module_init
-Message-ID: <20070428105838.GA3792@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-	William Irwin <wli@holomorphy.com>
-References: <20070428071923.GB9545@APFDCB5C> <b6fcc0a0704280044i3ff820b6w343bd73c7a08f708@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6fcc0a0704280044i3ff820b6w343bd73c7a08f708@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Sat, 28 Apr 2007 07:05:13 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Back to the future.
+To: Pavel Machek <pavel@ucw.cz>, David Lang <david.lang@digitalinsight.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Sat, 28 Apr 2007 13:04:45 +0200
+References: <8e5l8-7SD-21@gated-at.bofh.it> <8e6Ka-1uR-3@gated-at.bofh.it> <8e6TS-1Id-11@gated-at.bofh.it> <8efu9-6mF-1@gated-at.bofh.it> <8ekWV-6FF-33@gated-at.bofh.it> <8el6y-6Sj-5@gated-at.bofh.it> <8elpT-7wY-21@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1HhkjN-0000nb-6D@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX183vXBxaFwsPryrpWJpVqhxA4PpjtKAyjlyQSn
+ fSFvNouS/N+Ezc4RJic67/vAAJJGzYQP8D0vWP0IQFX0Xvs+VW
+ IqAp1rfEWNNVCsamgcQZQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 11:44:43AM +0400, Alexey Dobriyan wrote:
-> On 4/28/07, Akinobu Mita <akinobu.mita@gmail.com> wrote:
-> >init_hugetlbfs_fs() needs to unregister hugetlbfs
-> >when kern_mount() returns error.
+Pavel Machek <pavel@ucw.cz> wrote:
+
+>> I also don't like the idea of storing this in the swap partition for a
+>> couple of reasons.
+>> 
+>> 1. on many modern linux systems the swap partition is not large enough.
+>> 
+>> for example, on my boxes with 16G or ram I only allocate 2G of swap
+>> space
 > 
-> HUGETLBFS is bool, so __init function should panic more and
-> __exit function should be removed. Or someone is planning
-> making it tristate?
+> WTF? So allocate larger swap partition. You just told me disks are big
+> enough.
 
-Seems reasonable to make it panic. Because hugetlbfs_vfsmount
-is not initialized when error happen, and shmget() (ipc/shm.c)
-can cause NULL pointer dereference by hugetlb_zero_setup().
+1) Repartitioning is sometimes not an option.
+2) What happens, if the swap space gets used?
 
-Or we can add NULL check for hugetlbfs_vfsmount in hugetlbfs_vfsmount().
+I want to be sure I can suspend my {server,laptop} in case of power running
+out. Using swap is only an option for desktops.
 
+>> 2. it's too easy for other things to stomp on your swap partition.
+>> 
+>>   for example: booting from a live CD that finds and uses swap
+>> partitions
+> 
+> That's a feature. If you are booting from live CD, you _want_ to erase
+> any hibernation image.
+
+NACK. You want to keep all partitions related to the hibernated system
+read-only. That's completely different from destroying all your unsafed
+data and possibly long-running tasks.
+-- 
+Top 100 things you don't want the sysadmin to say:
+51. YEEEHA!!!  What a CRASH!!!
+
+Friﬂ, Spammer: C@rzlmn.7eggert.dyndns.org D9GLNDg@Zk.7eggert.dyndns.org
