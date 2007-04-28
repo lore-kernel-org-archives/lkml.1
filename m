@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163351AbXD1SBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163348AbXD1SCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163351AbXD1SBd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163349AbXD1SBb
+	id S1163348AbXD1SCK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163356AbXD1SBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:01:31 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39008 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 14:01:46 -0400
+Received: from ns.suse.de ([195.135.220.2]:34708 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163352AbXD1R7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:59:07 -0400
+	id S1163359AbXD1R7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:59:11 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070428758.455116000@suse.de>
 In-Reply-To: <20070428758.455116000@suse.de>
 To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
        patches@x86-64.org
-Subject: [PATCH] [18/22] x86: __pa and __pa_symbol address space separation
-Message-Id: <20070428175905.BDF96151CA@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:59:05 +0200 (CEST)
+Subject: [PATCH] [22/22] x86_64: Move cpu verification code to common file
+Message-Id: <20070428175910.38D57151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:59:10 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -24,36 +24,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Vivek Goyal <vgoyal@in.ibm.com>
 
 
-Currently __pa_symbol is for use with symbols in the kernel address
-map and __pa is for use with pointers into the physical memory map.
-But the code is implemented so you can usually interchange the two.
+o This patch moves the code to verify long mode and SSE to a common file.
+  This code is now shared by trampoline.S, wakeup.S, boot/setup.S and
+  boot/compressed/head.S
 
-__pa which is much more common can be implemented much more cheaply
-if it is it doesn't have to worry about any other kernel address
-spaces.  This is especially true with a relocatable kernel as
-__pa_symbol needs to peform an extra variable read to resolve
-the address.
+o So far we used to do very limited check in trampoline.S, wakeup.S and
+  in 32bit entry point. Now all the entry paths are forced to do the
+  exhaustive check, including SSE because verify_cpu is shared.
 
-There is a third macro that is added for the vsyscall data
-__pa_vsymbol for finding the physical addesses of vsyscall pages.
-
-Most of this patch is simply sorting through the references to
-__pa or __pa_symbol and using the proper one.  A little of
-it is continuing to use a physical address when we have it
-instead of recalculating it several times.
-
-swapper_pgd is now NULL.  leave_mm now uses init_mm.pgd
-and init_mm.pgd is initialized at boot (instead of compile time)
-to the physmem virtual mapping of init_level4_pgd.  The
-physical address changed.
-
-Except for the for EMPTY_ZERO page all of the remaining references
-to __pa_symbol appear to be during kernel initialization.  So this
-should reduce the cost of __pa in the common case, even on a relocated
-kernel.
-
-As this is technically a semantic change we need to be on the lookout
-for anything I missed.  But it works for me (tm).
+o I am keeping this patch as last in the x86 relocatable series because
+  previous patches have got quite some amount of testing done and don't want
+  to distrub that. So that if there is problem introduced by this patch, at
+  least it can be easily isolated.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
@@ -61,337 +43,386 @@ Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- arch/i386/kernel/alternative.c     |    4 ++--
- arch/i386/mm/init.c                |   15 ++++++++-------
- arch/x86_64/kernel/machine_kexec.c |   14 +++++++-------
- arch/x86_64/kernel/setup.c         |    9 +++++----
- arch/x86_64/kernel/smp.c           |    2 +-
- arch/x86_64/kernel/vsyscall.c      |    9 +++++++--
- arch/x86_64/mm/init.c              |   21 +++++++++++----------
- arch/x86_64/mm/pageattr.c          |   16 ++++++++--------
- include/asm-x86_64/page.h          |    6 ++----
- include/asm-x86_64/pgtable.h       |    4 ++--
- 10 files changed, 53 insertions(+), 47 deletions(-)
+ arch/x86_64/boot/compressed/head.S |   19 ++++++
+ arch/x86_64/boot/setup.S           |   65 ++-------------------
+ arch/x86_64/kernel/acpi/wakeup.S   |   30 +++++-----
+ arch/x86_64/kernel/trampoline.S    |   51 +----------------
+ arch/x86_64/kernel/verify_cpu.S    |  110 +++++++++++++++++++++++++++++++++++++
+ 5 files changed, 152 insertions(+), 123 deletions(-)
 
-Index: linux/arch/i386/kernel/alternative.c
+Index: linux/arch/x86_64/boot/compressed/head.S
 ===================================================================
---- linux.orig/arch/i386/kernel/alternative.c
-+++ linux/arch/i386/kernel/alternative.c
-@@ -402,8 +402,8 @@ void __init alternative_instructions(voi
- 						_text, _etext);
- 		}
- 		free_init_pages("SMP alternatives",
--				(unsigned long)__smp_alt_begin,
--				(unsigned long)__smp_alt_end);
-+				__pa_symbol(&__smp_alt_begin),
-+				__pa_symbol(&__smp_alt_end));
- 	} else {
- 		alternatives_smp_save(__smp_alt_instructions,
- 				      __smp_alt_instructions_end);
-Index: linux/arch/i386/mm/init.c
-===================================================================
---- linux.orig/arch/i386/mm/init.c
-+++ linux/arch/i386/mm/init.c
-@@ -774,10 +774,11 @@ void free_init_pages(char *what, unsigne
- 	unsigned long addr;
+--- linux.orig/arch/x86_64/boot/compressed/head.S
++++ linux/arch/x86_64/boot/compressed/head.S
+@@ -54,6 +54,15 @@ startup_32:
+ 1:	popl	%ebp
+ 	subl	$1b, %ebp
  
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(addr));
--		init_page_count(virt_to_page(addr));
--		memset((void *)addr, POISON_FREE_INITMEM, PAGE_SIZE);
--		free_page(addr);
-+		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
-+		ClearPageReserved(page);
-+		init_page_count(page);
-+		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
-+		__free_page(page);
- 		totalram_pages++;
- 	}
- 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
-@@ -786,14 +787,14 @@ void free_init_pages(char *what, unsigne
- void free_initmem(void)
- {
- 	free_init_pages("unused kernel memory",
--			(unsigned long)(&__init_begin),
--			(unsigned long)(&__init_end));
-+			__pa_symbol(&__init_begin),
-+			__pa_symbol(&__init_end));
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--	free_init_pages("initrd memory", start, end);
-+	free_init_pages("initrd memory", __pa(start), __pa(end));
- }
- #endif
- 
-Index: linux/arch/x86_64/kernel/machine_kexec.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/machine_kexec.c
-+++ linux/arch/x86_64/kernel/machine_kexec.c
-@@ -191,19 +191,19 @@ NORET_TYPE void machine_kexec(struct kim
- 
- 	page_list[PA_CONTROL_PAGE] = __pa(control_page);
- 	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
--	page_list[PA_PGD] = __pa(kexec_pgd);
-+	page_list[PA_PGD] = __pa_symbol(&kexec_pgd);
- 	page_list[VA_PGD] = (unsigned long)kexec_pgd;
--	page_list[PA_PUD_0] = __pa(kexec_pud0);
-+	page_list[PA_PUD_0] = __pa_symbol(&kexec_pud0);
- 	page_list[VA_PUD_0] = (unsigned long)kexec_pud0;
--	page_list[PA_PMD_0] = __pa(kexec_pmd0);
-+	page_list[PA_PMD_0] = __pa_symbol(&kexec_pmd0);
- 	page_list[VA_PMD_0] = (unsigned long)kexec_pmd0;
--	page_list[PA_PTE_0] = __pa(kexec_pte0);
-+	page_list[PA_PTE_0] = __pa_symbol(&kexec_pte0);
- 	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
--	page_list[PA_PUD_1] = __pa(kexec_pud1);
-+	page_list[PA_PUD_1] = __pa_symbol(&kexec_pud1);
- 	page_list[VA_PUD_1] = (unsigned long)kexec_pud1;
--	page_list[PA_PMD_1] = __pa(kexec_pmd1);
-+	page_list[PA_PMD_1] = __pa_symbol(&kexec_pmd1);
- 	page_list[VA_PMD_1] = (unsigned long)kexec_pmd1;
--	page_list[PA_PTE_1] = __pa(kexec_pte1);
-+	page_list[PA_PTE_1] = __pa_symbol(&kexec_pte1);
- 	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
- 
- 	page_list[PA_TABLE_PAGE] =
-Index: linux/arch/x86_64/kernel/setup.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/setup.c
-+++ linux/arch/x86_64/kernel/setup.c
-@@ -243,11 +243,12 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.end_code = (unsigned long) &_etext;
- 	init_mm.end_data = (unsigned long) &_edata;
- 	init_mm.brk = (unsigned long) &_end;
-+	init_mm.pgd = __va(__pa_symbol(&init_level4_pgt));
- 
--	code_resource.start = virt_to_phys(&_text);
--	code_resource.end = virt_to_phys(&_etext)-1;
--	data_resource.start = virt_to_phys(&_etext);
--	data_resource.end = virt_to_phys(&_edata)-1;
-+	code_resource.start = __pa_symbol(&_text);
-+	code_resource.end = __pa_symbol(&_etext)-1;
-+	data_resource.start = __pa_symbol(&_etext);
-+	data_resource.end = __pa_symbol(&_edata)-1;
- 
- 	early_identify_cpu(&boot_cpu_data);
- 
-Index: linux/arch/x86_64/kernel/smp.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/smp.c
-+++ linux/arch/x86_64/kernel/smp.c
-@@ -76,7 +76,7 @@ static inline void leave_mm(int cpu)
- 	if (read_pda(mmu_state) == TLBSTATE_OK)
- 		BUG();
- 	cpu_clear(cpu, read_pda(active_mm)->cpu_vm_mask);
--	load_cr3(swapper_pg_dir);
-+	load_cr3(init_mm.pgd);
- }
- 
- /*
-Index: linux/arch/x86_64/kernel/vsyscall.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/vsyscall.c
-+++ linux/arch/x86_64/kernel/vsyscall.c
-@@ -45,6 +45,11 @@
- 
- #define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
- #define __syscall_clobber "r11","rcx","memory"
-+#define __pa_vsymbol(x)			\
-+	({unsigned long v;  		\
-+	extern char __vsyscall_0; 	\
-+	  asm("" : "=r" (v) : "0" (x)); \
-+	  ((v - VSYSCALL_FIRST_PAGE) + __pa_symbol(&__vsyscall_0)); })
- 
- struct vsyscall_gtod_data_t {
- 	seqlock_t lock;
-@@ -224,10 +229,10 @@ static int vsyscall_sysctl_change(ctl_ta
- 		return ret;
- 	/* gcc has some trouble with __va(__pa()), so just do it this
- 	   way. */
--	map1 = ioremap(__pa_symbol(&vsysc1), 2);
-+	map1 = ioremap(__pa_vsymbol(&vsysc1), 2);
- 	if (!map1)
- 		return -ENOMEM;
--	map2 = ioremap(__pa_symbol(&vsysc2), 2);
-+	map2 = ioremap(__pa_vsymbol(&vsysc2), 2);
- 	if (!map2) {
- 		ret = -ENOMEM;
- 		goto out;
-Index: linux/arch/x86_64/mm/init.c
-===================================================================
---- linux.orig/arch/x86_64/mm/init.c
-+++ linux/arch/x86_64/mm/init.c
-@@ -565,11 +565,11 @@ void free_init_pages(char *what, unsigne
- 
- 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
- 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
--		ClearPageReserved(virt_to_page(addr));
--		init_page_count(virt_to_page(addr));
--		memset((void *)(addr & ~(PAGE_SIZE-1)),
--			POISON_FREE_INITMEM, PAGE_SIZE);
--		free_page(addr);
-+		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
-+		ClearPageReserved(page);
-+		init_page_count(page);
-+		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
-+		__free_page(page);
- 		totalram_pages++;
- 	}
- }
-@@ -579,17 +579,18 @@ void free_initmem(void)
- 	memset(__initdata_begin, POISON_FREE_INITDATA,
- 		__initdata_end - __initdata_begin);
- 	free_init_pages("unused kernel memory",
--			(unsigned long)(&__init_begin),
--			(unsigned long)(&__init_end));
-+			__pa_symbol(&__init_begin),
-+			__pa_symbol(&__init_end));
- }
- 
- #ifdef CONFIG_DEBUG_RODATA
- 
- void mark_rodata_ro(void)
- {
--	unsigned long addr = (unsigned long)__start_rodata;
-+	unsigned long addr = (unsigned long)__va(__pa_symbol(&__start_rodata));
-+	unsigned long end  = (unsigned long)__va(__pa_symbol(&__end_rodata));
- 
--	for (; addr < (unsigned long)__end_rodata; addr += PAGE_SIZE)
-+	for (; addr < end; addr += PAGE_SIZE)
- 		change_page_attr_addr(addr, 1, PAGE_KERNEL_RO);
- 
- 	printk ("Write protecting the kernel read-only data: %luk\n",
-@@ -608,7 +609,7 @@ void mark_rodata_ro(void)
- #ifdef CONFIG_BLK_DEV_INITRD
- void free_initrd_mem(unsigned long start, unsigned long end)
- {
--	free_init_pages("initrd memory", start, end);
-+	free_init_pages("initrd memory", __pa(start), __pa(end));
- }
- #endif
- 
-Index: linux/arch/x86_64/mm/pageattr.c
-===================================================================
---- linux.orig/arch/x86_64/mm/pageattr.c
-+++ linux/arch/x86_64/mm/pageattr.c
-@@ -51,7 +51,6 @@ static struct page *split_large_page(uns
- 	SetPagePrivate(base);
- 	page_private(base) = 0;
- 
--	address = __pa(address);
- 	addr = address & LARGE_PAGE_MASK; 
- 	pbase = (pte_t *)page_address(base);
- 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
-@@ -101,13 +100,12 @@ static inline void save_page(struct page
-  * No more special protections in this 2/4MB area - revert to a
-  * large page again. 
++/* setup a stack and make sure cpu supports long mode. */
++	movl	$user_stack_end, %eax
++	addl	%ebp, %eax
++	movl	%eax, %esp
++
++	call	verify_cpu
++	testl	%eax, %eax
++	jnz	no_longmode
++
+ /* Compute the delta between where we were compiled to run at
+  * and where the code will actually run at.
   */
--static void revert_page(unsigned long address, pgprot_t ref_prot)
-+static void revert_page(unsigned long address, unsigned long pfn, pgprot_t ref_prot)
- {
- 	pgd_t *pgd;
- 	pud_t *pud;
- 	pmd_t *pmd;
- 	pte_t large_pte;
--	unsigned long pfn;
+@@ -159,13 +168,21 @@ startup_32:
+ 	/* Jump from 32bit compatibility mode into 64bit mode. */
+ 	lret
  
- 	pgd = pgd_offset_k(address);
- 	BUG_ON(pgd_none(*pgd));
-@@ -115,7 +113,6 @@ static void revert_page(unsigned long ad
- 	BUG_ON(pud_none(*pud));
- 	pmd = pmd_offset(pud, address);
- 	BUG_ON(pmd_val(*pmd) & _PAGE_PSE);
--	pfn = (__pa(address) & LARGE_PAGE_MASK) >> PAGE_SHIFT;
- 	large_pte = pfn_pte(pfn, ref_prot);
- 	large_pte = pte_mkhuge(large_pte);
- 	set_pte((pte_t *)pmd, large_pte);
-@@ -141,7 +138,8 @@ __change_page_attr(unsigned long address
-  			 */
- 			struct page *split;
- 			ref_prot2 = pte_pgprot(pte_clrhuge(*kpte));
--			split = split_large_page(address, prot, ref_prot2);
-+			split = split_large_page(pfn << PAGE_SHIFT, prot,
-+							ref_prot2);
- 			if (!split)
- 				return -ENOMEM;
- 			set_pte(kpte, mk_pte(split, ref_prot2));
-@@ -160,7 +158,7 @@ __change_page_attr(unsigned long address
- 
- 	if (page_private(kpte_page) == 0) {
- 		save_page(kpte_page);
--		revert_page(address, ref_prot);
-+		revert_page(address, pfn, ref_prot);
-  	}
- 	return 0;
- } 
-@@ -180,6 +178,7 @@ __change_page_attr(unsigned long address
-  */
- int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
- {
-+	unsigned long phys_base_pfn = __pa_symbol(__START_KERNEL_map) >> PAGE_SHIFT;
- 	int err = 0; 
- 	int i; 
- 
-@@ -192,10 +191,11 @@ int change_page_attr_addr(unsigned long 
- 			break; 
- 		/* Handle kernel mapping too which aliases part of the
- 		 * lowmem */
--		if (__pa(address) < KERNEL_TEXT_SIZE) {
-+		if ((pfn >= phys_base_pfn) &&
-+			((pfn - phys_base_pfn) < (KERNEL_TEXT_SIZE >> PAGE_SHIFT))) {
- 			unsigned long addr2;
- 			pgprot_t prot2;
--			addr2 = __START_KERNEL_map + __pa(address);
-+			addr2 = __START_KERNEL_map + ((pfn - phys_base_pfn) << PAGE_SHIFT);
- 			/* Make sure the kernel mappings stay executable */
- 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
- 			err = __change_page_attr(addr2, pfn, prot2,
-Index: linux/include/asm-x86_64/page.h
++no_longmode:
++	/* This isn't an x86-64 CPU so hang */
++1:
++	hlt
++	jmp     1b
++
++#include "../../kernel/verify_cpu.S"
++
+ 	/* Be careful here startup_64 needs to be at a predictable
+ 	 * address so I can export it in an ELF header.  Bootloaders
+ 	 * should look at the ELF header to find this address, as
+ 	 * it may change in the future.
+ 	 */
+ 	.code64
+-	.org 0x100
++	.org 0x200
+ ENTRY(startup_64)
+ 	/* We come here either from startup_32 or directly from a
+ 	 * 64bit bootloader.  If we come here from a bootloader we depend on
+Index: linux/arch/x86_64/boot/setup.S
 ===================================================================
---- linux.orig/include/asm-x86_64/page.h
-+++ linux/include/asm-x86_64/page.h
-@@ -102,17 +102,15 @@ typedef struct { unsigned long pgprot; }
- 
- /* Note: __pa(&symbol_visible_to_c) should be always replaced with __pa_symbol.
-    Otherwise you risk miscompilation. */ 
--#define __pa(x)			(((unsigned long)(x)>=__START_KERNEL_map)?(unsigned long)(x) - (unsigned long)__START_KERNEL_map:(unsigned long)(x) - PAGE_OFFSET)
-+#define __pa(x)			((unsigned long)(x) - PAGE_OFFSET)
- /* __pa_symbol should be used for C visible symbols.
-    This seems to be the official gcc blessed way to do such arithmetic. */ 
- #define __pa_symbol(x)		\
- 	({unsigned long v;  \
- 	  asm("" : "=r" (v) : "0" (x)); \
--	  __pa(v); })
-+	  (v - __START_KERNEL_map); })
- 
- #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
--#define __boot_va(x)		__va(x)
--#define __boot_pa(x)		__pa(x)
- #ifdef CONFIG_FLATMEM
- #define pfn_valid(pfn)		((pfn) < end_pfn)
- #endif
-Index: linux/include/asm-x86_64/pgtable.h
+--- linux.orig/arch/x86_64/boot/setup.S
++++ linux/arch/x86_64/boot/setup.S
+@@ -299,64 +299,10 @@ loader_ok:
+ 	movw	%cs,%ax
+ 	movw	%ax,%ds
+ 	
+-	/* minimum CPUID flags for x86-64 */
+-	/* see http://www.x86-64.org/lists/discuss/msg02971.html */		
+-#define SSE_MASK ((1<<25)|(1<<26))
+-#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
+-					   (1<<13)|(1<<15)|(1<<24))
+-#define REQUIRED_MASK2 (1<<29)
+-
+-	pushfl				/* standard way to check for cpuid */
+-	popl	%eax
+-	movl	%eax,%ebx
+-	xorl	$0x200000,%eax
+-	pushl	%eax
+-	popfl
+-	pushfl
+-	popl	%eax
+-	cmpl	%eax,%ebx
+-	jz	no_longmode		/* cpu has no cpuid */
+-	movl	$0x0,%eax
+-	cpuid
+-	cmpl	$0x1,%eax
+-	jb	no_longmode		/* no cpuid 1 */
+-	xor	%di,%di
+-	cmpl	$0x68747541,%ebx	/* AuthenticAMD */
+-	jnz	noamd
+-	cmpl	$0x69746e65,%edx
+-	jnz	noamd
+-	cmpl	$0x444d4163,%ecx
+-	jnz	noamd
+-	mov	$1,%di			/* cpu is from AMD */
+-noamd:		
+-	movl    $0x1,%eax
+-	cpuid
+-	andl	$REQUIRED_MASK1,%edx
+-	xorl	$REQUIRED_MASK1,%edx
+-	jnz	no_longmode
+-	movl    $0x80000000,%eax
+-	cpuid
+-	cmpl    $0x80000001,%eax
+-	jb      no_longmode             /* no extended cpuid */
+-	movl    $0x80000001,%eax
+-	cpuid
+-	andl    $REQUIRED_MASK2,%edx
+-	xorl    $REQUIRED_MASK2,%edx
+-	jnz     no_longmode
+-sse_test:		
+-	movl	$1,%eax
+-	cpuid
+-	andl	$SSE_MASK,%edx
+-	cmpl	$SSE_MASK,%edx
+-	je	sse_ok
+-	test	%di,%di
+-	jz	no_longmode	/* only try to force SSE on AMD */ 
+-	movl	$0xc0010015,%ecx	/* HWCR */
+-	rdmsr
+-	btr	$15,%eax	/* enable SSE */
+-	wrmsr
+-	xor	%di,%di		/* don't loop */
+-	jmp	sse_test	/* try again */	
++	call verify_cpu
++	testl %eax,%eax
++	jz sse_ok
++
+ no_longmode:
+ 	call	beep
+ 	lea	long_mode_panic,%si
+@@ -366,7 +312,8 @@ no_longmode_loop:		
+ long_mode_panic:
+ 	.string "Your CPU does not support long mode. Use a 32bit distribution."
+ 	.byte 0
+-	
++
++#include "../kernel/verify_cpu.S"
+ sse_ok:
+ 	popw	%ds
+ 	
+Index: linux/arch/x86_64/kernel/acpi/wakeup.S
 ===================================================================
---- linux.orig/include/asm-x86_64/pgtable.h
-+++ linux/include/asm-x86_64/pgtable.h
-@@ -19,7 +19,7 @@ extern pmd_t level2_kernel_pgt[512];
- extern pgd_t init_level4_pgt[];
- extern unsigned long __supported_pte_mask;
+--- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
++++ linux/arch/x86_64/kernel/acpi/wakeup.S
+@@ -43,6 +43,11 @@ wakeup_code:
+ 	cmpl	$0x12345678, %eax
+ 	jne	bogus_real_magic
  
--#define swapper_pg_dir init_level4_pgt
-+#define swapper_pg_dir ((pgd_t *)NULL)
++  	call	verify_cpu			# Verify the cpu supports long
++						# mode
++	testl	%eax, %eax
++	jnz	no_longmode
++
+ 	testl	$1, video_flags - wakeup_code
+ 	jz	1f
+ 	lcall   $0xc000,$3
+@@ -92,18 +97,6 @@ wakeup_32:
+ # Running in this code, but at low address; paging is not yet turned on.
+ 	movb	$0xa5, %al	;  outb %al, $0x80
  
- extern void paging_init(void);
- extern void clear_kernel_mapping(unsigned long addr, unsigned long size);
-@@ -29,7 +29,7 @@ extern void clear_kernel_mapping(unsigne
-  * for zero-mapped memory areas etc..
-  */
- extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
--#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
-+#define ZERO_PAGE(vaddr) (pfn_to_page(__pa_symbol(&empty_zero_page) >> PAGE_SHIFT))
+-	/* Check if extended functions are implemented */		
+-	movl	$0x80000000, %eax
+-	cpuid
+-	cmpl	$0x80000000, %eax
+-	jbe	bogus_cpu
+-	wbinvd
+-	mov	$0x80000001, %eax
+-	cpuid
+-	btl	$29, %edx
+-	jnc	bogus_cpu
+-	movl	%edx,%edi
+-	
+ 	movl	$__KERNEL_DS, %eax
+ 	movl	%eax, %ds
  
- #endif /* !__ASSEMBLY__ */
+@@ -123,6 +116,11 @@ wakeup_32:
+ 	leal    (wakeup_level4_pgt - wakeup_code)(%esi), %eax
+ 	movl	%eax, %cr3
  
++        /* Check if nx is implemented */
++        movl    $0x80000001, %eax
++        cpuid
++        movl    %edx,%edi
++
+ 	/* Enable Long Mode */
+ 	xorl    %eax, %eax
+ 	btsl	$_EFER_LME, %eax
+@@ -244,10 +242,12 @@ bogus_64_magic:
+ 	movb	$0xb3,%al	;  outb %al,$0x80
+ 	jmp bogus_64_magic
+ 
+-bogus_cpu:
+-	movb	$0xbc,%al	;  outb %al,$0x80
+-	jmp bogus_cpu
++.code16
++no_longmode:
++	movb    $0xbc,%al       ;  outb %al,$0x80
++	jmp no_longmode
+ 
++#include "../verify_cpu.S"
+ 	
+ /* This code uses an extended set of video mode numbers. These include:
+  * Aliases for standard modes
+Index: linux/arch/x86_64/kernel/trampoline.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/trampoline.S
++++ linux/arch/x86_64/kernel/trampoline.S
+@@ -54,6 +54,8 @@ r_base = .
+ 	movw	$(trampoline_stack_end - r_base), %sp
+ 
+ 	call	verify_cpu		# Verify the cpu supports long mode
++	testl   %eax, %eax		# Check for return code
++	jnz	no_longmode
+ 
+ 	mov	%cs, %ax
+ 	movzx	%ax, %esi		# Find the 32bit trampoline location
+@@ -121,57 +123,10 @@ startup_64:
+ 	jmp	*%rax
+ 
+ 	.code16
+-verify_cpu:
+-	pushl	$0			# Kill any dangerous flags
+-	popfl
+-
+-	/* minimum CPUID flags for x86-64 */
+-	/* see http://www.x86-64.org/lists/discuss/msg02971.html */
+-#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
+-			   (1<<13)|(1<<15)|(1<<24)|(1<<25)|(1<<26))
+-#define REQUIRED_MASK2 (1<<29)
+-
+-	pushfl				# check for cpuid
+-	popl	%eax
+-	movl	%eax, %ebx
+-	xorl	$0x200000,%eax
+-	pushl	%eax
+-	popfl
+-	pushfl
+-	popl	%eax
+-	pushl	%ebx
+-	popfl
+-	cmpl	%eax, %ebx
+-	jz	no_longmode
+-
+-	xorl	%eax, %eax		# See if cpuid 1 is implemented
+-	cpuid
+-	cmpl	$0x1, %eax
+-	jb	no_longmode
+-
+-	movl	$0x01, %eax		# Does the cpu have what it takes?
+-	cpuid
+-	andl	$REQUIRED_MASK1, %edx
+-	xorl	$REQUIRED_MASK1, %edx
+-	jnz	no_longmode
+-
+-	movl	$0x80000000, %eax	# See if extended cpuid is implemented
+-	cpuid
+-	cmpl	$0x80000001, %eax
+-	jb	no_longmode
+-
+-	movl	$0x80000001, %eax	# Does the cpu have what it takes?
+-	cpuid
+-	andl	$REQUIRED_MASK2, %edx
+-	xorl	$REQUIRED_MASK2, %edx
+-	jnz	no_longmode
+-
+-	ret				# The cpu supports long mode
+-
+ no_longmode:
+ 	hlt
+ 	jmp no_longmode
+-
++#include "verify_cpu.S"
+ 
+ 	# Careful these need to be in the same 64K segment as the above;
+ tidt:
+Index: linux/arch/x86_64/kernel/verify_cpu.S
+===================================================================
+--- /dev/null
++++ linux/arch/x86_64/kernel/verify_cpu.S
+@@ -0,0 +1,110 @@
++/*
++ *
++ *	verify_cpu.S - Code for cpu long mode and SSE verification. This
++ *	code has been borrowed from boot/setup.S and was introduced by
++ * 	Andi Kleen.
++ *
++ *	Copyright (c) 2007  Andi Kleen (ak@suse.de)
++ *	Copyright (c) 2007  Eric Biederman (ebiederm@xmission.com)
++ *	Copyright (c) 2007  Vivek Goyal (vgoyal@in.ibm.com)
++ *
++ * 	This source code is licensed under the GNU General Public License,
++ * 	Version 2.  See the file COPYING for more details.
++ *
++ *	This is a common code for verification whether CPU supports
++ * 	long mode and SSE or not. It is not called directly instead this
++ *	file is included at various places and compiled in that context.
++ * 	Following are the current usage.
++ *
++ * 	This file is included by both 16bit and 32bit code.
++ *
++ *	arch/x86_64/boot/setup.S : Boot cpu verification (16bit)
++ *	arch/x86_64/boot/compressed/head.S: Boot cpu verification (32bit)
++ *	arch/x86_64/kernel/trampoline.S: secondary processor verfication (16bit)
++ *	arch/x86_64/kernel/acpi/wakeup.S:Verfication at resume (16bit)
++ *
++ *	verify_cpu, returns the status of cpu check in register %eax.
++ *		0: Success    1: Failure
++ *
++ * 	The caller needs to check for the error code and take the action
++ * 	appropriately. Either display a message or halt.
++ */
++
++verify_cpu:
++
++	pushfl				# Save caller passed flags
++	pushl	$0			# Kill any dangerous flags
++	popfl
++
++	/* minimum CPUID flags for x86-64 */
++	/* see http://www.x86-64.org/lists/discuss/msg02971.html */
++#define SSE_MASK ((1<<25)|(1<<26))
++#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
++					   (1<<13)|(1<<15)|(1<<24))
++#define REQUIRED_MASK2 (1<<29)
++	pushfl				# standard way to check for cpuid
++	popl	%eax
++	movl	%eax,%ebx
++	xorl	$0x200000,%eax
++	pushl	%eax
++	popfl
++	pushfl
++	popl	%eax
++	cmpl	%eax,%ebx
++	jz	verify_cpu_no_longmode	# cpu has no cpuid
++
++	movl	$0x0,%eax		# See if cpuid 1 is implemented
++	cpuid
++	cmpl	$0x1,%eax
++	jb	verify_cpu_no_longmode	# no cpuid 1
++
++	xor	%di,%di
++	cmpl	$0x68747541,%ebx	# AuthenticAMD
++	jnz	verify_cpu_noamd
++	cmpl	$0x69746e65,%edx
++	jnz	verify_cpu_noamd
++	cmpl	$0x444d4163,%ecx
++	jnz	verify_cpu_noamd
++	mov	$1,%di			# cpu is from AMD
++
++verify_cpu_noamd:
++	movl    $0x1,%eax		# Does the cpu have what it takes
++	cpuid
++	andl	$REQUIRED_MASK1,%edx
++	xorl	$REQUIRED_MASK1,%edx
++	jnz	verify_cpu_no_longmode
++
++	movl    $0x80000000,%eax	# See if extended cpuid is implemented
++	cpuid
++	cmpl    $0x80000001,%eax
++	jb      verify_cpu_no_longmode	# no extended cpuid
++
++	movl    $0x80000001,%eax	# Does the cpu have what it takes
++	cpuid
++	andl    $REQUIRED_MASK2,%edx
++	xorl    $REQUIRED_MASK2,%edx
++	jnz     verify_cpu_no_longmode
++
++verify_cpu_sse_test:
++	movl	$1,%eax
++	cpuid
++	andl	$SSE_MASK,%edx
++	cmpl	$SSE_MASK,%edx
++	je	verify_cpu_sse_ok
++	test	%di,%di
++	jz	verify_cpu_no_longmode	# only try to force SSE on AMD
++	movl	$0xc0010015,%ecx	# HWCR
++	rdmsr
++	btr	$15,%eax		# enable SSE
++	wrmsr
++	xor	%di,%di			# don't loop
++	jmp	verify_cpu_sse_test	# try again
++
++verify_cpu_no_longmode:
++	popfl				# Restore caller passed flags
++	movl $1,%eax
++	ret
++verify_cpu_sse_ok:
++	popfl				# Restore caller passed flags
++	xorl %eax, %eax
++	ret
