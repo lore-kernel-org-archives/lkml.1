@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163481AbXD1S1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163457AbXD1S3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163481AbXD1S1D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163482AbXD1S1B
+	id S1163457AbXD1S3a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163484AbXD1S3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:27:01 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51251 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1163481AbXD1S07 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:26:59 -0400
-Date: Sat, 28 Apr 2007 11:26:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070428112640.5b92b995.akpm@linux-foundation.org>
-In-Reply-To: <20070428140907.GU19966@holomorphy.com>
-References: <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
-	<20070427002640.22a71d06.akpm@linux-foundation.org>
-	<20070427163620.GI32602149@melbourne.sgi.com>
-	<20070427173432.GJ32602149@melbourne.sgi.com>
-	<20070427121108.9ee05710.akpm@linux-foundation.org>
-	<4632A6DF.7080301@yahoo.com.au>
-	<1177747448.28223.26.camel@twins>
-	<20070428012251.fae10a71.akpm@linux-foundation.org>
-	<20070428140907.GU19966@holomorphy.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 28 Apr 2007 14:29:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55021 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163457AbXD1S32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:29:28 -0400
+Date: Sat, 28 Apr 2007 14:28:55 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andi Kleen <ak@suse.de>, Simon Arlott <simon@arlott.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: Re: [PATCH] [16/35] i386: Add an option for the VIA C7 which sets appropriate L1 cache
+Message-ID: <20070428182855.GD20646@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
+	Simon Arlott <simon@arlott.org>,
+	Dave Jones <davej@codemonkey.org.uk>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+	patches@x86-64.org
+References: <20070428752.712152000@suse.de> <20070428175240.E6704151CA@wotan.suse.de> <46338DBA.2050404@garzik.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46338DBA.2050404@garzik.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 07:09:07 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+On Sat, Apr 28, 2007 at 02:08:58PM -0400, Jeff Garzik wrote:
+ > Andi Kleen wrote:
+ > > From: Simon Arlott <simon@arlott.org>
+ > > 
+ > > The VIA C7 is a 686 (with TSC) that supports MMX, SSE and SSE2, it also has
+ > > a cache line length of 64 according to
+ > > http://www.digit-life.com/articles2/cpu/rmma-via-c7.html.  This patch sets
+ > > gcc to -march=686 and select s the correct cache shift.
+ > > 
+ > > Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+ > > Signed-off-by: Andi Kleen <ak@suse.de>
+ > > Cc: Andi Kleen <ak@suse.de>
+ > > Cc: Dave Jones <davej@codemonkey.org.uk>
+ > > Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+ > > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+ > 
+ > Has it been verified in the field that this CPU supports CMOV?
 
-> On Sat, 28 Apr 2007 10:04:08 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> >> only 4.4 times faster, and more scalable, since we don't bounce the
-> >> upper level locks around.
-> 
-> On Sat, Apr 28, 2007 at 01:22:51AM -0700, Andrew Morton wrote:
-> > I'm not sure what we're looking at here.  radix-tree changes?  Locking
-> > changes?  Both?
-> > If we have a whole pile of pages to insert then there are obvious gains
-> > from not taking the lock once per page (gang insert).  But I expect there
-> > will also be gains from not walking down the radix tree once per page too:
-> > walk all the way down and populate all the way to the end of the node.
-> 
-> The gang allocation affair would may also want to make the calls into
-> the page allocator batched. For instance, grab enough compound pages to
-> build the gang under the lock, since we're going to blow the per-cpu
-> lists with so many pages, then break the compound pages up outside the
-> zone->lock.
+Yes. All their CPUs for some time now have done so.
 
-Sure, but...
+	Dave
 
-Allocating a single order-3 (say) page _is_ a form of batching
-
-We don't want compound pages here: just higher-order ones
-
-Higher-order allocations bypass the per-cpu lists
-
-> I think it'd be good to have some corresponding tactics for freeing as
-> well.
-
-hm, hadn't thought about that - would need to peek at contiguous pages in
-the pagecache and see if we can gang-free them as higher-order pages.
-
-The place to do that is perhaps inside the per-cpu magazines: it's more
-general.  Dunno if it would net advantageous though.
+-- 
+http://www.codemonkey.org.uk
