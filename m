@@ -1,176 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030933AbXD1CUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030923AbXD1CUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030933AbXD1CUJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030932AbXD1CUJ
+	id S1030923AbXD1CUf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030940AbXD1CUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:20:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:49689 "EHLO mail.goop.org"
+	Fri, 27 Apr 2007 22:20:35 -0400
+Received: from holomorphy.com ([66.93.40.71]:48062 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030933AbXD1CUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:20:07 -0400
-Message-ID: <4632AF57.1070102@goop.org>
-Date: Fri, 27 Apr 2007 19:20:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
+	id S1030923AbXD1CUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:20:34 -0400
+Date: Fri, 27 Apr 2007 19:21:01 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>
-Subject: [PATCH] deflate inflate_dynamic too
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Cc: Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070428022101.GS19966@holomorphy.com>
+References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com> <20070426235542.bad7035a.akpm@linux-foundation.org> <20070427134451.GP19966@holomorphy.com> <20070427121557.de9e8b4a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427121557.de9e8b4a.akpm@linux-foundation.org>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inflate_dynamic() has piggy stack usage too, so heap allocate it too.
-I'm not sure it actually gets used, but it shows up large in "make
-checkstack".
+On Thu, Apr 26, 2007 at 11:55:42PM -0700, Andrew Morton wrote:
+>>> Please address my point: if in five years time x86 has larger or varible
+>>> pagesize, this code will be a permanent millstone around our necks which we
+>>> *should not have merged*.
+>>> And if in five years time x86 does not have larger pagesize support then
+>>> the manufacturers would have decided that 4k pages are not a performance
+>>> problem, so we again should not have merged this code.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+On Fri, 27 Apr 2007 06:44:51 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
+>> So the verdict is wait 5 years, see if x86 did anything, and so on.
 
----
- lib/inflate.c |   63 ++++++++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 42 insertions(+), 21 deletions(-)
+On Fri, Apr 27, 2007 at 12:15:57PM -0700, Andrew Morton wrote:
+> You missed the bit about "evaluate alternatives".
 
-===================================================================
---- a/lib/inflate.c
-+++ b/lib/inflate.c
-@@ -798,15 +798,18 @@ STATIC int noinline INIT inflate_dynamic
-   unsigned nb;          /* number of bit length codes */
-   unsigned nl;          /* number of literal/length codes */
-   unsigned nd;          /* number of distance codes */
--#ifdef PKZIP_BUG_WORKAROUND
--  unsigned ll[288+32];  /* literal/length and distance code lengths */
--#else
--  unsigned ll[286+30];  /* literal/length and distance code lengths */
--#endif
-+  unsigned *ll;         /* literal/length and distance code lengths */
-   register ulg b;       /* bit buffer */
-   register unsigned k;  /* number of bits in bit buffer */
-+  int ret;
- 
- DEBG("<dyn");
-+
-+#ifdef PKZIP_BUG_WORKAROUND
-+  ll = malloc(sizeof(*ll) * (288+32));  /* literal/length and distance code lengths */
-+#else
-+  ll = malloc(sizeof(*ll) * (286+30));  /* literal/length and distance code lengths */
-+#endif
- 
-   /* make local bit buffer */
-   b = bb;
-@@ -828,7 +831,10 @@ DEBG("<dyn");
- #else
-   if (nl > 286 || nd > 30)
- #endif
--    return 1;                   /* bad lengths */
-+  {
-+    ret = 1;             /* bad lengths */
-+    goto out;
-+  }
- 
- DEBG("dyn1 ");
- 
-@@ -850,7 +856,8 @@ DEBG("dyn2 ");
-   {
-     if (i == 1)
-       huft_free(tl);
--    return i;                   /* incomplete code set */
-+    ret = i;                   /* incomplete code set */
-+    goto out;
-   }
- 
- DEBG("dyn3 ");
-@@ -872,8 +879,10 @@ DEBG("dyn3 ");
-       NEEDBITS(2)
-       j = 3 + ((unsigned)b & 3);
-       DUMPBITS(2)
--      if ((unsigned)i + j > n)
--        return 1;
-+      if ((unsigned)i + j > n) {
-+        ret = 1;
-+	goto out;
-+      }
-       while (j--)
-         ll[i++] = l;
-     }
-@@ -882,8 +891,10 @@ DEBG("dyn3 ");
-       NEEDBITS(3)
-       j = 3 + ((unsigned)b & 7);
-       DUMPBITS(3)
--      if ((unsigned)i + j > n)
--        return 1;
-+      if ((unsigned)i + j > n) {
-+        ret = 1;
-+	goto out;
-+      }
-       while (j--)
-         ll[i++] = 0;
-       l = 0;
-@@ -893,8 +904,10 @@ DEBG("dyn3 ");
-       NEEDBITS(7)
-       j = 11 + ((unsigned)b & 0x7f);
-       DUMPBITS(7)
--      if ((unsigned)i + j > n)
--        return 1;
-+      if ((unsigned)i + j > n) {
-+        ret = 1;
-+	goto out;
-+      }
-       while (j--)
-         ll[i++] = 0;
-       l = 0;
-@@ -923,7 +936,8 @@ DEBG("dyn5b ");
-       error("incomplete literal tree");
-       huft_free(tl);
-     }
--    return i;                   /* incomplete code set */
-+    ret = i;                   /* incomplete code set */
-+    goto out;
-   }
- DEBG("dyn5c ");
-   bd = dbits;
-@@ -939,15 +953,18 @@ DEBG("dyn5d ");
-       huft_free(td);
-     }
-     huft_free(tl);
--    return i;                   /* incomplete code set */
-+    ret = i;                   /* incomplete code set */
-+    goto out;
- #endif
-   }
- 
- DEBG("dyn6 ");
- 
-   /* decompress until an end-of-block code */
--  if (inflate_codes(tl, td, bl, bd))
--    return 1;
-+  if (inflate_codes(tl, td, bl, bd)) {
-+    ret = 1;
-+    goto out;
-+  }
- 
- DEBG("dyn7 ");
- 
-@@ -956,10 +973,14 @@ DEBG("dyn7 ");
-   huft_free(td);
- 
-   DEBG(">");
--  return 0;
--
-- underrun:
--  return 4;			/* Input underrun */
-+  ret = 0;
-+out:
-+  free(ll);
-+  return ret;
-+
-+underrun:
-+  ret = 4;			/* Input underrun */
-+  goto out;
- }
- 
- 
+No worries. I'm used to being on the wrong side of things. I'll have
+no trouble picking out the alternative least likely to be accepted. ;)
 
+
+-- wli
