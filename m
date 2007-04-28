@@ -1,100 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965865AbXD1Q1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965888AbXD1Q2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965865AbXD1Q1N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 12:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965880AbXD1Q1N
+	id S965888AbXD1Q2c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 12:28:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965912AbXD1Q2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 12:27:13 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:56889 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965865AbXD1Q1K (ORCPT
+	Sat, 28 Apr 2007 12:28:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:3833 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965898AbXD1Q22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 12:27:10 -0400
-Date: Sat, 28 Apr 2007 09:24:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Bryan WU <bryan.wu@analog.com>
-cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/33] 2.6.20-stable review
-In-Reply-To: <1177742776.9029.17.camel@roc-desktop>
-Message-ID: <alpine.LFD.0.98.0704280908230.9964@woody.linux-foundation.org>
-References: <20070426165445.GA1898@kroah.com>  <1177668954.5969.18.camel@roc-desktop>
- <20070427151314.GA10281@suse.de>  <1177734084.9029.10.camel@roc-desktop> 
- <20070428054800.GA6267@suse.de> <1177742776.9029.17.camel@roc-desktop>
+	Sat, 28 Apr 2007 12:28:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=Dfo1/81X4M65THfB3zJ8dV2+/wLYTj0NuJkOeaEwb7mfMbzn0ZW2EDjARwh2qK+YOaNdAccTJrEAEruYITS5L8xpwQq6+5tCUCROSZ7wVL7/1mHfbmCi8mK0c85zQpQe5p2QdtVpXgPJMBP3Q+AzAx13VftNXosGLu1/5ZgQzkQ=
+Message-ID: <463375E5.5040108@googlemail.com>
+Date: Sat, 28 Apr 2007 18:27:17 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       netdev@vger.kernel.org,
+       =?UTF-8?B?SMOla2FuIExpbmRxdmlzdA==?= <lindqvist@netstar.se>,
+       Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       =?UTF-8?B?RnJhbsOnb2lzIFZhbGVuZHVj?= <francois.valenduc@skynet.be>,
+       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: 2.6.21 known regressions (v2) (for -stable team)
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
+
+Here is a list of known regressions reported after 2.6.21 release.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
 
 
-On Sat, 28 Apr 2007, Bryan WU wrote:
-> 
-> You know, because the kernel development is so active and so many stable
-> versions release, it is very hard to decide use which version for mass
-> production, especially some embedded systems which does not often
-> upgrade. 
+Subject    : kernel crash at boot with maxcpus=1 on quad core
+             kernel BUG at drivers/cpufreq/cpufreq.c:1023
+References : http://lkml.org/lkml/2007/4/27/460
+Submitter  : Brandeburg, Jesse <jesse.brandeburg@intel.com>
+Status     : Unknow
 
-I actually think that one of the advantages (at least that was the _plan_) 
-of having kernel releases every two-to-three months is that for vendors 
-who don't upgrade very often, you should always have a choice of few 
-kernels to decide on - you can simply decide to go with a less recent 
-kernel that you've been testing for a while. 
+Subject    : Soft lockup on CPU0 when resuming from suspension to ram, related to acpi processor module
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8391
+Submitter  : Giorgio Lando <patroclo7@gmail.com>
+Status     : Unknow
 
-And with a fairly short release cycle, even if you decide that "hey, we 
-just don't know enough about the latest kernel, so let's go with the <n-1> 
-release", you won't be _totally_ behind the times. Yeah, you'll be using 
-something older, but it will be just two months older, not "totally 
-ancient".
+Subject    : Bad interaction between dynticks and amarok?
+References : http://lkml.org/lkml/2007/4/26/307
+Submitter  : Thomas Meyer <thomas.mey@web.de>
+Status     : Unknow
 
-In other words, the fact that the kernel developers cut releases fairly 
-often should mean that vendors can much more easily decide on their own 
-release cycle _independently_ of the kernel release cycle, because at any 
-point in time, you always have *some* kernel release that isn't horribly 
-old, and that you can have a few months of knowledge about.
+Subject    : Long pause initializating usb-storage
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8380
+Submitter  : Vincent Frentzel <zcecc22@ucl.ac.uk>
+Status     : Unknow
 
-Compare that to a release cycle of every two years or something (eg a 
-major gcc release), where if you're unlucky, you have the choice between 
-"recent and all the features, but it's not seen a lot of testing yet", or 
-"really quite old and stable, and we'll look bad for packaging it when 
-people know there is a much more recent release".
+Subject    : Multpiple problem when thermal is loaded with kernel 2.6.21
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8385
+Submitter  : François Valenduc <francois.valenduc@skynet.be>
+Status     : Unknow
 
-In that kind of situation, a downstream vendor just doesn't have a lot of 
-good choices: delay the release until you know more about the package, or 
-ship a really old version, or ship a new and scary one. All three are "big 
-choices", and you can just pray you do the right one.
+Subject    : 2.6.21: sky2 "hw csum failure" problem
+References : http://lkml.org/lkml/2007/4/28/105
+Submitter  : Håkan Lindqvist <lindqvist@netstar.se>
+Status     : unknown
 
-In contrast, the kernel release cycle has been geared to making those 
-choices "small and inconsequential". Right now, you can basically choose 
-between any of 
- - 2.6.19.7
- - 2.6.20.10
- - 2.6.21.1
-and none of them are horribly old, and you can base your choice on just 
-how adventurous you are _and_ on being familiar with two of them.
+Subject    : sky2 regression in 2.6.21: Asus P5B-E Plus ethernet adapter no more supported  
+References : http://lkml.org/lkml/2007/4/26/599
+Submitter  : Francois SIMOND <curio@free.fr> 
+Handled-By : Stephen Hemminger <shemminger@linux-foundation.org>
+Status     : unknown
 
-For example, I think 2.6.20 was a good release, and so my gut feel is that 
-2.6.20.10 is probably preferable over the 2.6.19-based one, but if you 
-want to live on the edge, you'd pick 2.6.21.1, and if you want to go for 
-having a _loong_ time of being comfy with something, you might decide to 
-go with 2.6.16.49 that Adrian has been maintaining.
+Subject    : 2.6.21 - BUG: at arch/i386/kernel/smp.c:177 send_IPI_mask_bitmask()
+References : http://lkml.org/lkml/2007/4/27/621
+Submitter  : Jeff Chua <jeff.chua.linux@gmail.com>
+Status     : unknown
 
-In other words, having tight development releases just makes all these 
-choices easier. There's more choice, for sure, and that could feel scary, 
-but at the same time, it should result in less of a "choice between two 
-evils" kind of situation, and more of a "I *can* make an informed choice 
-if I just spend some effort on it".
+Subject    : 2.6.21 don't boot, it stops after ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 *5 6 7 9 10 11 12 14 15).
+References : http://lkml.org/lkml/2007/4/27/400
+Submitter  : Riccardo Ricci < rricci@nuovanetmore.it >
+Handled-By : Len Brown <lenb@kernel.org>
+Status     : unknown
 
-At least that was the plan. From everything I've heard, most people are 
-pretty happy with the 2.6.x development model. You cannot please 
-everybody, but the release frequency means that developers feel like they 
-can work on relevant stuff all the time, and vendors can always choose 
-something that is known stable and not horribly ancient.
+Subject    : ACPI interpreter errors
+References : http://lkml.org/lkml/2007/4/27/206
+Submitter  : Udo A. Steinberg < us15@os.inf.tu-dresden.de >
+Handled-By : Len Brown <lenb@kernel.org>
+Status     : unknown
 
-			Linus
+Subject    : reiserfs -- circular locking
+References : http://lkml.org/lkml/2007/4/26/648
+Submitter  : David Brownell < david-b@pacbell.net >
+Handled-By : Jeff Mahoney < jeffm@suse.com >
+Patch      : http://lkml.org/lkml/2007/4/27/332
+Status     : patch available
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
