@@ -1,43 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163314AbXD1R40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031911AbXD1Rzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163314AbXD1R40 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163313AbXD1R4U
+	id S1031911AbXD1Rzp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163314AbXD1RxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:56:20 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:1994 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163310AbXD1Rzz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:55:55 -0400
-Date: Sat, 28 Apr 2007 20:55:59 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: What's in infiniband.git for 2.6.22
-Message-ID: <20070428175559.GC13106@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <adaps5rro8v.fsf@cisco.com> <20070427153016.GB1709@mellanox.co.il>
-	<adaslalm9sd.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adaslalm9sd.fsf@cisco.com>
-User-Agent: Mutt/1.5.11
+	Sat, 28 Apr 2007 13:53:19 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38651 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163310AbXD1Rwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:52:51 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428752.712152000@suse.de>
+In-Reply-To: <20070428752.712152000@suse.de>
+To: Rene Herman <rene.herman@gmail.com>, Andi Kleen <ak@suse.de>,
+       Zachary Amsden <zach@vmware.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       linux-kernel@vger.kernel.org, patches@x86-64.org
+Subject: [PATCH] [17/35] i386: probe_roms() cleanup
+Message-Id: <20070428175242.050AE151D1@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:52:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Roland Dreier <rdreier@cisco.com>:
-> Subject: Re: What's in infiniband.git for 2.6.22
-> 
->  > What about the mthca patch to use separate HW queues for kernel RC/UD/userspace RC?
-> 
-> right, I'll queue that up too.
-> BTW is there something analogous we could do for mlx4, or is FW not
-> quite ready?
 
-I am assured the issue this is sloving is not present in mlx4.
+From: Rene Herman <rene.herman@gmail.com>
 
--- 
-MST
+Remove the assumption that if the first page of a legacy ROM is mapped,
+it'll all be mapped. This'll also stop people reading this code from
+wondering if they're looking at a bug...
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+Signed-off-by: Martin Murray <murrayma@citi.umich.edu>
+Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ arch/i386/kernel/e820.c |   29 ++++++++++++++++++-----------
+ 1 file changed, 18 insertions(+), 11 deletions(-)
+
+Index: linux/arch/i386/kernel/e820.c
+===================================================================
+--- linux.orig/arch/i386/kernel/e820.c
++++ linux/arch/i386/kernel/e820.c
+@@ -161,26 +161,27 @@ static struct resource standard_io_resou
+ 
+ static int __init romsignature(const unsigned char *rom)
+ {
++	const unsigned short * const ptr = (const unsigned short *)rom;
+ 	unsigned short sig;
+ 
+-	return probe_kernel_address((const unsigned short *)rom, sig) == 0 &&
+-	       sig == ROMSIGNATURE;
++	return probe_kernel_address(ptr, sig) == 0 && sig == ROMSIGNATURE;
+ }
+ 
+-static int __init romchecksum(unsigned char *rom, unsigned long length)
++static int __init romchecksum(const unsigned char *rom, unsigned long length)
+ {
+-	unsigned char sum;
++	unsigned char sum, c;
+ 
+-	for (sum = 0; length; length--)
+-		sum += *rom++;
+-	return sum == 0;
++	for (sum = 0; length && probe_kernel_address(rom++, c) == 0; length--)
++		sum += c;
++	return !length && !sum;
+ }
+ 
+ static void __init probe_roms(void)
+ {
++	const unsigned char *rom;
+ 	unsigned long start, length, upper;
+-	unsigned char *rom;
+-	int	      i;
++	unsigned char c;
++	int i;
+ 
+ 	/* video rom */
+ 	upper = adapter_rom_resources[0].start;
+@@ -191,8 +192,11 @@ static void __init probe_roms(void)
+ 
+ 		video_rom_resource.start = start;
+ 
++		if (probe_kernel_address(rom + 2, c) != 0)
++			continue;
++
+ 		/* 0 < length <= 0x7f * 512, historically */
+-		length = rom[2] * 512;
++		length = c * 512;
+ 
+ 		/* if checksum okay, trust length byte */
+ 		if (length && romchecksum(rom, length))
+@@ -226,8 +230,11 @@ static void __init probe_roms(void)
+ 		if (!romsignature(rom))
+ 			continue;
+ 
++		if (probe_kernel_address(rom + 2, c) != 0)
++			continue;
++
+ 		/* 0 < length <= 0x7f * 512, historically */
+-		length = rom[2] * 512;
++		length = c * 512;
+ 
+ 		/* but accept any length that fits if checksum okay */
+ 		if (!length || start + length > upper || !romchecksum(rom, length))
