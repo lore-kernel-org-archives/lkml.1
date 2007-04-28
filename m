@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163339AbXD1R7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163366AbXD1R7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163339AbXD1R7p (ORCPT <rfc822;w@1wt.eu>);
+	id S1163366AbXD1R7p (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 28 Apr 2007 13:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163340AbXD1R7Z
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163339AbXD1R70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:59:25 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38957 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 13:59:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38975 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163339AbXD1R64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:58:56 -0400
+	id S1163342AbXD1R66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:58:58 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070428758.455116000@suse.de>
 In-Reply-To: <20070428758.455116000@suse.de>
 To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
        patches@x86-64.org
-Subject: [PATCH] [3/22] x86_64: Kill temp boot pmds
-Message-Id: <20070428175849.AD7B5151F0@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:58:49 +0200 (CEST)
+Subject: [PATCH] [10/22] x86_64: Get rid of dead code in suspend resume
+Message-Id: <20070428175857.2E4C4151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:58:57 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -24,27 +24,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Vivek Goyal <vgoyal@in.ibm.com>
 
 
-Early in the boot process we need the ability to set
-up temporary mappings, before our normal mechanisms are
-initialized.  Currently this is used to map pages that
-are part of the page tables we are building and pages
-during the dmi scan.
+o Get rid of dead code in wakeup.S
 
-The core problem is that we are using the user portion of
-the page tables to implement this.  Which means that while
-this mechanism is active we cannot catch NULL pointer dereferences
-and we deviate from the normal ways of handling things.
+o We never restore from saved_gdt, saved_idt, saved_ltd, saved_tss, saved_cr3,
+  saved_cr4, saved_cr0, real_save_gdt, saved_efer, saved_efer2. Get rid
+  of of associated code.
 
-In this patch I modify early_ioremap to map pages into
-the kernel portion of address space, roughly where
-we will later put modules, and I make the discovery of
-which addresses we can use dynamic which removes all
-kinds of static limits and remove the dependencies
-on implementation details between different parts of the code.
-
-Now alloc_low_page() and unmap_low_page() use 
-early_iomap() and early_iounmap() to allocate/map and 
-unmap a page.
+o Get rid of bogus_magic, bogus_31_magic and bogus_magic2. No longer being
+  used.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
@@ -52,197 +39,112 @@ Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- arch/x86_64/kernel/head.S |    3 -
- arch/x86_64/mm/init.c     |  100 ++++++++++++++++++++--------------------------
- 2 files changed, 45 insertions(+), 58 deletions(-)
+ arch/x86_64/kernel/acpi/wakeup.S |   57 ---------------------------------------
+ 1 file changed, 1 insertion(+), 56 deletions(-)
 
-Index: linux/arch/x86_64/kernel/head.S
+Index: linux/arch/x86_64/kernel/acpi/wakeup.S
 ===================================================================
---- linux.orig/arch/x86_64/kernel/head.S
-+++ linux/arch/x86_64/kernel/head.S
-@@ -288,9 +288,6 @@ NEXT_PAGE(level2_ident_pgt)
- 	.quad	i << 21 | 0x083
- 	i = i + 1
- 	.endr
--	/* Temporary mappings for the super early allocator in arch/x86_64/mm/init.c */
--	.globl temp_boot_pmds
--temp_boot_pmds:
- 	.fill	492,8,0
+--- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
++++ linux/arch/x86_64/kernel/acpi/wakeup.S
+@@ -258,8 +258,6 @@ gdt_48a:
+ 	.word	0, 0				# gdt base (filled in later)
  	
- NEXT_PAGE(level2_kernel_pgt)
-Index: linux/arch/x86_64/mm/init.c
-===================================================================
---- linux.orig/arch/x86_64/mm/init.c
-+++ linux/arch/x86_64/mm/init.c
-@@ -167,23 +167,9 @@ __set_fixmap (enum fixed_addresses idx, 
+ 	
+-real_save_gdt:	.word 0
+-		.quad 0
+ real_magic:	.quad 0
+ video_mode:	.quad 0
+ video_flags:	.quad 0
+@@ -272,10 +270,6 @@ bogus_32_magic:
+ 	movb	$0xb3,%al	;  outb %al,$0x80
+ 	jmp bogus_32_magic
  
- unsigned long __initdata table_start, table_end; 
- 
--extern pmd_t temp_boot_pmds[]; 
+-bogus_31_magic:
+-	movb	$0xb1,%al	;  outb %al,$0x80
+-	jmp bogus_31_magic
 -
--static  struct temp_map { 
--	pmd_t *pmd;
--	void  *address; 
--	int    allocated; 
--} temp_mappings[] __initdata = { 
--	{ &temp_boot_pmds[0], (void *)(40UL * 1024 * 1024) },
--	{ &temp_boot_pmds[1], (void *)(42UL * 1024 * 1024) }, 
--	{}
--}; 
+ bogus_cpu:
+ 	movb	$0xbc,%al	;  outb %al,$0x80
+ 	jmp bogus_cpu
+@@ -346,16 +340,6 @@ check_vesaa:
+ 
+ _setbada: jmp setbada
+ 
+-	.code64
+-bogus_magic:
+-	movw	$0x0e00 + 'B', %ds:(0xb8018)
+-	jmp bogus_magic
 -
--static __meminit void *alloc_low_page(int *index, unsigned long *phys)
-+static __meminit void *alloc_low_page(unsigned long *phys)
- { 
--	struct temp_map *ti;
--	int i; 
--	unsigned long pfn = table_end++, paddr; 
-+	unsigned long pfn = table_end++;
- 	void *adr;
- 
- 	if (after_bootmem) {
-@@ -194,57 +180,63 @@ static __meminit void *alloc_low_page(in
- 
- 	if (pfn >= end_pfn) 
- 		panic("alloc_low_page: ran out of memory"); 
--	for (i = 0; temp_mappings[i].allocated; i++) {
--		if (!temp_mappings[i].pmd) 
--			panic("alloc_low_page: ran out of temp mappings"); 
--	} 
--	ti = &temp_mappings[i];
--	paddr = (pfn << PAGE_SHIFT) & PMD_MASK; 
--	set_pmd(ti->pmd, __pmd(paddr | _KERNPG_TABLE | _PAGE_PSE)); 
--	ti->allocated = 1; 
--	__flush_tlb(); 	       
--	adr = ti->address + ((pfn << PAGE_SHIFT) & ~PMD_MASK); 
-+
-+	adr = early_ioremap(pfn * PAGE_SIZE, PAGE_SIZE);
- 	memset(adr, 0, PAGE_SIZE);
--	*index = i; 
--	*phys  = pfn * PAGE_SIZE;  
--	return adr; 
--} 
-+	*phys  = pfn * PAGE_SIZE;
-+	return adr;
-+}
- 
--static __meminit void unmap_low_page(int i)
-+static __meminit void unmap_low_page(void *adr)
- { 
--	struct temp_map *ti;
- 
- 	if (after_bootmem)
- 		return;
- 
--	ti = &temp_mappings[i];
--	set_pmd(ti->pmd, __pmd(0));
--	ti->allocated = 0; 
-+	early_iounmap(adr, PAGE_SIZE);
- } 
- 
- /* Must run before zap_low_mappings */
- __init void *early_ioremap(unsigned long addr, unsigned long size)
- {
--	unsigned long map = round_down(addr, LARGE_PAGE_SIZE); 
+-bogus_magic2:
+-	movw	$0x0e00 + '2', %ds:(0xb8018)
+-	jmp bogus_magic2
+-	
 -
--	/* actually usually some more */
--	if (size >= LARGE_PAGE_SIZE) { 
--		return NULL;
-+	unsigned long vaddr;
-+	pmd_t *pmd, *last_pmd;
-+	int i, pmds;
-+
-+	pmds = ((addr & ~PMD_MASK) + size + ~PMD_MASK) / PMD_SIZE;
-+	vaddr = __START_KERNEL_map;
-+	pmd = level2_kernel_pgt;
-+	last_pmd = level2_kernel_pgt + PTRS_PER_PMD - 1;
-+	for (; pmd <= last_pmd; pmd++, vaddr += PMD_SIZE) {
-+		for (i = 0; i < pmds; i++) {
-+			if (pmd_present(pmd[i]))
-+				goto next;
-+		}
-+		vaddr += addr & ~PMD_MASK;
-+		addr &= PMD_MASK;
-+		for (i = 0; i < pmds; i++, addr += PMD_SIZE)
-+			set_pmd(pmd + i,__pmd(addr | _KERNPG_TABLE | _PAGE_PSE));
-+		__flush_tlb();
-+		return (void *)vaddr;
-+	next:
-+		;
- 	}
--	set_pmd(temp_mappings[0].pmd,  __pmd(map | _KERNPG_TABLE | _PAGE_PSE));
--	map += LARGE_PAGE_SIZE;
--	set_pmd(temp_mappings[1].pmd,  __pmd(map | _KERNPG_TABLE | _PAGE_PSE));
--	__flush_tlb();
--	return temp_mappings[0].address + (addr & (LARGE_PAGE_SIZE-1));
-+	printk("early_ioremap(0x%lx, %lu) failed\n", addr, size);
-+	return NULL;
- }
+ wakeup_stack_begin:	# Stack grows down
  
- /* To avoid virtual aliases later */
- __init void early_iounmap(void *addr, unsigned long size)
- {
--	if ((void *)round_down((unsigned long)addr, LARGE_PAGE_SIZE) != temp_mappings[0].address)
--		printk("early_iounmap: bad address %p\n", addr);
--	set_pmd(temp_mappings[0].pmd, __pmd(0));
--	set_pmd(temp_mappings[1].pmd, __pmd(0));
-+	unsigned long vaddr;
-+	pmd_t *pmd;
-+	int i, pmds;
-+
-+	vaddr = (unsigned long)addr;
-+	pmds = ((vaddr & ~PMD_MASK) + size + ~PMD_MASK) / PMD_SIZE;
-+	pmd = level2_kernel_pgt + pmd_index(vaddr);
-+	for (i = 0; i < pmds; i++)
-+		pmd_clear(pmd + i);
- 	__flush_tlb();
- }
+ .org	0xff0
+@@ -373,28 +357,11 @@ ENTRY(wakeup_end)
+ #
+ # Returned address is location of code in low memory (past data and stack)
+ #
++	.code64
+ ENTRY(acpi_copy_wakeup_routine)
+ 	pushq	%rax
+-	pushq	%rcx
+ 	pushq	%rdx
  
-@@ -289,7 +281,6 @@ static void __meminit phys_pud_init(pud_
+-	sgdt	saved_gdt
+-	sidt	saved_idt
+-	sldt	saved_ldt
+-	str	saved_tss
+-
+-	movq    %cr3, %rdx
+-	movq    %rdx, saved_cr3
+-	movq    %cr4, %rdx
+-	movq    %rdx, saved_cr4
+-	movq	%cr0, %rdx
+-	movq	%rdx, saved_cr0
+-	sgdt    real_save_gdt - wakeup_start (,%rdi)
+-	movl	$MSR_EFER, %ecx
+-	rdmsr
+-	movl	%eax, saved_efer
+-	movl	%edx, saved_efer2
+-
+ 	movl	saved_video_mode, %edx
+ 	movl	%edx, video_mode - wakeup_start (,%rdi)
+ 	movl	acpi_video_flags, %edx
+@@ -407,17 +374,8 @@ ENTRY(acpi_copy_wakeup_routine)
+ 	cmpl	$0x9abcdef0, %eax
+ 	jne	bogus_32_magic
  
+-	# make sure %cr4 is set correctly (features, etc)
+-	movl	saved_cr4 - __START_KERNEL_map, %eax
+-	movq	%rax, %cr4
+-
+-	movl	saved_cr0 - __START_KERNEL_map, %eax
+-	movq	%rax, %cr0
+-	jmp	1f		# Flush pipelines
+-1:
+ 	# restore the regs we used
+ 	popq	%rdx
+-	popq	%rcx
+ 	popq	%rax
+ ENTRY(do_suspend_lowlevel_s4bios)
+ 	ret
+@@ -512,16 +470,3 @@ ENTRY(saved_eip)	.quad	0
+ ENTRY(saved_esp)	.quad	0
  
- 	for (; i < PTRS_PER_PUD; i++, addr = (addr & PUD_MASK) + PUD_SIZE ) {
--		int map; 
- 		unsigned long pmd_phys;
- 		pud_t *pud = pud_page + pud_index(addr);
- 		pmd_t *pmd;
-@@ -307,12 +298,12 @@ static void __meminit phys_pud_init(pud_
- 			continue;
- 		}
- 
--		pmd = alloc_low_page(&map, &pmd_phys);
-+		pmd = alloc_low_page(&pmd_phys);
- 		spin_lock(&init_mm.page_table_lock);
- 		set_pud(pud, __pud(pmd_phys | _KERNPG_TABLE));
- 		phys_pmd_init(pmd, addr, end);
- 		spin_unlock(&init_mm.page_table_lock);
--		unmap_low_page(map);
-+		unmap_low_page(pmd);
- 	}
- 	__flush_tlb();
- } 
-@@ -364,7 +355,6 @@ void __meminit init_memory_mapping(unsig
- 	end = (unsigned long)__va(end);
- 
- 	for (; start < end; start = next) {
--		int map;
- 		unsigned long pud_phys; 
- 		pgd_t *pgd = pgd_offset_k(start);
- 		pud_t *pud;
-@@ -372,7 +362,7 @@ void __meminit init_memory_mapping(unsig
- 		if (after_bootmem)
- 			pud = pud_offset(pgd, start & PGDIR_MASK);
- 		else
--			pud = alloc_low_page(&map, &pud_phys);
-+			pud = alloc_low_page(&pud_phys);
- 
- 		next = start + PGDIR_SIZE;
- 		if (next > end) 
-@@ -380,7 +370,7 @@ void __meminit init_memory_mapping(unsig
- 		phys_pud_init(pud, __pa(start), __pa(next));
- 		if (!after_bootmem)
- 			set_pgd(pgd_offset_k(start), mk_kernel_pgd(pud_phys));
--		unmap_low_page(map);   
-+		unmap_low_page(pud);
- 	} 
- 
- 	if (!after_bootmem)
+ ENTRY(saved_magic)	.quad	0
+-
+-ALIGN
+-# saved registers
+-saved_gdt:	.quad	0,0
+-saved_idt:	.quad	0,0
+-saved_ldt:	.quad	0
+-saved_tss:	.quad	0
+-
+-saved_cr0:	.quad 0
+-saved_cr3:	.quad 0
+-saved_cr4:	.quad 0
+-saved_efer:	.quad 0
+-saved_efer2:	.quad 0
