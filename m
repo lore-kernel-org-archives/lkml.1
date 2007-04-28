@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161148AbXD1F6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031112AbXD1F7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161148AbXD1F6a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 01:58:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161143AbXD1F6a
+	id S1031112AbXD1F7J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 01:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031111AbXD1F7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 01:58:30 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:9537 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161137AbXD1F62 (ORCPT
+	Sat, 28 Apr 2007 01:59:09 -0400
+Received: from smtp111.plus.mail.re2.yahoo.com ([206.190.53.36]:37800 "HELO
+	smtp111.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1031107AbXD1F7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 01:58:28 -0400
-X-IronPort-AV: i="4.14,464,1170662400"; 
-   d="scan'208"; a="141745438:sNHT45121167"
+	Sat, 28 Apr 2007 01:59:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=jb4opM7mNy2bpwP8Hd6/ElbIKsQxM51/Cp3Srh+st6tJRAVVF31ANKVq/g4o1Sk3OP42vHcQF4hArrpOxfPyTtJ3FzPINQYQGGpvr5Jh9zoVa5KvikgL7TIdwQ9aXrNRtRhctE0mYTpeQ6xun2QnuHzW7QOkqZ7aRhI/QnrQwOQ=  ;
+X-YMail-OSG: dBvz4vsVM1k2TnTFjFzlt_vOkKpxdJimQ8Vp1OmQCxrg4DvMOJK8BXdz0_qs7WM.PuClFwFVDA--
+Date: Sat, 28 Apr 2007 07:57:40 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Jones <davej@redhat.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-X-Message-Flag: Warning: May contain useful information
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-	<20070425143011.57247c1d.akpm@linux-foundation.org>
-	<20070425172447.1576c399.akpm@linux-foundation.org>
-	<20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com>
-	<20070425200207.77a2721a.akpm@linux-foundation.org>
-	<20070428030805.GA13331@redhat.com>
-	<20070427221803.2a117c23.akpm@linux-foundation.org>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 27 Apr 2007 22:58:26 -0700
-In-Reply-To: <20070427221803.2a117c23.akpm@linux-foundation.org> (Andrew Morton's message of "Fri, 27 Apr 2007 22:18:03 -0700")
-Message-ID: <adak5vxm459.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized spinlock. was: Re: 2.6.21-rc7-mm2
+Message-ID: <20070428055740.GA4957@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070426182519.GA4532@gollum.tnic> <20070427172230.94b82829.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 28 Apr 2007 05:58:27.0024 (UTC) FILETIME=[3D342D00:01C7895A]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070427172230.94b82829.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Use WARN_ON & Recovery code rather than BUG() and BUG_ON()
- > 23286:+ BUILD_BUG_ON(BCM43xx_SEC_KEYSIZE < ETH_ALEN);
+On Fri, Apr 27, 2007 at 05:22:30PM -0700, Andrew Morton wrote:
+> On Thu, 26 Apr 2007 20:25:19 +0200
+> Borislav Petkov <bbpetkov@yahoo.de> wrote:
+> 
+> > 
+> > Remove build warning mm/memory.c:1491: warning: 'ptl' may be used uninitialized in this function.
+> > The spinlock pointer is assigned to null since it gets overwritten right away in
+> > pte_alloc_map_lock().
+> > 
+> > Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+> > ---
+> > 
+> > Index: linux-mm/mm/memory.c
+> > ===================================================================
+> > --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
+> > +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
+> > @@ -1488,7 +1488,7 @@
+> >         pte_t *pte;
+> >         int err;
+> >         struct page *pmd_page;
+> > -       spinlock_t *ptl;
+> > +       spinlock_t *ptl = NULL;
+> > 
+> >         pte = (mm == &init_mm) ?
+> >                 pte_alloc_kernel(pmd, addr) :
+> > 
+> 
+> yes, I've been staring unhappily at this for some time.
+> 
+> Your change adds seven bytes of text to this function for no runtime
+> benefit, just to fix a build-time warning.  It's a general problem.
+> 
+> 
+> Often we just leave the warning in place and curse gcc each time it flies
+> past.  Sometimes the code can be restructured in a sensible fashion to
+> avoid the warning; often it cannot.
+> 
+> But I don't think I want to put up with a warning coming out of core MM all
+> the time so let's go with the following silliness which adds no additional
+> runtime cost.
+> 
+> --- a/mm/memory.c~add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix
+> +++ a/mm/memory.c
+> @@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
+>  	pte_t *pte;
+>  	int err;
+>  	struct page *pmd_page;
+> -	spinlock_t *ptl;
+> +	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
+>  
+>  	pte = (mm == &init_mm) ?
+>  		pte_alloc_kernel(pmd, addr) :
+> _
 
-BTW, I missed this before -- BUILD_BUG_ON() is actually far better
-than WARN_ON(), I think.
+Yeah,
+I saw in other places that usually a NULL/0 is assigned to such a type of pointer. 
+However, writing code which looks pretty silly just to shut up gcc is pretty
+senseless, IMHO. Isn't there such a tweak in gcc to say that this pointer is
+going to be assigned to later on, so don't issue a warning. Something like 
 
-Maybe something like this?  (Although someone who knows perl probably
-has a better way)
+__attribute__ __address_will_be_overwritten_so_don't_bother_warning_me__?
 
----
-Don't tell people to change BUILD_BUG_ON() to WARN_ON().
+/me going to read gcc docs...
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-
---- checkpatch.pl.orig	2007-04-27 20:30:34.000000000 -0700
-+++ checkpatch.pl	2007-04-27 22:54:42.000000000 -0700
-@@ -123,7 +123,7 @@
- 	$warnings += search(qr/kernel_thread\(/, "Use kthread abstraction instead of kernel_thread()\n");
- 	$warnings += search(qr/typedef/, "Do not add new typedefs.\n");
- 	$warnings += search(qr/uint32_t/, "Incorrect type usage for kernel code. Use __u32 etc.\n");
--	$warnings += search(qr/BUG(_ON)\(/, "Use WARN_ON & Recovery code rather than BUG() and BUG_ON()\n");
-+	$warnings += search(qr/(?<!BUILD_)BUG(_ON)\(/, "Use WARN_ON & Recovery code rather than BUG() and BUG_ON()\n");
- 
- 	# pedantic: Noisy regexps that aren't really fatal.
- 	if ($opt_pedantic) {
+-- 
+Regards/Gruß,
+    Boris.
