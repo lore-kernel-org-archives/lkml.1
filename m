@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163487AbXD1SbN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163499AbXD1SdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163487AbXD1SbN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:31:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163490AbXD1SbM
+	id S1163499AbXD1SdP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163501AbXD1SdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:31:12 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:41833 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1163487AbXD1SbJ (ORCPT
+	Sat, 28 Apr 2007 14:33:14 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47813 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1163499AbXD1SdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 14:31:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:from:message-id:to:cc:subject:date:mime-version:
-	content-type:content-transfer-encoding:x-mailer:in-reply-to:x-mimeole:thread-index;
-	b=gIjLyu5gkHEtvaklzK3VHEaWCia48Uc1bWZrLg5Gq08Ndjuw+aL2khwtHCBjNUsxw
-	xsnSciMSUiyYxcxt3/i+w==
-From: Rohit Seth <rohitseth@google.com>
-Message-Id: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
-To: "'Nick Piggin'" <nickpiggin@yahoo.com.au>,
-       "'Hugh Dickins'" <hugh@veritas.com>
-Cc: "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, <linux-ia64@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: RE: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-Date: Sat, 28 Apr 2007 11:30:40 -0700
+	Sat, 28 Apr 2007 14:33:13 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix PSE pagetable construction
+References: <4632AE54.7030200@goop.org> <200704281229.48597.ak@suse.de>
+	<m1r6q4e7kk.fsf@ebiederm.dsl.xmission.com>
+	<200704282003.30118.ak@suse.de>
+Date: Sat, 28 Apr 2007 12:32:01 -0600
+In-Reply-To: <200704282003.30118.ak@suse.de> (Andi Kleen's message of "Sat, 28
+	Apr 2007 20:03:29 +0200")
+Message-ID: <m1mz0se4f2.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook, Build 11.0.6353
-In-Reply-To: <4632E3B0.6050101@yahoo.com.au>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Thread-Index: AceJWwJ7OfGpU9drRvC+mKpMTBDgKwAZrNNA
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Nick, 
+Andi Kleen <ak@suse.de> writes:
 
------Original Message-----
-From: Nick Piggin [mailto:nickpiggin@yahoo.com.au] 
-Sent: Friday, April 27, 2007 11:03 PM
-To: Hugh Dickins
-Cc: rohitseth@google.com; Mike Stroyan; Andrew Morton; Luck, Tony;
-linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+> On Saturday 28 April 2007 19:23:55 Eric W. Biederman wrote:
+>> Andi Kleen <ak@suse.de> writes:
+>> 
+>> >> My preference would be for whoever had:
+>> >> paravirt_ops-hooks-to-set-up-initial-pagetable.patch
+>> >
+>> > That would be very messy because there are many followup dependencies.
+>> >
+>> > But once we have a good fix aggreed by everybody I can merge it into the 
+>> > initial patch then.
+>> 
+>> I don't see Xen patches merged yet in your tree yet.
+>
+> Hmm, I thought you were talking about paravirt-initial-pagetable ?
 
-Hugh Dickins wrote:
-> On Sat, 28 Apr 2007, Nick Piggin wrote:
-> 
->>OIC, you need a virtual address to evict the icache, so you can't 
->>flush at flush_dcache time? Or does ia64 have an instruction to flush 
->>the whole icache? (it would be worth testing, to see how much 
->>performance suffers).
-> 
-> 
-> I'm puzzled by that remark: the ia64 flush_icache_range always has a 
-> virtual address, it uses the kernel virtual address; it takes no 
-> interest in whether there's a user virtual address.
+Yes that is the patch with problems.
 
->I _think_ what it is doing is actually flushing dcache lines dirtied 
->via the kernel virtual address (yes, I think flush_icache
-> in lazy_mmu_prot_update is actually just flushing the dcache, but 
->I could be wrong? [*]).
+> That one is in my tree already. The Xen patches that are still outstanding
+> iirc are all addons patches, as they don't impact existing code paths anymore.
 
-It is invalidating any entries (containing same physical address) in both I
-and D caches.  Any dirty lines in D cache are written back to memory before
-getting invalidated (ofcourse).
+Ok.
 
-> There are supposedly no icache lines at that point[**]:
+Right now Xen is the only paravirtualization solution that wants to make
+page tables read only.
 
-For this bug to trigger there has to be a (stale) entry in icache containing
-the old contents of a page that just got updated by kernel as explicit
-copying of data (DMAs are coherent on ia64, meaning if a device were to
-write to memory then architecture guarnatees that both I and D caches are
-invalidated).
+The current Xen methodology is to setup the identity mapping with the
+initial page table set to read-only, before calling paging_init().
+kernel_physical_mapping_init was modified to skip pages which are
+already in the page table.
 
-> the bug fix at the start of this thread 
->is due to icache lines becoming present before the flush.
+However in other cases this causes us to fail to setup important bits
+like PSE and NX where we want them on the page tables.  So for the
+leaf pages we need to continue setting things at least on real hardware.
 
-For this mail thread, the old contents were not flushed out of icache when
-the old mapping was removed.  And they were still present when the free page
-got mapped again.
+The current plan was that Jeremy was going to go and modify the
+Xen set_pte early in boot, to preserve to mask off _PAGE_RW in
+early boot for pages that don't currently have _PAGE_RW set.
 
-Cheers,
--rohit
+So the fix is two parts.
+- Part one unconditionally set the page table entries for
+  4K and pse pages.
+- Fix the Xen set_pte.
 
+Short of making the identity mapping setup paravirt specific 
+I don't know what we can do.
+
+Eric
