@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbXD1NZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756188AbXD1NiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbXD1NZr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbXD1NZq
+	id S1756188AbXD1NiJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 09:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756137AbXD1NiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:25:46 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45861 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754631AbXD1NZp (ORCPT
+	Sat, 28 Apr 2007 09:38:09 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:40635 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756188AbXD1NiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:25:45 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Sat, 28 Apr 2007 09:25:49 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: random thoughts on DEPRECATED and OBSOLETE
-Message-ID: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
+	Sat, 28 Apr 2007 09:38:07 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: Back to the future.
+Date: Sat, 28 Apr 2007 15:37:52 +0200
+User-Agent: KMail/1.9.1
+Cc: "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704272107.28565.oliver@neukum.org> <84144f020704280222s42ff99ddg3eea3cb353c8882e@mail.gmail.com>
+In-Reply-To: <84144f020704280222s42ff99ddg3eea3cb353c8882e@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704281537.53479.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Samstag, 28. April 2007 11:22 schrieb Pekka Enberg:
+> Hi Oliver,
+> 
+> Am Freitag, 27. April 2007 12:12 schrieb Pekka J Enberg:
+> > > The problem with writing in the kernel is obvious: we need to add new code
+> > > to the kernel for compression, encryption, and userspace interaction
+> > > (graphical progress bar) that are important for user experience.
+> 
+> On 4/27/07, Oliver Neukum <oliver@neukum.org> wrote:
+> > The kernel can already do compression and encryption.
+> 
+> Yes, if we all could agree on _which_ compression and encryption
 
-http://fsdev.net/wiki/index.php?title=Maturity_levels
+Any of those available in the kernel. Where's the problem?
 
-rday
+> algorithm(s) we want to use. It goes beyond that too, where do you
+> want to save the image? In the swap device or a regular file? And
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+A swap device is doubtlessly easier. But isn't the problem of using
+a swap file already fixed? The writeout seems the easiest part of
+hibernation.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+> don't forget about debuggability either. It's faster to do a
+> snapshot/resume without shutdown/restart in the middle or just do a
+> snapshot, and examine its contents.
+
+Then use a "fake reboot" option and save the image to a ramdisk.
+It isn't that hard. You must be able to survive that, as io errors during
+write out are possible.
+
+	Regards
+		Oliver
