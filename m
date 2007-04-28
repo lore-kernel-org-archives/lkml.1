@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756295AbXD1Nlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbXD1Nlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756295AbXD1Nlk (ORCPT <rfc822;w@1wt.eu>);
+	id S1756301AbXD1Nlk (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 28 Apr 2007 09:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbXD1NlB
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbXD1NlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:41:01 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:45466 "EHLO
+	Sat, 28 Apr 2007 09:41:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:45359 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030766AbXD1NkC (ORCPT
+	with ESMTP id S1030772AbXD1NkG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:40:02 -0400
+	Sat, 28 Apr 2007 09:40:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=h0FxaSIoSPy5gn/5Fic4fwVpxtWbVA/KcAzZkDJaWiitaQLP5A1CbvTfwUkVB8qnU7BYN/YB7XSWn2DbWAHG2EKRENVmHyvDGGhSMy4Ye0uAgCegMwDANj+4p9Ognhrtf2vSVGPXY/xasdElKpHb6vNGNMoAg3dKFlIAtvdRAX8=
+        b=LUFEllgzaE6Vq6FnbUIrBtvakIc3Z8XNId6WhCecYWuLtZeENittRl1AWcZNn+xKBjLFXI53UkY0n4G8Ah1tZqeZ6aeEF9p4peQbFu9l+Hyftz17tR5ZXJxM7IxsGhMVD0Xqx6olPJF6Vqz5WLJE7GLGKEGvHCw4wKhGudFfGBc=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 17/21] sysfs: implement sysfs_dirent active reference and immediate disconnect
+Subject: [PATCH 21/21] sysfs: reimplement syfs_drop_dentry()
 In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Sat, 28 Apr 2007 22:39:42 +0900
-Message-Id: <11777675823999-git-send-email-htejun@gmail.com>
+Date: Sat, 28 Apr 2007 22:39:43 +0900
+Message-Id: <1177767582707-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -32,736 +32,319 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] sysfs: implement sysfs_dirent active reference and immediate disconnect
+There are two races around sysfs_drop_dentry().
 
-Opening a sysfs node references its associated kobject, so userland
-can arbitrarily prolong lifetime of a kobject which complicates
-lifetime rules in drivers.  This patch implements active reference and
-makes the association between kobject and sysfs immediately breakable.
+### race 1
 
-Now each sysfs_dirent has two reference counts - s_count and s_active.
-s_count is a regular reference count which guarantees that the
-containing sysfs_dirent is accessible.  As long as s_count reference
-is held, all sysfs internal fields in sysfs_dirent are accessible
-including s_parent and s_name.
+   http://article.gmane.org/gmane.linux.kernel/516210
 
-The newly added s_active is active reference count.  This is acquired
-by invoking sysfs_get_active() and it's the caller's responsibility to
-ensure sysfs_dirent itself is accessible (should be holding s_count
-one way or the other).  Dereferencing sysfs_dirent to access objects
-out of sysfs proper requires active reference.  This includes access
-to the associated kobjects, attributes and ops.
+   Unable to handle kernel NULL pointer dereference at 000000000000004c RIP:
+    [<ffffffff802935b4>] simple_unlink+0x14/0x5c
+   ...
+   Call Trace:
+    [<ffffffff802b31ee>] sysfs_hash_and_remove+0x7c/0xef
+    [<ffffffff803a0c1a>] device_del+0x66/0x20a
+    [<ffffffff804d2d7e>] netdev_run_todo+0xc6/0x225
+    [<ffffffff8800d025>] :dummy:dummy_free_one+0x1c/0x2d
+    [<ffffffff8800d0a2>] :dummy:dummy_cleanup_module+0xe/0x23
+    [<ffffffff8024ceed>] sys_delete_module+0x1b1/0x1e0
+    [<ffffffff803437e7>] __up_write+0x21/0x10e
+    [<ffffffff80209bbe>] system_call+0x7e/0x83
 
-The active references can be drained and denied by calling
-sysfs_deactivate().  All active sysfs_dirents must be deactivated
-after deletion but before the default reference is dropped.  This
-enables immediate disconnect of sysfs nodes.  Once a sysfs_dirent is
-deleted, it won't access any entity external to sysfs proper.
+   This is race between dcache shrinking triggered by umount and sysfs
+   deletion.  It seems to be introduced when dentries for attr and
+   symlink nodes are made unpinned.  sd->s_dentry clearing is done
+   without synchronization and sysfs_drop_entry() ends up deleting
+   already deleted dentry (dentry->inode is NULL).
 
-Because attr/bin_attr ops access both the node itself and its parent
-for kobject, they need to hold active references to both.
-sysfs_get/put_active_two() helpers are provided to help grabbing both
-references.  Parent's is acquired first and released last.
+### race 2
 
-Unlike other operations, mmapped area lingers on after mmap() is
-finished and the module implement implementing it and kobj need to
-stay referenced till all the mapped pages are gone.  This is
-accomplished by holding one set of active references to the bin_attr
-and its parent if there have been any mmap during lifetime of an
-openfile.  The references are dropped when the openfile is released.
+    thread shrinking dcache		thread looking up sysfs entry
+   --------------------------------------------------------------------
+ 1. sysfs dentry for A is chosen as
+    victim.
+ 2. prune_one_dentry() drops the dentry
+    and calls dentry_iput().
+ 3. dentry_iput() unlinks d_alias and
+    releases spin locks.
+					4. looks up dentry for A which
+					   is not in dcache.
+					5. new dentry is created and
+					   sysfs_lookup() is invoked,
+					   which instantiates the dentry
+					   and set sd->s_dentry to it.
+ 6. sysfs_d_iput() is called.
+    BUG_ON(sd->s_dentry != dentry)
+    triggers and sd->s_dentry is
+    cleared.  You're screwed.
 
-This change makes sysfs lifetime rules independent from both kobject's
-and module's.  It not only fixes several race conditions caused by
-sysfs not holding onto the proper module when referencing kobject, but
-also helps fixing and simplifying lifetime management in driver model
-and drivers by taking sysfs out of the equation.
+Both races are caused by sd->s_dentry going out of sync.  This patch
+introduces sysfs_lock and protect sd->s_dentry with it so that...
 
-Please read the following message for more info.
+* sd->s_dentry always points to the dentry which is looked up most
+  recently.  This is guaranteed even when dentry_iput() on the
+  previous dentry overlaps with the lookup of the latest dentry.
 
-  http://article.gmane.org/gmane.linux.kernel/510293
+* While sysfs_lock is held, the value contained in sd->s_dentry is
+  valid.  If null, no dentry is associated with the sd.  If not null,
+  the dentry is accessible and is or used to be associated with the
+  sd.  Whether the dentry is alive or not can be checked by locking
+  dcache_lock and checking whether the dentry is positive.
+
+This change allows syfs_drop_dentry() to reliably determine the
+associated dentry and drop it.  This patch also converts remove_dir()
+which used to use a separate drop mechanism to use the same drop path.
+With this change, making directories reclaimable is much easier.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 ---
- fs/sysfs/bin.c   |   95 ++++++++++++++++++++++++++--------------
- fs/sysfs/dir.c   |   28 ++++++++++-
- fs/sysfs/file.c  |  130 +++++++++++++++++++++++++++++++----------------------
- fs/sysfs/inode.c |    8 +++-
- fs/sysfs/sysfs.h |  123 ++++++++++++++++++++++++++++++++++++++++++---------
- 5 files changed, 271 insertions(+), 113 deletions(-)
+ fs/sysfs/dir.c   |   39 +++++++++++++++---------
+ fs/sysfs/inode.c |   88 ++++++++++++++++++++++++++++++++++++++++++++----------
+ fs/sysfs/sysfs.h |    3 +-
+ 3 files changed, 98 insertions(+), 32 deletions(-)
 
-diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
-index 5dc47fe..618b8ae 100644
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -23,6 +23,7 @@
- struct bin_buffer {
- 	struct mutex	mutex;
- 	void		*buffer;
-+	int		mmapped;
- };
- 
- static int
-@@ -30,12 +31,20 @@ fill_read(struct dentry *dentry, char *buffer, loff_t off, size_t count)
- {
- 	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
--	struct kobject * kobj = to_kobj(dentry->d_parent);
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
-+	int rc;
-+
-+	/* need attr_sd for attr, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
- 
--	if (!attr->read)
--		return -EIO;
-+	rc = -EIO;
-+	if (attr->read)
-+		rc = attr->read(kobj, buffer, off, count);
- 
--	return attr->read(kobj, buffer, off, count);
-+	sysfs_put_active_two(attr_sd);
-+
-+	return rc;
- }
- 
- static ssize_t
-@@ -79,12 +88,20 @@ flush_write(struct dentry *dentry, char *buffer, loff_t offset, size_t count)
- {
- 	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
--	struct kobject *kobj = to_kobj(dentry->d_parent);
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
-+	int rc;
-+
-+	/* need attr_sd for attr, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
- 
--	if (!attr->write)
--		return -EIO;
-+	rc = -EIO;
-+	if (attr->write)
-+		rc = attr->write(kobj, buffer, offset, count);
- 
--	return attr->write(kobj, buffer, offset, count);
-+	sysfs_put_active_two(attr_sd);
-+
-+	return rc;
- }
- 
- static ssize_t write(struct file *file, const char __user *userbuf,
-@@ -124,14 +141,24 @@ static int mmap(struct file *file, struct vm_area_struct *vma)
- 	struct bin_buffer *bb = file->private_data;
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
--	struct kobject *kobj = to_kobj(file->f_path.dentry->d_parent);
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	int rc;
- 
--	if (!attr->mmap)
--		return -EINVAL;
--
- 	mutex_lock(&bb->mutex);
--	rc = attr->mmap(kobj, attr, vma);
-+
-+	/* need attr_sd for attr, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
-+
-+	rc = -EINVAL;
-+	if (attr->mmap)
-+		rc = attr->mmap(kobj, attr, vma);
-+
-+	if (rc == 0 && !bb->mmapped)
-+		bb->mmapped = 1;
-+	else
-+		sysfs_put_active_two(attr_sd);
-+
- 	mutex_unlock(&bb->mutex);
- 
- 	return rc;
-@@ -139,58 +166,60 @@ static int mmap(struct file *file, struct vm_area_struct *vma)
- 
- static int open(struct inode * inode, struct file * file)
- {
--	struct kobject *kobj = sysfs_get_kobject(file->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
- 	struct bin_buffer *bb = NULL;
--	int error = -EINVAL;
-+	int error;
- 
--	if (!kobj || !attr)
--		goto Done;
-+	/* need attr_sd for attr */
-+	if (!sysfs_get_active(attr_sd))
-+		return -ENODEV;
- 
--	/* Grab the module reference for this attribute if we have one */
-+	/* Grab the module reference for this attribute */
- 	error = -ENODEV;
--	if (!try_module_get(attr->attr.owner)) 
--		goto Done;
-+	if (!try_module_get(attr->attr.owner))
-+		goto err_sput;
- 
- 	error = -EACCES;
- 	if ((file->f_mode & FMODE_WRITE) && !(attr->write || attr->mmap))
--		goto Error;
-+		goto err_mput;
- 	if ((file->f_mode & FMODE_READ) && !(attr->read || attr->mmap))
--		goto Error;
-+		goto err_mput;
- 
- 	error = -ENOMEM;
- 	bb = kzalloc(sizeof(*bb), GFP_KERNEL);
- 	if (!bb)
--		goto Error;
-+		goto err_mput;
- 
- 	bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	if (!bb->buffer)
--		goto Error;
-+		goto err_mput;
- 
- 	mutex_init(&bb->mutex);
- 	file->private_data = bb;
- 
--	error = 0;
--	goto Done;
-+	/* open succeeded, put active reference and pin attr_sd */
-+	sysfs_put_active(attr_sd);
-+	sysfs_get(attr_sd);
-+	return 0;
- 
-- Error:
--	kfree(bb);
-+ err_mput:
- 	module_put(attr->attr.owner);
-- Done:
--	if (error)
--		kobject_put(kobj);
-+ err_sput:
-+	sysfs_put_active(attr_sd);
-+	kfree(bb);
- 	return error;
- }
- 
- static int release(struct inode * inode, struct file * file)
- {
--	struct kobject * kobj = to_kobj(file->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct bin_attribute *attr = attr_sd->s_elem.bin_attr.bin_attr;
- 	struct bin_buffer *bb = file->private_data;
- 
--	kobject_put(kobj);
-+	if (bb->mmapped)
-+		sysfs_put_active_two(attr_sd);
-+	sysfs_put(attr_sd);
- 	module_put(attr->attr.owner);
- 	kfree(bb->buffer);
- 	kfree(bb);
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 36d47d3..265042a 100644
+index 1a45a1d..bc11a26 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -52,6 +52,19 @@ void release_sysfs_dirent(struct sysfs_dirent * sd)
-  repeat:
- 	parent_sd = sd->s_parent;
+@@ -14,6 +14,7 @@
+ #include "sysfs.h"
  
-+	/* If @sd is being released after deletion, s_active is write
-+	 * locked.  If @sd is cursor for directory walk or being
-+	 * released prematurely, s_active has no reader or writer.
-+	 *
-+	 * sysfs_deactivate() lies to lockdep that s_active is
-+	 * unlocked immediately.  Lie one more time to cover the
-+	 * previous lie.
-+	 */
-+	if (!down_write_trylock(&sd->s_active))
-+		rwsem_acquire(&sd->s_active.dep_map,
-+			      SYSFS_S_ACTIVE_DEACTIVATE, 0, _RET_IP_);
-+	up_write(&sd->s_active);
+ DECLARE_RWSEM(sysfs_rename_sem);
++spinlock_t sysfs_lock = SPIN_LOCK_UNLOCKED;
+ spinlock_t kobj_sysfs_assoc_lock = SPIN_LOCK_UNLOCKED;
+ 
+ static spinlock_t sysfs_ino_lock = SPIN_LOCK_UNLOCKED;
+@@ -83,8 +84,19 @@ static void sysfs_d_iput(struct dentry * dentry, struct inode * inode)
+ 	struct sysfs_dirent * sd = dentry->d_fsdata;
+ 
+ 	if (sd) {
+-		BUG_ON(sd->s_dentry != dentry);
+-		sd->s_dentry = NULL;
++		/* sd->s_dentry is protected with sysfs_lock.  This
++		 * allows sysfs_drop_dentry() to dereference it.
++		 */
++		spin_lock(&sysfs_lock);
 +
- 	if (sd->s_type & SYSFS_KOBJ_LINK)
- 		sysfs_put(sd->s_elem.symlink.target_sd);
- 	if (sd->s_type & SYSFS_COPY_NAME)
-@@ -101,6 +114,7 @@ struct sysfs_dirent *sysfs_new_dirent(const char *name, umode_t mode, int type)
- 
- 	atomic_set(&sd->s_count, 1);
- 	atomic_set(&sd->s_event, 1);
-+	init_rwsem(&sd->s_active);
- 	INIT_LIST_HEAD(&sd->s_children);
- 	INIT_LIST_HEAD(&sd->s_sibling);
- 
-@@ -353,7 +367,6 @@ static void remove_dir(struct dentry * d)
- 	d_delete(d);
- 	sd = d->d_fsdata;
-  	list_del_init(&sd->s_sibling);
--	sysfs_put(sd);
- 	if (d->d_inode)
- 		simple_rmdir(parent->d_inode,d);
- 
-@@ -362,6 +375,9 @@ static void remove_dir(struct dentry * d)
- 
- 	mutex_unlock(&parent->d_inode->i_mutex);
- 	dput(parent);
++		/* The dentry might have been deleted or another
++		 * lookup could have happened updating sd->s_dentry to
++		 * point the new dentry.  Ignore if it isn't pointing
++		 * to this dentry.
++		 */
++		if (sd->s_dentry == dentry)
++			sd->s_dentry = NULL;
++		spin_unlock(&sysfs_lock);
+ 		sysfs_put(sd);
+ 	}
+ 	iput(inode);
+@@ -134,7 +146,12 @@ static void sysfs_attach_dentry(struct sysfs_dirent *sd, struct dentry *dentry)
+ {
+ 	dentry->d_op = &sysfs_dentry_ops;
+ 	dentry->d_fsdata = sysfs_get(sd);
 +
-+	sysfs_deactivate(sd);
-+	sysfs_put(sd);
++	/* protect sd->s_dentry against sysfs_d_iput */
++	spin_lock(&sysfs_lock);
+ 	sd->s_dentry = dentry;
++	spin_unlock(&sysfs_lock);
++
+ 	d_rehash(dentry);
  }
  
- void sysfs_remove_subdir(struct dentry * d)
-@@ -372,6 +388,7 @@ void sysfs_remove_subdir(struct dentry * d)
+@@ -355,22 +372,19 @@ const struct inode_operations sysfs_dir_inode_operations = {
  
- static void __sysfs_remove_dir(struct dentry *dentry)
+ static void remove_dir(struct dentry * d)
  {
-+	LIST_HEAD(removed);
+-	struct dentry * parent = dget(d->d_parent);
+-	struct sysfs_dirent * sd;
++	struct dentry *parent = d->d_parent;
++	struct sysfs_dirent *sd = d->d_fsdata;
+ 
+ 	mutex_lock(&parent->d_inode->i_mutex);
+-	d_delete(d);
+-	sd = d->d_fsdata;
++
+  	list_del_init(&sd->s_sibling);
+-	if (d->d_inode)
+-		simple_rmdir(parent->d_inode,d);
+ 
+ 	pr_debug(" o %s removing done (%d)\n",d->d_name.name,
+ 		 atomic_read(&d->d_count));
+ 
+ 	mutex_unlock(&parent->d_inode->i_mutex);
+-	dput(parent);
+ 
++	sysfs_drop_dentry(sd);
+ 	sysfs_deactivate(sd);
+ 	sysfs_put(sd);
+ }
+@@ -387,7 +401,6 @@ static void __sysfs_remove_dir(struct dentry *dentry)
  	struct sysfs_dirent * parent_sd;
  	struct sysfs_dirent * sd, * tmp;
  
-@@ -385,12 +402,17 @@ static void __sysfs_remove_dir(struct dentry *dentry)
- 	list_for_each_entry_safe(sd, tmp, &parent_sd->s_children, s_sibling) {
+-	dget(dentry);
+ 	if (!dentry)
+ 		return;
+ 
+@@ -398,21 +411,17 @@ static void __sysfs_remove_dir(struct dentry *dentry)
  		if (!sd->s_type || !(sd->s_type & SYSFS_NOT_PINNED))
  			continue;
--		list_del_init(&sd->s_sibling);
-+		list_move(&sd->s_sibling, &removed);
- 		sysfs_drop_dentry(sd, dentry);
--		sysfs_put(sd);
+ 		list_move(&sd->s_sibling, &removed);
+-		sysfs_drop_dentry(sd, dentry);
  	}
  	mutex_unlock(&dentry->d_inode->i_mutex);
  
-+	list_for_each_entry_safe(sd, tmp, &removed, s_sibling) {
-+		list_del_init(&sd->s_sibling);
-+		sysfs_deactivate(sd);
-+		sysfs_put(sd);
-+	}
-+
+ 	list_for_each_entry_safe(sd, tmp, &removed, s_sibling) {
+ 		list_del_init(&sd->s_sibling);
++		sysfs_drop_dentry(sd);
+ 		sysfs_deactivate(sd);
+ 		sysfs_put(sd);
+ 	}
+ 
  	remove_dir(dentry);
- 	/**
- 	 * Drop reference from dget() on entrance.
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index b52b4da..df0e0c0 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -88,8 +88,8 @@ remove_from_collection(struct sysfs_buffer *buffer, struct inode *node)
-  */
- static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer)
- {
--	struct sysfs_dirent * sd = dentry->d_fsdata;
--	struct kobject * kobj = to_kobj(dentry->d_parent);
-+	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	struct sysfs_ops * ops = buffer->ops;
- 	int ret = 0;
- 	ssize_t count;
-@@ -99,8 +99,15 @@ static int fill_read_buffer(struct dentry * dentry, struct sysfs_buffer * buffer
- 	if (!buffer->page)
- 		return -ENOMEM;
- 
--	buffer->event = atomic_read(&sd->s_event);
--	count = ops->show(kobj, sd->s_elem.attr.attr, buffer->page);
-+	/* need attr_sd for attr and ops, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
-+
-+	buffer->event = atomic_read(&attr_sd->s_event);
-+	count = ops->show(kobj, attr_sd->s_elem.attr.attr, buffer->page);
-+
-+	sysfs_put_active_two(attr_sd);
-+
- 	BUG_ON(count > (ssize_t)PAGE_SIZE);
- 	if (count >= 0) {
- 		buffer->needs_read_fill = 0;
-@@ -225,14 +232,23 @@ fill_write_buffer(struct sysfs_buffer * buffer, const char __user * buf, size_t
-  *	passing the buffer that we acquired in fill_write_buffer().
-  */
- 
--static int 
-+static int
- flush_write_buffer(struct dentry * dentry, struct sysfs_buffer * buffer, size_t count)
- {
- 	struct sysfs_dirent *attr_sd = dentry->d_fsdata;
--	struct kobject * kobj = to_kobj(dentry->d_parent);
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	struct sysfs_ops * ops = buffer->ops;
-+	int rc;
-+
-+	/* need attr_sd for attr and ops, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
-+
-+	rc = ops->store(kobj, attr_sd->s_elem.attr.attr, buffer->page, count);
-+
-+	sysfs_put_active_two(attr_sd);
- 
--	return ops->store(kobj, attr_sd->s_elem.attr.attr, buffer->page, count);
-+	return rc;
+-	/**
+-	 * Drop reference from dget() on entrance.
+-	 */
+-	dput(dentry);
  }
  
- 
-@@ -276,22 +292,22 @@ out:
- 
- static int sysfs_open_file(struct inode *inode, struct file *file)
- {
--	struct kobject *kobj = sysfs_get_kobject(file->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
- 	struct attribute *attr = attr_sd->s_elem.attr.attr;
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
- 	struct sysfs_buffer_collection *set;
- 	struct sysfs_buffer * buffer;
- 	struct sysfs_ops * ops = NULL;
--	int error = 0;
-+	int error;
- 
--	if (!kobj || !attr)
--		goto Einval;
-+	/* need attr_sd for attr and ops, its parent for kobj */
-+	if (!sysfs_get_active_two(attr_sd))
-+		return -ENODEV;
- 
--	/* Grab the module reference for this attribute if we have one */
--	if (!try_module_get(attr->owner)) {
--		error = -ENODEV;
--		goto Done;
--	}
-+	/* Grab the module reference for this attribute */
-+	error = -ENODEV;
-+	if (!try_module_get(attr->owner))
-+		goto err_sput;
- 
- 	/* if the kobject has no ktype, then we assume that it is a subsystem
- 	 * itself, and use ops for it.
-@@ -306,30 +322,30 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	/* No sysfs operations, either from having no subsystem,
- 	 * or the subsystem have no operations.
- 	 */
-+	error = -EACCES;
- 	if (!ops)
--		goto Eaccess;
-+		goto err_mput;
- 
- 	/* make sure we have a collection to add our buffers to */
- 	mutex_lock(&inode->i_mutex);
- 	if (!(set = inode->i_private)) {
--		if (!(set = inode->i_private = kmalloc(sizeof(struct sysfs_buffer_collection), GFP_KERNEL))) {
--			error = -ENOMEM;
--			goto Done;
--		} else {
-+		error = -ENOMEM;
-+		if (!(set = inode->i_private = kmalloc(sizeof(struct sysfs_buffer_collection), GFP_KERNEL)))
-+			goto err_mput;
-+		else
- 			INIT_LIST_HEAD(&set->associates);
--		}
- 	}
- 	mutex_unlock(&inode->i_mutex);
- 
-+	error = -EACCES;
-+
- 	/* File needs write support.
- 	 * The inode's perms must say it's ok, 
- 	 * and we must have a store method.
- 	 */
- 	if (file->f_mode & FMODE_WRITE) {
--
- 		if (!(inode->i_mode & S_IWUGO) || !ops->store)
--			goto Eaccess;
--
-+			goto err_mput;
- 	}
- 
- 	/* File needs read support.
-@@ -338,46 +354,45 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
- 	 */
- 	if (file->f_mode & FMODE_READ) {
- 		if (!(inode->i_mode & S_IRUGO) || !ops->show)
--			goto Eaccess;
-+			goto err_mput;
- 	}
- 
- 	/* No error? Great, allocate a buffer for the file, and store it
- 	 * it in file->private_data for easy access.
- 	 */
-+	error = -ENOMEM;
- 	buffer = kzalloc(sizeof(struct sysfs_buffer), GFP_KERNEL);
--	if (buffer) {
--		INIT_LIST_HEAD(&buffer->associates);
--		init_MUTEX(&buffer->sem);
--		buffer->needs_read_fill = 1;
--		buffer->ops = ops;
--		add_to_collection(buffer, inode);
--		file->private_data = buffer;
--	} else
--		error = -ENOMEM;
--	goto Done;
-+	if (!buffer)
-+		goto err_mput;
- 
-- Einval:
--	error = -EINVAL;
--	goto Done;
-- Eaccess:
--	error = -EACCES;
-+	INIT_LIST_HEAD(&buffer->associates);
-+	init_MUTEX(&buffer->sem);
-+	buffer->needs_read_fill = 1;
-+	buffer->ops = ops;
-+	add_to_collection(buffer, inode);
-+	file->private_data = buffer;
-+
-+	/* open succeeded, put active references and pin attr_sd */
-+	sysfs_put_active_two(attr_sd);
-+	sysfs_get(attr_sd);
-+	return 0;
-+
-+ err_mput:
- 	module_put(attr->owner);
-- Done:
--	if (error)
--		kobject_put(kobj);
-+ err_sput:
-+	sysfs_put_active_two(attr_sd);
+ /**
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 10aa33f..81460c5 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -190,28 +190,83 @@ int sysfs_create(struct sysfs_dirent *sd, struct dentry *dentry, int mode,
  	return error;
  }
  
- static int sysfs_release(struct inode * inode, struct file * filp)
+-/*
+- * Unhashes the dentry corresponding to given sysfs_dirent
+- * Called with parent inode's i_mutex held.
++/**
++ *	sysfs_drop_dentry - drop dentry for the specified sysfs_dirent
++ *	@sd: target sysfs_dirent
++ *
++ *	Drop dentry for @sd.  @sd must have been unlinked from its
++ *	parent on entry to this function such that it can't be looked
++ *	up anymore.
++ *
++ *	@sd->s_dentry which is protected with sysfs_lock points to the
++ *	currently associated dentry but we're not holding a reference
++ *	to it and racing with dput().  Grab dcache_lock and verify
++ *	dentry before dropping it.  If @sd->s_dentry is NULL or dput()
++ *	beats us, no need to bother.
+  */
+-void sysfs_drop_dentry(struct sysfs_dirent * sd, struct dentry * parent)
++void sysfs_drop_dentry(struct sysfs_dirent *sd)
  {
--	struct kobject * kobj = to_kobj(filp->f_path.dentry->d_parent);
- 	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
- 	struct attribute *attr = attr_sd->s_elem.attr.attr;
- 	struct sysfs_buffer * buffer = filp->private_data;
- 
- 	if (buffer)
- 		remove_from_collection(buffer, inode);
--	kobject_put(kobj);
-+	sysfs_put(attr_sd);
- 	/* After this point, attr should not be accessed. */
- 	module_put(attr->owner);
- 
-@@ -406,18 +421,25 @@ static int sysfs_release(struct inode * inode, struct file * filp)
- static unsigned int sysfs_poll(struct file *filp, poll_table *wait)
- {
- 	struct sysfs_buffer * buffer = filp->private_data;
--	struct kobject * kobj = to_kobj(filp->f_path.dentry->d_parent);
--	struct sysfs_dirent * sd = filp->f_path.dentry->d_fsdata;
--	int res = 0;
-+	struct sysfs_dirent *attr_sd = filp->f_path.dentry->d_fsdata;
-+	struct kobject *kobj = attr_sd->s_parent->s_elem.dir.kobj;
+-	struct dentry * dentry = sd->s_dentry;
++	struct dentry *dentry = NULL, *parent = NULL;
++	struct inode *dir;
++	struct timespec curtime;
 +
-+	/* need parent for the kobj, grab both */
-+	if (!sysfs_get_active_two(attr_sd))
-+		goto trigger;
- 
- 	poll_wait(filp, &kobj->poll, wait);
- 
--	if (buffer->event != atomic_read(&sd->s_event)) {
--		res = POLLERR|POLLPRI;
--		buffer->needs_read_fill = 1;
--	}
-+	sysfs_put_active_two(attr_sd);
- 
--	return res;
-+	if (buffer->event != atomic_read(&attr_sd->s_event))
-+		goto trigger;
++	/* We're not holding a reference to ->s_dentry dentry but the
++	 * field will stay valid as long as sysfs_lock is held.
++	 */
++	spin_lock(&sysfs_lock);
++	spin_lock(&dcache_lock);
 +
-+	return 0;
++	if (sd->s_dentry && sd->s_dentry->d_inode) {
++		/* get dentry if it's there and dput() didn't kill it yet */
++		dentry = dget_locked(sd->s_dentry);
++		parent = dentry->d_parent;
++	} else if (sd->s_parent->s_dentry->d_inode) {
++		/* We need to update the parent even if dentry for the
++		 * victim itself doesn't exist.
++		 */
++		parent = dget_locked(sd->s_parent->s_dentry);
++	}
+ 
++	/* drop */
+ 	if (dentry) {
+-		spin_lock(&dcache_lock);
+ 		spin_lock(&dentry->d_lock);
+-		if (!(d_unhashed(dentry) && dentry->d_inode)) {
+-			dget_locked(dentry);
+-			__d_drop(dentry);
+-			spin_unlock(&dentry->d_lock);
+-			spin_unlock(&dcache_lock);
+-			simple_unlink(parent->d_inode, dentry);
+-		} else {
+-			spin_unlock(&dentry->d_lock);
+-			spin_unlock(&dcache_lock);
++		__d_drop(dentry);
++		spin_unlock(&dentry->d_lock);
++	}
 +
-+ trigger:
-+	buffer->needs_read_fill = 1;
-+	return POLLERR|POLLPRI;
++	spin_unlock(&dcache_lock);
++	spin_unlock(&sysfs_lock);
++
++	/* nothing to do if the parent isn't in dcache */
++	if (!parent)
++		return;
++
++	/* adjust nlink and update timestamp */
++	dir = parent->d_inode;
++	mutex_lock(&dir->i_mutex);
++
++	curtime = CURRENT_TIME;
++
++	dir->i_ctime = dir->i_mtime = curtime;
++
++	if (dentry) {
++		dentry->d_inode->i_ctime = curtime;
++		drop_nlink(dentry->d_inode);
++		if (sd->s_type & SYSFS_DIR) {
++			drop_nlink(dentry->d_inode);
++			drop_nlink(dir);
++			/* XXX: unpin if directory, this will go away soon */
++			dput(dentry);
+ 		}
+ 	}
++
++	mutex_unlock(&dir->i_mutex);
++
++	/* bye bye */
++	if (dentry)
++		dput(dentry);
++	else
++		dput(parent);
  }
  
- 
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index 9085dc4..a222064 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -260,12 +260,16 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+@@ -234,7 +289,6 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+ 			continue;
  		if (!strcmp(sd->s_name, name)) {
  			list_del_init(&sd->s_sibling);
- 			sysfs_drop_dentry(sd, dir);
--			sysfs_put(sd);
+-			sysfs_drop_dentry(sd, dir);
  			found = 1;
  			break;
  		}
- 	}
- 	mutex_unlock(&dir->d_inode->i_mutex);
+@@ -244,7 +298,9 @@ int sysfs_hash_and_remove(struct dentry * dir, const char * name)
+ 	if (!found)
+ 		return -ENOENT;
  
--	return found ? 0 : -ENOENT;
-+	if (!found)
-+		return -ENOENT;
++	sysfs_drop_dentry(sd);
+ 	sysfs_deactivate(sd);
+ 	sysfs_put(sd);
 +
-+	sysfs_deactivate(sd);
-+	sysfs_put(sd);
-+	return 0;
+ 	return 0;
  }
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index e1a213d..47d5c5a 100644
+index 06a237e..fc6aa86 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -14,8 +14,14 @@ struct sysfs_elem_bin_attr {
- 	struct bin_attribute	* bin_attr;
- };
+@@ -76,9 +76,10 @@ extern struct sysfs_dirent *sysfs_find(struct sysfs_dirent *dir, const char * na
+ extern int sysfs_create_subdir(struct kobject *, const char *, struct dentry **);
+ extern void sysfs_remove_subdir(struct dentry *);
  
-+/*
-+ * As long as s_count reference is held, the sysfs_dirent itself is
-+ * accessible.  Dereferencing s_elem or any other outer entity
-+ * requires s_active reference.
-+ */
- struct sysfs_dirent {
- 	atomic_t		s_count;
-+	struct rw_semaphore	s_active;
- 	struct sysfs_dirent	* s_parent;
- 	struct list_head	s_sibling;
- 	struct list_head	s_children;
-@@ -36,6 +42,17 @@ struct sysfs_dirent {
- 	atomic_t		s_event;
- };
+-extern void sysfs_drop_dentry(struct sysfs_dirent *sd, struct dentry *parent);
++extern void sysfs_drop_dentry(struct sysfs_dirent *sd);
+ extern int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
  
-+/*
-+ * A sysfs file which deletes another file when written to need to
-+ * write lock the s_active of the victim while its s_active is read
-+ * locked for the write operation.  Tell lockdep that this is okay.
-+ */
-+enum sysfs_s_active_class
-+{
-+	SYSFS_S_ACTIVE_NORMAL,		/* file r/w access, etc - default */
-+	SYSFS_S_ACTIVE_DEACTIVATE,	/* file deactivation */
-+};
-+
- extern struct vfsmount * sysfs_mount;
- extern struct kmem_cache *sysfs_dir_cachep;
- 
-@@ -86,43 +103,107 @@ struct sysfs_buffer_collection {
- 	struct list_head	associates;
- };
- 
--static inline struct kobject * to_kobj(struct dentry * dentry)
-+static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
- {
--	struct sysfs_dirent * sd = dentry->d_fsdata;
--	return sd->s_elem.dir.kobj;
-+	if (sd) {
-+		WARN_ON(!atomic_read(&sd->s_count));
-+		atomic_inc(&sd->s_count);
-+	}
-+	return sd;
- }
- 
--static inline struct kobject *sysfs_get_kobject(struct dentry *dentry)
-+static inline void sysfs_put(struct sysfs_dirent * sd)
- {
--	struct kobject * kobj = NULL;
--
--	spin_lock(&dcache_lock);
--	if (!d_unhashed(dentry)) {
--		struct sysfs_dirent * sd = dentry->d_fsdata;
--
--		if (sd->s_type & SYSFS_KOBJ_LINK)
--			sd = sd->s_elem.symlink.target_sd;
-+	if (sd && atomic_dec_and_test(&sd->s_count))
-+		release_sysfs_dirent(sd);
-+}
- 
--		kobj = kobject_get(sd->s_elem.dir.kobj);
-+/**
-+ *	sysfs_get_active - get an active reference to sysfs_dirent
-+ *	@sd: sysfs_dirent to get an active reference to
-+ *
-+ *	Get an active reference of @sd.  This function is noop if @sd
-+ *	is NULL.
-+ *
-+ *	RETURNS:
-+ *	Pointer to @sd on success, NULL on failure.
-+ */
-+static inline struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd)
-+{
-+	if (sd) {
-+		if (unlikely(!down_read_trylock(&sd->s_active)))
-+			sd = NULL;
- 	}
--	spin_unlock(&dcache_lock);
-+	return sd;
-+}
- 
--	return kobj;
-+/**
-+ *	sysfs_put_active - put an active reference to sysfs_dirent
-+ *	@sd: sysfs_dirent to put an active reference to
-+ *
-+ *	Put an active reference to @sd.  This function is noop if @sd
-+ *	is NULL.
-+ */
-+static inline void sysfs_put_active(struct sysfs_dirent *sd)
-+{
-+	if (sd)
-+		up_read(&sd->s_active);
- }
- 
--static inline struct sysfs_dirent * sysfs_get(struct sysfs_dirent * sd)
-+/**
-+ *	sysfs_get_active_two - get active references to sysfs_dirent and parent
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Get active reference to @sd and its parent.  Parent's active
-+ *	reference is grabbed first.  This function is noop if @sd is
-+ *	NULL.
-+ *
-+ *	RETURNS:
-+ *	Pointer to @sd on success, NULL on failure.
-+ */
-+static inline struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd)
- {
- 	if (sd) {
--		WARN_ON(!atomic_read(&sd->s_count));
--		atomic_inc(&sd->s_count);
-+		if (sd->s_parent && unlikely(!sysfs_get_active(sd->s_parent)))
-+			return NULL;
-+		if (unlikely(!sysfs_get_active(sd))) {
-+			sysfs_put_active(sd->s_parent);
-+			return NULL;
-+		}
- 	}
- 	return sd;
- }
- 
--static inline void sysfs_put(struct sysfs_dirent * sd)
-+/**
-+ *	sysfs_put_active_two - put active references to sysfs_dirent and parent
-+ *	@sd: sysfs_dirent of interest
-+ *
-+ *	Put active references to @sd and its parent.  This function is
-+ *	noop if @sd is NULL.
-+ */
-+static inline void sysfs_put_active_two(struct sysfs_dirent *sd)
- {
--	if (sd && atomic_dec_and_test(&sd->s_count))
--		release_sysfs_dirent(sd);
-+	if (sd) {
-+		sysfs_put_active(sd);
-+		sysfs_put_active(sd->s_parent);
-+	}
-+}
-+
-+/**
-+ *	sysfs_deactivate - deactivate sysfs_dirent
-+ *	@sd: sysfs_dirent to deactivate
-+ *
-+ *	Deny new active references and drain existing ones.  s_active
-+ *	will be unlocked when the sysfs_dirent is released.
-+ */
-+static inline void sysfs_deactivate(struct sysfs_dirent *sd)
-+{
-+	down_write_nested(&sd->s_active, SYSFS_S_ACTIVE_DEACTIVATE);
-+
-+	/* s_active will be unlocked by the thread doing the final put
-+	 * on @sd.  Lie to lockdep.
-+	 */
-+	rwsem_release(&sd->s_active.dep_map, 1, _RET_IP_);
- }
- 
- static inline int sysfs_is_shadowed_inode(struct inode *inode)
++extern spinlock_t sysfs_lock;
+ extern spinlock_t kobj_sysfs_assoc_lock;
+ extern struct rw_semaphore sysfs_rename_sem;
+ extern struct super_block * sysfs_sb;
 -- 
 1.5.0.3
 
