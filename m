@@ -1,168 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031803AbXD1Rzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163339AbXD1R7p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031803AbXD1Rzn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163307AbXD1Rx1
+	id S1163339AbXD1R7p (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:59:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163340AbXD1R7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:53:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38635 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 13:59:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38957 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163302AbXD1Rwr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:52:47 -0400
+	id S1163339AbXD1R64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:58:56 -0400
 From: Andi Kleen <ak@suse.de>
-References: <20070428752.712152000@suse.de>
-In-Reply-To: <20070428752.712152000@suse.de>
-To: linux-kernel@vger.kernel.org, patches@x86-64.org
-Subject: [PATCH] [20/35] x86: Fix i386 and x86_64 fault information pollution
-Message-Id: <20070428175245.3E265151FC@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:52:45 +0200 (CEST)
+References: <20070428758.455116000@suse.de>
+In-Reply-To: <20070428758.455116000@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [3/22] x86_64: Kill temp boot pmds
+Message-Id: <20070428175849.AD7B5151F0@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:58:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-a userspace fault or a kernelspace fault which will result in the
-immediate death of the process.  They should not be filled in as a
-result of a kernelspace fault which can be fixed up.
+From: Vivek Goyal <vgoyal@in.ibm.com>
 
-Otherwise, if the process is handling SIGSEGV and examining the fault
-information, this can result in the kernel space fault trashing the
-previously stored fault information if it arrives between the
-userspace fault happening and the SIGSEGV being delivered to the process.
 
-Signed-off-by: Jeff Dike <jdike@addtoit.com>
+Early in the boot process we need the ability to set
+up temporary mappings, before our normal mechanisms are
+initialized.  Currently this is used to map pages that
+are part of the page tables we are building and pages
+during the dmi scan.
+
+The core problem is that we are using the user portion of
+the page tables to implement this.  Which means that while
+this mechanism is active we cannot catch NULL pointer dereferences
+and we deviate from the normal ways of handling things.
+
+In this patch I modify early_ioremap to map pages into
+the kernel portion of address space, roughly where
+we will later put modules, and I make the discovery of
+which addresses we can use dynamic which removes all
+kinds of static limits and remove the dependencies
+on implementation details between different parts of the code.
+
+Now alloc_low_page() and unmap_low_page() use 
+early_iomap() and early_iounmap() to allocate/map and 
+unmap a page.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Acked-by: Jan Beulich <jbeulich@novell.com>
---
- arch/i386/kernel/traps.c   |   24 ++++++++++++++++++------
- arch/x86_64/kernel/traps.c |   30 +++++++++++++++++++++++-------
- 2 files changed, 41 insertions(+), 13 deletions(-)
 
-Index: linux/arch/i386/kernel/traps.c
+---
+
+ arch/x86_64/kernel/head.S |    3 -
+ arch/x86_64/mm/init.c     |  100 ++++++++++++++++++++--------------------------
+ 2 files changed, 45 insertions(+), 58 deletions(-)
+
+Index: linux/arch/x86_64/kernel/head.S
 ===================================================================
---- linux.orig/arch/i386/kernel/traps.c
-+++ linux/arch/i386/kernel/traps.c
-@@ -476,8 +476,6 @@ static void __kprobes do_trap(int trapnr
- 			      siginfo_t *info)
- {
- 	struct task_struct *tsk = current;
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = trapnr;
- 
- 	if (regs->eflags & VM_MASK) {
- 		if (vm86)
-@@ -489,6 +487,18 @@ static void __kprobes do_trap(int trapnr
- 		goto kernel_trap;
- 
- 	trap_signal: {
-+		/*
-+		 * We want error_code and trap_no set for userspace faults and
-+		 * kernelspace faults which result in die(), but not
-+		 * kernelspace faults which are fixed up.  die() gives the
-+		 * process no chance to handle the signal and notice the
-+		 * kernel fault information, so that won't result in polluting
-+		 * the information about previously queued, but not yet
-+		 * delivered, faults.  See also do_general_protection below.
-+		 */
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = trapnr;
-+
- 		if (info)
- 			force_sig_info(signr, info, tsk);
- 		else
-@@ -497,8 +507,11 @@ static void __kprobes do_trap(int trapnr
- 	}
- 
- 	kernel_trap: {
--		if (!fixup_exception(regs))
-+		if (!fixup_exception(regs)) {
-+			tsk->thread.error_code = error_code;
-+			tsk->thread.trap_no = trapnr;
- 			die(str, regs, error_code);
-+		}
- 		return;
- 	}
- 
-@@ -603,9 +616,6 @@ fastcall void __kprobes do_general_prote
- 	}
- 	put_cpu();
- 
--	current->thread.error_code = error_code;
--	current->thread.trap_no = 13;
--
- 	if (regs->eflags & VM_MASK)
- 		goto gp_in_vm86;
- 
-@@ -624,6 +634,8 @@ gp_in_vm86:
- 
- gp_in_kernel:
- 	if (!fixup_exception(regs)) {
-+		current->thread.error_code = error_code;
-+		current->thread.trap_no = 13;
- 		if (notify_die(DIE_GPF, "general protection fault", regs,
- 				error_code, 13, SIGSEGV) == NOTIFY_STOP)
- 			return;
-Index: linux/arch/x86_64/kernel/traps.c
+--- linux.orig/arch/x86_64/kernel/head.S
++++ linux/arch/x86_64/kernel/head.S
+@@ -288,9 +288,6 @@ NEXT_PAGE(level2_ident_pgt)
+ 	.quad	i << 21 | 0x083
+ 	i = i + 1
+ 	.endr
+-	/* Temporary mappings for the super early allocator in arch/x86_64/mm/init.c */
+-	.globl temp_boot_pmds
+-temp_boot_pmds:
+ 	.fill	492,8,0
+ 	
+ NEXT_PAGE(level2_kernel_pgt)
+Index: linux/arch/x86_64/mm/init.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/traps.c
-+++ linux/arch/x86_64/kernel/traps.c
-@@ -581,10 +581,20 @@ static void __kprobes do_trap(int trapnr
- {
- 	struct task_struct *tsk = current;
+--- linux.orig/arch/x86_64/mm/init.c
++++ linux/arch/x86_64/mm/init.c
+@@ -167,23 +167,9 @@ __set_fixmap (enum fixed_addresses idx, 
  
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = trapnr;
+ unsigned long __initdata table_start, table_end; 
+ 
+-extern pmd_t temp_boot_pmds[]; 
 -
- 	if (user_mode(regs)) {
-+		/*
-+		 * We want error_code and trap_no set for userspace
-+		 * faults and kernelspace faults which result in
-+		 * die(), but not kernelspace faults which are fixed
-+		 * up.  die() gives the process no chance to handle
-+		 * the signal and notice the kernel fault information,
-+		 * so that won't result in polluting the information
-+		 * about previously queued, but not yet delivered,
-+		 * faults.  See also do_general_protection below.
-+		 */
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = trapnr;
+-static  struct temp_map { 
+-	pmd_t *pmd;
+-	void  *address; 
+-	int    allocated; 
+-} temp_mappings[] __initdata = { 
+-	{ &temp_boot_pmds[0], (void *)(40UL * 1024 * 1024) },
+-	{ &temp_boot_pmds[1], (void *)(42UL * 1024 * 1024) }, 
+-	{}
+-}; 
+-
+-static __meminit void *alloc_low_page(int *index, unsigned long *phys)
++static __meminit void *alloc_low_page(unsigned long *phys)
+ { 
+-	struct temp_map *ti;
+-	int i; 
+-	unsigned long pfn = table_end++, paddr; 
++	unsigned long pfn = table_end++;
+ 	void *adr;
+ 
+ 	if (after_bootmem) {
+@@ -194,57 +180,63 @@ static __meminit void *alloc_low_page(in
+ 
+ 	if (pfn >= end_pfn) 
+ 		panic("alloc_low_page: ran out of memory"); 
+-	for (i = 0; temp_mappings[i].allocated; i++) {
+-		if (!temp_mappings[i].pmd) 
+-			panic("alloc_low_page: ran out of temp mappings"); 
+-	} 
+-	ti = &temp_mappings[i];
+-	paddr = (pfn << PAGE_SHIFT) & PMD_MASK; 
+-	set_pmd(ti->pmd, __pmd(paddr | _KERNPG_TABLE | _PAGE_PSE)); 
+-	ti->allocated = 1; 
+-	__flush_tlb(); 	       
+-	adr = ti->address + ((pfn << PAGE_SHIFT) & ~PMD_MASK); 
 +
- 		if (exception_trace && unhandled_signal(tsk, signr))
- 			printk(KERN_INFO
- 			       "%s[%d] trap %s rip:%lx rsp:%lx error:%lx\n",
-@@ -605,8 +615,11 @@ static void __kprobes do_trap(int trapnr
- 		fixup = search_exception_tables(regs->rip);
- 		if (fixup)
- 			regs->rip = fixup->fixup;
--		else	
-+		else {
-+			tsk->thread.error_code = error_code;
-+			tsk->thread.trap_no = trapnr;
- 			die(str, regs, error_code);
-+		}
++	adr = early_ioremap(pfn * PAGE_SIZE, PAGE_SIZE);
+ 	memset(adr, 0, PAGE_SIZE);
+-	*index = i; 
+-	*phys  = pfn * PAGE_SIZE;  
+-	return adr; 
+-} 
++	*phys  = pfn * PAGE_SIZE;
++	return adr;
++}
+ 
+-static __meminit void unmap_low_page(int i)
++static __meminit void unmap_low_page(void *adr)
+ { 
+-	struct temp_map *ti;
+ 
+ 	if (after_bootmem)
  		return;
+ 
+-	ti = &temp_mappings[i];
+-	set_pmd(ti->pmd, __pmd(0));
+-	ti->allocated = 0; 
++	early_iounmap(adr, PAGE_SIZE);
+ } 
+ 
+ /* Must run before zap_low_mappings */
+ __init void *early_ioremap(unsigned long addr, unsigned long size)
+ {
+-	unsigned long map = round_down(addr, LARGE_PAGE_SIZE); 
+-
+-	/* actually usually some more */
+-	if (size >= LARGE_PAGE_SIZE) { 
+-		return NULL;
++	unsigned long vaddr;
++	pmd_t *pmd, *last_pmd;
++	int i, pmds;
++
++	pmds = ((addr & ~PMD_MASK) + size + ~PMD_MASK) / PMD_SIZE;
++	vaddr = __START_KERNEL_map;
++	pmd = level2_kernel_pgt;
++	last_pmd = level2_kernel_pgt + PTRS_PER_PMD - 1;
++	for (; pmd <= last_pmd; pmd++, vaddr += PMD_SIZE) {
++		for (i = 0; i < pmds; i++) {
++			if (pmd_present(pmd[i]))
++				goto next;
++		}
++		vaddr += addr & ~PMD_MASK;
++		addr &= PMD_MASK;
++		for (i = 0; i < pmds; i++, addr += PMD_SIZE)
++			set_pmd(pmd + i,__pmd(addr | _KERNPG_TABLE | _PAGE_PSE));
++		__flush_tlb();
++		return (void *)vaddr;
++	next:
++		;
  	}
+-	set_pmd(temp_mappings[0].pmd,  __pmd(map | _KERNPG_TABLE | _PAGE_PSE));
+-	map += LARGE_PAGE_SIZE;
+-	set_pmd(temp_mappings[1].pmd,  __pmd(map | _KERNPG_TABLE | _PAGE_PSE));
+-	__flush_tlb();
+-	return temp_mappings[0].address + (addr & (LARGE_PAGE_SIZE-1));
++	printk("early_ioremap(0x%lx, %lu) failed\n", addr, size);
++	return NULL;
  }
-@@ -682,10 +695,10 @@ asmlinkage void __kprobes do_general_pro
  
- 	conditional_sti(regs);
- 
--	tsk->thread.error_code = error_code;
--	tsk->thread.trap_no = 13;
--
- 	if (user_mode(regs)) {
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = 13;
+ /* To avoid virtual aliases later */
+ __init void early_iounmap(void *addr, unsigned long size)
+ {
+-	if ((void *)round_down((unsigned long)addr, LARGE_PAGE_SIZE) != temp_mappings[0].address)
+-		printk("early_iounmap: bad address %p\n", addr);
+-	set_pmd(temp_mappings[0].pmd, __pmd(0));
+-	set_pmd(temp_mappings[1].pmd, __pmd(0));
++	unsigned long vaddr;
++	pmd_t *pmd;
++	int i, pmds;
 +
- 		if (exception_trace && unhandled_signal(tsk, SIGSEGV))
- 			printk(KERN_INFO
- 		       "%s[%d] general protection rip:%lx rsp:%lx error:%lx\n",
-@@ -704,6 +717,9 @@ asmlinkage void __kprobes do_general_pro
- 			regs->rip = fixup->fixup;
- 			return;
++	vaddr = (unsigned long)addr;
++	pmds = ((vaddr & ~PMD_MASK) + size + ~PMD_MASK) / PMD_SIZE;
++	pmd = level2_kernel_pgt + pmd_index(vaddr);
++	for (i = 0; i < pmds; i++)
++		pmd_clear(pmd + i);
+ 	__flush_tlb();
+ }
+ 
+@@ -289,7 +281,6 @@ static void __meminit phys_pud_init(pud_
+ 
+ 
+ 	for (; i < PTRS_PER_PUD; i++, addr = (addr & PUD_MASK) + PUD_SIZE ) {
+-		int map; 
+ 		unsigned long pmd_phys;
+ 		pud_t *pud = pud_page + pud_index(addr);
+ 		pmd_t *pmd;
+@@ -307,12 +298,12 @@ static void __meminit phys_pud_init(pud_
+ 			continue;
  		}
-+
-+		tsk->thread.error_code = error_code;
-+		tsk->thread.trap_no = 13;
- 		if (notify_die(DIE_GPF, "general protection fault", regs,
- 					error_code, 13, SIGSEGV) == NOTIFY_STOP)
- 			return;
+ 
+-		pmd = alloc_low_page(&map, &pmd_phys);
++		pmd = alloc_low_page(&pmd_phys);
+ 		spin_lock(&init_mm.page_table_lock);
+ 		set_pud(pud, __pud(pmd_phys | _KERNPG_TABLE));
+ 		phys_pmd_init(pmd, addr, end);
+ 		spin_unlock(&init_mm.page_table_lock);
+-		unmap_low_page(map);
++		unmap_low_page(pmd);
+ 	}
+ 	__flush_tlb();
+ } 
+@@ -364,7 +355,6 @@ void __meminit init_memory_mapping(unsig
+ 	end = (unsigned long)__va(end);
+ 
+ 	for (; start < end; start = next) {
+-		int map;
+ 		unsigned long pud_phys; 
+ 		pgd_t *pgd = pgd_offset_k(start);
+ 		pud_t *pud;
+@@ -372,7 +362,7 @@ void __meminit init_memory_mapping(unsig
+ 		if (after_bootmem)
+ 			pud = pud_offset(pgd, start & PGDIR_MASK);
+ 		else
+-			pud = alloc_low_page(&map, &pud_phys);
++			pud = alloc_low_page(&pud_phys);
+ 
+ 		next = start + PGDIR_SIZE;
+ 		if (next > end) 
+@@ -380,7 +370,7 @@ void __meminit init_memory_mapping(unsig
+ 		phys_pud_init(pud, __pa(start), __pa(next));
+ 		if (!after_bootmem)
+ 			set_pgd(pgd_offset_k(start), mk_kernel_pgd(pud_phys));
+-		unmap_low_page(map);   
++		unmap_low_page(pud);
+ 	} 
+ 
+ 	if (!after_bootmem)
