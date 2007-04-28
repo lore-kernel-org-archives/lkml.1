@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161140AbXD1TVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161029AbXD1TVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161140AbXD1TVs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161205AbXD1TUn
+	id S1161029AbXD1TVx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161071AbXD1TUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:20:43 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:44585 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1031176AbXD1TUU (ORCPT
+	Sat, 28 Apr 2007 15:20:42 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37521 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031190AbXD1TUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:20:20 -0400
-Date: Sat, 28 Apr 2007 11:44:25 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pavel Machek <pavel@ucw.cz>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: Back to the future.
-In-Reply-To: <200704282114.49815.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.63.0704281143440.11638@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <20070428085000.GA3293@elf.ucw.cz>  <Pine.LNX.4.63.0704281130200.11638@qynat.qvtvafvgr.pbz>
- <200704282114.49815.rjw@sisk.pl>
+	Sat, 28 Apr 2007 15:20:23 -0400
+Date: Sat, 28 Apr 2007 21:20:34 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       James Smart <James.Smart@emulex.com>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [-mm patch] scsi/lpfc/lpfc_init.c: remove unused variable
+Message-ID: <20070428192034.GW3468@stusta.de>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
+This patch removes a no longer used variable:
 
-> On Saturday, 28 April 2007 20:32, David Lang wrote:
->> On Sat, 28 Apr 2007, Pavel Machek wrote:
->>
->>>>
->>>> We freeze user space processes for the reasons that you have quoted above.
->>>>
->>>> Why we freeze kernel threads in there too is a good question, but not for me to
->>>> answer.  I don't know.  Pavel should know, I think.
->>>
->>> We do not want kernel threads running:
->>>
->>> a) they may hold some locks and deadlock suspend
->>>
->>> b) they may do some writes to disk, leading to corruption
->>>
->>> We could solve a) by carefully auditing suspend lock usage to make
->>> sure deadlocks are impossible even with kernel threads running.
->>
->> remember that we are doing suspend-to-disk, after we do the snapshot we will be
->> doing a shutdown. that should simplify the locking issues
->
-> That's assuming that we won't need to cancel the hibernation.
+<--  snip  -->
 
-true, but if we cancel the hibernation then why are the locks an issue? they are 
-appropriate for the system state.
+...
+  CC      drivers/scsi/lpfc/lpfc_init.o
+/home/bunk/linux/kernel-2.6/linux-2.6.21-rc7-mm2/drivers/scsi/lpfc/lpfc_init.c: In function ‘lpfc_pci_probe_one’:
+/home/bunk/linux/kernel-2.6/linux-2.6.21-rc7-mm2/drivers/scsi/lpfc/lpfc_init.c:1419: warning: unused variable ‘retval’
+...
 
-David Lang
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.21-rc7-mm2/drivers/scsi/lpfc/lpfc_init.c.old	2007-04-28 15:20:42.000000000 +0200
++++ linux-2.6.21-rc7-mm2/drivers/scsi/lpfc/lpfc_init.c	2007-04-28 15:20:57.000000000 +0200
+@@ -1416,7 +1416,7 @@
+ 	struct lpfc_sli  *psli;
+ 	struct lpfc_iocbq *iocbq_entry = NULL, *iocbq_next = NULL;
+ 	unsigned long bar0map_len, bar2map_len;
+-	int error = -ENODEV, retval;
++	int error = -ENODEV;
+ 	int i;
+ 	uint16_t iotag;
+ 
+
