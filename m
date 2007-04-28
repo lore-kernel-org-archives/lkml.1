@@ -1,77 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754375AbXD1CAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030900AbXD1CB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754375AbXD1CAh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754451AbXD1CAh
+	id S1030900AbXD1CB7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030910AbXD1CB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:00:37 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:44819 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754343AbXD1CA1 (ORCPT
+	Fri, 27 Apr 2007 22:01:59 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44890 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030900AbXD1CB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:00:27 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=To7ACMobghLIcOVMv3Nh4jvQSkFTl3ydJf4FckKMzBf/NVoHZ5r9K+ZkxuTuaULSoa+Odd+aWT7VvI/ZytrBD9R7uwoE0bq2nho0ZUo1lbFcPVgBrmcy5un+lL9ZBPGx9JjQS2CrTeb1rmLsNL9DIl0hfWGxJ1EgLLNYtSKDI10=  ;
-Message-ID: <4632AAB4.6030303@yahoo.com.au>
-Date: Sat, 28 Apr 2007 12:00:20 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: rohitseth@google.com
-CC: Mike Stroyan <mike.stroyan@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, "Luck, Tony" <tony.luck@intel.com>,
-       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <20070425205548.fd51b301.akpm@linux-foundation.org>	 <46305A8D.2080003@yahoo.com.au> <20070426173544.GA30744@ldl.fc.hp.com>	 <4631E49C.2030501@yahoo.com.au> <1177723479.13482.371.camel@galaxy.corp.google.com>
-In-Reply-To: <1177723479.13482.371.camel@galaxy.corp.google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 27 Apr 2007 22:01:57 -0400
+Date: Fri, 27 Apr 2007 19:01:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+Cc: <linux-pcmcia@lists.infradead.org>, "lkml" <linux-kernel@vger.kernel.org>,
+       "Dominik Brodowski" <linux@dominikbrodowski.net>,
+       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
+Message-Id: <20070427190143.d597dd38.akpm@linux-foundation.org>
+In-Reply-To: <D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
+References: <20070425171533.22efa133.akpm@linux-foundation.org>
+	<D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rohit Seth wrote:
-> On Fri, 2007-04-27 at 21:55 +1000, Nick Piggin wrote:
+On Thu, 26 Apr 2007 11:21:01 +0200
+"Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com> wrote:
+
+> As pointed to by Peter, and also as indicated by a judicious output in
+> dmesg, the 4th parameter should be 0x969aa4f2. Please find below the
+> corrected patch:
 > 
+> Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
 > 
->>That's the theory. However, I'd still like to know how the arch code can
->>make the assertion that icache is known to be at all times other than at
->>the time of a fault?
->>
-> 
-> 
-> Kernel needs to only worry about the updates that it does.  So, if
-> kernel is writing into a page that is getting marked with execute
-> permission then it will need to make sure that caches are coherent.
-> ia64 Kernel keeps track of whether it has done any write operation on a
-> page or not using PG_arch_1.  And accordingly flushes icaches.
+> ===================================================================
+> --- linux-2.6.20.7-orig/drivers/ide/legacy/ide-cs.c	2007-04-15
+> 21:08:02.000000000 +0200
+> +++ linux-2.6.20.7/drivers/ide/legacy/ide-cs.c	2007-04-26
+> 11:13:13.000000000 +0200
+> @@ -399,6 +399,7 @@
+>  	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a,
+> 0x3489e003),
+>  	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+>  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1,
+> 0x2a54d4b1),
+> +	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1,
+> 0x969aa4f2),
+>  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1,
+> 0xf54a91c8),
+>  	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+>  	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c,
+> 0x212bb918),
+> ===================================================================
 
-It flushes icache at fault time, I know. What I don't know is why we
-leave them to drift out of sync afterwards.
+This one-liner is turning into a fiasco.  All the top-posting and
+word-wrapped patches aren't helping :(
+
+I presently have two patches.  Please check them.
 
 
->>Ie. what if an operation which causes incoherency is carried out _after_
->>an executable mapping is installed for that page.
->>
-> 
-> 
-> You mean by user space? If so, then it is user space responsibility to
-> do the appropriate operations (like flush icache in this case).
+ide-cs-recognize-2gb-compactflash-from-transcend.patch:
 
-No, I mean places that set PG_arch_1. flush_dcache_page. This can
-happen for mapped pages in write, splice, install_arg_page looks
-questionable, direct IO...
 
-Actually there are various windows where mapped pages can be !uptodate,
-so there is technically most of the filesystem code as well, but I'm
-trying to stamp those out, so let's ignore that for now.
+From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
 
-What if you were to say remove all the PG_arch_1 code, and do something
-really simple like flush icache in flush_dcache_page? Would performance
-suffer horribly?
+Without the following patch, the kernel does not automatically detect
+2GB CompactFlash cards from Transcend.
 
--- 
-SUSE Labs, Novell Inc.
+Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/ide/legacy/ide-cs.c |    2 ++
+ 1 files changed, 2 insertions(+)
+
+diff -puN drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend drivers/ide/legacy/ide-cs.c
+--- a/drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend
++++ a/drivers/ide/legacy/ide-cs.c
+@@ -401,6 +401,8 @@ static struct pcmcia_device_id ide_ids[]
+ 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 0x3489e003),
+ 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1, 0x2a54d4b1),
++	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0xf54a91c8),
++	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0x969aa4f2),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1, 0xf54a91c8),
+ 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+ 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 0x212bb918),
+_
+
+
+Is this really supposed to add a TS2GCF120 entry with the same IDs as
+TS4GCF120?
+
+
+
+
+
+And pata_pcmcia-recognize-2gb-compactflash-from-transcend.patch:
+
+From: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>
+
+Allow the pata_pcmcia driver to automatically detect 2GB CompactFlash cards
+from Transcend.
+
+Signed-off-by: Fabrice Aeschbacher <fabrice.aeschbacher@siemens.com>
+Cc: "Peter Stuge" <stuge-linux-pcmcia@cdy.org>
+Acked-by: Alan Cox <alan@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/ata/pata_pcmcia.c |    1 +
+ 1 files changed, 1 insertion(+)
+
+diff -puN drivers/ata/pata_pcmcia.c~pata_pcmcia-recognize-2gb-compactflash-from-transcend drivers/ata/pata_pcmcia.c
+--- a/drivers/ata/pata_pcmcia.c~pata_pcmcia-recognize-2gb-compactflash-from-transcend
++++ a/drivers/ata/pata_pcmcia.c
+@@ -396,6 +396,7 @@ static struct pcmcia_device_id pcmcia_de
+ 	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 0x3489e003),
+ 	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1, 0x2a54d4b1),
++	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0x969aa4f2),
+ 	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1, 0xf54a91c8),
+ 	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
+ 	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 0x212bb918),
+_
+
