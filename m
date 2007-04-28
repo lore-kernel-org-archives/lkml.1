@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbXD1Uqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbXD1UsP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbXD1Uqa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 16:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbXD1Uqa
+	id S1754723AbXD1UsP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 16:48:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXD1UsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 16:46:30 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:34629 "EHLO
-	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753091AbXD1Uq3 (ORCPT
+	Sat, 28 Apr 2007 16:48:15 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45308 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754723AbXD1UsN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 16:46:29 -0400
-Date: Sat, 28 Apr 2007 22:46:27 +0200 (CEST)
-From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-In-Reply-To: <20070427013350.d0d7ac38.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
- <20070427013350.d0d7ac38.akpm@linux-foundation.org>
-X-Personality-Disorder: Schizoid
+	Sat, 28 Apr 2007 16:48:13 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>
+	<4633B0BB.6080600@zytor.com>
+Date: Sat, 28 Apr 2007 14:46:18 -0600
+In-Reply-To: <4633B0BB.6080600@zytor.com> (H. Peter Anvin's message of "Sat,
+	28 Apr 2007 13:38:19 -0700")
+Message-ID: <m1bqh8dy79.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> hm, fsync.
->
-> Aside: why the heck do applications think that their data is so important
-> that they need to fsync it all the time.  I used to run a kernel on my
-> laptop which had "return 0;" at the top of fsync() and fdatasync().  Most
-> pleasurable.
->
-> But wedging for 20 minutes is probably excessive punishment.
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-I most wonder, why vim fsyncs its swapfile regularly (blocking typing 
-during that) and doesn't fsync the resulting file on :w  :-/
+> Eric W. Biederman wrote:
+>> 
+>> The boot protocol change is in 2.6.21 for arch/i386.
+>> 
+>> HPA looked at it a while ago.
+>> 
+>> All it does is set a flag that tells a bootloader.
+>> "Hey. I can run when loaded a non-default address, and this is what
+>>  you have to align me to."
+>> 
+>> All relocation processing happens in the kernel itself.
+>> 
+>> So it is all pretty trivial.
+>> 
+>
+> Indeed.  We *did* find some problems with Grub with the early versions,
+> those were addressed.
 
-Mikulas
+We found some failures that weren't root caused so we went to this
+more conservative version.
+
+RHEL5 is actually shipping the original version of these patches if I
+recall correctly.
+
+Eric
