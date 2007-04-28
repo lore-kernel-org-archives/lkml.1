@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXD1WGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161205AbXD1WLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161162AbXD1WGg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 18:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161205AbXD1WGg
+	id S1161205AbXD1WLI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 18:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161232AbXD1WLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 18:06:36 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:32138 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161162AbXD1WGf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 18:06:35 -0400
-Date: Sat, 28 Apr 2007 23:06:21 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
- (-1)
-In-Reply-To: <20070428141024.887342bd.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0704282300080.2223@blonde.wat.veritas.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
- <46338AEB.2070109@imap.cc> <20070428141024.887342bd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 28 Apr 2007 22:06:33.0893 (UTC) FILETIME=[7BACFD50:01C789E1]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAdGlsbWFuQGltYXAuY2MAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
-X-Brightmail-Tracker: AAAAAA==
+	Sat, 28 Apr 2007 18:11:07 -0400
+Received: from www.osadl.org ([213.239.205.134]:50374 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1161205AbXD1WLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 18:11:05 -0400
+Subject: Re: High Resolution Timer DOS
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: matthieu castet <castet.matthieu@free.fr>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4633C269.9050806@free.fr>
+References: <4633C269.9050806@free.fr>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 00:13:09 +0200
+Message-Id: <1177798389.7646.320.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Andrew Morton wrote:
+On Sat, 2007-04-28 at 23:53 +0200, matthieu castet wrote:
+> Hi,
 > 
-> It seems wildly screwed up that we have a PageReserved() page with a pfn of
-> zero (!) which claims to be in a reiserfs mapping, only it isn't attached
-> to a reiserfs file.  How the heck did that happen?
+> some programs need to do some short of busyloop. It was often 
+> implemented as :
+> 
+> while (1) {
+> 	if (can_do_stuff) {
+> 		do_stuff();
+> 	}
+> 	else
+> 		//sleep a very short of time
+> 		usleep(1);
+> }
+> 
+> usleep(1) or equivalent where used instead of sched_yield, because of 
+> some priority issue. IIRC doing sched_yield, make the process appears 
+> like an interactive process, so it has better priority and get call more 
+> often.
+> 
+> But now if high res timer are enabled, these programs while cause 
+> something like a DOS : the context switch per second will be bigger than 
+> 500 000 and the cpu usage will be very high.
 
-It's "simply" that it somehow got a spurious page table entry 00000001.
-Great that it's so reproducible, I take that to mean this one is not
-bad RAM.  Your request for a bisection is just what we want, thanks.
+Well, it is not really a DoS. The rescheduling of the process is limited
+by the scheduler and the available CPU time (depending on the number of
+runnable tasks in the system).
 
-Hugh
+>From the spec:
+
+Implementations may place limitations on the granularity of timer
+values. For each interval timer, if the requested timer value requires a
+finer granularity than the implementation supports, the actual timer
+value shall be rounded up to the next supported value.
+
+The !HIGHRES enabled kernel rounds this up to the HZ interval, the
+HIGHRES enabled kernel grants the request for this short sleep.
+
+The program gets what it asked for: a stupid sleep value.
+
+	tglx
+
+
