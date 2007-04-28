@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031571AbXD1RZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031617AbXD1Reo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031571AbXD1RZm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031575AbXD1RZm
+	id S1031617AbXD1Reo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031642AbXD1Reo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:25:42 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:22094 "EHLO mx33.mail.ru"
+	Sat, 28 Apr 2007 13:34:44 -0400
+Received: from waste.org ([66.93.16.53]:35574 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031571AbXD1RZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:25:41 -0400
-Date: Sat, 28 Apr 2007 21:23:52 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Greg KH <gregkh@suse.de>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ANNOUNCE] battery2 git repository
-Message-ID: <20070428172352.GA8124@zarina>
-Reply-To: cbou@mail.ru
-References: <20070426232902.GA10423@zarina> <20070427000928.GA5303@suse.de> <1177653814.2755.466.camel@pmac.infradead.org> <20070427235553.GC24476@suse.de>
+	id S1031617AbXD1Ref (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:34:35 -0400
+Date: Sat, 28 Apr 2007 12:21:54 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070428172154.GA11115@waste.org>
+References: <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org> <20070428171101.GC20646@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070427235553.GC24476@suse.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070428171101.GC20646@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 04:55:53PM -0700, Greg KH wrote:
-> On Fri, Apr 27, 2007 at 07:03:34AM +0100, David Woodhouse wrote:
-> > On Thu, 2007-04-26 at 17:09 -0700, Greg KH wrote:
-> > > So, I'm still not quite understanding this, is David giving up on his
-> > > code now that you have pulled his changes into your tree?  Or is there
-> > > some reason there are still two competing versions here?
-> > 
-> > Anton hasn't pulled my changes -- it's a separate implementation,
-> > although very similar. In return for the account on git.infradead.org he
-> > said he was going to port the two drivers I already had (PMU and OLPC)
-> > to his framework.
+On Sat, Apr 28, 2007 at 01:11:01PM -0400, Dave Jones wrote:
+> On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
+>  > > I'm all ears for additional regexps, bug reports or other suggestions.
+>  > 
+>  > Neat.
+>  > 
+>  > Does it check for:
+>  > 
+>  > functions marked extern?
+>  > pulling in external functions or variables without a header file?
+>  > return used as a function, eg return(foo);?
 > 
-> Hopefully he took the driver model fixes you did.
+> These sound a little more tricky than just dumb regexps.
+> I don't want to expand this to a fullblown C parser (given
+> that we have sparse which can do a better job), but I don't
+> object to adding some extra code to give the searches more
+> context.
 
-Like class_device -> device transition? Yup.
+The first is a straightforward one-line regexp, as is the last:
 
-> Anton, care to send a
-> new set of patches, so we can review them?
+^extern \w.*\w\(
+return\s?\(
 
-Sure! But please let me do it tomorrow, to send it I need merge
-intermediate commits, and I'm in OLPC battery writing mood. ;-)
+The middle one is a bit trickier. Basically, we don't want people
+doing either:
 
-If cumulative "git diff linus" is acceptable, I can send it now.
+extern int capital_of_assyria;
+int sir_not_appearing_in_this_module();
 
-> thanks,
-> 
-> greg k-h
+in .c files. The first of those two is easy, provided you can figure
+out the file type. And both are possible with multiline regexps.
 
-Good day,
+This whole thing would be quite a bit more powerful if your search
+function joined all the lines together, did a potentially multiline
+search, then calculated the line numbers from the search results. Then
+you could search for things like:
+
+if (...)
+{
+
+if (...) {
+  single_statement;
+}
+
+Looking forward to fully-automated pedantry. This should probably live
+in scripts/.
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+Mathematics is the supreme nostalgia of our time.
