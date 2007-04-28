@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754114AbXD1LXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXD1L0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754114AbXD1LXq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXD1LXq
+	id S1754778AbXD1L0L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXD1L0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:23:46 -0400
-Received: from mail-in-07.arcor-online.net ([151.189.21.47]:38922 "EHLO
-	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754114AbXD1LXp (ORCPT
+	Sat, 28 Apr 2007 07:26:11 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43511 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754778AbXD1L0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:23:45 -0400
-In-Reply-To: <20070427144434.970de79f.akpm@linux-foundation.org>
-References: <200704271742.l3RHgPTH019561@fire-2.osdl.org> <20070427144434.970de79f.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <18bbbf39d8da8a578ab7eab477f500c1@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       Truxton Fulton <trux@truxton.com>, linux-kernel@vger.kernel.org,
-       lee-in-berlin@web.de
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Bugme-new] [Bug 8378] New: Averatec 3156X laptop doesn't reboot with kernels > 2.6.13.5 (responsible commit found)
-Date: Sat, 28 Apr 2007 13:23:17 +0200
+	Sat, 28 Apr 2007 07:26:09 -0400
+Date: Sat, 28 Apr 2007 12:29:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.623)
+Cc: David Chinner <dgc@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070428122908.58f81808@the-village.bc.nu>
+In-Reply-To: <20070428032530.2e9c9e55.akpm@linux-foundation.org>
+References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+	<20070426235542.bad7035a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
+	<20070427002640.22a71d06.akpm@linux-foundation.org>
+	<20070427163620.GI32602149@melbourne.sgi.com>
+	<20070427173432.GJ32602149@melbourne.sgi.com>
+	<20070427121108.9ee05710.akpm@linux-foundation.org>
+	<20070428031739.GK32602149@melbourne.sgi.com>
+	<20070427215634.325606a9.akpm@linux-foundation.org>
+	<20070428104328.0b609fb6@the-village.bc.nu>
+	<20070428025801.eca77146.akpm@linux-foundation.org>
+	<20070428112117.6170f581@the-village.bc.nu>
+	<20070428032530.2e9c9e55.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That patch says
+> But all (both) the proposals we're (ahem) discussing do involve 4x
+> physically contiguous pages going into those four contiguous pagecache
+> slots.
+> 
+> So we're improving things for the half-assed controllers, aren't we?
 
-> +               outb(0x60, 0x64);       /* write Controller Command 
-> Byte */
-> +               udelay(50);
-> +               kb_wait();
-> +               udelay(50);
-> +               outb(0x14, 0x60);       /* set "System flag" */
+Not neccessarily. If you use 16K contiguous pages you have to do
+more work to get memory contiguously and you have less cache efficiency
+both of which will do serious damage to performance with poor I/O
+subsystems for all the extra paging and I/O, and probably way more than
+sglist stuff on PC class boxes. (yes its probably a win on your 32GB SGI
+monster)
 
-so the comment doesn't agree with the code: it sets
-all flags in the command byte, not just the system
-flag.  Perhaps importantly, it disables the keyboard
-clock.  Why not do a read-modify-write sequence instead?
-Something like
+That aside you are improving things for most but not all half-assed
+controllers (some sglists are simply page pointers for each 4K page or
+have different efficient encoding for page sized chunks (I2O). If you are
+reading large chunks on a really crap controller (eg IDE in PIO) then the
+fact you pull 16K when you need 4K will also wipe out any gains.
 
-                outb(0x20, 0x64);       /* read Controller Command Byte 
-*/
-                udelay(50);
-                kb_wait();
-                udelay(50);
-                u8 cmd = inb(0x60);
-                udelay(50);
-                kb_wait();
-                udelay(50);
-                outb(0x60, 0x64);       /* write Controller Command Byte 
-*/
-                udelay(50);
-                kb_wait();
-                udelay(50);
-                outb(cmd | 0x04, 0x60); /* set "System flag" */
-
-Segher
-
+Alan
