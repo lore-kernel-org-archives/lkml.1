@@ -1,303 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163320AbXD1SGH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161152AbXD1SGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163320AbXD1SGH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:06:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161152AbXD1SA7
+	id S1161152AbXD1SGT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163398AbXD1SGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:00:59 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38974 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163341AbXD1R66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:58:58 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070428758.455116000@suse.de>
-In-Reply-To: <20070428758.455116000@suse.de>
-To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       patches@x86-64.org
-Subject: [PATCH] [9/22] x86_64: 64bit PIC SMP trampoline
-Message-Id: <20070428175856.1FF64151CA@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:58:56 +0200 (CEST)
+	Sat, 28 Apr 2007 14:06:09 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:57800 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161071AbXD1SF5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 14:05:57 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Sat, 28 Apr 2007 14:05:44 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: random thoughts on DEPRECATED and OBSOLETE
+In-Reply-To: <46337BD2.7000701@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0704281320560.27098@localhost.localdomain>
+References: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
+ <46337BD2.7000701@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Vivek Goyal <vgoyal@in.ibm.com>
+stefan makes a number of points, all of which i'll add to the wiki
+page shortly (if i get ambitious enough), but i'll answer them here as
+well.
 
+On Sat, 28 Apr 2007, Stefan Richter wrote:
 
-This modifies the SMP trampoline and all of the associated code so
-it can jump to a 64bit kernel loaded at an arbitrary address.
+> Robert P. J. Day wrote:
+> > http://fsdev.net/wiki/index.php?title=Maturity_levels
+> >
+> > rday
+> >
+>
+> A few comments:
+>
+>   - Your argument should include what the benefits of exposing
+>     DEPRECATED and OBSOLETE as machine-parsable tags are.
 
-The dependencies on having an idenetity mapped page in the kernel
-page tables for SMP bootup have all been removed.
+assuming i understand you correctly, the advantage of adding these
+attributes is to be able to (de)select, in one operation, anything of
+that attribute type from your build (in the same way that you can
+deselect anything EXPERIMENTAL in one mouse click).
 
-In addition the trampoline has been modified to verify
-that long mode is supported.  Asking if long mode is implemented is
-down right silly but we have traditionally had some of these checks,
-and they can't hurt anything.  So when the totally ludicrous happens
-we just might handle it correctly.
+i think there's a real benefit in being able to say that you can
+configure and build a kernel that incorporates nothing that people
+have labelled as obsolete or deprecated (or broken, etc.).
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
+(hypothetically, you could do "make allyesconfig", then "make
+menuconfig" and switch off anything tagged as OBSOLETE, then do your
+build.  that *that* configuration should build would be, IMHO, more
+important than whether a full build *including* obsolete stuff
+builds.  all that's doing is prioritizing how much you care whether
+various parts of the kernel actually compile even though, yes, you
+probably want to eventually fix it up, anyway. but at least you can
+compile-test the more important features first.)
 
----
+>   - "...it's not really experimental but nonetheless claims to be. Bad
+>     craziness all around."
 
- arch/x86_64/kernel/head.S       |    1 
- arch/x86_64/kernel/setup.c      |    9 --
- arch/x86_64/kernel/trampoline.S |  168 ++++++++++++++++++++++++++++++++++++----
- 3 files changed, 156 insertions(+), 22 deletions(-)
+>     Won't adding more maturity levels increase craziness?
 
-Index: linux/arch/x86_64/kernel/head.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/head.S
-+++ linux/arch/x86_64/kernel/head.S
-@@ -101,6 +101,7 @@ startup_32:
- 	.org 0x100	
- 	.globl startup_64
- startup_64:
-+ENTRY(secondary_startup_64)
- 	/* We come here either from startup_32
- 	 * or directly from a 64bit bootloader.
- 	 * Since we may have come directly from a bootloader we
-Index: linux/arch/x86_64/kernel/setup.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/setup.c
-+++ linux/arch/x86_64/kernel/setup.c
-@@ -329,15 +329,8 @@ void __init setup_arch(char **cmdline_p)
- #endif
- 
- #ifdef CONFIG_SMP
--	/*
--	 * But first pinch a few for the stack/trampoline stuff
--	 * FIXME: Don't need the extra page at 4K, but need to fix
--	 * trampoline before removing it. (see the GDT stuff)
--	 */
--	reserve_bootmem_generic(PAGE_SIZE, PAGE_SIZE);
--
- 	/* Reserve SMP trampoline */
--	reserve_bootmem_generic(SMP_TRAMPOLINE_BASE, PAGE_SIZE);
-+	reserve_bootmem_generic(SMP_TRAMPOLINE_BASE, 2*PAGE_SIZE);
- #endif
- 
- #ifdef CONFIG_ACPI_SLEEP
-Index: linux/arch/x86_64/kernel/trampoline.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/trampoline.S
-+++ linux/arch/x86_64/kernel/trampoline.S
-@@ -3,6 +3,7 @@
-  *	Trampoline.S	Derived from Setup.S by Linus Torvalds
-  *
-  *	4 Jan 1997 Michael Chastain: changed to gnu as.
-+ *	15 Sept 2005 Eric Biederman: 64bit PIC support
-  *
-  *	Entry: CS:IP point to the start of our code, we are 
-  *	in real mode with no stack, but the rest of the 
-@@ -17,15 +18,20 @@
-  *	and IP is zero.  Thus, data addresses need to be absolute
-  *	(no relocation) and are taken with regard to r_base.
-  *
-+ *	With the addition of trampoline_level4_pgt this code can
-+ *	now enter a 64bit kernel that lives at arbitrary 64bit
-+ *	physical addresses.
-+ *
-  *	If you work on this file, check the object module with objdump
-  *	--full-contents --reloc to make sure there are no relocation
-- *	entries. For the GDT entry we do hand relocation in smpboot.c
-- *	because of 64bit linker limitations.
-+ *	entries.
-  */
- 
- #include <linux/linkage.h>
--#include <asm/segment.h>
-+#include <asm/pgtable.h>
- #include <asm/page.h>
-+#include <asm/msr.h>
-+#include <asm/segment.h>
- 
- .data
- 
-@@ -33,15 +39,31 @@
- 
- ENTRY(trampoline_data)
- r_base = .
-+	cli			# We should be safe anyway
- 	wbinvd	
- 	mov	%cs, %ax	# Code and data in the same place
- 	mov	%ax, %ds
-+	mov	%ax, %es
-+	mov	%ax, %ss
- 
--	cli			# We should be safe anyway
- 
- 	movl	$0xA5A5A5A5, trampoline_data - r_base
- 				# write marker for master knows we're running
- 
-+					# Setup stack
-+	movw	$(trampoline_stack_end - r_base), %sp
-+
-+	call	verify_cpu		# Verify the cpu supports long mode
-+
-+	mov	%cs, %ax
-+	movzx	%ax, %esi		# Find the 32bit trampoline location
-+	shll	$4, %esi
-+
-+					# Fixup the vectors
-+	addl	%esi, startup_32_vector - r_base
-+	addl	%esi, startup_64_vector - r_base
-+	addl	%esi, tgdt + 2 - r_base	# Fixup the gdt pointer
-+
- 	/*
- 	 * GDT tables in non default location kernel can be beyond 16MB and
- 	 * lgdt will not be able to load the address as in real mode default
-@@ -49,23 +71,141 @@ r_base = .
- 	 * to 32 bit.
- 	 */
- 
--	lidtl	idt_48 - r_base	# load idt with 0, 0
--	lgdtl	gdt_48 - r_base	# load gdt with whatever is appropriate
-+	lidtl	tidt - r_base	# load idt with 0, 0
-+	lgdtl	tgdt - r_base	# load gdt with whatever is appropriate
- 
- 	xor	%ax, %ax
- 	inc	%ax		# protected mode (PE) bit
- 	lmsw	%ax		# into protected mode
--	# flaush prefetch and jump to startup_32 in arch/x86_64/kernel/head.S
--	ljmpl	$__KERNEL32_CS, $(startup_32-__START_KERNEL_map)
-+
-+	# flush prefetch and jump to startup_32
-+	ljmpl	*(startup_32_vector - r_base)
-+
-+	.code32
-+	.balign 4
-+startup_32:
-+	movl	$__KERNEL_DS, %eax	# Initialize the %ds segment register
-+	movl	%eax, %ds
-+
-+	xorl	%eax, %eax
-+	btsl	$5, %eax		# Enable PAE mode
-+	movl	%eax, %cr4
-+
-+					# Setup trampoline 4 level pagetables
-+	leal	(trampoline_level4_pgt - r_base)(%esi), %eax
-+	movl	%eax, %cr3
-+
-+	movl	$MSR_EFER, %ecx
-+	movl	$(1 << _EFER_LME), %eax	# Enable Long Mode
-+	xorl	%edx, %edx
-+	wrmsr
-+
-+	xorl	%eax, %eax
-+	btsl	$31, %eax		# Enable paging and in turn activate Long Mode
-+	btsl	$0, %eax		# Enable protected mode
-+	movl	%eax, %cr0
-+
-+	/*
-+	 * At this point we're in long mode but in 32bit compatibility mode
-+	 * with EFER.LME = 1, CS.L = 0, CS.D = 1 (and in turn
-+	 * EFER.LMA = 1). Now we want to jump in 64bit mode, to do that we use
-+	 * the new gdt/idt that has __KERNEL_CS with CS.L = 1.
-+	 */
-+	ljmp	*(startup_64_vector - r_base)(%esi)
-+
-+	.code64
-+	.balign 4
-+startup_64:
-+	# Now jump into the kernel using virtual addresses
-+	movq	$secondary_startup_64, %rax
-+	jmp	*%rax
-+
-+	.code16
-+verify_cpu:
-+	pushl	$0			# Kill any dangerous flags
-+	popfl
-+
-+	/* minimum CPUID flags for x86-64 */
-+	/* see http://www.x86-64.org/lists/discuss/msg02971.html */
-+#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
-+			   (1<<13)|(1<<15)|(1<<24)|(1<<25)|(1<<26))
-+#define REQUIRED_MASK2 (1<<29)
-+
-+	pushfl				# check for cpuid
-+	popl	%eax
-+	movl	%eax, %ebx
-+	xorl	$0x200000,%eax
-+	pushl	%eax
-+	popfl
-+	pushfl
-+	popl	%eax
-+	pushl	%ebx
-+	popfl
-+	cmpl	%eax, %ebx
-+	jz	no_longmode
-+
-+	xorl	%eax, %eax		# See if cpuid 1 is implemented
-+	cpuid
-+	cmpl	$0x1, %eax
-+	jb	no_longmode
-+
-+	movl	$0x01, %eax		# Does the cpu have what it takes?
-+	cpuid
-+	andl	$REQUIRED_MASK1, %edx
-+	xorl	$REQUIRED_MASK1, %edx
-+	jnz	no_longmode
-+
-+	movl	$0x80000000, %eax	# See if extended cpuid is implemented
-+	cpuid
-+	cmpl	$0x80000001, %eax
-+	jb	no_longmode
-+
-+	movl	$0x80000001, %eax	# Does the cpu have what it takes?
-+	cpuid
-+	andl	$REQUIRED_MASK2, %edx
-+	xorl	$REQUIRED_MASK2, %edx
-+	jnz	no_longmode
-+
-+	ret				# The cpu supports long mode
-+
-+no_longmode:
-+	hlt
-+	jmp no_longmode
-+
- 
- 	# Careful these need to be in the same 64K segment as the above;
--idt_48:
-+tidt:
- 	.word	0			# idt limit = 0
- 	.word	0, 0			# idt base = 0L
- 
--gdt_48:
--	.short	GDT_ENTRIES*8 - 1	# gdt limit
--	.long	cpu_gdt_table-__START_KERNEL_map
-+	# Duplicate the global descriptor table
-+	# so the kernel can live anywhere
-+	.balign 4
-+tgdt:
-+	.short	tgdt_end - tgdt		# gdt limit
-+	.long	tgdt - r_base
-+	.short 0
-+	.quad	0x00cf9b000000ffff	# __KERNEL32_CS
-+	.quad	0x00af9b000000ffff	# __KERNEL_CS
-+	.quad	0x00cf93000000ffff	# __KERNEL_DS
-+tgdt_end:
-+
-+	.balign 4
-+startup_32_vector:
-+	.long	startup_32 - r_base
-+	.word	__KERNEL32_CS, 0
-+
-+	.balign 4
-+startup_64_vector:
-+	.long	startup_64 - r_base
-+	.word	__KERNEL_CS, 0
-+
-+trampoline_stack:
-+	.org 0x1000
-+trampoline_stack_end:
-+ENTRY(trampoline_level4_pgt)
-+	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+	.fill	510,8,0
-+	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
- 
--.globl trampoline_end
--trampoline_end:	
-+ENTRY(trampoline_end)
+not at all.  in fact, what it *will* do is prevent those mismatches
+between some kernel feature visually *advertising* itself as being,
+say, DEPRECATED, while, in reality, it's *not* tagged that way.  or
+vice versa.  there's a lot of that going on in the current Kconfig
+files as we speak (with EXPERIMENTAL, of course).
+
+> All of the levels except BROKEN are highly subjective.
+
+i don't think so.  we've had this discussion before, and most people
+seem to agree on what it means for something to be "deprecated" and
+what it means to be "obsolete."  it's not really *that* subjective.
+
+> And such tags can and will become outdated.
+
+how is that different from what's happening now?  there's stuff marked
+"EXPERIMENTAL" that appears to have been in the kernel for years.
+and, obviously, the only way a scheme like this is going to work is if
+developers keep their own subsystems up to date and tag them
+appropriately.
+
+(note also that the beauty of this scheme is that you can start off
+slowly and, a bit at a time, start tagging stuff with those new
+attributes.  you don't need to do it all at once but, the more you use
+it, the more rigorous and selective you can make your builds.)
+
+>   - How is the proposed "maturity" keyword to be used?  Will
+>         maturity EXPERIMENTAL
+>     replace
+>         config EXPERIMENTAL
+>     or
+>         depends on EXPERIMENTAL
+>     ?  One of your examples for the usage of the keyword, "maturity
+>     OBSOLETE && BROKEN", indicates it is the latter.
+
+whoops, good point.  it would be used thusly:
+
+config FUBAR
+	bool "Grobnit the fubar"
+	maturity DEPRECATED
+	...
+
+in addition, "maturity EXPERIMENTAL" would replace "depends on
+EXPERIMENTAL", while you would lose the whole "config EXPERIMENTAL"
+part completely, since EXPERIMENTAL would no longer be a regular
+"config" option, but a maturity attribute.
+
+>   - In case it is the latter, didn't you mean by this example "maturity
+>     OBSOLETE | BROKEN" rather than "maturity OBSOLETE && BROKEN"?
+
+no, it would make no sense to tag something as
+
+	maturity OBSOLETE | BROKEN
+
+as if there was a choice.  any kernel feature would be explicitly
+tagged as one or more maturity attributes, as in one of, possibly:
+
+	maturity OBSOLETE
+	maturity BROKEN
+	maturity BROKEN && OBSOLETE && PIECEOFCRAP
+
+then, depending on your config selection, you would display *only*
+those features whose attributes are a *subset* of what you selected:
+
+	[*] OBSOLETE
+	[ ] BROKEN
+
+would display stuff that (in addition to the normal stuff with no
+maturity tag at all) was OBSOLETE, but *not* OBSOLETE *and* BROKEN,
+since you clearly did not select BROKEN.
+
+> I sometimes voiced my opinion that the Kconfig language and files
+> should stick to reflect the mere dependencies, while presentation
+> should be left to the UIs.  The "maturity" directive is basically a
+> variant of "config" or "depends on" with added presentational
+> information.
+
+in a way, yes, it's a variant, but it's a variant that differs enough
+from a regular "config" and "depends on" that i think trying to mix
+the two would be a horribly bad idea.
+
+i like your suggestion of calling it an "attribute".  it's sort of
+like assigning a type.  but the point to note is that this whole idea
+has a precedent -- EXPERIMENTAL.  once you've allowed kernel features
+to be tagged as EXPERIMENTAL, you're really opened the door to other
+types of maturity levels that would be just as useful.  personally, i
+don't know how anyone can accept the notion of EXPERIMENTAL, yet
+resist adding more maturity levels, but that's just me.
+
+> Of course everybody is entitled to have a different opinion and ask
+> for more presentational markup in Kconfig.
+
+fair enough, but it's not just presentational markup, in the same way
+that EXPERIMENTAL isn't *just* presentational markup -- it means more
+than that.
+
+> Something /can/ sensibly be DEPRECATED and OBSOLETE at the same
+> time.
+
+i disagree.  in previous exchanges, most people seemed satisfied that
+those two terms were mutually exclusive.  i think the difference in
+their definitions is self-evident.
+
+> (This also means the correct term is not maturity /levels/, but
+> maturity attributes or the like.)
+
+sure, i can go with that, but it's not like it's a critical
+distinction since only the word "maturity" need appear in the Kconfig
+file, anyway.
+
+rday
+
+p.s.  a couple more observations.  first, rather than mess with
+EXPERIMENTAL or BROKEN, those can be left entirely alone and a new
+structure can be added to the parser to support *just* maturity levels
+of DEPRECATED and OBSOLETE.  once that seems to work well,
+EXPERIMENTAL and BROKEN can be moved over some time in the future but,
+even without that move, a restricted maturity attribute would still be
+useful and informative.
+
+also, once a few things get tagged, then, as i mentioned before, a
+full tree build can be done in stages.  i recall andrew grumbling that
+he was still trying to get a full configuration to build.  but why try
+to do it all at once?
+
+i'd start with an "allyesconfig" but leaving out all the DEPRECATED,
+OBSOLETE and BROKEN stuff and beat on that until it worked.  then i'd
+add in the DEPRECATED stuff and do it again.  finally, add the
+OBSOLETE stuff.  at each stage, the build might fail but, the further
+you get into it, the less a build failure should concern you.
+
+it's just a thought.
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
