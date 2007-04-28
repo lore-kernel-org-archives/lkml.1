@@ -1,52 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbXD1U0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbXD1U1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750897AbXD1U0p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 16:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXD1U0p
+	id S1752274AbXD1U1V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 16:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXD1U1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 16:26:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:46166 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbXD1U0o (ORCPT
+	Sat, 28 Apr 2007 16:27:20 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2309 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752016AbXD1U1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 16:26:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=DlfKWiUdRmaOFVhifGBZ7WtXjX5+66gkOBa7oUYiZ9poM+T9KqOncBbEsSQc5Agrj8rKggNHu78/hlGJNgBKajZ0i6KBYv6Y9JqEhjS3+3CZFeAd85knp4ZfLC6CT83eJBmaP7RtAG081lYivCAOBm/wp2y+2CU93Mek9ghxpuE=
-Message-ID: <e294b46e0704281326w60f9cecfuace3442791f147b3@mail.gmail.com>
-Date: Sat, 28 Apr 2007 21:26:42 +0100
-From: "Bradley Chapman" <kakadu@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_HIGHMEM4G and 1GB RAM
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 16:27:19 -0400
+Date: Sat, 28 Apr 2007 21:27:01 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070428202701.GA30343@flint.arm.linux.org.uk>
+Mail-Followup-To: Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Diego Calleja <diegocg@gmail.com>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070428195320.GZ3468@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After installing a second 512MB SODIMM into my laptop, I noticed that
-my 2.6.18.3 kernel only detected and used 896MB of the resulting 1GB,
-and informed me that I needed to enable high memory in order to access
-the remaining 127MB.
+On Sat, Apr 28, 2007 at 09:53:20PM +0200, Adrian Bunk wrote:
+> We are already quite good at ignoring bug reports that come through 
+> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
+> than 1600 open bugs because this tells how bad we are at handling bugs.
+> How many thousand bug reports have been ignored during the same time on 
+> linux-kernel?
 
-While doing so, I noticed that the help text stated that enabling high
-memory (in my case, CONFIG_HIGHMEM4G) should only be done if the
-system the kernel is running on has more than 1GB, but less than 4GB -
-it said that systems with 1GB should leave it off, which resulted in
-an eighth of the installed memory going missing. A bit more research
-found a three year old thread on this list where it was stated that
-enabling CONFIG_HIGHMEM4G sometimes slows the system down due to
-sometimes undesirable changes to the way the kernel sets up the memory
-map.
+However, look at this bug:
 
-Basically, all I want to know is whether or not enabling
-CONFIG_HIGHMEM4G for a laptop that has exactly 1GB of RAM will result
-in any performance degradation.
+  http://bugme.osdl.org/show_bug.cgi?id=7760
 
-TIA,
+It's outside my knowledge to be able to fix for various reasons:
 
-Brad
+1. I don't know _anything_ about IXP4xx hardware, so I'm not the right
+   person to own this bug.
 
-P.S: Direct replies please - I'm not subscribed to the list.
+2. I've no idea who's looking after IXP4xx stuff now.  (When it was
+   posted to the ARM kernel list by Rob, it was ignored so I guess the
+   IXP4xx maintainer isn't watching for bugs, if such a person even
+   exists.)
+
+3. I've little idea about why the MM page allocation is failing early.
+
+4. The ARM DMA bounce code is a hack, and I'm pretty sure that this
+   failure is a result of trying to use this contorted code instead
+   of the relevant subsystems having a correct DMA mask.
+
+Can you make any suggestion what should be done about this bug?
+
+I'm personally very tempted to close it as "won't fix" (I wish there was
+a "can't fix" category.)
+
+As for my other bugs:
+
+  http://bugme.osdl.org/show_bug.cgi?id=8149
+
+Again, EP93xx is not my thing, but I've recently merged a patch to allow
+AMBA PL010 uarts (which are present on this platform) to use the clock
+control API.
+
+The EP93xx people (provided they're willing) now need to do whatever's
+required to resolve that bug.  (Hopefully they've taken ownership of
+that bug now.)
+
+  http://bugme.osdl.org/show_bug.cgi?id=4270
+  http://bugme.osdl.org/show_bug.cgi?id=5875
+  http://bugme.osdl.org/show_bug.cgi?id=7750
+
+I'm no longer serial maintainer.  Bug IDs after about 7000 reflect bugs
+submitted since I've resigned my serial maintainership, and therefore
+I've ignored them.  It's far easier to ignore bug reports in bugzilla
+than it is to get categories reassigned (to whom? - dunno) or even
+deleted (if no one steps up presumably that's what needs to happen?)
+
+  http://bugme.osdl.org/show_bug.cgi?id=7389
+
+This one isn't a regression, or even a bug IMHO, but could be viewed as
+undesirable behaviour.  Fixing it is utterly non-trivial though.
+
+A serial port which happens to have an IrDA device on it is still a serial
+port at the end of the day, and as long as we have legacy probing, a serial
+port at a standard COM port address will be detected as such.  There's
+never been any facility in the kernel to get around serial ports being
+at standard COM port addresses.
+
+Moreover, there's a whole class of applications which want IrDA devices
+to be presented to userspace as a serial port rather than a special
+network device, so unilaterally ignoring IrDA devices which look like
+serial is not really an option.
+
+Basically, IrDA and serial need to develop a way to work in harmony
+with each other.  That's a long-term thing though.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
