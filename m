@@ -1,56 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbXD1G3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030991AbXD1Gaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbXD1G3F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXD1G3F
+	id S1030991AbXD1Gaj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:30:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756111AbXD1Gaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:29:05 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2060 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754747AbXD1G3D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:29:03 -0400
-Date: Sat, 28 Apr 2007 16:28:39 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private data
-Message-ID: <20070428062839.GA6535@gondor.apana.org.au>
-References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463286D9.7090609@goop.org>
-User-Agent: Mutt/1.5.9i
+	Sat, 28 Apr 2007 02:30:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:41182 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161221AbXD1GaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 02:30:08 -0400
+Message-ID: <4632E9F1.8020407@goop.org>
+Date: Fri, 27 Apr 2007 23:30:09 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix PSE pagetable construction
+References: <4632AE54.7030200@goop.org> <m1zm4tghyf.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1zm4tghyf.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 04:27:21PM -0700, Jeremy Fitzhardinge wrote:
-> Herbert Xu wrote:
-> > They can be applied separately so you don't need the dom0 part for your
-> > tree.
-> 
-> Great, thanks.
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> When constructing the initial pagetable in pagetable_init, make sure
+>> that non-PSE pmds are updated to PSE ones.  This fixes a bug in the
+>> paravirt pagetable init code, which otherwise tries to avoid overwrite
+>> existing mappings.
+>>
+>> This moves the definition of pmd_huge() out of the hugetlbfs files
+>> into pgtable.h.
+>>
+>> [ I know Eric would like to make larger changes to the way
+>>   pagetable init works, but this patch is the minimal fix to an
+>>   existing bug. ]
+>>     
+>
+> My preference would be for whoever had:
+> paravirt_ops-hooks-to-set-up-initial-pagetable.patch
+>
+> queued to drop it until we can get a version that doesn't break early
+> page table setup.
+>
+> Your partial fix still leaves the real page tables in a partially
+> incorrect state, and even if we removed your changes from the PSE
+> path we still can wind up not failing to set _PAGE_NX in the
+> appropriate places on 4K pages.
+>
+> I have tried to be constructive and suggest how we can fix this
+> cleanly.
+>   
 
-BTW, the version I posted to you is missing the following line.
+Well, you've proposed:
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
---- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
-+++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
-@@ -89,6 +89,7 @@
- 	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
- 	if (skb->h.raw >= skb->tail)
- 		goto out;
-+	skb->csum_start = skb->h.raw - skb->head;
- 	switch (skb->nh.iph->protocol) {
- 	case IPPROTO_TCP:
- 		skb->csum_offset = offsetof(struct tcphdr, check);
+   1. write the pte entries unconditionally
+   2. a callback to ask what permissions each page should be mapped
+   3. a general mechanism to query for pages which require special
+      mappings, such at PAT in the native case, and RO for Xen
+
+      and I've proposed:
+
+   4. if we're given a template pagetable, then don't overwrite any
+      existing mapping
+
+
+1 works in general, but it doesn't work for Xen because it ends up
+mapping pagetable pages RW.
+
+If 2 is constrained to boot-time init then its reasonably possible to
+implement, but it will add a new paravirt_op which isn't going to make
+Andi happy.  A general mechanism will be extremely hard to implement,
+because I don't know of an efficient way to identify whether a
+particular pfn is part of a pagetable or not.
+
+3 suffers the same problem as the general form of 2, but its more
+ambitious since it would also allow identification of pages with an
+arbitrary set of special properties.
+
+Perhaps 2 and 3 could be implemented by stashing some state in the page
+structure, but that's no use for pagetable_init, because page structures
+don't exist at that point.
+
+4 is what I've implemented.  It works for Xen, but it currently prevents
+non-PAE native booting from properly constructing a PSE mapping for the
+kernel.  And as you point out, it also prevents harmless (from Xen's
+perspective) updates of the page permissions.  Plus it just adds a bit
+more uglification entropy to mm/init.c.
+
+
+So, in summary:
+
+Given that 1 is unworkable for Xen, 2 is kind of groady, 3 is
+longer-term research project and 4 is buggy, we need something else.
+
+I don't have any particularly bright ideas, but there is the other idea
+I mentioned.  I could pre-initialize the pagetable with the Xen
+template, but use unconditional calls to set_pte in pagetable_init. 
+However, the init-time xen_set_pte simply refuse to set _PAGE_WRITE on a
+pte which isn't already writable, thereby protecting the RO state of the
+pagetable pages.  Once pagetable construction has finished, it would
+switch to the real xen_set_pte, which operates as normal.
+
+This has the downside of making init-time xen_set_pte a little strange,
+but it does have the advantage of making the Xen constraints solely the
+responsibility of the Xen code, and it is mitigated by the fact that it
+is only in effect during pagetable_init.
+
+Would that work for everyone?
+
+    J
