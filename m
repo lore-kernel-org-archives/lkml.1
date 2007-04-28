@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030634AbXD1NAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965818AbXD1NOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030634AbXD1NAk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 09:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031160AbXD1NAk
+	id S965818AbXD1NOA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 09:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030766AbXD1NOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 09:00:40 -0400
-Received: from main.gmane.org ([80.91.229.2]:47394 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030634AbXD1NAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 09:00:37 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	Sat, 28 Apr 2007 09:14:00 -0400
+Received: from dtp.xs4all.nl ([80.126.206.180]:32652 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S965818AbXD1NNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 09:13:45 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Apr 2007 09:13:44 EDT
+Date: Sat, 28 Apr 2007 15:07:02 +0200
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
 To: linux-kernel@vger.kernel.org
-From: Matthieu CASTET <castet.matthieu@free.fr>
-Subject: Re: [GIT PATCH] UIO patches for 2.6.21
-Date: Sat, 28 Apr 2007 13:00:14 +0000 (UTC)
-Message-ID: <pan.2007.04.28.13.00.14@free.fr>
-References: <20070427224957.GA17967@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: cac94-1-81-57-151-96.fbx.proxad.net
-User-Agent: Pan/0.125 (Potzrebie)
+Subject: nbd hangs in 2.6.21
+Message-ID: <20070428130702.GA23589@bitwizard.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 Hi,
 
-On Fri, 27 Apr 2007 15:49:57 -0700, Greg KH wrote:
+I've been doing some work with nbd-servers, but it seems they are
+a bit unreliable right now. It seems to be the kernel side that
+is locking up. 
 
-> Here are the updated UIO (Userspace I/O driver framework) patches for
-> 2.6.21.
-> 
+Doing things like 
 
-> 
->  Documentation/DocBook/kernel-api.tmpl |    4 +
->  Documentation/DocBook/uio-howto.tmpl  |  498 +++++++++++++++++++++++
->  drivers/Kconfig                       |    1 + drivers/Makefile        
->               |    1 + drivers/uio/Kconfig                   |   27 ++
->  drivers/uio/Makefile                  |    2 + drivers/uio/uio.c       
->               |  702 +++++++++++++++++++++++++++++++++
->  drivers/uio/uio_cif.c                 |  156 ++++++++
->  include/linux/uio_driver.h            |   91 +++++ 9 files changed,
->  1482 insertions(+), 0 deletions(-) create mode 100644
->  Documentation/DocBook/uio-howto.tmpl create mode 100644
->  drivers/uio/Kconfig create mode 100644 drivers/uio/Makefile create mode
->  100644 drivers/uio/uio.c
->  create mode 100644 drivers/uio/uio_cif.c create mode 100644
->  include/linux/uio_driver.h
-> 
-uio_dummy.c (that should be present according documentation) seems 
-missing.
+dd if=/dev/zero of=filesys bs=1k count=1 seek=1024000
+nbd-server 1234 `pwd`/filesys 
 
-I find the doc not very clear for the devices where there is no 
-interrupt : they speak of some kernel timer, but a userspace timer could 
-be used (and even the userspace driver could be written without kernel 
-support at all).
+and then 
 
-At the end of the doc there is something about IRQ_HANDLED vs IRQ_NONE.
-Last time I check kernel irq code, in both case next irq handler are 
-called. The only difference was that if all handler reply IRQ_NONE, the 
-kernel gave an error about an unexpected interrupt.
+nbd-client othersystem 1234 /dev/nd0 
+mke2fs /dev/nd0
+mount /dev/nd0 /mnt
+cp -r /usr/src/linux/ /mnt/test1
+cp -r /usr/src/linux/ /mnt/test2
+sync
 
-Also why sysfs is used for describing the mapping instead of something 
-like an ioctl ?
-UIO could be useful in embedded system where sysfs is not always 
-desirable.
+will usually do the trick: The sync will hang in disk-wait and never
+come out of it. 
 
+In my case "othersystem" is running 2.6.20. I don't think it is
+causing the problems: the nbd-server is simply waiting for the next
+request. I also tried a different codebase: nbdsvr. Same thing. 
 
-Matthieu
+Anybody else see this?
 
+	Roger. 
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
