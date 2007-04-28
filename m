@@ -1,69 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXD1VTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753641AbXD1VV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbXD1VTs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 17:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXD1VTs
+	id S1753641AbXD1VV7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbXD1VV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 17:19:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:22363 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbXD1VTq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 17:19:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GfK7r6wsNTag8BLV3RBKMSFigWOZ4+CYAmlTugXttja3iD6w1RPkGTChXAxOtkVimYhP4/PJ2Gm1BqpQirGrO57SkTLhL+YyBLMr/wZ8lkNSiA9SIEKy7QG+lw/EQPKRMcV+P5iwLe+Mc3SUYWUOQ97IBZCcdWoKKX1Fqm3vqAU=
-Message-ID: <5a4c581d0704281419o75db965p2d4460c6d3efacdb@mail.gmail.com>
-Date: Sat, 28 Apr 2007 23:19:44 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [2.6.21-git2] sk_buff changes break Cisco VPN client
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <ada647gmcq0.fsf@cisco.com>
+	Sat, 28 Apr 2007 17:21:59 -0400
+Received: from khc.piap.pl ([195.187.100.11]:55529 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641AbXD1VV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 17:21:57 -0400
+To: Greg KH <greg@kroah.com>
+Cc: Gene Heskett <gene.heskett@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Jeff Mahoney <jeffm@suse.com>, Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       Riccardo Ricci <rricci@nuovanetmore.it>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Giorgio Lando <patroclo7@gmail.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       H??kan Lindqvist <lindqvist@netstar.se>,
+       Fran??ois Valenduc <francois.valenduc@skynet.be>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>,
+       stable@kernel.org, Len Brown <len.brown@intel.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Francois SIMOND <curio@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, reiserfs-dev@namesys.com
+Subject: Re: [stable] 2.6.21 known regressions (v2) (for -stable team)
+References: <463375E5.5040108@googlemail.com>
+	<200704281252.20381.gene.heskett@gmail.com>
+	<20070428181933.GA9811@kroah.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Sat, 28 Apr 2007 23:21:54 +0200
+In-Reply-To: <20070428181933.GA9811@kroah.com> (Greg KH's message of "Sat, 28 Apr 2007 11:19:33 -0700")
+Message-ID: <m3647gchzh.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5a4c581d0704281338w28227b13p52f3043a56af4945@mail.gmail.com>
-	 <ada647gmcq0.fsf@cisco.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/28/07, Roland Dreier <rdreier@cisco.com> wrote:
-> This is really a problem for Cisco support, not the kernel people.
-> (And despite my email address I really have no idea who looks after
-> the VPN client).
+Greg KH <greg@kroah.com> writes:
 
-It's ok, I know it's "not a kernel issue". I just asked over here
- because I saw network code already converted to the new
- sk_buff code, and hoped someone could hint to a solution;
- I don't think it'd be extremely fruitful to ask Cisco since I'm
- already running a patched version of their latest official
- Linux release, which hasn't been updated for quite a while.
+>> Also, assignation of ttyUSB#'s is volatile depending on phase of the
+>> moon when booted.
+>
+> That's always been the case, ever since the 2.2 kernel releases.  Please
+> use udev if you want persistent device names for your tty USB devices.
 
-> However I can suggest vpnc (http://www.unix-ag.uni-kl.de/~massar/vpnc/)
-> as an alternative.  I'm not forced to use Cisco VPN access any more,
-> but when I tried it, vpnc was tons better than the Cisco product.
-
-vpnc only started supporting hybrid-auth as of very, very
- recently; I used it before my company network turned to
- hybrid-auth-only several months ago. It's in my sights to go
- back to test vpnc-0.4.0 with the hybrid-auth support patch
- in the near future. But in the meantime I'll be stuck with
- the Cisco VPN client.
-
-After clarifying all this, I'll respectfully ask again whether
- anyone has an idea about how to go fixing the five or so
- lines of the skb stuff impacted by the kernel changes -
- and will of course take no offense if nobody can help, while
- happily ignoring those who can only contribute what I do
- already know, that is - this isn't a kernel issue.
-
-Thanks again in advance, ciao,
-
---alessandro
-
- "Did you get married but forgot to get divorced ?"
-
-     (Danny and Dusty, 'The Good Old Days')
+I don't know how udev (or anything) could help here. AFAIK the
+converters have no serial numbers and no other means to
+differentiate.
+-- 
+Krzysztof Halasa
