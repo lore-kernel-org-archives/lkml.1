@@ -1,120 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030354AbXD1Bkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030870AbXD1BlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030354AbXD1Bkn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 21:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030862AbXD1Bkn
+	id S1030870AbXD1BlE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 21:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030869AbXD1BlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 21:40:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59629 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030354AbXD1Bkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 21:40:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Back to the future.
-Date: Sat, 28 Apr 2007 03:44:48 +0200
-User-Agent: KMail/1.9.5
-Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280300.22604.rjw@sisk.pl> <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704271801020.9964@woody.linux-foundation.org>
+	Fri, 27 Apr 2007 21:41:04 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:47750 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030870AbXD1BlA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 21:41:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=onCnu4d1qcYXWC0KBfscEHUI0CHTiDmzo35fox8W+LQZVlzcLp6G0CJLr1PUe5czKasrJdu5eD2o9s/8JdRxUy9SF+tB24EIlUOLr72WBuuus2UiSWzwXhaiWnoMp8yx+cpJDzofCXFYNzhu3LWYMTjvtOnWdNPp01EGmdmRZKA=
+Message-ID: <b6a2187b0704271840l4ca69b27v7c687b546c28dd15@mail.gmail.com>
+Date: Sat, 28 Apr 2007 09:40:59 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "lkml777@123mail.org" <lkml777@123mail.org>
+Subject: Re: Question about Reiser4 (how to boot it?)
+Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
+       "William Heimbigner" <icxcnika@mar.tar.cc>,
+       "Alex Zarochentsev" <zam@namesys.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
+       "Edward Shishkin" <edward@namesys.com>
+In-Reply-To: <1177717116.1762.1186993177@webmail.messagingengine.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704280344.49674.rjw@sisk.pl>
+References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
+	 <20070424193921.GA17129@one.firstfloor.org>
+	 <462F6717.70508@namesys.com>
+	 <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
+	 <1177564182.15467.1186637743@webmail.messagingengine.com>
+	 <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com>
+	 <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
+	 <1177658163.8094.1186854037@webmail.messagingengine.com>
+	 <b6a2187b0704270937g18f305cdxfdd54349fb73f3ea@mail.gmail.com>
+	 <1177717116.1762.1186993177@webmail.messagingengine.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 28 April 2007 03:12, Linus Torvalds wrote:
-> 
-> On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
-> > 
-> > > It's doubly bad, because that idiocy has also infected s2ram. Again, 
-> > > another thing that really makes no sense at all - and we do it not just 
-> > > for snapshotting, but for s2ram too. Can you tell me *why*?
-> > 
-> > Why we freeze tasks at all or why we freeze kernel threads?
-> 
-> In many ways, "at all".
-> 
-> I _do_ realize the IO request queue issues, and that we cannot actually do 
-> s2ram with some devices in the middle of a DMA. So we want to be able to 
-> avoid *that*, there's no question about that. And I suspect that stopping 
-> user threads and then waiting for a sync is practically one of the easier 
-> ways to do so.
-> 
-> So in practice, the "at all" may become a "why freeze kernel threads?" and 
-> freezing user threads I don't find really objectionable.
-> 
-> But as Paul pointed out, Linux on the old powerpc Mac hardware was 
-> actually rather famous for having working (and reliable) suspend long 
-> before it worked even remotely reliably on PC's. And they didn't do even
-> that.
-> 
-> (They didn't have ACPI, and they had a much more limited set of devices, 
-> but the whole process freezer is really about neither of those issues. The 
-> wild and wacky PC hardware has its problems, but that's _one_ thing we 
-> can't blame PC hardware for ;)
+On 4/28/07, lkml777@123mail.org <lkml777@123mail.org> wrote:
+> Thanks, that is certainly helpful, but that only mounts one directory
+> (partition) as Reiser4.
+>
+> This I have already done.
+>
+> I was more interested in how to have a whole partition dedicated to
+> Reiser4 and being able to boot into it.
 
-We freeze user space processes for the reasons that you have quoted above.
+Not able to boot a whole partition with grub2. I've seen patch for
+grub ... ftp://ftp.namesys.com/pub/reiser4progs/grub-0.97-reiser4-20050808.tar.gz
 
-Why we freeze kernel threads in there too is a good question, but not for me to
-answer.  I don't know.  Pavel should know, I think.
+But I since I'm using grub2, it's not possible to boot directly into
+reiser4. I'm only use the whole 250GB partition on my 2nd hard disk
+for testing.
 
-> > > 	git grep create_freezeable_workthread
-> > 
-> > s/workthread/workqueue/
-> 
-> Yes.
-> 
-> > > and ponder the end results of that grep. If you don't see something wrong, 
-> > > you're blind.
-> > 
-> > This was a mistake, quite unrelated to the point you're making.
-> 
-> Did you actually _do_ the "grep" (with the fixed argument)?
-> 
-> I had two totally independent points. #1 was that you yourself have been 
-> fixing bugs in this area. #2 was the result of that grep. It's absolutely 
-> _empty_ except for the define to add that interface.
-> 
-> NOBODY USES IT!
+I'm as interested as you in looking for grub2 to boot directly.
+Currently, I've to create a small ext2 partition for grub2.
 
-The reason is pretty simple.
-
-We wanted to drop that interface altogether, because it was broken (my fault),
-but Oleg suggested that we keep it so that we could fix and use it in the
-future (for purposes other than the hibernation, though).
-
-> Now, grep for the same interface that creates _non_freezeable workqueues.
-> 
-> Put another way:
-> 
-> 	[torvalds@woody linux]$ git grep create_workqueue | wc -l
-> 	35
-> 
-> 	[torvalds@woody linux]$ git grep create_freezeable_workqueue | wc -l
-> 	1
-> 
-> and that _one_ hit you get for the "freezeable" case is not actually a 
-> user, it's the definition!
-> 
-> Ie my point is, nobody wants freezeable kernel threads. Absolutely nobody.
-
-That's freezable workqueues only. :-)
-
-> Yet we have all this support for freezing them (or rather, we freeze them 
-> by default, and then we have all this support for _not_ doing that wrong 
-> default thing!)
-> 
-> So yes, I think it would be interesting to just stop freezing kernel 
-> threads. Totally.
-
-Okay, I'll do that.
-
-Greetings,
-Rafael
+Jeff.
