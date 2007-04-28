@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbXD1Jy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbXD1J6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbXD1Jy3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 05:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXD1Jy3
+	id S1754077AbXD1J6S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 05:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbXD1J6S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 05:54:29 -0400
-Received: from ns.suse.de ([195.135.220.2]:37198 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754037AbXD1Jy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 05:54:28 -0400
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Jones <davej@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-	<20070425143011.57247c1d.akpm@linux-foundation.org>
-	<20070425172447.1576c399.akpm@linux-foundation.org>
-	<20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com>
-	<20070425200207.77a2721a.akpm@linux-foundation.org>
-	<20070428030805.GA13331@redhat.com>
-	<20070427221803.2a117c23.akpm@linux-foundation.org>
-	<adaodl9m4ia.fsf@cisco.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 28 Apr 2007 12:52:14 +0200
-In-Reply-To: <adaodl9m4ia.fsf@cisco.com>
-Message-ID: <p73ps5o22ld.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Apr 2007 05:58:18 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43652 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754077AbXD1J6Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 05:58:16 -0400
+Date: Sat, 28 Apr 2007 02:58:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Chinner <dgc@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-Id: <20070428025801.eca77146.akpm@linux-foundation.org>
+In-Reply-To: <20070428104328.0b609fb6@the-village.bc.nu>
+References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+	<20070426235542.bad7035a.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
+	<20070427002640.22a71d06.akpm@linux-foundation.org>
+	<20070427163620.GI32602149@melbourne.sgi.com>
+	<20070427173432.GJ32602149@melbourne.sgi.com>
+	<20070427121108.9ee05710.akpm@linux-foundation.org>
+	<20070428031739.GK32602149@melbourne.sgi.com>
+	<20070427215634.325606a9.akpm@linux-foundation.org>
+	<20070428104328.0b609fb6@the-village.bc.nu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier <rdreier@cisco.com> writes:
+On Sat, 28 Apr 2007 10:43:28 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
->  > Checking patches/git-infiniband.patch:  signoffs = 113
->  > Use WARN_ON & Recovery code rather than BUG() and BUG_ON()
->  > 8143:+  BUG_ON(mlx4_ib_alloc_db_from_pgdir(pgdir, db, order));
->  > 12629:+ BUG_ON(cmd->free_head < 0);
->  > 16580:+         BUG_ON(index < dev->caps.num_mgms);
->  > 16665:+                 BUG_ON(amgm_index_to_free < dev->caps.num_mgms);
->  > 16681:+         BUG_ON(index < dev->caps.num_mgms);
+> On Fri, 27 Apr 2007 21:56:34 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> I agree -- killing the kernel for a driver bug is dump.  I'll remove
-> all these BUGs before merging.
+> > On Sat, 28 Apr 2007 13:17:40 +1000 David Chinner <dgc@sgi.com> wrote:
+> > 
+> > > > Fix up your lameo HBA for reads.
+> > > 
+> > > Where did that come from? You spend 20 lines described the inefficiencies
+> > > of the readahead in the page cache and it should be fixed but then you
+> > > turn around and say fix the HBA? 
+> > 
+> > My (repeated) point is that if we populate pagecache with physically-contiguous 4k
+> > pages in this manner then bio+block will be able to create much larger SG lists.
+> 
+> Also remember that even if you do larger pages by using virtual pairs or
+> quads of real pages because it helps on some systems you end up needing
+> the same sized sglist as before so you don't make anything worse for
+> half-assed controllers as you get the same I/O size providing they have
+> the minimal 2 or 4 sg list entries (and those that don't are genuinely
+> beyond saving and nowdays very rare)
+> 
 
-So you prefer to corrupt data instead?  I don't think that's a good idea.
-Don't do it. Silent failures are really bad.
-
-BUG_ONs are only fatal when you're in interrupt context anyways because
-it often ends up trying to kill the idle task. In process context
-while there might be some lost locks in most cases the system continues
-running happily. 
-
-At some point I had  a hack to just restart idle to handle the 
-interrupt case too. Perhaps that might be worth resurrecting if you
-want to solve this properly. 
-
-Would be imho far preferable over not having the BUGs imho.
-
--Andi
+Could you expand on that a bit please?  I don't get it.
