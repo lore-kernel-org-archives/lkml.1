@@ -1,189 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163337AbXD1Rzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163341AbXD1SBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163337AbXD1Rzk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163302AbXD1Ryk
+	id S1163341AbXD1SBT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163344AbXD1SBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:54:40 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52921 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1163306AbXD1RyW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:54:22 -0400
-X-Sasl-enc: EY85UynyDqUJYEMMsd4UTDj6YhbkFDnWRnndgO7UxbCl 1177782861
-Message-ID: <46338AEB.2070109@imap.cc>
-Date: Sat, 28 Apr 2007 19:56:59 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative! (-1)
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-In-Reply-To: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig569612D61238E66C5B7DF4E3"
+	Sat, 28 Apr 2007 14:01:13 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38982 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1163349AbXD1R7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:59:03 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070428758.455116000@suse.de>
+In-Reply-To: <20070428758.455116000@suse.de>
+To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       patches@x86-64.org
+Subject: [PATCH] [13/22] x86_64: 64bit ACPI wakeup trampoline
+Message-Id: <20070428175900.622F8151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:59:00 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig569612D61238E66C5B7DF4E3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-With kernel 2.6.21-rc7-mm2, my Dell Optiplex GX110 (P3/933) regularly
-crashes during the SuSE 10.1 startup sequence. When booting to RL5,
-it panicblinks shortly after the graphical login screen appears.
-Booting to RL3, it hangs after the startup message:
-
-Starting Firewall Initialization (phase 2 of 2)
-
-(the last message before "runlevel 3 has been reached") logging this:
-
-[   57.138955] Eeek! page_mapcount(page) went negative! (-1)
-[   57.139040]   page pfn =3D 0
-[   57.139053]   page->flags =3D 400
-[   57.139066]   page->count =3D 1
-[   57.139079]   page->mapping =3D 00000000
-[   57.139111]   vma->vm_ops =3D generic_file_vm_ops+0x0/0x18
-[   57.139147]   vma->vm_ops->nopage =3D 0x0
-[   57.139181]   vma->vm_file->f_op->mmap =3D reiserfs_file_mmap+0x0/0x47=
-
-[   57.139220] ------------[ cut here ]------------
-[   57.139236] kernel BUG at mm/rmap.c:648!
-[   57.139251] invalid opcode: 0000 [#1]
-[   57.139264] PREEMPT
-[   57.139278] Modules linked in: usbserial snd_rtctimer snd_seq_dummy sn=
-d_pcm_oss snd_mixer_oss snd_seq snd_seq_device thermal processor fan butt=
-on battery ac af_packet usb_gigaset ser_gigaset bas_gigaset gigaset isdn =
-slhc crc_ccitt ip6t_REJECT xt_tcpudp ipt_REJECT xt_state iptable_mangle i=
-ptable_nat nf_nat iptable_filter ip6table_mangle nf_conntrack_ipv4 nf_con=
-ntrack nfnetlink ip_tables ip6table_filter ip6_tables x_tables ehci_hcd s=
-nd_intel8x0 snd_ac97_codec ac97_bus snd_pcm snd_timer snd soundcore snd_p=
-age_alloc i2c_i801 uhci_hcd parport_pc lp parport ipv6 nls_iso8859_1 nls_=
-cp437 vfat fat nls_utf8 ntfs dm_mod
-[   57.139447] CPU:    0
-[   57.139450] EIP:    0060:[<c015dfc0>]    Not tainted VLI
-[   57.139453] EFLAGS: 00010282   (2.6.21-rc7-mm2-noinitrd #1)
-[   57.139506] EIP is at page_remove_rmap+0xd7/0x106
-[   57.139522] eax: 0000004b   ebx: c1000000   ecx: 00000001   edx: 00000=
-002
-[   57.139541] esi: c309fde0   edi: b7f24000   ebp: c373ec90   esp: c373e=
-c78
-[   57.139559] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-[   57.139577] Process getcfg-interfac (pid: 4343, ti=3Dc373e000 task=3Dc=
-18734d0 task.ti=3Dc373e000)
-[   57.139586] Stack: c042abb5 00000000 c373ec90 c13f91c0 c1000000 c373dc=
-90 c373ecf0 c0158df4
-[   57.139618]        c04f2ac4 00000001 00000000 c309fde0 c373ed10 00005f=
-f1 00000000 00000001
-[   57.139647]        b7f62000 c374cb7c c374cb7c c374cb7c c373b344 ffffff=
-fe 00000000 c0569c2c
-[   57.139677] Call Trace:
-[   57.139721]  [<c0158df4>] unmap_vmas+0x2d7/0x4c9
-[   57.139748]  [<c015b7dd>] exit_mmap+0x68/0xeb
-[   57.139772]  [<c01191b0>] mmput+0x52/0xcb
-[   57.139805]  [<c011c368>] exit_mm+0xbb/0xc3
-[   57.139832]  [<c011d188>] do_exit+0x1ea/0x73e
-[   57.139857]  [<c011d74d>] sys_exit_group+0x0/0x13
-[   57.139880]  [<c012524e>] get_signal_to_deliver+0x6cd/0x6f8
-[   57.139917]  [<c01036cf>] do_notify_resume+0x91/0x692
-[   57.139944]  [<c0103f15>] work_notifysig+0x13/0x1a
-[   57.139970]  [<b7f6b7a8>] 0xb7f6b7a8
-[   57.139988]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
-[   57.140002] INFO: lockdep is turned off.
-[   57.140015] Code: c0 74 0d 8b 50 0c b8 e5 ab 42 c0 e8 d7 fa fd ff 8b 4=
-6 48 85 c0 74 14 8b 40 10 85 c0 74 0d 8b 50 2c b8 04 ac 42 c0 e8 bc fa fd=
- ff <0f> 0b eb fe 8b 53 10 8b 03 83 e2 01 f7 da c1 e8 1e 83 c2 04 69
-[   57.140133] EIP: [<c015dfc0>] page_remove_rmap+0xd7/0x106 SS:ESP 0068:=
-c373ec78
-[   57.140191] Fixing recursive fault but reboot is needed!
-[   57.140209] BUG: scheduling while atomic: getcfg-interfac/0x00000002/4=
-343
-[   57.140225] INFO: lockdep is turned off.
-[   57.140247]  [<c0104e80>] dump_trace+0x61/0x1e4
-[   57.140275]  [<c010501d>] show_trace_log_lvl+0x1a/0x30
-[   57.140298]  [<c0105fe9>] show_trace+0x12/0x14
-[   57.140322]  [<c0106000>] dump_stack+0x15/0x17
-[   57.140344]  [<c0380849>] schedule+0x6e/0x52c
-[   57.140383]  [<c011d08f>] do_exit+0xf1/0x73e
-[   57.140407]  [<c010569b>] die+0x1b7/0x1bf
-[   57.140429]  [<c0105a66>] do_trap+0x8d/0xa7
-[   57.140451]  [<c0105dd2>] do_invalid_op+0x88/0x92
-[   57.140474]  [<c03833ba>] error_code+0x6a/0x70
-[   57.140500]  [<c015dfc0>] page_remove_rmap+0xd7/0x106
-[   57.140525]  [<c0158df4>] unmap_vmas+0x2d7/0x4c9
-[   57.140548]  [<c015b7dd>] exit_mmap+0x68/0xeb
-[   57.140571]  [<c01191b0>] mmput+0x52/0xcb
-[   57.140593]  [<c011c368>] exit_mm+0xbb/0xc3
-[   57.140615]  [<c011d188>] do_exit+0x1ea/0x73e
-[   57.140638]  [<c011d74d>] sys_exit_group+0x0/0x13
-[   57.140661]  [<c012524e>] get_signal_to_deliver+0x6cd/0x6f8
-[   57.140686]  [<c01036cf>] do_notify_resume+0x91/0x692
-[   57.140708]  [<c0103f15>] work_notifysig+0x13/0x1a
-[   57.140731]  [<b7f6b7a8>] 0xb7f6b7a8
-[   57.140749]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
+From: Vivek Goyal <vgoyal@in.ibm.com>
 
 
-followed by a couple of these:
+o Moved wakeup_level4_pgt into the wakeup routine so we can
+  run the kernel above 4G.
 
-[   87.264940] BUG: sleeping function called from invalid context at mm/s=
-lab.c:3054
-[   87.265023] in_atomic():1, irqs_disabled():0
-[   87.265038] INFO: lockdep is turned off.
-[   87.265079]  [<c0104e80>] dump_trace+0x61/0x1e4
-[   87.265119]  [<c010501d>] show_trace_log_lvl+0x1a/0x30
-[   87.265161]  [<c0105fe9>] show_trace+0x12/0x14
-[   87.265187]  [<c0106000>] dump_stack+0x15/0x17
-[   87.265210]  [<c01177b3>] __might_sleep+0xc7/0xcd
-[   87.265241]  [<c0168548>] __kmalloc_track_caller+0x67/0xe9
-[   87.265281]  [<c0156e0b>] __kzalloc+0x13/0x3d
-[   87.265312]  [<c0226a6c>] kobject_get_path+0x3b/0x94
-[   87.265342]  [<c02b4004>] dev_uevent+0x2d0/0x36a
-[   87.265375]  [<c02b36ac>] show_uevent+0x94/0xe4
-[   87.265400]  [<c02b34fd>] dev_attr_show+0x1b/0x1f
-[   87.265424]  [<c01a7ac0>] sysfs_read_file+0x17f/0x1b0
-[   87.265454]  [<c016bbf8>] vfs_read+0xaf/0x138
-[   87.265479]  [<c016c476>] sys_read+0x3d/0x61
-[   87.265503]  [<c0103dc2>] sysenter_past_esp+0x5f/0x99
-[   87.265531]  [<b7fd7410>] 0xb7fd7410
-[   87.265568]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D
+o Now we first go to 64bit mode and continue to run from trampoline and
+  then then start accessing kernel symbols and restore processor context.
+  This enables us to resume even in relocatable kernel context when 
+  kernel might not be loaded at physical addr it has been compiled for.
 
-separated by 20 or 40 second pauses, before rebooting spontaneously.
+o Removed the need for modifying any existing kernel page table.
 
-2.6.21-rc7-mm1 crashed too. 2.6.21 runs fine.
+o Increased the size of the wakeup routine to 8K. This is required as
+  wake page tables are on trampoline itself and they got to be at 4K
+  boundary, hence one page is not sufficient.
 
-Please let me know if you need more information or want me to test
-anything.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
 
-HTH
-T.
+---
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- In theory, there is no difference between theory and practice.
-  In practice, there is.
+ arch/x86_64/kernel/acpi/sleep.c  |   24 ++-------------
+ arch/x86_64/kernel/acpi/wakeup.S |   59 ++++++++++++++++++++++++---------------
+ arch/x86_64/kernel/head.S        |    9 -----
+ 3 files changed, 41 insertions(+), 51 deletions(-)
 
-
---------------enig569612D61238E66C5B7DF4E3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGM4rzMdB4Whm86/kRAnssAJ9HT1/4TXqm2turgdz3XjmhVTKQlQCeNxtr
-dtVjsitFtjlm1U1Qhj8PJA0=
-=P8Nw
------END PGP SIGNATURE-----
-
---------------enig569612D61238E66C5B7DF4E3--
+Index: linux/arch/x86_64/kernel/acpi/sleep.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/acpi/sleep.c
++++ linux/arch/x86_64/kernel/acpi/sleep.c
+@@ -60,19 +60,6 @@ extern char wakeup_start, wakeup_end;
+ 
+ extern unsigned long acpi_copy_wakeup_routine(unsigned long);
+ 
+-static pgd_t low_ptr;
+-
+-static void init_low_mapping(void)
+-{
+-	pgd_t *slot0 = pgd_offset(current->mm, 0UL);
+-	low_ptr = *slot0;
+-	/* FIXME: We're playing with the current task's page tables here, which
+-	 * is potentially dangerous on SMP systems.
+-	 */
+-	set_pgd(slot0, *pgd_offset(current->mm, PAGE_OFFSET));
+-	local_flush_tlb();
+-}
+-
+ /**
+  * acpi_save_state_mem - save kernel state
+  *
+@@ -81,8 +68,6 @@ static void init_low_mapping(void)
+  */
+ int acpi_save_state_mem(void)
+ {
+-	init_low_mapping();
+-
+ 	memcpy((void *)acpi_wakeup_address, &wakeup_start,
+ 	       &wakeup_end - &wakeup_start);
+ 	acpi_copy_wakeup_routine(acpi_wakeup_address);
+@@ -95,8 +80,6 @@ int acpi_save_state_mem(void)
+  */
+ void acpi_restore_state_mem(void)
+ {
+-	set_pgd(pgd_offset(current->mm, 0UL), low_ptr);
+-	local_flush_tlb();
+ }
+ 
+ /**
+@@ -109,10 +92,11 @@ void acpi_restore_state_mem(void)
+  */
+ void __init acpi_reserve_bootmem(void)
+ {
+-	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
+-	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE)
++	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
++	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
+ 		printk(KERN_CRIT
+-		       "ACPI: Wakeup code way too big, will crash on attempt to suspend\n");
++		       "ACPI: Wakeup code way too big, will crash on attempt"
++		       " to suspend\n");
+ }
+ 
+ static int __init acpi_sleep_setup(char *str)
+Index: linux/arch/x86_64/kernel/acpi/wakeup.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
++++ linux/arch/x86_64/kernel/acpi/wakeup.S
+@@ -1,6 +1,7 @@
+ .text
+ #include <linux/linkage.h>
+ #include <asm/segment.h>
++#include <asm/pgtable.h>
+ #include <asm/page.h>
+ #include <asm/msr.h>
+ 
+@@ -62,12 +63,15 @@ wakeup_code:
+ 
+ 	movb	$0xa2, %al	;  outb %al, $0x80
+ 	
+-	lidt	%ds:idt_48a - wakeup_code
+-	xorl	%eax, %eax
+-	movw	%ds, %ax			# (Convert %ds:gdt to a linear ptr)
+-	shll	$4, %eax
+-	addl	$(gdta - wakeup_code), %eax
+-	movl	%eax, gdt_48a +2 - wakeup_code
++	mov	%ds, %ax			# Find 32bit wakeup_code addr
++	movzx   %ax, %esi			# (Convert %ds:gdt to a liner ptr)
++	shll    $4, %esi
++						# Fix up the vectors
++	addl    %esi, wakeup_32_vector - wakeup_code
++	addl    %esi, wakeup_long64_vector - wakeup_code
++	addl    %esi, gdt_48a + 2 - wakeup_code # Fixup the gdt pointer
++
++	lidtl	%ds:idt_48a - wakeup_code
+ 	lgdtl	%ds:gdt_48a - wakeup_code	# load gdt with whatever is
+ 						# appropriate
+ 
+@@ -80,7 +84,7 @@ wakeup_code:
+ 
+ 	.balign 4
+ wakeup_32_vector:
+-	.long   wakeup_32 - __START_KERNEL_map
++	.long   wakeup_32 - wakeup_code
+ 	.word   __KERNEL32_CS, 0
+ 
+ 	.code32
+@@ -103,10 +107,6 @@ wakeup_32:
+ 	movl	$__KERNEL_DS, %eax
+ 	movl	%eax, %ds
+ 
+-	movl	saved_magic - __START_KERNEL_map, %eax
+-	cmpl	$0x9abcdef0, %eax
+-	jne	bogus_32_magic
+-
+ 	movw	$0x0e00 + 'i', %ds:(0xb8012)
+ 	movb	$0xa8, %al	;  outb %al, $0x80;
+ 
+@@ -120,7 +120,7 @@ wakeup_32:
+ 	movl	%eax, %cr4
+ 
+ 	/* Setup early boot stage 4 level pagetables */
+-	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
++	leal    (wakeup_level4_pgt - wakeup_code)(%esi), %eax
+ 	movl	%eax, %cr3
+ 
+ 	/* Enable Long Mode */
+@@ -159,11 +159,11 @@ wakeup_32:
+ 	 */
+ 
+ 	/* Finally jump in 64bit mode */
+-	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
++        ljmp    *(wakeup_long64_vector - wakeup_code)(%esi)
+ 
+ 	.balign 4
+ wakeup_long64_vector:
+-	.long   wakeup_long64 - __START_KERNEL_map
++	.long   wakeup_long64 - wakeup_code
+ 	.word   __KERNEL_CS, 0
+ 
+ .code64
+@@ -178,11 +178,16 @@ wakeup_long64:
+ 	 * addresses where we're currently running on. We have to do that here
+ 	 * because in 32bit we couldn't load a 64bit linear address.
+ 	 */
+-	lgdt	cpu_gdt_descr - __START_KERNEL_map
++	lgdt	cpu_gdt_descr
+ 
+ 	movw	$0x0e00 + 'n', %ds:(0xb8014)
+ 	movb	$0xa9, %al	;  outb %al, $0x80
+ 
++	movq    saved_magic, %rax
++	movq    $0x123456789abcdef0, %rdx
++	cmpq    %rdx, %rax
++	jne     bogus_64_magic
++
+ 	movw	$0x0e00 + 'u', %ds:(0xb8016)
+ 	
+ 	nop
+@@ -223,20 +228,21 @@ idt_48a:
+ gdt_48a:
+ 	.word	0x800				# gdt limit=2048,
+ 						#  256 GDT entries
+-	.word	0, 0				# gdt base (filled in later)
+-	
++	.long   gdta - wakeup_code              # gdt base (relocated in later)
+ 	
+ real_magic:	.quad 0
+ video_mode:	.quad 0
+ video_flags:	.quad 0
+ 
++.code16
+ bogus_real_magic:
+ 	movb	$0xba,%al	;  outb %al,$0x80
+ 	jmp bogus_real_magic
+ 
+-bogus_32_magic:
++.code64
++bogus_64_magic:
+ 	movb	$0xb3,%al	;  outb %al,$0x80
+-	jmp bogus_32_magic
++	jmp bogus_64_magic
+ 
+ bogus_cpu:
+ 	movb	$0xbc,%al	;  outb %al,$0x80
+@@ -263,6 +269,7 @@ bogus_cpu:
+ #define VIDEO_FIRST_V7 0x0900
+ 
+ # Setting of user mode (AX=mode ID) => CF=success
++.code16
+ mode_seta:
+ 	movw	%ax, %bx
+ #if 0
+@@ -313,6 +320,13 @@ wakeup_stack_begin:	# Stack grows down
+ .org	0xff0
+ wakeup_stack:		# Just below end of page
+ 
++.org   0x1000
++ENTRY(wakeup_level4_pgt)
++	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
++	.fill   510,8,0
++	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
++	.quad   level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
++
+ ENTRY(wakeup_end)
+ 	
+ ##
+@@ -338,9 +352,10 @@ ENTRY(acpi_copy_wakeup_routine)
+ 	movq	$0x123456789abcdef0, %rdx
+ 	movq	%rdx, saved_magic
+ 
+-	movl	saved_magic - __START_KERNEL_map, %eax
+-	cmpl	$0x9abcdef0, %eax
+-	jne	bogus_32_magic
++	movq    saved_magic, %rax
++	movq    $0x123456789abcdef0, %rdx
++	cmpq    %rdx, %rax
++	jne     bogus_64_magic
+ 
+ 	# restore the regs we used
+ 	popq	%rdx
+Index: linux/arch/x86_64/kernel/head.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/head.S
++++ linux/arch/x86_64/kernel/head.S
+@@ -308,15 +308,6 @@ NEXT_PAGE(level2_kernel_pgt)
+ 
+ 	.data
+ 
+-#ifdef CONFIG_ACPI_SLEEP
+-	.align PAGE_SIZE
+-ENTRY(wakeup_level4_pgt)
+-	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-	.fill	510,8,0
+-	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
+-	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
+-#endif
+-
+ #ifndef CONFIG_HOTPLUG_CPU
+ 	__INITDATA
+ #endif
