@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161775AbXD1I7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161778AbXD1I7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161775AbXD1I7E (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 04:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161778AbXD1I7E
+	id S1161778AbXD1I7X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 04:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161787AbXD1I7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 04:59:04 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:38195 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161775AbXD1I7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 04:59:01 -0400
-Message-ID: <46330CD1.8040306@simon.arlott.org.uk>
-Date: Sat, 28 Apr 2007 09:58:57 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Duncan Sands <duncan.sands@math.u-psud.fr>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH (rev 2)] cxacru: Cleanup sysfs attribute code
-References: <462E730F.3090401@simon.arlott.org.uk>	<200704250919.50382.duncan.sands@math.u-psud.fr>	<11882.simon.1177499883@5ec7c279.invalid>	<462FA0D0.9040901@simon.arlott.org.uk> <20070428005028.54f1b621.akpm@linux-foundation.org>
-In-Reply-To: <20070428005028.54f1b621.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 28 Apr 2007 04:59:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50416 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161778AbXD1I7U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 04:59:20 -0400
+Date: Sat, 28 Apr 2007 01:59:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthias Andree <matthias.andree@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+Message-Id: <20070428015912.6108dbd5.akpm@linux-foundation.org>
+In-Reply-To: <20070428085148.GC31196@merlin.emma.line.org>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	<alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
+	<20070427113117.98c4f88b.akpm@linux-foundation.org>
+	<20070428085148.GC31196@merlin.emma.line.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/04/07 08:50, Andrew Morton wrote:
-> On Wed, 25 Apr 2007 19:41:20 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
->> This changes the format of unknown status values to be less verbose and 
->> uses an array instead of several different snprintf calls. Since only 
->> enum values are assigned to it, poll_state is changed from int to enum. 
->> Use abs() for dB values instead of two almost identical return lines.
->> ...
->> +	static char *str[] = { "no", "yes" };
->> +	if (unlikely(value >= ARRAY_SIZE(str)))
->> +		return snprintf(buf, PAGE_SIZE, "%u\n", value);
->> +	return snprintf(buf, PAGE_SIZE, "%s\n", str[value]);
+On Sat, 28 Apr 2007 10:51:48 +0200 Matthias Andree <matthias.andree@gmx.de> wrote:
+
+> On Fri, 27 Apr 2007, Andrew Morton wrote:
 > 
-> Should a bool be displayed as "true" or "false"?
-
-The only attribute that uses this is line_startable... I suppose 
-it could return true/false - I just happened to use yes/no.
-
->> +		return snprintf(buf, PAGE_SIZE, "%u\n", value);
+> > But none of this explains a 20-minute hang, unless a *lot* of fsyncs are
+> > being performed, perhaps.
 > 
-> To be completely pedantic: we shouldn't be printing u32's with %u.  Because
-> %u assumes that u32 is implemented as unsigned int.  Only it's an opaque
-> type and we don't know what actual C type the architecture chose to use.
+> Another thing that is rather unpleasant (haven't yet tried fiddling with
+> the dirty limits) is UDF to DVD-RAM - try rsyncing /home to a DVD-RAM,
+> that's going to leave you with tons of dirty buffers that clear slowly
+> -- "watch -n 1 grep -i dirty /proc/meminfo" is boring, but elucidating...
 > 
-> It happens to work OK on all architectures and I expect it always will, so
-> no change is needed, but there you have it.
 
-Ok.
+yes, a few people are attacking that from various angles at present.  It's
+tricky - writeback has to juggle a lot of balls.  We'll get there.
 
-> u64's and %llu _are_ incompatible on some architectures and I get to fix
-> that about 1000000 times.
-
--- 
-Simon Arlott
