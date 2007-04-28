@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753430AbXD1VLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030413AbXD1VMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753430AbXD1VLA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 17:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXD1VLA
+	id S1030413AbXD1VMm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 17:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030726AbXD1VMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 17:11:00 -0400
-Received: from mail1.vetienne.net ([87.98.219.23]:4286 "EHLO
-	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbXD1VK6 convert rfc822-to-8bit (ORCPT
+	Sat, 28 Apr 2007 17:12:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:62934 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030413AbXD1VMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 17:10:58 -0400
-From: Vincent ETIENNE <ve@vetienne.net>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1
-User-Agent: KMail/1.9.6
-References: <200704262058.33087.ve@vetienne.net> <200704272205.29131.ve@vetienne.net> <20070427153237.03f3b59c.akpm@linux-foundation.org>
-In-Reply-To: <20070427153237.03f3b59c.akpm@linux-foundation.org>
+	Sat, 28 Apr 2007 17:12:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=f9OcxpKsLnmpi+92mmuFkMnO1UIVtMzIrjfFf/Eqdb2gHsn2c07ZEOAqzkE1PaqweeIp6zdLbhEk8YLDxowu5OLn1DglsqCTQYnd5fquJ86FNQVTE04cywdT7MrkyaZ4tnXvnpRO1JW79n17aeJuefCqdaF18PCIpgJE504zoig=
+Message-ID: <75b66ecd0704281412x33352e97kc9c646ea594ef9ee@mail.gmail.com>
+Date: Sat, 28 Apr 2007 17:12:34 -0400
+From: "Lee Revell" <rlrevell@joe-job.com>
+To: "Mikulas Patocka" <mikulas@artax.karlin.mff.cuni.cz>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS is under heavy write load (massive starvation)
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mike Galbraith" <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Date: Sat, 28 Apr 2007 23:10:56 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200704282310.56633.ve@vetienne.net>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	 <20070427013350.d0d7ac38.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz>
+X-Google-Sender-Auth: e35a2cc71c28a908
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Saturday 28 April 2007 00:32:37 Andrew Morton, vous avez écrit :
-> On Fri, 27 Apr 2007 22:05:28 +0200
->
+On 4/28/07, Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
+> I most wonder, why vim fsyncs its swapfile regularly (blocking typing
+> during that) and doesn't fsync the resulting file on :w  :-/
 
-> because we thought we'd fixed the rtnl_lock() problems in 2.6.21-rc7-mm2.
-> Are you sure that log is from 2.6.21-rc7-mm2?
+Never seen this.  Why would fsync block typing unless vim was doing
+disk IO for every keystroke?
 
-
-Yes. I have retested it another time ( for adding the small usb debug 
-message ) and get the same message a new time.
-
-Maybe a tiny difference : only eth0 was setup during boot ( bond0 and eth1 was 
-not setup - volontary  - to avoid problem that could interfere with usb ). 
-Ony after having done my usb test, i have stopped the eth0, setup bond 
-interface and restart bond interface and got the same problem with the same 
-back trace.
-
-Is there anything i can do to get you more precise information ?
-
-
-Resend to the list : i have stripped lklm from the recipients......
-
+Lee
