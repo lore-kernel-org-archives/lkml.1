@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754129AbXD1TSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030506AbXD1TSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754129AbXD1TSQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXD1TSQ
+	id S1030506AbXD1TSf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXD1TSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:18:16 -0400
-Received: from mail.tmr.com ([64.65.253.246]:49318 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754129AbXD1TSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:18:15 -0400
-Message-ID: <46339E0C.4070109@tmr.com>
-Date: Sat, 28 Apr 2007 15:18:36 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sat, 28 Apr 2007 15:18:34 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:43214 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1030490AbXD1TSb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 15:18:31 -0400
+Date: Sat, 28 Apr 2007 11:43:13 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Oliver Neukum <oliver@neukum.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <200704281235.37102.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.63.0704281139500.11638@qynat.qvtvafvgr.pbz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <200704271150.55701.oliver@neukum.org>  <Pine.LNX.4.64.0704271303260.925@sbz-30.cs.Helsinki.FI>
+ <200704281235.37102.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Josh Triplett <josh@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-kernel@vger.kernel.org
-Subject: Re: suspend2 merge (was Re: [Suspend2-devel] Re: CFS and suspend2:
-   hang in atomic copy)
-References: 20070425232806.GL17387@elf.ucw.cz <4630DF19.3060805@kernel.org> <alpine.LFD.0.98.0704261036120.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704261036120.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
+On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
+> On Friday, 27 April 2007 12:12, Pekka J Enberg wrote:
+>> The problem with writing in the kernel is obvious: we need to add new code
+>> to the kernel for compression, encryption, and userspace interaction
+>> (graphical progress bar) that are important for user experience.
+>
+> Yes, and that's why we wanted to introduce the userland part.  The problem
+> with this approach, as it's turned out, is that the userland part must be a
+> very specialized piece of software, really careful of what it's doing, mainly
+> because of the inability to checkpoint filesystems.  If we could checkpoint
+> filesystems and were able to unfreeze the user space after creating the
+> snapshot without the risk of corrupting filesystems in the restore phase,
+> the userland part could be much simpler (even as simple as Linus suggested).
 
-> (And for me personally, I'd love to have all my machines "sleep" by 
-> default, but wake up by eithernet and keyboard - I'd love for my screen 
-> saver to literally put the machine to sleep, but not have to worry about 
-> touching a keyboard - just ssh'ing into them should still wake up. It's 
-> *technically* doable, but it's just a pain to do right now)
-> 
-And timer somehow so cron jobs could still run. Ideal for critical but 
-rarely used machines like fallover servers, the user documentation 
-download site, or similar.
+this sounds like a really good argument for having a useable userspace running. 
+we already have the LVM snapshot code in the kernel, so we have the pieces 
+available to protect the filesystems, we just need to figure out how to put them 
+togeather. (the simpliest way would be to make a new suspend package that 
+required the user to use LVM so that snapshots are available, but this is also 
+the most disruptive approach)
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+David Lang
