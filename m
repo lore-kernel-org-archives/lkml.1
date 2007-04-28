@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbXD1O2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753913AbXD1O2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbXD1O2o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 10:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXD1O2o
+	id S1753913AbXD1O2u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 10:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXD1O2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 10:28:44 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1121 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753873AbXD1O2n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 10:28:43 -0400
-Date: Sat, 28 Apr 2007 10:28:41 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: gregkh@suse.de, <dmitry.torokhov@gmail.com>, <cornelia.huck@de.ibm.com>,
-       <oneukum@suse.de>, <rpurdie@rpsys.net>, <maneesh@in.ibm.com>,
-       <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCHSET] sysfs: sysfs rework, take #2
-In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0704281026400.29437-100000@netrider.rowland.org>
+	Sat, 28 Apr 2007 10:28:50 -0400
+Received: from gw.goop.org ([64.81.55.164]:38613 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbXD1O2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 10:28:49 -0400
+Message-ID: <46335A26.4020109@goop.org>
+Date: Sat, 28 Apr 2007 07:28:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <ak@suse.de>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: fix PSE pagetable construction
+References: <4632AE54.7030200@goop.org> <m1zm4tghyf.fsf@ebiederm.dsl.xmission.com> <200704281229.48597.ak@suse.de>
+In-Reply-To: <200704281229.48597.ak@suse.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Tejun Heo wrote:
+Andi Kleen wrote:
+>> My preference would be for whoever had:
+>> paravirt_ops-hooks-to-set-up-initial-pagetable.patch
+>>     
+>
+> That would be very messy because there are many followup dependencies.
+>
+> But once we have a good fix aggreed by everybody I can merge it into the 
+> initial patch then.
 
-> Subject: [PATCHSET] sysfs: sysfs rework, take #2
-> 
-> Hello, all.
-> 
-> This is respin of syswork rework patchset in gregkh patch series.
-> Changes are...
+I'm working on an incremental fix.
 
-...
-
-> All the known regrssions are fixed.  I think I've got all the
-> attr->owner but haven't verified with cross compiling yet, just
-> allyesconfig on x86-64 and i386.  I'll try to setup some cross compile
-> environments tomorrow and follow up if I can find more fallouts.
-
-What have you done about the problem of device nodes getting unregistered
-while the corresponding sysfs directory is non-empty, say with child
-device directories still present?
-
-Alan Stern
-
+    J
