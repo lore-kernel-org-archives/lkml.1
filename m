@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1163341AbXD1SBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1163351AbXD1SBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1163341AbXD1SBT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 14:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163344AbXD1SBN
+	id S1163351AbXD1SBd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 14:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163349AbXD1SBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 14:01:13 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38982 "EHLO mx2.suse.de"
+	Sat, 28 Apr 2007 14:01:31 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39008 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1163349AbXD1R7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:59:03 -0400
+	id S1163352AbXD1R7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:59:07 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070428758.455116000@suse.de>
 In-Reply-To: <20070428758.455116000@suse.de>
 To: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
        patches@x86-64.org
-Subject: [PATCH] [13/22] x86_64: 64bit ACPI wakeup trampoline
-Message-Id: <20070428175900.622F8151CA@wotan.suse.de>
-Date: Sat, 28 Apr 2007 19:59:00 +0200 (CEST)
+Subject: [PATCH] [18/22] x86: __pa and __pa_symbol address space separation
+Message-Id: <20070428175905.BDF96151CA@wotan.suse.de>
+Date: Sat, 28 Apr 2007 19:59:05 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -24,19 +24,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Vivek Goyal <vgoyal@in.ibm.com>
 
 
-o Moved wakeup_level4_pgt into the wakeup routine so we can
-  run the kernel above 4G.
+Currently __pa_symbol is for use with symbols in the kernel address
+map and __pa is for use with pointers into the physical memory map.
+But the code is implemented so you can usually interchange the two.
 
-o Now we first go to 64bit mode and continue to run from trampoline and
-  then then start accessing kernel symbols and restore processor context.
-  This enables us to resume even in relocatable kernel context when 
-  kernel might not be loaded at physical addr it has been compiled for.
+__pa which is much more common can be implemented much more cheaply
+if it is it doesn't have to worry about any other kernel address
+spaces.  This is especially true with a relocatable kernel as
+__pa_symbol needs to peform an extra variable read to resolve
+the address.
 
-o Removed the need for modifying any existing kernel page table.
+There is a third macro that is added for the vsyscall data
+__pa_vsymbol for finding the physical addesses of vsyscall pages.
 
-o Increased the size of the wakeup routine to 8K. This is required as
-  wake page tables are on trampoline itself and they got to be at 4K
-  boundary, hence one page is not sufficient.
+Most of this patch is simply sorting through the references to
+__pa or __pa_symbol and using the proper one.  A little of
+it is continuing to use a physical address when we have it
+instead of recalculating it several times.
+
+swapper_pgd is now NULL.  leave_mm now uses init_mm.pgd
+and init_mm.pgd is initialized at boot (instead of compile time)
+to the physmem virtual mapping of init_level4_pgd.  The
+physical address changed.
+
+Except for the for EMPTY_ZERO page all of the remaining references
+to __pa_symbol appear to be during kernel initialization.  So this
+should reduce the cost of __pa in the common case, even on a relocated
+kernel.
+
+As this is technically a semantic change we need to be on the lookout
+for anything I missed.  But it works for me (tm).
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 Signed-off-by: Vivek Goyal <vgoyal@in.ibm.com>
@@ -44,242 +61,337 @@ Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- arch/x86_64/kernel/acpi/sleep.c  |   24 ++-------------
- arch/x86_64/kernel/acpi/wakeup.S |   59 ++++++++++++++++++++++++---------------
- arch/x86_64/kernel/head.S        |    9 -----
- 3 files changed, 41 insertions(+), 51 deletions(-)
+ arch/i386/kernel/alternative.c     |    4 ++--
+ arch/i386/mm/init.c                |   15 ++++++++-------
+ arch/x86_64/kernel/machine_kexec.c |   14 +++++++-------
+ arch/x86_64/kernel/setup.c         |    9 +++++----
+ arch/x86_64/kernel/smp.c           |    2 +-
+ arch/x86_64/kernel/vsyscall.c      |    9 +++++++--
+ arch/x86_64/mm/init.c              |   21 +++++++++++----------
+ arch/x86_64/mm/pageattr.c          |   16 ++++++++--------
+ include/asm-x86_64/page.h          |    6 ++----
+ include/asm-x86_64/pgtable.h       |    4 ++--
+ 10 files changed, 53 insertions(+), 47 deletions(-)
 
-Index: linux/arch/x86_64/kernel/acpi/sleep.c
+Index: linux/arch/i386/kernel/alternative.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/acpi/sleep.c
-+++ linux/arch/x86_64/kernel/acpi/sleep.c
-@@ -60,19 +60,6 @@ extern char wakeup_start, wakeup_end;
+--- linux.orig/arch/i386/kernel/alternative.c
++++ linux/arch/i386/kernel/alternative.c
+@@ -402,8 +402,8 @@ void __init alternative_instructions(voi
+ 						_text, _etext);
+ 		}
+ 		free_init_pages("SMP alternatives",
+-				(unsigned long)__smp_alt_begin,
+-				(unsigned long)__smp_alt_end);
++				__pa_symbol(&__smp_alt_begin),
++				__pa_symbol(&__smp_alt_end));
+ 	} else {
+ 		alternatives_smp_save(__smp_alt_instructions,
+ 				      __smp_alt_instructions_end);
+Index: linux/arch/i386/mm/init.c
+===================================================================
+--- linux.orig/arch/i386/mm/init.c
++++ linux/arch/i386/mm/init.c
+@@ -774,10 +774,11 @@ void free_init_pages(char *what, unsigne
+ 	unsigned long addr;
  
- extern unsigned long acpi_copy_wakeup_routine(unsigned long);
- 
--static pgd_t low_ptr;
--
--static void init_low_mapping(void)
--{
--	pgd_t *slot0 = pgd_offset(current->mm, 0UL);
--	low_ptr = *slot0;
--	/* FIXME: We're playing with the current task's page tables here, which
--	 * is potentially dangerous on SMP systems.
--	 */
--	set_pgd(slot0, *pgd_offset(current->mm, PAGE_OFFSET));
--	local_flush_tlb();
--}
--
- /**
-  * acpi_save_state_mem - save kernel state
-  *
-@@ -81,8 +68,6 @@ static void init_low_mapping(void)
-  */
- int acpi_save_state_mem(void)
+ 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
+-		ClearPageReserved(virt_to_page(addr));
+-		init_page_count(virt_to_page(addr));
+-		memset((void *)addr, POISON_FREE_INITMEM, PAGE_SIZE);
+-		free_page(addr);
++		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
++		ClearPageReserved(page);
++		init_page_count(page);
++		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
++		__free_page(page);
+ 		totalram_pages++;
+ 	}
+ 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
+@@ -786,14 +787,14 @@ void free_init_pages(char *what, unsigne
+ void free_initmem(void)
  {
--	init_low_mapping();
--
- 	memcpy((void *)acpi_wakeup_address, &wakeup_start,
- 	       &wakeup_end - &wakeup_start);
- 	acpi_copy_wakeup_routine(acpi_wakeup_address);
-@@ -95,8 +80,6 @@ int acpi_save_state_mem(void)
-  */
- void acpi_restore_state_mem(void)
- {
--	set_pgd(pgd_offset(current->mm, 0UL), low_ptr);
--	local_flush_tlb();
+ 	free_init_pages("unused kernel memory",
+-			(unsigned long)(&__init_begin),
+-			(unsigned long)(&__init_end));
++			__pa_symbol(&__init_begin),
++			__pa_symbol(&__init_end));
  }
  
- /**
-@@ -109,10 +92,11 @@ void acpi_restore_state_mem(void)
-  */
- void __init acpi_reserve_bootmem(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
  {
--	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE);
--	if ((&wakeup_end - &wakeup_start) > PAGE_SIZE)
-+	acpi_wakeup_address = (unsigned long)alloc_bootmem_low(PAGE_SIZE*2);
-+	if ((&wakeup_end - &wakeup_start) > (PAGE_SIZE*2))
- 		printk(KERN_CRIT
--		       "ACPI: Wakeup code way too big, will crash on attempt to suspend\n");
-+		       "ACPI: Wakeup code way too big, will crash on attempt"
-+		       " to suspend\n");
+-	free_init_pages("initrd memory", start, end);
++	free_init_pages("initrd memory", __pa(start), __pa(end));
  }
- 
- static int __init acpi_sleep_setup(char *str)
-Index: linux/arch/x86_64/kernel/acpi/wakeup.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/acpi/wakeup.S
-+++ linux/arch/x86_64/kernel/acpi/wakeup.S
-@@ -1,6 +1,7 @@
- .text
- #include <linux/linkage.h>
- #include <asm/segment.h>
-+#include <asm/pgtable.h>
- #include <asm/page.h>
- #include <asm/msr.h>
- 
-@@ -62,12 +63,15 @@ wakeup_code:
- 
- 	movb	$0xa2, %al	;  outb %al, $0x80
- 	
--	lidt	%ds:idt_48a - wakeup_code
--	xorl	%eax, %eax
--	movw	%ds, %ax			# (Convert %ds:gdt to a linear ptr)
--	shll	$4, %eax
--	addl	$(gdta - wakeup_code), %eax
--	movl	%eax, gdt_48a +2 - wakeup_code
-+	mov	%ds, %ax			# Find 32bit wakeup_code addr
-+	movzx   %ax, %esi			# (Convert %ds:gdt to a liner ptr)
-+	shll    $4, %esi
-+						# Fix up the vectors
-+	addl    %esi, wakeup_32_vector - wakeup_code
-+	addl    %esi, wakeup_long64_vector - wakeup_code
-+	addl    %esi, gdt_48a + 2 - wakeup_code # Fixup the gdt pointer
-+
-+	lidtl	%ds:idt_48a - wakeup_code
- 	lgdtl	%ds:gdt_48a - wakeup_code	# load gdt with whatever is
- 						# appropriate
- 
-@@ -80,7 +84,7 @@ wakeup_code:
- 
- 	.balign 4
- wakeup_32_vector:
--	.long   wakeup_32 - __START_KERNEL_map
-+	.long   wakeup_32 - wakeup_code
- 	.word   __KERNEL32_CS, 0
- 
- 	.code32
-@@ -103,10 +107,6 @@ wakeup_32:
- 	movl	$__KERNEL_DS, %eax
- 	movl	%eax, %ds
- 
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
--
- 	movw	$0x0e00 + 'i', %ds:(0xb8012)
- 	movb	$0xa8, %al	;  outb %al, $0x80;
- 
-@@ -120,7 +120,7 @@ wakeup_32:
- 	movl	%eax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables */
--	movl	$(wakeup_level4_pgt - __START_KERNEL_map), %eax
-+	leal    (wakeup_level4_pgt - wakeup_code)(%esi), %eax
- 	movl	%eax, %cr3
- 
- 	/* Enable Long Mode */
-@@ -159,11 +159,11 @@ wakeup_32:
- 	 */
- 
- 	/* Finally jump in 64bit mode */
--	ljmp	*(wakeup_long64_vector - __START_KERNEL_map)
-+        ljmp    *(wakeup_long64_vector - wakeup_code)(%esi)
- 
- 	.balign 4
- wakeup_long64_vector:
--	.long   wakeup_long64 - __START_KERNEL_map
-+	.long   wakeup_long64 - wakeup_code
- 	.word   __KERNEL_CS, 0
- 
- .code64
-@@ -178,11 +178,16 @@ wakeup_long64:
- 	 * addresses where we're currently running on. We have to do that here
- 	 * because in 32bit we couldn't load a 64bit linear address.
- 	 */
--	lgdt	cpu_gdt_descr - __START_KERNEL_map
-+	lgdt	cpu_gdt_descr
- 
- 	movw	$0x0e00 + 'n', %ds:(0xb8014)
- 	movb	$0xa9, %al	;  outb %al, $0x80
- 
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
-+
- 	movw	$0x0e00 + 'u', %ds:(0xb8016)
- 	
- 	nop
-@@ -223,20 +228,21 @@ idt_48a:
- gdt_48a:
- 	.word	0x800				# gdt limit=2048,
- 						#  256 GDT entries
--	.word	0, 0				# gdt base (filled in later)
--	
-+	.long   gdta - wakeup_code              # gdt base (relocated in later)
- 	
- real_magic:	.quad 0
- video_mode:	.quad 0
- video_flags:	.quad 0
- 
-+.code16
- bogus_real_magic:
- 	movb	$0xba,%al	;  outb %al,$0x80
- 	jmp bogus_real_magic
- 
--bogus_32_magic:
-+.code64
-+bogus_64_magic:
- 	movb	$0xb3,%al	;  outb %al,$0x80
--	jmp bogus_32_magic
-+	jmp bogus_64_magic
- 
- bogus_cpu:
- 	movb	$0xbc,%al	;  outb %al,$0x80
-@@ -263,6 +269,7 @@ bogus_cpu:
- #define VIDEO_FIRST_V7 0x0900
- 
- # Setting of user mode (AX=mode ID) => CF=success
-+.code16
- mode_seta:
- 	movw	%ax, %bx
- #if 0
-@@ -313,6 +320,13 @@ wakeup_stack_begin:	# Stack grows down
- .org	0xff0
- wakeup_stack:		# Just below end of page
- 
-+.org   0x1000
-+ENTRY(wakeup_level4_pgt)
-+	.quad   level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+	.fill   510,8,0
-+	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
-+	.quad   level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
-+
- ENTRY(wakeup_end)
- 	
- ##
-@@ -338,9 +352,10 @@ ENTRY(acpi_copy_wakeup_routine)
- 	movq	$0x123456789abcdef0, %rdx
- 	movq	%rdx, saved_magic
- 
--	movl	saved_magic - __START_KERNEL_map, %eax
--	cmpl	$0x9abcdef0, %eax
--	jne	bogus_32_magic
-+	movq    saved_magic, %rax
-+	movq    $0x123456789abcdef0, %rdx
-+	cmpq    %rdx, %rax
-+	jne     bogus_64_magic
- 
- 	# restore the regs we used
- 	popq	%rdx
-Index: linux/arch/x86_64/kernel/head.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/head.S
-+++ linux/arch/x86_64/kernel/head.S
-@@ -308,15 +308,6 @@ NEXT_PAGE(level2_kernel_pgt)
- 
- 	.data
- 
--#ifdef CONFIG_ACPI_SLEEP
--	.align PAGE_SIZE
--ENTRY(wakeup_level4_pgt)
--	.quad	level3_ident_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	510,8,0
--	/* (2^48-(2*1024*1024*1024))/(2^39) = 511 */
--	.quad	level3_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
--#endif
--
- #ifndef CONFIG_HOTPLUG_CPU
- 	__INITDATA
  #endif
+ 
+Index: linux/arch/x86_64/kernel/machine_kexec.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/machine_kexec.c
++++ linux/arch/x86_64/kernel/machine_kexec.c
+@@ -191,19 +191,19 @@ NORET_TYPE void machine_kexec(struct kim
+ 
+ 	page_list[PA_CONTROL_PAGE] = __pa(control_page);
+ 	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
+-	page_list[PA_PGD] = __pa(kexec_pgd);
++	page_list[PA_PGD] = __pa_symbol(&kexec_pgd);
+ 	page_list[VA_PGD] = (unsigned long)kexec_pgd;
+-	page_list[PA_PUD_0] = __pa(kexec_pud0);
++	page_list[PA_PUD_0] = __pa_symbol(&kexec_pud0);
+ 	page_list[VA_PUD_0] = (unsigned long)kexec_pud0;
+-	page_list[PA_PMD_0] = __pa(kexec_pmd0);
++	page_list[PA_PMD_0] = __pa_symbol(&kexec_pmd0);
+ 	page_list[VA_PMD_0] = (unsigned long)kexec_pmd0;
+-	page_list[PA_PTE_0] = __pa(kexec_pte0);
++	page_list[PA_PTE_0] = __pa_symbol(&kexec_pte0);
+ 	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
+-	page_list[PA_PUD_1] = __pa(kexec_pud1);
++	page_list[PA_PUD_1] = __pa_symbol(&kexec_pud1);
+ 	page_list[VA_PUD_1] = (unsigned long)kexec_pud1;
+-	page_list[PA_PMD_1] = __pa(kexec_pmd1);
++	page_list[PA_PMD_1] = __pa_symbol(&kexec_pmd1);
+ 	page_list[VA_PMD_1] = (unsigned long)kexec_pmd1;
+-	page_list[PA_PTE_1] = __pa(kexec_pte1);
++	page_list[PA_PTE_1] = __pa_symbol(&kexec_pte1);
+ 	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
+ 
+ 	page_list[PA_TABLE_PAGE] =
+Index: linux/arch/x86_64/kernel/setup.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/setup.c
++++ linux/arch/x86_64/kernel/setup.c
+@@ -243,11 +243,12 @@ void __init setup_arch(char **cmdline_p)
+ 	init_mm.end_code = (unsigned long) &_etext;
+ 	init_mm.end_data = (unsigned long) &_edata;
+ 	init_mm.brk = (unsigned long) &_end;
++	init_mm.pgd = __va(__pa_symbol(&init_level4_pgt));
+ 
+-	code_resource.start = virt_to_phys(&_text);
+-	code_resource.end = virt_to_phys(&_etext)-1;
+-	data_resource.start = virt_to_phys(&_etext);
+-	data_resource.end = virt_to_phys(&_edata)-1;
++	code_resource.start = __pa_symbol(&_text);
++	code_resource.end = __pa_symbol(&_etext)-1;
++	data_resource.start = __pa_symbol(&_etext);
++	data_resource.end = __pa_symbol(&_edata)-1;
+ 
+ 	early_identify_cpu(&boot_cpu_data);
+ 
+Index: linux/arch/x86_64/kernel/smp.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/smp.c
++++ linux/arch/x86_64/kernel/smp.c
+@@ -76,7 +76,7 @@ static inline void leave_mm(int cpu)
+ 	if (read_pda(mmu_state) == TLBSTATE_OK)
+ 		BUG();
+ 	cpu_clear(cpu, read_pda(active_mm)->cpu_vm_mask);
+-	load_cr3(swapper_pg_dir);
++	load_cr3(init_mm.pgd);
+ }
+ 
+ /*
+Index: linux/arch/x86_64/kernel/vsyscall.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/vsyscall.c
++++ linux/arch/x86_64/kernel/vsyscall.c
+@@ -45,6 +45,11 @@
+ 
+ #define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
+ #define __syscall_clobber "r11","rcx","memory"
++#define __pa_vsymbol(x)			\
++	({unsigned long v;  		\
++	extern char __vsyscall_0; 	\
++	  asm("" : "=r" (v) : "0" (x)); \
++	  ((v - VSYSCALL_FIRST_PAGE) + __pa_symbol(&__vsyscall_0)); })
+ 
+ struct vsyscall_gtod_data_t {
+ 	seqlock_t lock;
+@@ -224,10 +229,10 @@ static int vsyscall_sysctl_change(ctl_ta
+ 		return ret;
+ 	/* gcc has some trouble with __va(__pa()), so just do it this
+ 	   way. */
+-	map1 = ioremap(__pa_symbol(&vsysc1), 2);
++	map1 = ioremap(__pa_vsymbol(&vsysc1), 2);
+ 	if (!map1)
+ 		return -ENOMEM;
+-	map2 = ioremap(__pa_symbol(&vsysc2), 2);
++	map2 = ioremap(__pa_vsymbol(&vsysc2), 2);
+ 	if (!map2) {
+ 		ret = -ENOMEM;
+ 		goto out;
+Index: linux/arch/x86_64/mm/init.c
+===================================================================
+--- linux.orig/arch/x86_64/mm/init.c
++++ linux/arch/x86_64/mm/init.c
+@@ -565,11 +565,11 @@ void free_init_pages(char *what, unsigne
+ 
+ 	printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) >> 10);
+ 	for (addr = begin; addr < end; addr += PAGE_SIZE) {
+-		ClearPageReserved(virt_to_page(addr));
+-		init_page_count(virt_to_page(addr));
+-		memset((void *)(addr & ~(PAGE_SIZE-1)),
+-			POISON_FREE_INITMEM, PAGE_SIZE);
+-		free_page(addr);
++		struct page *page = pfn_to_page(addr >> PAGE_SHIFT);
++		ClearPageReserved(page);
++		init_page_count(page);
++		memset(page_address(page), POISON_FREE_INITMEM, PAGE_SIZE);
++		__free_page(page);
+ 		totalram_pages++;
+ 	}
+ }
+@@ -579,17 +579,18 @@ void free_initmem(void)
+ 	memset(__initdata_begin, POISON_FREE_INITDATA,
+ 		__initdata_end - __initdata_begin);
+ 	free_init_pages("unused kernel memory",
+-			(unsigned long)(&__init_begin),
+-			(unsigned long)(&__init_end));
++			__pa_symbol(&__init_begin),
++			__pa_symbol(&__init_end));
+ }
+ 
+ #ifdef CONFIG_DEBUG_RODATA
+ 
+ void mark_rodata_ro(void)
+ {
+-	unsigned long addr = (unsigned long)__start_rodata;
++	unsigned long addr = (unsigned long)__va(__pa_symbol(&__start_rodata));
++	unsigned long end  = (unsigned long)__va(__pa_symbol(&__end_rodata));
+ 
+-	for (; addr < (unsigned long)__end_rodata; addr += PAGE_SIZE)
++	for (; addr < end; addr += PAGE_SIZE)
+ 		change_page_attr_addr(addr, 1, PAGE_KERNEL_RO);
+ 
+ 	printk ("Write protecting the kernel read-only data: %luk\n",
+@@ -608,7 +609,7 @@ void mark_rodata_ro(void)
+ #ifdef CONFIG_BLK_DEV_INITRD
+ void free_initrd_mem(unsigned long start, unsigned long end)
+ {
+-	free_init_pages("initrd memory", start, end);
++	free_init_pages("initrd memory", __pa(start), __pa(end));
+ }
+ #endif
+ 
+Index: linux/arch/x86_64/mm/pageattr.c
+===================================================================
+--- linux.orig/arch/x86_64/mm/pageattr.c
++++ linux/arch/x86_64/mm/pageattr.c
+@@ -51,7 +51,6 @@ static struct page *split_large_page(uns
+ 	SetPagePrivate(base);
+ 	page_private(base) = 0;
+ 
+-	address = __pa(address);
+ 	addr = address & LARGE_PAGE_MASK; 
+ 	pbase = (pte_t *)page_address(base);
+ 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
+@@ -101,13 +100,12 @@ static inline void save_page(struct page
+  * No more special protections in this 2/4MB area - revert to a
+  * large page again. 
+  */
+-static void revert_page(unsigned long address, pgprot_t ref_prot)
++static void revert_page(unsigned long address, unsigned long pfn, pgprot_t ref_prot)
+ {
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 	pmd_t *pmd;
+ 	pte_t large_pte;
+-	unsigned long pfn;
+ 
+ 	pgd = pgd_offset_k(address);
+ 	BUG_ON(pgd_none(*pgd));
+@@ -115,7 +113,6 @@ static void revert_page(unsigned long ad
+ 	BUG_ON(pud_none(*pud));
+ 	pmd = pmd_offset(pud, address);
+ 	BUG_ON(pmd_val(*pmd) & _PAGE_PSE);
+-	pfn = (__pa(address) & LARGE_PAGE_MASK) >> PAGE_SHIFT;
+ 	large_pte = pfn_pte(pfn, ref_prot);
+ 	large_pte = pte_mkhuge(large_pte);
+ 	set_pte((pte_t *)pmd, large_pte);
+@@ -141,7 +138,8 @@ __change_page_attr(unsigned long address
+  			 */
+ 			struct page *split;
+ 			ref_prot2 = pte_pgprot(pte_clrhuge(*kpte));
+-			split = split_large_page(address, prot, ref_prot2);
++			split = split_large_page(pfn << PAGE_SHIFT, prot,
++							ref_prot2);
+ 			if (!split)
+ 				return -ENOMEM;
+ 			set_pte(kpte, mk_pte(split, ref_prot2));
+@@ -160,7 +158,7 @@ __change_page_attr(unsigned long address
+ 
+ 	if (page_private(kpte_page) == 0) {
+ 		save_page(kpte_page);
+-		revert_page(address, ref_prot);
++		revert_page(address, pfn, ref_prot);
+  	}
+ 	return 0;
+ } 
+@@ -180,6 +178,7 @@ __change_page_attr(unsigned long address
+  */
+ int change_page_attr_addr(unsigned long address, int numpages, pgprot_t prot)
+ {
++	unsigned long phys_base_pfn = __pa_symbol(__START_KERNEL_map) >> PAGE_SHIFT;
+ 	int err = 0; 
+ 	int i; 
+ 
+@@ -192,10 +191,11 @@ int change_page_attr_addr(unsigned long 
+ 			break; 
+ 		/* Handle kernel mapping too which aliases part of the
+ 		 * lowmem */
+-		if (__pa(address) < KERNEL_TEXT_SIZE) {
++		if ((pfn >= phys_base_pfn) &&
++			((pfn - phys_base_pfn) < (KERNEL_TEXT_SIZE >> PAGE_SHIFT))) {
+ 			unsigned long addr2;
+ 			pgprot_t prot2;
+-			addr2 = __START_KERNEL_map + __pa(address);
++			addr2 = __START_KERNEL_map + ((pfn - phys_base_pfn) << PAGE_SHIFT);
+ 			/* Make sure the kernel mappings stay executable */
+ 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
+ 			err = __change_page_attr(addr2, pfn, prot2,
+Index: linux/include/asm-x86_64/page.h
+===================================================================
+--- linux.orig/include/asm-x86_64/page.h
++++ linux/include/asm-x86_64/page.h
+@@ -102,17 +102,15 @@ typedef struct { unsigned long pgprot; }
+ 
+ /* Note: __pa(&symbol_visible_to_c) should be always replaced with __pa_symbol.
+    Otherwise you risk miscompilation. */ 
+-#define __pa(x)			(((unsigned long)(x)>=__START_KERNEL_map)?(unsigned long)(x) - (unsigned long)__START_KERNEL_map:(unsigned long)(x) - PAGE_OFFSET)
++#define __pa(x)			((unsigned long)(x) - PAGE_OFFSET)
+ /* __pa_symbol should be used for C visible symbols.
+    This seems to be the official gcc blessed way to do such arithmetic. */ 
+ #define __pa_symbol(x)		\
+ 	({unsigned long v;  \
+ 	  asm("" : "=r" (v) : "0" (x)); \
+-	  __pa(v); })
++	  (v - __START_KERNEL_map); })
+ 
+ #define __va(x)			((void *)((unsigned long)(x)+PAGE_OFFSET))
+-#define __boot_va(x)		__va(x)
+-#define __boot_pa(x)		__pa(x)
+ #ifdef CONFIG_FLATMEM
+ #define pfn_valid(pfn)		((pfn) < end_pfn)
+ #endif
+Index: linux/include/asm-x86_64/pgtable.h
+===================================================================
+--- linux.orig/include/asm-x86_64/pgtable.h
++++ linux/include/asm-x86_64/pgtable.h
+@@ -19,7 +19,7 @@ extern pmd_t level2_kernel_pgt[512];
+ extern pgd_t init_level4_pgt[];
+ extern unsigned long __supported_pte_mask;
+ 
+-#define swapper_pg_dir init_level4_pgt
++#define swapper_pg_dir ((pgd_t *)NULL)
+ 
+ extern void paging_init(void);
+ extern void clear_kernel_mapping(unsigned long addr, unsigned long size);
+@@ -29,7 +29,7 @@ extern void clear_kernel_mapping(unsigne
+  * for zero-mapped memory areas etc..
+  */
+ extern unsigned long empty_zero_page[PAGE_SIZE/sizeof(unsigned long)];
+-#define ZERO_PAGE(vaddr) (virt_to_page(empty_zero_page))
++#define ZERO_PAGE(vaddr) (pfn_to_page(__pa_symbol(&empty_zero_page) >> PAGE_SHIFT))
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
