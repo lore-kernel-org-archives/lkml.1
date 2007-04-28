@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031617AbXD1Reo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161130AbXD1Rqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031617AbXD1Reo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 13:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031642AbXD1Reo
+	id S1161130AbXD1Rqb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 13:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1163270AbXD1Rqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 13:34:44 -0400
-Received: from waste.org ([66.93.16.53]:35574 "EHLO waste.org"
+	Sat, 28 Apr 2007 13:46:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33995 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031617AbXD1Ref (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 13:34:35 -0400
-Date: Sat, 28 Apr 2007 12:21:54 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-ID: <20070428172154.GA11115@waste.org>
-References: <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org> <20070428171101.GC20646@redhat.com>
+	id S1161130AbXD1Rqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 13:46:30 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Back to the future.
+Date: Sat, 28 Apr 2007 19:50:29 +0200
+User-Agent: KMail/1.9.5
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <20070428085000.GA3293@elf.ucw.cz> <alpine.LFD.0.98.0704280926140.9964@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704280926140.9964@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070428171101.GC20646@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200704281950.30405.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 01:11:01PM -0400, Dave Jones wrote:
-> On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
->  > > I'm all ears for additional regexps, bug reports or other suggestions.
->  > 
->  > Neat.
->  > 
->  > Does it check for:
->  > 
->  > functions marked extern?
->  > pulling in external functions or variables without a header file?
->  > return used as a function, eg return(foo);?
+On Saturday, 28 April 2007 18:28, Linus Torvalds wrote:
 > 
-> These sound a little more tricky than just dumb regexps.
-> I don't want to expand this to a fullblown C parser (given
-> that we have sparse which can do a better job), but I don't
-> object to adding some extra code to give the searches more
-> context.
+> On Sat, 28 Apr 2007, Pavel Machek wrote:
+> > 
+> > We do not want kernel threads running:
+> > 
+> > a) they may hold some locks and deadlock suspend
+> > 
+> > b) they may do some writes to disk, leading to corruption
+> 
+> You're really just making both of those up.
+> 
+> If a kernel thread holds a lock and deadlocks suspend, that would deadlock 
+> anythign else _too_. Suspend isn't *that* special. Everything it does are 
+> things other people do too.
+> 
+> And no, kernel threads do not write to disk on their own. Name one.
 
-The first is a straightforward one-line regexp, as is the last:
+xfssyncd , or at least it seems so at a quick look.
 
-^extern \w.*\w\(
-return\s?\(
+> They help *others* write to disk, but those disk writes need to happen.
+> 
+> The freezer has *caused* those deadlocks (eg by stopping threads that were 
+> needed for the suspend writeouts to succeed!), not solved them.
 
-The middle one is a bit trickier. Basically, we don't want people
-doing either:
+I can't remember anything like this, but I believe you have a specific test
+case in mind.
 
-extern int capital_of_assyria;
-int sir_not_appearing_in_this_module();
+> So stop making these totally bogus arguments up.
 
-in .c files. The first of those two is easy, provided you can figure
-out the file type. And both are possible with multiline regexps.
+Well, they may be bogus, but there's something else.
 
-This whole thing would be quite a bit more powerful if your search
-function joined all the lines together, did a potentially multiline
-search, then calculated the line numbers from the search results. Then
-you could search for things like:
+I have reviewed some kernel threads used by device drivers that currently are
+frozen to see if it would be safe not to freeze them, and I'm worried.
 
-if (...)
-{
+What, for example, if such a thread schedules a timeout and waits for
+something to happen (eg. the airo driver does something like this), but instead
+the hibernation/suspend happens and the device is frozen/suspended under it?
 
-if (...) {
-  single_statement;
-}
+Shouldn't the thread be notified by the driver's freeze/suspend callback?
 
-Looking forward to fully-automated pedantry. This should probably live
-in scripts/.
+Moreover, what if after the restore the device is not present (for example, it
+may be a pcmcia card that the user has removed) and the thread is scheduled
+before the device's unfreeze callback has a chance to run?  Shouldn't the
+thread check that the device is present?  In that case it would have to be
+notified by someone that the check is necessary, but who can do that?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Greetings,
+Rafael
