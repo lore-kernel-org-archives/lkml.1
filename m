@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161534AbXD1HZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161537AbXD1H3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161534AbXD1HZb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 03:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161591AbXD1HZa
+	id S1161537AbXD1H3s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 03:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965496AbXD1H3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 03:25:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:10031 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965485AbXD1HZJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 03:25:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=XoP3ZmYZybW6QnjQwCsHvGAXRnsKuw+vHD/fyYja04EisW8727my8OFf112jlydUsbII59pRl6K1cPSk/qDeLDFXtZP29DI4HsXYVKiVTaF15ULztrLFK1+cjpQ4IUdrX78oxYU48GN88sGJNXk1x6l06xlRsTHe3RNG19MJcdk=
-Date: Sat, 28 Apr 2007 16:19:23 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: William Irwin <wli@holomorphy.com>
-Subject: [PATCH] hugetlbfs: fix error path in module_init
-Message-ID: <20070428071923.GB9545@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org, William Irwin <wli@holomorphy.com>
-Mime-Version: 1.0
+	Sat, 28 Apr 2007 03:29:48 -0400
+Received: from gw.goop.org ([64.81.55.164]:50794 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965461AbXD1H3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 03:29:47 -0400
+Message-ID: <4632F7EE.6080101@goop.org>
+Date: Sat, 28 Apr 2007 00:29:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] use elfnote.h to generate vsyscall notes
+References: <20070428071615.242FC1801A4@magilla.sf.frob.com>
+In-Reply-To: <20070428071615.242FC1801A4@magilla.sf.frob.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-init_hugetlbfs_fs() needs to unregister hugetlbfs
-when kern_mount() returns error.
+Roland McGrath wrote:
+> Please don't change the section name that way. 
 
-Cc: William Irwin <wli@holomorphy.com>
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Does the section name matter? I've been operating under the assumption
+that it doesn't, other that needing to start with .note. Using
+.note.vendor means that all the vendor's notes will get grouped
+properly, but other than that it seems much of a muchness.
 
----
- fs/hugetlbfs/inode.c |   22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+>  I don't see why the macros
+> should do differently than what was in vsyscall-note.S to begin with.
+>   
+Well, passing the section name seems redundant unless its actually
+needed. In this case it will go from .note.kernel-version to
+.note.Linux, but it will end up being called .note in the final vdso
+regardless.
 
-Index: 2.6-mm/fs/hugetlbfs/inode.c
-===================================================================
---- 2.6-mm.orig/fs/hugetlbfs/inode.c
-+++ 2.6-mm/fs/hugetlbfs/inode.c
-@@ -804,20 +804,23 @@ static int __init init_hugetlbfs_fs(void
- 
- 	error = register_filesystem(&hugetlbfs_fs_type);
- 	if (error)
--		goto out;
-+		goto out_cache;
- 
- 	vfsmount = kern_mount(&hugetlbfs_fs_type);
- 
--	if (!IS_ERR(vfsmount)) {
--		hugetlbfs_vfsmount = vfsmount;
--		return 0;
-+	if (IS_ERR(vfsmount)) {
-+		error = PTR_ERR(vfsmount);
-+		goto out_fs;
- 	}
-+	hugetlbfs_vfsmount = vfsmount;
- 
--	error = PTR_ERR(vfsmount);
-+	return 0;
-+
-+out_fs:
-+	unregister_filesystem(&hugetlbfs_fs_type);
-+out_cache:
-+	kmem_cache_destroy(hugetlbfs_inode_cachep);
- 
-- out:
--	if (error)
--		kmem_cache_destroy(hugetlbfs_inode_cachep);
- 	return error;
- }
- 
+J
