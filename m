@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754778AbXD1L0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965780AbXD1L2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754778AbXD1L0L (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 07:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbXD1L0L
+	id S965780AbXD1L2y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 07:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965796AbXD1L2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 07:26:11 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43511 "EHLO
+	Sat, 28 Apr 2007 07:28:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43518 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754778AbXD1L0J (ORCPT
+	with ESMTP id S965780AbXD1L2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 07:26:09 -0400
-Date: Sat, 28 Apr 2007 12:29:08 +0100
+	Sat, 28 Apr 2007 07:28:53 -0400
+Date: Sat, 28 Apr 2007 12:32:22 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070428122908.58f81808@the-village.bc.nu>
-In-Reply-To: <20070428032530.2e9c9e55.akpm@linux-foundation.org>
-References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
-	<20070427002640.22a71d06.akpm@linux-foundation.org>
-	<20070427163620.GI32602149@melbourne.sgi.com>
-	<20070427173432.GJ32602149@melbourne.sgi.com>
-	<20070427121108.9ee05710.akpm@linux-foundation.org>
-	<20070428031739.GK32602149@melbourne.sgi.com>
-	<20070427215634.325606a9.akpm@linux-foundation.org>
-	<20070428104328.0b609fb6@the-village.bc.nu>
-	<20070428025801.eca77146.akpm@linux-foundation.org>
-	<20070428112117.6170f581@the-village.bc.nu>
-	<20070428032530.2e9c9e55.akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Dave Jones <davej@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070428123222.2ad96f77@the-village.bc.nu>
+In-Reply-To: <20070428111835.GA4471@one.firstfloor.org>
+References: <20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<20070426003911.GA19383@redhat.com>
+	<4630109F.6090002@oracle.com>
+	<20070425200207.77a2721a.akpm@linux-foundation.org>
+	<20070428030805.GA13331@redhat.com>
+	<20070427221803.2a117c23.akpm@linux-foundation.org>
+	<p73tzv022qw.fsf@bingen.suse.de>
+	<20070428030213.4787031f.akpm@linux-foundation.org>
+	<20070428111504.24641d03@the-village.bc.nu>
+	<20070428111835.GA4471@one.firstfloor.org>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -46,23 +37,20 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> But all (both) the proposals we're (ahem) discussing do involve 4x
-> physically contiguous pages going into those four contiguous pagecache
-> slots.
+> > At least one way to handle BUG_ON() type situations more cleanly (for
+> > some anyway) is to fake a hot-unplug/plug event. Thats something that
 > 
-> So we're improving things for the half-assed controllers, aren't we?
+> That would have a high risk of deadlock on some lost lock.
 
-Not neccessarily. If you use 16K contiguous pages you have to do
-more work to get memory contiguously and you have less cache efficiency
-both of which will do serious damage to performance with poor I/O
-subsystems for all the extra paging and I/O, and probably way more than
-sglist stuff on PC class boxes. (yes its probably a win on your 32GB SGI
-monster)
+Well I was assuming you'd code this up in the driver not arbitarily - and
+you need to do that for IRQ anyway. So something like
 
-That aside you are improving things for most but not all half-assed
-controllers (some sglists are simply page pointers for each 4K page or
-have different efficient encoding for page sized chunks (I2O). If you are
-reading large chunks on a really crap controller (eg IDE in PIO) then the
-fact you pull 16K when you need 4K will also wipe out any gains.
+
+	writel(0xFFFFFFFF, &mdev->irq_mask);
+	pci_mark_failed(pdev, PCI_TRY_REPLUG|PCI_TRY_D3);
+	spin_unlock(&mylock);
+	return -EXPLODED;
+
+with pci_mark_failed firing off any replug via a work queue
 
 Alan
