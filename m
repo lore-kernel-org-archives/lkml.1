@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030506AbXD1TSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030501AbXD1TSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030506AbXD1TSf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 15:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXD1TSe
+	id S1030501AbXD1TSo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 15:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030657AbXD1TSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 15:18:34 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:43214 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1030490AbXD1TSb (ORCPT
+	Sat, 28 Apr 2007 15:18:44 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37482 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030501AbXD1TSm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 15:18:31 -0400
-Date: Sat, 28 Apr 2007 11:43:13 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pekka J Enberg <penberg@cs.helsinki.fi>, Oliver Neukum <oliver@neukum.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <200704281235.37102.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.63.0704281139500.11638@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> 
- <200704271150.55701.oliver@neukum.org>  <Pine.LNX.4.64.0704271303260.925@sbz-30.cs.Helsinki.FI>
- <200704281235.37102.rjw@sisk.pl>
+	Sat, 28 Apr 2007 15:18:42 -0400
+Date: Sat, 28 Apr 2007 21:18:51 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: davidhart@tqmcube.com,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 8392] New: Hard Lock Subsequent to Boot
+Message-ID: <20070428191851.GM3468@stusta.de>
+References: <200704281634.l3SGYhJX014704@fire-2.osdl.org> <20070428115906.86e93af6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070428115906.86e93af6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Rafael J. Wysocki wrote:
-> On Friday, 27 April 2007 12:12, Pekka J Enberg wrote:
->> The problem with writing in the kernel is obvious: we need to add new code
->> to the kernel for compression, encryption, and userspace interaction
->> (graphical progress bar) that are important for user experience.
->
-> Yes, and that's why we wanted to introduce the userland part.  The problem
-> with this approach, as it's turned out, is that the userland part must be a
-> very specialized piece of software, really careful of what it's doing, mainly
-> because of the inability to checkpoint filesystems.  If we could checkpoint
-> filesystems and were able to unfreeze the user space after creating the
-> snapshot without the risk of corrupting filesystems in the restore phase,
-> the userland part could be much simpler (even as simple as Linus suggested).
+On Sat, Apr 28, 2007 at 11:59:06AM -0700, Andrew Morton wrote:
+>...
+> 3: Performa a git bisection search, find the buggy patch.  This is quite a
+>    lot of work, and I hate asking people to do it because we don't (afaik)
+>    have any particularly good documentation on how to perform it.
 
-this sounds like a really good argument for having a useable userspace running. 
-we already have the LVM snapshot code in the kernel, so we have the pieces 
-available to protect the filesystems, we just need to figure out how to put them 
-togeather. (the simpliest way would be to make a new suspend package that 
-required the user to use LVM so that snapshots are available, but this is also 
-the most disruptive approach)
 
-David Lang
+The text I'm using for telling people how to bisect is:
+
+<--  snip  -->
+
+# install git and cogito on your computer
+
+# clone Linus' tree:
+cg-clone \ 
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+# start bisecting:
+cd linux-2.6
+git bisect start
+git bisect bad v2.6.21
+git bisect good v2.6.20
+cp /path/to/.config .
+
+# start a round
+make oldconfig
+make
+# install kernel, check whether it's good or bad, then:
+git bisect [bad|good]
+# start next round
+
+
+After at about 12 reboots you'll have found the guilty commit
+("...  is first bad commit").
+
+
+More information on git bisecting:
+  man git-bisect
+
+<--  snip  -->
+
+
+Is this text understandable?
+
+If not, what is missing?
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
