@@ -1,42 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161257AbXD1GxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161194AbXD1GyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161257AbXD1GxF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 02:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXD1GxF
+	id S1161194AbXD1GyN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 02:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161235AbXD1GyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 02:53:05 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59258 "EHLO
+	Sat, 28 Apr 2007 02:54:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:41172 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161257AbXD1GxD (ORCPT
+	by vger.kernel.org with ESMTP id S1161194AbXD1GyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 02:53:03 -0400
-Date: Fri, 27 Apr 2007 23:52:47 -0700
+	Sat, 28 Apr 2007 02:54:11 -0400
+Date: Fri, 27 Apr 2007 23:54:09 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-Id: <20070427235247.3576a463.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704272319170.7610@schroedinger.engr.sgi.com>
-References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
-	<20070427042046.GI65285596@melbourne.sgi.com>
-	<20070426221528.655d79cb.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
-	<20070426235542.bad7035a.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
-	<20070427002640.22a71d06.akpm@linux-foundation.org>
-	<20070427163620.GI32602149@melbourne.sgi.com>
-	<20070427173432.GJ32602149@melbourne.sgi.com>
-	<20070427121108.9ee05710.akpm@linux-foundation.org>
-	<20070428031739.GK32602149@melbourne.sgi.com>
-	<20070427215634.325606a9.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704272158360.7342@schroedinger.engr.sgi.com>
-	<20070427223632.52def99e.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704272319170.7610@schroedinger.engr.sgi.com>
+To: bbpetkov@yahoo.de
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
+ spinlock. was: Re: 2.6.21-rc7-mm2
+Message-Id: <20070427235409.c464455f.akpm@linux-foundation.org>
+In-Reply-To: <20070428062516.GB4957@gollum.tnic>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<20070426182519.GA4532@gollum.tnic>
+	<20070427172230.94b82829.akpm@linux-foundation.org>
+	<20070428055740.GA4957@gollum.tnic>
+	<20070428062516.GB4957@gollum.tnic>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -44,36 +30,35 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 23:24:05 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Sat, 28 Apr 2007 08:25:17 +0200 Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
-> > Fact is, this change has *costs*.  And you're completely ignoring them,
-> > trying to spin them away.  It ain't working and it never will.  I'm seeing
-> > no serious attempt to think about how we can reduce those costs while
-> > retaining most of the benefits.
+> > __attribute__ __address_will_be_overwritten_so_don't_bother_warning_me__?
+> > 
+> > /me going to read gcc docs...
 > 
-> Well okay my work is "no serious attempt".
+> Sorry, no such thing in the docs to do
+> 
+> spinlock_t __attribute__((__uninitialized__)) *ptl;
+> 
+> in order to suppress warnings.
 
-No.  My point is, you have resisted all attempts to explore less costly
-*alternatives* to this work.  Alternatives.
+Bummer.  Thanks for checking.
 
-By misunderstanding any suggestions, misrepresenting them, making incorrect
-statements about them, by not suggesting any alternatives yourself, all of
-it buttressed by a stolid refusal to recognise that this patch has any
-costs.
+> But if function size is our concern here, even
+> shorter would be:
+> 
+> Index: linux-mm/mm/memory.c
+> ===================================================================
+> --- linux-mm.orig/mm/memory.c    2007-04-26 19:57:14.000000000 +0200
+> +++ linux-mm/mm/memory.c 2007-04-26 20:00:30.000000000 +0200
+> @@ -1488,7 +1488,7 @@
+>         pte_t *pte;
+>         int err;
+>         struct page *pmd_page;
+> -       spinlock_t *ptl;
+> +       spinlock_t *ptl = 0;
+> 
+>         pte = (mm == &init_mm) ?
+>                 pte_alloc_kernel(pmd, addr) :
 
-This effectively leaves it up to others to find time to think about and to
-implement possible alternative solutions to the problems which you're
-observing.
-
-
-The altenative which is on the table (and there may be others) is
-populating pagecache with physically contiguous pages.  This will fix the
-HBA problem and is much less costly in terms of maintenance and will
-improve all workloads on all machines and doesn't have the additional
-runtime costs of pagecache wastage and more memset() overhead with small
-files and it doesn't require administrator intervention.
-
-OTOH (yes!  there are tradeoffs!) it will consume an unknown amount more
-CPU and it doesn't address the large-fs-blocksize requirement, but I don't
-know how important the latter is and given the unrelenting advocacy storm
-coming from the SGI direction I don't know how to find that out, frankly.
+hm, that'll have the same seven-byte cost as `= NULL;', won't it?
