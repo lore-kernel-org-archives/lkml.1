@@ -1,65 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030915AbXD1CJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030916AbXD1CPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030915AbXD1CJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Apr 2007 22:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030916AbXD1CJ5
+	id S1030916AbXD1CPu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Apr 2007 22:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030917AbXD1CPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 22:09:57 -0400
-Received: from foo.birdnet.se ([213.88.146.6]:50380 "EHLO foo.birdnet.se"
+	Fri, 27 Apr 2007 22:15:50 -0400
+Received: from gw.goop.org ([64.81.55.164]:44355 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030915AbXD1CJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 22:09:56 -0400
-Message-ID: <20070428020950.15491.qmail@cdy.org>
-Date: Sat, 28 Apr 2007 04:09:50 +0200
-From: Peter Stuge <stuge-linux-pcmcia@cdy.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>,
-       linux-pcmcia@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>,
-       Dominik Brodowski <linux@dominikbrodowski.net>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH] ide-cs: recognize 2GB CompactFlash from Transcend
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	"Aeschbacher, Fabrice" <Fabrice.Aeschbacher@siemens.com>,
-	linux-pcmcia@lists.infradead.org,
-	lkml <linux-kernel@vger.kernel.org>,
-	Dominik Brodowski <linux@dominikbrodowski.net>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-References: <20070425171533.22efa133.akpm@linux-foundation.org> <D7810733513F4840B4EBAAFA64D9C6A4012D6188@stgw002a.ww002.siemens.net> <20070427190143.d597dd38.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070427190143.d597dd38.akpm@linux-foundation.org>
+	id S1030916AbXD1CPs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Apr 2007 22:15:48 -0400
+Message-ID: <4632AE54.7030200@goop.org>
+Date: Fri, 27 Apr 2007 19:15:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix PSE pagetable construction
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 07:01:43PM -0700, Andrew Morton wrote:
-> This one-liner is turning into a fiasco.
-> diff -puN drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend drivers/ide/legacy/ide-cs.c
-> --- a/drivers/ide/legacy/ide-cs.c~ide-cs-recognize-2gb-compactflash-from-transcend
-> +++ a/drivers/ide/legacy/ide-cs.c
-> @@ -401,6 +401,8 @@ static struct pcmcia_device_id ide_ids[]
->  	PCMCIA_DEVICE_PROD_ID12("TOSHIBA", "MK2001MPL", 0xb4585a1a, 0x3489e003),
->  	PCMCIA_DEVICE_PROD_ID1("TRANSCEND    512M   ", 0xd0909443),
->  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS1GCF80", 0x709b1bf1, 0x2a54d4b1),
-> +	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0xf54a91c8),
-> +	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS2GCF120", 0x709b1bf1, 0x969aa4f2),
->  	PCMCIA_DEVICE_PROD_ID12("TRANSCEND", "TS4GCF120", 0x709b1bf1, 0xf54a91c8),
->  	PCMCIA_DEVICE_PROD_ID12("WIT", "IDE16", 0x244e5994, 0x3e232852),
->  	PCMCIA_DEVICE_PROD_ID12("WEIDA", "TWTTI", 0xcc7cf69c, 0x212bb918),
-> _
-> 
-> 
-> Is this really supposed to add a TS2GCF120 entry with the same IDs
-> as TS4GCF120?
+When constructing the initial pagetable in pagetable_init, make sure
+that non-PSE pmds are updated to PSE ones.  This fixes a bug in the
+paravirt pagetable init code, which otherwise tries to avoid overwrite
+existing mappings.
 
-That's probably a copy and paste error. 0x969aa4f2 is the correct ID.
+This moves the definition of pmd_huge() out of the hugetlbfs files
+into pgtable.h.
 
+[ I know Eric would like to make larger changes to the way
+  pagetable init works, but this patch is the minimal fix to an
+  existing bug. ]
 
-> And pata_pcmcia-recognize-2gb-compactflash-from-transcend.patch:
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
 
-This one is all right so for what it's worth, it gets:
+---
+ arch/i386/mm/hugetlbpage.c   |    6 +-----
+ arch/i386/mm/init.c          |    2 +-
+ include/asm-i386/pgtable.h   |    2 +-
+ include/asm-x86_64/pgtable.h |    1 +
+ include/linux/hugetlb.h      |    2 --
+ 5 files changed, 4 insertions(+), 9 deletions(-)
 
-Acked-by: Peter Stuge <peter@stuge.se>
+===================================================================
+--- a/arch/i386/mm/hugetlbpage.c
++++ b/arch/i386/mm/hugetlbpage.c
+@@ -183,6 +183,7 @@ follow_huge_addr(struct mm_struct *mm, u
+ 	return page;
+ }
+ 
++#undef pmd_huge
+ int pmd_huge(pmd_t pmd)
+ {
+ 	return 0;
+@@ -201,11 +202,6 @@ follow_huge_addr(struct mm_struct *mm, u
+ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
+ {
+ 	return ERR_PTR(-EINVAL);
+-}
+-
+-int pmd_huge(pmd_t pmd)
+-{
+-	return !!(pmd_val(pmd) & _PAGE_PSE);
+ }
+ 
+ struct page *
+===================================================================
+--- a/arch/i386/mm/init.c
++++ b/arch/i386/mm/init.c
+@@ -172,7 +172,7 @@ static void __init kernel_physical_mappi
+ 			/* Map with big pages if possible, otherwise create normal page tables. */
+ 			if (cpu_has_pse) {
+ 				unsigned int address2 = (pfn + PTRS_PER_PTE - 1) * PAGE_SIZE + PAGE_OFFSET + PAGE_SIZE-1;
+-				if (!pmd_present(*pmd)) {
++				if (!pmd_present(*pmd) || !pmd_huge(*pmd)) {
+ 					if (is_kernel_text(address) || is_kernel_text(address2))
+ 						set_pmd(pmd, pfn_pmd(pfn, PAGE_KERNEL_LARGE_EXEC));
+ 					else
+===================================================================
+--- a/include/asm-i386/pgtable.h
++++ b/include/asm-i386/pgtable.h
+@@ -211,7 +211,7 @@ extern unsigned long pg0[];
+ #define pmd_none(x)	(!(unsigned long)pmd_val(x))
+ #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+ #define	pmd_bad(x)	((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
+-
++#define pmd_huge(x)	((pmd_val(x) & _PAGE_PSE) != 0)
+ 
+ #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
+ 
+===================================================================
+--- a/include/asm-x86_64/pgtable.h
++++ b/include/asm-x86_64/pgtable.h
+@@ -352,6 +352,7 @@ static inline int pmd_large(pmd_t pte) {
+ 			pmd_index(address))
+ #define pmd_none(x)	(!pmd_val(x))
+ #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
++#define pmd_huge(x)	((pmd_val(x) & _PAGE_PSE) != 0)
+ #define pmd_clear(xp)	do { set_pmd(xp, __pmd(0)); } while (0)
+ #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
+ #define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+===================================================================
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -41,7 +41,6 @@ struct page *follow_huge_addr(struct mm_
+ 			      int write);
+ struct page *follow_huge_pmd(struct mm_struct *mm, unsigned long address,
+ 				pmd_t *pmd, int write);
+-int pmd_huge(pmd_t pmd);
+ void hugetlb_change_protection(struct vm_area_struct *vma,
+ 		unsigned long address, unsigned long end, pgprot_t newprot);
+ 
+@@ -114,7 +113,6 @@ static inline unsigned long hugetlb_tota
+ #define hugetlb_report_node_meminfo(n, buf)	0
+ #define follow_huge_pmd(mm, addr, pmd, write)	NULL
+ #define prepare_hugepage_range(addr,len,pgoff)	(-EINVAL)
+-#define pmd_huge(x)	0
+ #define is_hugepage_only_range(mm, addr, len)	0
+ #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
+ #define hugetlb_fault(mm, vma, addr, write)	({ BUG(); 0; })
 
-
-//Peter
