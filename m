@@ -1,158 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbXD1Xke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbXD1Xkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbXD1Xke (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 19:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754410AbXD1Xkd
+	id S1754423AbXD1Xkx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 19:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbXD1Xkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 19:40:33 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:49509 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754404AbXD1XkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 19:40:10 -0400
-Message-ID: <4633DB56.6070000@simon.arlott.org.uk>
-Date: Sun, 29 Apr 2007 00:40:06 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Sat, 28 Apr 2007 19:40:53 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53847 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754419AbXD1Xkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 19:40:51 -0400
+Date: Sat, 28 Apr 2007 16:40:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+cc: Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+In-Reply-To: <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+Message-ID: <alpine.LFD.0.98.0704281629440.9964@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+  <20070426125802.GL3468@stusta.de>  <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+  <4630DB24.4030005@redhat.com>  <20070426201325.8a1ebda3.diegocg@gmail.com>
+  <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> 
+ <20070426224148.69b91b2e.diegocg@gmail.com> 
+ <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> 
+ <20070428195320.GZ3468@stusta.de>  <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
+ <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: randy.dunlap@oracle.com, herbert@gondor.apana.org.au, michal@logix.cz
-Subject: [PATCH] crypto: Remove pointless padlock module
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When this is compiled in it is run too early to do anything useful:
-[    6.052000] padlock: No VIA PadLock drivers have been loaded.
-[    6.052000] padlock: Using VIA PadLock ACE for AES algorithm.
-[    6.052000] padlock: Using VIA PadLock ACE for SHA1/SHA256 algorithms.
 
-When it's a module it isn't doing anything special, the same functionality 
-can be provided in userspace by "probeall padlock padlock-aes padlock-sha" 
-in modules.conf if it is required.
 
-Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Michal Ludvig <michal@logix.cz>
----
- drivers/crypto/Kconfig   |   16 ++----------
- drivers/crypto/Makefile  |    1 -
- drivers/crypto/padlock.c |   58 ----------------------------------------------
- 3 files changed, 3 insertions(+), 72 deletions(-)
- delete mode 100644 drivers/crypto/padlock.c
+On Sun, 29 Apr 2007, Markus Rechberger wrote:
+> 
+> I totally disagree here, bugzilla is a very good tool. If someone is
+> too lazy to look at it it's his problem.
 
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index ff8c4be..f85cecc 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -1,10 +1,10 @@
- menu "Hardware crypto devices"
- 
- config CRYPTO_DEV_PADLOCK
--	tristate "Support for VIA PadLock ACE"
--	depends on X86_32
-+	bool "Support for VIA PadLock ACE"
-+	depends on CRYPTO && X86_32
-+	default y
- 	select CRYPTO_ALGAPI
--	default m
- 	help
- 	  Some VIA processors come with an integrated crypto engine
- 	  (so called VIA PadLock ACE, Advanced Cryptography Engine)
-@@ -14,16 +14,6 @@ config CRYPTO_DEV_PADLOCK
- 	  The instructions are used only when the CPU supports them.
- 	  Otherwise software encryption is used.
- 
--	  Selecting M for this option will compile a helper module
--	  padlock.ko that should autoload all below configured
--	  algorithms. Don't worry if your hardware does not support
--	  some or all of them. In such case padlock.ko will
--	  simply write a single line into the kernel log informing
--	  about its failure but everything will keep working fine.
--
--	  If you are unsure, say M. The compiled module will be
--	  called padlock.ko
--
- config CRYPTO_DEV_PADLOCK_AES
- 	tristate "PadLock driver for AES algorithm"
- 	depends on CRYPTO_DEV_PADLOCK
-diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
-index 6059cf8..d070030 100644
---- a/drivers/crypto/Makefile
-+++ b/drivers/crypto/Makefile
-@@ -1,4 +1,3 @@
--obj-$(CONFIG_CRYPTO_DEV_PADLOCK) += padlock.o
- obj-$(CONFIG_CRYPTO_DEV_PADLOCK_AES) += padlock-aes.o
- obj-$(CONFIG_CRYPTO_DEV_PADLOCK_SHA) += padlock-sha.o
- obj-$(CONFIG_CRYPTO_DEV_GEODE) += geode-aes.o
-diff --git a/drivers/crypto/padlock.c b/drivers/crypto/padlock.c
-deleted file mode 100644
-index d6d7dd5..0000000
---- a/drivers/crypto/padlock.c
-+++ /dev/null
-@@ -1,58 +0,0 @@
--/*
-- * Cryptographic API.
-- *
-- * Support for VIA PadLock hardware crypto engine.
-- *
-- * Copyright (c) 2006  Michal Ludvig <michal@logix.cz>
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/errno.h>
--#include <linux/crypto.h>
--#include <linux/cryptohash.h>
--#include <linux/interrupt.h>
--#include <linux/kernel.h>
--#include <linux/scatterlist.h>
--#include "padlock.h"
--
--static int __init padlock_init(void)
--{
--	int success = 0;
--
--	if (crypto_has_cipher("aes-padlock", 0, 0))
--		success++;
--
--	if (crypto_has_hash("sha1-padlock", 0, 0))
--		success++;
--
--	if (crypto_has_hash("sha256-padlock", 0, 0))
--		success++;
--
--	if (!success) {
--		printk(KERN_WARNING PFX "No VIA PadLock drivers have been loaded.\n");
--		return -ENODEV;
--	}
--
--	printk(KERN_NOTICE PFX "%d drivers are available.\n", success);
--
--	return 0;
--}
--
--static void __exit padlock_fini(void)
--{
--}
--
--module_init(padlock_init);
--module_exit(padlock_fini);
--
--MODULE_DESCRIPTION("Load all configured PadLock algorithms.");
--MODULE_LICENSE("GPL");
--MODULE_AUTHOR("Michal Ludvig");
--
--- 
-1.5.0.1
+You must be doing things very differently from a lot of other people if 
+you think that's the case.
 
--- 
-Simon Arlott
+> Kernel Janitors can pick out some bugs which aren't addressed by
+> anyone or got left behind.
+
+IF that happened, it would actually be great. That's what I'm arguing for. 
+And it was basically what Adrian was doing!
+
+> How else should bugs get handled, sending them to the lkml?
+
+Actually, looking at Adrian's regression lists, yes. lkml worked better 
+than bugzilla did. By at _least_ a factor of two.
+
+> I'm 100% sure some bugreports will also get lost then, but on the lkml
+> they'll very likely remain lost whereas in the bugzilla they'll remain
+> as open.
+
+What's the difference between bugzilla and lkml.org? Both have search 
+buttons. Both archive the old stuff. Both can be pointed to.
+
+> what are your suggestions to improve a bugreporting tool, I'm very
+> sure that many people, especially people who want to get into existing
+> projects here, would love to contribute.
+
+I don't know what the perfect setup is, but I do know that bugzilla is 
+very close to be totally useless for the top-level maintainers.
+
+Try to think like a person who doesn't maintain *one* specific file in the 
+kernel, but who can actually make a good judgement about a lot of things, 
+or at least funnel a problem report to the right person?
+
+And now, imagine that that person is also fairly busy (exactly *because* 
+he's not looking at a single file, he may be maintaining a huge subsystem 
+that has multiple submaintainers etc).
+
+And ask yourself whether bugzilla really helps.
+
+> I'd say this is a personal opinion, some people will get along with it
+> and some of them will not...
+
+I think bugzilla really only works for very "directed" issues. If you 
+already know exactly which driver is affected (which is often wrong 
+anyway: some of the bugs that were due timer breakage got blamed as disk 
+hangs!) it's almost totally useless.
+
+And yes, maybe that's why you have a much higher opinion of bugzilla than 
+I do. To _me_ bugzilla is a total mess. There's absolutely _zero_ useful 
+information there. And I'm pretty certain that is true of a *lot* of other 
+people too. But if you have a small project, or you maintain a very 
+specific (and clearly delineated) part of a big project, bugzilla probably 
+looks a lot more palatable.
+
+			Linus
