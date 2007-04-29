@@ -1,161 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbXD2LFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbXD2LFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbXD2LFj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 07:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbXD2LAk
+	id S1754329AbXD2LFk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 07:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbXD2LAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:00:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52208 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 07:00:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51281 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756343AbXD2Kxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 06:53:33 -0400
+	id S1755157AbXD2KxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 06:53:10 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200704291252.514680000@suse.de>
 In-Reply-To: <200704291252.514680000@suse.de>
-To: Adrian Bunk <bunk@stusta.de>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [42/48] x86: remove UNEXPECTED_IO_APIC()
-Message-Id: <20070429105332.88A7715108@wotan.suse.de>
-Date: Sun, 29 Apr 2007 12:53:32 +0200 (CEST)
+To: David Rientjes <rientjes@google.com>, Andi Kleen <ak@suse.de>,
+       Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@engr.sgi.com>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [20/48] x86_64: fixed size remaining fake nodes
+Message-Id: <20070429105309.0307515108@wotan.suse.de>
+Date: Sun, 29 Apr 2007 12:53:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Adrian Bunk <bunk@stusta.de>
-Many years ago, UNEXPECTED_IO_APIC() contained printk()'s (but nothing more).
+From: David Rientjes <rientjes@google.com>
 
-Now that it's completely empty for years, we can as well remove it.
+Extends the numa=fake x86_64 command-line option to split the remaining system
+memory into nodes of fixed size.  Any leftover memory is allocated to a final
+node unless the command-line ends with a comma.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+For example:
+  numa=fake=2*512,*128	gives two 512M nodes and the remaining system
+			memory is split into nodes of 128M each.
+
+This is beneficial for systems where the exact size of RAM is unknown or not
+necessarily relevant, but the size of the remaining nodes to be allocated is
+known based on their capacity for resource management.
+
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: David Rientjes <rientjes@google.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/io_apic.c   |   30 ------------------------------
- arch/x86_64/kernel/io_apic.c |   28 ----------------------------
- 2 files changed, 58 deletions(-)
+ Documentation/x86_64/boot-options.txt |   14 ++++++----
+ arch/x86_64/mm/numa.c                 |   47 ++++++++++++++++++++++++++--------
+ 2 files changed, 46 insertions(+), 15 deletions(-)
 
-Index: linux/arch/i386/kernel/io_apic.c
+Index: linux/Documentation/x86_64/boot-options.txt
 ===================================================================
---- linux.orig/arch/i386/kernel/io_apic.c
-+++ linux/arch/i386/kernel/io_apic.c
-@@ -1403,10 +1403,6 @@ static void __init setup_ExtINT_IRQ0_pin
- 	enable_8259A_irq(0);
+--- linux.orig/Documentation/x86_64/boot-options.txt
++++ linux/Documentation/x86_64/boot-options.txt
+@@ -153,11 +153,15 @@ NUMA
+ 		If a number, fakes CMDLINE nodes and ignores NUMA setup of the
+ 		actual machine.  Otherwise, system memory is configured
+ 		depending on the sizes and coefficients listed.  For example:
+-			numa=fake=2*512,1024,4*256
+-		gives two 512M nodes, a 1024M node, and four 256M nodes.  The
+-		remaining system RAM is allocated to an additional node.  If
+-		the last character of CMDLINE is a *, the remaining system RAM
+-		is instead divided up equally among its coefficient.
++			numa=fake=2*512,1024,4*256,*128
++		gives two 512M nodes, a 1024M node, four 256M nodes, and the
++		rest split into 128M chunks.  If the last character of CMDLINE
++		is a *, the remaining memory is divided up equally among its
++		coefficient:
++			numa=fake=2*512,2*
++		gives two 512M nodes and the rest split into two nodes.
++		Otherwise, the remaining system RAM is allocated to an
++		additional node.
+ 
+   numa=hotadd=percent
+ 		Only allow hotadd memory to preallocate page structures upto
+Index: linux/arch/x86_64/mm/numa.c
+===================================================================
+--- linux.orig/arch/x86_64/mm/numa.c
++++ linux/arch/x86_64/mm/numa.c
+@@ -362,6 +362,21 @@ static int __init split_nodes_equally(st
  }
  
--static inline void UNEXPECTED_IO_APIC(void)
--{
--}
--
- void __init print_IO_APIC(void)
- {
- 	int apic, i;
-@@ -1446,34 +1442,12 @@ void __init print_IO_APIC(void)
- 	printk(KERN_DEBUG ".......    : physical APIC id: %02X\n", reg_00.bits.ID);
- 	printk(KERN_DEBUG ".......    : Delivery Type: %X\n", reg_00.bits.delivery_type);
- 	printk(KERN_DEBUG ".......    : LTS          : %X\n", reg_00.bits.LTS);
--	if (reg_00.bits.ID >= get_physical_broadcast())
--		UNEXPECTED_IO_APIC();
--	if (reg_00.bits.__reserved_1 || reg_00.bits.__reserved_2)
--		UNEXPECTED_IO_APIC();
+ /*
++ * Splits the remaining system RAM into chunks of size.  The remaining memory is
++ * always assigned to a final node and can be asymmetric.  Returns the number of
++ * nodes split.
++ */
++static int __init split_nodes_by_size(struct bootnode *nodes, u64 *addr,
++				      u64 max_addr, int node_start, u64 size)
++{
++	int i = node_start;
++	size = (size << 20) & FAKE_NODE_MIN_HASH_MASK;
++	while (!setup_node_range(i++, nodes, addr, size, max_addr))
++		;
++	return i - node_start;
++}
++
++/*
+  * Sets up the system RAM area from start_pfn to end_pfn according to the
+  * numa=fake command-line option.
+  */
+@@ -370,9 +385,10 @@ static int __init numa_emulation(unsigne
+ 	struct bootnode nodes[MAX_NUMNODES];
+ 	u64 addr = start_pfn << PAGE_SHIFT;
+ 	u64 max_addr = end_pfn << PAGE_SHIFT;
+-	unsigned int coeff;
+-	unsigned int num = 0;
+ 	int num_nodes = 0;
++	int coeff_flag;
++	int coeff = -1;
++	int num = 0;
+ 	u64 size;
+ 	int i;
  
- 	printk(KERN_DEBUG ".... register #01: %08X\n", reg_01.raw);
- 	printk(KERN_DEBUG ".......     : max redirection entries: %04X\n", reg_01.bits.entries);
--	if (	(reg_01.bits.entries != 0x0f) && /* older (Neptune) boards */
--		(reg_01.bits.entries != 0x17) && /* typical ISA+PCI boards */
--		(reg_01.bits.entries != 0x1b) && /* Compaq Proliant boards */
--		(reg_01.bits.entries != 0x1f) && /* dual Xeon boards */
--		(reg_01.bits.entries != 0x22) && /* bigger Xeon boards */
--		(reg_01.bits.entries != 0x2E) &&
--		(reg_01.bits.entries != 0x3F)
--	)
--		UNEXPECTED_IO_APIC();
- 
- 	printk(KERN_DEBUG ".......     : PRQ implemented: %X\n", reg_01.bits.PRQ);
- 	printk(KERN_DEBUG ".......     : IO APIC version: %04X\n", reg_01.bits.version);
--	if (	(reg_01.bits.version != 0x01) && /* 82489DX IO-APICs */
--		(reg_01.bits.version != 0x10) && /* oldest IO-APICs */
--		(reg_01.bits.version != 0x11) && /* Pentium/Pro IO-APICs */
--		(reg_01.bits.version != 0x13) && /* Xeon IO-APICs */
--		(reg_01.bits.version != 0x20)    /* Intel P64H (82806 AA) */
--	)
--		UNEXPECTED_IO_APIC();
--	if (reg_01.bits.__reserved_1 || reg_01.bits.__reserved_2)
--		UNEXPECTED_IO_APIC();
- 
- 	/*
- 	 * Some Intel chipsets with IO APIC VERSION of 0x1? don't have reg_02,
-@@ -1483,8 +1457,6 @@ void __init print_IO_APIC(void)
- 	if (reg_01.bits.version >= 0x10 && reg_02.raw != reg_01.raw) {
- 		printk(KERN_DEBUG ".... register #02: %08X\n", reg_02.raw);
- 		printk(KERN_DEBUG ".......     : arbitration: %02X\n", reg_02.bits.arbitration);
--		if (reg_02.bits.__reserved_1 || reg_02.bits.__reserved_2)
--			UNEXPECTED_IO_APIC();
+@@ -390,29 +406,34 @@ static int __init numa_emulation(unsigne
  	}
  
- 	/*
-@@ -1496,8 +1468,6 @@ void __init print_IO_APIC(void)
- 	    reg_03.raw != reg_01.raw) {
- 		printk(KERN_DEBUG ".... register #03: %08X\n", reg_03.raw);
- 		printk(KERN_DEBUG ".......     : Boot DT    : %X\n", reg_03.bits.boot_DT);
--		if (reg_03.bits.__reserved_1)
--			UNEXPECTED_IO_APIC();
+ 	/* Parse the command line. */
+-	for (coeff = 1; ; cmdline++) {
++	for (coeff_flag = 0; ; cmdline++) {
+ 		if (*cmdline && isdigit(*cmdline)) {
+ 			num = num * 10 + *cmdline - '0';
+ 			continue;
+ 		}
+-		if (*cmdline == '*')
+-			coeff = num;
++		if (*cmdline == '*') {
++			if (num > 0)
++				coeff = num;
++			coeff_flag = 1;
++		}
+ 		if (!*cmdline || *cmdline == ',') {
++			if (!coeff_flag)
++				coeff = 1;
+ 			/*
+ 			 * Round down to the nearest FAKE_NODE_MIN_SIZE.
+ 			 * Command-line coefficients are in megabytes.
+ 			 */
+ 			size = ((u64)num << 20) & FAKE_NODE_MIN_HASH_MASK;
+-			if (size) {
++			if (size)
+ 				for (i = 0; i < coeff; i++, num_nodes++)
+ 					if (setup_node_range(num_nodes, nodes,
+ 						&addr, size, max_addr) < 0)
+ 						goto done;
+-				coeff = 1;
+-			}
++			if (!*cmdline)
++				break;
++			coeff_flag = 0;
++			coeff = -1;
+ 		}
+-		if (!*cmdline)
+-			break;
+ 		num = 0;
  	}
- 
- 	printk(KERN_DEBUG ".... IRQ redirection table:\n");
-Index: linux/arch/x86_64/kernel/io_apic.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/io_apic.c
-+++ linux/arch/x86_64/kernel/io_apic.c
-@@ -907,10 +907,6 @@ static void __init setup_ExtINT_IRQ0_pin
- 	enable_8259A_irq(0);
- }
- 
--void __init UNEXPECTED_IO_APIC(void)
--{
--}
--
- void __apicdebuginit print_IO_APIC(void)
- {
- 	int apic, i;
-@@ -946,40 +942,16 @@ void __apicdebuginit print_IO_APIC(void)
- 	printk(KERN_DEBUG "IO APIC #%d......\n", mp_ioapics[apic].mpc_apicid);
- 	printk(KERN_DEBUG ".... register #00: %08X\n", reg_00.raw);
- 	printk(KERN_DEBUG ".......    : physical APIC id: %02X\n", reg_00.bits.ID);
--	if (reg_00.bits.__reserved_1 || reg_00.bits.__reserved_2)
--		UNEXPECTED_IO_APIC();
- 
- 	printk(KERN_DEBUG ".... register #01: %08X\n", *(int *)&reg_01);
- 	printk(KERN_DEBUG ".......     : max redirection entries: %04X\n", reg_01.bits.entries);
--	if (	(reg_01.bits.entries != 0x0f) && /* older (Neptune) boards */
--		(reg_01.bits.entries != 0x17) && /* typical ISA+PCI boards */
--		(reg_01.bits.entries != 0x1b) && /* Compaq Proliant boards */
--		(reg_01.bits.entries != 0x1f) && /* dual Xeon boards */
--		(reg_01.bits.entries != 0x22) && /* bigger Xeon boards */
--		(reg_01.bits.entries != 0x2E) &&
--		(reg_01.bits.entries != 0x3F) &&
--		(reg_01.bits.entries != 0x03) 
--	)
--		UNEXPECTED_IO_APIC();
- 
- 	printk(KERN_DEBUG ".......     : PRQ implemented: %X\n", reg_01.bits.PRQ);
- 	printk(KERN_DEBUG ".......     : IO APIC version: %04X\n", reg_01.bits.version);
--	if (	(reg_01.bits.version != 0x01) && /* 82489DX IO-APICs */
--		(reg_01.bits.version != 0x02) && /* 82801BA IO-APICs (ICH2) */
--		(reg_01.bits.version != 0x10) && /* oldest IO-APICs */
--		(reg_01.bits.version != 0x11) && /* Pentium/Pro IO-APICs */
--		(reg_01.bits.version != 0x13) && /* Xeon IO-APICs */
--		(reg_01.bits.version != 0x20)    /* Intel P64H (82806 AA) */
--	)
--		UNEXPECTED_IO_APIC();
--	if (reg_01.bits.__reserved_1 || reg_01.bits.__reserved_2)
--		UNEXPECTED_IO_APIC();
- 
- 	if (reg_01.bits.version >= 0x10) {
- 		printk(KERN_DEBUG ".... register #02: %08X\n", reg_02.raw);
- 		printk(KERN_DEBUG ".......     : arbitration: %02X\n", reg_02.bits.arbitration);
--		if (reg_02.bits.__reserved_1 || reg_02.bits.__reserved_2)
--			UNEXPECTED_IO_APIC();
- 	}
- 
- 	printk(KERN_DEBUG ".... IRQ redirection table:\n");
+ done:
+@@ -420,6 +441,12 @@ done:
+ 		return -1;
+ 	/* Fill remainder of system RAM, if appropriate. */
+ 	if (addr < max_addr) {
++		if (coeff_flag && coeff < 0) {
++			/* Split remaining nodes into num-sized chunks */
++			num_nodes += split_nodes_by_size(nodes, &addr, max_addr,
++							 num_nodes, num);
++			goto out;
++		}
+ 		switch (*(cmdline - 1)) {
+ 		case '*':
+ 			/* Split remaining nodes into coeff chunks */
