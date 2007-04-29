@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933223AbXD2NA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbXD2NDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933223AbXD2NA2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 09:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933224AbXD2NA1
+	id S1755235AbXD2NDA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 09:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbXD2NDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 09:00:27 -0400
-Received: from ihemail3.lucent.com ([135.245.0.37]:36663 "EHLO
-	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933223AbXD2NAQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 09:00:16 -0400
-Content-class: urn:content-classes:message
+	Sun, 29 Apr 2007 09:03:00 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:41202 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755235AbXD2NC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 09:02:59 -0400
+Date: Sun, 29 Apr 2007 15:01:54 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: linux1394-devel@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 13/30] Use menuconfig objects - IEEE1394
+In-Reply-To: <46333211.6030506@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.61.0704291454050.506@yvahk01.tjqt.qr>
+References: <46333211.6030506@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6249.0
-Subject: problem that /bin/sh keeps spawning
-Date: Sun, 29 Apr 2007 20:59:36 +0800
-Message-ID: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF70C9@exch03.qd.lucent.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] CFS scheduler, -v6
-Thread-Index: AceKXacZVAr8JbJwQpyl40q9KYuCCAAABewQ
-From: "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 29 Apr 2007 12:59:36.0153 (UTC) FILETIME=[3D310490:01C78A5E]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-I'm using busybox1.5. The /bin/sh keeps spawning as following output shows. Thanks for suggestions.
+>Jan Engelhardt wrote:
+>>On Apr 28 2007 12:41, Stefan Richter wrote:
+>>
+>>> So, shall I put Jan's patch aside until there is only one stack left?
+>>
+>> Sort of. [...] when a menu has two or three choices (in this case:
+>> larger subsystems), it's rand() for me whether or not to convert
+>> to menuconfig. Feel free.
+>
+> I'll see if anybody out there will voice an opinion, to tip the
+> balance one way or another.
 
-Freeing unused kernel memory: 1536k init
-Warning: unable to open an initial console.
+Seems like silence. Anyway, your suggestion in 
+http://lkml.org/lkml/2007/4/28/108 sounds not bad, and since it's cheap, 
+I have the patch for it. (To be posted when I am through with more 
+menus.)
 
-Please press Enter to activate this console. init: can't log to /dev/tty5
-starting pid 191, tty '/dev/ttyS1': '/bin/sh'
-# 
-Please press Enter to activate this console. init: can't log to /dev/tty5
-starting pid 192, tty '/dev/ttyS1': '/bin/sh'
-# 
-Please press Enter to activate this console. init: can't log to /dev/tty5
-starting pid 193, tty '/dev/ttyS1': '/bin/sh'
-# 
-Please press Enter to activate this console. init: can't log to /dev/tty5
-starting pid 194, tty '/dev/ttyS1': '/bin/sh'
-# 
-Please press Enter to activate this console. init: can't log to /dev/tty5
-starting pid 195, tty '/dev/ttyS1': '/bin/sh'
-# 
-:
-:
-<Similar Output as the above>
-:
-:
 
-Gavin
+Regards,
+Jan
+-- 
