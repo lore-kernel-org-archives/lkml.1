@@ -1,38 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030748AbXD2Qzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbXD2RF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030748AbXD2Qzg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 12:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXD2Qzf
+	id S1752625AbXD2RF4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 13:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXD2RF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 12:55:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:58874 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030748AbXD2Qzd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 12:55:33 -0400
-Message-ID: <4634CE10.2050103@goop.org>
-Date: Sun, 29 Apr 2007 09:55:44 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Chuck Ebbert <cebbert@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Zachary Amsden <zach@vmware.com>, Chris Wright <chrisw@sous-sol.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 10/28] i386: map enough initial memory to create lowmem
- mappings
-References: <20070414204154.871250608@goop.org>	<200704192250.52633.ak@suse.de> <4627D756.5020405@zytor.com>	<200704192304.01053.ak@suse.de> <4627DB0C.2010804@zytor.com>	<4627DDAD.4070805@redhat.com> <4627E099.209@goop.org>	<m1abwwqiof.fsf@ebiederm.dsl.xmission.com> <462FC8CD.1030505@goop.org>	<m11wi8qflo.fsf@ebiederm.dsl.xmission.com> <462FD0EF.5050706@goop.org> <m1wszv6sft.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1wszv6sft.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 29 Apr 2007 13:05:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:35551 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752625AbXD2RFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 13:05:55 -0400
+Subject: Re: [patch 5/9] IEEE1394: Spinlock initializer cleanup
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>
+In-Reply-To: <4634CB45.70408@s5r6.in-berlin.de>
+References: <20070429154221.159165000@linutronix.de> >
+	 <20070429154337.581254000@linutronix.de> >
+	  <4634CB45.70408@s5r6.in-berlin.de>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 19:08:02 +0200
+Message-Id: <1177866482.5791.130.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Any chance you had CONFIG_DEBUG_PAGEALLOC selected?
->   
+On Sun, 2007-04-29 at 18:43 +0200, Stefan Richter wrote:
+> Thomas Gleixner wrote:
+> > --- linux-2.6.orig/drivers/ieee1394/ieee1394_transactions.c
+> > +++ linux-2.6/drivers/ieee1394/ieee1394_transactions.c
+> > @@ -32,7 +32,7 @@
+> >  #ifndef HPSB_DEBUG_TLABELS
+> >  static
+> >  #endif
+> > -spinlock_t hpsb_tlabel_lock = SPIN_LOCK_UNLOCKED;
+> > +DEFINE_SPINLOCK(hpsb_tlabel_lock);
+> 
+> We've got already an identical patch from Milind Arun Choudhary,
+> http://git.kernel.org/?p=linux/kernel/git/ieee1394/linux1394-2.6.git;a=commitdiff;h=ca79b9d41152ff8605ed5503fd4cbfe0ea60ee7f
+> in linux1394-2.6.git/master and hence in -mm.  It'll be part of the post
+> 2.6.21 pull request I'll send out RSN, unless your patch bypasses me
+> somehow.
 
-Yes, that's quite likely.
+Missed that one.
 
-    J
+Thanks,
+
+	tglx
+
+
+	
+
