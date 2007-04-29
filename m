@@ -1,28 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbXD2D0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbXD2D3f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbXD2D0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 23:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbXD2D0X
+	id S1754330AbXD2D3f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 23:29:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXD2D3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 23:26:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53320 "EHLO
+	Sat, 28 Apr 2007 23:29:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53606 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754424AbXD2D0W (ORCPT
+	by vger.kernel.org with ESMTP id S1754330AbXD2D3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 23:26:22 -0400
-Date: Sat, 28 Apr 2007 20:25:27 -0700
+	Sat, 28 Apr 2007 23:29:33 -0400
+Date: Sat, 28 Apr 2007 20:28:49 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: bbpetkov@yahoo.de, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
- spinlock. was: Re: 2.6.21-rc7-mm2
-Message-Id: <20070428202527.d52470aa.akpm@linux-foundation.org>
-In-Reply-To: <4633DD55.1020006@shadowen.org>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<20070426182519.GA4532@gollum.tnic>
-	<20070427172230.94b82829.akpm@linux-foundation.org>
-	<4633DD55.1020006@shadowen.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-Id: <20070428202849.2a506722.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0704281703510.9964@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
+	<20070426040806.GJ3468@stusta.de>
+	<20070426125802.GL3468@stusta.de>
+	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+	<4630DB24.4030005@redhat.com>
+	<20070426201325.8a1ebda3.diegocg@gmail.com>
+	<alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
+	<20070426224148.69b91b2e.diegocg@gmail.com>
+	<alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
+	<46339BC7.6050802@mbligh.org>
+	<alpine.LFD.0.98.0704281703510.9964@woody.linux-foundation.org>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,34 +37,35 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 00:48:37 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Sat, 28 Apr 2007 17:07:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> > +++ a/mm/memory.c
-> > @@ -1455,7 +1455,7 @@ static int apply_to_pte_range(struct mm_
-> >  	pte_t *pte;
-> >  	int err;
-> >  	struct page *pmd_page;
-> > -	spinlock_t *ptl;
-> > +	spinlock_t *ptl = ptl;		/* Suppress gcc warning */
-> >  
-> >  	pte = (mm == &init_mm) ?
-> >  		pte_alloc_kernel(pmd, addr) :
-> > _
+> On Sat, 28 Apr 2007, Martin J. Bligh wrote:
 > > 
+> > Go to http://bugzilla.kernel.org. Hit query. Find the box that says
+> > "Bug Changes, Only bugs changed in the last __ days". Stick 7 in it.
+> > 
+> > 74 bugs found.
+> > 
+> > Not hard to do.
 > 
-> Perhaps we should have some kind definition helper.
+> And what part of the "directed" did you miss?
 > 
-> #define suppress_unused(x) x = x
+> Do you really expect me to go there every day to look at all bugs? That's 
+> nbot a bug tracker. That's just a noise-maker.
 > 
-> 	spinlock_t *suppress_unused(ptl);
+> It needs to be email, not some "mouse around for 30 seconds and type 
+> thing", and it needs to be *directed*. Preferably with somebody who 
+> actually did some manual scanning over it and spent a few minutes just 
+> looking at whether it looks like a worthy bug.
 > 
-> Perhaps?
+> In other words: we shouldn't have all developers wasting time doing this. 
 
-I think so.  It makes it clear what's happening and it allows us to change
-the implementation later on if the present trick stops working in later
-gcc.  It also allows people to suppress the suppression (some have
-expressed concern that it can hide real bugs).
+yup.
 
-But I lost (or didn't pursue) the bunfight^Wdiscussion last time this came
-around.
+> It would be much better to have _one_ person (or a group of people) doing 
+> it,
+
+I am doing that.  It's only 5-10 a day - routing them to the relevant
+culprit is very little work.  It's also very little work for said culprits
+to totally ignore said routing, which is a tougher problem.
 
