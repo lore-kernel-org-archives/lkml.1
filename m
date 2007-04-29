@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbXD2BSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXD2BYH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752250AbXD2BSp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 21:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXD2BSp
+	id S1753289AbXD2BYH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 21:24:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXD2BYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 21:18:45 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:50330 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbXD2BSo (ORCPT
+	Sat, 28 Apr 2007 21:24:07 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:26533 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXD2BYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 21:18:44 -0400
-Subject: Re: [patch] CFS scheduler, -v6
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-In-Reply-To: <1177774551.21279.8.camel@localhost>
-References: <20070425214704.GA32572@elte.hu>
-	 <1177596399.14496.1.camel@localhost>
-	 <200704261041.04838.gene.heskett@gmail.com>
-	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
-	 <20070427115526.GA7699@elte.hu>  <1177774551.21279.8.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 03:18:32 +0200
-Message-Id: <1177809512.9756.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Apr 2007 21:24:04 -0400
+Date: Sat, 28 Apr 2007 19:22:43 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: PCI Express MMCONFIG and BIOS Bug messages..
+In-reply-to: <46279358.1010002@redhat.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
+Message-id: <4633F363.4000009@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=windows-1252; format=flowed
+Content-transfer-encoding: 7bit
+References: <4626C514.5010605@shaw.ca> <46279358.1010002@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Okay so i've tried with cfs 7 now, and the completely broken audio
-behavior is fixed.
+Chuck Ebbert wrote:
+> Robert Hancock wrote:
+>> I've seen a lot of systems (including brand new Xeon-based servers from
+>> IBM and HP) that output messages on boot like:
+>>
+>> PCI: BIOS Bug: MCFG area at f0000000 is not E820-reserved
+>> PCI: Not using MMCONFIG.
+>>
+>>
+>> So Microsoft is explicitly telling the BIOS developers that there is no
+>> need to reserve the MMCONFIG space in the E820 table because Windows
+>> doesn't care. On that basis it doesn't seem like a valid check to
+>> require it to be so reserved, then.
+>>
+>> Really, I think we should be basing this check on whether the
+>> corresponding memory range is reserved in the ACPI resources, like
+>> Windows expects. This does require putting more fingers into ACPI from
+>> this early boot stage, though..
+>>
+> 
+> Intel had posted patches to do exactly that, but they were rejected.
+> I don't remember why now...
 
-The only things i really notice now is that gtk apps seems to redraw
-somewhat slower, and renicing X doesent seem to be able to bring it on
-par with SD or vanilla.
+I tried adapting a patch by Rajesh Shah to do this for current kernels:
 
-And smoothness just doesent match SD, it may be abit better than
-vanilla/staircase, i cant really definitively say, but SD just has the
-smoothness factor which is extremely attractive.
+http://lkml.org/lkml/2006/6/23/365
 
-This is with 3d stuff, like through wine or natively on linux, under
-load(and even just minor things like using a browser or other things,
-like spamasassin), vanilla/staircase(not rsdl or sd)/cfs will go down in
-FPS, but at the same time stutter, it goes down to around the same fps
-under same load, as SD, but SD is completely smooth.
+It walks through all the motherboard resource devices and tries to pull 
+out the resource settings for all of them using the _CRS method. 
+(Depending on how you do the probing, the _STA method is called as well, 
+either before or after.) From my limited ACPI knowledge, the problem is 
+that the PCI MMCONFIG initialization is called before the main ACPI 
+interpreter is enabled, and these control methods may try to access 
+operation regions who don't have handlers set up for them yet, so a 
+bunch of "no handler for region" errors show up.
 
-Im not sure im describing properly, but say it takes 35fps for the 3d
-stuff to seem perfect, the fps monitor updates once every 1 or two
-seconds, showing average fps(havent looked at the code, but i assume it
-spans those 1-2 seconds), usually i have like 60 fps, but under load it
-can go down to 35, but under anything but SD its not smooth, it will do
-the 35 fps, but i suspect it does it in chunks, for example it will skip
-for 200 ms and then hurry to display the 35 frames. This means it does
-get the workload done, but not in a very plesant matter, and its here i
-see SD as being in such a high league that its really impossible to
-describe the results with any other word than Perfect.
+I think some earlier version of this patch was in -mm for a while back 
+in 2.6.18 times, I actually complained about it back then because it 
+falsely detected the region wasn't reserved on my system since it bailed 
+out on the first such error before it found the reservation. On my 
+system it turns out that the device called EXPL that has the MCFG table 
+reservation in it has the addresses statically defined in the _CRS 
+method and doesn't need to access any regions, so if you make the search 
+continue on after errors, it does actually work, but there's probably no 
+guarantee that all systems will have the MCFG reservation statically 
+defined like this, and we can't have all those ACPI errors from other 
+devices clogging the logs either.
 
-mvh.
-Kasper Sandberg
+So essentially if we want to do this check based on ACPI resource 
+reservations, we need to be able to execute control methods at the point 
+that MMCONFIG is set up. Is there a reason why this can't be made 
+possible (like by moving the necessary parts of ACPI initialization 
+earlier)?
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
 
