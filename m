@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756432AbXD2MSE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756435AbXD2MSG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756432AbXD2MSE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 08:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756442AbXD2MSE
+	id S1756435AbXD2MSG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 08:18:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbXD2MSG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 08:18:04 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:48886 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756432AbXD2MSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 08:18:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hchORaFHWZfWRUrVQruhoF9tcXhf4+kzwmT5mAZn4CJGN5e7pGlGOW/LGCy1tlwPxoxWuUIT9j4gzAcpdknQOrfVp8PFUNVpPx3MragArjMoyybtXuU8jagNEQBChYcyr187B/uQwD1s12MzP8zEWTUIZJo3IHsxkg4x1yK6II8=
-Subject: Re: [PATCH] [37/48] i386: ignore vgacon if hardware not present
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Andi Kleen <ak@suse.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070429105327.2ECA6151C5@wotan.suse.de>
-References: <200704291252.514680000@suse.de>
-	 <20070429105327.2ECA6151C5@wotan.suse.de>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 20:17:50 +0800
-Message-Id: <1177849070.17715.0.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 08:18:06 -0400
+Received: from mail.suse.de ([195.135.220.2]:58847 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756439AbXD2MSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 08:18:03 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+References: <20070426040806.GJ3468@stusta.de>
+	<20070426125802.GL3468@stusta.de>
+	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
+	<4630DB24.4030005@redhat.com>
+	<20070426201325.8a1ebda3.diegocg@gmail.com>
+	<alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
+	<20070426224148.69b91b2e.diegocg@gmail.com>
+	<alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
+	<20070428195320.GZ3468@stusta.de>
+	<20070428202701.GA30343@flint.arm.linux.org.uk>
+	<20070428224904.GE3468@stusta.de>
+	<alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 29 Apr 2007 15:15:42 +0200
+In-Reply-To: <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
+Message-ID: <p73d51n1fup.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 12:53 +0200, Andi Kleen wrote:
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> On Thu, 2007-03-29 at 12:36 +0200, Andi Kleen wrote:
-> > On Thu, Mar 29, 2007 at 05:46:48PM +1000, Rusty Russell wrote:
-> > > (Did this fall through the cracks?  I don't see it in -mm.  It's
-> > > standalone, and saves some silly code in lguest and presumably others).
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> On Sun, 29 Apr 2007, Adrian Bunk wrote:
 > > 
-> > Normally it should go to some some console maintainer? 
+> > That's exactly where Linus' "drop any bug reports that are more than a 
+> > week old" suggestion is completely flawed - no matter what the submitter 
+> > does, how often he tests latest kernels, noone will help him.
 > 
-> Hmm, but who?
+> You talk, but what do you actually *suggest*?
 > 
-> > Ok I can add it.
+> Talk is cheap. You use to do the walk too, but you've already said that 
+> you're not interested in that any more. So excuse me if I'm not impressed. 
 > 
-> Thanks.  While you're in a patch-applying mood, how about this?
-> 
-> Cheers,
-> Rusty.
-> ==
-> Use X86_EFLAGS_IF in irqflags.h.
-> 
-> Move X86_EFLAGS_IF et al out to a new header: processor-flags.h, so we
-> can include it from irqflags.h and use it in raw_irqs_disabled_flags().
-> 
-> As a side-effect, we could now use these flags in .S files.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> ---
->  include/asm-i386/irqflags.h        |    3 ++-
->  include/asm-i386/processor-flags.h |   26 ++++++++++++++++++++++++++
->  include/asm-i386/processor.h       |   22 +---------------------
->  3 files changed, 29 insertions(+), 22 deletions(-)
+> The thing is, bugzilla is totally broken because it's designed to help 
+> track bugs, but it's *not* designed to actually handle the much harder 
+> problem, which is to actually get the *right* developers to be aware of 
+> the *right* bugs!
 
-The subject does not reflect the content of the patch :-). And I believe
-ignore-vgacon-if-hardware-not-present is already in mainline.
+This means we need people who figure out who to assign bugs too.
+Aka bugmasters.
 
-Tony
+In theory it could be nearly automated. Figure out what files related
+to the bug and assign to the last 5 people who submitted patches
+for them and/or signed off. 
 
+Ok I suppose it's not that easy -- you would need some human judgement.
+
+BTW one big problem in our current bugzilla is that a lot of people
+cannot reassign bugs they don't own. I sometimes see bugs that I don't
+own bug I know who is responsible, but bugzilla doesn't allow me to do it.
+
+So I think what would help:
+
+- Ask more people to just categorize and reassign bugs (anybody interested?)
+- Give more people in bugzilla the power to reassign arbitary bugs
+(bugzilla maintainers would need to do that)
+
+-Andi
 
