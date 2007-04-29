@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbXD2Ge7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbXD2Gpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbXD2Ge7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 02:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbXD2Ge7
+	id S1754989AbXD2Gpz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 02:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbXD2Gpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 02:34:59 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:37471 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754979AbXD2Geo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 02:34:44 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Sun, 29 Apr 2007 02:34:31 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: random thoughts on DEPRECATED and OBSOLETE
-In-Reply-To: <4633E55B.1080601@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0704290232050.3648@localhost.localdomain>
-References: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain>
- <46337BD2.7000701@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281320560.27098@localhost.localdomain>
- <4633ACE4.50004@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281635190.28274@localhost.localdomain>
- <4633CA7F.6010505@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281933160.29552@localhost.localdomain>
- <4633E55B.1080601@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 29 Apr 2007 02:45:55 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52595 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754986AbXD2Gpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 02:45:54 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/wDq4jf0nwejsulDnHjsx7Bqg1Jgz2oWw9pb4uec
+	ljK71jIxLngToN
+Subject: Re: [patch] CFS scheduler, -v6
+From: Mike Galbraith <efault@gmx.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+In-Reply-To: <20070429053022.GB23638@1wt.eu>
+References: <20070425214704.GA32572@elte.hu>
+	 <1177596399.14496.1.camel@localhost>
+	 <200704261041.04838.gene.heskett@gmail.com>
+	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
+	 <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost>
+	 <1177809512.9756.10.camel@localhost>  <20070429053022.GB23638@1wt.eu>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 08:45:47 +0200
+Message-Id: <1177829148.6264.6.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007, Stefan Richter wrote:
+On Sun, 2007-04-29 at 07:30 +0200, Willy Tarreau wrote:
 
-> Robert P. J. Day wrote:
-> > i think this online definition matches what i have in mind:
-> >
-> > http://www.google.com/search?hl=en&rls=GGGL,GGGL:2006-10,GGGL:en&defl=en&q=define:Deprecated&sa=X&oi=glossary_definition&ct=title
->
-> "Definitions of Deprecated on the Web: [...] This term is used to refer
-> to /obsolete/ structures that should not be used for new applications".
->
-> Emphasis is mine.
-> I can agree with this and the other definitions at this search result.
+> I don't know if Mike still has problems with SD...
 
-you're conflating those two again.  here's my last attempt -- see the
-definitions here:
+I'm neither testing recent SD releases nor looking at the source.  All
+the testing I did was a waste of my time and lkml bandwidth.
 
-http://www.w3.org/TR/html401/conform.html
+	-Mike
 
-and note the fundamental distinction:
-
-deprecated:  "... User agents should continue to support deprecated
-                                     ^^^^^^^^^^^^^^^^^^^
-elements for reasons of backward compatibility..."
-
-obsolete:  "... no guarantee of support by a user agent."
-                ^^^^^^^^^^^^^^^^^^^^^^^
-  that's it -- there's the fundamental difference.  i really don't
-care if you can find other wordings that you can interpret
-differently.  in *my* proposal, those two definitions are not
-orthogonal, they are mutually exclusive.  period.  end of discussion.
-if you can't accept that, feel free to submit your own proposal.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
