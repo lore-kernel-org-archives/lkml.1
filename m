@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbXD2D3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbXD2Dkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbXD2D3f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 23:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXD2D3f
+	id S1754535AbXD2Dkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 23:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbXD2Dkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 23:29:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53606 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754330AbXD2D3d (ORCPT
+	Sat, 28 Apr 2007 23:40:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49136
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754518AbXD2Dkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 23:29:33 -0400
-Date: Sat, 28 Apr 2007 20:28:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Sat, 28 Apr 2007 23:40:39 -0400
+Date: Sat, 28 Apr 2007 20:40:48 -0700 (PDT)
+Message-Id: <20070428.204048.125894473.davem@davemloft.net>
+To: mrechberger@gmail.com
+Cc: torvalds@linux-foundation.org, bunk@stusta.de, diegocg@gmail.com,
+       cebbert@redhat.com, linux-kernel@vger.kernel.org
 Subject: Re: Linux 2.6.21
-Message-Id: <20070428202849.2a506722.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704281703510.9964@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org>
-	<20070426040806.GJ3468@stusta.de>
-	<20070426125802.GL3468@stusta.de>
-	<alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org>
-	<4630DB24.4030005@redhat.com>
-	<20070426201325.8a1ebda3.diegocg@gmail.com>
-	<alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org>
-	<20070426224148.69b91b2e.diegocg@gmail.com>
-	<alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org>
-	<46339BC7.6050802@mbligh.org>
-	<alpine.LFD.0.98.0704281703510.9964@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+References: <20070428195320.GZ3468@stusta.de>
+	<alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org>
+	<d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 17:07:30 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+From: "Markus Rechberger" <mrechberger@gmail.com>
+Date: Sun, 29 Apr 2007 00:58:09 +0200
 
-> On Sat, 28 Apr 2007, Martin J. Bligh wrote:
-> > 
-> > Go to http://bugzilla.kernel.org. Hit query. Find the box that says
-> > "Bug Changes, Only bugs changed in the last __ days". Stick 7 in it.
-> > 
-> > 74 bugs found.
-> > 
-> > Not hard to do.
+> On 4/29/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >
+> >
+> > On Sat, 28 Apr 2007, Adrian Bunk wrote:
+> > >
+> > > We are already quite good at ignoring bug reports that come through
+> > > linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more
+> > > than 1600 open bugs because this tells how bad we are at handling bugs.
+> >
+> > No, it just shows that bugzilla doesn't matter for most of the kernel.
+> >
+> > Don't say that "bugzilla tells how bad we are at handling bugs". It tells
+> > how bad *bugzilla* is for handling bugs, nothing more.
+> >
 > 
-> And what part of the "directed" did you miss?
-> 
-> Do you really expect me to go there every day to look at all bugs? That's 
-> nbot a bug tracker. That's just a noise-maker.
-> 
-> It needs to be email, not some "mouse around for 30 seconds and type 
-> thing", and it needs to be *directed*. Preferably with somebody who 
-> actually did some manual scanning over it and spent a few minutes just 
-> looking at whether it looks like a worthy bug.
-> 
-> In other words: we shouldn't have all developers wasting time doing this. 
+> I totally disagree here, bugzilla is a very good tool.
 
-yup.
+No, Bugzilla really does suck, and I personally refuse to use it when
+I have a choice.  And guess what?  You better be concerned about that
+because I maintain all of the networking code :-)
 
-> It would be much better to have _one_ person (or a group of people) doing 
-> it,
+It puts the onus FAR too much on the developer and not enough on the
+reporter and other minions.  We have a small resource of developers,
+yet lots of users, bug reporters, and minions, so something that
+doesn't take advantage of the larger resource we have is going to
+not function efficiently at all.  Yet that is what bugzilla does.
 
-I am doing that.  It's only 5-10 a day - routing them to the relevant
-culprit is very little work.  It's also very little work for said culprits
-to totally ignore said routing, which is a tougher problem.
+It's made way too much work for me every time I'm come in contact with
+it, it wastes my time instead of making good use of it.
 
+As a developer I do not want to get pounded with emails containing
+state changes and other bullshit that typically comes with being
+assigned to or on the CC of a bugzilla entry.  I don't want to be
+reminded that a bug hasn't been touched in weeks, if the reporter
+doesn't care I don't care and I'll work on things that people do care
+about.  It makes me delete all the bugzilla email, even the ones with
+important information in them, because it's rediculious to have to
+sift through all of that crap.
+
+People only use bugzilla because it is well understood and nothing
+better has reached critical mass yet.
