@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbXD2N4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933235AbXD2OH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477AbXD2N4S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 09:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbXD2N4S
+	id S933235AbXD2OH6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 10:07:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933238AbXD2OH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 09:56:18 -0400
-Received: from mail.suse.de ([195.135.220.2]:35988 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756444AbXD2N4R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 09:56:17 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
-Date: Sun, 29 Apr 2007 15:55:56 +0200
-User-Agent: KMail/1.9.6
-Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net> <6bffcb0e0704251602x74e01dcbvf1d6eea565e3bbc5@mail.gmail.com> <6bffcb0e0704290636k3cea128ag44d7d6c9688a4e20@mail.gmail.com>
-In-Reply-To: <6bffcb0e0704290636k3cea128ag44d7d6c9688a4e20@mail.gmail.com>
+	Sun, 29 Apr 2007 10:07:58 -0400
+Received: from 85-218-34-145.dclient.lsne.ch ([85.218.34.145]:56174 "EHLO vdr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933235AbXD2OH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 10:07:57 -0400
+Date: Sun, 29 Apr 2007 16:07:53 +0200
+From: Gregoire Favre <Gregoire.Favre@gmail.com>
+To: Jon Burgess <jburgess777@googlemail.com>
+Cc: linux-dvb@linuxtv.org, v4l-dvb-maintainer@linuxtv.org,
+       Markus Rechberger <mrechberger@gmail.com>, linux-kernel@vger.kernel.org,
+       Lee Revell <rlrevell@joe-job.com>
+Subject: Re: [PATCH] Re: More than 2Gb problem (dvb related) ?
+Message-ID: <20070429140753.GA6677@gmail.com>
+References: <20070427111047.GB10284@gmail.com> <d9def9db0704271346i1556c59dgad222d5de7d919f6@mail.gmail.com> <1177711220.26292.20.camel@localhost.localdomain> <75b66ecd0704271506x595dfb6bqe0ef4fd153818501@mail.gmail.com> <1177780652.7152.14.camel@localhost.localdomain> <1177791277.5170.11.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200704291555.57082.ak@suse.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1177791277.5170.11.camel@localhost.localdomain>
+X-Operating-System: Linux 2.6.21.1
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 28, 2007 at 09:14:37PM +0100, Jon Burgess wrote:
 
-> s/Friday/Sunday
+> While the above patch works, it seems the underlying causes is that
+> vmalloc_32() is providing memory above 4Gb on x86-64 which is not what
+> the driver expects. This same issue came up a few weeks ago with regards
+> to DRM on radeon http://lkml.org/lkml/2007/4/1/257
 > 
-> GOOD
-> ignore-stolen-time-in-the-softlockup-watchdog.patch
-> ignore-stolen-time-in-the-softlockup-watchdog-fix.patch
-> BAD
+> Andi Kleen included a patch to ensure vmalloc_32() returns memory <4Gb
+> in a patch which is currently in -mm
+>  http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/x86_64-mm-vmalloc-32.patch
+> 
+> With this patch applied the current driver appears to work OK. 
+> 
+> Attached is a smaller patch against v4l-dvb which just adds the missing
+> pci_unmap_sg() call.
+> 
+> 	Jon
+> 
+> Signed-off-by: Jon Burgess <jburgess777@googlemail.com>
 
-Thanks. I think the patch got dropped anyways. At least I don't have it anymore.
+Tremendous : after a perfect weekend for paragliding a solution appear
+here :-)
 
--Andi
+I hope both patch will be included very soon ;-)
+
+And it's works perfectly, thank you very much,
+-- 
+Grégoire FAVRE  http://gregoire.favre.googlepages.com  http://www.gnupg.org
+               http://picasaweb.google.com/Gregoire.Favre
