@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933133AbXD2LBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXD2LBL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933133AbXD2LBg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 07:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932561AbXD2LBc
+	id S1755165AbXD2LBL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 07:01:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbXD2LBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:01:32 -0400
-Received: from mail.suse.de ([195.135.220.2]:52046 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 07:01:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:51221 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755114AbXD2Kw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755117AbXD2Kw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Apr 2007 06:52:59 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200704291252.514680000@suse.de>
 In-Reply-To: <200704291252.514680000@suse.de>
-To: "Ken Chen" <kenchen@google.com>, patches@x86-64.org,
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Dave Jones <davej@codemonkey.org.uk>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [10/48] i386: type cast clean up for find_next_zero_bit
-Message-Id: <20070429105258.4565E151C5@wotan.suse.de>
-Date: Sun, 29 Apr 2007 12:52:58 +0200 (CEST)
+Subject: [PATCH] [1/48] x86_64: fix x86_64-mm-sched-clock-share
+Message-Id: <20070429105248.A4C2B151C5@wotan.suse.de>
+Date: Sun, 29 Apr 2007 12:52:48 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Ken Chen" <kenchen@google.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-clean up unneeded type cast by properly declare data type.
+Fix for the following patch. Provide dummy cpufreq functions when
+CPUFREQ is not compiled in. 
 
-Signed-off-by: Ken Chen <kenchen@google.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
 
- arch/i386/lib/bitops.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/cpufreq.h |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
 
-Index: linux/arch/i386/lib/bitops.c
+Index: linux/include/linux/cpufreq.h
 ===================================================================
---- linux.orig/arch/i386/lib/bitops.c
-+++ linux/arch/i386/lib/bitops.c
-@@ -43,7 +43,7 @@ EXPORT_SYMBOL(find_next_bit);
-  */
- int find_next_zero_bit(const unsigned long *addr, int size, int offset)
- {
--	unsigned long * p = ((unsigned long *) addr) + (offset >> 5);
-+	const unsigned long *p = addr + (offset >> 5);
- 	int set = 0, bit = offset & 31, res;
+--- linux.orig/include/linux/cpufreq.h
++++ linux/include/linux/cpufreq.h
+@@ -32,7 +32,15 @@
+  *                     CPUFREQ NOTIFIER INTERFACE                    *
+  *********************************************************************/
  
- 	if (bit) {
-@@ -64,7 +64,7 @@ int find_next_zero_bit(const unsigned lo
- 	/*
- 	 * No zero yet, search remaining full bytes for a zero
- 	 */
--	res = find_first_zero_bit (p, size - 32 * (p - (unsigned long *) addr));
-+	res = find_first_zero_bit(p, size - 32 * (p - addr));
- 	return (offset + set + res);
++#ifdef CONFIG_CPU_FREQ
+ int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
++#else
++static inline int cpufreq_register_notifier(struct notifier_block *nb,
++						unsigned int list)
++{
++	return 0;
++}
++#endif
+ int cpufreq_unregister_notifier(struct notifier_block *nb, unsigned int list);
+ 
+ #define CPUFREQ_TRANSITION_NOTIFIER	(0)
+@@ -261,17 +269,22 @@ int cpufreq_set_policy(struct cpufreq_po
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+ int cpufreq_update_policy(unsigned int cpu);
+ 
+-/* query the current CPU frequency (in kHz). If zero, cpufreq couldn't detect it */
+-unsigned int cpufreq_get(unsigned int cpu);
+ 
+-/* query the last known CPU freq (in kHz). If zero, cpufreq couldn't detect it */
++/*
++ * query the last known CPU freq (in kHz). If zero, cpufreq couldn't detect it
++ */
+ #ifdef CONFIG_CPU_FREQ
+ unsigned int cpufreq_quick_get(unsigned int cpu);
++unsigned int cpufreq_get(unsigned int cpu);
+ #else
+ static inline unsigned int cpufreq_quick_get(unsigned int cpu)
+ {
+ 	return 0;
  }
- EXPORT_SYMBOL(find_next_zero_bit);
++static inline unsigned int cpufreq_get(unsigned int cpu)
++{
++	return 0;
++}
+ #endif
+ 
+ 
