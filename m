@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbXD2Hfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbXD2Hh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbXD2Hfw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 03:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbXD2Hfv
+	id S1755007AbXD2Hh3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 03:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbXD2Hh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 03:35:51 -0400
-Received: from smtprelay07.ispgateway.de ([80.67.29.7]:60963 "EHLO
-	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751975AbXD2Hfu (ORCPT
+	Sun, 29 Apr 2007 03:37:29 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3168 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754995AbXD2Hh2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 03:35:50 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Apr 2007 03:35:49 EDT
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] crypto: Use padlock.ko only as a module
-Date: Sun, 29 Apr 2007 09:28:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       herbert@gondor.apana.org.au
-References: <463379FA.9080004@simon.arlott.org.uk> <20070428153707.50f1644a.randy.dunlap@oracle.com> <4633D6E3.5060602@simon.arlott.org.uk>
-In-Reply-To: <4633D6E3.5060602@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 03:37:28 -0400
+Date: Sun, 29 Apr 2007 08:37:18 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070429073718.GC26094@flint.arm.linux.org.uk>
+Mail-Followup-To: Markus Rechberger <mrechberger@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org> <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200704290928.57764.ioe-lkml@rameria.de>
+In-Reply-To: <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Scott,
+On Sun, Apr 29, 2007 at 12:58:09AM +0200, Markus Rechberger wrote:
+> I totally disagree here, bugzilla is a very good tool. If someone is
+> too lazy to look at it it's his problem.
 
-On Sunday 29 April 2007, Simon Arlott wrote:
-> Ideally I'd just remove that module completely, all it does is 
-> trigger the loading of the other two modules when modules are 
-> used - so I'll submit a patch for that instead.
+If you think so, try reading my email and responding constructively
+on how the issues there can be resolved.
 
-That's much better! 
+That email contains good examples where bugzilla fails, and bugs end
+up sitting around for ages untouched.  And no, it's not because I'm
+"lazy".
 
-When you force a feature to be a module on a kernel without 
-module support, it will effectivly be disabled.
-
-And if it is so simple to do the same in userspace like you suggest,
-than that's much better.
-
-Best Regards
-
-Ingo Oeser
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
