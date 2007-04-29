@@ -1,118 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755097AbXD2JZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbXD2J1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755097AbXD2JZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 05:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbXD2JZ2
+	id S1755078AbXD2J1t (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 05:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbXD2J1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 05:25:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:47718 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755090AbXD2JZ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 05:25:27 -0400
-Date: Sun, 29 Apr 2007 02:24:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: bbpetkov@yahoo.de
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-Subject: Re: [PATCH] mm/memory.c: remove warning from an uninitialized
- spinlock. was: Re: 2.6.21-rc7-mm2
-Message-Id: <20070429022440.cb8fc8c4.akpm@linux-foundation.org>
-In-Reply-To: <20070429065049.GB4446@gollum.tnic>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	<20070426182519.GA4532@gollum.tnic>
-	<20070427172230.94b82829.akpm@linux-foundation.org>
-	<4633DD55.1020006@shadowen.org>
-	<20070429065049.GB4446@gollum.tnic>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 29 Apr 2007 05:27:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36486 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755055AbXD2J1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 05:27:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Back to the future.
+Date: Sun, 29 Apr 2007 11:32:10 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704291057.48747.rjw@sisk.pl> <20070429085937.GD1900@elf.ucw.cz>
+In-Reply-To: <20070429085937.GD1900@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704291132.11409.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 08:50:49 +0200 Borislav Petkov <bbpetkov@yahoo.de> wrote:
+On Sunday, 29 April 2007 10:59, Pavel Machek wrote:
+> Hi!
+> 
+> > > Ie we do have history of _not_ freezing things.  The freezing came later, 
+> > > and came with the subsystem that had more problems..
+> > 
+> > It doesn't have that many problems as you are trying to suggest.  At present,
+> > the only problems with it happen if someone tries to "improve" it in the way
+> > I did with the workqueues.
+> > 
+> > Anyway, the freezing of tasks, including kernel threads, is one of the few
+> > things on which Pavel, Nigel and me completely agree that they should be done,
+> > so perhaps you could accept that?
+> 
+> Actually, if we want to support OLPC _nicely_, we'll need to get rid
+> of freezer from suspend-to-RAM. Of course, that _will_ put more
+> pressure at the drivers -- and break few of them...
 
-> Introduce a macro for suppressing gcc from generating a warning about a probable
-> unitialized state of a variable.
+I think the removal of sys_sync() from freeze_processes() in the s2ram case
+might help.
 
-I ended up doing the below.
+I'm really afraid of dropping the freezing of kernel threads from the
+hibernation/suspend altogether before we know we won't break drivers, because
+we can introduce some very subtle and difficult to debug problems this way.
 
-It's better to make this a per-compiler-version thing: later versions of
-gcc might need different tricks, or might provide __attribute__((stfu)) or
-whatever.
+Moreover, apart from speeding up the suspend slightly (kernel threads are
+frozen very quickly) this won't buy us anything, since kprobes uses the freezer
+and all of the infrastructure is needed anyway.
 
-Plus I don't know if the x=x trick is needed on the intel compiler, nor if
-it even works, so I left ICC alone.
-
-
-
-
-From: Borislav Petkov <bbpetkov@yahoo.de>
-
-Introduce a macro for suppressing gcc from generating a warning about a
-probable uninitialized state of a variable.
-
-Example:
-
--	spinlock_t *ptl;
-+	spinlock_t *uninitialized_var(ptl);
-
-Not a happy solution, but those warnings are obnoxious.
-
-- Using the usual pointlessly-set-it-to-zero approach wastes several
-  bytes of text.
-
-- Using a macro means we can (hopefully) do something else if gcc changes
-  cause the `x = x' hack to stop working
-
-- Using a macro means that people who are worried about hiding true bugs
-  can easily turn it off.
-
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- include/linux/compiler-gcc3.h  |    6 ++++++
- include/linux/compiler-gcc4.h  |    6 ++++++
- include/linux/compiler-intel.h |    2 ++
- 3 files changed, 14 insertions(+)
-
-diff -puN include/linux/compiler-gcc3.h~add-unitialized_var-macro-for-suppressing-gcc-warnings include/linux/compiler-gcc3.h
---- a/include/linux/compiler-gcc3.h~add-unitialized_var-macro-for-suppressing-gcc-warnings
-+++ a/include/linux/compiler-gcc3.h
-@@ -13,4 +13,10 @@
- #define __must_check		__attribute__((warn_unused_result))
- #endif
- 
-+/*
-+ * A trick to suppress uninitialized variable warning without generating any
-+ * code
-+ */
-+#define uninitialized_var(x) x = x
-+
- #define __always_inline		inline __attribute__((always_inline))
-diff -puN include/linux/compiler-gcc4.h~add-unitialized_var-macro-for-suppressing-gcc-warnings include/linux/compiler-gcc4.h
---- a/include/linux/compiler-gcc4.h~add-unitialized_var-macro-for-suppressing-gcc-warnings
-+++ a/include/linux/compiler-gcc4.h
-@@ -16,3 +16,9 @@
- #define __must_check 		__attribute__((warn_unused_result))
- #define __compiler_offsetof(a,b) __builtin_offsetof(a,b)
- #define __always_inline		inline __attribute__((always_inline))
-+
-+/*
-+ * A trick to suppress uninitialized variable warning without generating any
-+ * code
-+ */
-+#define uninitialized_var(x) x = x
-diff -puN include/linux/compiler-intel.h~add-unitialized_var-macro-for-suppressing-gcc-warnings include/linux/compiler-intel.h
---- a/include/linux/compiler-intel.h~add-unitialized_var-macro-for-suppressing-gcc-warnings
-+++ a/include/linux/compiler-intel.h
-@@ -22,3 +22,5 @@
-     (typeof(ptr)) (__ptr + (off)); })
- 
- #endif
-+
-+#define uninitialized_var(x) x
-_
-
+Greetings,
+Rafael
