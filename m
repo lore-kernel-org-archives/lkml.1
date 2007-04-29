@@ -1,236 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbXD2FXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbXD2FcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754970AbXD2FXR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 01:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbXD2FXQ
+	id S1754960AbXD2FcL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 01:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754968AbXD2FcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 01:23:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:38709 "EHLO mail.goop.org"
+	Sun, 29 Apr 2007 01:32:10 -0400
+Received: from 1wt.eu ([62.212.114.60]:2326 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754970AbXD2FXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 01:23:14 -0400
-Message-ID: <46342BCB.3090608@goop.org>
-Date: Sat, 28 Apr 2007 22:23:23 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: fix voyager build
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1754960AbXD2FcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 01:32:09 -0400
+Date: Sun, 29 Apr 2007 07:30:23 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Gene Heskett <gene.heskett@gmail.com>,
+       linux-kernel@vger.kernel.org, Con Kolivas <kernel@kolivas.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070429053022.GB23638@1wt.eu>
+References: <20070425214704.GA32572@elte.hu> <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177809512.9756.10.camel@localhost>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds an smp_ops for voyager, and hooks things up appropriately.
-This is the first baby-step to making subarch runtime switchable.
+Hi,
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+On Sun, Apr 29, 2007 at 03:18:32AM +0200, Kasper Sandberg wrote:
+> Okay so i've tried with cfs 7 now, and the completely broken audio
+> behavior is fixed.
+> 
+> The only things i really notice now is that gtk apps seems to redraw
+> somewhat slower, and renicing X doesent seem to be able to bring it on
+> par with SD or vanilla.
+> 
+> And smoothness just doesent match SD, it may be abit better than
+> vanilla/staircase, i cant really definitively say, but SD just has the
+> smoothness factor which is extremely attractive.
 
----
- arch/i386/mach-voyager/voyager_smp.c |   73 ++++++++++++++++++++--------------
- 1 file changed, 44 insertions(+), 29 deletions(-)
+(...)
 
-===================================================================
---- a/arch/i386/mach-voyager/voyager_smp.c
-+++ b/arch/i386/mach-voyager/voyager_smp.c
-@@ -28,7 +28,6 @@
- #include <asm/pgalloc.h>
- #include <asm/tlbflush.h>
- #include <asm/arch_hooks.h>
--#include <asm/pda.h>
- 
- /* TLB state -- visible externally, indexed physically */
- DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate) ____cacheline_aligned = { &init_mm, 0 };
-@@ -423,7 +422,7 @@ find_smp_config(void)
- 	     VOYAGER_SUS_IN_CONTROL_PORT);
- 
- 	current_thread_info()->cpu = boot_cpu_id;
--	write_pda(cpu_number, boot_cpu_id);
-+	x86_write_percpu(cpu_number, boot_cpu_id);
- }
- 
- /*
-@@ -436,7 +435,7 @@ smp_store_cpu_info(int id)
- 
- 	*c = boot_cpu_data;
- 
--	identify_cpu(c);
-+	identify_secondary_cpu(c);
- }
- 
- /* set up the trampoline and return the physical address of the code */
-@@ -460,7 +459,7 @@ start_secondary(void *unused)
- 	/* external functions not defined in the headers */
- 	extern void calibrate_delay(void);
- 
--	secondary_cpu_init();
-+	cpu_init();
- 
- 	/* OK, we're in the routine */
- 	ack_CPI(VIC_CPU_BOOT_CPI);
-@@ -580,7 +579,9 @@ do_boot_cpu(__u8 cpu)
- 	/* init_tasks (in sched.c) is indexed logically */
- 	stack_start.esp = (void *) idle->thread.esp;
- 
--	init_gdt(cpu, idle);
-+	init_gdt(cpu);
-+ 	per_cpu(current_task, cpu) = idle;
-+	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
- 	irq_ctx_init(cpu);
- 
- 	/* Note: Don't modify initial ss override */
-@@ -884,8 +885,8 @@ smp_invalidate_interrupt(void)
- 
- /* This routine is called with a physical cpu mask */
- static void
--flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
--						unsigned long va)
-+voyager_flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
-+			  unsigned long va)
- {
- 	int stuck = 50000;
- 
-@@ -937,7 +938,7 @@ flush_tlb_current_task(void)
- 	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
- 	local_flush_tlb();
- 	if (cpu_mask)
--		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
-+		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
- 
- 	preempt_enable();
- }
-@@ -959,7 +960,7 @@ flush_tlb_mm (struct mm_struct * mm)
- 			leave_mm(smp_processor_id());
- 	}
- 	if (cpu_mask)
--		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
-+		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
- 
- 	preempt_enable();
- }
-@@ -980,7 +981,7 @@ void flush_tlb_page(struct vm_area_struc
- 	}
- 
- 	if (cpu_mask)
--		flush_tlb_others(cpu_mask, mm, va);
-+		voyager_flush_tlb_others(cpu_mask, mm, va);
- 
- 	preempt_enable();
- }
-@@ -1076,12 +1077,13 @@ smp_call_function_interrupt(void)
-     [RETURNS] 0 on success, else a negative status code. Does not return until
-     remote CPUs are nearly ready to execute <<func>> or are or have executed.
- */
--int
--smp_call_function (void (*func) (void *info), void *info, int retry,
--		   int wait)
-+static int
-+voyager_smp_call_function_mask (cpumask_t cpumask,
-+				void (*func) (void *info), void *info,
-+				int wait)
- {
- 	struct call_data_struct data;
--	__u32 mask = cpus_addr(cpu_online_map)[0];
-+	u32 mask = cpumask.bits[0];
- 
- 	mask &= ~(1<<smp_processor_id());
- 
-@@ -1116,7 +1118,6 @@ smp_call_function (void (*func) (void *i
- 
- 	return 0;
- }
--EXPORT_SYMBOL(smp_call_function);
- 
- /* Sorry about the name.  In an APIC based system, the APICs
-  * themselves are programmed to send a timer interrupt.  This is used
-@@ -1231,8 +1232,8 @@ smp_alloc_memory(void)
- }
- 
- /* send a reschedule CPI to one CPU by physical CPU number*/
--void
--smp_send_reschedule(int cpu)
-+static void
-+voyager_smp_send_reschedule(int cpu)
- {
- 	send_one_CPI(cpu, VIC_RESCHEDULE_CPI);
- }
-@@ -1261,8 +1262,8 @@ safe_smp_processor_id(void)
- }
- 
- /* broadcast a halt to all other CPUs */
--void
--smp_send_stop(void)
-+static void
-+voyager_smp_send_stop(void)
- {
- 	smp_call_function(smp_stop_cpu_function, NULL, 1, 1);
- }
-@@ -1924,23 +1925,26 @@ smp_voyager_power_off(void *dummy)
- 		smp_stop_cpu_function(NULL);
- }
- 
--void __init
--smp_prepare_cpus(unsigned int max_cpus)
-+static void __init
-+voyager_smp_prepare_cpus(unsigned int max_cpus)
- {
- 	/* FIXME: ignore max_cpus for now */
- 	smp_boot_cpus();
- }
- 
--void __devinit smp_prepare_boot_cpu(void)
--{
-+static void __devinit voyager_smp_prepare_boot_cpu(void)
-+{
-+	init_gdt(smp_processor_id());
-+	switch_to_new_gdt();
-+
- 	cpu_set(smp_processor_id(), cpu_online_map);
- 	cpu_set(smp_processor_id(), cpu_callout_map);
- 	cpu_set(smp_processor_id(), cpu_possible_map);
- 	cpu_set(smp_processor_id(), cpu_present_map);
- }
- 
--int __devinit
--__cpu_up(unsigned int cpu)
-+static int __devinit
-+voyager_cpu_up(unsigned int cpu)
- {
- 	/* This only works at boot for x86.  See "rewrite" above. */
- 	if (cpu_isset(cpu, smp_commenced_mask))
-@@ -1956,8 +1960,8 @@ __cpu_up(unsigned int cpu)
- 	return 0;
- }
- 
--void __init 
--smp_cpus_done(unsigned int max_cpus)
-+static void __init
-+voyager_smp_cpus_done(unsigned int max_cpus)
- {
- 	zap_low_mappings();
- }
-@@ -1966,5 +1970,16 @@ smp_setup_processor_id(void)
- smp_setup_processor_id(void)
- {
- 	current_thread_info()->cpu = hard_smp_processor_id();
--	write_pda(cpu_number, hard_smp_processor_id());
--}
-+	x86_write_percpu(cpu_number, hard_smp_processor_id());
-+}
-+
-+struct smp_ops smp_ops = {
-+	.smp_prepare_boot_cpu = voyager_smp_prepare_boot_cpu,
-+	.smp_prepare_cpus = voyager_smp_prepare_cpus,
-+	.cpu_up = voyager_cpu_up,
-+	.smp_cpus_done = voyager_smp_cpus_done,
-+
-+	.smp_send_stop = voyager_smp_send_stop,
-+	.smp_send_reschedule = voyager_smp_send_reschedule,
-+	.smp_call_function_mask = voyager_smp_call_function_mask,
-+};
+I don't know if Mike still has problems with SD, but there are now several
+interesting reports of SD giving better feedback than CFS on real work. In
+my experience, CFS seems smoother on *technical* tests, which I agree that
+they do not really simulate real work.
+
+I really think that if we merged SD in 2.6.22, at least we could focus
+more on differences between it (which will become mainline) and CFS in
+order to improve CFS for later inclusion when mature enough. Or maybe
+only relevant parts of CFS will be merged into mainline later. But at
+least, testers will not have to patch anymore to report feedback with
+SD during -rc, and above all they would not compare anymore against
+old-vanilla, thus reducing the number of tests.
+
+Just my 2 cents,
+Willy
 
