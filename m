@@ -1,588 +1,1330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031046AbXD2Rki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031027AbXD2RlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031046AbXD2Rki (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 13:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030890AbXD2RbG
+	id S1031027AbXD2RlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 13:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030767AbXD2Rkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 13:31:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:58979 "EHLO mail.goop.org"
+	Sun, 29 Apr 2007 13:40:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:57183 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753832AbXD2RaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 13:30:17 -0400
-Message-Id: <20070429172911.581459000@goop.org>
+	id S965105AbXD2RbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 13:31:18 -0400
+Message-Id: <20070429172915.805798000@goop.org>
 References: <20070429172835.284784000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sun, 29 Apr 2007 10:28:41 -0700
+Date: Sun, 29 Apr 2007 10:29:01 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 06/32] xen: Xen virtual mmu
-Content-Disposition: inline; filename=xen-mmu.patch
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       Jens Axboe <axboe@kernel.dk>
+Subject: [patch 26/32] xen: Add Xen virtual block device driver.
+Content-Disposition: inline; filename=xen-blockfront.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen pagetable handling, including the machinery to implement direct
-pagetables.  This means that pte update operations are intercepted so
-that pseudo-physical addresses can be converted to machine addresses.
-It also implements late pinning/early unpinning so that pagetables are
-initialized while they're normal read-write memory as much as
-possible, yet pinned to make cr3 reloads as efficient as possible.
+The block device frontend driver allows the kernel to access block
+devices exported exported by a virtual machine containing a physical
+block device driver.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <greg@kroah.com>
+Cc: Jens Axboe <axboe@kernel.dk>
 ---
- arch/i386/xen/Makefile    |    2 
- arch/i386/xen/enlighten.c |   30 ++-
- arch/i386/xen/mmu.c       |  419 +++++++++++++++++++++++++++++++++++++++++++++
- arch/i386/xen/mmu.h       |   47 +++++
- 4 files changed, 493 insertions(+), 5 deletions(-)
+ drivers/block/Kconfig        |    1 
+ drivers/block/Makefile       |    1 
+ drivers/block/xen/Kconfig    |   14 
+ drivers/block/xen/Makefile   |    5 
+ drivers/block/xen/blkfront.c |  844 ++++++++++++++++++++++++++++++++++++++++++
+ drivers/block/xen/block.h    |  135 ++++++
+ drivers/block/xen/vbd.c      |  229 +++++++++++
+ include/linux/major.h        |    2 
+ 8 files changed, 1231 insertions(+)
 
 ===================================================================
---- a/arch/i386/xen/Makefile
-+++ b/arch/i386/xen/Makefile
-@@ -1,1 +1,1 @@ obj-y		:= enlighten.o setup.o features.o
--obj-y		:= enlighten.o setup.o features.o multicalls.o
-+obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o
+--- a/drivers/block/Kconfig
++++ b/drivers/block/Kconfig
+@@ -445,6 +445,7 @@ config CDROM_PKTCDVD_WCACHE
+ 	  don't do deferred write error handling yet.
+ 
+ source "drivers/s390/block/Kconfig"
++source "drivers/block/xen/Kconfig"
+ 
+ config ATA_OVER_ETH
+ 	tristate "ATA over Ethernet support"
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -39,6 +39,7 @@
- #include <asm/pgtable.h>
+--- a/drivers/block/Makefile
++++ b/drivers/block/Makefile
+@@ -29,3 +29,4 @@ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
  
- #include "xen-ops.h"
-+#include "mmu.h"
- #include "multicalls.h"
- 
- EXPORT_SYMBOL_GPL(hypercall_page);
-@@ -565,11 +566,9 @@ static __init void xen_pagetable_setup_d
- 		 * Should be set_fixmap(), but shared_info is a machine
- 		 * address with no corresponding pseudo-phys address.
- 		 */
--#if 0
- 		set_pte_mfn(fix_to_virt(FIX_PARAVIRT_BOOTMAP),
- 			    PFN_DOWN(xen_start_info->shared_info),
- 			    PAGE_KERNEL);
--#endif
- 
- 		HYPERVISOR_shared_info =
- 			(struct shared_info *)fix_to_virt(FIX_PARAVIRT_BOOTMAP);
-@@ -578,9 +577,7 @@ static __init void xen_pagetable_setup_d
- 		HYPERVISOR_shared_info =
- 			(struct shared_info *)__va(xen_start_info->shared_info);
- 
--#if 0
- 	xen_pgd_pin(base);
--#endif
- 
- 	xen_vcpu_setup(smp_processor_id());
- }
-@@ -682,6 +679,31 @@ static const struct paravirt_ops xen_par
- 	.release_pd = xen_release_pd,
- 	.release_pt = xen_release_pt,
- 
-+	.set_pte = xen_set_pte,
-+	.set_pte_at = xen_set_pte_at,
-+	.set_pmd = xen_set_pmd,
-+
-+	.pte_val = xen_pte_val,
-+	.pgd_val = xen_pgd_val,
-+
-+	.make_pte = xen_make_pte,
-+	.make_pgd = xen_make_pgd,
-+
-+#ifdef CONFIG_X86_PAE
-+	.set_pte_atomic = xen_set_pte_atomic,
-+	.set_pte_present = xen_set_pte_at,
-+	.set_pud = xen_set_pud,
-+	.pte_clear = xen_pte_clear,
-+	.pmd_clear = xen_pmd_clear,
-+
-+	.make_pmd = xen_make_pmd,
-+	.pmd_val = xen_pmd_val,
-+#endif	/* PAE */
-+
-+	.activate_mm = xen_activate_mm,
-+	.dup_mmap = xen_dup_mmap,
-+	.exit_mmap = xen_exit_mmap,
-+
- 	.set_lazy_mode = xen_set_lazy_mode,
- };
- 
++obj-$(CONFIG_XEN)		+= xen/
 ===================================================================
 --- /dev/null
-+++ b/arch/i386/xen/mmu.c
-@@ -0,0 +1,419 @@
-+/*
-+ * Xen mmu operations
++++ b/drivers/block/xen/Kconfig
+@@ -0,0 +1,14 @@
++menu "Xen block device drivers"
++        depends on XEN
++
++config XEN_BLKDEV_FRONTEND
++	tristate "Block device frontend driver"
++	depends on XEN
++	default y
++	help
++	  The block device frontend driver allows the kernel to access block
++	  devices exported from a device driver virtual machine. Unless you
++	  are building a dedicated device driver virtual machine, then you
++	  almost certainly want to say Y here.
++
++endmenu
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/Makefile
+@@ -0,0 +1,5 @@
++
++obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	:= xenblk.o
++
++xenblk-objs := blkfront.o vbd.o
++
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/blkfront.c
+@@ -0,0 +1,844 @@
++/******************************************************************************
++ * blkfront.c
 + *
-+ * This file contains the various mmu fetch and update operations.
-+ * The most important job they must perform is the mapping between the
-+ * domain's pfn and the overall machine mfns.
++ * XenLinux virtual block device driver.
 + *
-+ * Xen allows guests to directly update the pagetable, in a controlled
-+ * fashion.  In other words, the guest modifies the same pagetable
-+ * that the CPU actually uses, which eliminates the overhead of having
-+ * a separate shadow pagetable.
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004, Christian Limpach
++ * Copyright (c) 2004, Andrew Warfield
++ * Copyright (c) 2005, Christopher Clark
++ * Copyright (c) 2005, XenSource Ltd
 + *
-+ * In order to allow this, it falls on the guest domain to map its
-+ * notion of a "physical" pfn - which is just a domain-local linear
-+ * address - into a real "machine address" which the CPU's MMU can
-+ * use.
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
 + *
-+ * A pgd_t/pmd_t/pte_t will typically contain an mfn, and so can be
-+ * inserted directly into the pagetable.  When creating a new
-+ * pte/pmd/pgd, it converts the passed pfn into an mfn.  Conversely,
-+ * when reading the content back with __(pgd|pmd|pte)_val, it converts
-+ * the mfn back into a pfn.
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
 + *
-+ * The other constraint is that all pages which make up a pagetable
-+ * must be mapped read-only in the guest.  This prevents uncontrolled
-+ * guest updates to the pagetable.  Xen strictly enforces this, and
-+ * will disallow any pagetable update which will end up mapping a
-+ * pagetable page RW, and will disallow using any writable page as a
-+ * pagetable.
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
 + *
-+ * Naively, when loading %cr3 with the base of a new pagetable, Xen
-+ * would need to validate the whole pagetable before going on.
-+ * Naturally, this is quite slow.  The solution is to "pin" a
-+ * pagetable, which enforces all the constraints on the pagetable even
-+ * when it is not actively in use.  This menas that Xen can be assured
-+ * that it is still valid when you do load it into %cr3, and doesn't
-+ * need to revalidate it.
-+ *
-+ * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
 + */
-+#include <asm/bug.h>
 +
-+#include <asm/pgtable.h>
-+#include <asm/tlbflush.h>
-+#include <asm/mmu_context.h>
-+
-+#include <asm/xen/hypercall.h>
-+#include <asm/paravirt.h>
-+
++#include <linux/version.h>
++#include "block.h"
++#include <linux/cdrom.h>
++#include <linux/sched.h>
++#include <linux/interrupt.h>
++#include <scsi/scsi.h>
++#include <xen/xenbus.h>
++#include <xen/interface/grant_table.h>
++#include <xen/grant_table.h>
++#include <xen/events.h>
 +#include <xen/page.h>
-+#include <xen/interface/xen.h>
++#include <asm/xen/hypervisor.h>
 +
-+#include "mmu.h"
++#define BLKIF_STATE_DISCONNECTED 0
++#define BLKIF_STATE_CONNECTED    1
++#define BLKIF_STATE_SUSPENDED    2
 +
-+xmaddr_t arbitrary_virt_to_machine(unsigned long address)
-+{
-+	pte_t *pte = lookup_address(address);
-+	unsigned offset = address & PAGE_MASK;
++#define MAXIMUM_OUTSTANDING_BLOCK_REQS \
++    (BLKIF_MAX_SEGMENTS_PER_REQUEST * BLK_RING_SIZE)
++#define GRANT_INVALID_REF	0
 +
-+	BUG_ON(pte == NULL);
++static void connect(struct blkfront_info *);
++static void blkfront_closing(struct xenbus_device *);
++static int blkfront_remove(struct xenbus_device *);
++static int talk_to_backend(struct xenbus_device *, struct blkfront_info *);
++static int setup_blkring(struct xenbus_device *, struct blkfront_info *);
 +
-+	return XMADDR((pte_mfn(*pte) << PAGE_SHIFT) + offset);
-+}
++static void kick_pending_request_queues(struct blkfront_info *);
 +
-+void make_lowmem_page_readonly(void *vaddr)
-+{
-+	pte_t *pte, ptev;
-+	unsigned long address = (unsigned long)vaddr;
-+
-+	pte = lookup_address(address);
-+	BUG_ON(pte == NULL);
-+
-+	ptev = pte_wrprotect(*pte);
-+
-+	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
-+		BUG();
-+}
-+
-+void make_lowmem_page_readwrite(void *vaddr)
-+{
-+	pte_t *pte, ptev;
-+	unsigned long address = (unsigned long)vaddr;
-+
-+	pte = lookup_address(address);
-+	BUG_ON(pte == NULL);
-+
-+	ptev = pte_mkwrite(*pte);
-+
-+	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
-+		BUG();
-+}
++static irqreturn_t blkif_int(int irq, void *dev_id);
++static void blkif_restart_queue(struct work_struct *work);
++static void blkif_recover(struct blkfront_info *);
++static void blkif_completion(struct blk_shadow *);
++static void blkif_free(struct blkfront_info *, int);
 +
 +
-+void xen_set_pte(pte_t *ptep, pte_t pte)
-+{
-+	struct mmu_update u;
-+
-+	u.ptr = virt_to_machine(ptep).maddr;
-+	u.val = pte_val_ma(pte);
-+	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+}
-+
-+void xen_set_pmd(pmd_t *ptr, pmd_t val)
-+{
-+	struct mmu_update u;
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pmd_val_ma(val);
-+	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+}
-+
-+#ifdef CONFIG_X86_PAE
-+void xen_set_pud(pud_t *ptr, pud_t val)
-+{
-+	struct mmu_update u;
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pud_val_ma(val);
-+	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+}
-+#endif
-+
-+/*
-+ * Associate a virtual page frame with a given physical page frame
-+ * and protection flags for that frame.
++/**
++ * Entry point to this code when a new device is created.  Allocate the basic
++ * structures and the ring buffer for communication with the backend, and
++ * inform the backend of the appropriate details for those.  Switch to
++ * Initialised state.
 + */
-+void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
++static int blkfront_probe(struct xenbus_device *dev,
++			  const struct xenbus_device_id *id)
 +{
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
++	int err, vdevice, i;
++	struct blkfront_info *info;
 +
-+	pgd = swapper_pg_dir + pgd_index(vaddr);
-+	if (pgd_none(*pgd)) {
-+		BUG();
-+		return;
-+	}
-+	pud = pud_offset(pgd, vaddr);
-+	if (pud_none(*pud)) {
-+		BUG();
-+		return;
-+	}
-+	pmd = pmd_offset(pud, vaddr);
-+	if (pmd_none(*pmd)) {
-+		BUG();
-+		return;
-+	}
-+	pte = pte_offset_kernel(pmd, vaddr);
-+	/* <mfn,flags> stored as-is, to permit clearing entries */
-+	xen_set_pte(pte, mfn_pte(mfn, flags));
-+
-+	/*
-+	 * It's enough to flush this one mapping.
-+	 * (PGE mappings get flushed as well)
-+	 */
-+	__flush_tlb_one(vaddr);
-+}
-+
-+void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
-+		    pte_t *ptep, pte_t pteval)
-+{
-+	if ((mm != current->mm && mm != &init_mm) ||
-+	    HYPERVISOR_update_va_mapping(addr, pteval, 0) != 0)
-+		xen_set_pte(ptep, pteval);
-+}
-+
-+#ifdef CONFIG_X86_PAE
-+void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
-+{
-+	set_64bit((u64 *)ptep, pte_val_ma(pte));
-+}
-+
-+void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep)
-+{
-+	ptep->pte_low = 0;
-+	smp_wmb();
-+	ptep->pte_high = 0;
-+}
-+
-+void xen_pmd_clear(pmd_t *pmdp)
-+{
-+	xen_set_pmd(pmdp, __pmd(0));
-+}
-+
-+unsigned long long xen_pte_val(pte_t pte)
-+{
-+	unsigned long long ret = 0;
-+
-+	if (pte.pte_low) {
-+		ret = ((unsigned long long)pte.pte_high << 32) | pte.pte_low;
-+		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	/* FIXME: Use dynamic device id if this is not set. */
++	err = xenbus_scanf(XBT_NIL, dev->nodename,
++			   "virtual-device", "%i", &vdevice);
++	if (err != 1) {
++		xenbus_dev_fatal(dev, err, "reading virtual-device");
++		return err;
 +	}
 +
-+	return ret;
-+}
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
++	if (!info) {
++		xenbus_dev_fatal(dev, -ENOMEM, "allocating info structure");
++		return -ENOMEM;
++	}
 +
-+unsigned long long xen_pmd_val(pmd_t pmd)
-+{
-+	unsigned long long ret = pmd.pmd;
-+	if (ret)
-+		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
-+	return ret;
-+}
++	info->xbdev = dev;
++	info->vdevice = vdevice;
++	info->connected = BLKIF_STATE_DISCONNECTED;
++	INIT_WORK(&info->work, blkif_restart_queue);
 +
-+unsigned long long xen_pgd_val(pgd_t pgd)
-+{
-+	unsigned long long ret = pgd.pgd;
-+	if (ret)
-+		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
-+	return ret;
-+}
++	for (i = 0; i < BLK_RING_SIZE; i++)
++		info->shadow[i].req.id = i+1;
++	info->shadow[BLK_RING_SIZE-1].req.id = 0x0fffffff;
 +
-+pte_t xen_make_pte(unsigned long long pte)
-+{
-+	if (pte & 1)
-+		pte = phys_to_machine(XPADDR(pte)).maddr;
++	/* Front end dir is a number, which is used as the id. */
++	info->handle = simple_strtoul(strrchr(dev->nodename,'/')+1, NULL, 0);
++	dev->dev.driver_data = info;
 +
-+	return (pte_t){ pte, pte >> 32 };
-+}
++	err = talk_to_backend(dev, info);
++	if (err) {
++		kfree(info);
++		dev->dev.driver_data = NULL;
++		return err;
++	}
 +
-+pmd_t xen_make_pmd(unsigned long long pmd)
-+{
-+	if (pmd & 1)
-+		pmd = phys_to_machine(XPADDR(pmd)).maddr;
-+
-+	return (pmd_t){ pmd };
-+}
-+
-+pgd_t xen_make_pgd(unsigned long long pgd)
-+{
-+	if (pgd & _PAGE_PRESENT)
-+		pgd = phys_to_machine(XPADDR(pgd)).maddr;
-+
-+	return (pgd_t){ pgd };
-+}
-+#else  /* !PAE */
-+unsigned long xen_pte_val(pte_t pte)
-+{
-+	unsigned long ret = pte.pte_low;
-+
-+	if (ret & _PAGE_PRESENT)
-+		ret = machine_to_phys(XMADDR(ret)).paddr;
-+
-+	return ret;
-+}
-+
-+unsigned long xen_pmd_val(pmd_t pmd)
-+{
-+	/* a BUG here is a lot easier to track down than a NULL eip */
-+	BUG();
 +	return 0;
 +}
 +
-+unsigned long xen_pgd_val(pgd_t pgd)
++
++/**
++ * We are reconnecting to the backend, due to a suspend/resume, or a backend
++ * driver restart.  We tear down our blkif structure and recreate it, but
++ * leave the device-layer structures intact so that this is transparent to the
++ * rest of the kernel.
++ */
++static int blkfront_resume(struct xenbus_device *dev)
 +{
-+	unsigned long ret = pgd.pgd;
-+	if (ret)
-+		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
-+	return ret;
++	struct blkfront_info *info = dev->dev.driver_data;
++	int err;
++
++	dev_dbg(&dev->dev, "blkfront_resume: %s\n", dev->nodename);
++
++	blkif_free(info, info->connected == BLKIF_STATE_CONNECTED);
++
++	err = talk_to_backend(dev, info);
++	if (info->connected == BLKIF_STATE_SUSPENDED && !err)
++		blkif_recover(info);
++
++	return err;
 +}
 +
-+pte_t xen_make_pte(unsigned long pte)
-+{
-+	if (pte & _PAGE_PRESENT)
-+		pte = phys_to_machine(XPADDR(pte)).maddr;
 +
-+	return (pte_t){ pte };
++/* Common code used when first setting up, and when resuming. */
++static int talk_to_backend(struct xenbus_device *dev,
++			   struct blkfront_info *info)
++{
++	const char *message = NULL;
++	struct xenbus_transaction xbt;
++	int err;
++
++	/* Create shared ring, alloc event channel. */
++	err = setup_blkring(dev, info);
++	if (err)
++		goto out;
++
++again:
++	err = xenbus_transaction_start(&xbt);
++	if (err) {
++		xenbus_dev_fatal(dev, err, "starting transaction");
++		goto destroy_blkring;
++	}
++
++	err = xenbus_printf(xbt, dev->nodename,
++			    "ring-ref","%u", info->ring_ref);
++	if (err) {
++		message = "writing ring-ref";
++		goto abort_transaction;
++	}
++	err = xenbus_printf(xbt, dev->nodename,
++			    "event-channel", "%u", info->evtchn);
++	if (err) {
++		message = "writing event-channel";
++		goto abort_transaction;
++	}
++
++	err = xenbus_transaction_end(xbt, 0);
++	if (err) {
++		if (err == -EAGAIN)
++			goto again;
++		xenbus_dev_fatal(dev, err, "completing transaction");
++		goto destroy_blkring;
++	}
++
++	xenbus_switch_state(dev, XenbusStateInitialised);
++
++	return 0;
++
++ abort_transaction:
++	xenbus_transaction_end(xbt, 1);
++	if (message)
++		xenbus_dev_fatal(dev, err, "%s", message);
++ destroy_blkring:
++	blkif_free(info, 0);
++ out:
++	return err;
 +}
 +
-+pmd_t xen_make_pmd(unsigned long pmd)
++
++static int setup_blkring(struct xenbus_device *dev,
++			 struct blkfront_info *info)
 +{
-+	/* a BUG here is a lot easier to track down than a NULL eip */
-+	BUG();
-+	return __pmd(0);
++	struct blkif_sring *sring;
++	int err;
++
++	info->ring_ref = GRANT_INVALID_REF;
++
++	sring = (struct blkif_sring *)__get_free_page(GFP_KERNEL);
++	if (!sring) {
++		xenbus_dev_fatal(dev, -ENOMEM, "allocating shared ring");
++		return -ENOMEM;
++	}
++	SHARED_RING_INIT(sring);
++	FRONT_RING_INIT(&info->ring, sring, PAGE_SIZE);
++
++	err = xenbus_grant_ring(dev, virt_to_mfn(info->ring.sring));
++	if (err < 0) {
++		free_page((unsigned long)sring);
++		info->ring.sring = NULL;
++		goto fail;
++	}
++	info->ring_ref = err;
++
++	err = xenbus_alloc_evtchn(dev, &info->evtchn);
++	if (err)
++		goto fail;
++
++	err = bind_evtchn_to_irqhandler(
++		info->evtchn, blkif_int, IRQF_SAMPLE_RANDOM, "blkif", info);
++	if (err <= 0) {
++		xenbus_dev_fatal(dev, err,
++				 "bind_evtchn_to_irqhandler failed");
++		goto fail;
++	}
++	info->irq = err;
++
++	return 0;
++fail:
++	blkif_free(info, 0);
++	return err;
 +}
 +
-+pgd_t xen_make_pgd(unsigned long pgd)
-+{
-+	if (pgd & _PAGE_PRESENT)
-+		pgd = phys_to_machine(XPADDR(pgd)).maddr;
 +
-+	return (pgd_t){ pgd };
++/**
++ * Callback received when the backend's state changes.
++ */
++static void backend_changed(struct xenbus_device *dev,
++			    enum xenbus_state backend_state)
++{
++	struct blkfront_info *info = dev->dev.driver_data;
++	struct block_device *bd;
++
++	dev_dbg(&dev->dev, "blkfront:backend_changed.\n");
++
++	switch (backend_state) {
++	case XenbusStateInitialising:
++	case XenbusStateInitWait:
++	case XenbusStateInitialised:
++	case XenbusStateUnknown:
++	case XenbusStateClosed:
++		break;
++
++	case XenbusStateConnected:
++		connect(info);
++		break;
++
++	case XenbusStateClosing:
++		bd = bdget(info->dev);
++		if (bd == NULL)
++			xenbus_dev_fatal(dev, -ENODEV, "bdget failed");
++
++		mutex_lock(&bd->bd_mutex);
++		if (info->users > 0)
++			xenbus_dev_error(dev, -EBUSY,
++					 "Device in use; refusing to close");
++		else
++			blkfront_closing(dev);
++		mutex_unlock(&bd->bd_mutex);
++		bdput(bd);
++		break;
++	}
 +}
-+#endif	/* CONFIG_X86_PAE */
 +
 +
++/* ** Connection ** */
 +
-+static void pgd_walk_set_prot(void *pt, pgprot_t flags)
++
++/*
++ * Invoked when the backend is finally 'ready' (and has told produced
++ * the details about the physical device - #sectors, size, etc).
++ */
++static void connect(struct blkfront_info *info)
 +{
-+	unsigned long pfn = PFN_DOWN(__pa(pt));
++	unsigned long long sectors;
++	unsigned long sector_size;
++	unsigned int binfo;
++	int err;
 +
-+	if (HYPERVISOR_update_va_mapping((unsigned long)pt,
-+					 pfn_pte(pfn, flags), 0) < 0)
-+		BUG();
-+}
-+
-+static void pgd_walk(pgd_t *pgd_base, pgprot_t flags)
-+{
-+	pgd_t *pgd = pgd_base;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	int    g, u, m;
-+
-+	if (xen_feature(XENFEAT_auto_translated_physmap))
++	if ((info->connected == BLKIF_STATE_CONNECTED) ||
++	    (info->connected == BLKIF_STATE_SUSPENDED) )
 +		return;
 +
-+	for (g = 0; g < USER_PTRS_PER_PGD; g++, pgd++) {
-+		if (pgd_none(*pgd))
-+			continue;
-+		pud = pud_offset(pgd, 0);
++	dev_dbg(&info->dev, "blkfront.c:connect:%s.\n", info->xbdev->otherend);
 +
-+		if (PTRS_PER_PUD > 1) /* not folded */
-+			pgd_walk_set_prot(pud,flags);
++	err = xenbus_gather(XBT_NIL, info->xbdev->otherend,
++			    "sectors", "%llu", &sectors,
++			    "info", "%u", &binfo,
++			    "sector-size", "%lu", &sector_size,
++			    NULL);
++	if (err) {
++		xenbus_dev_fatal(info->xbdev, err,
++				 "reading backend fields at %s",
++				 info->xbdev->otherend);
++		return;
++	}
 +
-+		for (u = 0; u < PTRS_PER_PUD; u++, pud++) {
-+			if (pud_none(*pud))
-+				continue;
-+			pmd = pmd_offset(pud, 0);
++	err = xenbus_gather(XBT_NIL, info->xbdev->otherend,
++			    "feature-barrier", "%lu", &info->feature_barrier,
++			    NULL);
++	if (err)
++		info->feature_barrier = 0;
 +
-+			if (PTRS_PER_PMD > 1) /* not folded */
-+				pgd_walk_set_prot(pmd,flags);
++	err = xlvbd_add(sectors, info->vdevice, binfo, sector_size, info);
++	if (err) {
++		xenbus_dev_fatal(info->xbdev, err, "xlvbd_add at %s",
++				 info->xbdev->otherend);
++		return;
++	}
 +
-+			for (m = 0; m < PTRS_PER_PMD; m++, pmd++) {
-+				if (pmd_none(*pmd))
-+					continue;
++	xenbus_switch_state(info->xbdev, XenbusStateConnected);
 +
-+				/* This can get called before mem_map
-+				   is set up, so we assume nothing is
-+				   highmem at that point. */
-+				if (mem_map == NULL ||
-+				    !PageHighMem(pmd_page(*pmd))) {
-+					pte = pte_offset_kernel(pmd,0);
-+					pgd_walk_set_prot(pte,flags);
-+				}
-+			}
++	/* Kick pending requests. */
++	spin_lock_irq(&blkif_io_lock);
++	info->connected = BLKIF_STATE_CONNECTED;
++	kick_pending_request_queues(info);
++	spin_unlock_irq(&blkif_io_lock);
++
++	add_disk(info->gd);
++}
++
++/**
++ * Handle the change of state of the backend to Closing.  We must delete our
++ * device-layer structures now, to ensure that writes are flushed through to
++ * the backend.  Once is this done, we can switch to Closed in
++ * acknowledgement.
++ */
++static void blkfront_closing(struct xenbus_device *dev)
++{
++	struct blkfront_info *info = dev->dev.driver_data;
++	unsigned long flags;
++
++	dev_dbg(&dev->dev, "blkfront_closing: %s removed\n", dev->nodename);
++
++	if (info->rq == NULL)
++		goto out;
++
++	spin_lock_irqsave(&blkif_io_lock, flags);
++	/* No more blkif_request(). */
++	blk_stop_queue(info->rq);
++	/* No more gnttab callback work. */
++	gnttab_cancel_free_callback(&info->callback);
++	spin_unlock_irqrestore(&blkif_io_lock, flags);
++
++	/* Flush gnttab callback work. Must be done with no locks held. */
++	flush_scheduled_work();
++
++	xlvbd_del(info);
++
++ out:
++	xenbus_frontend_closed(dev);
++}
++
++
++static int blkfront_remove(struct xenbus_device *dev)
++{
++	struct blkfront_info *info = dev->dev.driver_data;
++
++	dev_dbg(&dev->dev, "blkfront_remove: %s removed\n", dev->nodename);
++
++	blkif_free(info, 0);
++
++	kfree(info);
++
++	return 0;
++}
++
++
++static inline int GET_ID_FROM_FREELIST(
++	struct blkfront_info *info)
++{
++	unsigned long free = info->shadow_free;
++	BUG_ON(free > BLK_RING_SIZE);
++	info->shadow_free = info->shadow[free].req.id;
++	info->shadow[free].req.id = 0x0fffffee; /* debug */
++	return free;
++}
++
++static inline void ADD_ID_TO_FREELIST(
++	struct blkfront_info *info, unsigned long id)
++{
++	info->shadow[id].req.id  = info->shadow_free;
++	info->shadow[id].request = 0;
++	info->shadow_free = id;
++}
++
++static inline void flush_requests(struct blkfront_info *info)
++{
++	int notify;
++
++	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&info->ring, notify);
++
++	if (notify)
++		notify_remote_via_irq(info->irq);
++}
++
++static void kick_pending_request_queues(struct blkfront_info *info)
++{
++	if (!RING_FULL(&info->ring)) {
++		/* Re-enable calldowns. */
++		blk_start_queue(info->rq);
++		/* Kick things off immediately. */
++		do_blkif_request(info->rq);
++	}
++}
++
++static void blkif_restart_queue(struct work_struct *work)
++{
++	struct blkfront_info *info = container_of(work, struct blkfront_info, work);
++
++	spin_lock_irq(&blkif_io_lock);
++	if (info->connected == BLKIF_STATE_CONNECTED)
++		kick_pending_request_queues(info);
++	spin_unlock_irq(&blkif_io_lock);
++}
++
++static void blkif_restart_queue_callback(void *arg)
++{
++	struct blkfront_info *info = (struct blkfront_info *)arg;
++	schedule_work(&info->work);
++}
++
++int blkif_open(struct inode *inode, struct file *filep)
++{
++	struct blkfront_info *info = inode->i_bdev->bd_disk->private_data;
++	info->users++;
++	return 0;
++}
++
++
++int blkif_release(struct inode *inode, struct file *filep)
++{
++	struct blkfront_info *info = inode->i_bdev->bd_disk->private_data;
++	info->users--;
++	if (info->users == 0) {
++		/* Check whether we have been instructed to close.  We will
++		   have ignored this request initially, as the device was
++		   still mounted. */
++		struct xenbus_device * dev = info->xbdev;
++		enum xenbus_state state = xenbus_read_driver_state(dev->otherend);
++
++		if (state == XenbusStateClosing)
++			blkfront_closing(dev);
++	}
++	return 0;
++}
++
++
++int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
++{
++	/* We don't have real geometry info, but let's at least return
++	   values consistent with the size of the device */
++	sector_t nsect = get_capacity(bd->bd_disk);
++	sector_t cylinders = nsect;
++
++	hg->heads = 0xff;
++	hg->sectors = 0x3f;
++	sector_div(cylinders, hg->heads * hg->sectors);
++	hg->cylinders = cylinders;
++	if ((sector_t)(hg->cylinders + 1) * hg->heads * hg->sectors < nsect)
++		hg->cylinders = 0xffff;
++	return 0;
++}
++
++/*
++ * blkif_queue_request
++ *
++ * request block io
++ *
++ * id: for guest use only.
++ * operation: BLKIF_OP_{READ,WRITE,PROBE}
++ * buffer: buffer to read/write into. this should be a
++ *   virtual address in the guest os.
++ */
++static int blkif_queue_request(struct request *req)
++{
++	struct blkfront_info *info = req->rq_disk->private_data;
++	unsigned long buffer_mfn;
++	struct blkif_request *ring_req;
++	struct bio *bio;
++	struct bio_vec *bvec;
++	int idx;
++	unsigned long id;
++	unsigned int fsect, lsect;
++	int ref;
++	grant_ref_t gref_head;
++
++	if (unlikely(info->connected != BLKIF_STATE_CONNECTED))
++		return 1;
++
++	if (gnttab_alloc_grant_references(
++		BLKIF_MAX_SEGMENTS_PER_REQUEST, &gref_head) < 0) {
++		gnttab_request_free_callback(
++			&info->callback,
++			blkif_restart_queue_callback,
++			info,
++			BLKIF_MAX_SEGMENTS_PER_REQUEST);
++		return 1;
++	}
++
++	/* Fill out a communications ring structure. */
++	ring_req = RING_GET_REQUEST(&info->ring, info->ring.req_prod_pvt);
++	id = GET_ID_FROM_FREELIST(info);
++	info->shadow[id].request = (unsigned long)req;
++
++	ring_req->id = id;
++	ring_req->sector_number = (blkif_sector_t)req->sector;
++	ring_req->handle = info->handle;
++
++	ring_req->operation = rq_data_dir(req) ?
++		BLKIF_OP_WRITE : BLKIF_OP_READ;
++	if (blk_barrier_rq(req))
++		ring_req->operation = BLKIF_OP_WRITE_BARRIER;
++
++	ring_req->nr_segments = 0;
++	rq_for_each_bio (bio, req) {
++		bio_for_each_segment (bvec, bio, idx) {
++			BUG_ON(ring_req->nr_segments
++			       == BLKIF_MAX_SEGMENTS_PER_REQUEST);
++			buffer_mfn = pfn_to_mfn(page_to_pfn(bvec->bv_page));
++			fsect = bvec->bv_offset >> 9;
++			lsect = fsect + (bvec->bv_len >> 9) - 1;
++			/* install a grant reference. */
++			ref = gnttab_claim_grant_reference(&gref_head);
++			BUG_ON(ref == -ENOSPC);
++
++			gnttab_grant_foreign_access_ref(
++				ref,
++				info->xbdev->otherend_id,
++				buffer_mfn,
++				rq_data_dir(req) );
++
++			info->shadow[id].frame[ring_req->nr_segments] =
++				mfn_to_pfn(buffer_mfn);
++
++			ring_req->seg[ring_req->nr_segments] =
++				(struct blkif_request_segment) {
++					.gref       = ref,
++					.first_sect = fsect,
++					.last_sect  = lsect };
++
++			ring_req->nr_segments++;
 +		}
 +	}
 +
-+	if (HYPERVISOR_update_va_mapping((unsigned long)pgd_base,
-+					 pfn_pte(PFN_DOWN(__pa(pgd_base)),
-+						 flags),
-+					 UVMF_TLB_FLUSH) < 0)
-+		BUG();
++	info->ring.req_prod_pvt++;
++
++	/* Keep a private copy so we can reissue requests when recovering. */
++	info->shadow[id].req = *ring_req;
++
++	gnttab_free_grant_references(gref_head);
++
++	return 0;
 +}
 +
-+
-+/* This is called just after a mm has been duplicated from its parent,
-+   but it has not been used yet.  We need to make sure that its
-+   pagetable is all read-only, and can be pinned. */
-+void xen_pgd_pin(pgd_t *pgd)
++/*
++ * do_blkif_request
++ *  read a block; request is in a request queue
++ */
++void do_blkif_request(request_queue_t *rq)
 +{
-+	struct mmuext_op op;
++	struct blkfront_info *info = NULL;
++	struct request *req;
++	int queued;
 +
-+	pgd_walk(pgd, PAGE_KERNEL_RO);
++	pr_debug("Entered do_blkif_request\n");
 +
-+#if defined(CONFIG_X86_PAE)
-+	op.cmd = MMUEXT_PIN_L3_TABLE;
-+#else
-+	op.cmd = MMUEXT_PIN_L2_TABLE;
-+#endif
-+	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
-+	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+}
++	queued = 0;
 +
-+/* Release a pagetables pages back as normal RW */
-+void xen_pgd_unpin(pgd_t *pgd)
-+{
-+	struct mmuext_op op;
++	while ((req = elv_next_request(rq)) != NULL) {
++		info = req->rq_disk->private_data;
++		if (!blk_fs_request(req)) {
++			end_request(req, 0);
++			continue;
++		}
 +
-+	op.cmd = MMUEXT_UNPIN_TABLE;
-+	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
++		if (RING_FULL(&info->ring))
++			goto wait;
 +
-+	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
-+
-+	pgd_walk(pgd, PAGE_KERNEL);
-+}
++		pr_debug("do_blk_req %p: cmd %p, sec %lx, "
++			 "(%u/%li) buffer:%p [%s]\n",
++			 req, req->cmd, (unsigned long)req->sector,
++			 req->current_nr_sectors,
++			 req->nr_sectors, req->buffer,
++			 rq_data_dir(req) ? "write" : "read");
 +
 +
-+void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next)
-+{
-+	xen_pgd_pin(next->pgd);
-+}
++		blkdev_dequeue_request(req);
++		if (blkif_queue_request(req)) {
++			blk_requeue_request(rq, req);
++		wait:
++			/* Avoid pointless unplugs. */
++			blk_stop_queue(rq);
++			break;
++		}
 +
-+void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
-+{
-+	xen_pgd_pin(mm->pgd);
-+}
-+
-+void xen_exit_mmap(struct mm_struct *mm)
-+{
-+	struct task_struct *tsk = current;
-+
-+	task_lock(tsk);
-+
-+	/*
-+	 * We aggressively remove defunct pgd from cr3. We execute unmap_vmas()
-+	 * *much* faster this way, as no tlb flushes means bigger wrpt batches.
-+	 */
-+	if (tsk->active_mm == mm) {
-+		tsk->active_mm = &init_mm;
-+		atomic_inc(&init_mm.mm_count);
-+
-+		switch_mm(mm, &init_mm, tsk);
-+
-+		atomic_dec(&mm->mm_count);
-+		BUG_ON(atomic_read(&mm->mm_count) == 0);
++		queued++;
 +	}
 +
-+	task_unlock(tsk);
-+
-+	xen_pgd_unpin(mm->pgd);
++	if (queued != 0)
++		flush_requests(info);
 +}
++
++
++static irqreturn_t blkif_int(int irq, void *dev_id)
++{
++	struct request *req;
++	struct blkif_response *bret;
++	RING_IDX i, rp;
++	unsigned long flags;
++	struct blkfront_info *info = (struct blkfront_info *)dev_id;
++	int uptodate;
++
++	spin_lock_irqsave(&blkif_io_lock, flags);
++
++	if (unlikely(info->connected != BLKIF_STATE_CONNECTED)) {
++		spin_unlock_irqrestore(&blkif_io_lock, flags);
++		return IRQ_HANDLED;
++	}
++
++ again:
++	rp = info->ring.sring->rsp_prod;
++	rmb(); /* Ensure we see queued responses up to 'rp'. */
++
++	for (i = info->ring.rsp_cons; i != rp; i++) {
++		unsigned long id;
++		int ret;
++
++		bret = RING_GET_RESPONSE(&info->ring, i);
++		id   = bret->id;
++		req  = (struct request *)info->shadow[id].request;
++
++		blkif_completion(&info->shadow[id]);
++
++		ADD_ID_TO_FREELIST(info, id);
++
++		uptodate = (bret->status == BLKIF_RSP_OKAY);
++		switch (bret->operation) {
++		case BLKIF_OP_WRITE_BARRIER:
++			if (unlikely(bret->status == BLKIF_RSP_EOPNOTSUPP)) {
++				printk("blkfront: %s: write barrier op failed\n",
++				       info->gd->disk_name);
++				uptodate = -EOPNOTSUPP;
++				info->feature_barrier = 0;
++			        xlvbd_barrier(info);
++			}
++			/* fall through */
++		case BLKIF_OP_READ:
++		case BLKIF_OP_WRITE:
++			if (unlikely(bret->status != BLKIF_RSP_OKAY))
++				dev_dbg(&info->dev, "Bad return from blkdev data "
++					"request: %x\n", bret->status);
++
++			ret = end_that_request_first(req, uptodate,
++				req->hard_nr_sectors);
++			BUG_ON(ret);
++			end_that_request_last(req, uptodate);
++			break;
++		default:
++			BUG();
++		}
++	}
++
++	info->ring.rsp_cons = i;
++
++	if (i != info->ring.req_prod_pvt) {
++		int more_to_do;
++		RING_FINAL_CHECK_FOR_RESPONSES(&info->ring, more_to_do);
++		if (more_to_do)
++			goto again;
++	} else
++		info->ring.sring->rsp_event = i + 1;
++
++	kick_pending_request_queues(info);
++
++	spin_unlock_irqrestore(&blkif_io_lock, flags);
++
++	return IRQ_HANDLED;
++}
++
++static void blkif_free(struct blkfront_info *info, int suspend)
++{
++	/* Prevent new requests being issued until we fix things up. */
++	spin_lock_irq(&blkif_io_lock);
++	info->connected = suspend ?
++		BLKIF_STATE_SUSPENDED : BLKIF_STATE_DISCONNECTED;
++	/* No more blkif_request(). */
++	if (info->rq)
++		blk_stop_queue(info->rq);
++	/* No more gnttab callback work. */
++	gnttab_cancel_free_callback(&info->callback);
++	spin_unlock_irq(&blkif_io_lock);
++
++	/* Flush gnttab callback work. Must be done with no locks held. */
++	flush_scheduled_work();
++
++	/* Free resources associated with old device channel. */
++	if (info->ring_ref != GRANT_INVALID_REF) {
++		gnttab_end_foreign_access(info->ring_ref, 0,
++					  (unsigned long)info->ring.sring);
++		info->ring_ref = GRANT_INVALID_REF;
++		info->ring.sring = NULL;
++	}
++	if (info->irq)
++		unbind_from_irqhandler(info->irq, info);
++	info->evtchn = info->irq = 0;
++
++}
++
++static void blkif_completion(struct blk_shadow *s)
++{
++	int i;
++	for (i = 0; i < s->req.nr_segments; i++)
++		gnttab_end_foreign_access(s->req.seg[i].gref, 0, 0UL);
++}
++
++static void blkif_recover(struct blkfront_info *info)
++{
++	int i;
++	struct blkif_request *req;
++	struct blk_shadow *copy;
++	int j;
++
++	/* Stage 1: Make a safe copy of the shadow state. */
++	copy = kmalloc(sizeof(info->shadow), GFP_KERNEL | __GFP_NOFAIL);
++	memcpy(copy, info->shadow, sizeof(info->shadow));
++
++	/* Stage 2: Set up free list. */
++	memset(&info->shadow, 0, sizeof(info->shadow));
++	for (i = 0; i < BLK_RING_SIZE; i++)
++		info->shadow[i].req.id = i+1;
++	info->shadow_free = info->ring.req_prod_pvt;
++	info->shadow[BLK_RING_SIZE-1].req.id = 0x0fffffff;
++
++	/* Stage 3: Find pending requests and requeue them. */
++	for (i = 0; i < BLK_RING_SIZE; i++) {
++		/* Not in use? */
++		if (copy[i].request == 0)
++			continue;
++
++		/* Grab a request slot and copy shadow state into it. */
++		req = RING_GET_REQUEST(
++			&info->ring, info->ring.req_prod_pvt);
++		*req = copy[i].req;
++
++		/* We get a new request id, and must reset the shadow state. */
++		req->id = GET_ID_FROM_FREELIST(info);
++		memcpy(&info->shadow[req->id], &copy[i], sizeof(copy[i]));
++
++		/* Rewrite any grant references invalidated by susp/resume. */
++		for (j = 0; j < req->nr_segments; j++)
++			gnttab_grant_foreign_access_ref(
++				req->seg[j].gref,
++				info->xbdev->otherend_id,
++				pfn_to_mfn(info->shadow[req->id].frame[j]),
++				rq_data_dir(
++					(struct request *)
++					info->shadow[req->id].request));
++		info->shadow[req->id].req = *req;
++
++		info->ring.req_prod_pvt++;
++	}
++
++	kfree(copy);
++
++	xenbus_switch_state(info->xbdev, XenbusStateConnected);
++
++	spin_lock_irq(&blkif_io_lock);
++
++	/* Now safe for us to use the shared ring */
++	info->connected = BLKIF_STATE_CONNECTED;
++
++	/* Send off requeued requests */
++	flush_requests(info);
++
++	/* Kick any other new requests queued since we resumed */
++	kick_pending_request_queues(info);
++
++	spin_unlock_irq(&blkif_io_lock);
++}
++
++
++/* ** Driver Registration ** */
++
++
++static struct xenbus_device_id blkfront_ids[] = {
++	{ "vbd" },
++	{ "" }
++};
++
++
++static struct xenbus_driver blkfront = {
++	.name = "vbd",
++	.owner = THIS_MODULE,
++	.ids = blkfront_ids,
++	.probe = blkfront_probe,
++	.remove = blkfront_remove,
++	.resume = blkfront_resume,
++	.otherend_changed = backend_changed,
++};
++
++
++static int __init xlblk_init(void)
++{
++	if (!is_running_on_xen())
++		return -ENODEV;
++
++	if (xlvbd_alloc_major() < 0)
++		return -ENODEV;
++
++	return xenbus_register_frontend(&blkfront);
++}
++module_init(xlblk_init);
++
++
++static void xlblk_exit(void)
++{
++	return xenbus_unregister_driver(&blkfront);
++}
++module_exit(xlblk_exit);
++
++MODULE_LICENSE("Dual BSD/GPL");
 ===================================================================
 --- /dev/null
-+++ b/arch/i386/xen/mmu.h
-@@ -0,0 +1,47 @@
-+#ifndef _XEN_MMU_H
++++ b/drivers/block/xen/block.h
+@@ -0,0 +1,135 @@
++/******************************************************************************
++ * block.h
++ *
++ * Shared definitions between all levels of XenLinux Virtual block devices.
++ *
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004-2005, Christian Limpach
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
 +
-+#include <linux/linkage.h>
-+#include <asm/page.h>
++#ifndef __XEN_DRIVERS_BLOCK_H__
++#define __XEN_DRIVERS_BLOCK_H__
 +
-+void set_pte_mfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags);
++#include <linux/version.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/fs.h>
++#include <linux/hdreg.h>
++#include <linux/blkdev.h>
++#include <linux/major.h>
++#include <asm/xen/hypervisor.h>
++#include <xen/xenbus.h>
++#include <xen/grant_table.h>
++#include <xen/interface/xen.h>
++#include <xen/interface/io/blkif.h>
++#include <xen/interface/io/ring.h>
++#include <asm/io.h>
++#include <asm/atomic.h>
++#include <asm/uaccess.h>
 +
-+void xen_set_pte(pte_t *ptep, pte_t pteval);
-+void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
-+		    pte_t *ptep, pte_t pteval);
-+void xen_set_pmd(pmd_t *pmdp, pmd_t pmdval);
++struct xlbd_type_info
++{
++	int partn_shift;
++	int disks_per_major;
++	char *devname;
++	char *diskname;
++};
 +
-+void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next);
-+void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm);
-+void xen_exit_mmap(struct mm_struct *mm);
++struct xlbd_major_info
++{
++	int major;
++	int index;
++	int usage;
++	struct xlbd_type_info *type;
++};
 +
-+void xen_pgd_pin(pgd_t *pgd);
-+void xen_pgd_unpin(pgd_t *pgd);
++struct blk_shadow {
++	struct blkif_request req;
++	unsigned long request;
++	unsigned long frame[BLKIF_MAX_SEGMENTS_PER_REQUEST];
++};
 +
-+#ifdef CONFIG_X86_PAE
-+unsigned long long xen_pte_val(pte_t);
-+unsigned long long xen_pmd_val(pmd_t);
-+unsigned long long xen_pgd_val(pgd_t);
++#define BLK_RING_SIZE __RING_SIZE((struct blkif_sring *)0, PAGE_SIZE)
 +
-+pte_t xen_make_pte(unsigned long long);
-+pmd_t xen_make_pmd(unsigned long long);
-+pgd_t xen_make_pgd(unsigned long long);
++/*
++ * We have one of these per vbd, whether ide, scsi or 'other'.  They
++ * hang in private_data off the gendisk structure. We may end up
++ * putting all kinds of interesting stuff here :-)
++ */
++struct blkfront_info
++{
++	struct xenbus_device *xbdev;
++	dev_t dev;
++ 	struct gendisk *gd;
++	int vdevice;
++	blkif_vdev_t handle;
++	int connected;
++	int ring_ref;
++	struct blkif_front_ring ring;
++	unsigned int evtchn, irq;
++	struct xlbd_major_info *mi;
++	request_queue_t *rq;
++	struct work_struct work;
++	struct gnttab_free_callback callback;
++	struct blk_shadow shadow[BLK_RING_SIZE];
++	unsigned long shadow_free;
++	int feature_barrier;
 +
-+void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
-+		    pte_t *ptep, pte_t pteval);
-+void xen_set_pte_atomic(pte_t *ptep, pte_t pte);
-+void xen_set_pud(pud_t *ptr, pud_t val);
-+void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep);
-+void xen_pmd_clear(pmd_t *pmdp);
++	/**
++	 * The number of people holding this device open.  We won't allow a
++	 * hot-unplug unless this is 0.
++	 */
++	int users;
++};
 +
++extern spinlock_t blkif_io_lock;
 +
-+#else
-+unsigned long xen_pte_val(pte_t);
-+unsigned long xen_pmd_val(pmd_t);
-+unsigned long xen_pgd_val(pgd_t);
++extern int blkif_open(struct inode *inode, struct file *filep);
++extern int blkif_release(struct inode *inode, struct file *filep);
++extern int blkif_ioctl(struct inode *inode, struct file *filep,
++		       unsigned command, unsigned long argument);
++extern int blkif_getgeo(struct block_device *, struct hd_geometry *);
++extern int blkif_check(dev_t dev);
++extern int blkif_revalidate(dev_t dev);
++extern void do_blkif_request (request_queue_t *rq);
 +
-+pte_t xen_make_pte(unsigned long);
-+pmd_t xen_make_pmd(unsigned long);
-+pgd_t xen_make_pgd(unsigned long);
-+#endif
++/* Virtual block device subsystem. */
++int xlvbd_alloc_major(void);
++/* Note that xlvbd_add doesn't call add_disk for you: you're expected
++   to call add_disk on info->gd once the disk is properly connected
++   up. */
++int xlvbd_add(blkif_sector_t capacity, int device,
++	      u16 vdisk_info, u16 sector_size, struct blkfront_info *info);
++void xlvbd_del(struct blkfront_info *info);
++int xlvbd_barrier(struct blkfront_info *info);
 +
-+#endif	/* _XEN_MMU_H */
++#endif /* __XEN_DRIVERS_BLOCK_H__ */
+===================================================================
+--- /dev/null
++++ b/drivers/block/xen/vbd.c
+@@ -0,0 +1,229 @@
++/******************************************************************************
++ * vbd.c
++ *
++ * XenLinux virtual block device driver (xvd).
++ *
++ * Copyright (c) 2003-2004, Keir Fraser & Steve Hand
++ * Modifications by Mark A. Williamson are (c) Intel Research Cambridge
++ * Copyright (c) 2004-2005, Christian Limpach
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include "block.h"
++#include <linux/blkdev.h>
++#include <linux/list.h>
++
++#define BLKIF_MAJOR(dev) ((dev)>>8)
++#define BLKIF_MINOR(dev) ((dev) & 0xff)
++
++static struct xlbd_type_info xvd_type_info = {
++	.partn_shift = 4,
++	.disks_per_major = 16,
++	.devname = "xvd",
++	.diskname = "xvd"
++};
++
++static struct xlbd_major_info xvd_major_info = {
++	.major = XENVBD_MAJOR,
++	.type = &xvd_type_info
++};
++
++/* Information about our VBDs. */
++#define MAX_VBDS 64
++static LIST_HEAD(vbds_list);
++
++static struct block_device_operations xlvbd_block_fops =
++{
++	.owner = THIS_MODULE,
++	.open = blkif_open,
++	.release = blkif_release,
++	.getgeo = blkif_getgeo
++};
++
++DEFINE_SPINLOCK(blkif_io_lock);
++
++int
++xlvbd_alloc_major(void)
++{
++	if (register_blkdev(xvd_major_info.major,
++			    xvd_major_info.type->devname)) {
++		printk(KERN_WARNING "xen_blk: can't get major %d with name %s\n",
++		       xvd_major_info.major, xvd_major_info.type->devname);
++		return -1;
++	}
++	return 0;
++}
++
++static int
++xlvbd_init_blk_queue(struct gendisk *gd, u16 sector_size)
++{
++	request_queue_t *rq;
++
++	rq = blk_init_queue(do_blkif_request, &blkif_io_lock);
++	if (rq == NULL)
++		return -1;
++
++	elevator_init(rq, "noop");
++
++	/* Hard sector size and max sectors impersonate the equiv. hardware. */
++	blk_queue_hardsect_size(rq, sector_size);
++	blk_queue_max_sectors(rq, 512);
++
++	/* Each segment in a request is up to an aligned page in size. */
++	blk_queue_segment_boundary(rq, PAGE_SIZE - 1);
++	blk_queue_max_segment_size(rq, PAGE_SIZE);
++
++	/* Ensure a merged request will fit in a single I/O ring slot. */
++	blk_queue_max_phys_segments(rq, BLKIF_MAX_SEGMENTS_PER_REQUEST);
++	blk_queue_max_hw_segments(rq, BLKIF_MAX_SEGMENTS_PER_REQUEST);
++
++	/* Make sure buffer addresses are sector-aligned. */
++	blk_queue_dma_alignment(rq, 511);
++
++	gd->queue = rq;
++
++	return 0;
++}
++
++static int
++xlvbd_alloc_gendisk(int minor, blkif_sector_t capacity, int vdevice,
++		    u16 vdisk_info, u16 sector_size,
++		    struct blkfront_info *info)
++{
++	struct gendisk *gd;
++	struct xlbd_major_info *mi;
++	int nr_minors = 1;
++	int err = -ENODEV;
++
++	BUG_ON(info->gd != NULL);
++	BUG_ON(info->mi != NULL);
++	BUG_ON(info->rq != NULL);
++
++	mi = &xvd_major_info;
++	info->mi = mi;
++
++	if ((minor & ((1 << mi->type->partn_shift) - 1)) == 0)
++		nr_minors = 1 << mi->type->partn_shift;
++
++	gd = alloc_disk(nr_minors);
++	if (gd == NULL)
++		goto out;
++
++	if (nr_minors > 1)
++		sprintf(gd->disk_name, "%s%c", mi->type->diskname,
++			'a' + mi->index * mi->type->disks_per_major +
++			(minor >> mi->type->partn_shift));
++	else
++		sprintf(gd->disk_name, "%s%c%d", mi->type->diskname,
++			'a' + mi->index * mi->type->disks_per_major +
++			(minor >> mi->type->partn_shift),
++			minor & ((1 << mi->type->partn_shift) - 1));
++
++	gd->major = mi->major;
++	gd->first_minor = minor;
++	gd->fops = &xlvbd_block_fops;
++	gd->private_data = info;
++	gd->driverfs_dev = &(info->xbdev->dev);
++	set_capacity(gd, capacity);
++
++	if (xlvbd_init_blk_queue(gd, sector_size)) {
++		del_gendisk(gd);
++		goto out;
++	}
++
++	info->rq = gd->queue;
++	info->gd = gd;
++
++	if (info->feature_barrier)
++		xlvbd_barrier(info);
++
++	if (vdisk_info & VDISK_READONLY)
++		set_disk_ro(gd, 1);
++
++	if (vdisk_info & VDISK_REMOVABLE)
++		gd->flags |= GENHD_FL_REMOVABLE;
++
++	if (vdisk_info & VDISK_CDROM)
++		gd->flags |= GENHD_FL_CD;
++
++	return 0;
++
++ out:
++	info->mi = NULL;
++	return err;
++}
++
++int
++xlvbd_add(blkif_sector_t capacity, int vdevice, u16 vdisk_info,
++	  u16 sector_size, struct blkfront_info *info)
++{
++	struct block_device *bd;
++	int err = 0;
++
++	info->dev = MKDEV(BLKIF_MAJOR(vdevice), BLKIF_MINOR(vdevice));
++
++	bd = bdget(info->dev);
++	if (bd == NULL)
++		return -ENODEV;
++
++	err = xlvbd_alloc_gendisk(BLKIF_MINOR(vdevice), capacity, vdevice,
++				  vdisk_info, sector_size, info);
++
++	bdput(bd);
++	return err;
++}
++
++void
++xlvbd_del(struct blkfront_info *info)
++{
++	if (info->mi == NULL)
++		return;
++
++	BUG_ON(info->gd == NULL);
++	del_gendisk(info->gd);
++	put_disk(info->gd);
++	info->gd = NULL;
++
++	info->mi = NULL;
++
++	BUG_ON(info->rq == NULL);
++	blk_cleanup_queue(info->rq);
++	info->rq = NULL;
++}
++
++int
++xlvbd_barrier(struct blkfront_info *info)
++{
++	int err;
++
++	err = blk_queue_ordered(info->rq,
++		info->feature_barrier ? QUEUE_ORDERED_DRAIN : QUEUE_ORDERED_NONE, NULL);
++	if (err)
++		return err;
++	printk("blkfront: %s: barriers %s\n",
++	       info->gd->disk_name, info->feature_barrier ? "enabled" : "disabled");
++	return 0;
++}
+===================================================================
+--- a/include/linux/major.h
++++ b/include/linux/major.h
+@@ -156,6 +156,8 @@
+ #define VXSPEC_MAJOR		200	/* VERITAS volume config driver */
+ #define VXDMP_MAJOR		201	/* VERITAS volume multipath driver */
+ 
++#define XENVBD_MAJOR		202	/* Xen virtual block device */
++
+ #define MSR_MAJOR		202
+ #define CPUID_MAJOR		203
+ 
 
 -- 
 
