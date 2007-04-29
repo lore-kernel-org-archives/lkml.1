@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030890AbXD2Ru5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbXD2Rv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030890AbXD2Ru5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 13:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030876AbXD2Ru5
+	id S1753832AbXD2Rv7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 13:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbXD2Rv7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 13:50:57 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40349 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030878AbXD2Ru4 (ORCPT
+	Sun, 29 Apr 2007 13:51:59 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34990 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753832AbXD2Rv6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 13:50:56 -0400
-Date: Sun, 29 Apr 2007 10:50:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Adrian Bunk <bunk@stusta.de>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070429173725.GB30248@one.firstfloor.org>
-Message-ID: <alpine.LFD.0.98.0704291049060.9964@woody.linux-foundation.org>
-References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de>
- <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
- <200704291849.23197.rjw@sisk.pl>
- <20070429173725.GB30248@one.firstfloor.org>
+	Sun, 29 Apr 2007 13:51:58 -0400
+Message-ID: <4634DB24.7020408@zytor.com>
+Date: Sun, 29 Apr 2007 10:51:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org> <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+In-Reply-To: <4634483E.9030307@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 29 Apr 2007, Andi Kleen wrote:
+Jeremy Fitzhardinge wrote:
+> Eric W. Biederman wrote:
+>> All it does is set a flag that tells a bootloader.
+>> "Hey. I can run when loaded a non-default address, and this is what
+>>  you have to align me to."
+>>
+>> All relocation processing happens in the kernel itself.
+>>   
 > 
-> Besides the primary point of bug tracking is not to be friendly
-> to someone, but to (a) fix the bugs and (b) know how many bugs
-> there for a given release. Any replacement would need to solve
-> this problem too.
+> Is it possible to decompress and extract the kernel image from the
+> bzImage without executing it?  Ie, is there enough information to find
+> the compressed data part of the bzImage by inspection?
 > 
-> Email does not solve it as far as I can see.
+> At some point we'll need to change the Xen domain builder to handle
+> bzImage files, and it would be best if we didn't need to run them.
+> 
 
-Email fixes a _lot_ more bugs than bugzilla does. 
+Probabilistically, you might be able to (search for a gzip header), but
+it is *definitely* not guaranteed by protocol.
 
-End of story. I don't think anybody who cannot accept that UNDENIABLE FACT 
-should even participate in this discussion. Wake up and look at all the 
-bugs we fix - most of them have never been in bugzilla.
-
-That's a FACT.
-
-Don't go around ignoring reality.
-
-		Linus
+	-hpa
