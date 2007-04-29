@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbXD2K4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbXD2K5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756347AbXD2K4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 06:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbXD2K4a
+	id S1756366AbXD2K5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 06:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbXD2Kxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 06:56:30 -0400
-Received: from mail.suse.de ([195.135.220.2]:52757 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 06:53:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51292 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756347AbXD2K4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 06:56:18 -0400
-To: Syren Baran <sbaran@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Probable PCIE prob
-References: <1177790017.3649.23.camel@excalibur>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 29 Apr 2007 13:54:02 +0200
-In-Reply-To: <1177790017.3649.23.camel@excalibur>
-Message-ID: <p73hcqz1jmt.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755166AbXD2KxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 06:53:14 -0400
+From: Andi Kleen <ak@suse.de>
+References: <200704291252.514680000@suse.de>
+In-Reply-To: <200704291252.514680000@suse.de>
+To: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [24/48] i386: Initialize esp0 properly all the time
+Message-Id: <20070429105313.462CC15108@wotan.suse.de>
+Date: Sun, 29 Apr 2007 12:53:13 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Syren Baran <sbaran@gmx.de> writes:
 
-> i got a problem with the combination of an Asrock AM2NF4G-SATA2
-> mainboard with a Radeon X1900 (chip 1002,724b) graphics
-> card. /i386/pci/mmconfig.c reports a buggy bios (e0000000 is not
-> E820-reserved).
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-This message is harmless and likely unrelated.
+Whenever we schedule, __switch_to calls load_esp0 which does:
 
- System crashes only happen when viewing films (neither
-> xine nor mplayer run with root privileges) and independent of video
-> drivers (framebuffer, vesa and fglrx). Logs dont show any anomalies
-> before crashing. Anybody got a clue?
+	tss->esp0 = thread->esp0;
 
-Sounds like some sort of hardware problem. Maybe the power supply
-is not up to the task? Or the board could be broken. Also always
-worth updating the BIOS.
+This is never initialized for the initial thread (ie "swapper"), so when we're
+scheduling that, we end up setting esp0 to 0.  This is fine: the swapper never
+leaves ring 0, so this field is never used.
 
--Andi
+lguest, however, gets upset that we're trying to used an unmapped page as our
+kernel stack.  Rather than work around it there, let's initialize it.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ include/asm-i386/processor.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux/include/asm-i386/processor.h
+===================================================================
+--- linux.orig/include/asm-i386/processor.h
++++ linux/include/asm-i386/processor.h
+@@ -421,6 +421,7 @@ struct thread_struct {
+ };
+ 
+ #define INIT_THREAD  {							\
++	.esp0 = sizeof(init_stack) + (long)&init_stack,			\
+ 	.vm86_info = NULL,						\
+ 	.sysenter_cs = __KERNEL_CS,					\
+ 	.io_bitmap_ptr = NULL,						\
