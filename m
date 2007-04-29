@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161544AbXD2XKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161535AbXD2XPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161544AbXD2XKe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161542AbXD2XKd
+	id S1161535AbXD2XPk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 19:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161542AbXD2XPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:10:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39094 "EHLO ogre.sisk.pl"
+	Sun, 29 Apr 2007 19:15:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39109 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161544AbXD2XKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:10:32 -0400
+	id S1161535AbXD2XOt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:14:49 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
+To: Diego Calleja <diegocg@gmail.com>
 Subject: Re: Linux 2.6.21
-Date: Mon, 30 Apr 2007 01:14:26 +0200
+Date: Mon, 30 Apr 2007 01:19:17 +0200
 User-Agent: KMail/1.9.5
-Cc: Andi Kleen <andi@firstfloor.org>,
+Cc: Adrian Bunk <bunk@stusta.de>, Andi Kleen <andi@firstfloor.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070426040806.GJ3468@stusta.de> <200704300000.29024.rjw@sisk.pl> <20070429220011.GV3468@stusta.de>
-In-Reply-To: <20070429220011.GV3468@stusta.de>
+References: <20070428224904.GE3468@stusta.de> <20070429211028.GT3468@stusta.de> <20070429235147.06a94dfa.diegocg@gmail.com>
+In-Reply-To: <20070429235147.06a94dfa.diegocg@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200704300114.27590.rjw@sisk.pl>
+Message-Id: <200704300119.18474.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 30 April 2007 00:00, Adrian Bunk wrote:
-> On Mon, Apr 30, 2007 at 12:00:28AM +0200, Rafael J. Wysocki wrote:
-> > On Sunday, 29 April 2007 22:43, Adrian Bunk wrote:
-> > > On Sun, Apr 29, 2007 at 10:18:10PM +0200, Rafael J. Wysocki wrote:
-> > > >...
-> > > > But emailed reports _are_ saved anyway and we _know_ how to get a copy.
-> > > > From lkml.org, for example.  Why don't we use that?  The only missing piece
-> > > > is the 'keep a list' thing, but that's not a rocket science, IMHO.
-> > > > 
-> > > > [For example, you can create a bugzilla entry with a link to the lkml.org copy
-> > > > of the relevant message, so why to require the reporter to file the report with
-> > > > the bugzilla himself?]
-> > > > 
-> > > > _Moreover_, some LKML archives, for example at http://marc.info/?l=linux-kernel,
-> > > > keep track of each thread separately, so you can browse any of them at any
-> > > > time.  In particular, you can see the _history_ of each bug report sent to LKML
-> > > > if you have a link to any message in its thread.
-> > > > 
-> > > > Really, if we ask reporters to put '[BUG]' in the subjects of their messages,
-> > > > you'll even be able to use the lkml.org archives plus wget and a couple of
-> > > > shell scripts to cherry pick the links to all bug reports sent to the list
-> > > > within a given time interval.
-> > > > 
-> > > > All of this functionality is out there already.
-> > > >...
-> > > 
-> > > How can I get the functionality "show me all unfixed SATA bugs"?
-> > > 
-> > > That's one of the important functionalities of every bug tracking 
-> > > system.
-> > 
-> > That's the missing piece, obviously.
-> > 
-> > BTW, I didn't want to say that one could entirely replace a bug-tracking system
-> > with tracking the LKML archives.  What I wanted to say was that the email
-> > messages sent to the LKML were easily trackable and could be hooked up into a
-> > bug-tracking system, for example with the help of URLs.
-> > 
-> > In such a setup people could send initial reports to the LKML and the links to
-> > these messages might be put into a bug-tracking system as soon as it turned
-> > out that the bugs were worthy of tracking.
+On Sunday, 29 April 2007 23:51, Diego Calleja wrote:
+> El Sun, 29 Apr 2007 23:10:28 +0200, Adrian Bunk <bunk@stusta.de> escribió:
 > 
-> Who is doing this "might be put", and why don't you start with asking 
-> the submitter to submit bugs in a bug tracking system and forward the 
-> bug report from the bug tracking system (manually or automatically) to 
-> the developers and linux-kernel?
+> > What exactly is the purpose of the 2.6.21 regressions list in the Wiki?
+> 
+> AFAIK, submitting its contents to the list periodically CCing the developers,
+> like you did with your lists.
+> 
+> If developers care to fix it or not or how much Linus cares about that list before
+> releasing a new version is another question. I think it's useful because it makes
+> those bugs look more important than the 1600 stored in the bugzilla...it won't
+> help to fix those 1600, but it attracts some attention over the "release critical"
+> ones and encourages developers to fix them, even if not all of them get fixed.
+> 
+> I don't think you can do many other things to get as much bugs fixed as possible,
+> unless we reward bug fixers with weekends in the Playboy mansion. I think the
+> fundamental question here is: is there a way to make hackers follow and fix _all_
+> the bugs? I'd love it was possible, but AFAIK all the projects that have tried to
+> be ultra-stable and have adopted a policy to fullfill such goal have fallen behind
+> of competing projects that cared more about working in improving their software.
 
-Because quite often I know what the problem is after having asked the reporter
-a couple of simple questions or I can forward his report to a list on which
-there are the right people and the problem gets fixed quickly, so it just
-doesn't need to be formally registered.
-
-The problem with the bugzilla is that it requires a considerable setup for each
-bug which is a loss of time if the bug is trivial.  Using the bugzilla for
-handling trivial bugs just doesn't make sense, IMHO.  It's too heavywieght
-for that.  [It _is_ useful nevertheless.  For example, the suspend metabug that
-you've created for me is really a nice thing, so thanks a lot again. :-)
-Perhaps something like this might be used for tracking the regressions ...]
-
-Unfortunately, you can't say whether or not the bug is trivial until you see
-the report.  If you've got it from bugzilla, you're stuck with it, so it's just
-more efficient to use something else in the initial phase of resolving
-problems.
+Apart from this many bugs are found and get fixed in the process of developing
+new code, so the 'ultra stable' approach is not really practical.
 
 Greetings,
 Rafael
