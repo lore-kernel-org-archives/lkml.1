@@ -1,286 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161575AbXD2Xu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161595AbXD2XvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161575AbXD2Xu7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161606AbXD2Xqx
+	id S1161595AbXD2XvA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 19:51:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161608AbXD2Xqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:46:53 -0400
-Received: from mx1.suse.de ([195.135.220.2]:41973 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 19:46:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38485 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161613AbXD2Xqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:46:37 -0400
+	id S1161605AbXD2Xqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:46:31 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430146.588463000@suse.de>
 In-Reply-To: <20070430146.588463000@suse.de>
-To: Rusty Russell <rusty@rustcorp.com.au>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [26/26] i386: i386 separate hardware-defined TSS from Linux  additions
-Message-Id: <20070429234636.70C19150F2@wotan.suse.de>
-Date: Mon, 30 Apr 2007 01:46:36 +0200 (CEST)
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [20/26] x86: Allow percpu variables to be page-aligned
+Message-Id: <20070429234630.0DF42151C5@wotan.suse.de>
+Date: Mon, 30 Apr 2007 01:46:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-On Thu, 2007-03-29 at 13:16 +0200, Andi Kleen wrote:
-> Please clean it up properly with two structs.
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Let's allow page-alignment in general for per-cpu data (wanted by Xen, and
+Ingo suggested KVM as well).
 
-Not sure about this, now I've done it.  Running it here.
-
-If you like it, I can do x86-64 as well.
-
-==
-lguest defines its own TSS struct because the "struct tss_struct"
-contains linux-specific additions.  Andi asked me to split the struct
-in processor.h.
-
-Unfortunately it makes usage a little awkward.
+Because larger alignments can use more room, we increase the max per-cpu
+memory to 64k rather than 32k: it's getting a little tight.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/i386/kernel/asm-offsets.c |    2 +-
- arch/i386/kernel/doublefault.c |   31 +++++++++++++++++--------------
- arch/i386/kernel/ioport.c      |    2 +-
- arch/i386/kernel/process.c     |    8 ++++----
- arch/i386/kernel/sysenter.c    |    6 +++---
- arch/i386/kernel/traps.c       |    4 ++--
- arch/i386/kernel/vmi.c         |    8 ++++----
- include/asm-i386/processor.h   |   24 ++++++++++++++++--------
- 8 files changed, 48 insertions(+), 37 deletions(-)
+ arch/alpha/kernel/vmlinux.lds.S   |    2 +-
+ arch/arm/kernel/vmlinux.lds.S     |    2 +-
+ arch/cris/arch-v32/vmlinux.lds.S  |    1 +
+ arch/frv/kernel/vmlinux.lds.S     |    1 +
+ arch/i386/kernel/vmlinux.lds.S    |    2 +-
+ arch/m32r/kernel/vmlinux.lds.S    |    2 +-
+ arch/mips/kernel/vmlinux.lds.S    |    2 +-
+ arch/parisc/kernel/vmlinux.lds.S  |    2 +-
+ arch/powerpc/kernel/setup_64.c    |    4 ++--
+ arch/powerpc/kernel/vmlinux.lds.S |    6 +-----
+ arch/ppc/kernel/vmlinux.lds.S     |    2 +-
+ arch/s390/kernel/vmlinux.lds.S    |    2 +-
+ arch/sh/kernel/vmlinux.lds.S      |    2 +-
+ arch/sh64/kernel/vmlinux.lds.S    |    2 +-
+ arch/sparc/kernel/vmlinux.lds.S   |    2 +-
+ arch/sparc64/kernel/smp.c         |    6 +++---
+ arch/x86_64/kernel/setup64.c      |    4 ++--
+ arch/x86_64/kernel/vmlinux.lds.S  |    2 +-
+ arch/xtensa/kernel/vmlinux.lds.S  |    2 +-
+ init/main.c                       |    8 ++------
+ kernel/module.c                   |    8 ++++----
+ 21 files changed, 29 insertions(+), 35 deletions(-)
 
-Index: linux/include/asm-i386/processor.h
 ===================================================================
---- linux.orig/include/asm-i386/processor.h
-+++ linux/include/asm-i386/processor.h
-@@ -291,7 +291,8 @@ typedef struct {
+Index: linux/arch/alpha/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/alpha/kernel/vmlinux.lds.S
++++ linux/arch/alpha/kernel/vmlinux.lds.S
+@@ -69,7 +69,7 @@ SECTIONS
+   . = ALIGN(8);
+   SECURITY_INIT
  
- struct thread_struct;
- 
--struct tss_struct {
-+/* This is the TSS defined by the hardware. */
-+struct i386_hw_tss {
- 	unsigned short	back_link,__blh;
- 	unsigned long	esp0;
- 	unsigned short	ss0,__ss0h;
-@@ -315,6 +316,11 @@ struct tss_struct {
- 	unsigned short	gs, __gsh;
- 	unsigned short	ldt, __ldth;
- 	unsigned short	trace, io_bitmap_base;
-+} __attribute__((packed));
-+
-+struct tss_struct {
-+	struct i386_hw_tss x86_tss;
-+
- 	/*
- 	 * The extra 1 is there because the CPU will access an
- 	 * additional byte beyond the end of the IO permission
-@@ -381,10 +387,12 @@ struct thread_struct {
-  * be within the limit.
-  */
- #define INIT_TSS  {							\
--	.esp0		= sizeof(init_stack) + (long)&init_stack,	\
--	.ss0		= __KERNEL_DS,					\
--	.ss1		= __KERNEL_CS,					\
--	.io_bitmap_base	= INVALID_IO_BITMAP_OFFSET,			\
-+	.x86_tss = {							\
-+		.esp0		= sizeof(init_stack) + (long)&init_stack, \
-+		.ss0		= __KERNEL_DS,				\
-+		.ss1		= __KERNEL_CS,				\
-+		.io_bitmap_base	= INVALID_IO_BITMAP_OFFSET,		\
-+	 },								\
- 	.io_bitmap	= { [ 0 ... IO_BITMAP_LONGS] = ~0 },		\
- }
- 
-@@ -493,10 +501,10 @@ static inline void rep_nop(void)
- 
- static inline void native_load_esp0(struct tss_struct *tss, struct thread_struct *thread)
- {
--	tss->esp0 = thread->esp0;
-+	tss->x86_tss.esp0 = thread->esp0;
- 	/* This can only happen when SEP is enabled, no need to test "SEP"arately */
--	if (unlikely(tss->ss1 != thread->sysenter_cs)) {
--		tss->ss1 = thread->sysenter_cs;
-+	if (unlikely(tss->x86_tss.ss1 != thread->sysenter_cs)) {
-+		tss->x86_tss.ss1 = thread->sysenter_cs;
- 		wrmsr(MSR_IA32_SYSENTER_CS, thread->sysenter_cs, 0);
+-  . = ALIGN(64);
++  . = ALIGN(8192);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/arm/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/arm/kernel/vmlinux.lds.S
++++ linux/arch/arm/kernel/vmlinux.lds.S
+@@ -59,7 +59,7 @@ SECTIONS
+ 			usr/built-in.o(.init.ramfs)
+ 		__initramfs_end = .;
+ #endif
+-		. = ALIGN(64);
++		. = ALIGN(4096);
+ 		__per_cpu_start = .;
+ 			*(.data.percpu)
+ 		__per_cpu_end = .;
+Index: linux/arch/cris/arch-v32/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/cris/arch-v32/vmlinux.lds.S
++++ linux/arch/cris/arch-v32/vmlinux.lds.S
+@@ -91,6 +91,7 @@ SECTIONS
  	}
- }
-Index: linux/arch/i386/kernel/asm-offsets.c
+ 	SECURITY_INIT
+ 
++	. =  ALIGN (8192);
+ 	__per_cpu_start = .;
+ 	.data.percpu  : { *(.data.percpu) }
+ 	__per_cpu_end = .;
+Index: linux/arch/frv/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/i386/kernel/asm-offsets.c
-+++ linux/arch/i386/kernel/asm-offsets.c
-@@ -93,7 +93,7 @@ void foo(void)
- 	OFFSET(pbe_next, pbe, next);
+--- linux.orig/arch/frv/kernel/vmlinux.lds.S
++++ linux/arch/frv/kernel/vmlinux.lds.S
+@@ -57,6 +57,7 @@ SECTIONS
+   __alt_instructions_end = .;
+  .altinstr_replacement : { *(.altinstr_replacement) }
  
- 	/* Offset from the sysenter stack to tss.esp0 */
--	DEFINE(TSS_sysenter_esp0, offsetof(struct tss_struct, esp0) -
-+	DEFINE(TSS_sysenter_esp0, offsetof(struct tss_struct, x86_tss.esp0) -
- 		 sizeof(struct tss_struct));
- 
- 	DEFINE(PAGE_SIZE_asm, PAGE_SIZE);
-Index: linux/arch/i386/kernel/doublefault.c
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/i386/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/i386/kernel/doublefault.c
-+++ linux/arch/i386/kernel/doublefault.c
-@@ -33,7 +33,7 @@ static void doublefault_fn(void)
- 		printk("double fault, tss at %08lx\n", tss);
- 
- 		if (ptr_ok(tss)) {
--			struct tss_struct *t = (struct tss_struct *)tss;
-+			struct i386_hw_tss *t = (struct i386_hw_tss *)tss;
- 
- 			printk("eip = %08lx, esp = %08lx\n", t->eip, t->esp);
- 
-@@ -49,18 +49,21 @@ static void doublefault_fn(void)
- }
- 
- struct tss_struct doublefault_tss __cacheline_aligned = {
--	.esp0		= STACK_START,
--	.ss0		= __KERNEL_DS,
--	.ldt		= 0,
--	.io_bitmap_base	= INVALID_IO_BITMAP_OFFSET,
--
--	.eip		= (unsigned long) doublefault_fn,
--	.eflags		= X86_EFLAGS_SF | 0x2,	/* 0x2 bit is always set */
--	.esp		= STACK_START,
--	.es		= __USER_DS,
--	.cs		= __KERNEL_CS,
--	.ss		= __KERNEL_DS,
--	.ds		= __USER_DS,
-+	.x86_tss = {
-+		.esp0		= STACK_START,
-+		.ss0		= __KERNEL_DS,
-+		.ldt		= 0,
-+		.io_bitmap_base	= INVALID_IO_BITMAP_OFFSET,
-+
-+		.eip		= (unsigned long) doublefault_fn,
-+		/* 0x2 bit is always set */
-+		.eflags		= X86_EFLAGS_SF | 0x2,
-+		.esp		= STACK_START,
-+		.es		= __USER_DS,
-+		.cs		= __KERNEL_CS,
-+		.ss		= __KERNEL_DS,
-+		.ds		= __USER_DS,
- 
--	.__cr3		= __pa(swapper_pg_dir)
-+		.__cr3		= __pa(swapper_pg_dir)
-+	}
- };
-Index: linux/arch/i386/kernel/ioport.c
+--- linux.orig/arch/i386/kernel/vmlinux.lds.S
++++ linux/arch/i386/kernel/vmlinux.lds.S
+@@ -194,7 +194,7 @@ SECTIONS
+ 	__initramfs_end = .;
+   }
+ #endif
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 	__per_cpu_start = .;
+ 	*(.data.percpu)
+Index: linux/arch/m32r/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/i386/kernel/ioport.c
-+++ linux/arch/i386/kernel/ioport.c
-@@ -114,7 +114,7 @@ asmlinkage long sys_ioperm(unsigned long
- 	 * Reset the owner so that a process switch will not set
- 	 * tss->io_bitmap_base to IO_BITMAP_OFFSET.
- 	 */
--	tss->io_bitmap_base = INVALID_IO_BITMAP_OFFSET_LAZY;
-+	tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET_LAZY;
- 	tss->io_bitmap_owner = NULL;
+--- linux.orig/arch/m32r/kernel/vmlinux.lds.S
++++ linux/arch/m32r/kernel/vmlinux.lds.S
+@@ -110,7 +110,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
  
- 	put_cpu();
-Index: linux/arch/i386/kernel/process.c
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/mips/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -375,7 +375,7 @@ void exit_thread(void)
- 		t->io_bitmap_max = 0;
- 		tss->io_bitmap_owner = NULL;
- 		tss->io_bitmap_max = 0;
--		tss->io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
-+		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
- 		put_cpu();
+--- linux.orig/arch/mips/kernel/vmlinux.lds.S
++++ linux/arch/mips/kernel/vmlinux.lds.S
+@@ -119,7 +119,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/parisc/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/parisc/kernel/vmlinux.lds.S
++++ linux/arch/parisc/kernel/vmlinux.lds.S
+@@ -181,7 +181,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(32);
++  . = ALIGN(ASM_PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/powerpc/kernel/setup_64.c
+===================================================================
+--- linux.orig/arch/powerpc/kernel/setup_64.c
++++ linux/arch/powerpc/kernel/setup_64.c
+@@ -583,14 +583,14 @@ void __init setup_per_cpu_areas(void)
+ 	char *ptr;
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+-	size = ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES);
++	size = ALIGN(__per_cpu_end - __per_cpu_start, PAGE_SIZE);
+ #ifdef CONFIG_MODULES
+ 	if (size < PERCPU_ENOUGH_ROOM)
+ 		size = PERCPU_ENOUGH_ROOM;
+ #endif
+ 
+ 	for_each_possible_cpu(i) {
+-		ptr = alloc_bootmem_node(NODE_DATA(cpu_to_node(i)), size);
++		ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
+ 		if (!ptr)
+ 			panic("Cannot allocate cpu data for CPU %d\n", i);
+ 
+Index: linux/arch/powerpc/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/powerpc/kernel/vmlinux.lds.S
++++ linux/arch/powerpc/kernel/vmlinux.lds.S
+@@ -139,11 +139,7 @@ SECTIONS
+ 		__initramfs_end = .;
  	}
- }
-@@ -554,7 +554,7 @@ static noinline void __switch_to_xtra(st
- 		 * Disable the bitmap via an invalid offset. We still cache
- 		 * the previous bitmap owner and the IO bitmap contents:
- 		 */
--		tss->io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
-+		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
- 		return;
- 	}
- 
-@@ -564,7 +564,7 @@ static noinline void __switch_to_xtra(st
- 		 * matches the next task, we dont have to do anything but
- 		 * to set a valid offset in the TSS:
- 		 */
--		tss->io_bitmap_base = IO_BITMAP_OFFSET;
-+		tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET;
- 		return;
- 	}
- 	/*
-@@ -576,7 +576,7 @@ static noinline void __switch_to_xtra(st
- 	 * redundant copies when the currently switched task does not
- 	 * perform any I/O during its timeslice.
- 	 */
--	tss->io_bitmap_base = INVALID_IO_BITMAP_OFFSET_LAZY;
-+	tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET_LAZY;
- }
- 
- /*
-Index: linux/arch/i386/kernel/sysenter.c
+ #endif
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(32);
+-#else
+-	. = ALIGN(128);
+-#endif
++	. = ALIGN(PAGE_SIZE);
+ 	.data.percpu : {
+ 		__per_cpu_start = .;
+ 		*(.data.percpu)
+Index: linux/arch/ppc/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/i386/kernel/sysenter.c
-+++ linux/arch/i386/kernel/sysenter.c
-@@ -183,10 +183,10 @@ void enable_sep_cpu(void)
- 		return;
+--- linux.orig/arch/ppc/kernel/vmlinux.lds.S
++++ linux/arch/ppc/kernel/vmlinux.lds.S
+@@ -130,7 +130,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/s390/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/s390/kernel/vmlinux.lds.S
++++ linux/arch/s390/kernel/vmlinux.lds.S
+@@ -107,7 +107,7 @@ SECTIONS
+   . = ALIGN(2);
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(256);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/sh/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/sh/kernel/vmlinux.lds.S
++++ linux/arch/sh/kernel/vmlinux.lds.S
+@@ -54,7 +54,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/sh64/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/sh64/kernel/vmlinux.lds.S
++++ linux/arch/sh64/kernel/vmlinux.lds.S
+@@ -85,7 +85,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : C_PHYS(.data.page_aligned) { *(.data.page_aligned) }
+ 
+-  . = ALIGN(L1_CACHE_BYTES);
++  . = ALIGN(PAGE_SIZE);
+   __per_cpu_start = .;
+   .data.percpu : C_PHYS(.data.percpu) { *(.data.percpu) }
+   __per_cpu_end = . ;
+Index: linux/arch/sparc/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/sparc/kernel/vmlinux.lds.S
++++ linux/arch/sparc/kernel/vmlinux.lds.S
+@@ -65,7 +65,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/sparc64/kernel/smp.c
+===================================================================
+--- linux.orig/arch/sparc64/kernel/smp.c
++++ linux/arch/sparc64/kernel/smp.c
+@@ -1343,11 +1343,11 @@ void __init setup_per_cpu_areas(void)
+ 	/* Copy section for each CPU (we discard the original) */
+ 	goal = PERCPU_ENOUGH_ROOM;
+ 
+-	__per_cpu_shift = 0;
+-	for (size = 1UL; size < goal; size <<= 1UL)
++	__per_cpu_shift = PAGE_SHIFT;
++	for (size = PAGE_SIZE; size < goal; size <<= 1UL)
+ 		__per_cpu_shift++;
+ 
+-	ptr = alloc_bootmem(size * NR_CPUS);
++	ptr = alloc_bootmem_pages(size * NR_CPUS);
+ 
+ 	__per_cpu_base = ptr - __per_cpu_start;
+ 
+Index: linux/arch/x86_64/kernel/setup64.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/setup64.c
++++ linux/arch/x86_64/kernel/setup64.c
+@@ -103,9 +103,9 @@ void __init setup_per_cpu_areas(void)
+ 		if (!NODE_DATA(cpu_to_node(i))) {
+ 			printk("cpu with no node %d, num_online_nodes %d\n",
+ 			       i, num_online_nodes());
+-			ptr = alloc_bootmem(size);
++			ptr = alloc_bootmem_pages(size);
+ 		} else { 
+-			ptr = alloc_bootmem_node(NODE_DATA(cpu_to_node(i)), size);
++			ptr = alloc_bootmem_pages_node(NODE_DATA(cpu_to_node(i)), size);
+ 		}
+ 		if (!ptr)
+ 			panic("Cannot allocate cpu data for CPU %d\n", i);
+Index: linux/arch/x86_64/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/x86_64/kernel/vmlinux.lds.S
++++ linux/arch/x86_64/kernel/vmlinux.lds.S
+@@ -195,7 +195,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-    . = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/arch/xtensa/kernel/vmlinux.lds.S
+===================================================================
+--- linux.orig/arch/xtensa/kernel/vmlinux.lds.S
++++ linux/arch/xtensa/kernel/vmlinux.lds.S
+@@ -198,7 +198,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(32);
++  . = ALIGN(4096);
+   __per_cpu_start = .;
+   .data.percpu  : { *(.data.percpu) }
+   __per_cpu_end = .;
+Index: linux/init/main.c
+===================================================================
+--- linux.orig/init/main.c
++++ linux/init/main.c
+@@ -369,12 +369,8 @@ static void __init setup_per_cpu_areas(v
+ 	unsigned long nr_possible_cpus = num_possible_cpus();
+ 
+ 	/* Copy section for each CPU (we discard the original) */
+-	size = ALIGN(__per_cpu_end - __per_cpu_start, SMP_CACHE_BYTES);
+-#ifdef CONFIG_MODULES
+-	if (size < PERCPU_ENOUGH_ROOM)
+-		size = PERCPU_ENOUGH_ROOM;
+-#endif
+-	ptr = alloc_bootmem(size * nr_possible_cpus);
++	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
++	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
+ 
+ 	for_each_possible_cpu(i) {
+ 		__per_cpu_offset[i] = ptr - __per_cpu_start;
+Index: linux/kernel/module.c
+===================================================================
+--- linux.orig/kernel/module.c
++++ linux/kernel/module.c
+@@ -346,10 +346,10 @@ static void *percpu_modalloc(unsigned lo
+ 	unsigned int i;
+ 	void *ptr;
+ 
+-	if (align > SMP_CACHE_BYTES) {
+-		printk(KERN_WARNING "%s: per-cpu alignment %li > %i\n",
+-		       name, align, SMP_CACHE_BYTES);
+-		align = SMP_CACHE_BYTES;
++	if (align > PAGE_SIZE) {
++		printk(KERN_WARNING "%s: per-cpu alignment %li > %li\n",
++		       name, align, PAGE_SIZE);
++		align = PAGE_SIZE;
  	}
  
--	tss->ss1 = __KERNEL_CS;
--	tss->esp1 = sizeof(struct tss_struct) + (unsigned long) tss;
-+	tss->x86_tss.ss1 = __KERNEL_CS;
-+	tss->x86_tss.esp1 = sizeof(struct tss_struct) + (unsigned long) tss;
- 	wrmsr(MSR_IA32_SYSENTER_CS, __KERNEL_CS, 0);
--	wrmsr(MSR_IA32_SYSENTER_ESP, tss->esp1, 0);
-+	wrmsr(MSR_IA32_SYSENTER_ESP, tss->x86_tss.esp1, 0);
- 	wrmsr(MSR_IA32_SYSENTER_EIP, (unsigned long) sysenter_entry, 0);
- 	put_cpu();	
- }
-Index: linux/arch/i386/kernel/traps.c
-===================================================================
---- linux.orig/arch/i386/kernel/traps.c
-+++ linux/arch/i386/kernel/traps.c
-@@ -596,7 +596,7 @@ fastcall void __kprobes do_general_prote
- 	 * and we set the offset field correctly. Then we let the CPU to
- 	 * restart the faulting instruction.
- 	 */
--	if (tss->io_bitmap_base == INVALID_IO_BITMAP_OFFSET_LAZY &&
-+	if (tss->x86_tss.io_bitmap_base == INVALID_IO_BITMAP_OFFSET_LAZY &&
- 	    thread->io_bitmap_ptr) {
- 		memcpy(tss->io_bitmap, thread->io_bitmap_ptr,
- 		       thread->io_bitmap_max);
-@@ -609,7 +609,7 @@ fastcall void __kprobes do_general_prote
- 				thread->io_bitmap_max, 0xff,
- 				tss->io_bitmap_max - thread->io_bitmap_max);
- 		tss->io_bitmap_max = thread->io_bitmap_max;
--		tss->io_bitmap_base = IO_BITMAP_OFFSET;
-+		tss->x86_tss.io_bitmap_base = IO_BITMAP_OFFSET;
- 		tss->io_bitmap_owner = thread;
- 		put_cpu();
- 		return;
-Index: linux/arch/i386/kernel/vmi.c
-===================================================================
---- linux.orig/arch/i386/kernel/vmi.c
-+++ linux/arch/i386/kernel/vmi.c
-@@ -230,14 +230,14 @@ static void vmi_set_tr(void)
- static void vmi_load_esp0(struct tss_struct *tss,
- 				   struct thread_struct *thread)
- {
--	tss->esp0 = thread->esp0;
-+	tss->x86_tss.esp0 = thread->esp0;
- 
- 	/* This can only happen when SEP is enabled, no need to test "SEP"arately */
--	if (unlikely(tss->ss1 != thread->sysenter_cs)) {
--		tss->ss1 = thread->sysenter_cs;
-+	if (unlikely(tss->x86_tss.ss1 != thread->sysenter_cs)) {
-+		tss->x86_tss.ss1 = thread->sysenter_cs;
- 		wrmsr(MSR_IA32_SYSENTER_CS, thread->sysenter_cs, 0);
- 	}
--	vmi_ops.set_kernel_stack(__KERNEL_DS, tss->esp0);
-+	vmi_ops.set_kernel_stack(__KERNEL_DS, tss->x86_tss.esp0);
- }
- 
- static void vmi_flush_tlb_user(void)
+ 	ptr = __per_cpu_start;
