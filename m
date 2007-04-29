@@ -1,109 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161506AbXD2WyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161521AbXD2W5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161506AbXD2WyX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 18:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161521AbXD2WyW
+	id S1161521AbXD2W5E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 18:57:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161529AbXD2W5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 18:54:22 -0400
-Received: from neon.samage.net ([85.17.153.66]:44720 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161506AbXD2WyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 18:54:21 -0400
-Message-ID: <1898.81.207.0.53.1177887257.squirrel@secure.samage.net>
-In-Reply-To: <1177874733.5791.137.camel@localhost.localdomain>
-References: <4655.81.207.0.53.1177863612.squirrel@secure.samage.net>
-    <1177874733.5791.137.camel@localhost.localdomain>
-Date: Mon, 30 Apr 2007 00:54:17 +0200 (CEST)
-Subject: Re: [2.6.21] BUG: clocksource_watchdog isn't reset after resume
-From: "Indan Zupancic" <indan@nul.nu>
-To: tglx@linutronix.de
-Cc: johnstul@us.ibm.com, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Sun, 29 Apr 2007 18:57:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:38307 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161521AbXD2W5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 18:57:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Zt+tMh05DC6TxFrVC5Qj9NNTY9e1YjKrX1qpAupsTyA7QBmN+c9hBO7bo4RyP0P2ZMoHHRFPYgjzMp+vmfMD91pozNOaOAIftEw9kNgYBVlOjq753a421khrtrMxQLmzM/go824PGT4arIcLnZB5hZ3e3nVLkpUBUOM9BbigIAo=
+Message-ID: <6bffcb0e0704291557l23f08d9as44ed55805c3fec18@mail.gmail.com>
+Date: Mon, 30 Apr 2007 00:57:00 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: Linux 2.6.21
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Diego Calleja" <diegocg@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070429224256.GA23336@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: bbdeaaa4d227adae8d620e69c05793d6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070429180909.GA30604@one.firstfloor.org>
+	 <20070429201729.GQ3468@stusta.de>
+	 <20070429225657.a501ab5a.diegocg@gmail.com>
+	 <20070429211028.GT3468@stusta.de>
+	 <6bffcb0e0704291416u402668ffo9bcaafb389228981@mail.gmail.com>
+	 <20070429212128.GU3468@stusta.de>
+	 <1177883521.5791.156.camel@localhost.localdomain>
+	 <20070429221958.GX3468@stusta.de>
+	 <1177886010.5791.166.camel@localhost.localdomain>
+	 <20070429224256.GA23336@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, April 29, 2007 21:25, Thomas Gleixner wrote:
-> On Sun, 2007-04-29 at 18:20 +0200, Indan Zupancic wrote:
->> Hello,
->>
->> After s2ram, basically the following happens, which shouldn't happen:
->>
->> [    0.880234] Clocksource tsc unstable (delta = 449782067799 ns)
->> [    0.881221] Time: pit clocksource has been installed.
->>
->> Looking at the source, it seems that clocksource_watchdog isn't reset
->> after resume, while the clock source used is, and hence it thinks that
->> the clock is unstable.
+On 30/04/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Mon, Apr 30, 2007 at 12:33:30AM +0200, Thomas Gleixner wrote:
+> > On Mon, 2007-04-30 at 00:19 +0200, Adrian Bunk wrote:
+> >...
+> > > And it failed because many regressions still stayed unfixed and some
+> > > even undebugged.
+> >
+> > No it failed not. It is not perfect. Way more bugs, which have been
+> > fixed or are in the debugging process, would have been unnoticed and
+> > ignored otherwise.
+> >...
 >
-> Yup, missed that. I was looking into the resume path anyway for other
-> reasons. Does the patch below fix your problem ?
+> It depends on what you consider failure and what you consider success.
 
-Yes it does, thanks!
+I hope that this discussion about bugs will change something in Linux
+regressions front.
 
-Just wondering, but is it expected that tsc doesn't show up in
-/proc/timer_list? Output below:
+Huge thanks to you for that.
 
-$ cat /proc/timer_list
-Timer List Version: v0.3
-HRTIMER_MAX_CLOCK_BASES: 2
-now at 557820361144 nsecs
+>
+> For me, it failed. Not because it wasn't perfect, but because we could
+> have done much better with fixing the known regressions, and also by not
+> introducing several regressions between the last -rc and the final
+> kernel (and people who did test -rc7 and would most likely also have
+> tested an -rc8 ran into them).
+>
+> >       tglx
+>
+> cu
+> Adrian
 
-cpu: 0
- clock 0:
-  .index:      0
-  .resolution: 999848 nsecs
-  .get_time:   ktime_get_real
-active timers:
- clock 1:
-  .index:      1
-  .resolution: 999848 nsecs
-  .get_time:   ktime_get
-active timers:
- #0: <b6e12f10>, it_real_fn, S:01
- # expires at 557838167583 nsecs [in 17806439 nsecs]
- #1: <b6e12f10>, it_real_fn, S:01
- # expires at 577078756293 nsecs [in 19258395149 nsecs]
- #2: <b6e12f10>, hrtimer_wakeup, S:01
- # expires at 607716759262 nsecs [in 49896398118 nsecs]
- #3: <b6e12f10>, it_real_fn, S:01
- # expires at 3656633914145 nsecs [in 3098813553001 nsecs]
+Regards,
+Michal
 
-
-Tick Device: mode:     0
-Clock Event Device: pit
- max_delta_ns:   27461866
- min_delta_ns:   12571
- mult:           5124677
- shift:          32
- mode:           4
- next_event:     0 nsecs
- set_next_event: pit_next_event
- set_mode:       init_pit_timer
- event_handler:  clockevents_handle_noop
-tick_broadcast_mask: 00000000
-
-
-Tick Device: mode:     0
-Clock Event Device: lapic
- max_delta_ns:   674685450
- min_delta_ns:   1206
- mult:           53400874
- shift:          32
- mode:           2
- next_event:     0 nsecs
- set_next_event: lapic_next_event
- set_mode:       lapic_timer_setup
- event_handler:  tick_handle_periodic
-
-Greetings,
-
-Indan
-
-
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
