@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXD2IHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXD2IIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932478AbXD2IHi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932962AbXD2IHh
+	id S932785AbXD2IIE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXD2IHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:07:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40711 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932812AbXD2IGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:06:52 -0400
-Date: Sun, 29 Apr 2007 10:05:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Willy Tarreau <w@1wt.eu>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070429080559.GB9988@elte.hu>
-References: <1177596399.14496.1.camel@localhost> <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <1177833575.9756.22.camel@localhost>
+	Sun, 29 Apr 2007 04:07:41 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2497 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932785AbXD2IGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:06:47 -0400
+Date: Sun, 29 Apr 2007 18:05:15 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private data
+Message-ID: <20070429080515.GA16942@gondor.apana.org.au>
+References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org> <20070428062839.GA6535@gondor.apana.org.au> <46344CA5.6000900@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1177833575.9756.22.camel@localhost>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <46344CA5.6000900@goop.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 29, 2007 at 12:43:33AM -0700, Jeremy Fitzhardinge wrote:
+> Herbert Xu wrote:
+> > BTW, the version I posted to you is missing the following line.
+> >   
+> > --- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
+> > +++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
+> > @@ -89,6 +89,7 @@
+> >  	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
+> >  	if (skb->h.raw >= skb->tail)
+> >  		goto out;
+> > +	skb->csum_start = skb->h.raw - skb->head;
+> >  	switch (skb->nh.iph->protocol) {
+> >  	case IPPROTO_TCP:
+> >  		skb->csum_offset = offsetof(struct tcphdr, check);
+> >   
+> 
+> drivers/xen/core/skbuff.c?  What's that?
 
-* Kasper Sandberg <lkml@metanurb.dk> wrote:
+It's part of the skb_checksum_setup function which we still need
+for this because the current netback protocol doesn't pass the
+csum_start and csum_offset values along.
 
-> If you have some ideas on how these problems might be fixed i'd surely 
-> try fixes and stuff, or if you have some data you need me to collect 
-> to better understand whats going on. But i suspect any somewhat 
-> demanding 3d application will do, and the difference is so staggering 
-> that when you see it in effect, you cant miss it.
-
-it would be great if you could try a simple experiment: does something 
-as simple as glxgears resized to a large window trigger this 
-'stuttering' phenomenon when other stuff is running? If not, could you 
-try to find the simplest 3D stuff under Linux that already triggers it 
-so that i can reproduce it?
-
-(Also, as an independent debug-test, could you try CONFIG_PREEMPT too 
-perhaps? I.e. is this 'stuttering' behavior independent of the 
-preemption model and a general property of CFS?)
-
-	Ingo
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
