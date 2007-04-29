@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbXD2EBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbXD2EKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbXD2EBk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 00:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbXD2EBj
+	id S1754552AbXD2EKK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 00:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXD2EKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 00:01:39 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47764
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754557AbXD2EBi (ORCPT
+	Sun, 29 Apr 2007 00:10:10 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45630 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754552AbXD2EKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 00:01:38 -0400
-Date: Sat, 28 Apr 2007 21:01:47 -0700 (PDT)
-Message-Id: <20070428.210147.111207684.davem@davemloft.net>
-To: mark@mtfhpc.demon.co.uk
-Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org, linux-serial@vger.kernel.org,
-       jengelh@linux01.gwdg.de
-Subject: Re: [TESTING NEEDED] drivers/serial/sunzilog: Interrupt enable
- before ISR handler installed
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.61.0704281529090.8157@mtfhpc.demon.co.uk>
-References: <Pine.LNX.4.61.0704281529090.8157@mtfhpc.demon.co.uk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 00:10:01 -0400
+X-Sasl-enc: xhkXvfrYB1O9NUQVQSRPiqJ2eaKK2fgg1p3rcPkGvrVm 1177819798
+Date: Sun, 29 Apr 2007 01:09:53 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [-mm patch] make drivers/misc/thinkpad_acpi:fan_mutex static
+Message-ID: <20070429040953.GA29832@khazad-dum.debian.net>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070428191938.GO3468@stusta.de> <20070428195821.GC2392@khazad-dum.debian.net> <20070429025008.GK3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429025008.GK3468@stusta.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 29 Apr 2007, Adrian Bunk wrote:
+> Forward declarations of static functions (if required) and actual 
+> variables (like fan_mutex) belong into the C file, not the header.
 
-Your patch is extremely mangled, please try to email it to yourself
-and apply it if in doubt.
+Very well.  I will fix the mess for 2.6.23, or, time permitting, 2.6.22.
 
-Furthermore, the comment your patch adds is unnecessary.  That kind of
-text belongs in the changelog comment, not the code.  The changelog is
-also where you'll get credit for your change.
+> > Maybe I should just break the driver into multiple files in a subdirectory?
+> > That would certainly make it *much* cleaner...
+> 
+> But even more in this case, you will not want to have actual variables 
+> or prototypes of static functions in the header file.
 
-There is no reason to play Napoleon in the source files any more now
-that we have proper source control and history all these years. :-)
+I would not have to, in that case.  The driver would be much easier to
+write, and I will need to break it in two for an alsa module anyway, might
+as well break it in one subdriver per file.
 
-Please fix all of this up and resubmit, thank you.
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
