@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXD2JxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755123AbXD2JyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbXD2JxY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 05:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXD2JxY
+	id S1755123AbXD2JyE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 05:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbXD2JyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 05:53:24 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:33381 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753066AbXD2JxX (ORCPT
+	Sun, 29 Apr 2007 05:54:04 -0400
+Received: from mail31.syd.optusnet.com.au ([211.29.132.102]:56683 "EHLO
+	mail31.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755123AbXD2JyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 05:53:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46346B01.9040008@s5r6.in-berlin.de>
-Date: Sun, 29 Apr 2007 11:53:05 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Markus Rechberger <mrechberger@gmail.com>,
+	Sun, 29 Apr 2007 05:54:00 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v6
+Date: Sun, 29 Apr 2007 19:52:22 +1000
+User-Agent: KMail/1.9.5
+Cc: Willy Tarreau <w@1wt.eu>, Kasper Sandberg <lkml@metanurb.dk>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <alpine.LFD.0.98.0704281529080.9964@woody.linux-foundation.org> <d9def9db0704281558r57460a6ft76bbddcc480058eb@mail.gmail.com> <20070429060106.GV943@1wt.eu>
-In-Reply-To: <20070429060106.GV943@1wt.eu>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+References: <1177618164.14496.5.camel@localhost> <20070429073819.GD23638@1wt.eu> <20070429080028.GA9988@elte.hu>
+In-Reply-To: <20070429080028.GA9988@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704291952.22840.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> On Sun, Apr 29, 2007 at 12:58:09AM +0200, Markus Rechberger wrote:
->> I totally disagree here, bugzilla is a very good tool. If someone is
->> too lazy to look at it it's his problem.
-> 
-> I'm glad we finally found _the_ person using it !
-> 
-> More seriously, it's so much a complicated interface ! It's hard to
-> bring more people into a discussion, it's hard to comment on code or
-> suggested patches, etc... Mail is by far more adapted to the job !
+On Sunday 29 April 2007 18:00, Ingo Molnar wrote:
+> * Willy Tarreau <w@1wt.eu> wrote:
+> > > > [...] except for Mike who has not tested recent versions. [...]
+> > >
+> > > actually, dont discount Mark Lord's test results either. And it
+> > > might be a good idea for Mike to re-test SD 0.46?
+> >
+> > In any case, it might be a good idea because Mike encountered a
+> > problem that nobody could reproduce. [...]
+>
+> actually, Mark Lord too reproduced something similar to Mike's results.
+> Please try those workloads yourself.
 
-To continue on the sarcastic tangent:  This flaw of bugzilla is
-irrelevant for subsystems where there are less than three or two persons
-who steadily hunt bugs anyway.  At the field I work on, I wouldn't have
-anybody else to bring in in the first place, except that I sometimes
-suggest to reporters to subscribe to a bug ticket.
+I see no suggestion that either Mark or Mike have tested, or for that matter 
+_have any intention of testing_, the current version of SD without fancy 
+renicing or anything involved. Willy I grealy appreciate you trying, but I 
+don't know why you're bothering even trying here since clearly 1. Ingo is the 
+scheduler maintainer 2. he's working on a competing implementation and 3. in 
+my excellent physical and mental state I seem to have slighted the two 
+testers (both?) somewhere along the line. Mike feels his testing was a 
+complete waste of time yet it would be ludicrous for me to say that SD didn't 
+evolve 20 versions further due to his earlier testing, and was the impetus 
+for you to start work on CFS. The crunch came that we couldn't agree that 
+fair was appropriate for mainline and we parted ways. That fairness has not 
+been a problem for his view on CFS though but he has only tested older 
+versions of SD that still had bugs.
+
+Given facts 1 and 2 above I have all but resigned myself to the fact that SD 
+has -less than zero- chance of ever being considered for mainline and it's my 
+job to use it as something to compare your competing design with to make sure 
+that when (and I do mean when since there seems no doubt in everyone else's 
+mind) CFS becomes part of mainline that it is as good as SD. Saying people 
+found CFS better than SD is, in my humble opinion, an exaggeration since 
+every one I could find was a glowing standalone report of CFS rather than any 
+comparison to the current very stable bug free version of SD. On the other 
+hand I still see that when people compare them side to side they find SD is 
+better, so I will hold CFS against that comparison - when comparing fairness 
+based designs.
+
+On a related note - implementing a framework is nice but doesn't address any 
+of the current fairness/starvation/corner case problems mainline has. I don't 
+see much point in rushing the framework merging since it's still in flux.
+
 -- 
-Stefan Richter
--=====-=-=== -=-- ===-=
-http://arcgraph.de/sr/
+-ck
