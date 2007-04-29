@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031341AbXD2Wb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031428AbXD2Wha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031341AbXD2Wb0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 18:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031289AbXD2WbZ
+	id S1031428AbXD2Wha (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 18:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031443AbXD2Wh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 18:31:25 -0400
-Received: from www.osadl.org ([213.239.205.134]:50796 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031341AbXD2WbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 18:31:24 -0400
-Subject: Re: Linux 2.6.21
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
+	Sun, 29 Apr 2007 18:37:29 -0400
+Received: from allen.werkleitz.de ([80.190.251.108]:56531 "EHLO
+	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031428AbXD2Wh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 18:37:28 -0400
+Date: Mon, 30 Apr 2007 00:36:49 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
 To: Adrian Bunk <bunk@stusta.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
        Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070429221958.GX3468@stusta.de>
-References: <20070429173500.GA30248@one.firstfloor.org>
-	 <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
-	 <20070429180909.GA30604@one.firstfloor.org>
-	 <20070429214007.9ea12e96.diegocg@gmail.com>
-	 <20070429201729.GQ3468@stusta.de>
-	 <20070429225657.a501ab5a.diegocg@gmail.com>
-	 <20070429211028.GT3468@stusta.de>
-	 <6bffcb0e0704291416u402668ffo9bcaafb389228981@mail.gmail.com>
-	 <20070429212128.GU3468@stusta.de>
-	 <1177883521.5791.156.camel@localhost.localdomain>
-	 <20070429221958.GX3468@stusta.de>
-Content-Type: text/plain
-Date: Mon, 30 Apr 2007 00:33:30 +0200
-Message-Id: <1177886010.5791.166.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070429223649.GA12672@linuxtv.org>
+References: <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com> <20070429201729.GQ3468@stusta.de> <alpine.LFD.0.98.0704291330280.9964@woody.linux-foundation.org> <20070429210505.GS3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429210505.GS3468@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 87.162.103.156
+Subject: Re: Linux 2.6.21
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-30 at 00:19 +0200, Adrian Bunk wrote:
-> > Don't be silly, did any of the developers say, that he has spare time to
-> > read your regression lists ?
+On Sun, Apr 29, 2007, Adrian Bunk wrote:
+> On Sun, Apr 29, 2007 at 01:33:16PM -0700, Linus Torvalds wrote:
+> > On Sun, 29 Apr 2007, Adrian Bunk wrote:
+> > > 
+> > > The kernel Bugzilla currently contains 1600 open bugs.
+> > 
+> > Adrian, why do you keep harping on this, and ignoring reality?
+> > 
+> > Kernel bugzilla has 1600 open bugs BECAUSE IT SUCKS.
 > 
-> It worked because several people (including Linus) emphasized that 
-> fixing regressions from this list was important.
-
-Right. Simply because these lists are assembled by someone
-
-- who knows how to pick that reports from the mailinglists
-- who knows how to sort them in a useful way
-- who knows how to add the relevant folks on CC
-- ....
-
-Can you see the pattern ?
-
-> And it failed because many regressions still stayed unfixed and some 
-> even undebugged.
-
-No it failed not. It is not perfect. Way more bugs, which have been
-fixed or are in the debugging process, would have been unnoticed and
-ignored otherwise.
-
-> > So what are you complaining about ? Folks stepped up and built a
-> > regression list and posted it to LKML. What's wrong with that ?
+> OK, how do you suggest to track bugs in a way that doesn't suck?
 > 
-> If it works it's perfectly fine.
+> Bug reports to linux-kernel have the big problem that they are lost if 
+> no developer immediately picks them up.
 
-It will work not much different from your lists. It'll be not perfect
-either.
+I suspect some bug reports get ignored deliberately.
 
-	tglx
+Why? Because it's hard to write good bug reports, and thus
+a lot of them suck.
+
+In some cases you are lucky and get a test case which makes
+the bug easily reproducible, or you get a nice, comprehensible
+Oops message, and can pinpoint the bug right away. But usually you
+have to interact with the user to get more information, have her
+try various patches or do a bisect. And sometimes this interaction
+drives you crazy because the user is slow to answer, gives you
+incomplete or even false information, and doesn't do what you
+ask her to do to narrow the bug, or you just have no clue
+what the bug could be etc.
+
+Probably every developer went through this experience a couple of
+times, wasting a lot of time and causing a lot of grief. Thus it's
+just natural that you learn from the experience to ignore every
+bug report which even remotely smells fishy ;-/
+Y'know, a lot of developers don't just work for the money, they
+work for the fun of it. Thus they try to avoid pain and grief. :-)
+
+Bugzilla just makes this visible because it doesn't forget.
+Which is stupid and discouraging for both (potential) bug
+reporters and developers.
 
 
+The lesson to learn is that there are some very valid
+reasons why bug reports get ignored (some not mentioned here),
+and there's nothing you can do about it. And it has nothing to
+do with the method or tool used for reporting or tracking.
+
+And I also think that ignoring bad bug reports _increases_
+the software quality, because you can use the saved time
+working on something productive. And it makes developers
+happier :-)
+
+[Just to avoid misunderstandings: By no means do I advocate
+ignoring *every* bug report. But ignoring the bad ones
+is just the sane thing to do.]
+
+
+Johannes
