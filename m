@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031421AbXD2UnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031412AbXD2UsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031421AbXD2UnJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031412AbXD2UnJ
+	id S1031412AbXD2UsI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031423AbXD2UsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:43:09 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:32780 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031421AbXD2UnH (ORCPT
+	Sun, 29 Apr 2007 16:48:07 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:33483 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031412AbXD2UsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:43:07 -0400
-Date: Sun, 29 Apr 2007 22:43:17 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070429204317.GR3468@stusta.de>
-References: <20070426040806.GJ3468@stusta.de> <200704292050.56575.rjw@sisk.pl> <20070429191432.GA31445@one.firstfloor.org> <200704292218.11242.rjw@sisk.pl>
+	Sun, 29 Apr 2007 16:48:06 -0400
+Message-ID: <4635041F.10507@wpkg.org>
+Date: Sun, 29 Apr 2007 22:46:23 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200704292218.11242.rjw@sisk.pl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.21
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 10:18:10PM +0200, Rafael J. Wysocki wrote:
->...
-> But emailed reports _are_ saved anyway and we _know_ how to get a copy.
-> From lkml.org, for example.  Why don't we use that?  The only missing piece
-> is the 'keep a list' thing, but that's not a rocket science, IMHO.
-> 
-> [For example, you can create a bugzilla entry with a link to the lkml.org copy
-> of the relevant message, so why to require the reporter to file the report with
-> the bugzilla himself?]
-> 
-> _Moreover_, some LKML archives, for example at http://marc.info/?l=linux-kernel,
-> keep track of each thread separately, so you can browse any of them at any
-> time.  In particular, you can see the _history_ of each bug report sent to LKML
-> if you have a link to any message in its thread.
-> 
-> Really, if we ask reporters to put '[BUG]' in the subjects of their messages,
-> you'll even be able to use the lkml.org archives plus wget and a couple of
-> shell scripts to cherry pick the links to all bug reports sent to the list
-> within a given time interval.
-> 
-> All of this functionality is out there already.
->...
+David Miller wrote:
 
-How can I get the functionality "show me all unfixed SATA bugs"?
+>> Don't think that's true. There are plenty of projects who only
+>> accept bugs through bugzilla (mozilla, various distributions, etc.) 
+>> and I don't see any evidence of your claim being true.
+> 
+> That explains why my bugs don't get looked at for months if
+> not years when I submit them to such projects.
+> 
+> I reported a bug that eats people's hard disks due to a bug
+> in the X.ORG PCI support code on sparc, NOBODY has fixed
+> the bug in 2 years even though a full bugzilla entry with
+> even a full patch fix is in there.
 
-That's one of the important functionalities of every bug tracking 
-system.
+And how fast was the bug fixed when you posted it to the X.ORG list?
 
-> Greetings,
-> Rafael
 
-cu
-Adrian
+> Bugzilla sucks, emails rules because it is in your face and
+> gets people to work on things.
+
+Bugzilla can be configured to send emails, too (to the list for a newly 
+reported bug for example).
+
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Tomasz Chmielewski
+http://wpkg.org
 
