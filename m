@@ -1,200 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161616AbXD2Xt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161626AbXD2Xu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161616AbXD2Xt1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161599AbXD2XrG
+	id S1161626AbXD2Xu6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 19:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161607AbXD2Xqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:47:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38472 "EHLO mx2.suse.de"
+	Sun, 29 Apr 2007 19:46:52 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38490 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161598AbXD2Xq0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:46:26 -0400
+	id S1161606AbXD2Xqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:46:33 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430146.588463000@suse.de>
 In-Reply-To: <20070430146.588463000@suse.de>
-To: andreas.herrmann@amd.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [15/26] x86: Don't use MWAIT on AMD Family 10
-Message-Id: <20070429234624.AF710150F2@wotan.suse.de>
-Date: Mon, 30 Apr 2007 01:46:24 +0200 (CEST)
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [22/26] i386: Remove smp_alt_instructions
+Message-Id: <20070429234632.2ED1A151C5@wotan.suse.de>
+Date: Mon, 30 Apr 2007 01:46:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-It doesn't put the CPU into deeper sleep states, so it's better to use the standard
-idle loop to save power. But allow to reenable it anyways for benchmarking.
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+The .smp_altinstructions section and its corresponding symbols are
+completely unused, so remove them.
 
-I also removed the obsolete idle=halt on i386
+Also, remove stray #ifdef __KENREL__ in asm-i386/alternative.h
 
-Cc: andreas.herrmann@amd.com
-
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andi Kleen <ak@suse.de>
 
 ---
- Documentation/kernel-parameters.txt |   11 +++++++++--
- arch/i386/kernel/cpu/amd.c          |    5 +++++
- arch/i386/kernel/process.c          |   17 ++++++++---------
- arch/x86_64/kernel/process.c        |   12 +++++++-----
- arch/x86_64/kernel/setup.c          |    6 ++++++
- include/asm-i386/processor.h        |    2 ++
- include/asm-x86_64/proto.h          |    2 ++
- 7 files changed, 39 insertions(+), 16 deletions(-)
+ arch/i386/kernel/alternative.c |   38 ++------------------------------------
+ arch/i386/kernel/vmlinux.lds.S |   11 -----------
+ include/asm-i386/alternative.h |    6 +-----
+ 3 files changed, 3 insertions(+), 52 deletions(-)
 
-Index: linux/Documentation/kernel-parameters.txt
 ===================================================================
---- linux.orig/Documentation/kernel-parameters.txt
-+++ linux/Documentation/kernel-parameters.txt
-@@ -673,8 +673,15 @@ and is between 256 and 4096 characters. 
- 	idebus=		[HW] (E)IDE subsystem - VLB/PCI bus speed
- 			See Documentation/ide.txt.
- 
--	idle=		[HW]
--			Format: idle=poll or idle=halt
-+	idle=		[X86]
-+			Format: idle=poll or idle=mwait
-+			Poll forces a polling idle loop that can slightly improves the performance
-+			of waking up a idle CPU, but will use a lot of power and make the system
-+			run hot. Not recommended.
-+			idle=mwait. On systems which support MONITOR/MWAIT but the kernel chose
-+			to not use it because it doesn't save as much power as a normal idle
-+			loop use the MONITOR/MWAIT idle loop anyways. Performance should be the same
-+			as idle=poll.
- 
- 	ignore_loglevel	[KNL]
- 			Ignore loglevel setting - this will print /all/
-Index: linux/arch/i386/kernel/cpu/amd.c
+Index: linux/arch/i386/kernel/alternative.c
 ===================================================================
---- linux.orig/arch/i386/kernel/cpu/amd.c
-+++ linux/arch/i386/kernel/cpu/amd.c
-@@ -53,6 +53,8 @@ static __cpuinit int amd_apic_timer_brok
- 	return 0;
+--- linux.orig/arch/i386/kernel/alternative.c
++++ linux/arch/i386/kernel/alternative.c
+@@ -132,11 +132,8 @@ static void nop_out(void *insns, unsigne
  }
  
-+int force_mwait __cpuinitdata;
-+
- static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- {
- 	u32 l, h;
-@@ -275,6 +277,9 @@ static void __cpuinit init_amd(struct cp
+ extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
+-extern struct alt_instr __smp_alt_instructions[], __smp_alt_instructions_end[];
+ extern u8 *__smp_locks[], *__smp_locks_end[];
  
- 	if (amd_apic_timer_broken())
- 		set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
-+
-+	if (c->x86 == 0x10 && !force_mwait)
-+		clear_bit(X86_FEATURE_MWAIT, c->x86_capability);
- }
- 
- static unsigned int __cpuinit amd_size_cache(struct cpuinfo_x86 * c, unsigned int size)
-Index: linux/arch/i386/kernel/process.c
-===================================================================
---- linux.orig/arch/i386/kernel/process.c
-+++ linux/arch/i386/kernel/process.c
-@@ -272,25 +272,24 @@ void __devinit select_idle_routine(const
- 	}
- }
- 
--static int __init idle_setup (char *str)
-+static int __init idle_setup(char *str)
- {
--	if (!strncmp(str, "poll", 4)) {
-+	if (!strcmp(str, "poll")) {
- 		printk("using polling idle threads.\n");
- 		pm_idle = poll_idle;
- #ifdef CONFIG_X86_SMP
- 		if (smp_num_siblings > 1)
- 			printk("WARNING: polling idle and HT enabled, performance may degrade.\n");
- #endif
--	} else if (!strncmp(str, "halt", 4)) {
--		printk("using halt in idle threads.\n");
--		pm_idle = default_idle;
--	}
-+	} else if (!strcmp(str, "mwait"))
-+		force_mwait = 1;
-+	else
-+		return -1;
- 
- 	boot_option_idle_override = 1;
--	return 1;
-+	return 0;
- }
+-extern u8 __smp_alt_begin[], __smp_alt_end[];
 -
--__setup("idle=", idle_setup);
-+early_param("idle", idle_setup);
+ /* Replace instructions with better alternatives for this CPU type.
+    This runs before SMP is initialized to avoid SMP problems with
+    self modifying code. This implies that assymetric systems where
+@@ -171,29 +168,6 @@ void apply_alternatives(struct alt_instr
  
- void show_regs(struct pt_regs * regs)
- {
-Index: linux/arch/x86_64/kernel/process.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/process.c
-+++ linux/arch/x86_64/kernel/process.c
-@@ -288,16 +288,18 @@ void __cpuinit select_idle_routine(const
+ #ifdef CONFIG_SMP
  
- static int __init idle_setup (char *str)
- {
--	if (!strncmp(str, "poll", 4)) {
-+	if (!strcmp(str, "poll")) {
- 		printk("using polling idle threads.\n");
- 		pm_idle = poll_idle;
--	}
-+	} else if (!strcmp(str, "mwait"))
-+		force_mwait = 1;
-+	else
-+		return -1;
- 
- 	boot_option_idle_override = 1;
--	return 1;
-+	return 0;
- }
+-static void alternatives_smp_save(struct alt_instr *start, struct alt_instr *end)
+-{
+-	struct alt_instr *a;
 -
--__setup("idle=", idle_setup);
-+early_param("idle", idle_setup);
- 
- /* Prints also some state that isn't saved in the pt_regs */ 
- void __show_regs(struct pt_regs * regs)
-Index: linux/arch/x86_64/kernel/setup.c
+-	DPRINTK("%s: alt table %p-%p\n", __FUNCTION__, start, end);
+-	for (a = start; a < end; a++) {
+-		memcpy(a->replacement + a->replacementlen,
+-		       a->instr,
+-		       a->instrlen);
+-	}
+-}
+-
+-static void alternatives_smp_apply(struct alt_instr *start, struct alt_instr *end)
+-{
+-	struct alt_instr *a;
+-
+-	for (a = start; a < end; a++) {
+-		memcpy(a->instr,
+-		       a->replacement + a->replacementlen,
+-		       a->instrlen);
+-	}
+-}
+-
+ static void alternatives_smp_lock(u8 **start, u8 **end, u8 *text, u8 *text_end)
+ {
+ 	u8 **ptr;
+@@ -319,8 +293,6 @@ void alternatives_smp_switch(int smp)
+ 		printk(KERN_INFO "SMP alternatives: switching to SMP code\n");
+ 		clear_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 		clear_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-		alternatives_smp_apply(__smp_alt_instructions,
+-				       __smp_alt_instructions_end);
+ 		list_for_each_entry(mod, &smp_alt_modules, next)
+ 			alternatives_smp_lock(mod->locks, mod->locks_end,
+ 					      mod->text, mod->text_end);
+@@ -328,8 +300,6 @@ void alternatives_smp_switch(int smp)
+ 		printk(KERN_INFO "SMP alternatives: switching to UP code\n");
+ 		set_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 		set_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-		apply_alternatives(__smp_alt_instructions,
+-				   __smp_alt_instructions_end);
+ 		list_for_each_entry(mod, &smp_alt_modules, next)
+ 			alternatives_smp_unlock(mod->locks, mod->locks_end,
+ 						mod->text, mod->text_end);
+@@ -396,17 +366,13 @@ void __init alternative_instructions(voi
+ 			printk(KERN_INFO "SMP alternatives: switching to UP code\n");
+ 			set_bit(X86_FEATURE_UP, boot_cpu_data.x86_capability);
+ 			set_bit(X86_FEATURE_UP, cpu_data[0].x86_capability);
+-			apply_alternatives(__smp_alt_instructions,
+-					   __smp_alt_instructions_end);
+ 			alternatives_smp_unlock(__smp_locks, __smp_locks_end,
+ 						_text, _etext);
+ 		}
+ 		free_init_pages("SMP alternatives",
+-				__pa_symbol(&__smp_alt_begin),
+-				__pa_symbol(&__smp_alt_end));
++				__pa_symbol(&__smp_locks),
++				__pa_symbol(&__smp_locks_end));
+ 	} else {
+-		alternatives_smp_save(__smp_alt_instructions,
+-				      __smp_alt_instructions_end);
+ 		alternatives_smp_module_add(NULL, "core kernel",
+ 					    __smp_locks, __smp_locks_end,
+ 					    _text, _etext);
+Index: linux/arch/i386/kernel/vmlinux.lds.S
 ===================================================================
---- linux.orig/arch/x86_64/kernel/setup.c
-+++ linux/arch/x86_64/kernel/setup.c
-@@ -79,6 +79,8 @@ int bootloader_type;
+--- linux.orig/arch/i386/kernel/vmlinux.lds.S
++++ linux/arch/i386/kernel/vmlinux.lds.S
+@@ -117,22 +117,11 @@ SECTIONS
  
- unsigned long saved_video_mode;
- 
-+int force_mwait __cpuinitdata;
-+
- /* 
-  * Early DMI memory
-  */
-@@ -604,6 +606,10 @@ static void __cpuinit init_amd(struct cp
- 
- 	/* RDTSC can be speculated around */
- 	clear_bit(X86_FEATURE_SYNC_RDTSC, &c->x86_capability);
-+
-+	/* Family 10 doesn't support C states in MWAIT so don't use it */
-+	if (c->x86 == 0x10 && !force_mwait)
-+		clear_bit(X86_FEATURE_MWAIT, &c->x86_capability);
- }
- 
- static void __cpuinit detect_ht(struct cpuinfo_x86 *c)
-Index: linux/include/asm-i386/processor.h
+   /* might get freed after init */
+   . = ALIGN(4096);
+-  .smp_altinstructions : AT(ADDR(.smp_altinstructions) - LOAD_OFFSET) {
+-	__smp_alt_begin = .;
+-	__smp_alt_instructions = .;
+-	*(.smp_altinstructions)
+-	__smp_alt_instructions_end = .;
+-  }
+-  . = ALIGN(4);
+   .smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
+   	__smp_locks = .;
+ 	*(.smp_locks)
+ 	__smp_locks_end = .;
+   }
+-  .smp_altinstr_replacement : AT(ADDR(.smp_altinstr_replacement) - LOAD_OFFSET) {
+-	*(.smp_altinstr_replacement)
+-  	__smp_alt_end = .;
+-  }
+   /* will be freed after init
+    * Following ALIGN() is required to make sure no other data falls on the
+    * same page where __smp_alt_end is pointing as that page might be freed
+Index: linux/include/asm-i386/alternative.h
 ===================================================================
---- linux.orig/include/asm-i386/processor.h
-+++ linux/include/asm-i386/processor.h
-@@ -779,4 +779,6 @@ extern int sysenter_setup(void);
- extern void cpu_set_gdt(int);
- extern void cpu_init(void);
+--- linux.orig/include/asm-i386/alternative.h
++++ linux/include/asm-i386/alternative.h
+@@ -1,8 +1,6 @@
+ #ifndef _I386_ALTERNATIVE_H
+ #define _I386_ALTERNATIVE_H
  
-+extern int force_mwait;
-+
- #endif /* __ASM_I386_PROCESSOR_H */
-Index: linux/include/asm-x86_64/proto.h
-===================================================================
---- linux.orig/include/asm-x86_64/proto.h
-+++ linux/include/asm-x86_64/proto.h
-@@ -119,6 +119,8 @@ extern int gsi_irq_sharing(int gsi);
+-#ifdef __KERNEL__
+-
+ #include <asm/types.h>
+ #include <linux/stddef.h>
+ #include <linux/types.h>
+@@ -32,9 +30,7 @@ static inline void alternatives_smp_modu
+ 					void *text, void *text_end) {}
+ static inline void alternatives_smp_module_del(struct module *mod) {}
+ static inline void alternatives_smp_switch(int smp) {}
+-#endif
+-
+-#endif
++#endif	/* CONFIG_SMP */
  
- extern void smp_local_timer_interrupt(void);
- 
-+extern int force_mwait;
-+
- long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
- 
- void i8254_timer_resume(void);
+ /*
+  * Alternative instructions for different CPU types or capabilities.
