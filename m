@@ -1,147 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161227AbXD2VBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXD2VBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161227AbXD2VBP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161292AbXD2VBP
+	id S1161323AbXD2VBz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161303AbXD2VBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:01:15 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48241 "EHLO smtp.wsc.cz"
+	Sun, 29 Apr 2007 17:01:55 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:48250 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161311AbXD2VBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:01:12 -0400
-Message-id: <9252677022273619@wsc.cz>
+	id S1161323AbXD2VBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:01:54 -0400
+Message-id: <181033173971179592@wsc.cz>
 In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 12/21] Char: cyclades, remove sleep_on
+Subject: [PATCH 13/21] Char: cyclades, fix blockmove
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 23:01:11 +0200 (CEST)
+Date: Sun, 29 Apr 2007 23:01:52 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, remove sleep_on
+cyclades, fix blockmove
 
-convert to wait_* and completion
+tty has no longer flip buffers accessible externally. Fix it by moving the
+code to the tty_*flip* helpers.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 300e8efee2151f3bd26ed824f932fba53a7313f4
-tree 02665558209c35460450f9ac28159d8aa5c8ea2e
-parent fcc653d03162d0c14053a2fca345ae8aa1eff924
-author Jiri Slaby <jirislaby@gmail.com> Fri, 27 Apr 2007 00:15:42 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sat, 28 Apr 2007 23:48:15 +0200
+commit 147542c38691d4e5049b916b083dc93bc3bf8c3b
+tree 8986e0764afc717d7d283326b87aa5e3dff8b052
+parent 300e8efee2151f3bd26ed824f932fba53a7313f4
+author Jiri Slaby <jirislaby@gmail.com> Fri, 27 Apr 2007 15:48:28 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 28 Apr 2007 23:48:17 +0200
 
- drivers/char/cyclades.c  |   45 ++++++++++++++++-----------------------------
- include/linux/cyclades.h |    2 +-
- 2 files changed, 17 insertions(+), 30 deletions(-)
+ drivers/char/cyclades.c |   34 ++++++++++++++++------------------
+ 1 files changed, 16 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 9bec4ef..c236e9f 100644
+index c236e9f..9160953 100644
 --- a/drivers/char/cyclades.c
 +++ b/drivers/char/cyclades.c
-@@ -947,7 +947,7 @@ do_softint(struct work_struct *work)
- 	tty_wakeup(tty);
- #ifdef Z_WAKE
- 	if (test_and_clear_bit(Cy_EVENT_SHUTDOWN_WAKEUP, &info->event))
--		wake_up_interruptible(&info->shutdown_wait);
-+		complete(&info->shutdown_wait);
+@@ -1560,7 +1560,7 @@ cyz_handle_rx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
+ 	int char_count;
+ 	int len;
+ #ifdef BLOCKMOVE
+-	int small_count;
++	unsigned char *buf;
+ #else
+ 	char data;
  #endif
- } /* do_softint */
+@@ -1596,25 +1596,23 @@ cyz_handle_rx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
+ 		/* we'd like to use memcpy(t, f, n) and memset(s, c, count)
+ 		   for performance, but because of buffer boundaries, there
+ 		   may be several steps to the operation */
+-			while (0 < (small_count = min_t(unsigned int,
+-					rx_bufsize - new_rx_get,
+-					min_t(unsigned int, TTY_FLIPBUF_SIZE -
+-						tty->flip.count, char_count)))){
+-				memcpy_fromio(tty->flip.char_buf_ptr,
+-					(char *)(cinfo->base_addr + rx_bufaddr +
+-						new_rx_get),
+-					small_count);
++			while (1) {
++				len = tty_prepare_flip_string(tty, &buf,
++						char_count);
++				if (!len)
++					break;
  
-@@ -2324,9 +2324,8 @@ block_til_ready(struct tty_struct *tty, struct file *filp,
- 	 * until it's done, and then try again.
- 	 */
- 	if (tty_hung_up_p(filp) || (info->flags & ASYNC_CLOSING)) {
--		if (info->flags & ASYNC_CLOSING) {
--			interruptible_sleep_on(&info->close_wait);
--		}
-+		wait_event_interruptible(info->close_wait,
-+				!(info->flags & ASYNC_CLOSING));
- 		return (info->flags & ASYNC_HUP_NOTIFY) ? -EAGAIN: -ERESTARTSYS;
- 	}
- 
-@@ -2597,8 +2596,8 @@ static int cy_open(struct tty_struct *tty, struct file *filp)
- 	 * If the port is the middle of closing, bail out now
- 	 */
- 	if (tty_hung_up_p(filp) || (info->flags & ASYNC_CLOSING)) {
--		if (info->flags & ASYNC_CLOSING)
--			interruptible_sleep_on(&info->close_wait);
-+		wait_event_interruptible(info->close_wait,
-+				!(info->flags & ASYNC_CLOSING));
- 		return (info->flags & ASYNC_HUP_NOTIFY) ? -EAGAIN: -ERESTARTSYS;
- 	}
- 
-@@ -2805,7 +2804,7 @@ static void cy_close(struct tty_struct *tty, struct file *filp)
- 					"ttyC%d was %x\n", info->line, retval);
+-				tty->flip.char_buf_ptr += small_count;
+-				memset(tty->flip.flag_buf_ptr, TTY_NORMAL,
+-					small_count);
+-				tty->flip.flag_buf_ptr += small_count;
+-				new_rx_get = (new_rx_get + small_count) &
++				len = min_t(unsigned int, min(len, char_count),
++						rx_bufsize - new_rx_get);
++
++				memcpy_fromio(buf, cinfo->base_addr +
++						rx_bufaddr + new_rx_get, len);
++
++				new_rx_get = (new_rx_get + len) &
+ 						(rx_bufsize - 1);
+-				char_count -= small_count;
+-				info->icount.rx += small_count;
+-				info->idle_stats.recv_bytes += small_count;
+-				tty->flip.count += small_count;
++				char_count -= len;
++				info->icount.rx += len;
++				info->idle_stats.recv_bytes += len;
  			}
- 			CY_UNLOCK(info, flags);
--			interruptible_sleep_on(&info->shutdown_wait);
-+			wait_for_completion_interruptible(&info->shutdown_wait);
- 			CY_LOCK(info, flags);
- 		}
- #endif
-@@ -4091,32 +4090,20 @@ cy_ioctl(struct tty_struct *tty, struct file *file,
- 	case TIOCMIWAIT:
- 		CY_LOCK(info, flags);
- 		/* note the counters on entry */
--		cprev = info->icount;
-+		cnow = info->icount;
- 		CY_UNLOCK(info, flags);
--		while (1) {
--			interruptible_sleep_on(&info->delta_msr_wait);
--			/* see if a signal did it */
--			if (signal_pending(current)) {
--				return -ERESTARTSYS;
--			}
--
-+		ret_val = wait_event_interruptible(info->delta_msr_wait, ({
-+			cprev = cnow;
- 			CY_LOCK(info, flags);
- 			cnow = info->icount;	/* atomic copy */
- 			CY_UNLOCK(info, flags);
- 
--			if (cnow.rng == cprev.rng && cnow.dsr == cprev.dsr &&
--			    cnow.dcd == cprev.dcd && cnow.cts == cprev.cts) {
--				return -EIO;	/* no change => error */
--			}
--			if (((arg & TIOCM_RNG) && (cnow.rng != cprev.rng)) ||
--			    ((arg & TIOCM_DSR) && (cnow.dsr != cprev.dsr)) ||
--			    ((arg & TIOCM_CD) && (cnow.dcd != cprev.dcd)) ||
--			    ((arg & TIOCM_CTS) && (cnow.cts != cprev.cts))) {
--				return 0;
--			}
--			cprev = cnow;
--		}
--		/* NOTREACHED */
-+			((arg & TIOCM_RNG) && (cnow.rng != cprev.rng)) ||
-+			((arg & TIOCM_DSR) && (cnow.dsr != cprev.dsr)) ||
-+			((arg & TIOCM_CD)  && (cnow.dcd != cprev.dcd)) ||
-+			((arg & TIOCM_CTS) && (cnow.cts != cprev.cts));
-+		}));
-+		break;
- 
- 		/*
- 		 * Get counter of input serial line interrupts (DCD,RI,DSR,CTS)
-@@ -4534,7 +4521,7 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo)
- 		INIT_WORK(&info->tqueue, do_softint);
- 		init_waitqueue_head(&info->open_wait);
- 		init_waitqueue_head(&info->close_wait);
--		init_waitqueue_head(&info->shutdown_wait);
-+		init_completion(&info->shutdown_wait);
- 		init_waitqueue_head(&info->delta_msr_wait);
- 
- 		if (IS_CYC_Z(*cinfo)) {
-diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
-index 121d64c..cdd7739 100644
---- a/include/linux/cyclades.h
-+++ b/include/linux/cyclades.h
-@@ -588,7 +588,7 @@ struct cyclades_port {
- 	struct work_struct	tqueue;
- 	wait_queue_head_t       open_wait;
- 	wait_queue_head_t       close_wait;
--	wait_queue_head_t       shutdown_wait;
-+	struct completion       shutdown_wait;
- 	wait_queue_head_t       delta_msr_wait;
- 	int throttle;
- };
+ #else
+ 			len = tty_buffer_request_room(tty, char_count);
