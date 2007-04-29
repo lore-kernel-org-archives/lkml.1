@@ -1,155 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXD2U5I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXD2U5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161224AbXD2U5I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:57:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161113AbXD2U5H
+	id S1161228AbXD2U5d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161227AbXD2U5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:57:07 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:49437 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161224AbXD2U5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:57:02 -0400
-Message-id: <2404076572497619881@wsc.cz>
-In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 6/21] Char: cyclades, irq is int
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 22:57:00 +0200 (CEST)
+	Sun, 29 Apr 2007 16:57:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:18130 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161172AbXD2U5b convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 16:57:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=Etc84KBtIqjSkl+cZ5v7S/MRV5k6SCPCI1BonQNKhVunzX71X/Te05uUH7Ijn5MF531KpmTl6NMZElJ6LJbleAZvMeGZlz5ggMQ/BUlChKHsAP/0tyw1Gm6cX/aE06Pb39sOmMg+CcNF6PR4WlSZJ+kqX+j9P6HL6ygPluZAW8s=
+Date: Sun, 29 Apr 2007 22:56:57 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-Id: <20070429225657.a501ab5a.diegocg@gmail.com>
+In-Reply-To: <20070429201729.GQ3468@stusta.de>
+References: <20070428195320.GZ3468@stusta.de>
+	<20070428202701.GA30343@flint.arm.linux.org.uk>
+	<20070428224904.GE3468@stusta.de>
+	<alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
+	<p73d51n1fup.fsf@bingen.suse.de>
+	<alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
+	<20070429173500.GA30248@one.firstfloor.org>
+	<alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
+	<20070429180909.GA30604@one.firstfloor.org>
+	<20070429214007.9ea12e96.diegocg@gmail.com>
+	<20070429201729.GQ3468@stusta.de>
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, irq is int
+El Sun, 29 Apr 2007 22:17:29 +0200, Adrian Bunk <bunk@stusta.de> escribió:
 
-don't fetch it to uchar
+> Bugzilla might not be perfect, but it works and it's better than doing 
+> it by hand.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+The good thing about the wiki is that it doesn't exclude bugzilla. It's
+just a "regressions list", it doesn't intends to replace bugzilla. If a bug
+doesn't gets fixed for a while, I don't think it's very useful to keep it
+forever in the list like you do in the bugzilla, because I don't think
+it's possible to fix every single bug, and it steals you time to fix bugs
+that you are able to fix.
 
----
-commit 34705e1c32f10d42a1d4b7e2b3da93321bd20625
-tree d32188cad2366036c71f140b123d50c8f748b3fa
-parent 85e1e6d0a4acbcedf00e9f2fc6b71d66179dc382
-author Jiri Slaby <jirislaby@gmail.com> Wed, 25 Apr 2007 14:15:57 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Fri, 27 Apr 2007 13:15:01 +0200
-
- drivers/char/cyclades.c |   30 ++++++++++++------------------
- 1 files changed, 12 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index a79a4b2..c12dbb1 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -4916,7 +4916,7 @@ static int __devinit cy_init_Ze(unsigned long cy_pci_phys0,
- 	/* set cy_card */
- 	cy_card[j].base_addr = cy_pci_addr2;
- 	cy_card[j].ctl_addr = cy_pci_addr0;
--	cy_card[j].irq = (int)cy_pci_irq;
-+	cy_card[j].irq = cy_pci_irq;
- 	cy_card[j].bus_index = 1;
- 	cy_card[j].first_line = cy_next_channel;
- 	cy_card[j].num_chips = -1;
-@@ -4929,8 +4929,7 @@ static int __devinit cy_init_Ze(unsigned long cy_pci_phys0,
- 	if ((cy_pci_irq != 0) && (cy_pci_irq != 255))
- 		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
- 			j + 1, (ulong) cy_pci_phys2,
--			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1),
--			(int)cy_pci_irq);
-+			(ulong) (cy_pci_phys2 + CyPCI_Ze_win - 1), cy_pci_irq);
- 	else
- #endif				/* CONFIG_CYZ_INTR */
- 		printk("Cyclades-Ze/PCI #%d: 0x%lx-0x%lx, ",
-@@ -4950,7 +4949,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		const struct pci_device_id *ent)
- {
- 	unsigned char cyy_rev_id;
--	unsigned char cy_pci_irq;
-+	int cy_pci_irq;
- 	__u32 cy_pci_phys0, cy_pci_phys2, mailbox;
- 	void __iomem *cy_pci_addr0, *cy_pci_addr2;
- 	unsigned int device_id;
-@@ -4976,8 +4975,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- #ifdef CY_PCI_DEBUG
- 		printk("Cyclom-Y/PCI (bus=0x0%x, pci_id=0x%x, ",
- 			pdev->bus->number, pdev->devfn);
--		printk("rev_id=%d) IRQ%d\n",
--			cyy_rev_id, (int)cy_pci_irq);
-+		printk("rev_id=%d) IRQ%d\n", cyy_rev_id, cy_pci_irq);
- 		printk("Cyclom-Y/PCI:found  winaddr=0x%lx "
- 			"ctladdr=0x%lx\n",
- 			(ulong)cy_pci_phys2, (ulong)cy_pci_phys0);
-@@ -5003,7 +5001,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 			printk("Cyclom-Y/PCI (bus=0x0%x, pci_id=0x%x, ",
- 				pdev->bus->number, pdev->devfn);
- 			printk("rev_id=%d) IRQ%d\n",
--				cyy_rev_id, (int)cy_pci_irq);
-+				cyy_rev_id, cy_pci_irq);
- 			printk("Cyclom-Y/PCI:found  winaddr=0x%lx "
- 				"ctladdr=0x%lx\n",
- 				(ulong)cy_pci_phys2,
-@@ -5065,7 +5063,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		/* set cy_card */
- 		cy_card[j].base_addr = cy_pci_addr2;
- 		cy_card[j].ctl_addr = cy_pci_addr0;
--		cy_card[j].irq = (int)cy_pci_irq;
-+		cy_card[j].irq = cy_pci_irq;
- 		cy_card[j].bus_index = 1;
- 		cy_card[j].first_line = cy_next_channel;
- 		cy_card[j].num_chips = cy_pci_nchan / 4;
-@@ -5101,8 +5099,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		/* print message */
- 		printk("Cyclom-Y/PCI #%d: 0x%lx-0x%lx, IRQ%d, ",
- 			j + 1, (ulong)cy_pci_phys2,
--			(ulong) (cy_pci_phys2 + CyPCI_Ywin - 1),
--			(int)cy_pci_irq);
-+			(ulong) (cy_pci_phys2 + CyPCI_Ywin - 1), cy_pci_irq);
- 		printk("%d channels starting from port %d.\n",
- 			cy_pci_nchan, cy_next_channel);
- 		for (j = cy_next_channel;
-@@ -5114,8 +5111,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		/* print message */
- 		printk("Cyclades-Z/PCI (bus=0x0%x, pci_id=0x%x, ",
- 			pdev->bus->number, pdev->devfn);
--		printk("rev_id=%d) IRQ%d\n",
--			cyy_rev_id, (int)cy_pci_irq);
-+		printk("rev_id=%d) IRQ%d\n", cyy_rev_id, cy_pci_irq);
- 		printk("Cyclades-Z/PCI: found winaddr=0x%lx "
- 			"ctladdr=0x%lx\n",
- 			(ulong)cy_pci_phys2, (ulong)cy_pci_phys0);
-@@ -5126,8 +5122,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- #ifdef CY_PCI_DEBUG
- 		printk("Cyclades-Z/PCI (bus=0x0%x, pci_id=0x%x, ",
- 			pdev->bus->number, pdev->devfn);
--		printk("rev_id=%d) IRQ%d\n",
--			cyy_rev_id, (int)cy_pci_irq);
-+		printk("rev_id=%d) IRQ%d\n", cyy_rev_id, cy_pci_irq);
- 		printk("Cyclades-Z/PCI: found winaddr=0x%lx "
- 			"ctladdr=0x%lx\n",
- 			(ulong) cy_pci_phys2, (ulong) cy_pci_phys0);
-@@ -5144,8 +5139,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		   re-write it to the PCI config. registers.
- 		   This will remain here until we find a permanent
- 		   fix. */
--		pci_write_config_byte(pdev, PCI_INTERRUPT_LINE,
--					cy_pci_irq);
-+		pci_write_config_byte(pdev, PCI_INTERRUPT_LINE, cy_pci_irq);
- 
- 		mailbox = (__u32)readl(&((struct RUNTIME_9060 __iomem *)
- 				cy_pci_addr0)->mail_box_0);
-@@ -5249,7 +5243,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 		/* set cy_card */
- 		cy_card[j].base_addr = cy_pci_addr2;
- 		cy_card[j].ctl_addr = cy_pci_addr0;
--		cy_card[j].irq = (int)cy_pci_irq;
-+		cy_card[j].irq = cy_pci_irq;
- 		cy_card[j].bus_index = 1;
- 		cy_card[j].first_line = cy_next_channel;
- 		cy_card[j].num_chips = -1;
-@@ -5263,7 +5257,7 @@ static int __devinit cy_pci_probe(struct pci_dev *pdev,
- 			printk("Cyclades-8Zo/PCI #%d: 0x%lx-0x%lx, "
- 				"IRQ%d, ", j + 1, (ulong)cy_pci_phys2,
- 				(ulong) (cy_pci_phys2 + CyPCI_Zwin - 1),
--				(int)cy_pci_irq);
-+				cy_pci_irq);
- 		else
- #endif				/* CONFIG_CYZ_INTR */
- 			printk("Cyclades-8Zo/PCI #%d: 0x%lx-0x%lx, ",
+It's not great but it's the best clone of you we've found 8)
