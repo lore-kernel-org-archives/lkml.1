@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161383AbXD2VUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161391AbXD2VVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161383AbXD2VUg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161395AbXD2VUg
+	id S1161391AbXD2VVT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161398AbXD2VVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:20:36 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55390 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161383AbXD2VUG (ORCPT
+	Sun, 29 Apr 2007 17:21:19 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32820 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161391AbXD2VVS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:20:06 -0400
-Date: Sun, 29 Apr 2007 14:19:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-cc: linux-dvb@linuxtv.org, mkruky@linuxtv.org, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Critical points about kernel 2.6.21 and pseudo-authorities
-In-Reply-To: <20070429205925.129920@gmx.net>
-Message-ID: <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
-References: <20070429182209.267430@gmx.net>
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
- <20070429205925.129920@gmx.net>
+	Sun, 29 Apr 2007 17:21:18 -0400
+Date: Sun, 29 Apr 2007 23:21:28 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070429212128.GU3468@stusta.de>
+References: <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com> <20070429201729.GQ3468@stusta.de> <20070429225657.a501ab5a.diegocg@gmail.com> <20070429211028.GT3468@stusta.de> <6bffcb0e0704291416u402668ffo9bcaafb389228981@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6bffcb0e0704291416u402668ffo9bcaafb389228981@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 29, 2007 at 11:16:51PM +0200, Michal Piotrowski wrote:
+> On 29/04/07, Adrian Bunk <bunk@stusta.de> wrote:
+>> On Sun, Apr 29, 2007 at 10:56:57PM +0200, Diego Calleja wrote:
+>> > El Sun, 29 Apr 2007 22:17:29 +0200, Adrian Bunk <bunk@stusta.de> 
+>> escribió:
+>> >
+>> > > Bugzilla might not be perfect, but it works and it's better than doing
+>> > > it by hand.
+>> >
+>> > The good thing about the wiki is that it doesn't exclude bugzilla. It's
+>> > just a "regressions list", it doesn't intends to replace bugzilla. If a 
+>> bug
+>> > doesn't gets fixed for a while, I don't think it's very useful to keep 
+>> it
+>> > forever in the list like you do in the bugzilla, because I don't think
+>> > it's possible to fix every single bug, and it steals you time to fix 
+>> bugs
+>> > that you are able to fix.
+>> >
+>> > It's not great but it's the best clone of you we've found 8)
+>>
+>> What exactly is the purpose of the 2.6.21 regressions list in the Wiki?
+>
+> It's for -stable team.
+>...
 
+Did Greg or Chris say they have spare time for going through this list?
 
-On Sun, 29 Apr 2007, Uwe Bugla wrote:
-> 
-> I have been trying diff and other tools in various variants (except 
-> git-bisect that I cannot handle because I do not understand the practice 
-> of it).
+> Regards,
+> Michal
 
-git bisect is _really_ simple if you already have a git tree anyway. And 
-even if you don't, getting one isn't really hard either. Just do
+cu
+Adrian
 
-	git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git linux-2.6
+-- 
 
-and you have a tree (it will take a little while - it's going to dowload 
-about 170MB or so of stuff, so the initial clone is going to be a bit 
-painful unless you have a fast internet connection).
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Once you have the git tree, assuming that 2.6.21-rc7 worked for you, it's 
-really as easy as just saying
-
-	git bisect start
-	git bisect good v2.6.21-rc7
-	git bisect bad v2.6.21
-
-and git will think for a short while (most of the time is going to be 
-checking out the new tree) and give you a tree to test.
-
-Just build, boot, and test that tree.
-
-If it was fine, do
-
-	git bisect good
-
-and git will pick a new tree to test. And if it wasn't, instead just do 
-"git bisect bad", and git will pick _another_ version to test. Do this a 
-few times, and git will tell you which commit introduced them.
-
-There were just 125 commits in between 2.6.21-rc7 and the final one, so it 
-should be quite quick - bisection basically does a binary search, so doing 
-seven reboots should have you with the result.
-
-The fact that it already works in 2.6.21-git2 obviously means that _I_ end 
-up being less interested, but the -stable tree people would love to hear 
-what broke!
-
-> I like small and effective kernels instead of blown up RAM waste.
-> This is no Windoze, man, this is Linux!
-
-Yes. But if you cannot be polite and *RESPECTFUL*, you won't get anywhere 
-at all.
-
-This is Linux, not Windows. But that also means that those developers that 
-you denigrate aren't getting paid by you, and if you don't show them 
-respect, they'll totally ignore you.
-
-		Linus
