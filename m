@@ -1,74 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030187AbXD2IGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXD2IGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030187AbXD2IGo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbXD2IGn
+	id S932690AbXD2IGh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932478AbXD2IGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:06:43 -0400
-Received: from hoefnix.telenet-ops.be ([195.130.132.54]:43633 "EHLO
-	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785AbXD2IFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:05:45 -0400
-Date: Sun, 29 Apr 2007 10:05:17 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Timur Tabi <timur@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: 2.6.21-rc7-mm2
-In-Reply-To: <20070426134631.7a78b946.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0704291004420.27246@anakin>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
- <46309142.2010907@googlemail.com> <20070426133720.25085207.akpm@linux-foundation.org>
- <20070426134631.7a78b946.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 29 Apr 2007 04:06:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56516 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932690AbXD2IE4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:04:56 -0400
+Date: Sun, 29 Apr 2007 10:03:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Willy Tarreau <w@1wt.eu>, Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070429080359.GA10844@elte.hu>
+References: <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <20070429075436.GZ31925@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429075436.GZ31925@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Apr 2007, Randy Dunlap wrote:
-> On Thu, 26 Apr 2007 13:37:20 -0700 Andrew Morton wrote:
-> > On Thu, 26 Apr 2007 13:47:14 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-> > > Andrew Morton wrote:
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/
-> > > >
-> > > >
-> > > > - this has everything which is in 2.6.21.  Plus more!
-> > > >
-> > > > - a number of nasty bugs were fixed.  This should be (a lot) more stable
-> > > >   than 2.6.21-rc7-mm1.
-> > > >
-> > > >   
-> > > 
-> > > I get this warning here :
-> > > 
-> > > 
-> > > drivers/net/Kconfig:2327:warning: 'select' used by config symbol 
-> > > 'UCC_GETH' refer to undefined symbol 'UCC_FAST'
-> > 
-> > Yes, we get so many of those that I tend to ignore them, assuming that
-> > someone will pick it up and fix it.
-> > 
-> > This one was added by git-powerpc, presumably
-> > 7d776cb596994219584257eb5956b87628e5deaf "QE: automatically select QE
-> > options"
-> 
-> There was a similar problem with PS3_xyz (don't recall exactly
-> which PS3_option it was) that was "solved" by introducing an
-> intermediate config symbol IIRC.  Maybe that trick^W fix can be
-> done here also...
 
-CONFIG_PS3_ADVANCED, commit 3f555c700b6c90f9ac24bc81a4f509583d906278
+* William Lee Irwin III <wli@holomorphy.com> wrote:
 
-Gr{oetje,eeting}s,
+> I think it'd be a good idea to merge scheduler classes before changing 
+> over the policy so future changes to policy have smaller code impact. 
+> Basically, get scheduler classes going with the mainline scheduler.
 
-						Geert
+i've got a split up patch for the class stuff already, but lets first 
+get some wider test-coverage before even thinking about upstream 
+integration. This is all v2.6.22 stuff at the earliest.
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------------------- Sint-Stevens-Woluwestraat 55
-Voice +32-2-2908453 Fax +32-2-7262686 ---------------- B-1130 Brussels, Belgium
+	Ingo
