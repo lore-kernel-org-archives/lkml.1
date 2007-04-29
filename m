@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756365AbXD2LFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXD2LFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756365AbXD2LFe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 07:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbXD2LBG
+	id S1756368AbXD2LFf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 07:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbXD2LAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:01:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52090 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 07:00:50 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52115 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755156AbXD2KxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 06:53:08 -0400
+	id S1755165AbXD2KxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 06:53:13 -0400
 From: Andi Kleen <ak@suse.de>
 References: <200704291252.514680000@suse.de>
 In-Reply-To: <200704291252.514680000@suse.de>
-To: David Rientjes <rientjes@google.com>, Andi Kleen <ak@suse.de>,
-       Paul Jackson <pj@sgi.com>, Christoph Lameter <clameter@engr.sgi.com>,
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
        patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [19/48] x86_64: split remaining fake nodes equally
-Message-Id: <20070429105307.E18A915108@wotan.suse.de>
-Date: Sun, 29 Apr 2007 12:53:07 +0200 (CEST)
+Subject: [PATCH] [23/48] i386: VDSO_PRELINK warning fix
+Message-Id: <20070429105312.33E8015108@wotan.suse.de>
+Date: Sun, 29 Apr 2007 12:53:12 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: David Rientjes <rientjes@google.com>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Extends the numa=fake x86_64 command-line option to split the remaining
-system memory into equal-sized nodes.
+The lguest patches somehow managed to trigger this:
 
-For example:
-numa=fake=2*512,4*	gives two 512M nodes and the remaining system
-			memory is split into four approximately equal
-			chunks.
+In file included from arch/i386/lguest/lguest.c:38:
+include/asm/asm-offsets.h:67:1: warning: "VDSO_PRELINK" redefined
+In file included from include/linux/elf.h:7,
+                 from include/linux/module.h:15,
+                 from include/linux/device.h:21,
+                 from include/linux/interrupt.h:15,
+                 from arch/i386/lguest/lguest.c:27:
+include/asm/elf.h:140:1: warning: this is the location of the previous definition
 
-This is beneficial for systems where the exact size of RAM is unknown or not
-necessarily relevant, but the granularity with which nodes shall be allocated
-is known.
+I assume that using the same identifier twice was a bad idea..
 
+Cc: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: David Rientjes <rientjes@google.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Paul Jackson <pj@sgi.com>
-Cc: Christoph Lameter <clameter@engr.sgi.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
 ---
 
- Documentation/x86_64/boot-options.txt |    4 +++-
- arch/x86_64/mm/numa.c                 |   22 ++++++++++++++++++----
- 2 files changed, 21 insertions(+), 5 deletions(-)
+ arch/i386/kernel/asm-offsets.c  |    2 +-
+ arch/i386/kernel/vsyscall.lds.S |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux/Documentation/x86_64/boot-options.txt
+Index: linux/arch/i386/kernel/asm-offsets.c
 ===================================================================
---- linux.orig/Documentation/x86_64/boot-options.txt
-+++ linux/Documentation/x86_64/boot-options.txt
-@@ -155,7 +155,9 @@ NUMA
- 		depending on the sizes and coefficients listed.  For example:
- 			numa=fake=2*512,1024,4*256
- 		gives two 512M nodes, a 1024M node, and four 256M nodes.  The
--		remaining system RAM is allocated to an additional node.
-+		remaining system RAM is allocated to an additional node.  If
-+		the last character of CMDLINE is a *, the remaining system RAM
-+		is instead divided up equally among its coefficient.
+--- linux.orig/arch/i386/kernel/asm-offsets.c
++++ linux/arch/i386/kernel/asm-offsets.c
+@@ -97,7 +97,7 @@ void foo(void)
+ 		 sizeof(struct tss_struct));
  
-   numa=hotadd=percent
- 		Only allow hotadd memory to preallocate page structures upto
-Index: linux/arch/x86_64/mm/numa.c
+ 	DEFINE(PAGE_SIZE_asm, PAGE_SIZE);
+-	DEFINE(VDSO_PRELINK, VDSO_PRELINK);
++	DEFINE(VDSO_PRELINK_asm, VDSO_PRELINK);
+ 
+ 	OFFSET(crypto_tfm_ctx_offset, crypto_tfm, __crt_ctx);
+ 
+Index: linux/arch/i386/kernel/vsyscall.lds.S
 ===================================================================
---- linux.orig/arch/x86_64/mm/numa.c
-+++ linux/arch/x86_64/mm/numa.c
-@@ -418,11 +418,25 @@ static int __init numa_emulation(unsigne
- done:
- 	if (!num_nodes)
- 		return -1;
--	/* Fill remainder of system RAM with a final node, if appropriate. */
-+	/* Fill remainder of system RAM, if appropriate. */
- 	if (addr < max_addr) {
--		setup_node_range(num_nodes, nodes, &addr, max_addr - addr,
--				 max_addr);
--		num_nodes++;
-+		switch (*(cmdline - 1)) {
-+		case '*':
-+			/* Split remaining nodes into coeff chunks */
-+			if (coeff <= 0)
-+				break;
-+			num_nodes += split_nodes_equally(nodes, &addr, max_addr,
-+							 num_nodes, coeff);
-+			break;
-+		case ',':
-+			/* Do not allocate remaining system RAM */
-+			break;
-+		default:
-+			/* Give one final node */
-+			setup_node_range(num_nodes, nodes, &addr,
-+					 max_addr - addr, max_addr);
-+			num_nodes++;
-+		}
- 	}
- out:
- 	memnode_shift = compute_hash_shift(nodes, num_nodes);
+--- linux.orig/arch/i386/kernel/vsyscall.lds.S
++++ linux/arch/i386/kernel/vsyscall.lds.S
+@@ -7,7 +7,7 @@
+ 
+ SECTIONS
+ {
+-  . = VDSO_PRELINK + SIZEOF_HEADERS;
++  . = VDSO_PRELINK_asm + SIZEOF_HEADERS;
+ 
+   .hash           : { *(.hash) }		:text
+   .gnu.hash       : { *(.gnu.hash) }
+@@ -21,7 +21,7 @@ SECTIONS
+      For the layouts to match, we need to skip more than enough
+      space for the dynamic symbol table et al.  If this amount
+      is insufficient, ld -shared will barf.  Just increase it here.  */
+-  . = VDSO_PRELINK + 0x400;
++  . = VDSO_PRELINK_asm + 0x400;
+ 
+   .text           : { *(.text) }		:text =0x90909090
+   .note		  : { *(.note.*) }		:text :note
