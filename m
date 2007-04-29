@@ -1,91 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755066AbXD2Ixj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbXD2Iz3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755066AbXD2Ixj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXD2Ixj
+	id S1755096AbXD2Iz3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:55:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXD2Iz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:53:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36398 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755065AbXD2Ixi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:53:38 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Back to the future.
-Date: Sun, 29 Apr 2007 10:57:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704290103.38409.rjw@sisk.pl> <alpine.LFD.0.98.0704281640480.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704281640480.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 29 Apr 2007 04:55:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50765 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755087AbXD2Iyo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:54:44 -0400
+Date: Sun, 29 Apr 2007 01:54:43 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, clameter@sgi.com
+Subject: Re: bad_page from quicklist patches
+Message-Id: <20070429015443.c1e31844.pj@sgi.com>
+In-Reply-To: <20070429012202.b0c11d4f.akpm@linux-foundation.org>
+References: <20070429081610.5469.36016.sendpatchset@v0>
+	<20070429012202.b0c11d4f.akpm@linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704291057.48747.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 29 April 2007 01:45, Linus Torvalds wrote:
-> 
-> On Sun, 29 Apr 2007, Rafael J. Wysocki wrote:
-> > 
-> > OK, more precisely: fs-related threads should not try to process their queues,
-> > etc., after the snapshot is done, because that may cause some fs data to be
-> > written at that time and then the fs in question may be corrupted after the
-> > restore.  Not all of the I/O in general, fs data.
-> 
-> But that's not true _either_. That's only true because right now I think 
-> we cannot even suspend to a swapfile (I might be wrong). 
+> That should have been fixed in -mm2
 
-You are.
- 
-> If you have a swapfile on a filesystem, you'd need those fs queues 
-> running!
+Verified.  2.6.21-rc7-mm2 builds and boots on my SN2 (ia64).
 
-No, I don't.  It's done by bmapping the file and writing directly to the
-underlying blockdev.  Otherwise we'd have corrupted filesystems after the
-restore.
-
-Swapfiles are handled this way anyway, so we just use the same code.
-
-> > Well, I'm not sure whether or not that still would have been the case if we had
-> > stopped to freeze kernel threads for the hibernation/suspend.
-> 
-> Did you miss the email where Paul pointed out that Mac/PowerPC didn't use 
-> to do any of this?
-
-No, I didn't.
-
-> And apparently never had any issues with it?
-
-On one platform with a limited subset of device drivers.
-
-> And probably worked more reliably several years ago than suspend/hibernation 
-> does _today_?
-
-I have no problems with the hibernation on my test boxes (six of them), except
-for one network driver that doesn't bother to define a .suspend() callback.
-
-There are problems with the suspend (s2ram), but they are _not_ related to the
-freezing of kernel threads.  Some of them are related to the other issue that
-you have risen, which is that the same callbacks should not be used for the
-suspend and hibernation, and which I think is absolutely valid.  The remaining
-ones are related to the fact that graphic card vendors don't care for us at
-all.
-
-> Ie we do have history of _not_ freezing things.  The freezing came later, 
-> and came with the subsystem that had more problems..
-
-It doesn't have that many problems as you are trying to suggest.  At present,
-the only problems with it happen if someone tries to "improve" it in the way
-I did with the workqueues.
-
-Anyway, the freezing of tasks, including kernel threads, is one of the few
-things on which Pavel, Nigel and me completely agree that they should be done,
-so perhaps you could accept that?
-
-Greetings,
-Rafael
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
