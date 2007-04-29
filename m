@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030370AbXD2QPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXD2QTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030370AbXD2QPp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 12:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030297AbXD2QPp
+	id S1030297AbXD2QTH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 12:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030332AbXD2QTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 12:15:45 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:41895 "EHLO havoc.gtf.org"
+	Sun, 29 Apr 2007 12:19:07 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:41901 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030370AbXD2QPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 12:15:43 -0400
-Date: Sun, 29 Apr 2007 12:15:42 -0400
+	id S1030297AbXD2QTB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 12:19:01 -0400
+Date: Sun, 29 Apr 2007 12:19:01 -0400
 From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
+To: netdev@vger.kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata updates
-Message-ID: <20070429161542.GA12501@havoc.gtf.org>
+Subject: [git patches] net driver updates
+Message-ID: <20070429161901.GA12609@havoc.gtf.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -25,212 +25,444 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 (just sent this upstream to Linus and Andrew)
 
-Noteworthy changes:
-* remove combined mode PCI quirk.  IDE driver selection (libata or
-  old-IDE) is now determined purely by module load order.
-* new driver API, that is far more like other kernel APIs:
-  alloc...register...unregister...free.  
-* More Alan PATA work
-* Lots of other little bits.
+The only really notable thing is the merging of the wireless driver for
+the OLPC, libertas.
  
-
 Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-linus
 
 to receive the following updates:
 
- arch/i386/defconfig                 |    1 -
- arch/parisc/configs/c3000_defconfig |    1 -
- arch/x86_64/defconfig               |    1 -
- drivers/ata/Kconfig                 |   43 +-
- drivers/ata/Makefile                |    1 +
- drivers/ata/ahci.c                  |  473 ++++++++---------
- drivers/ata/ata_generic.c           |   32 +-
- drivers/ata/ata_piix.c              |   56 +--
- drivers/ata/libata-core.c           | 1015 ++++++++++++++++++++++++-----------
- drivers/ata/libata-eh.c             |   15 +-
- drivers/ata/libata-scsi.c           |   85 +++-
- drivers/ata/libata-sff.c            |  631 ++++++++++++++--------
- drivers/ata/libata.h                |   10 +-
- drivers/ata/pata_ali.c              |   74 +---
- drivers/ata/pata_amd.c              |   89 ++--
- drivers/ata/pata_artop.c            |   26 +-
- drivers/ata/pata_atiixp.c           |   26 +-
- drivers/ata/pata_cmd640.c           |  312 +++++++++++
- drivers/ata/pata_cmd64x.c           |   34 +-
- drivers/ata/pata_cs5520.c           |  145 +++---
- drivers/ata/pata_cs5530.c           |   15 +-
- drivers/ata/pata_cs5535.c           |   24 +-
- drivers/ata/pata_cypress.c          |   14 +-
- drivers/ata/pata_efar.c             |   31 +-
- drivers/ata/pata_hpt366.c           |   26 +-
- drivers/ata/pata_hpt37x.c           |  381 ++++++--------
- drivers/ata/pata_hpt3x2n.c          |   74 ++-
- drivers/ata/pata_hpt3x3.c           |   22 +-
- drivers/ata/pata_isapnp.c           |   44 +-
- drivers/ata/pata_it8213.c           |   36 +-
- drivers/ata/pata_it821x.c           |   36 +-
- drivers/ata/pata_ixp4xx_cf.c        |   40 +-
- drivers/ata/pata_legacy.c           |   45 +-
- drivers/ata/pata_marvell.c          |   20 +-
- drivers/ata/pata_mpc52xx.c          |   49 +-
- drivers/ata/pata_mpiix.c            |   40 +-
- drivers/ata/pata_netcell.c          |   31 +-
- drivers/ata/pata_ns87410.c          |    6 +-
- drivers/ata/pata_oldpiix.c          |    6 +-
- drivers/ata/pata_opti.c             |    5 +-
- drivers/ata/pata_optidma.c          |   54 +-
- drivers/ata/pata_pcmcia.c           |   77 ++-
- drivers/ata/pata_pdc2027x.c         |  158 +++---
- drivers/ata/pata_pdc202xx_old.c     |   45 +--
- drivers/ata/pata_platform.c         |   44 +-
- drivers/ata/pata_qdi.c              |   47 +-
- drivers/ata/pata_radisys.c          |   37 +--
- drivers/ata/pata_rz1000.c           |   28 +-
- drivers/ata/pata_sc1200.c           |    1 +
- drivers/ata/pata_scc.c              |   51 +--
- drivers/ata/pata_serverworks.c      |   34 +-
- drivers/ata/pata_sil680.c           |   11 +-
- drivers/ata/pata_sis.c              |  109 +---
- drivers/ata/pata_sl82c105.c         |    2 +-
- drivers/ata/pata_triflex.c          |    4 +-
- drivers/ata/pata_via.c              |   27 +-
- drivers/ata/pata_winbond.c          |  101 ++--
- drivers/ata/pdc_adma.c              |   85 ++--
- drivers/ata/sata_inic162x.c         |   86 ++--
- drivers/ata/sata_mv.c               |  213 ++++----
- drivers/ata/sata_nv.c               |  130 ++---
- drivers/ata/sata_promise.c          |  398 ++++++++-------
- drivers/ata/sata_qstor.c            |   62 +--
- drivers/ata/sata_sil.c              |  118 ++--
- drivers/ata/sata_sil24.c            |  122 ++---
- drivers/ata/sata_sis.c              |   50 +--
- drivers/ata/sata_svw.c              |  107 ++--
- drivers/ata/sata_sx4.c              |  150 +++---
- drivers/ata/sata_uli.c              |   65 +--
- drivers/ata/sata_via.c              |  217 +++-----
- drivers/ata/sata_vsc.c              |   72 +--
- drivers/pci/quirks.c                |  113 ----
- drivers/scsi/ipr.c                  |    3 +-
- include/linux/ata.h                 |   10 +
- include/linux/ioport.h              |    1 -
- include/linux/libata.h              |   78 ++--
- include/linux/pci.h                 |    1 +
- include/linux/pci_ids.h             |    1 -
- kernel/resource.c                   |   21 -
- lib/devres.c                        |   26 +
- 80 files changed, 3656 insertions(+), 3318 deletions(-)
- create mode 100644 drivers/ata/pata_cmd640.c
+ Documentation/DocBook/kernel-api.tmpl          |    6 +
+ Documentation/networking/bcm43xx.txt           |   97 +-
+ MAINTAINERS                                    |   20 +-
+ arch/mips/mips-boards/sim/Makefile             |    3 +-
+ arch/mips/mips-boards/sim/sim_platform.c       |   35 +
+ arch/powerpc/sysdev/qe_lib/ucc_fast.c          |    3 +
+ crypto/michael_mic.c                           |    4 +-
+ drivers/net/3c509.c                            |    1 -
+ drivers/net/Kconfig                            |   15 +-
+ drivers/net/Makefile                           |    2 +-
+ drivers/net/chelsio/Makefile                   |    4 +-
+ drivers/net/chelsio/common.h                   |    6 +-
+ drivers/net/chelsio/cphy.h                     |   16 +-
+ drivers/net/chelsio/gmac.h                     |   10 +-
+ drivers/net/chelsio/ixf1010.c                  |  505 -----
+ drivers/net/chelsio/mac.c                      |    2 +-
+ drivers/net/chelsio/mv88e1xxx.c                |    8 +-
+ drivers/net/chelsio/mv88x201x.c                |    8 +-
+ drivers/net/chelsio/my3126.c                   |    8 +-
+ drivers/net/chelsio/pm3393.c                   |    8 +-
+ drivers/net/chelsio/subr.c                     |  199 ++-
+ drivers/net/chelsio/vsc7326.c                  |    2 +-
+ drivers/net/chelsio/vsc8244.c                  |  367 ----
+ drivers/net/chelsio/vsc8244_reg.h              |  172 --
+ drivers/net/e100.c                             |  159 +-
+ drivers/net/e1000/e1000.h                      |    3 -
+ drivers/net/e1000/e1000_ethtool.c              |   34 +-
+ drivers/net/e1000/e1000_main.c                 |   45 +-
+ drivers/net/e1000/e1000_param.c                |    4 +-
+ drivers/net/eexpress.c                         |    9 +-
+ drivers/net/ehea/ehea.h                        |   42 +-
+ drivers/net/ehea/ehea_ethtool.c                |  115 +-
+ drivers/net/ehea/ehea_main.c                   |  940 +++++---
+ drivers/net/ehea/ehea_phyp.c                   |    6 +-
+ drivers/net/ehea/ehea_phyp.h                   |    6 +-
+ drivers/net/ehea/ehea_qmr.c                    |  184 ++-
+ drivers/net/ehea/ehea_qmr.h                    |   16 +-
+ drivers/net/hamradio/baycom_ser_fdx.c          |   13 +-
+ drivers/net/ibmveth.c                          |   10 +-
+ drivers/net/ixgb/ixgb.h                        |    3 -
+ drivers/net/ixgb/ixgb_ethtool.c                |    4 +-
+ drivers/net/ixgb/ixgb_main.c                   |    4 +-
+ drivers/net/ixgb/ixgb_param.c                  |    8 +-
+ drivers/net/mii.c                              |   57 +
+ drivers/net/mipsnet.c                          |   53 +-
+ drivers/net/mv643xx_eth.c                      |   59 +-
+ drivers/net/mv643xx_eth.h                      |    4 -
+ drivers/net/netxen/netxen_nic.h                |  189 +-
+ drivers/net/netxen/netxen_nic_ethtool.c        |  212 ++-
+ drivers/net/netxen/netxen_nic_hdr.h            |   12 +
+ drivers/net/netxen/netxen_nic_hw.c             |  401 +++-
+ drivers/net/netxen/netxen_nic_hw.h             |   85 +-
+ drivers/net/netxen/netxen_nic_init.c           |  130 +-
+ drivers/net/netxen/netxen_nic_isr.c            |  101 +-
+ drivers/net/netxen/netxen_nic_main.c           |  769 ++++---
+ drivers/net/netxen/netxen_nic_niu.c            |  168 +-
+ drivers/net/netxen/netxen_nic_phan_reg.h       |  134 +-
+ drivers/net/pcnet32.c                          |  159 +-
+ drivers/net/phy/mdio_bus.c                     |   19 +-
+ drivers/net/phy/phy.c                          |  194 ++-
+ drivers/net/phy/phy_device.c                   |  114 +-
+ drivers/net/qla3xxx.c                          |  371 +++-
+ drivers/net/qla3xxx.h                          |   33 +-
+ drivers/net/s2io-regs.h                        |    2 +-
+ drivers/net/s2io.c                             |   78 +-
+ drivers/net/s2io.h                             |    8 +-
+ drivers/net/sb1250-mac.c                       |  294 ++-
+ drivers/net/sgiseeq.c                          |   28 +-
+ drivers/net/sk98lin/skge.c                     |   20 +-
+ drivers/net/skfp/h/lnkstat.h                   |   84 -
+ drivers/net/skge.c                             |   30 +-
+ drivers/net/skge.h                             |   10 +-
+ drivers/net/smc911x.c                          |    2 +-
+ drivers/net/tc35815.c                          | 2554 ++++++++++++++++------
+ drivers/net/tulip/dmfe.c                       |  118 +-
+ drivers/net/tulip/interrupt.c                  |    4 +-
+ drivers/net/tulip/media.c                      |   40 +-
+ drivers/net/tulip/tulip.h                      |    9 +-
+ drivers/net/tulip/tulip_core.c                 |    6 +-
+ drivers/net/tulip/winbond-840.c                |    2 +-
+ drivers/net/ucc_geth.c                         |  946 +++-----
+ drivers/net/ucc_geth.h                         |  114 +-
+ drivers/net/ucc_geth_mii.c                     |  279 +++
+ drivers/net/ucc_geth_mii.h                     |  100 +
+ drivers/net/ucc_geth_phy.c                     |  785 -------
+ drivers/net/ucc_geth_phy.h                     |  217 --
+ drivers/net/wan/hdlc_cisco.c                   |   29 +-
+ drivers/net/wan/hdlc_fr.c                      |   18 +-
+ drivers/net/wireless/Kconfig                   |   13 +
+ drivers/net/wireless/Makefile                  |    1 +
+ drivers/net/wireless/README                    |   25 -
+ drivers/net/wireless/airo.c                    |   70 +-
+ drivers/net/wireless/bcm43xx/bcm43xx.h         |    3 +
+ drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c |    4 +-
+ drivers/net/wireless/bcm43xx/bcm43xx_main.c    |    4 +-
+ drivers/net/wireless/bcm43xx/bcm43xx_phy.c     |   23 +-
+ drivers/net/wireless/bcm43xx/bcm43xx_phy.h     |    4 +
+ drivers/net/wireless/bcm43xx/bcm43xx_radio.c   |  196 ++-
+ drivers/net/wireless/hostap/hostap_ap.c        |    4 +-
+ drivers/net/wireless/hostap/hostap_common.h    |    4 +-
+ drivers/net/wireless/hostap/hostap_cs.c        |    9 +-
+ drivers/net/wireless/hostap/hostap_hw.c        |    4 +-
+ drivers/net/wireless/hostap/hostap_main.c      |    4 +-
+ drivers/net/wireless/hostap/hostap_pci.c       |    2 +-
+ drivers/net/wireless/hostap/hostap_plx.c       |    2 +-
+ drivers/net/wireless/ipw2100.c                 |    4 +-
+ drivers/net/wireless/ipw2200.c                 |   47 +
+ drivers/net/wireless/libertas/11d.c            |  754 +++++++
+ drivers/net/wireless/libertas/11d.h            |  105 +
+ drivers/net/wireless/libertas/LICENSE          |   16 +
+ drivers/net/wireless/libertas/Makefile         |   21 +
+ drivers/net/wireless/libertas/README           | 1044 +++++++++
+ drivers/net/wireless/libertas/assoc.c          |  588 +++++
+ drivers/net/wireless/libertas/assoc.h          |   30 +
+ drivers/net/wireless/libertas/cmd.c            | 1958 +++++++++++++++++
+ drivers/net/wireless/libertas/cmdresp.c        | 1031 +++++++++
+ drivers/net/wireless/libertas/debugfs.c        | 1935 +++++++++++++++++
+ drivers/net/wireless/libertas/debugfs.h        |    6 +
+ drivers/net/wireless/libertas/decl.h           |   83 +
+ drivers/net/wireless/libertas/defs.h           |  369 ++++
+ drivers/net/wireless/libertas/dev.h            |  403 ++++
+ drivers/net/wireless/libertas/ethtool.c        |  184 ++
+ drivers/net/wireless/libertas/fw.c             |  361 +++
+ drivers/net/wireless/libertas/fw.h             |   13 +
+ drivers/net/wireless/libertas/host.h           |  338 +++
+ drivers/net/wireless/libertas/hostcmd.h        |  693 ++++++
+ drivers/net/wireless/libertas/if_bootcmd.c     |   38 +
+ drivers/net/wireless/libertas/if_usb.c         |  952 ++++++++
+ drivers/net/wireless/libertas/if_usb.h         |  109 +
+ drivers/net/wireless/libertas/ioctl.c          | 2500 +++++++++++++++++++++
+ drivers/net/wireless/libertas/join.c           | 1055 +++++++++
+ drivers/net/wireless/libertas/join.h           |   64 +
+ drivers/net/wireless/libertas/main.c           | 1258 +++++++++++
+ drivers/net/wireless/libertas/radiotap.h       |   57 +
+ drivers/net/wireless/libertas/rx.c             |  459 ++++
+ drivers/net/wireless/libertas/sbi.h            |   40 +
+ drivers/net/wireless/libertas/scan.c           | 2044 +++++++++++++++++
+ drivers/net/wireless/libertas/scan.h           |  216 ++
+ drivers/net/wireless/libertas/thread.h         |   52 +
+ drivers/net/wireless/libertas/tx.c             |  285 +++
+ drivers/net/wireless/libertas/types.h          |  289 +++
+ drivers/net/wireless/libertas/version.h        |    8 +
+ drivers/net/wireless/libertas/wext.c           | 2769 ++++++++++++++++++++++++
+ drivers/net/wireless/libertas/wext.h           |  147 ++
+ drivers/net/wireless/todo.txt                  |   15 -
+ drivers/net/wireless/zd1211rw/zd_chip.c        |   47 +-
+ drivers/net/wireless/zd1211rw/zd_chip.h        |    1 +
+ drivers/net/wireless/zd1211rw/zd_mac.c         |   23 +-
+ drivers/net/wireless/zd1211rw/zd_rf.c          |   18 +-
+ drivers/net/wireless/zd1211rw/zd_rf.h          |   11 +-
+ drivers/net/wireless/zd1211rw/zd_rf_al2230.c   |   91 +-
+ drivers/net/wireless/zd1211rw/zd_rf_al7230b.c  |  317 +++-
+ drivers/net/wireless/zd1211rw/zd_rf_rf2959.c   |    4 +-
+ drivers/net/wireless/zd1211rw/zd_usb.c         |   24 +-
+ include/asm-powerpc/ucc_fast.h                 |    3 +
+ include/linux/fsl_devices.h                    |   39 -
+ include/linux/hdlc.h                           |    3 +-
+ include/linux/pci_ids.h                        |    2 +
+ include/linux/phy.h                            |    1 +
+ include/linux/wireless.h                       |    2 +-
+ include/net/ieee80211.h                        |    4 +-
+ include/net/ieee80211_crypt.h                  |    4 +-
+ include/net/ieee80211_radiotap.h               |   77 +-
+ net/ieee80211/ieee80211_crypt.c                |    2 +-
+ net/ieee80211/ieee80211_crypt_ccmp.c           |    4 +-
+ net/ieee80211/ieee80211_crypt_tkip.c           |    6 +-
+ net/ieee80211/ieee80211_crypt_wep.c            |    2 +-
+ net/ieee80211/ieee80211_module.c               |    5 +-
+ net/ieee80211/ieee80211_rx.c                   |    4 +-
+ net/ieee80211/ieee80211_wx.c                   |    4 +-
+ 170 files changed, 29413 insertions(+), 6144 deletions(-)
+ create mode 100644 arch/mips/mips-boards/sim/sim_platform.c
+ delete mode 100644 drivers/net/chelsio/ixf1010.c
+ delete mode 100644 drivers/net/chelsio/vsc8244.c
+ delete mode 100644 drivers/net/chelsio/vsc8244_reg.h
+ delete mode 100644 drivers/net/skfp/h/lnkstat.h
+ create mode 100644 drivers/net/ucc_geth_mii.c
+ create mode 100644 drivers/net/ucc_geth_mii.h
+ delete mode 100644 drivers/net/ucc_geth_phy.c
+ delete mode 100644 drivers/net/ucc_geth_phy.h
+ delete mode 100644 drivers/net/wireless/README
+ create mode 100644 drivers/net/wireless/libertas/11d.c
+ create mode 100644 drivers/net/wireless/libertas/11d.h
+ create mode 100644 drivers/net/wireless/libertas/LICENSE
+ create mode 100644 drivers/net/wireless/libertas/Makefile
+ create mode 100644 drivers/net/wireless/libertas/README
+ create mode 100644 drivers/net/wireless/libertas/assoc.c
+ create mode 100644 drivers/net/wireless/libertas/assoc.h
+ create mode 100644 drivers/net/wireless/libertas/cmd.c
+ create mode 100644 drivers/net/wireless/libertas/cmdresp.c
+ create mode 100644 drivers/net/wireless/libertas/debugfs.c
+ create mode 100644 drivers/net/wireless/libertas/debugfs.h
+ create mode 100644 drivers/net/wireless/libertas/decl.h
+ create mode 100644 drivers/net/wireless/libertas/defs.h
+ create mode 100644 drivers/net/wireless/libertas/dev.h
+ create mode 100644 drivers/net/wireless/libertas/ethtool.c
+ create mode 100644 drivers/net/wireless/libertas/fw.c
+ create mode 100644 drivers/net/wireless/libertas/fw.h
+ create mode 100644 drivers/net/wireless/libertas/host.h
+ create mode 100644 drivers/net/wireless/libertas/hostcmd.h
+ create mode 100644 drivers/net/wireless/libertas/if_bootcmd.c
+ create mode 100644 drivers/net/wireless/libertas/if_usb.c
+ create mode 100644 drivers/net/wireless/libertas/if_usb.h
+ create mode 100644 drivers/net/wireless/libertas/ioctl.c
+ create mode 100644 drivers/net/wireless/libertas/join.c
+ create mode 100644 drivers/net/wireless/libertas/join.h
+ create mode 100644 drivers/net/wireless/libertas/main.c
+ create mode 100644 drivers/net/wireless/libertas/radiotap.h
+ create mode 100644 drivers/net/wireless/libertas/rx.c
+ create mode 100644 drivers/net/wireless/libertas/sbi.h
+ create mode 100644 drivers/net/wireless/libertas/scan.c
+ create mode 100644 drivers/net/wireless/libertas/scan.h
+ create mode 100644 drivers/net/wireless/libertas/thread.h
+ create mode 100644 drivers/net/wireless/libertas/tx.c
+ create mode 100644 drivers/net/wireless/libertas/types.h
+ create mode 100644 drivers/net/wireless/libertas/version.h
+ create mode 100644 drivers/net/wireless/libertas/wext.c
+ create mode 100644 drivers/net/wireless/libertas/wext.h
+ delete mode 100644 drivers/net/wireless/todo.txt
 
-Alan Cox (37):
-      libata: dev_config does not need ap and adev passing
-      libata: cable detection fixes
-      pata_cmd640: CMD640 PCI support
-      pata_it8213: Cable detect
-      pata_marvell: Cable and reset fixes
-      pata_sis: Clean up using cable_detect methods
-      pata_via: Use cable_detect method
-      pata_cmd640: Multiple updates
-      libata: Restore Kconfig updated experimental levels and correct
-      libata-core: fix comments on cable type
-      sata_promise: Switch to cable method, clean up some bits as a result
-      pata_platform: Add cable_detect method
-      pata_rz1000: support cable_detect
-      pata_sc1200: restore cable type
-      pata_radisys: support cable_detect
-      pata_atiixp: support ->cable_detect
-      pata_efar: support ->cable_detect
-      pata_hpt366: support ->cable_detect
-      pata_hpt37x: Updates from drivers/ide work
-      pata: expose set_mode method so it can be wrapped
-      libata-core: Fix the iordy methods
-      sata_sil: First step to removing ->post_set_mode
-      libata: Change prototype of mode_filter to remove ata_port*
-      pcmcia - spot slave decode flaws (for testing)
-      pata_ali: remove all the crap again and switch to cable_detect method
-      pata_qdI: restore cable detect
-      pata_netcell: re-remove all the crud
-      pata_sl82c105: restore cable detect method
-      pata_winbond: restore cable method
-      pata_optidma: rework for cable detect and to remove post_set_mode()
-      pata: cable methods
-      pata_winbond
-      pata_pdc2027x: Updates
-      libata: HPA support
-      ata_timing: ensure t->cycle is always correct
-      pata_hpt3x2n: Add HPT371N support and other bits
-      pata_hpt37x: Further small fixes
+Adrian Bunk (3):
+      make drivers/net/s2io.c:vlan_strip_flag static
+      drivers/net/qla3xxx.c: make 2 functions static
+      make drivers/net/qla3xxx.c:PHY_DEVICES[] static
 
-Andrew Morton (3):
-      git-libata-all-ipr-fix
-      ata: printk warning fixes
-      drivers/ata/pata_cmd640.c: fix build with CONFIG_PM=n
+Ahmed S. Darwish (2):
+      e1000: Use ARRAY_SIZE macro when appropriate
+      ixgb: Use ARRAY_SIZE macro when appropriate.
 
-Conke Hu (1):
-      ahci.c: remove non-existing SB600 raid id (re-send)
+Andrew Morton (1):
+      ipw2200: fix ieee80211_get_geo typo
+
+Arjan van de Ven (1):
+      user of the jiffies rounding code: e1000
+
+Atsushi Nemoto (3):
+      tc35815 driver update (take 2)
+      tc35815: Fix an usage of streaming DMA API.
+      tc35815: Zap changelog from source code
+
+Auke Kok (1):
+      e1000: list e1000-devel mailing list in MAINTAINERS
+
+Daniel Drake (10):
+      zd1211rw: Use compare_ether_addr()
+      zd1211rw: Add AL2230S RF support
+      zd1211rw: More device IDs
+      zd1211rw: Mark some data const
+      zd1211rw: Don't handle broken frames in monitor mode
+      zd1211rw: Add another ID for Linksys WUSBF54G
+      zd1211rw: Remove invalid CR write during ZD1211 phy reset
+      zd1211rw: rework band edge patching
+      zd1211rw: Add AL7230B RF support for ZD1211B
+      zd1211rw: Add ID for ZyXEL AG-220
+
+Deepak Saxena (1):
+      Netpoll support for Sibyte MAC
 
 Dmitriy Monakhov (1):
-      libata: handle ata_pci_device_do_resume() failure while resuming
+      sk98lin: handle pci_enable_device() return value in skge_resume()
 
-Jeff Garzik (8):
-      [libata] sata_mv: remove extra braces
-      [libata] export sata_print_link_status()
-      [libata] sata_mv: clean up DMA boundary issues, turn on 64-bit DMA
-      [libata] Update several PATA drivers for new ->cable_detect hook
-      [libata] More PATA driver ->cable_detect support
-      [libata] sata_mv: support ->cable_detect
-      [libata] turn on !IORDY filter
-      libata/IDE: remove combined mode quirk
+Don Fry (2):
+      pcnet32: only allocate init_block dma consistent
+      pcnet32: change to use netdev_priv
 
-Mark Lord (3):
-      RESEND: libata: check cdb len per dev instead of per host
-      libata: add support for READ/WRITE LONG
-      libata: Handle drives that require a spin-up command before first access
+Folkert van Heusden (1):
+      baycom_ser_fdx: also allow i/o ports >= 0x1000 and enhanced failure logging
 
-Mikael Pettersson (4):
-      sata_promise: add missing cable_detect hooks
-      sata_promise: separate SATA and PATA ops
-      sata_promise: decode and report error reasons
-      sata_promise: fix error decode regression
+Gabriel Paubert (1):
+      mv643xx_eth: make eth_port_uc_addr_{get,set}() calls symmetric
 
-Milind Arun Choudhary (1):
-      SPIN_LOCK_UNLOCKED cleanup in drivers/ata/pata_winbond.c
+Jan-Bernd Themann (5):
+      ehea: dynamic add / remove port
+      ehea: NAPI multi queue TX/RX path for SMP
+      ehea: fix for dynamic lpar support
+      ehea: code cleanup
+      ehea: removing unused functionality
 
-Morrison, Tom (1):
-      Support for Marvell 7042 Chip
+Jean Delvare (1):
+      strlcpy is smart enough
 
-Robert Hancock (2):
-      libata: warn if speed limited due to 40-wire cable
-      sata_nv: don't read shadow registers when in ADMA mode
+Jesse Brandeburg (2):
+      e100: allow bad MAC address when running with invalid eeprom csum
+      e100: Optionally use I/O mode only to access register space
 
-Robin H\. Johnson (1):
-      Add notation that the Asus W5F laptop has a short cable instead of 80-wire.
+John W. Linville (2):
+      wireless: remove obsolete text files
+      libertas: fix build breakage from netdev class_device -> device
 
-Tejun Heo (24):
-      iomap: implement pcim_iounmap_regions()
-      libata: hardreset on SERR_INTERNAL
-      ahci: implement ata_save/restore_initial_config()
-      ahci: move port_map handling to ahci_save_initial_config()
-      libata: fix native mode disabled port handling
-      libata: improve AC_ERR_DEV handling for ->post_internal_cmd
-      libata: kill type mismatch compile warning
-      ahci: add PCI ID for new VIA chip
-      libata: allocate ap separately from shost
-      libata: separate out ata_host_start()
-      libata: separate out ata_host_alloc() and ata_host_register()
-      libata: implement ata_host_alloc_pinfo() and ata_host_register()
-      libata: convert legacy PCI host handling to new init model
-      libata: convert native PCI host handling to new init model
-      libata: add init helpers including ata_pci_prepare_native_host()
-      libata: convert drivers with combined SATA/PATA ports to new init model
-      libata: convert ata_pci_init_native_mode() users to new init model
-      libata: convert the remaining SATA drivers to new init model
-      libata: convert the remaining PATA drivers to new init model
-      libata: kill probe_ent and related helpers
-      pata_amd: remove contamination added during cable_detect conversion
-      libata: add missing call to ->cable_detect() in new EH path
-      ahci: consolidate common port flags
-      libata: separate ATA_EHI_DID_RESET into DID_SOFTRESET and DID_HARDRESET
+Jouni Malinen (2):
+      hostap: Add D-Link DWL-650 Rev. P1 product id
+      Update my email address from jkmaline@cc.hut.fi to j@w1.fi
+
+Kim Phillips (3):
+      phylib: add RGMII-ID interface mode definition
+      ucc_geth: migrate ucc_geth to phylib
+      ucc_geth: version 1.1
+
+Krzysztof Halasa (1):
+      Generic HDLC sparse annotations
+
+Ladislav Michl (1):
+      Add support for Seeq 8003 on Challenge S Mezz board.
+
+Larry Finger (5):
+      bcm43xx: Update Documentation/bcm43xx.txt
+      bcm43xx:Eliminate some 'G Mode Enable' magic numbers
+      bcm43xx: Change initialization for 2050 radios
+      ieee80211-crypt: Make some TKIP and CCMP error logging conditional
+      ieee80211: add missing global needed by IEEE80211_DEBUG_XXXX
+
+Marcelo Tosatti (1):
+      Marvell Libertas 8388 802.11b/g USB driver
+
+Marcin Juszkiewicz (1):
+      hostap_cs: support ADLINK 345 CF
+
+Mark Mason (1):
+      add NAPI support to sb1250-mac.c
+
+Maxim Levitsky (2):
+      dmfe: add support for suspend/resume
+      dmfe: add support for Wake on lan
+
+Michael Barkowski (1):
+      ucc_geth: Fix interrupt coalescing size and alignment
+
+Michael Ellerman (1):
+      Fix sparse errors in drivers/net/ibmveth.c
+
+Michael Reiss (2):
+      ucc_geth: NAPI-related bug fixes
+      ucc_geth: Implement Transmit on Demand support
+
+Michal Schmidt (2):
+      airo: Don't check for NULL before kfree()
+      airo: Make /sys/bus/pci/drivers/airo/{,un}bind work
+
+Milind Arun Choudhary (2):
+      e1000: ROUND_UP macro cleanup in drivers/net/e1000
+      ixgb: ROUND_UP macro cleanup in drivers/net/ixgb
+
+Mithlesh Thukral (7):
+      NetXen: Use multiple PCI functions
+      NetXen: Removal of redundant argument passing
+      NetXen: Multi PCI support for Quad cards
+      NetXen: Removal of redundant macros
+      NetXen: Port swap feature for multi port cards
+      NetXen: Fixes for Power PC architecture
+      NetXen: Fix for vmalloc issues
+
+Nicu Ioan Petru (1):
+      ucc_geth: fixes for ucc_geth_memclean
+
+Pavel Roskin (3):
+      hostap: use offsetof() instead of own equivalent
+      sparse-annotate radiotap header
+      Remove comment about IEEE80211_RADIOTAP_FCS
+
+Ralf Baechle (1):
+      MIPSnet: Modernize use platform_device API.
+
+Ramkrishna Vepa (3):
+      S2IO: Save/Restore unused buffer mappings in 2/3 buffer mode
+      S2io: Remove unused variables
+      S2io: Change of driver maintainers
+
+Randy Dunlap (2):
+      phy layer: add kernel-doc + DocBook
+      mii: add kernel-doc notation
+
+Robert P. J. Day (2):
+      remove unused header file: drivers/net/skfp/h/lnkstat.h
+      3C509: Remove unnecessary include of <linux/pm_legacy.h>
+
+Ron Mercer (3):
+      qla3xxx: Add ethtool get_pauseparam for improved bonding support.
+      qla3xxx: Adding support for the Agere PHY (ET1011C)
+      qla3xxx: Bumping driver version number to v2.03.00-k4
+
+Sam Ravnborg (1):
+      bcm43xx: do not rebuild when kernel version changes
+
+Scott Feldman (1):
+      [netdrvr e100] experiment with doing RX in a similar manner to eepro100
+
+Shan Lu (1):
+      network: add the missing phy_device speed information to phy_mii_ioctl
+
+Shani (1):
+      Patch:replace with time_after in drivers/net/eexpress.c
+
+Shani Moideen (1):
+      [netdrvr] eexpress: minor corrections
+
+Stephen Hemminger (7):
+      chelsio: remove unused code for 1G boards
+      chelsio: use C99 style initialization
+      chelsio: use const for virtual functions
+      skge: ignore unused error interrupts
+      skge: transmit locking improvements
+      skge: rearrange fields
+      skge: version 1.11
+
+Thibaut VARENE (1):
+      TULIP: Natsemi dp83840a PHY fix
+
+Thomas Klein (2):
+      ehea: fix for sysfs entries
+      ehea: fix for dlpar support
+
+Tony Breeds (1):
+      libertas: use standard kernel macros
+
+Ulrich Kunitz (1):
+      zd1211rw: changed GFP_NOFS to GFP_KERNEL
+
+Valerie Henson (3):
+      TULIP: Fix for 64-bit MIPS
+      Fix tulip SytemError typo
+      Rev tulip version
+
+Vitaly Wool (1):
+      smc911x: fix compilation breakage wjen debug is on
+
+Yan Burman (1):
+      e1000: Use kcalloc()
+
+Zhu Yi (1):
+      ipw2200: add channels sysfs entry
 
 [patch snipped due to size; it's in git]
 
