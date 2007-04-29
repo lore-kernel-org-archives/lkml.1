@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031061AbXD2S7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031068AbXD2S7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031061AbXD2S7G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 14:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754428AbXD2S7G
+	id S1031068AbXD2S7o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 14:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031076AbXD2S7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 14:59:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:56202 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754401AbXD2S7E (ORCPT
+	Sun, 29 Apr 2007 14:59:44 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:52328 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031068AbXD2S7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 14:59:04 -0400
-Date: Sun, 29 Apr 2007 11:58:05 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@stusta.de>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <200704292050.56575.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.98.0704291150060.9964@woody.linux-foundation.org>
-References: <20070426040806.GJ3468@stusta.de> <200704291849.23197.rjw@sisk.pl>
- <20070429173725.GB30248@one.firstfloor.org>
- <200704292050.56575.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 29 Apr 2007 14:59:43 -0400
+Subject: unprivileged mount problems: device permissions ignored, mount
+	sharing
+From: utz lehmann <lkml123@s2y4n2c.de>
+To: Miklos Szeredi <miklos@szeredi.hu>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 20:59:11 +0200
+Message-Id: <1177873151.4343.29.camel@segv.aura.of.mankind>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/jGIKXNTNLT22L9lLVCLP8Im7uNpGmtfVhgyE
+ 8jes4yvM30LXaRDgkMPdpqsOeAItcU3Jf0EWMWnxLLh6xTvNVc
+ JSUGgMvow1EOSoQwylV87DaTTgIxIEk
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello
+
+I tried the unprivileged mount v5 patches with 2.6.21.1. I made some
+experiments with normal filesystems (ext3, xfs, iso9660). I removed the
+FS_SAFE checks for that.
+
+Mounting and umounting as unprivileged user (user1) works, e.g.
+(/mnt/user1 is a mount owned by user1)
+
+[user1@segv ~]$ mmount -t xfs /dev/mapper/vg00-test /mnt/user1
+
+But the device permissions are ignored. The unprivileged user can mount
+the block device even there are no permissions to access it:
+
+brw------- 1 root root 253, 5 Apr 29 18:32 /dev/mapper/vg00-test
 
 
-On Sun, 29 Apr 2007, Rafael J. Wysocki wrote:
->
-> - You are required to select a category and 'component' for your report, which
->   often is difficult (especially if you're not a kernel expert)
-> - You need to have a bugzilla account (or to create one, if you don't)
+And there is another problem with sharing the device (superblock?).
+If user1 mount a device readonly:
 
-Amen.
+[user1@segv ~]$ mmount -r -t xfs /dev/mapper/vg00-test /mnt/user1
 
-Both of those are show-stoppers. It may be ok for kernel developers, but 
-it's not good for random people. It's one of the reasons I don't generally 
-use bugzilla for other projects - if they require me to sign up etc, they 
-can take care of their own bugs.
+Than root cannot mount the device rw:
 
-(For the same reason I consider closed mailing lists to be useless for 
-bugreports. If you have to be a member to send email, it's not a 
-bug-report thing, it's just a secret society).
+[root@segv ~]# mount /dev/mapper/vg00-test /mnt/test/
+mount: /dev/mapper/vg00-test already mounted or /mnt/test/ busy
 
-I realize that spam is a problem, but there are better spam solutions than 
-alienating the people who just want to send a report.
+Mounting ro works and than remounting rw work. But than /mnt/user1 is rw
+too.
 
-Also, I don't know if anybody has ever tried to avoid sending duplicate 
-bugs, but every time I use bugzilla to send a bug-report (which I do for 
-things like FC7 live CD's breaking etc where I care enough, and I have a 
-bugzilla account on that bugzilla _anyway_ for other reasons), I am ready 
-to _kill_ somebody whenever I see that "humorous" 
+This can DoS e.g. the automounter mounting /dev/mapper/vg00-test rw.
 
-	zarro bugs found
 
-message, after it made it almost impossible for me to even figure out how 
-to do a good search in the first place!
+utz
 
-So I gnash my teeth, and fill in the bug report anyway, and if it's a 
-duplicate becasue bugzilla didn't have any sane way to get any kind of 
-overview at all, hey, it's a duplicate. Nothing I can do about it.
 
-And the reason I gnash my teeth is that I realize that because I can't 
-even get any overview of the bugzilla entries as a random submitter (and 
-dammit, I probably have a better idea of what the problem might be than 
-most people), I sure as hell can't expect a random user to be better. So I 
-bet my bad reports are a lot better than the average, and a lot of people 
-probably just give up and don't report anything at all.
-
-		Linus
