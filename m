@@ -1,84 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbXD2CTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbXD2CuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbXD2CTX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 22:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbXD2CTX
+	id S1754094AbXD2CuQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 22:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXD2CuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 22:19:23 -0400
-Received: from utopia.booyaka.com ([72.9.107.138]:60702 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754016AbXD2CTV (ORCPT
+	Sat, 28 Apr 2007 22:50:16 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:37711 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754094AbXD2Ct6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 22:19:21 -0400
-Comment: DomainKeys? See http://antispam.yahoo.com/domainkeys
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=default; d=booyaka.com;
-  b=Is0Ovhs/PJAOA3H19EG8G/UcxSmutqYmFwOEXAzErlckKuAkdg2KKTiNqwXRV989qwy4C/d/nKR9YHBpCaYzsLZ5IuX4oajf8o2DJY4zjrtABYBrpyj1nQi6cZdUkkjjYbvpAy4rWtK5/dRuZ1ioLq19GcR7o1DWxb7AQQNY1QrkmpEB3aChXZFbPAu56Zz79ZfvYpTblyTC7uPGaZsC3AzgzPp7KB93qEjwPLSXwDtpugi7yCxbfyKnTOQKpIdii8eq8ZP07jwqlUuRcutX9/H0JZ/Jn1slc+FX/rnk5KSTTaSB8n+1dHPoQ+sKI0x+AIuDX1nsPd3cWekKgJ7m2A==  ;
-Date: Sat, 28 Apr 2007 20:19:20 -0600 (MDT)
-From: Paul Walmsley <paul@booyaka.com>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-cc: netdev@vger.kernel.org, mikep@linuxtr.net
-Subject: [PATCH] ibmtr_cs: fix hang on eject 
-Message-ID: <Pine.LNX.4.64.0704282004370.21519@utopia.booyaka.com>
+	Sat, 28 Apr 2007 22:49:58 -0400
+Date: Sun, 29 Apr 2007 04:50:08 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [-mm patch] make drivers/misc/thinkpad_acpi:fan_mutex static
+Message-ID: <20070429025008.GK3468@stusta.de>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070428191938.GO3468@stusta.de> <20070428195821.GC2392@khazad-dum.debian.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070428195821.GC2392@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Apr 28, 2007 at 04:58:21PM -0300, Henrique de Moraes Holschuh wrote:
+> On Sat, 28 Apr 2007, Adrian Bunk wrote:
+>...
+> > BTW: Prototypes for static versions and static variables in a header
+> >      file are really wrong, but the mess is bigger than what I'm
+> >      willing to clean up...
+> 
+> It is a private header file, only one file uses it and it is not supposed to
+> be used by any other file ever, either.  I can certainly do a cleaning up
+> and a lot can be removed (at least 70% of it), but the driver is not linear
+> (it is some infrastructure and various subdrivers) and there is a bunch of
+> stuff that will need forward declarations regardless.
 
-Sent this patch a few weeks ago to the addresses listed for Token Ring 
-maintainers.  No response, and the linux-tr@ address bounced.  Resent 
-here in case someone wants to pick it up.  Perhaps a MAINTAINERS edit 
-might be in order also.
+Forward declarations of static functions (if required) and actual 
+variables (like fan_mutex) belong into the C file, not the header.
 
+> Maybe I should just break the driver into multiple files in a subdirectory?
+> That would certainly make it *much* cleaner...
 
-- Paul
+But even more in this case, you will not want to have actual variables 
+or prototypes of static functions in the header file.
 
+> > --- linux-2.6.21-rc7-mm2/drivers/misc/thinkpad_acpi.h.old	2007-04-27 00:55:58.000000000 +0200
+> > +++ linux-2.6.21-rc7-mm2/drivers/misc/thinkpad_acpi.h	2007-04-28 01:32:54.000000000 +0200
+> > @@ -382,7 +382,7 @@
+> >  static u8 fan_control_desired_level;
+> >  static int fan_watchdog_maxinterval;
+> >  
+> > -struct mutex fan_mutex;
+> > +static struct mutex fan_mutex;
+> >  
+> >  static acpi_handle fans_handle, gfan_handle, sfan_handle;
+> >  
+>   Henrique Holschuh
 
-Ejecting a PCMCIA IBM Token Ring card that has not had its dev->open() 
-called will reliably trigger an uninitialized spinlock oops when spinlock 
-debugging is enabled. The system then hangs, occasionally softlockup 
-oopsing.  Apparently ibmtr.c:tok_interrupt() doesn't expect to be called 
-before tok_open(), but tok_interrupt() gets called anyway when the card is 
-ejected.  So, set an already-existing flag which causes tok_interrupt() to 
-bail out early upon card ejection. Tested by inserting and removing the 
-PCMCIA card several times.
+cu
+Adrian
 
-Patch against 2.6.21-rc6.
+-- 
 
-
-Signed-off-by: Paul Walmsley <paul@booyaka.com>
-
----
-  dev/drivers/net/pcmcia/ibmtr_cs.c |   12 ++++++++----
-  1 file changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux/dev/drivers/net/pcmcia/ibmtr_cs.c
-===================================================================
---- linux.orig/dev/drivers/net/pcmcia/ibmtr_cs.c
-+++ linux/dev/drivers/net/pcmcia/ibmtr_cs.c
-@@ -189,16 +189,20 @@ static void ibmtr_detach(struct pcmcia_d
-  {
-      struct ibmtr_dev_t *info = link->priv;
-      struct net_device *dev = info->dev;
-+    struct tok_info *ti = netdev_priv(dev);
-
-      DEBUG(0, "ibmtr_detach(0x%p)\n", link);
-+
-+    /*
-+     * When the card removal interrupt hits tok_interrupt(),
-+     * bail out early, so we don't crash the machine
-+     */
-+    ti->sram_phys |= 1;
-
-      if (link->dev_node)
-  	unregister_netdev(dev);
-
--    {
--	struct tok_info *ti = netdev_priv(dev);
--	del_timer_sync(&(ti->tr_timer));
--    }
-+    del_timer_sync(&(ti->tr_timer));
-
-      ibmtr_release(link);
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
