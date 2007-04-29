@@ -1,355 +1,626 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161361AbXD2VGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161358AbXD2VHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161361AbXD2VGv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161383AbXD2VGu
+	id S1161358AbXD2VHf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161368AbXD2VHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:06:50 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48228 "EHLO smtp.wsc.cz"
+	Sun, 29 Apr 2007 17:07:34 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:48232 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161361AbXD2VGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:06:11 -0400
-Message-id: <2351127086724526083@wsc.cz>
+	id S1161358AbXD2VGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:06:53 -0400
+Message-id: <571311201101303875@wsc.cz>
 In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 19/21] Char: cyclades, dynamic ports
+Subject: [PATCH 20/21] Char: cyclades, probe cleanup
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 23:06:08 +0200 (CEST)
+Date: Sun, 29 Apr 2007 23:06:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, dynamic ports
+cyclades, probe cleanup
 
-and save thus approx. 160k of .bss
+- add fail paths
+- merge 3 similar initializations into one (Z, Ze, Y)
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit c1eb9b97d07f0ac45e3c6173b4e5b822a2a5dca2
-tree ca449397fca08a7bb4bb6a28f273f8c00eade922
-parent 0d1d9602e00c115e03e04ee01f3ecc92adbbf504
-author Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 14:51:11 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 14:51:11 +0200
+commit c3f3dcbfe41732ece2f09a7c6e31e7a2b378a0f7
+tree 545a30891d1f0d2b2e60affb2ec0a29ec9eb0c1b
+parent c1eb9b97d07f0ac45e3c6173b4e5b822a2a5dca2
+author Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 21:55:20 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 21:55:20 +0200
 
- drivers/char/cyclades.c  |  142 ++++++++++++++++++++++------------------------
- include/linux/cyclades.h |    1 
- 2 files changed, 70 insertions(+), 73 deletions(-)
+ drivers/char/cyclades.c |  466 ++++++++++++++++++++---------------------------
+ 1 files changed, 197 insertions(+), 269 deletions(-)
 
 diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index f23d481..3eabd26 100644
+index 3eabd26..a17ff90 100644
 --- a/drivers/char/cyclades.c
 +++ b/drivers/char/cyclades.c
-@@ -722,11 +722,6 @@ module_param_array(irq, int, NULL, 0);
- */
- static struct cyclades_card cy_card[NR_CARDS];
- 
--/* This is the per-channel data structure containing pointers, flags
-- and variables for the port. This driver supports a maximum of NR_PORTS.
--*/
--static struct cyclades_port cy_port[NR_PORTS];
--
- static int cy_next_channel;	/* next minor available */
- 
- /*
-@@ -855,13 +850,6 @@ static inline int serial_paranoia_check(struct cyclades_port *info,
- 		return 1;
+@@ -4455,6 +4455,7 @@ static int __devinit cy_init_card(struct cyclades_card *cinfo)
+ 	cinfo->ports = kzalloc(sizeof(*cinfo->ports) * nports, GFP_KERNEL);
+ 	if (cinfo->ports == NULL) {
+ 		printk(KERN_ERR "Cyclades: cannot allocate ports\n");
++		cinfo->nports = 0;
+ 		return -ENOMEM;
  	}
  
--	if ((long)info < (long)(&cy_port[0]) ||
--			(long)(&cy_port[NR_PORTS]) < (long)info) {
--		printk(KERN_WARNING "cyc Warning: cyclades_port out of range "
--				"for (%s) in %s\n", name, routine);
--		return 1;
+@@ -4647,9 +4648,15 @@ static int __init cy_detect_isa(void)
+ 
+ 		/* probe for CD1400... */
+ 		cy_isa_address = ioremap(isa_address, CyISA_Ywin);
++		if (cy_isa_address == NULL) {
++			printk(KERN_ERR "Cyclom-Y/ISA: can't remap base "
++					"address\n");
++			continue;
++		}
+ 		cy_isa_nchan = CyPORTS_PER_CHIP *
+ 			cyy_init_card(cy_isa_address, 0);
+ 		if (cy_isa_nchan == 0) {
++			iounmap(cy_isa_address);
+ 			continue;
+ 		}
+ #ifdef MODULE
+@@ -4663,6 +4670,7 @@ static int __init cy_detect_isa(void)
+ 			printk(KERN_ERR "Cyclom-Y/ISA found at 0x%lx, but the "
+ 				"IRQ could not be detected.\n",
+ 				(unsigned long)cy_isa_address);
++			iounmap(cy_isa_address);
+ 			continue;
+ 		}
+ 
+@@ -4671,6 +4679,7 @@ static int __init cy_detect_isa(void)
+ 				"more channels are available. Change NR_PORTS "
+ 				"in cyclades.c and recompile kernel.\n",
+ 				(unsigned long)cy_isa_address);
++			iounmap(cy_isa_address);
+ 			return nboard;
+ 		}
+ 		/* fill the next cy_card structure available */
+@@ -4683,6 +4692,7 @@ static int __init cy_detect_isa(void)
+ 				"more cards can be used. Change NR_CARDS in "
+ 				"cyclades.c and recompile kernel.\n",
+ 				(unsigned long)cy_isa_address);
++			iounmap(cy_isa_address);
+ 			return nboard;
+ 		}
+ 
+@@ -4692,6 +4702,7 @@ static int __init cy_detect_isa(void)
+ 			printk(KERN_ERR "Cyclom-Y/ISA found at 0x%lx, but "
+ 				"could not allocate IRQ#%d.\n",
+ 				(unsigned long)cy_isa_address, cy_isa_irq);
++			iounmap(cy_isa_address);
+ 			return nboard;
+ 		}
+ 
+@@ -4702,7 +4713,12 @@ static int __init cy_detect_isa(void)
+ 		cy_card[j].bus_index = 0;
+ 		cy_card[j].first_line = cy_next_channel;
+ 		cy_card[j].num_chips = cy_isa_nchan / 4;
+-		cy_init_card(&cy_card[j]);
++		if (cy_init_card(&cy_card[j])) {
++			cy_card[j].base_addr = NULL;
++			free_irq(cy_isa_irq, &cy_card[j]);
++			iounmap(cy_isa_address);
++			continue;
++		}
+ 		nboard++;
+ 
+ 		printk(KERN_INFO "Cyclom-Y/ISA #%d: 0x%lx-0x%lx, IRQ%d found: "
+@@ -4736,333 +4752,245 @@ static void __devinit plx_init(void __iomem * addr, __u32 initctl)
+ 	cy_writel(addr + initctl, readl(addr + initctl) & ~0x20000000);
+ }
+ 
+-static int __devinit cy_init_Ze(struct RUNTIME_9060 __iomem *cy_pci_addr0,
+-		int cy_pci_irq, struct pci_dev *pdev)
+-{
+-	void __iomem *cy_pci_addr2;
+-	unsigned int j;
+-	unsigned short cy_pci_nchan;
+-
+-	cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Ze_win);
+-
+-	readl(&cy_pci_addr0->mail_box_0);
+-	dev_dbg(&pdev->dev, "new Cyclades-Z board.  FPGA not loaded\n");
+-
+-	/* This must be the new Cyclades-Ze/PCI. */
+-	cy_pci_nchan = ZE_V1_NPORTS;
+-
+-	if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
+-		dev_err(&pdev->dev, "Cyclades-Ze/PCI found, but no channels "
+-			"are available.\nChange NR_PORTS in cyclades.c "
+-			"and recompile kernel.\n");
+-		return -EIO;
 -	}
 -
- 	if (info->magic != CYCLADES_MAGIC) {
- 		printk(KERN_WARNING "cyc Warning: bad magic number for serial "
- 				"struct (%s) in %s\n", name, routine);
-@@ -1025,7 +1013,7 @@ static void cyy_intr_chip(struct cyclades_card *cinfo, int chip,
- 	struct cyclades_port *info;
- 	struct tty_struct *tty;
- 	int char_count;
--	int i, j, len, mdm_change, mdm_status, outch;
-+	int j, len, mdm_change, mdm_status, outch;
- 	int save_xir, channel, save_car;
- 	char data;
- 
-@@ -1037,8 +1025,7 @@ static void cyy_intr_chip(struct cyclades_card *cinfo, int chip,
- 		spin_lock(&cinfo->card_lock);
- 		save_xir = (u_char) readb(base_addr + (CyRIR << index));
- 		channel = (u_short) (save_xir & CyIRChannel);
--		i = channel + chip * 4 + cinfo->first_line;
--		info = &cy_port[i];
-+		info = &cinfo->ports[channel + chip * 4];
- 		save_car = readb(base_addr + (CyCAR << index));
- 		cy_writeb(base_addr + (CyCAR << index), save_xir);
- 
-@@ -1202,18 +1189,17 @@ static void cyy_intr_chip(struct cyclades_card *cinfo, int chip,
- 		spin_lock(&cinfo->card_lock);
- 		save_xir = (u_char) readb(base_addr + (CyTIR << index));
- 		channel = (u_short) (save_xir & CyIRChannel);
--		i = channel + chip * 4 + cinfo->first_line;
- 		save_car = readb(base_addr + (CyCAR << index));
- 		cy_writeb(base_addr + (CyCAR << index), save_xir);
- 
- 		/* validate the port# (as configured and open) */
--		if ((i < 0) || (NR_PORTS <= i)) {
-+		if (channel + chip * 4 >= cinfo->nports) {
- 			cy_writeb(base_addr + (CySRER << index),
- 				  readb(base_addr + (CySRER << index)) &
- 				  ~CyTxRdy);
- 			goto txend;
- 		}
--		info = &cy_port[i];
-+		info = &cinfo->ports[channel + chip * 4];
- 		if (info->tty == NULL) {
- 			cy_writeb(base_addr + (CySRER << index),
- 				  readb(base_addr + (CySRER << index)) &
-@@ -1325,7 +1311,7 @@ txend:
- 		spin_lock(&cinfo->card_lock);
- 		save_xir = (u_char) readb(base_addr + (CyMIR << index));
- 		channel = (u_short) (save_xir & CyIRChannel);
--		info = &cy_port[channel + chip * 4 + cinfo->first_line];
-+		info = &cinfo->ports[channel + chip * 4];
- 		save_car = readb(base_addr + (CyCAR << index));
- 		cy_writeb(base_addr + (CyCAR << index), save_xir);
- 
-@@ -1726,7 +1712,7 @@ static void cyz_handle_cmd(struct cyclades_card *cinfo)
- 	while (cyz_fetch_msg(cinfo, &channel, &cmd, &param) == 1) {
- 		special_count = 0;
- 		delta_count = 0;
--		info = &cy_port[channel + cinfo->first_line];
-+		info = &cinfo->ports[channel];
- 		if ((tty = info->tty) == NULL)
- 			continue;
- 
-@@ -1896,7 +1882,7 @@ static void cyz_poll(unsigned long arg)
- 		cyz_handle_cmd(cinfo);
- 
- 		for (port = 0; port < cinfo->nports; port++) {
--			info = &cy_port[port + cinfo->first_line];
-+			info = &cinfo->ports[port];
- 			tty = info->tty;
- 			ch_ctrl = &(zfw_ctrl->ch_ctrl[port]);
- 			buf_ctrl = &(zfw_ctrl->buf_ctrl[port]);
-@@ -2468,13 +2454,20 @@ block_til_ready(struct tty_struct *tty, struct file *filp,
- static int cy_open(struct tty_struct *tty, struct file *filp)
+-	/* fill the next cy_card structure available */
+-	for (j = 0; j < NR_CARDS; j++) {
+-		if (cy_card[j].base_addr == NULL)
+-			break;
+-	}
+-	if (j == NR_CARDS) {	/* no more cy_cards available */
+-		dev_err(&pdev->dev, "Cyclades-Ze/PCI found, but no more "
+-			"cards can be used.\nChange NR_CARDS in "
+-			"cyclades.c and recompile kernel.\n");
+-		return -EIO;
+-	}
+-#ifdef CONFIG_CYZ_INTR
+-	/* allocate IRQ only if board has an IRQ */
+-	if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
+-		if (request_irq(cy_pci_irq, cyz_interrupt,
+-				IRQF_SHARED, "Cyclades-Z",
+-				&cy_card[j])) {
+-			dev_err(&pdev->dev, "could not allocate IRQ.\n");
+-			return -EIO;
+-		}
+-	}
+-#endif				/* CONFIG_CYZ_INTR */
+-
+-	/* set cy_card */
+-	cy_card[j].base_addr = cy_pci_addr2;
+-	cy_card[j].ctl_addr = cy_pci_addr0;
+-	cy_card[j].irq = cy_pci_irq;
+-	cy_card[j].bus_index = 1;
+-	cy_card[j].first_line = cy_next_channel;
+-	cy_card[j].num_chips = -1;
+-	cy_init_card(&cy_card[j]);
+-	pci_set_drvdata(pdev, &cy_card[j]);
+-
+-	dev_info(&pdev->dev, "Cyclades-Ze/PCI #%d found: %d channels starting "
+-		"from port %d.\n", j + 1, cy_pci_nchan, cy_next_channel);
+-
+-	for (j = cy_next_channel; j < cy_next_channel + cy_pci_nchan; j++)
+-		tty_register_device(cy_serial_driver, j, &pdev->dev);
+-	cy_next_channel += cy_pci_nchan;
+-
+-	return 0;
+-}
+-
+ static int __devinit cy_pci_probe(struct pci_dev *pdev,
+ 		const struct pci_device_id *ent)
  {
- 	struct cyclades_port *info;
-+	unsigned int i;
- 	int retval, line;
+-	unsigned char cyy_rev_id;
+-	int cy_pci_irq;
+-	__u32 mailbox;
+-	void __iomem *cy_pci_addr0, *cy_pci_addr2;
+-	unsigned int device_id;
+-	unsigned short j, cy_pci_nchan, plx_ver;
+-	int retval;
++	void __iomem *addr0 = NULL, *addr2 = NULL;
++	char *card_name = NULL;
++	u32 mailbox;
++	unsigned int device_id, nchan = 0, card_no, i;
++	unsigned char plx_ver;
++	int retval, irq;
  
- 	line = tty->index;
- 	if ((line < 0) || (NR_PORTS <= line)) {
- 		return -ENODEV;
- 	}
--	info = &cy_port[line];
-+	for (i = 0; i < NR_CARDS; i++)
-+		if (line < cy_card[i].first_line + cy_card[i].nports &&
-+				line >= cy_card[i].first_line)
-+			break;
-+	if (i >= NR_CARDS)
-+		return -ENODEV;
-+	info = &cy_card[i].ports[line - cy_card[i].first_line];
- 	if (info->line < 0) {
- 		return -ENODEV;
- 	}
-@@ -4437,7 +4430,7 @@ static void cy_hangup(struct tty_struct *tty)
-  * ---------------------------------------------------------------------
-  */
- 
--static void __devinit cy_init_card(struct cyclades_card *cinfo)
-+static int __devinit cy_init_card(struct cyclades_card *cinfo)
- {
- 	struct cyclades_port *info;
- 	u32 mailbox;
-@@ -4459,10 +4452,15 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo)
- 		nports = cinfo->nports = CyPORTS_PER_CHIP * cinfo->num_chips;
+ 	retval = pci_enable_device(pdev);
+ 	if (retval) {
+ 		dev_err(&pdev->dev, "cannot enable device\n");
+-		return retval;
++		goto err;
  	}
  
-+	cinfo->ports = kzalloc(sizeof(*cinfo->ports) * nports, GFP_KERNEL);
-+	if (cinfo->ports == NULL) {
-+		printk(KERN_ERR "Cyclades: cannot allocate ports\n");
-+		return -ENOMEM;
+ 	/* read PCI configuration area */
+-	cy_pci_irq = pdev->irq;
+-	pci_read_config_byte(pdev, PCI_REVISION_ID, &cyy_rev_id);
+-
++	irq = pdev->irq;
+ 	device_id = pdev->device & ~PCI_DEVICE_ID_MASK;
+ 
++#if defined(__alpha__)
++	if (device_id == PCI_DEVICE_ID_CYCLOM_Y_Lo) {	/* below 1M? */
++		dev_err(&pdev->dev, "Cyclom-Y/PCI not supported for low "
++			"addresses on Alpha systems.\n");
++		retval = -EIO;
++		goto err_dis;
++	}
++#endif
++	if (device_id == PCI_DEVICE_ID_CYCLOM_Z_Lo) {
++		dev_err(&pdev->dev, "Cyclades-Z/PCI not supported for low "
++			"addresses\n");
++		retval = -EIO;
++		goto err_dis;
 +	}
 +
- 	for (port = cinfo->first_line; port < cinfo->first_line + nports;
- 			port++) {
--		info = &cy_port[port];
--		memset(info, 0, sizeof(*info));
-+		info = &cinfo->ports[port - cinfo->first_line];
- 		info->magic = CYCLADES_MAGIC;
- 		info->card = cinfo;
- 		info->line = port;
-@@ -4525,6 +4523,7 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo)
- #endif
- 	}
- #endif
-+	return 0;
- }
- 
- /* initialize chips on Cyclom-Y card -- return number of valid
-@@ -5094,13 +5093,11 @@ static void __devexit cy_pci_remove(struct pci_dev *pdev)
- 	pci_release_regions(pdev);
- 
- 	cinfo->base_addr = NULL;
--	for (i = cinfo->first_line; i < cinfo->first_line + cinfo->nports; i++){
--		cy_port[i].line = -1;
--		cy_port[i].magic = -1;
--	}
- 	for (i = cinfo->first_line; i < cinfo->first_line +
- 			cinfo->nports; i++)
- 		tty_unregister_device(cy_serial_driver, i);
-+	cinfo->nports = 0;
-+	kfree(cinfo->ports);
- }
- 
- static struct pci_driver cy_pci_driver = {
-@@ -5116,7 +5113,7 @@ cyclades_get_proc_info(char *buf, char **start, off_t offset, int length,
- 		int *eof, void *data)
- {
- 	struct cyclades_port *info;
--	int i;
-+	unsigned int i, j;
- 	int len = 0;
- 	off_t begin = 0;
- 	off_t pos = 0;
-@@ -5130,33 +5127,34 @@ cyclades_get_proc_info(char *buf, char **start, off_t offset, int length,
- 	len += size;
- 
- 	/* Output one line for each known port */
--	for (i = 0; i < NR_PORTS && cy_port[i].line >= 0; i++) {
--		info = &cy_port[i];
--
--		if (info->count)
--			size = sprintf(buf + len, "%3d %8lu %10lu %8lu %10lu "
--				"%8lu %9lu %6ld\n", info->line,
--				(cur_jifs - info->idle_stats.in_use) / HZ,
--				info->idle_stats.xmit_bytes,
--				(cur_jifs - info->idle_stats.xmit_idle) / HZ,
--				info->idle_stats.recv_bytes,
--				(cur_jifs - info->idle_stats.recv_idle) / HZ,
--				info->idle_stats.overruns,
--				(long)info->tty->ldisc.num);
--		else
--			size = sprintf(buf + len, "%3d %8lu %10lu %8lu %10lu "
--				"%8lu %9lu %6ld\n",
--				info->line, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
--		len += size;
--		pos = begin + len;
--
--		if (pos < offset) {
--			len = 0;
--			begin = pos;
-+	for (i = 0; i < NR_CARDS; i++)
-+		for (j = 0; j < cy_card[i].nports; j++) {
-+			info = &cy_card[i].ports[j];
++	if (pci_resource_flags(pdev, 2) & IORESOURCE_IO) {
++		dev_warn(&pdev->dev, "PCI I/O bit incorrectly set. Ignoring "
++				"it...\n");
++		pdev->resource[2].flags &= ~IORESOURCE_IO;
++	}
 +
-+			if (info->count)
-+				size = sprintf(buf + len, "%3d %8lu %10lu %8lu "
-+					"%10lu %8lu %9lu %6ld\n", info->line,
-+					(cur_jifs - info->idle_stats.in_use) /
-+					HZ, info->idle_stats.xmit_bytes,
-+					(cur_jifs - info->idle_stats.xmit_idle)/
-+					HZ, info->idle_stats.recv_bytes,
-+					(cur_jifs - info->idle_stats.recv_idle)/
-+					HZ, info->idle_stats.overruns,
-+					(long)info->tty->ldisc.num);
-+			else
-+				size = sprintf(buf + len, "%3d %8lu %10lu %8lu "
-+					"%10lu %8lu %9lu %6ld\n",
-+					info->line, 0L, 0L, 0L, 0L, 0L, 0L, 0L);
-+			len += size;
-+			pos = begin + len;
++	retval = pci_request_regions(pdev, "cyclades");
++	if (retval) {
++		dev_err(&pdev->dev, "failed to reserve resources\n");
++		goto err_dis;
++	}
 +
-+			if (pos < offset) {
-+				len = 0;
-+				begin = pos;
++	retval = -EIO;
+ 	if (device_id == PCI_DEVICE_ID_CYCLOM_Y_Lo ||
+ 			device_id == PCI_DEVICE_ID_CYCLOM_Y_Hi) {
+-		dev_dbg(&pdev->dev, "Cyclom-Y/PCI found\n");
+-
+-		if (pci_resource_flags(pdev, 2) & IORESOURCE_IO) {
+-			dev_warn(&pdev->dev, "PCI I/O bit incorrectly "
+-				"set. Ignoring it...\n");
+-			pdev->resource[2].flags &= ~IORESOURCE_IO;
+-		}
++		card_name = "Cyclom-Y";
+ 
+-		/* Although we don't use this I/O region, we should
+-		   request it from the kernel anyway, to avoid problems
+-		   with other drivers accessing it. */
+-		retval = pci_request_regions(pdev, "Cyclom-Y");
+-		if (retval) {
+-			dev_err(&pdev->dev, "failed to reserve resources\n");
+-			return retval;
++		addr0 = pci_iomap(pdev, 0, CyPCI_Yctl);
++		if (addr0 == NULL) {
++			dev_err(&pdev->dev, "can't remap ctl region\n");
++			goto err_reg;
+ 		}
+-#if defined(__alpha__)
+-		if (device_id == PCI_DEVICE_ID_CYCLOM_Y_Lo) {	/* below 1M? */
+-			dev_err(&pdev->dev, "Cyclom-Y/PCI not supported for "
+-				"low addresses on Alpha systems.\n");
+-			return -EIO;
++		addr2 = pci_iomap(pdev, 2, CyPCI_Ywin);
++		if (addr2 == NULL) {
++			dev_err(&pdev->dev, "can't remap base region\n");
++			goto err_unmap;
+ 		}
+-#endif
+-		cy_pci_addr0 = pci_iomap(pdev, 0, CyPCI_Yctl);
+-		cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Ywin);
+-
+-		dev_dbg(&pdev->dev, "Cyclom-Y/PCI: relocate winaddr=0x%p "
+-			"ctladdr=0x%p\n", cy_pci_addr2, cy_pci_addr0);
+ 
+-		cy_pci_nchan = (unsigned short)(CyPORTS_PER_CHIP *
+-				cyy_init_card(cy_pci_addr2, 1));
+-		if (cy_pci_nchan == 0) {
++		nchan = CyPORTS_PER_CHIP * cyy_init_card(addr2, 1);
++		if (nchan == 0) {
+ 			dev_err(&pdev->dev, "Cyclom-Y PCI host card with no "
+ 					"Serial-Modules\n");
+ 			return -EIO;
+ 		}
+-		if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
+-			dev_err(&pdev->dev, "Cyclom-Y/PCI found, but no "
+-				"channels are available. Change NR_PORTS in "
+-				"cyclades.c and recompile kernel.\n");
+-			return -EIO;
+-		}
+-		/* fill the next cy_card structure available */
+-		for (j = 0; j < NR_CARDS; j++) {
+-			if (cy_card[j].base_addr == NULL)
+-				break;
+-		}
+-		if (j == NR_CARDS) {	/* no more cy_cards available */
+-			dev_err(&pdev->dev, "Cyclom-Y/PCI found, but no more "
+-				"cards can be used. Change NR_CARDS in "
+-				"cyclades.c and recompile kernel.\n");
+-			return -EIO;
+-		}
+-
+-		/* allocate IRQ */
+-		retval = request_irq(cy_pci_irq, cyy_interrupt,
+-				IRQF_SHARED, "Cyclom-Y", &cy_card[j]);
+-		if (retval) {
+-			dev_err(&pdev->dev, "could not allocate IRQ\n");
+-			return retval;
+-		}
+-
+-		/* set cy_card */
+-		cy_card[j].base_addr = cy_pci_addr2;
+-		cy_card[j].ctl_addr = cy_pci_addr0;
+-		cy_card[j].irq = cy_pci_irq;
+-		cy_card[j].bus_index = 1;
+-		cy_card[j].first_line = cy_next_channel;
+-		cy_card[j].num_chips = cy_pci_nchan / 4;
+-		cy_init_card(&cy_card[j]);
+-		pci_set_drvdata(pdev, &cy_card[j]);
+-
+-		/* enable interrupts in the PCI interface */
+-		plx_ver = readb(cy_pci_addr2 + CyPLX_VER) & 0x0f;
+-		switch (plx_ver) {
+-		case PLX_9050:
+-
+-			cy_writeb(cy_pci_addr0 + 0x4c, 0x43);
+-			break;
+-
+-		case PLX_9060:
+-		case PLX_9080:
+-		default:	/* Old boards, use PLX_9060 */
+-
+-			plx_init(cy_pci_addr0, 0x6c);
+-		/* For some yet unknown reason, once the PLX9060 reloads
+-		   the EEPROM, the IRQ is lost and, thus, we have to
+-		   re-write it to the PCI config. registers.
+-		   This will remain here until we find a permanent
+-		   fix. */
+-			pci_write_config_byte(pdev, PCI_INTERRUPT_LINE,
+-					cy_pci_irq);
+-
+-			cy_writew(cy_pci_addr0 + 0x68,
+-				readw(cy_pci_addr0 + 0x68) | 0x0900);
+-			break;
+-		}
+-
+-		dev_info(&pdev->dev, "Cyclom-Y/PCI #%d found: %d channels "
+-			"starting from port %d.\n", j + 1, cy_pci_nchan,
+-			cy_next_channel);
+-
+-		for (j = cy_next_channel;
+-				j < cy_next_channel + cy_pci_nchan; j++)
+-			tty_register_device(cy_serial_driver, j, &pdev->dev);
+-
+-		cy_next_channel += cy_pci_nchan;
+-	} else if (device_id == PCI_DEVICE_ID_CYCLOM_Z_Lo) {
+-		dev_err(&pdev->dev, "Cyclades-Z/PCI not supported for "
+-			"low addresses\n");
+-		return -EIO;
+ 	} else if (device_id == PCI_DEVICE_ID_CYCLOM_Z_Hi) {
+-		dev_dbg(&pdev->dev, "Cyclades-Z/PCI found\n");
++		struct RUNTIME_9060 __iomem *ctl_addr;
+ 
+-		cy_pci_addr0 = pci_iomap(pdev, 0, CyPCI_Zctl);
++		ctl_addr = addr0 = pci_iomap(pdev, 0, CyPCI_Zctl);
++		if (addr0 == NULL) {
++			dev_err(&pdev->dev, "can't remap ctl region\n");
++			goto err_reg;
++		}
+ 
+ 		/* Disable interrupts on the PLX before resetting it */
+-		cy_writew(cy_pci_addr0 + 0x68,
+-			readw(cy_pci_addr0 + 0x68) & ~0x0900);
++		cy_writew(addr0 + 0x68,
++			readw(addr0 + 0x68) & ~0x0900);
+ 
+-		plx_init(cy_pci_addr0, 0x6c);
++		plx_init(addr0, 0x6c);
+ 		/* For some yet unknown reason, once the PLX9060 reloads
+ 		   the EEPROM, the IRQ is lost and, thus, we have to
+ 		   re-write it to the PCI config. registers.
+ 		   This will remain here until we find a permanent
+ 		   fix. */
+-		pci_write_config_byte(pdev, PCI_INTERRUPT_LINE, cy_pci_irq);
++		pci_write_config_byte(pdev, PCI_INTERRUPT_LINE, irq);
+ 
+-		mailbox = (__u32)readl(&((struct RUNTIME_9060 __iomem *)
+-				cy_pci_addr0)->mail_box_0);
++		mailbox = (u32)readl(&ctl_addr->mail_box_0);
+ 
+-		if (pci_resource_flags(pdev, 2) & IORESOURCE_IO) {
+-			dev_warn(&pdev->dev, "PCI I/O bit incorrectly "
+-				"set. Ignoring it...\n");
+-			pdev->resource[2].flags &= ~IORESOURCE_IO;
+-		}
+-
+-		/* Although we don't use this I/O region, we should
+-		   request it from the kernel anyway, to avoid problems
+-		   with other drivers accessing it. */
+-		retval = pci_request_regions(pdev, "Cyclades-Z");
+-		if (retval) {
+-			dev_err(&pdev->dev, "failed to reserve resources\n");
+-			return retval;
++		addr2 = pci_iomap(pdev, 2, mailbox == ZE_V1 ?
++				CyPCI_Ze_win : CyPCI_Zwin);
++		if (addr2 == NULL) {
++			dev_err(&pdev->dev, "can't remap base region\n");
++			goto err_unmap;
+ 		}
+ 
+ 		if (mailbox == ZE_V1) {
+-			retval = cy_init_Ze(cy_pci_addr0, cy_pci_irq, pdev);
+-			return retval;
++			card_name = "Cyclades-Ze";
++
++			readl(&ctl_addr->mail_box_0);
++			nchan = ZE_V1_NPORTS;
+ 		} else {
+-			cy_pci_addr2 = pci_iomap(pdev, 2, CyPCI_Zwin);
+-		}
++			card_name = "Cyclades-8Zo";
+ 
+-		dev_dbg(&pdev->dev, "Cyclades-Z/PCI: relocate winaddr=0x%p "
+-			"ctladdr=0x%p\n", cy_pci_addr2, cy_pci_addr0);
+ #ifdef CY_PCI_DEBUG
+-		if (mailbox == ZO_V1) {
+-			cy_writel(&((struct RUNTIME_9060 *)
+-				(cy_pci_addr0))->loc_addr_base,
+-				WIN_CREG);
+-			dev_info(&pdev->dev, "Cyclades-8Zo/PCI: FPGA id %lx, "
+-				"ver %lx\n", (ulong)(0xff &
+-				readl(&((struct CUSTOM_REG *)
+-					cy_pci_addr2)->fpga_id)),
+-				(ulong)(0xff & readl(&((struct CUSTOM_REG *)
+-					cy_pci_addr2)->fpga_version)));
+-			cy_writel(&((struct RUNTIME_9060 *)
+-				cy_pci_addr0)->loc_addr_base, WIN_RAM);
+-		} else {
+-			dev_info(&pdev->dev, "Cyclades-Z/PCI: New Cyclades-Z "
+-				"board.  FPGA not loaded\n");
+-		}
++			if (mailbox == ZO_V1) {
++				cy_writel(&ctl_addr->loc_addr_base, WIN_CREG);
++				dev_info(&pdev->dev, "Cyclades-8Zo/PCI: FPGA "
++					"id %lx, ver %lx\n", (ulong)(0xff &
++					readl(&((struct CUSTOM_REG *)addr2)->
++						fpga_id)), (ulong)(0xff &
++					readl(&((struct CUSTOM_REG *)addr2)->
++						fpga_version)));
++				cy_writel(&ctl_addr->loc_addr_base, WIN_RAM);
++			} else {
++				dev_info(&pdev->dev, "Cyclades-Z/PCI: New "
++					"Cyclades-Z board.  FPGA not loaded\n");
 +			}
-+			if (pos > offset + length)
-+				goto done;
- 		}
--		if (pos > offset + length)
--			goto done;
--	}
- 	*eof = 1;
- done:
- 	*start = buf + (offset - begin);	/* Start of wanted data */
-@@ -5211,7 +5209,7 @@ static const struct tty_operations cy_ops = {
- 
- static int __init cy_init(void)
- {
--	unsigned int i, nboards;
-+	unsigned int nboards;
- 	int retval = -ENOMEM;
- 
- 	cy_serial_driver = alloc_tty_driver(NR_PORTS);
-@@ -5242,11 +5240,6 @@ static int __init cy_init(void)
- 		goto err_frtty;
- 	}
- 
--	for (i = 0; i < NR_PORTS; i++) {
--		cy_port[i].line = -1;
--		cy_port[i].magic = -1;
--	}
--
- 	/* the code below is responsible to find the boards. Each different
- 	   type of board has its own detection routine. If a board is found,
- 	   the next cy_card structure available is set by the detection
-@@ -5275,6 +5268,7 @@ err:
- 
- static void __exit cy_cleanup_module(void)
- {
-+	struct cyclades_card *card;
- 	int i, e1;
- 
- #ifndef CONFIG_CYZ_INTR
-@@ -5290,22 +5284,24 @@ static void __exit cy_cleanup_module(void)
  #endif
+-		/* The following clears the firmware id word.  This
+-		   ensures that the driver will not attempt to talk to
+-		   the board until it has been properly initialized.
+-		 */
+-		if ((mailbox == ZO_V1) || (mailbox == ZO_V2))
+-			cy_writel(cy_pci_addr2 + ID_ADDRESS, 0L);
+-
+-		/* This must be a Cyclades-8Zo/PCI.  The extendable
+-		   version will have a different device_id and will
+-		   be allocated its maximum number of ports. */
+-		cy_pci_nchan = 8;
+-
+-		if ((cy_next_channel + cy_pci_nchan) > NR_PORTS) {
+-			dev_err(&pdev->dev, "Cyclades-8Zo/PCI found, but no "
+-				"channels are available. Change NR_PORTS in "
+-				"cyclades.c and recompile kernel.\n");
+-			return -EIO;
+-		}
++			/* The following clears the firmware id word.  This
++			   ensures that the driver will not attempt to talk to
++			   the board until it has been properly initialized.
++			 */
++			if ((mailbox == ZO_V1) || (mailbox == ZO_V2))
++				cy_writel(addr2 + ID_ADDRESS, 0L);
  
- 	for (i = 0; i < NR_CARDS; i++) {
--		if (cy_card[i].base_addr) {
-+		card = &cy_card[i];
-+		if (card->base_addr) {
- 			/* clear interrupt */
--			cy_writeb(cy_card[i].base_addr + Cy_ClrIntr, 0);
--			iounmap(cy_card[i].base_addr);
--			if (cy_card[i].ctl_addr)
--				iounmap(cy_card[i].ctl_addr);
--			if (cy_card[i].irq
-+			cy_writeb(card->base_addr + Cy_ClrIntr, 0);
-+			iounmap(card->base_addr);
-+			if (card->ctl_addr)
-+				iounmap(card->ctl_addr);
-+			if (card->irq
- #ifndef CONFIG_CYZ_INTR
--				&& !IS_CYC_Z(cy_card[i])
-+				&& !IS_CYC_Z(*card)
- #endif /* CONFIG_CYZ_INTR */
- 				)
--				free_irq(cy_card[i].irq, &cy_card[i]);
--			for (e1 = cy_card[i].first_line;
--					e1 < cy_card[i].first_line +
--					cy_card[i].nports; e1++)
-+				free_irq(card->irq, card);
-+			for (e1 = card->first_line;
-+					e1 < card->first_line +
-+					card->nports; e1++)
- 				tty_unregister_device(cy_serial_driver, e1);
-+			kfree(card->ports);
+-		/* fill the next cy_card structure available */
+-		for (j = 0; j < NR_CARDS; j++) {
+-			if (cy_card[j].base_addr == NULL)
+-				break;
++			/* This must be a Cyclades-8Zo/PCI.  The extendable
++			   version will have a different device_id and will
++			   be allocated its maximum number of ports. */
++			nchan = 8;
  		}
+-		if (j == NR_CARDS) {	/* no more cy_cards available */
+-			dev_err(&pdev->dev, "Cyclades-8Zo/PCI found, but no "
+-				"more cards can be used. Change NR_CARDS in "
+-				"cyclades.c and recompile kernel.\n");
+-			return -EIO;
++	}
++
++	if ((cy_next_channel + nchan) > NR_PORTS) {
++		dev_err(&pdev->dev, "Cyclades-8Zo/PCI found, but no "
++			"channels are available. Change NR_PORTS in "
++			"cyclades.c and recompile kernel.\n");
++		goto err_unmap;
++	}
++	/* fill the next cy_card structure available */
++	for (card_no = 0; card_no < NR_CARDS; card_no++) {
++		if (cy_card[card_no].base_addr == NULL)
++			break;
++	}
++	if (card_no == NR_CARDS) {	/* no more cy_cards available */
++		dev_err(&pdev->dev, "Cyclades-8Zo/PCI found, but no "
++			"more cards can be used. Change NR_CARDS in "
++			"cyclades.c and recompile kernel.\n");
++		goto err_unmap;
++	}
++
++	if (device_id == PCI_DEVICE_ID_CYCLOM_Y_Lo ||
++			device_id == PCI_DEVICE_ID_CYCLOM_Y_Hi) {
++		/* allocate IRQ */
++		retval = request_irq(irq, cyy_interrupt,
++				IRQF_SHARED, "Cyclom-Y", &cy_card[card_no]);
++		if (retval) {
++			dev_err(&pdev->dev, "could not allocate IRQ\n");
++			goto err_unmap;
+ 		}
++		cy_card[card_no].num_chips = nchan / 4;
++	} else {
+ #ifdef CONFIG_CYZ_INTR
+ 		/* allocate IRQ only if board has an IRQ */
+-		if ((cy_pci_irq != 0) && (cy_pci_irq != 255)) {
+-			retval = request_irq(cy_pci_irq, cyz_interrupt,
++		if (irq != 0 && irq != 255) {
++			retval = request_irq(irq, cyz_interrupt,
+ 					IRQF_SHARED, "Cyclades-Z",
+ 					&cy_card[j]);
+ 			if (retval) {
+ 				dev_err(&pdev->dev, "could not allocate IRQ\n");
+-				return retval;
++				goto err_unmap;
+ 			}
+ 		}
+ #endif				/* CONFIG_CYZ_INTR */
++		cy_card[card_no].num_chips = -1;
++	}
+ 
+-		/* set cy_card */
+-		cy_card[j].base_addr = cy_pci_addr2;
+-		cy_card[j].ctl_addr = cy_pci_addr0;
+-		cy_card[j].irq = cy_pci_irq;
+-		cy_card[j].bus_index = 1;
+-		cy_card[j].first_line = cy_next_channel;
+-		cy_card[j].num_chips = -1;
+-		cy_init_card(&cy_card[j]);
+-		pci_set_drvdata(pdev, &cy_card[j]);
++	/* set cy_card */
++	cy_card[card_no].base_addr = addr2;
++	cy_card[card_no].ctl_addr = addr0;
++	cy_card[card_no].irq = irq;
++	cy_card[card_no].bus_index = 1;
++	cy_card[card_no].first_line = cy_next_channel;
++	retval = cy_init_card(&cy_card[card_no]);
++	if (retval)
++		goto err_null;
+ 
+-		dev_info(&pdev->dev, "Cyclades-8Zo/PCI #%d found: %d channels "
+-			"starting from port %d.\n", j + 1, cy_pci_nchan,
+-			cy_next_channel);
++	pci_set_drvdata(pdev, &cy_card[card_no]);
+ 
+-		for (j = cy_next_channel;
+-				j < cy_next_channel + cy_pci_nchan; j++)
+-			tty_register_device(cy_serial_driver, j, &pdev->dev);
+-		cy_next_channel += cy_pci_nchan;
++	if (device_id == PCI_DEVICE_ID_CYCLOM_Y_Lo ||
++			device_id == PCI_DEVICE_ID_CYCLOM_Y_Hi) {
++		/* enable interrupts in the PCI interface */
++		plx_ver = readb(addr2 + CyPLX_VER) & 0x0f;
++		switch (plx_ver) {
++		case PLX_9050:
++
++			cy_writeb(addr0 + 0x4c, 0x43);
++			break;
++
++		case PLX_9060:
++		case PLX_9080:
++		default:	/* Old boards, use PLX_9060 */
++
++			plx_init(addr0, 0x6c);
++		/* For some yet unknown reason, once the PLX9060 reloads
++		   the EEPROM, the IRQ is lost and, thus, we have to
++		   re-write it to the PCI config. registers.
++		   This will remain here until we find a permanent
++		   fix. */
++			pci_write_config_byte(pdev, PCI_INTERRUPT_LINE, irq);
++
++			cy_writew(addr0 + 0x68, readw(addr0 + 0x68) | 0x0900);
++			break;
++		}
  	}
  
-diff --git a/include/linux/cyclades.h b/include/linux/cyclades.h
-index 07791f0..72aa00c 100644
---- a/include/linux/cyclades.h
-+++ b/include/linux/cyclades.h
-@@ -518,6 +518,7 @@ struct cyclades_card {
-     int bus_index;	/* address shift - 0 for ISA, 1 for PCI */
-     int	intr_enabled;	/* FW Interrupt flag - 0 disabled, 1 enabled */
-     spinlock_t card_lock;
-+    struct cyclades_port *ports;
- };
++	dev_info(&pdev->dev, "%s/PCI #%d found: %d channels starting from "
++		"port %d.\n", card_name, card_no + 1, nchan, cy_next_channel);
++	for (i = cy_next_channel; i < cy_next_channel + nchan; i++)
++		tty_register_device(cy_serial_driver, i, &pdev->dev);
++	cy_next_channel += nchan;
++
+ 	return 0;
++err_null:
++	cy_card[card_no].base_addr = NULL;
++	free_irq(irq, &cy_card[card_no]);
++err_unmap:
++	pci_iounmap(pdev, addr0);
++	if (addr2)
++		pci_iounmap(pdev, addr2);
++err_reg:
++	pci_release_regions(pdev);
++err_dis:
++	pci_disable_device(pdev);
++err:
++	return retval;
+ }
  
- /***************************************
+ static void __devexit cy_pci_remove(struct pci_dev *pdev)
