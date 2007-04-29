@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031443AbXD2Whr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031447AbXD2Wmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031443AbXD2Whr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 18:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031447AbXD2Whr
+	id S1031447AbXD2Wmq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 18:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031334AbXD2Wmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 18:37:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:38595 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031443AbXD2Who (ORCPT
+	Sun, 29 Apr 2007 18:42:46 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:32902 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031452AbXD2Wmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 18:37:44 -0400
-Date: Mon, 30 Apr 2007 00:37:41 +0200
-From: Andi Kleen <andi@firstfloor.org>
+	Sun, 29 Apr 2007 18:42:45 -0400
+Date: Mon, 30 Apr 2007 00:42:56 +0200
+From: Adrian Bunk <bunk@stusta.de>
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.21
-Message-ID: <20070429223741.GB714@one.firstfloor.org>
+Message-ID: <20070429224256.GA23336@stusta.de>
 References: <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com> <20070429201729.GQ3468@stusta.de> <20070429225657.a501ab5a.diegocg@gmail.com> <20070429211028.GT3468@stusta.de> <6bffcb0e0704291416u402668ffo9bcaafb389228981@mail.gmail.com> <20070429212128.GU3468@stusta.de> <1177883521.5791.156.camel@localhost.localdomain> <20070429221958.GX3468@stusta.de> <1177886010.5791.166.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 In-Reply-To: <1177886010.5791.166.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Right. Simply because these lists are assembled by someone
+On Mon, Apr 30, 2007 at 12:33:30AM +0200, Thomas Gleixner wrote:
+> On Mon, 2007-04-30 at 00:19 +0200, Adrian Bunk wrote:
+>...
+> > And it failed because many regressions still stayed unfixed and some 
+> > even undebugged.
 > 
-> - who knows how to pick that reports from the mailinglists
-> - who knows how to sort them in a useful way
-> - who knows how to add the relevant folks on CC
+> No it failed not. It is not perfect. Way more bugs, which have been
+> fixed or are in the debugging process, would have been unnoticed and
+> ignored otherwise.
+>...
 
-That all needs to be done by someone initially yes. But then tracking what happens
-afterwards is something that can be distributed. A difficult bug can take a long
-time to resolve and generate a lot of messages; you don't want to require
-the initial sorter to handle all that too.
+It depends on what you consider failure and what you consider success.
 
-It's much more scalable to let the developers update the state themselves
-then once they handle the bug.
+For me, it failed. Not because it wasn't perfect, but because we could 
+have done much better with fixing the known regressions, and also by not 
+introducing several regressions between the last -rc and the final 
+kernel (and people who did test -rc7 and would most likely also have 
+tested an -rc8 ran into them).
 
--Andi
+> 	tglx
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
