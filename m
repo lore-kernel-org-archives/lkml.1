@@ -1,191 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754139AbXD2SBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbXD2SJN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754139AbXD2SBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 14:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXD2SBA
+	id S1752004AbXD2SJN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 14:09:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbXD2SJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 14:01:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50302 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753872AbXD2SA5 (ORCPT
+	Sun, 29 Apr 2007 14:09:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50807 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbXD2SJM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 14:00:57 -0400
-Date: Sun, 29 Apr 2007 18:59:42 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>
-Subject: Re: [patch 27/32] xen: Add the Xen virtual network device driver.
-Message-ID: <20070429175942.GA3551@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-	Chris Wright <chrisw@sous-sol.org>,
-	Ian Pratt <ian.pratt@xensource.com>,
-	Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-	netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-	Stephen Hemminger <shemminge@linux-foundation.org>
-References: <20070429172835.284784000@goop.org> <20070429172916.025602000@goop.org>
+	Sun, 29 Apr 2007 14:09:12 -0400
+Date: Sun, 29 Apr 2007 20:09:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@stusta.de>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070429180909.GA30604@one.firstfloor.org>
+References: <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070429172916.025602000@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 10:29:02AM -0700, Jeremy Fitzhardinge wrote:
-> +#include <linux/version.h>
+>  - a lot of reporters will not use bugzilla, because it's damn 
+>    inconvenient even for reporting. If you propose something that uses 
 
-not needed.
+Don't think that's true. There are plenty of projects who only
+accept bugs through bugzilla (mozilla, various distributions, etc.) 
+and I don't see any evidence of your claim being true.
 
-> +#include <xen/xenbus.h>
-> +#include <xen/interface/io/netif.h>
-> +#include <xen/interface/memory.h>
-> +#ifdef CONFIG_XEN_BALLOON
-> +#include <xen/balloon.h>
-> +#endif
-> +#include <xen/interface/grant_table.h>
+Sure there will be always people who cannot be bothered
+to use any kind of interface for bugs, but then
+these are unlikely to stay on board during a longer 
+remote debugging q'n'a session either. So those people
+can be just ignored; they essentially don't exist in
+the bug report universe.
 
-Please don't try to put such a fucked up include hierachy in.
-Just move everything under include/xen or you will soon get
-problems with the 80 line length limit for your includes..
+Anyways it only works if people are willing to use it too and there
+are enough people who maintain bugs (aka ask questions to find out
+who to reassign, prune old bugs etc.)  If that's not there then
+it won't work well obviously, like it is currently the case.
 
-Also please make sure that <xen/balloon.h> can be included unconditionally,
-as we really don't like ifdefs around includes.
+I don't think the "keep it in Andrew's/Adrian's head" method
+is going to scale longer term at least (and one of them has 
+already thrown in the towel) 
 
-> +struct netfront_info {
-> +	struct list_head list;
-> +	struct net_device *netdev;
-> +
-> +	struct net_device_stats stats;
-> +
-> +	struct netif_tx_front_ring tx;
-> +	struct netif_rx_front_ring rx;
-> +
-> +	spinlock_t   tx_lock;
-> +	spinlock_t   rx_lock;
-> +
-> +	unsigned int evtchn, irq;
-> +	unsigned int copying_receiver;
-> +	unsigned int carrier;
+The "send it to a gigantic mailing list and hope someone catches
+it" method also doesn't seem to be that great. At least there
+are lots of lost reports in my experience this way.
 
-This doesn't not look like exactly smart cacheline alignment :)
+I suspect the real reason is more "Linus doesn't like web interfaces
+for no particular good reason". Not much can be done about that.
+Well perhaps someone can write a gopher based bugzilla interface 
+or something to solve that instead @)
 
-> +	grant_ref_t gref_tx_head;
-
-What's a grant_ref_t?  Should this really be a typedef or better
-a struct type?  Also it really wants a xen_ prefix instead of someting
-so generic.
-
-> + * Implement our own carrier flag: the network stack's version causes delays
-> + * when the carrier is re-enabled (in particular, dev_activate() may not
-> + * immediately be called, which can cause packet loss).
-> + */
-
-Did you talk to the networking folks about these problems?
-
-> +#define netfront_carrier_on(netif)	((netif)->carrier = 1)
-> +#define netfront_carrier_off(netif)	((netif)->carrier = 0)
-> +#define netfront_carrier_ok(netif)	((netif)->carrier)
-
-Please use proper symbolic names for the ctal states and kill these
-wrappers.
-
-> +static int setup_device(struct xenbus_device *, struct netfront_info *);
-> +static struct net_device *create_netdev(struct xenbus_device *);
-> +
-> +static void end_access(int, void *);
-> +static void netif_disconnect_backend(struct netfront_info *);
-> +
-> +static int network_connect(struct net_device *);
-> +static void network_tx_buf_gc(struct net_device *);
-> +static void network_alloc_rx_buffers(struct net_device *);
-> +
-> +static irqreturn_t netif_int(int irq, void *dev_id);
-
-Any chance you could avoid these forward-prototypes by reordering
-the functions a little?
-
-Also a lot of these names are horribly generic.  A proper xennet_
-prefix would probably help.
-
-> +static inline int xennet_can_sg(struct net_device *dev)
-> +{
-> +	return dev->features & NETIF_F_SG;
-> +}
-
-totally useless wrapper.
-
-> +static int __devexit netfront_remove(struct xenbus_device *dev)
-> +{
-> +	struct netfront_info *info = dev->dev.driver_data;
-> +
-> +	dev_dbg(&dev->dev, "%s\n", dev->nodename);
-> +
-> +	netif_disconnect_backend(info);
-> +
-> +	del_timer_sync(&info->rx_refill_timer);
-> +
-> +	xennet_sysfs_delif(info->netdev);
-> +
-> +	unregister_netdev(info->netdev);
-> +
-> +	free_netdev(info->netdev);
-
-This looks like very wrong ordering to me.  unregister_netdev should
-be the first thing in the remove function.
-
-> +	SHARED_RING_INIT(rxs);
-> +	FRONT_RING_INIT(&info->rx, rxs, PAGE_SIZE);
-
-Can you replace these shouting macros with proper named functions?
-
-> +	 * receive ring. This creates a less bursty demand on the memory
-> +	 * allocator, so should reduce the chance of failed allocation requests
-> +	 * both for ourself and for other kernel subsystems.
-> +	 */
-> +	batch_target = np->rx_target - (req_prod - np->rx.rsp_cons);
-> +	for (i = skb_queue_len(&np->rx_batch); i < batch_target; i++) {
-> +		/*
-> +		 * Allocate an skb and a page. Do not use __dev_alloc_skb as
-> +		 * that will allocate page-sized buffers which is not
-> +		 * necessary here.
-> +		 * 16 bytes added as necessary headroom for netif_receive_skb.
-> +		 */
-> +		skb = alloc_skb(RX_COPY_THRESHOLD + 16 + NET_IP_ALIGN,
-> +				GFP_ATOMIC | __GFP_NOWARN);
-
-This comment doesn't make any sense, __dev_alloc_skb is:
-
-static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
-                                              gfp_t gfp_mask)
-{
-	struct sk_buff *skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
-	if (likely(skb))
-		skb_reserve(skb, NET_SKB_PAD);
-	return skb;
-}
-
-then again what you really should be using here is __netdev_alloc_skb.
-
-> +#ifdef CONFIG_XEN_BALLOON
-> +		/* Tell the ballon driver what is going on. */
-> +		balloon_update_driver_allowance(i);
-> +#endif
-
-	This should be a noop for !CONFIG_XEN_BALLOON in the header,
-	and there should be no need for ifdefs here.
-
-> +		skb->nh.raw = (void *)skb_shinfo(skb)->frags[0].page;
-> +		skb->h.raw = skb->nh.raw + rx->offset;
-
-Stuff like this won't compile anymore in the current tree.
-
+-Andi
