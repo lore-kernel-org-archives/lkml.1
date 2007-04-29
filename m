@@ -1,99 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbXD2QZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbXD2Q3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756518AbXD2QZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 12:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXD2QZ0
+	id S1756512AbXD2Q3T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 12:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbXD2Q3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 12:25:26 -0400
-Received: from lucidpixels.com ([75.144.35.66]:47390 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756518AbXD2QZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 12:25:23 -0400
-Date: Sun, 29 Apr 2007 12:25:19 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: xfs@oss.sgi.com
-cc: linux-kernel@vger.kernel.org
-Subject: Re: mkfs.xfs cannot make sector size 64 KiB?
-In-Reply-To: <Pine.LNX.4.64.0704291218190.10418@p34.internal.lan>
-Message-ID: <Pine.LNX.4.64.0704291225070.10607@p34.internal.lan>
-References: <Pine.LNX.4.64.0704291218190.10418@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 29 Apr 2007 12:29:19 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42946 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756512AbXD2Q3S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 12:29:18 -0400
+Subject: Re: [Fastboot] restoring x86 BIOS state before reboot
+From: David Woodhouse <dwmw2@infradead.org>
+To: Bernhard Walle <bwalle@suse.de>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>
+In-Reply-To: <20070429094135.GA10948@suse.de>
+References: <20070406154628.GG12005@jukie.net>
+	 <m1zm4rd676.fsf@ebiederm.dsl.xmission.com> <20070429094135.GA10948@suse.de>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 17:28:59 +0100
+Message-Id: <1177864139.3085.37.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding LKML to cc list.
+On Sun, 2007-04-29 at 11:41 +0200, Bernhard Walle wrote:
+> I also heard that the 100-$-Laptop should now be able to use Windows.
+> As it's using LinuxBIOS, this could also be interesting. However,
+> maybe Microsoft simply modifies a special Windows for this, or they
+> integrate a ClosedSource part in that LinuxBIOS, I don't know ... :-(
 
-On Sun, 29 Apr 2007, Justin Piszcz wrote:
+You heard wrong. Microsoft have a few early test units and are trying to
+get Windows to boot on it. I believe their plan involves replacing
+LinuxBIOS with a 'normal' PC BIOS.
 
->> From the manpage:
->
->       -b     Block size options.
->
->              This option specifies the fundamental block size of the 
-> filesys-
->              tem.   The  valid suboptions are: log=value and size=value; 
-> only
->              one can be supplied.  The block size is specified  either  as 
-> a
->              base two logarithm value with log=, or in bytes with size=. 
-> The
->              default value is 4096 bytes (4 KiB), the minimum is 512, and 
-> the
->              maximum is 65536 (64 KiB).  XFS on Linux currently only 
-> supports
->              pagesize or smaller blocks.
->
-> The maximum size is 64 KiB, yet it seems only up to 32 KiB is valid?
->
-> I am running x86_64.
->
-> $ uname -m
-> x86_64
->
->
-> p34:~# mkfs.xfs -b size=512 /dev/md3
-> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
-> mkfs.xfs: Use the -f option to force overwrite.
-> p34:~# mkfs.xfs -b size=4096 /dev/md3
-> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
-> mkfs.xfs: Use the -f option to force overwrite.
-> p34:~# mkfs.xfs -b size=8192 /dev/md3
-> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
-> mkfs.xfs: Use the -f option to force overwrite.
-> p34:~# mkfs.xfs -b size=16384 /dev/md3
-> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
-> mkfs.xfs: Use the -f option to force overwrite.
-> p34:~# mkfs.xfs -b size=32768 /dev/md3
-> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
-> mkfs.xfs: Use the -f option to force overwrite.
-> p34:~# mkfs.xfs -b size=65536 /dev/md3
-> illegal sector size 65536
-> Usage: mkfs.xfs
-> /* blocksize */         [-b log=n|size=num]
-> /* data subvol */       [-d agcount=n,agsize=n,file,name=xxx,size=num,
->                            (sunit=value,swidth=value|su=num,sw=num),
->                            sectlog=n|sectsize=num,unwritten=0|1]
-> /* inode size */        [-i log=n|perblock=n|size=num,maxpct=n,attr=0|1|2]
-> /* log subvol */        [-l agnum=n,internal,size=num,logdev=xxx,version=n
->                            sunit=value|su=num,sectlog=n|sectsize=num]
-> /* label */             [-L label (maximum 12 characters)]
-> /* naming */            [-n log=n|size=num,version=n]
-> /* prototype file */    [-p fname]
-> /* quiet */             [-q]
-> /* realtime subvol */   [-r extsize=num,size=num,rtdev=xxx]
-> /* sectorsize */        [-s log=n|size=num]
-> /* version */           [-V]
->                        devicename
-> <devicename> is required unless -d name=xxx is given.
-> <num> is xxx (bytes), xxxs (sectors), xxxb (fs blocks), xxxk (xxx KiB),
->      xxxm (xxx MiB), xxxg (xxx GiB), xxxt (xxx TiB) or xxxp (xxx PiB).
-> <value> is xxx (512 byte blocks).
-> p34:~#
->
-> Unless, the page size is not <= 64 for x86_64?
->
-> Justin.
->
->
+-- 
+dwmw2
+
