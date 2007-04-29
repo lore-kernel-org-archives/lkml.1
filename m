@@ -1,251 +1,837 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754322AbXD2DXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbXD2DXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754322AbXD2DXA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 23:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbXD2DW7
+	id S1754502AbXD2DXn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 23:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbXD2DXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 23:22:59 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:36229 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754322AbXD2DWb (ORCPT
+	Sat, 28 Apr 2007 23:23:16 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:29756 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754431AbXD2DWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 23:22:31 -0400
+	Sat, 28 Apr 2007 23:22:33 -0400
 X-IronPort-AV: i="4.14,465,1170651600"; 
-   d="scan'208"; a="28603021:sNHT24642674"
+   d="scan'208"; a="36822436:sNHT38852849"
 From: Bryan Wu <bryan.wu@analog.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Cc: Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 3/7] blackfin arch: move revid function into global headers as inline functions
-Date: Sun, 29 Apr 2007 11:23:09 +0800
-Message-Id: <1177816995452-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 7/7] blackfin spi controller driver: update according to David Brownell's review
+Date: Sun, 29 Apr 2007 11:23:13 +0800
+Message-Id: <11778169961683-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <11778169933996-git-send-email-bryan.wu@analog.com>
 References: <11778169933996-git-send-email-bryan.wu@analog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(http://lkml.org/lkml/2007/4/16/333)
+
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- arch/blackfin/kernel/setup.c            |   72 +++++++-----------------------
- include/asm-blackfin/mach-bf533/bf533.h |    2 +-
- include/asm-blackfin/mach-bf537/bf537.h |    2 +-
- include/asm-blackfin/mach-bf561/bf561.h |    2 +-
- include/asm-blackfin/processor.h        |   25 +++++++++++
- 5 files changed, 45 insertions(+), 58 deletions(-)
+ drivers/spi/Kconfig       |   11 +-
+ drivers/spi/Makefile      |    4 +-
+ drivers/spi/spi_bfin5xx.c |  345 ++++++++++++++++++++++++---------------------
+ 3 files changed, 193 insertions(+), 167 deletions(-)
 
-diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
-index 6a2190f..724fd7a 100644
---- a/arch/blackfin/kernel/setup.c
-+++ b/arch/blackfin/kernel/setup.c
-@@ -121,34 +121,6 @@ void bf53x_relocate_l1_mem(void)
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 1ab2ed1..584ed9f 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -58,6 +58,12 @@ config SPI_ATMEL
+ 	  This selects a driver for the Atmel SPI Controller, present on
+ 	  many AT32 (AVR32) and AT91 (ARM) chips.
  
++config SPI_BFIN
++	tristate "SPI controller driver for ADI Blackfin5xx"
++	depends on SPI_MASTER && BFIN
++	help
++	  This is the SPI controller master driver for Blackfin 5xx processor.
++
+ config SPI_BITBANG
+ 	tristate "Bitbanging SPI master"
+ 	depends on SPI_MASTER && EXPERIMENTAL
+@@ -165,11 +171,6 @@ config SPI_SPIDEV
+ #
+ # Add new SPI protocol masters in alphabetical order above this line
+ #
+-config SPI_BFIN
+-	tristate "SPI controller driver for ADI Blackfin5xx"
+-	depends on SPI_MASTER && BFIN
+-	help
+-	  This is the SPI controller master driver for Blackfin 5xx processor.
+ 
+ # (slave support would go here)
+ 
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index f9dcdd1..4cc5e99 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -11,8 +11,9 @@ endif
+ obj-$(CONFIG_SPI_MASTER)		+= spi.o
+ 
+ # SPI master controller drivers (bus)
+-obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
+ obj-$(CONFIG_SPI_ATMEL)			+= atmel_spi.o
++obj-$(CONFIG_SPI_BFIN)			+= spi_bfin5xx.o
++obj-$(CONFIG_SPI_BITBANG)		+= spi_bitbang.o
+ obj-$(CONFIG_SPI_BUTTERFLY)		+= spi_butterfly.o
+ obj-$(CONFIG_SPI_IMX)			+= spi_imx.o
+ obj-$(CONFIG_SPI_PXA2XX)		+= pxa2xx_spi.o
+@@ -20,7 +21,6 @@ obj-$(CONFIG_SPI_OMAP_UWIRE)		+= omap_uwire.o
+ obj-$(CONFIG_SPI_MPC83xx)		+= spi_mpc83xx.o
+ obj-$(CONFIG_SPI_S3C24XX_GPIO)		+= spi_s3c24xx_gpio.o
+ obj-$(CONFIG_SPI_S3C24XX)		+= spi_s3c24xx.o
+-obj-$(CONFIG_SPI_BFIN)			+= spi_bfin5xx.o
+ # 	... add above this line ...
+ 
+ # SPI protocol drivers (device/link on bus)
+diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
+index ab6781a..2bbbe50 100644
+--- a/drivers/spi/spi_bfin5xx.c
++++ b/drivers/spi/spi_bfin5xx.c
+@@ -76,7 +76,6 @@ DEFINE_SPI_REG(SHAW, 0x18)
+ #define QUEUE_RUNNING 0
+ #define QUEUE_STOPPED 1
+ int dma_requested;
+-char chip_select_flag;
+ 
+ struct driver_data {
+ 	/* Driver model hookup */
+@@ -175,8 +174,9 @@ static int flush(struct driver_data *drv_data)
+ 	unsigned long limit = loops_per_jiffy << 1;
+ 
+ 	/* wait for stop and clear stat */
+-	do {
+-	} while (!(read_STAT() & BIT_STAT_SPIF) && limit--);
++	while (!(read_STAT() & BIT_STAT_SPIF) && limit--)
++		continue;
++	
+ 	write_STAT(BIT_STAT_CLR);
+ 
+ 	return limit;
+@@ -192,42 +192,50 @@ static void restore_state(struct driver_data *drv_data)
+ 	bfin_spi_disable(drv_data);
+ 	pr_debug("restoring spi ctl state\n");
+ 
+-#if defined(CONFIG_BF534)||defined(CONFIG_BF536)||defined(CONFIG_BF537)
+-	if (chip->chip_select_num == 1) {
+-		pr_debug("set for chip select 1\n");
++#if defined(CONFIG_BF534) || defined(CONFIG_BF536) || defined(CONFIG_BF537)
++	pr_debug("chip select number is %d\n", chip->chip_select_num);
++	
++	switch (chip->chip_select_num) {
++	case 1:
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3c00);
+ 		SSYNC();
+-
+-	} else if (chip->chip_select_num == 2 || chip->chip_select_num == 3) {
+-		pr_debug("set for chip select 2\n");
++		break;
++	
++	case 2:
++	case 3:
+ 		bfin_write_PORT_MUX(bfin_read_PORT_MUX() | PJSE_SPI);
+ 		SSYNC();
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3800);
+ 		SSYNC();
+-
+-	} else if (chip->chip_select_num == 4) {
++		break;
++	
++	case 4:
+ 		bfin_write_PORT_MUX(bfin_read_PORT_MUX() | PFS4E_SPI);
+ 		SSYNC();
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3840);
+ 		SSYNC();
+-
+-	} else if (chip->chip_select_num == 5) {
++		break;
++	
++	case 5:
+ 		bfin_write_PORT_MUX(bfin_read_PORT_MUX() | PFS5E_SPI);
+ 		SSYNC();
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3820);
+ 		SSYNC();
++		break;
+ 
+-	} else if (chip->chip_select_num == 6) {
++	case 6:
+ 		bfin_write_PORT_MUX(bfin_read_PORT_MUX() | PFS6E_SPI);
+ 		SSYNC();
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3810);
+ 		SSYNC();
+-
+-	} else if (chip->chip_select_num == 7) {
++		break;
++	
++	case 7:
+ 		bfin_write_PORT_MUX(bfin_read_PORT_MUX() | PJCE_SPI);
+ 		SSYNC();
+ 		bfin_write_PORTF_FER(bfin_read_PORTF_FER() | 0x3800);
+ 		SSYNC();
++		break;
+ 	}
+ #endif
+ 
+@@ -251,8 +259,8 @@ static void null_writer(struct driver_data *drv_data)
+ 
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(0);
+-		do {
+-		} while ((read_STAT() & BIT_STAT_TXS));
++		while ((read_STAT() & BIT_STAT_TXS))
++			continue;
+ 		drv_data->tx += n_bytes;
+ 	}
+ }
+@@ -263,8 +271,8 @@ static void null_reader(struct driver_data *drv_data)
+ 	dummy_read();
+ 
+ 	while (drv_data->rx < drv_data->rx_end) {
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		dummy_read();
+ 		drv_data->rx += n_bytes;
+ 	}
+@@ -275,14 +283,14 @@ static void u8_writer(struct driver_data *drv_data)
+ 	pr_debug("cr8-s is 0x%x\n", read_STAT());
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+-		do {
+-		} while (read_STAT() & BIT_STAT_TXS);
++		while (read_STAT() & BIT_STAT_TXS)
++			continue;
+ 		++drv_data->tx;
+ 	}
+ 
+ 	/* poll for SPI completion before returning */
+-	do {
+-	} while (!(read_STAT() & BIT_STAT_SPIF));
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
  }
  
--/* Get the DSP Revision ID */
--static u_int get_dsp_rev_id(void)
--{
--	u_int id;
--	id = bfin_read_DSPID() & 0xffff;
--#if defined(CONFIG_BF561)
--	id>>=8;
--#endif
--	return id;
--}
--
--static inline u_int get_compiled_rev_id(void)
--{
--#if defined(CONFIG_BF_REV_0_0)
--	return 0;
--#elif defined(CONFIG_BF_REV_0_1)
--	return 1;
--#elif defined(CONFIG_BF_REV_0_2)
--	return 2;
--#elif defined(CONFIG_BF_REV_0_3)
--	return 3;
--#elif defined(CONFIG_BF_REV_0_4)
--	return 4;
--#elif defined(CONFIG_BF_REV_0_5)
--	return 5;
--#endif
--}
--
- /*
-  * Initial parsing of the command line.  Currently, we support:
-  *  - Controlling the linux memory size: mem=xxx[KMG]
-@@ -196,7 +168,7 @@ static __init void parse_cmdline_early(char *cmdline_p)
+ static void u8_cs_chg_writer(struct driver_data *drv_data)
+@@ -294,10 +302,10 @@ static void u8_cs_chg_writer(struct driver_data *drv_data)
+ 		SSYNC();
  
- void __init setup_arch(char **cmdline_p)
- {
--	int bootmap_size, id;
-+	int bootmap_size;
- 	unsigned long l1_length, sclk, cclk;
- #ifdef CONFIG_MTD_UCLINUX
- 	unsigned long mtd_phys = 0;
-@@ -329,30 +301,23 @@ void __init setup_arch(char **cmdline_p)
- 	init_mm.brk = (unsigned long)0;
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+-		do {
+-		} while (read_STAT() & BIT_STAT_TXS);
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
++		while (read_STAT() & BIT_STAT_TXS)
++			continue;
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+ 		if (chip->cs_chg_udelay)
+@@ -318,13 +326,14 @@ static void u8_reader(struct driver_data *drv_data)
+ 	dummy_read();
  
- 	init_leds();
--	id = get_dsp_rev_id();
--
--	printk(KERN_INFO
--	       "Blackfin support (C) 2004-2006 Analog Devices, Inc.\n");
--	printk(KERN_INFO "Compiled for ADSP-%s Rev. 0.%d\n", CPU,
--	       get_compiled_rev_id());
--	if (id != get_compiled_rev_id())
--		printk(KERN_ERR
--		       "Warning: Compiled for Rev %d, but running on Rev %d\n",
--			get_compiled_rev_id(), id );
--	if (id < SUPPORTED_DSPID)
--		printk(KERN_ERR
--		       "Warning: Unsupported Chip Revision ADSP-%s Rev. 0.%d detected\n",
--		       CPU, id);
--	printk(KERN_INFO
--	       "Blackfin uClinux support by http://blackfin.uclinux.org/\n");
-+
-+	printk(KERN_INFO "Blackfin support (C) 2004-2007 Analog Devices, Inc.\n");
-+	printk(KERN_INFO "Compiled for ADSP-%s Rev 0.%d\n", CPU, bfin_compiled_revid());
-+	if (bfin_revid() != bfin_compiled_revid())
-+		printk(KERN_ERR "Warning: Compiled for Rev %d, but running on Rev %d\n",
-+		       bfin_compiled_revid(), bfin_revid());
-+	if (bfin_revid() < SUPPORTED_REVID)
-+		printk(KERN_ERR "Warning: Unsupported Chip Revision ADSP-%s Rev 0.%d detected\n",
-+		       CPU, bfin_revid());
-+	printk(KERN_INFO "Blackfin Linux support by http://blackfin.uclinux.org/\n");
+ 	while (drv_data->rx < drv_data->rx_end - 1) {
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u8 *) (drv_data->rx) = read_RDBR();
+ 		++drv_data->rx;
+ 	}
+-	do {
+-	} while (!(read_STAT() & BIT_STAT_RXS));
++	
++	while (!(read_STAT() & BIT_STAT_RXS))
++		continue;
+ 	*(u8 *) (drv_data->rx) = read_SHAW();
+ 	++drv_data->rx;
+ }
+@@ -338,10 +347,10 @@ static void u8_cs_chg_reader(struct driver_data *drv_data)
+ 		SSYNC();
  
- 	printk(KERN_INFO "Processor Speed: %lu MHz core clock and %lu Mhz System Clock\n",
- 	       cclk / 1000000,  sclk / 1000000);
+ 		read_RDBR();	/* kick off */
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
+ 		*(u8 *) (drv_data->rx) = read_SHAW();
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+@@ -358,10 +367,10 @@ static void u8_duplex(struct driver_data *drv_data)
+ 	/* in duplex mode, clk is triggered by writing of TDBR */
+ 	while (drv_data->rx < drv_data->rx_end) {
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u8 *) (drv_data->rx) = read_RDBR();
+ 		++drv_data->rx;
+ 		++drv_data->tx;
+@@ -377,10 +386,10 @@ static void u8_cs_chg_duplex(struct driver_data *drv_data)
+ 		SSYNC();
  
- #if defined(ANOMALY_05000273)
- 	if ((cclk >> 1) <= sclk)
--		printk(KERN_ERR
--		       "\n\n\nANOMALY_05000273: CCLK must be >= 2*SCLK !!!\n\n\n");
-+		printk("\n\n\nANOMALY_05000273: CCLK must be >= 2*SCLK !!!\n\n\n");
- #endif
+ 		write_TDBR(*(u8 *) (drv_data->tx));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u8 *) (drv_data->rx) = read_RDBR();
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+@@ -398,14 +407,14 @@ static void u16_writer(struct driver_data *drv_data)
+ 	pr_debug("cr16 is 0x%x\n", read_STAT());
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+-		do {
+-		} while ((read_STAT() & BIT_STAT_TXS));
++		while ((read_STAT() & BIT_STAT_TXS))
++			continue;
+ 		drv_data->tx += 2;
+ 	}
  
- 	printk(KERN_INFO "Board Memory: %ldMB\n", physical_mem_end >> 20);
-@@ -778,21 +743,19 @@ EXPORT_SYMBOL(get_sclk);
- static int show_cpuinfo(struct seq_file *m, void *v)
- {
- 	char *cpu, *mmu, *fpu, *name;
--#ifdef CONFIG_BLKFIN_CACHE_LOCK
--	int lock;
--#endif
-+	uint32_t revid;
+ 	/* poll for SPI completion before returning */
+-	do {
+-	} while (!(read_STAT() & BIT_STAT_SPIF));
++	while (!(read_STAT() & BIT_STAT_SPIF))
++		continue;
+ }
  
- 	u_long cclk = 0, sclk = 0;
--	u_int id, dcache_size = 0, dsup_banks = 0;
-+	u_int dcache_size = 0, dsup_banks = 0;
+ static void u16_cs_chg_writer(struct driver_data *drv_data)
+@@ -417,10 +426,10 @@ static void u16_cs_chg_writer(struct driver_data *drv_data)
+ 		SSYNC();
  
- 	cpu = CPU;
- 	mmu = "none";
- 	fpu = "none";
-+	revid = bfin_revid();
- 	name = bfin_board_name;
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+-		do {
+-		} while ((read_STAT() & BIT_STAT_TXS));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
++		while ((read_STAT() & BIT_STAT_TXS))
++			continue;
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+ 		if (chip->cs_chg_udelay)
+@@ -437,13 +446,14 @@ static void u16_reader(struct driver_data *drv_data)
+ 	dummy_read();
  
- 	cclk = get_cclk();
- 	sclk = get_sclk();
--	id = get_dsp_rev_id();
+ 	while (drv_data->rx < (drv_data->rx_end - 2)) {
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u16 *) (drv_data->rx) = read_RDBR();
+ 		drv_data->rx += 2;
+ 	}
+-	do {
+-	} while (!(read_STAT() & BIT_STAT_RXS));
++	
++	while (!(read_STAT() & BIT_STAT_RXS))
++		continue;
+ 	*(u16 *) (drv_data->rx) = read_SHAW();
+ 	drv_data->rx += 2;
+ }
+@@ -457,10 +467,10 @@ static void u16_cs_chg_reader(struct driver_data *drv_data)
+ 		SSYNC();
  
- 	seq_printf(m, "CPU:\t\tADSP-%s Rev. 0.%d\n"
- 		   "MMU:\t\t%s\n"
-@@ -801,7 +764,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 		   "System Clock:\t%9lu Hz\n"
- 		   "BogoMips:\t%lu.%02lu\n"
- 		   "Calibration:\t%lu loops\n",
--		   cpu, id, mmu, fpu,
-+		   cpu, revid, mmu, fpu,
- 		   cclk,
- 		   sclk,
- 		   (loops_per_jiffy * HZ) / 500000,
-@@ -856,8 +819,7 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 		   dsup_banks, BLKFIN_DSUBBANKS, BLKFIN_DWAYS,
- 		   BLKFIN_DLINES);
- #ifdef CONFIG_BLKFIN_CACHE_LOCK
--	lock = read_iloc();
--	switch (lock) {
-+	switch (read_iloc()) {
- 	case WAY0_L:
- 		seq_printf(m, "Way0 Locked-Down\n");
- 		break;
-diff --git a/include/asm-blackfin/mach-bf533/bf533.h b/include/asm-blackfin/mach-bf533/bf533.h
-index 095ca36..185fc12 100644
---- a/include/asm-blackfin/mach-bf533/bf533.h
-+++ b/include/asm-blackfin/mach-bf533/bf533.h
-@@ -30,7 +30,7 @@
- #ifndef __MACH_BF533_H__
- #define __MACH_BF533_H__
+ 		read_RDBR();	/* kick off */
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
+ 		*(u16 *) (drv_data->rx) = read_SHAW();
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+@@ -477,10 +487,10 @@ static void u16_duplex(struct driver_data *drv_data)
+ 	/* in duplex mode, clk is triggered by writing of TDBR */
+ 	while (drv_data->tx < drv_data->tx_end) {
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u16 *) (drv_data->rx) = read_RDBR();
+ 		drv_data->rx += 2;
+ 		drv_data->tx += 2;
+@@ -496,10 +506,10 @@ static void u16_cs_chg_duplex(struct driver_data *drv_data)
+ 		SSYNC();
  
--#define SUPPORTED_DSPID 2
-+#define SUPPORTED_REVID 2
+ 		write_TDBR(*(u16 *) (drv_data->tx));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_SPIF));
+-		do {
+-		} while (!(read_STAT() & BIT_STAT_RXS));
++		while (!(read_STAT() & BIT_STAT_SPIF))
++			continue;
++		while (!(read_STAT() & BIT_STAT_RXS))
++			continue;
+ 		*(u16 *) (drv_data->rx) = read_RDBR();
+ 		write_FLAG(0xFF00 | chip->flag);
+ 		SSYNC();
+@@ -528,8 +538,9 @@ static void *next_transfer(struct driver_data *drv_data)
+ 		return DONE_STATE;
+ }
  
- #define OFFSET_(x) ((x) & 0x0000FFFF)
- 
-diff --git a/include/asm-blackfin/mach-bf537/bf537.h b/include/asm-blackfin/mach-bf537/bf537.h
-index 05b664f..b8924cd 100644
---- a/include/asm-blackfin/mach-bf537/bf537.h
-+++ b/include/asm-blackfin/mach-bf537/bf537.h
-@@ -30,7 +30,7 @@
- #ifndef __MACH_BF537_H__
- #define __MACH_BF537_H__
- 
--#define SUPPORTED_DSPID 2
-+#define SUPPORTED_REVID 2
- 
- /* Masks for generic ERROR IRQ demultiplexing used in int-priority-sc.c */
- 
-diff --git a/include/asm-blackfin/mach-bf561/bf561.h b/include/asm-blackfin/mach-bf561/bf561.h
-index ded1796..96a5d3a 100644
---- a/include/asm-blackfin/mach-bf561/bf561.h
-+++ b/include/asm-blackfin/mach-bf561/bf561.h
-@@ -30,7 +30,7 @@
- #ifndef __MACH_BF561_H__
- #define __MACH_BF561_H__
- 
--#define SUPPORTED_DSPID		0x3
-+#define SUPPORTED_REVID		0x3
- 
- #define OFFSET_(x) ((x) & 0x0000FFFF)
- #define L1_ISRAM		0xFFA00000
-diff --git a/include/asm-blackfin/processor.h b/include/asm-blackfin/processor.h
-index 299c493..997465c 100644
---- a/include/asm-blackfin/processor.h
-+++ b/include/asm-blackfin/processor.h
-@@ -7,6 +7,7 @@
+-/* caller already set message->status; dma and pio irqs are blocked
+- * give finished message back
++/*
++ * caller already set message->status;
++ * dma and pio irqs are blocked give finished message back
   */
- #define current_text_addr() ({ __label__ _l; _l: &&_l;})
+ static void giveback(struct driver_data *drv_data)
+ {
+@@ -549,6 +560,7 @@ static void giveback(struct driver_data *drv_data)
+ 				   struct spi_transfer, transfer_list);
  
-+#include <asm/blackfin.h>
- #include <asm/segment.h>
- #include <linux/compiler.h>
- 
-@@ -102,4 +103,28 @@ unsigned long get_wchan(struct task_struct *p);
- 
- #define cpu_relax()    	barrier()
- 
-+/* Get the Silicon Revision of the chip */
-+static inline uint32_t bfin_revid(void)
-+{
-+	/* stored in the upper 4 bits */
-+	return bfin_read_CHIPID() >> 28;
-+}
+ 	msg->state = NULL;
 +
-+static inline uint32_t bfin_compiled_revid(void)
-+{
-+#if defined(CONFIG_BF_REV_0_0)
-+	return 0;
-+#elif defined(CONFIG_BF_REV_0_1)
-+	return 1;
-+#elif defined(CONFIG_BF_REV_0_2)
-+	return 2;
-+#elif defined(CONFIG_BF_REV_0_3)
-+	return 3;
-+#elif defined(CONFIG_BF_REV_0_4)
-+	return 4;
-+#elif defined(CONFIG_BF_REV_0_5)
-+	return 5;
-+#endif
-+}
+ 	/* disable chip select signal. And not stop spi in autobuffer mode */
+ 	if (drv_data->tx_dma != 0xFFFF) {
+ 		write_FLAG(0xFF00);
+@@ -567,15 +579,19 @@ static irqreturn_t dma_irq_handler(int irq, void *dev_id, struct pt_regs *regs)
+ 	pr_debug("in dma_irq_handler\n");
+ 	clear_dma_irqstat(CH_SPI);
+ 
+-	/* wait for the last transaction shifted out.  yes, these two
++	/*
++	 * wait for the last transaction shifted out.  yes, these two
+ 	 * while loops are supposed to be the same (see the HRM).
+ 	 */
+ 	if (drv_data->tx != NULL) {
+-		while (bfin_read_SPI_STAT() & TXS) ;
+-		while (bfin_read_SPI_STAT() & TXS) ;
++		while (bfin_read_SPI_STAT() & TXS)
++			continue;
++		while (bfin_read_SPI_STAT() & TXS)
++			continue;
+ 	}
+ 
+-	while (!(bfin_read_SPI_STAT() & SPIF)) ;
++	while (!(bfin_read_SPI_STAT() & SPIF))
++		continue;
+ 
+ 	bfin_spi_disable(drv_data);
+ 
+@@ -609,8 +625,11 @@ static void pump_transfers(unsigned long data)
+ 	transfer = drv_data->cur_transfer;
+ 	chip = drv_data->cur_chip;
+ 
+-	/* if msg is error or done, report it back using complete() callback */
+-	/* Handle for abort */
++	/*
++	 * if msg is error or done, report it back using complete() callback
++	 */
 +
- #endif
++	 /* Handle for abort */
+ 	if (message->state == ERROR_STATE) {
+ 		message->status = -EIO;
+ 		giveback(drv_data);
+@@ -676,7 +695,6 @@ static void pump_transfers(unsigned long data)
+ 	     drv_data->write, chip->write, null_writer);
+ 
+ 	/* speed and width has been set on per message */
+-
+ 	message->state = RUNNING_STATE;
+ 	dma_config = 0;
+ 
+@@ -690,8 +708,12 @@ static void pump_transfers(unsigned long data)
+ 
+ 	pr_debug("now pumping a transfer: width is %d, len is %d\n", width,
+ 		 transfer->len);
+-	/* Try to map dma buffer and do a dma transfer if successful */
+-	/* use different way to r/w according to drv_data->cur_chip->enable_dma */
++
++	/*
++	 * Try to map dma buffer and do a dma transfer if
++	 * successful use different way to r/w according to
++	 * drv_data->cur_chip->enable_dma
++	 */
+ 	if (drv_data->cur_chip->enable_dma && drv_data->len > 6) {
+ 
+ 		write_STAT(BIT_STAT_CLR);
+@@ -699,8 +721,8 @@ static void pump_transfers(unsigned long data)
+ 		clear_dma_irqstat(CH_SPI);
+ 		bfin_spi_disable(drv_data);
+ 
+-		pr_debug("doing dma transfer\n");
+ 		/* config dma channel */
++		pr_debug("doing dma transfer\n");
+ 		if (width == CFG_SPI_WORDSIZE16) {
+ 			set_dma_x_count(CH_SPI, drv_data->len);
+ 			set_dma_x_modify(CH_SPI, 2);
+@@ -711,9 +733,8 @@ static void pump_transfers(unsigned long data)
+ 			dma_width = WDSIZE_8;
+ 		}
+ 
+-		/* Go baby, go */
+ 		/* set transfer width,direction. And enable spi */
+-		cr = (read_CTRL() & (~BIT_CTL_TIMOD));	/* clear the TIMOD bits */
++		cr = (read_CTRL() & (~BIT_CTL_TIMOD));
+ 
+ 		/* dirty hack for autobuffer DMA mode */
+ 		if (drv_data->tx_dma == 0xFFFF) {
+@@ -727,6 +748,7 @@ static void pump_transfers(unsigned long data)
+ 			enable_dma(CH_SPI);
+ 			write_CTRL(cr | CFG_SPI_DMAWRITE | (width << 8) |
+ 				   (CFG_SPI_ENABLE << 14));
++
+ 			/* just return here, there can only be one transfer in this mode */
+ 			message->status = 0;
+ 			giveback(drv_data);
+@@ -760,6 +782,7 @@ static void pump_transfers(unsigned long data)
+ 			write_CTRL(cr);
+ 		} else if (drv_data->tx != NULL) {
+ 			pr_debug("doing DMA out.\n");
++
+ 			/* start dma */
+ 			dma_enable_irq(CH_SPI);
+ 			dma_config = (RESTART | dma_width | DI_EN);
+@@ -771,13 +794,14 @@ static void pump_transfers(unsigned long data)
+ 				   (CFG_SPI_ENABLE << 14));
+ 
+ 		}
+-	} else {		/* IO mode write then read */
+-		/* Go baby, go */
++	} else {
++		/* IO mode write then read */
+ 		pr_debug("doing IO transfer\n");
+ 
+ 		write_STAT(BIT_STAT_CLR);
+ 
+-		if (drv_data->tx != NULL && drv_data->rx != NULL) {	/* full duplex mode */
++		if (drv_data->tx != NULL && drv_data->rx != NULL) {
++			/* full duplex mode */
+ 			BUG_ON((drv_data->tx_end - drv_data->tx) !=
+ 			       (drv_data->rx_end - drv_data->rx));
+ 			cr = (read_CTRL() & (~BIT_CTL_TIMOD));	/* clear the TIMOD bits */
+@@ -793,7 +817,8 @@ static void pump_transfers(unsigned long data)
+ 
+ 			if (drv_data->tx != drv_data->tx_end)
+ 				tranf_success = 0;
+-		} else if (drv_data->tx != NULL) {	/* write only half duplex */
++		} else if (drv_data->tx != NULL) {
++			/* write only half duplex */
+ 			cr = (read_CTRL() & (~BIT_CTL_TIMOD));	/* clear the TIMOD bits */
+ 			cr |=
+ 			    CFG_SPI_WRITE | (width << 8) | (CFG_SPI_ENABLE <<
+@@ -807,8 +832,8 @@ static void pump_transfers(unsigned long data)
+ 
+ 			if (drv_data->tx != drv_data->tx_end)
+ 				tranf_success = 0;
+-		} else if (drv_data->rx != NULL) {	/* read only half duplex */
+-
++		} else if (drv_data->rx != NULL) {
++			/* read only half duplex */
+ 			cr = (read_CTRL() & (~BIT_CTL_TIMOD));	/* cleare the TIMOD bits */
+ 			cr |=
+ 			    CFG_SPI_READ | (width << 8) | (CFG_SPI_ENABLE <<
+@@ -887,7 +912,10 @@ static void pump_messages(struct work_struct *work)
+ 	spin_unlock_irqrestore(&drv_data->lock, flags);
+ }
+ 
+-/* got a msg to transfer, queue it in drv_data->queue. And kick off message pumper */
++/*
++ * got a msg to transfer, queue it in drv_data->queue.
++ * And kick off message pumper
++ */
+ static int transfer(struct spi_device *spi, struct spi_message *msg)
+ {
+ 	struct driver_data *drv_data = spi_master_get_devdata(spi->master);
+@@ -923,16 +951,15 @@ static int setup(struct spi_device *spi)
+ 	struct driver_data *drv_data = spi_master_get_devdata(spi->master);
+ 	u8 spi_flg;
+ 
+-	if (chip_select_flag & (1 << (spi->chip_select))) {
+-		printk(KERN_ERR
+-		       "spi_bfin: error: %s is using the same chip selection as another device.\n",
+-		       spi->modalias);
+-		return -ENODEV;
++	/* Abort device setup if requested features are not supported */
++	if (spi->mode & ~(SPI_CPOL | SPI_CPHA | SPI_LSB_FIRST)) {
++		dev_err(&spi->dev, "requested mode not fully supported\n");
++		return -EINVAL;
+ 	}
+-	chip_select_flag |= (1 << (spi->chip_select));
+ 
++	/* Zero (the default) here means 8 bits */
+ 	if (!spi->bits_per_word)
+-		spi->bits_per_word = 16;
++		spi->bits_per_word = 8;
+ 
+ 	if (spi->bits_per_word != 8 && spi->bits_per_word != 16)
+ 		return -EINVAL;
+@@ -958,13 +985,20 @@ static int setup(struct spi_device *spi)
+ 		chip->cs_chg_udelay = chip_info->cs_chg_udelay;
+ 	}
+ 
++	/* translate common spi framework into our register */
+ 	if (spi->mode & SPI_CPOL)
+-		chip->ctl_reg &= CPOL;
++		chip->ctl_reg |= CPOL;
+ 	if (spi->mode & SPI_CPHA)
+-		chip->ctl_reg &= CPHA;
+-
+-	/* if any one SPI chip is registered and wants DMA, request the
+-	   DMA channel for it */
++		chip->ctl_reg |= CPHA;
++	if (spi->mode & SPI_LSB_FIRST)
++		chip->ctl_reg |= LSBF;
++	/* we dont support running in slave mode (yet?) */
++	chip->ctl_reg |= MSTR;
++
++	/*
++	 * if any one SPI chip is registered and wants DMA, request the
++	 * DMA channel for it
++	 */
+ 	if (chip->enable_dma && !dma_requested) {
+ 		/* register dma irq handler */
+ 		if (request_dma(CH_SPI, "BF53x_SPI_DMA") < 0) {
+@@ -981,50 +1015,59 @@ static int setup(struct spi_device *spi)
+ 		dma_requested = 1;
+ 	}
+ 
+-	/* Notice: for blackfin, the speed_hz is the value of register
+-	   SPI_BAUD, not the real baudrate */
++	/*
++	 * Notice: for blackfin, the speed_hz is the value of register
++	 * SPI_BAUD, not the real baudrate
++	 */
+ 	chip->baud = hz_to_spi_baud(spi->max_speed_hz);
+ 	spi_flg = ~(1 << (spi->chip_select));
+ 	chip->flag = ((u16) spi_flg << 8) | (1 << (spi->chip_select));
+ 	chip->chip_select_num = spi->chip_select;
+ 
+-	if (chip->bits_per_word <= 8) {
++	switch (chip->bits_per_word) {
++	case 8:
+ 		chip->n_bytes = 1;
+ 		chip->width = CFG_SPI_WORDSIZE8;
+-		chip->read =
+-		    chip->cs_change_per_word ? u8_cs_chg_reader : u8_reader;
+-		chip->write =
+-		    chip->cs_change_per_word ? u8_cs_chg_writer : u8_writer;
+-		chip->duplex =
+-		    chip->cs_change_per_word ? u8_cs_chg_duplex : u8_duplex;
+-		pr_debug("8bit: chip->write is %p, u8_writer is %p\n",
+-			 chip->write, u8_writer);
+-	} else if (spi->bits_per_word <= 16) {
++		chip->read = chip->cs_change_per_word ?
++			u8_cs_chg_reader : u8_reader;
++		chip->write = chip->cs_change_per_word ?
++			u8_cs_chg_writer : u8_writer;
++		chip->duplex = chip->cs_change_per_word ?
++			u8_cs_chg_duplex : u8_duplex;
++		break;
++
++	case 16:
+ 		chip->n_bytes = 2;
+ 		chip->width = CFG_SPI_WORDSIZE16;
+-		chip->read =
+-		    chip->cs_change_per_word ? u16_cs_chg_reader : u16_reader;
+-		chip->write =
+-		    chip->cs_change_per_word ? u16_cs_chg_writer : u16_writer;
+-		chip->duplex =
+-		    chip->cs_change_per_word ? u16_cs_chg_duplex : u16_duplex;
+-		pr_debug("16bit: chip->write is %p, u16_writer is %p\n",
+-			 chip->write, u16_writer);
+-	} else {
+-		dev_err(&spi->dev, "invalid wordsize\n");
++		chip->read = chip->cs_change_per_word ?
++			u16_cs_chg_reader : u16_reader;
++		chip->write = chip->cs_change_per_word ?
++			u16_cs_chg_writer : u16_writer;
++		chip->duplex = chip->cs_change_per_word ?
++			u16_cs_chg_duplex : u16_duplex;
++		break;
++
++	default:
++		dev_err(&spi->dev, "%d bits_per_word is not supported\n",
++				chip->bits_per_word);
+ 		kfree(chip);
+ 		return -ENODEV;
+ 	}
+-	pr_debug
+-	    ("setup spi chip %s, width is %d, dma is %d, ctl_reg is 0x%x, flag_reg is 0x%x\n",
+-	     spi->modalias, chip->width, chip->enable_dma, chip->ctl_reg,
+-	     chip->flag);
++
++	pr_debug("setup spi chip %s, width is %d, dma is %d,",
++			spi->modalias, chip->width, chip->enable_dma);
++	pr_debug("ctl_reg is 0x%x, flag_reg is 0x%x\n",
++			chip->ctl_reg, chip->flag);
++
+ 	spi_set_ctldata(spi, chip);
+ 
+ 	return 0;
+ }
+ 
+-/* callback for spi framework. clean driver specific data */
++/*
++ * callback for spi framework.
++ * clean driver specific data
++ */
+ static void cleanup(const struct spi_device *spi)
+ {
+ 	struct chip_data *chip = spi_get_ctldata((struct spi_device *)spi);
+@@ -1032,7 +1075,7 @@ static void cleanup(const struct spi_device *spi)
+ 	kfree(chip);
+ }
+ 
+-static int init_queue(struct driver_data *drv_data)
++static inline int init_queue(struct driver_data *drv_data)
+ {
+ 	INIT_LIST_HEAD(&drv_data->queue);
+ 	spin_lock_init(&drv_data->lock);
+@@ -1054,7 +1097,7 @@ static int init_queue(struct driver_data *drv_data)
+ 	return 0;
+ }
+ 
+-static int start_queue(struct driver_data *drv_data)
++static inline int start_queue(struct driver_data *drv_data)
+ {
+ 	unsigned long flags;
+ 
+@@ -1076,7 +1119,7 @@ static int start_queue(struct driver_data *drv_data)
+ 	return 0;
+ }
+ 
+-static int stop_queue(struct driver_data *drv_data)
++static inline int stop_queue(struct driver_data *drv_data)
+ {
+ 	unsigned long flags;
+ 	unsigned limit = 500;
+@@ -1084,10 +1127,12 @@ static int stop_queue(struct driver_data *drv_data)
+ 
+ 	spin_lock_irqsave(&drv_data->lock, flags);
+ 
+-	/* This is a bit lame, but is optimized for the common execution path.
++	/*
++	 * This is a bit lame, but is optimized for the common execution path.
+ 	 * A wait_queue on the drv_data->busy could be used, but then the common
+ 	 * execution path (pump_messages) would be required to call wake_up or
+-	 * friends on every SPI message. Do this instead */
++	 * friends on every SPI message. Do this instead
++	 */
+ 	drv_data->run = QUEUE_STOPPED;
+ 	while (!list_empty(&drv_data->queue) && drv_data->busy && limit--) {
+ 		spin_unlock_irqrestore(&drv_data->lock, flags);
+@@ -1103,7 +1148,7 @@ static int stop_queue(struct driver_data *drv_data)
+ 	return status;
+ }
+ 
+-static int destroy_queue(struct driver_data *drv_data)
++static inline int destroy_queue(struct driver_data *drv_data)
+ {
+ 	int status;
+ 
+@@ -1116,7 +1161,7 @@ static int destroy_queue(struct driver_data *drv_data)
+ 	return 0;
+ }
+ 
+-static int bfin5xx_spi_probe(struct platform_device *pdev)
++static int __init bfin5xx_spi_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct bfin5xx_spi_master *platform_info;
+@@ -1126,7 +1171,7 @@ static int bfin5xx_spi_probe(struct platform_device *pdev)
+ 
+ 	platform_info = dev->platform_data;
+ 
+-	/* Allocate master with space for drv_data and null dma buffer */
++	/* Allocate master with space for drv_data */
+ 	master = spi_alloc_master(dev, sizeof(struct driver_data) + 16);
+ 	if (!master) {
+ 		dev_err(&pdev->dev, "can not alloc spi_master\n");
+@@ -1172,7 +1217,7 @@ static int bfin5xx_spi_probe(struct platform_device *pdev)
+ }
+ 
+ /* stop hardware and remove the driver */
+-static int bfin5xx_spi_remove(struct platform_device *pdev)
++static int __devexit bfin5xx_spi_remove(struct platform_device *pdev)
+ {
+ 	struct driver_data *drv_data = platform_get_drvdata(pdev);
+ 	int status = 0;
+@@ -1203,31 +1248,12 @@ static int bfin5xx_spi_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-/* PM, do nothing now */
+ #ifdef CONFIG_PM
+-static int suspend_devices(struct device *dev, void *pm_message)
+-{
+-	pm_message_t *state = pm_message;
+-
+-	if (dev->power.power_state.event != state->event && dev->driver != NULL) {
+-		dev_warn(dev, "pm state does not match request\n");
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
+ static int bfin5xx_spi_suspend(struct platform_device *pdev, pm_message_t state)
+ {
+ 	struct driver_data *drv_data = platform_get_drvdata(pdev);
+ 	int status = 0;
+ 
+-	/* Check all childern for current power state */
+-	if (device_for_each_child(&pdev->dev, &state, suspend_devices) != 0) {
+-		dev_warn(&pdev->dev, "suspend aborted\n");
+-		return -1;
+-	}
+-
+ 	status = stop_queue(drv_data);
+ 	if (status != 0)
+ 		return status;
+@@ -1260,7 +1286,7 @@ static int bfin5xx_spi_resume(struct platform_device *pdev)
+ #define bfin5xx_spi_resume NULL
+ #endif				/* CONFIG_PM */
+ 
+-static struct platform_driver driver = {
++static struct platform_driver bfin5xx_spi_driver = {
+ 	.driver = {
+ 		   .name = "bfin-spi-master",
+ 		   .bus = &platform_bus_type,
+@@ -1274,15 +1300,14 @@ static struct platform_driver driver = {
+ 
+ static int __init bfin5xx_spi_init(void)
+ {
+-	platform_driver_register(&driver);
+-	return 0;
++	return platform_driver_register(&bfin5xx_spi_driver);
+ }
+ 
+ module_init(bfin5xx_spi_init);
+ 
+ static void __exit bfin5xx_spi_exit(void)
+ {
+-	platform_driver_unregister(&driver);
++	platform_driver_unregister(&bfin5xx_spi_driver);
+ }
+ 
+ module_exit(bfin5xx_spi_exit);
 -- 
 1.5.1.2
