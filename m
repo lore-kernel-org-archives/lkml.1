@@ -1,71 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756476AbXD2Nf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbXD2Nga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756476AbXD2Nf6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 09:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbXD2Nf6
+	id S1756479AbXD2Nga (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 09:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbXD2Nga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 09:35:58 -0400
-Received: from www.osadl.org ([213.239.205.134]:33469 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756471AbXD2Nfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 09:35:42 -0400
-Subject: Re: [patch] CFS scheduler, -v6
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, Willy Tarreau <w@1wt.eu>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-In-Reply-To: <20070429125522.GB31925@holomorphy.com>
-References: <20070427115526.GA7699@elte.hu>
-	 <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost>
-	 <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu>
-	 <20070429071627.GC23638@1wt.eu>
-	 <1177842654.5791.85.camel@localhost.localdomain>
-	 <20070429111159.GH23638@1wt.eu> <1177848054.9756.30.camel@localhost>
-	 <1177848810.5791.104.camel@localhost.localdomain>
-	 <20070429125522.GB31925@holomorphy.com>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 15:37:47 +0200
-Message-Id: <1177853867.5791.120.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sun, 29 Apr 2007 09:36:30 -0400
+Received: from qb-out-0506.google.com ([72.14.204.238]:17119 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756475AbXD2Ng2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 09:36:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bbtzTKiy1NgCelA4alZo+lEqovAp7n+DjAvnlu5NU2qFzKKl3s/wmDC0C3+CMmsSsOM0Tcg0uReXJxhDbxRayGE/I/seURw7RkUkqS3H7OeMRNlLonkKOB3W/NXNKNrsYE7Mu0JifBQbEIgWCWDm7yCKi0C802SxQBtosF1LpSU=
+Message-ID: <6bffcb0e0704290636k3cea128ag44d7d6c9688a4e20@mail.gmail.com>
+Date: Sun, 29 Apr 2007 15:36:26 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: mm snapshot broken-out-2007-04-25-02-49.tar.gz uploaded
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <6bffcb0e0704251602x74e01dcbvf1d6eea565e3bbc5@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200704250952.l3P9qIHh032233@shell0.pdx.osdl.net>
+	 <200704252257.41950.ak@suse.de>
+	 <6bffcb0e0704251440l6149b50creafd4845c131be09@mail.gmail.com>
+	 <200704260007.12843.ak@suse.de>
+	 <6bffcb0e0704251602x74e01dcbvf1d6eea565e3bbc5@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 05:55 -0700, William Lee Irwin III wrote:
-> You'll also hit the same holes should you attempt to write such a
-> modularity patch for mainline as opposed to porting current mainline to
-> the driver API as-given. It takes a bit more work to get something that
-> actually works for all this, and it borders on disingenuity to
-> suggest that the scheduler class/driver API as it now stands is
-> capable of any such thing as porting current mainline, nicksched, or SD
-> to it without significant code impact to the core scheduler code.
+Hi,
 
-I never said, that the current implementation of CFS fits the criteria
-of modularity, but it is a step in that direction. I'm well aware that
-there is a bunch of things missing and it has hard coded leftovers,
-which are related to the current two hard coded policy classes.
+On 26/04/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> On 26/04/07, Andi Kleen <ak@suse.de> wrote:
+> > On Wednesday 25 April 2007 23:40:51 Michal Piotrowski wrote:
+> > > On 25/04/07, Andi Kleen <ak@suse.de> wrote:
+> > > >
+> > > > > Maybe because it's P4 HT?
+> > > >
+> > > > Shouldn't make a difference.
+> > > >
+> > > > Can you please: apply the latest patch from
+> > > >
+> > > > ftp://firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
+> > > >
+> > > > to a 2.6.21-rc7 kernel and then send me a full boot log?
+> > >
+> > > Now everything looks OK
+> > > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-04-25-02-49/git-dmesg
+> >
+> > Does it also work when you revert the sched-clock-share patch in Andrew's broken-out
+> > directory from mm and then apply my patch? (just to check there is not a bad interaction
+> > with other mm changes)
+>
+> I dropped
+> x86_64-mm-sched-clock-share.patch
+> x86_64-mm-log-reason-why-tsc-was-marked-unstable.patch
+> fix-x86_64-mm-sched-clock-share.patch
+>
+> The bug still appears
+> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-04-25-02-49/mm-dmesg2
+>
+> I can bisect it in Friday.
 
-> So on both these points, I don't see cfs as being adequate as it now
-> stands for a modular, hierarchical scheduler design. If we want a truly
-> modular and hierarchical scheduler design, I'd suggest pursuing it
-> directly and independently of policy, and furthermore considering the
-> representability of various policies in the scheduling class/driver API
-> as a test of its adequacy.
+s/Friday/Sunday
 
-Ack. I don't worry much whether the CFS policy is better than the SD
-one. I'm all for a truly modular design. SD and SCHED_FAIR are good
-proofs for it.
+GOOD
+ignore-stolen-time-in-the-softlockup-watchdog.patch
+ignore-stolen-time-in-the-softlockup-watchdog-fix.patch
+BAD
 
-	tglx
+Regards,
+Michal
 
-
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
