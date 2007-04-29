@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbXD2ICl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXD2IEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbXD2ICl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXD2ICl
+	id S932664AbXD2IEh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932690AbXD2IEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:02:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:49236 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932659AbXD2ICi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:02:38 -0400
-Date: Sun, 29 Apr 2007 01:01:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Miles Lane" <miles.lane@gmail.com>,
-       lollul@wp.pl, Matt Mackall <mpm@selenic.com>,
-       Helge Hafting <helgehaf@aitel.hist.no>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.22
-Message-Id: <20070429010104.68c51d1a.akpm@linux-foundation.org>
-In-Reply-To: <200704290102.33533.lenb@kernel.org>
-References: <200704290102.33533.lenb@kernel.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sun, 29 Apr 2007 04:04:36 -0400
+Received: from 1wt.eu ([62.212.114.60]:2375 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932664AbXD2IEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:04:35 -0400
+Date: Sun, 29 Apr 2007 10:02:50 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070429080250.GF23638@1wt.eu>
+References: <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <20070429073030.GA5253@elte.hu> <20070429073819.GD23638@1wt.eu> <20070429080028.GA9988@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429080028.GA9988@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 01:02:33 -0400 Len Brown <lenb@kernel.org> wrote:
-
-> please pull from: 
+On Sun, Apr 29, 2007 at 10:00:28AM +0200, Ingo Molnar wrote:
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> * Willy Tarreau <w@1wt.eu> wrote:
 > 
-> This batch mostly updates the platform-specific drivers that use ACPI.
-> The EC and sbs changes are primarily cleanups.
-> There are no changes to the ACPICA core, except a single bugfix
-> that was related to a 2.6.21 boot regression on some older machines.
-> And then the usual mix of random tweaks.
+> > > > [...] except for Mike who has not tested recent versions. [...]
+> > > 
+> > > actually, dont discount Mark Lord's test results either. And it 
+> > > might be a good idea for Mike to re-test SD 0.46?
+> > 
+> > In any case, it might be a good idea because Mike encountered a 
+> > problem that nobody could reproduce. [...]
+> 
+> actually, Mark Lord too reproduced something similar to Mike's results. 
 
-There might still be a few regressions in this lot:
+OK.
 
-- Miles Lane's "2.6.21-rc7-mm2 -- gnome-power-manager always shows the
-  power as coming from AC"
+> Please try those workloads yourself.
 
-- "battery caching introduces a lock up"
-  http://bugzilla.kernel.org/show_bug.cgi?id=8351
+Unfortunately, I do not have their tools, environments nor hardware.
+That's the advantage of having multiple testers ;-)
 
-These are older and might have been fixed:
+> 	Ingo
 
-- Mat Mackall's "Thinkpads not waking up on lid open with -rc6-mm1"
-
-- Helge Hafting's "2.6.21-rc3-mm2 hangs my opteron during bootup, ACPI?"
+Willy
 
