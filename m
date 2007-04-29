@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031020AbXD2RiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965148AbXD2Rif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031020AbXD2RiN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 13:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031001AbXD2RhP
+	id S965148AbXD2Rif (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 13:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964934AbXD2RiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 13:37:15 -0400
-Received: from mail-in-07.arcor-online.net ([151.189.21.47]:33887 "EHLO
-	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754417AbXD2Rba (ORCPT
+	Sun, 29 Apr 2007 13:38:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58917 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031002AbXD2Rh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 13:31:30 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v7
-Date: Sun, 29 Apr 2007 19:28:48 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       Kasper Sandberg <lkml@metanurb.dk>, buddabrod <buddabrod@gmail.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>
-References: <20070428152539.GA21601@elte.hu>
-In-Reply-To: <20070428152539.GA21601@elte.hu>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3697247.erSFiWD1td";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704291928.52575.prakash@punnoor.de>
+	Sun, 29 Apr 2007 13:37:27 -0400
+Date: Sun, 29 Apr 2007 19:37:25 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@stusta.de>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070429173725.GB30248@one.firstfloor.org>
+References: <20070426040806.GJ3468@stusta.de> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <200704291849.23197.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704291849.23197.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3697247.erSFiWD1td
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> My personal experience with bugzilla is that it's very unfriendly to
+> reporters.  IMHO it's suitable for tracking unresolved problems along with
+> debug patches, system information etc., but not for _reporting_ new ones.
 
-Am Samstag 28 April 2007 schrieb Ingo Molnar:
-> i'm pleased to announce release -v7 of the CFS scheduler patchset. (The
-> main goal of CFS is to implement "desktop scheduling" with as high
-> quality as technically possible.)
->
-> The CFS patch against v2.6.21 (or against v2.6.20.8) can be downloaded
-> from the usual place:
+What did you find unfriendly? 
 
-I made a quick test with the ac3 encoder aften, I tested against rsdl 0.36 =
-(I=20
-think it was). Time was slightly worse: >5.9 secs (with two threads on=20
-Athlon64 X2 x86_64). mainline gives me 5.4sec. rsdl took 5.8 sec.
+While I also cannot say I love it I don't find it any less unfriendly
+than an email.
 
-I haven't testes earlier cfs nor later sd. Seems scheduler gets optimized m=
-ore=20
-for single core than smp?
+Besides the primary point of bug tracking is not to be friendly
+to someone, but to (a) fix the bugs and (b) know how many bugs
+there for a given release. Any replacement would need to solve
+this problem too.
 
-http://aften.sourceforge.net/
+Email does not solve it as far as I can see.
 
-Cheers,
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
+-Andi
 
---nextPart3697247.erSFiWD1td
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGNNXUxU2n/+9+t5gRAsF7AJ4lm+2D6c7LWn6Rpx0veDXjXBbxdwCbB4qo
-EVM50VY3w640KfuCpf2g03E=
-=RCnx
------END PGP SIGNATURE-----
-
---nextPart3697247.erSFiWD1td--
