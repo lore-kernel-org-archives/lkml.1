@@ -1,54 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXD2OVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbXD2Ork@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933265AbXD2OVz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 10:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbXD2OVz
+	id S1755364AbXD2Ork (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 10:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbXD2Orj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 10:21:55 -0400
-Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:2153 "EHLO
-	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933265AbXD2OVy (ORCPT
+	Sun, 29 Apr 2007 10:47:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49486 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755364AbXD2Ori (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 10:21:54 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Syren Baran <sbaran@gmx.de>
-Subject: Re: Probable PCIE prob
-Date: Sun, 29 Apr 2007 15:21:48 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <1177790017.3649.23.camel@excalibur>
-In-Reply-To: <1177790017.3649.23.camel@excalibur>
+	Sun, 29 Apr 2007 10:47:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [Fastboot] restoring x86 BIOS state before reboot
+References: <20070406154628.GG12005@jukie.net>
+	<m1zm4rd676.fsf@ebiederm.dsl.xmission.com>
+	<20070429094135.GA10948@suse.de>
+Date: Sun, 29 Apr 2007 08:46:59 -0600
+In-Reply-To: <20070429094135.GA10948@suse.de> (Bernhard Walle's message of
+	"Sun, 29 Apr 2007 11:41:35 +0200")
+Message-ID: <m1ejm38cgs.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704291521.48769.s0348365@sms.ed.ac.uk>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 April 2007 20:53:37 Syren Baran wrote:
-> Hi,
+Bernhard Walle <bwalle@suse.de> writes:
+
+> * Eric W. Biederman <ebiederm@xmission.com> [2007-04-29 08:51]:
+>> 
+>> It may also be worth investigating if it is possible to bypass
+>> the part of windows that uses BIOS calls.  I really don't have
+>> a clue how a modern windows systems boots.
 >
-> i got a problem with the combination of an Asrock AM2NF4G-SATA2
-> mainboard with a Radeon X1900 (chip 1002,724b) graphics
-> card. /i386/pci/mmconfig.c reports a buggy bios (e0000000 is not
-> E820-reserved). System crashes only happen when viewing films (neither
-> xine nor mplayer run with root privileges) and independent of video
-> drivers (framebuffer, vesa and fglrx). Logs dont show any anomalies
-> before crashing. Anybody got a clue?
+> I think ReactOS has a bootlader that can also boot Windows, or at
+> least they are close to booting the Windows kernel. That bootloader
+> could be then used for booting Windows without BIOS calls.
+>
+> I also heard that the 100-$-Laptop should now be able to use Windows.
+> As it's using LinuxBIOS, this could also be interesting. However,
+> maybe Microsoft simply modifies a special Windows for this, or they
+> integrate a ClosedSource part in that LinuxBIOS, I don't know ... :-(
 
-This is a pretty bizarre crash. It might be a hardware problem. Try running a 
-load intensive task, something that heats your CPU up, for a long period. See 
-if it lasts longer than 30 minutes..
+I know it isn't a ClosedSource part in LinuxBIOS.
 
-Another thing you could try doing was eliminating X completely, by using 
-mplayer on a vesafb console..
+In any particular case you can work through the details, and
+make it work.
 
--- 
-Cheers,
-Alistair.
+The hard part is making the general case work.
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+Eric
