@@ -1,76 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXD2IPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbXD2IPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbXD2IPU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXD2IPU
+	id S932929AbXD2IPd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXD2IPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:15:20 -0400
-Received: from 1wt.eu ([62.212.114.60]:2390 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932840AbXD2IPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:15:09 -0400
-Date: Sun, 29 Apr 2007 10:13:17 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Kasper Sandberg <lkml@metanurb.dk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070429081317.GG23638@1wt.eu>
-References: <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <20070429075436.GZ31925@holomorphy.com>
+	Sun, 29 Apr 2007 04:15:33 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:38542 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932929AbXD2IPa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:15:30 -0400
+Date: Sun, 29 Apr 2007 01:15:18 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: vmstat: use our own timer events
+Message-Id: <20070429011518.259448ba.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704282206530.29468@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704282206530.29468@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070429075436.GZ31925@holomorphy.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 12:54:36AM -0700, William Lee Irwin III wrote:
-> On Sun, Apr 29, 2007 at 09:16:27AM +0200, Willy Tarreau wrote:
-> > In fact, what I'd like to see in 2.6.22 is something better for everybody
-> > and with *no* regression, even if it's not perfect. I had the feeling
-> > that SD matched that goal right now, except for Mike who has not tested
-> > recent versions. Don't get me wrong, I still think that CFS is a more
-> > interesting long-term target. But it may require more time to satisfy
-> > everyone. At least with one of them in 2.6.22, we won't waste time
-> > comparing to current mainline.
+On Sat, 28 Apr 2007 22:09:04 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+
+> vmstat is currently using the cache reaper to periodically bring the
+> statistics up to date. The cache reaper does only exists in SLUB
+> as a way to provide compatibility with SLAB. This patch removes
+> the vmstat calls from the slab allocators and provides its own
+> handling.
 > 
-> I think it'd be a good idea to merge scheduler classes before changing
-> over the policy so future changes to policy have smaller code impact.
-> Basically, get scheduler classes going with the mainline scheduler.
+> The advantage is also that we can use a different frequency for the
+> updates. Refreshing vm stats is a pretty fast job so we can run this
+> every second and stagger this by only one tick. This will lead to
+> some overlap in large systems. F.e a system running at 250 HZ with
+> 1024 processors will have 4 vm updates occurring at once.
 > 
-> There are other pieces that can be merged earlier, too, for instance,
-> the correction to the comment in init/main.c. Directed yields can
-> probably also go in as nops or -ENOSYS returns if not fully implemented,
-> though I suspect there shouldn't be much in the way of implementing them.
-> p->array vs. p->on_rq can be merged early too.
-
-I agree that merging some framework is a good way to proceed.
-
-> Common code for rbtree-based priority queues can be factored out of
-> cfq, cfs, and hrtimers.
-
-In my experience, rbtrees are painfully slow. Yesterday, I spent the
-day replacing them in haproxy with other trees I developped a few
-years ago, which look like radix trees. They are about 2-3 times as
-fast to insert 64-bit data, and you walk through them in O(1). I have
-many changes to apply to them before they could be used in kernel, but
-at least I think we already have code available for other types of trees.
-
-> There are extensive /proc/ reporting changes, large chunks of which
-> could go in before the policy as well.
+> However, the vm stats update only accesses per node information.
+> It is only necessary to stagger the vm statistics updates per
+> processor in each node. Vm counter updates occurring on distant
+> nodes will not cause cacheline contention.
 > 
-> I'm camping in this weekend, so I'll see what I can eke out.
+> We could implement an alternate approach that runs the first processor
+> on each node at the second and then each of the other processor on a
+> node on a subsequent tick. That may be useful to keep a large amount
+> of the second free of timer activity. Maybe the timer folks will have
+> some feedback on this one?
 
-good luck !
+The one-per-second timer interrupt will upset the people who are really
+aggressive about power consumption (eg, OLPC).  Perhaps there isn't (yet)
+an intersection between those people and SMP.
 
-Willy
+However a knob to set the frequency would be nice, if it's not too
+expensive to implement.  Presumably anyone who cares enough will come along
+and add one, but then they have to wait for a long period for that change
+to propagate out to their users, which is a bit sad for something which we
+already knew about.
 
+Having each CPU touch every zone looks a bit expensive - I'd have thought
+that it would be showing up a little on your monster NUMA machines?
+
+> @@ -648,11 +664,21 @@ static int __cpuinit vmstat_cpuup_callba
+>  		unsigned long action,
+>  		void *hcpu)
+>  {
+> +	long cpu = (long)hcpu;
+> +
+>  	switch (action) {
+> -	case CPU_UP_PREPARE:
+> -	case CPU_UP_PREPARE_FROZEN:
+> -	case CPU_UP_CANCELED:
+> -	case CPU_UP_CANCELED_FROZEN:
+> +	case CPU_ONLINE:
+> +	case CPU_ONLINE_FROZEN:
+> +		start_cpu_timer(cpu);
+> +		break;
+> +	case CPU_DOWN_PREPARE:
+> +	case CPU_DOWN_PREPARE_FROZEN:
+> +		cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+> +		per_cpu(vmstat_work, cpu).work.func = NULL;
+> +	case CPU_DOWN_FAILED:
+> +	case CPU_DOWN_FAILED_FROZEN:
+> +		start_cpu_timer(cpu);
+> +		break;
+>  	case CPU_DEAD:
+>  	case CPU_DEAD_FROZEN:
+>  		refresh_zone_stat_thresholds();
+
+Oh dear.  Some of these new notifier types are added by a patch which is a
+few hundred patches later than slub.  I can park this patch after that one,
+but that introduces a risk that later slub patches will also get
+disconnected.
+
+Oh well, we'll see how things go.
