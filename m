@@ -1,258 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161258AbXD2U7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161306AbXD2U7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161258AbXD2U7L (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161151AbXD2U7L
+	id S1161306AbXD2U7c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161295AbXD2U7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:59:11 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48215 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161258AbXD2U7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:59:08 -0400
-Message-id: <1845932223189792756@wsc.cz>
-In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 9/21] Char: cyclades, simplify variables initialization
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 22:59:05 +0200 (CEST)
+	Sun, 29 Apr 2007 16:59:31 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38035 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161151AbXD2U71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 16:59:27 -0400
+Cc: linux-dvb@linuxtv.org, mkruky@linuxtv.org, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Sun, 29 Apr 2007 22:59:25 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
+Message-ID: <20070429205925.129920@gmx.net>
+MIME-Version: 1.0
+References: <20070429182209.267430@gmx.net>
+ <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
+Subject: Re: Critical points about kernel 2.6.21 and pseudo-authorities
+To: Linus Torvalds <torvalds@linux-foundation.org>
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX18+JYQFZQM+vTosqcNOa7SisIMK2kuCJwyOCfFfaC
+ GCgVGOsOEugoSQoPn6uhoYVK0odR4S99f6MQ== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: FD8DD4h1QEV/CjO4FnVprOpCNzg2NYJg
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, simplify variables initialization
 
-- do not init static variables to 0
-- simplify cy_init_card -- use memset(0) and do not zero each element
-  separately, also reorder init, so that same entries are inited at one
-  place
+-------- Original-Nachricht --------
+Datum: Sun, 29 Apr 2007 11:49:40 -0700 (PDT)
+Von: Linus Torvalds <torvalds@linux-foundation.org>
+An: Uwe Bugla <uwe.bugla@gmx.de>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, mchehab@infradead.org, mkruky@linuxtv.org, linux-dvb@linuxtv.org
+Betreff: Re: Critical points about kernel 2.6.21 and pseudo-authorities
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> 
+> On Sun, 29 Apr 2007, Uwe Bugla wrote:
+> > 
+> > And now comes the critical point:
+> > If I use kernel 2.6.21 in connection with git2 (NOT: git1) everything is
+> fine so far.
+> 
+> Sounds like the sis900 network driver problem.
 
----
-commit 5bd7a7ad3eaafc9d8d03bd1488650b210c03f613
-tree 46cb0c86eba349d6079d294359f8e36ff8526c71
-parent 289b6204e150db7f487f53c227318b950b29d863
-author Jiri Slaby <jirislaby@gmail.com> Wed, 25 Apr 2007 22:02:36 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sat, 28 Apr 2007 23:47:12 +0200
+Hi Linus,
+I thought that this problem could be reduced to the sis900 driver issue, but today I found out that I was wrong. In so far:
+The kernel 2.6.21 official kernel makes my router hang up
+The kernel 2.6.21-git1 makes my router hang up
 
- drivers/char/cyclades.c |  156 +++++++++++++----------------------------------
- 1 files changed, 44 insertions(+), 112 deletions(-)
+Simply the 2.6.21-git2 is running stable.
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 738903d..9088c93 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -718,8 +718,8 @@ static unsigned int cy_isa_addresses[] = {
- #define NR_ISA_ADDRS ARRAY_SIZE(cy_isa_addresses)
- 
- #ifdef MODULE
--static long maddr[NR_CARDS] = { 0, };
--static int irq[NR_CARDS] = { 0, };
-+static long maddr[NR_CARDS];
-+static int irq[NR_CARDS];
- 
- module_param_array(maddr, long, NULL, 0);
- module_param_array(irq, int, NULL, 0);
-@@ -4505,6 +4505,8 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo,
- 	unsigned short chip_number;
- 	int index, port;
- 
-+	spin_lock_init(&cinfo->card_lock);
-+
- 	if (IS_CYC_Z(*cinfo)) {	/* Cyclades-Z */
- 		mailbox = readl(&((struct RUNTIME_9060 __iomem *)
- 				     cinfo->ctl_addr)->mail_box_0);
-@@ -4512,104 +4514,47 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo,
- 		cinfo->intr_enabled = 0;
- 		cinfo->nports = 0;	/* Will be correctly set later, after
- 					   Z FW is loaded */
--		spin_lock_init(&cinfo->card_lock);
--		for (port = cinfo->first_line;
--		     port < cinfo->first_line + nports; port++) {
--			info = &cy_port[port];
--			info->magic = CYCLADES_MAGIC;
-+	} else {
-+		index = cinfo->bus_index;
-+		nports = cinfo->nports = CyPORTS_PER_CHIP * cinfo->num_chips;
-+	}
-+
-+	for (port = cinfo->first_line; port < cinfo->first_line + nports;
-+			port++) {
-+		info = &cy_port[port];
-+		memset(info, 0, sizeof(*info));
-+		info->magic = CYCLADES_MAGIC;
-+		info->card = board;
-+		info->line = port;
-+		info->flags = STD_COM_FLAGS;
-+		info->closing_wait = CLOSING_WAIT_DELAY;
-+		info->close_delay = 5 * HZ / 10;
-+
-+		INIT_WORK(&info->tqueue, do_softint);
-+		init_waitqueue_head(&info->open_wait);
-+		init_waitqueue_head(&info->close_wait);
-+		init_waitqueue_head(&info->shutdown_wait);
-+		init_waitqueue_head(&info->delta_msr_wait);
-+
-+		if (IS_CYC_Z(*cinfo)) {
- 			info->type = PORT_STARTECH;
--			info->card = board;
--			info->line = port;
--			info->chip_rev = 0;
--			info->flags = STD_COM_FLAGS;
--			info->tty = NULL;
- 			if (mailbox == ZO_V1)
- 				info->xmit_fifo_size = CYZ_FIFO_SIZE;
- 			else
--				info->xmit_fifo_size =
--				    4 * CYZ_FIFO_SIZE;
--			info->cor1 = 0;
--			info->cor2 = 0;
--			info->cor3 = 0;
--			info->cor4 = 0;
--			info->cor5 = 0;
--			info->tbpr = 0;
--			info->tco = 0;
--			info->rbpr = 0;
--			info->rco = 0;
--			info->custom_divisor = 0;
--			info->close_delay = 5 * HZ / 10;
--			info->closing_wait = CLOSING_WAIT_DELAY;
--			info->icount.cts = info->icount.dsr =
--			    info->icount.rng = info->icount.dcd = 0;
--			info->icount.rx = info->icount.tx = 0;
--			info->icount.frame = info->icount.parity = 0;
--			info->icount.overrun = info->icount.brk = 0;
--			info->x_char = 0;
--			info->event = 0;
--			info->count = 0;
--			info->blocked_open = 0;
--			info->default_threshold = 0;
--			info->default_timeout = 0;
--			INIT_WORK(&info->tqueue, do_softint);
--			init_waitqueue_head(&info->open_wait);
--			init_waitqueue_head(&info->close_wait);
--			init_waitqueue_head(&info->shutdown_wait);
--			init_waitqueue_head(&info->delta_msr_wait);
--			/* info->session */
--			/* info->pgrp */
--			info->read_status_mask = 0;
--			/* info->timeout */
--			/* Bentson's vars */
--			info->jiffies[0] = 0;
--			info->jiffies[1] = 0;
--			info->jiffies[2] = 0;
--			info->rflush_count = 0;
-+				info->xmit_fifo_size = 4 * CYZ_FIFO_SIZE;
- #ifdef CONFIG_CYZ_INTR
- 			init_timer(&cyz_rx_full_timer[port]);
- 			cyz_rx_full_timer[port].function = NULL;
- #endif
--		}
--#ifndef CONFIG_CYZ_INTR
--		if (!timer_pending(&cyz_timerlist)) {
--			mod_timer(&cyz_timerlist, jiffies + 1);
--#ifdef CY_PCI_DEBUG
--			printk(KERN_DEBUG "Cyclades-Z polling initialized\n");
--#endif
--		}
--#endif				/* CONFIG_CYZ_INTR */
--
--	} else {	/* Cyclom-Y of some kind */
--		index = cinfo->bus_index;
--		spin_lock_init(&cinfo->card_lock);
--		cinfo->nports = CyPORTS_PER_CHIP * cinfo->num_chips;
--		for (port = cinfo->first_line;
--		     port < cinfo->first_line + cinfo->nports; port++) {
--			info = &cy_port[port];
--			info->magic = CYCLADES_MAGIC;
-+		} else {
- 			info->type = PORT_CIRRUS;
--			info->card = board;
--			info->line = port;
--			info->flags = STD_COM_FLAGS;
--			info->tty = NULL;
- 			info->xmit_fifo_size = CyMAX_CHAR_FIFO;
--			info->cor1 =
--			    CyPARITY_NONE | Cy_1_STOP | Cy_8_BITS;
-+			info->cor1 = CyPARITY_NONE | Cy_1_STOP | Cy_8_BITS;
- 			info->cor2 = CyETC;
- 			info->cor3 = 0x08;	/* _very_ small rcv threshold */
--			info->cor4 = 0;
--			info->cor5 = 0;
--			info->custom_divisor = 0;
--			info->close_delay = 5 * HZ / 10;
--			info->closing_wait = CLOSING_WAIT_DELAY;
--			info->icount.cts = info->icount.dsr =
--			    info->icount.rng = info->icount.dcd = 0;
--			info->icount.rx = info->icount.tx = 0;
--			info->icount.frame = info->icount.parity = 0;
--			info->icount.overrun = info->icount.brk = 0;
-+
- 			chip_number = (port - cinfo->first_line) / 4;
--			if ((info->chip_rev =
--			     readb(cinfo->base_addr +
-+			if ((info->chip_rev = readb(cinfo->base_addr +
- 				      (cy_chip_offset[chip_number] <<
- 				       index) + (CyGFRCR << index))) >=
- 			    CD1400_REV_J) {
-@@ -4618,35 +4563,28 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo,
- 				info->tco = baud_co_60[13];	/* Tx CO */
- 				info->rbpr = baud_bpr_60[13];	/* Rx BPR */
- 				info->rco = baud_co_60[13];	/* Rx CO */
--				info->rflow = 0;
- 				info->rtsdtr_inv = 1;
- 			} else {
- 				info->tbpr = baud_bpr_25[13];	/* Tx BPR */
- 				info->tco = baud_co_25[13];	/* Tx CO */
- 				info->rbpr = baud_bpr_25[13];	/* Rx BPR */
- 				info->rco = baud_co_25[13];	/* Rx CO */
--				info->rflow = 0;
- 				info->rtsdtr_inv = 0;
- 			}
--			info->x_char = 0;
--			info->event = 0;
--			info->count = 0;
--			info->blocked_open = 0;
--			info->default_threshold = 0;
--			info->default_timeout = 0;
--			INIT_WORK(&info->tqueue, do_softint);
--			init_waitqueue_head(&info->open_wait);
--			init_waitqueue_head(&info->close_wait);
--			init_waitqueue_head(&info->shutdown_wait);
--			init_waitqueue_head(&info->delta_msr_wait);
--			/* info->session */
--			/* info->pgrp */
--			info->read_status_mask =
--			    CyTIMEOUT | CySPECHAR | CyBREAK
--			    | CyPARITY | CyFRAME | CyOVERRUN;
--			/* info->timeout */
-+			info->read_status_mask = CyTIMEOUT | CySPECHAR |
-+				CyBREAK | CyPARITY | CyFRAME | CyOVERRUN;
- 		}
-+
- 	}
-+
-+#ifndef CONFIG_CYZ_INTR
-+	if (IS_CYC_Z(*cinfo) && !timer_pending(&cyz_timerlist)) {
-+		mod_timer(&cyz_timerlist, jiffies + 1);
-+#ifdef CY_PCI_DEBUG
-+		printk(KERN_DEBUG "Cyclades-Z polling initialized\n");
-+#endif
-+	}
-+#endif
- }
- 
- /* initialize chips on Cyclom-Y card -- return number of valid
-@@ -5369,12 +5307,6 @@ static int __init cy_init(void)
- 		goto err_frtty;
- 	}
- 
--	for (i = 0; i < NR_CARDS; i++) {
--		/* base_addr=0 indicates board not found */
--		cy_card[i].base_addr = NULL;
--	}
--
--	/* invalidate remaining cy_port structures */
- 	for (i = 0; i < NR_PORTS; i++) {
- 		cy_port[i].line = -1;
- 		cy_port[i].magic = -1;
+CLEARER: The sis900 patch is part of git1. In so far it cannot and will never be the real reason for the kernel Oopses on my router.
+
+I have been trying diff and other tools in various variants (except git-bisect that I cannot handle because I do not understand the practice of it).
+I did not manage to find out what part of the git2-code is necessary to make my AMD K7 router run stable. It is somewhere right between git1 and git2 - that is all I can say about that. It is definitely NOT the NIC issue.
+> 
+> > BUT: This 2.6.21-git2 is unusable in so far as it contains regressive
+> code
+> > in the dvb-section, authored by Trent Piepho, acked by Michael Krufky,
+> and signed-off-by Mauro Carvalho Chehab:
+> 
+> You never explained what the problem even was, apart from compiling in 
+> some code that you didn't need to before. Didn't it work in the end?
+
+Yes it works, but it is a regression in so far as I was fighting and arguing to get rid of some useless module attachments in the past which was then put into practice as solution done by Michael Krufky in a very sophisticated and fine manner.
+
+With the git2 solution I am condemned to waste RAM with at least one module that my card and a whole lot of other cards never needed. In so far it is a fallback and regression (like the router code that made floppy mounting impossible at the beginning of 2.6.21-rc1 or so, if you can remember this...
+You decided to rip that buggy stuff out - and this was a fine decision!
+
+I like small and effective kernels instead of blown up RAM waste.
+This is no Windoze, man, this is Linux!
+> 
+> If it worked, I don't see what the big issue was. You are getting a _lot_ 
+> of other code in the kernel that you probably never use, you may not even 
+> have realized.
+
+May be, don't know! But wouldn't it be a nice trait to at least get rid of unusable code that the specific machine does not need at all?
+
+Now, if that aim sounds too abrasive, what's the use of kernel compilation then?
+Do you expect me to accept a Kernel of a size of 2 or 3 Megabytes, with module support completely disabled and the RAM overcrowded with modules that I never needed?
+
+In the specific example of git2's dvb code you cannot disable the compilation of dvb-pll.c if you use the v4l normal layer (VIDEO_V4L1).
+
+If you are forced to use the v4l compat layer (VIDEO_V4L1_COMPAT) to enable a specific group of cards you do not have any chance to get rid of this module!
+
+Now - if this is no serious bug or regression, please what else is a serious bug or regression then?
+
+> 
+> Uwe, you really aren't helping yourself by being so damn abrasive. I know 
+> for a fact that your bug-reports are going ignored by some people, and I'm
+> not surprised at all.
+
+Now what a gesture?
+I can show you a ten Emails long ping pong game between Mauro and me which will prove you simply that Mauro Chehab never even did a five minutes look on my contributions.
+Instead he spent three quarters of an hour or so to offer me nothing but
+1. Lies
+2. Unproved Theses
+3. Unproved Assumptions
+
+With only one strategic aim: Fighting me down to make me give up, nothing else!
+
+Now Linus, how would you feel in my situation?
+Should I call this man a maintainer?
+Would you call this man a maintainer?
+
+See, I have had such a many positive experiences since I actively engaged in Linux.
+With maintainers, with quite a lots of other real fine people.
+
+And above that, I obviously am not alone at all. It was nobody but Johannes Stezenbach himself who uttered great sorrow where the personnel of linuxtv.org is going to (see mail list please).
+
+It seems like a 4 cylinder machine running on 2 or 3 cylinders, you know....
+> 
+> 			Linus
+
+Yours sincerely
+
+Uwe
+
+P. S.: If there are further questions I'd appreciate you to ask.
+
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
