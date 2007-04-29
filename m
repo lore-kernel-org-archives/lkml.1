@@ -1,106 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXD2LXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbXD2LsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756370AbXD2LXI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 07:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbXD2LXI
+	id S1756383AbXD2LsM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 07:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbXD2LsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:23:08 -0400
-Received: from www.osadl.org ([213.239.205.134]:60596 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756371AbXD2LXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 07:23:05 -0400
+	Sun, 29 Apr 2007 07:48:12 -0400
+Received: from mail38.syd.optusnet.com.au ([211.29.133.67]:60478 "EHLO
+	mail38.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755198AbXD2LsJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 07:48:09 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Willy Tarreau <w@1wt.eu>
 Subject: Re: [patch] CFS scheduler, -v6
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+Date: Sun, 29 Apr 2007 21:46:15 +1000
+User-Agent: KMail/1.9.5
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Kasper Sandberg <lkml@metanurb.dk>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Nick Piggin <npiggin@suse.de>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
        Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
        Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
        buddabrod <buddabrod@gmail.com>
-In-Reply-To: <1177843688.9756.28.camel@localhost>
-References: <20070425214704.GA32572@elte.hu>
-	 <1177596399.14496.1.camel@localhost>
-	 <200704261041.04838.gene.heskett@gmail.com>
-	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
-	 <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost>
-	 <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu>
-	 <20070429065900.GB32281@elte.hu>  <20070429071627.GC23638@1wt.eu>
-	 <1177842654.5791.85.camel@localhost.localdomain>
-	 <1177843688.9756.28.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 13:25:12 +0200
-Message-Id: <1177845912.5791.87.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+References: <200704261041.04838.gene.heskett@gmail.com> <1177842654.5791.85.camel@localhost.localdomain> <20070429111159.GH23638@1wt.eu>
+In-Reply-To: <20070429111159.GH23638@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704292146.15653.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 12:48 +0200, Kasper Sandberg wrote:
-> On Sun, 2007-04-29 at 12:30 +0200, Thomas Gleixner wrote:
+On Sunday 29 April 2007 21:11, Willy Tarreau wrote:
+> On Sun, Apr 29, 2007 at 12:30:54PM +0200, Thomas Gleixner wrote:
 > > Willy,
-> <snip>
+> >
+> > On Sun, 2007-04-29 at 09:16 +0200, Willy Tarreau wrote:
+> > > In fact, what I'd like to see in 2.6.22 is something better for
+> > > everybody and with *no* regression, even if it's not perfect. I had the
+> > > feeling that SD matched that goal right now, except for Mike who has
+> > > not tested recent versions. Don't get me wrong, I still think that CFS
+> > > is a more interesting long-term target. But it may require more time to
+> > > satisfy everyone. At least with one of them in 2.6.22, we won't waste
+> > > time comparing to current mainline.
+> >
+> > Oh no, we really do _NOT_ want to throw SD or anything else at mainline
+> > in a hurry just for not wasting time on comparing to the current
+> > scheduler.
+>
+> It is not about doing it in a hurry. I see SD as a small yet efficient
+> update to current scheduler. It's not perfect, probably not much extensible
+> but the risks of breaking anything are small given the fact that it does
+> not change much of the code or behaviour.
+>
+> IMHO, it is something which can provide users with a useful update while
+> leaving us with some more time to carefully implement the features of CFS
+> one at a time, and if it requires 5 versions, it's not a problem.
+>
+> > I agree that CFS is the more interesting target and I prefer to push the
+> > more interesting one even if it takes a release cycle longer. The main
+> > reason for me is the design of CFS. Even if it is not really modular
+> > right now, it is not rocket science to make it fully modular.
+> >
+> > Looking at the areas where people work on, e.g. containers, resource
+> > management, cpu isolation, fully tickless systems ...., we really need
+> > to go into that direction, when we want to avoid permanent tinkering in
+> > the core scheduler code for the next five years.
+> >
 > > As a sidenote: I really wonder if anybody noticed yet, that the whole
 > > CFS / SD comparison is so ridiculous, that it is not even funny anymore.
+>
+> Contrarily to most people, I don't see them as competitors. I see SD as
+> a first step with a low risk of regression, and CFS as an ultimate
+> solution relying on a more solid framework.
+>
 > > CFS modifies the scheduler and nothing else, SD fiddles all over the
-> > kernel in interesting ways. 
-> > 
-> 
-> have you looked at diffstat lately? :)
-> 
-> sd:
->  Documentation/sched-design.txt  |  241 +++++++
->  Documentation/sysctl/kernel.txt |   14
->  Makefile                        |    2
->  fs/pipe.c                       |    7
->  fs/proc/array.c                 |    2
->  include/linux/init_task.h       |    4
->  include/linux/sched.h           |   32 -
->  kernel/sched.c                  | 1279
-> +++++++++++++++++++---------------------
->  kernel/softirq.c                |    2
->  kernel/sysctl.c                 |   26
->  kernel/workqueue.c              |    2
->  11 files changed, 919 insertions(+), 692 deletions(-)
-> 
-> cfs:
->  Documentation/kernel-parameters.txt |   43
->  Documentation/sched-design-CFS.txt  |  107 +
->  Makefile                            |    2
->  arch/i386/kernel/smpboot.c          |   13
->  arch/i386/kernel/tsc.c              |    8
->  arch/ia64/kernel/setup.c            |    6
->  arch/mips/kernel/smp.c              |   11
->  arch/sparc/kernel/smp.c             |   10
->  arch/sparc64/kernel/smp.c           |   36
->  fs/proc/array.c                     |   11
->  fs/proc/base.c                      |    2
->  fs/proc/internal.h                  |    1
->  include/asm-i386/unistd.h           |    3
->  include/asm-x86_64/unistd.h         |    4
->  include/linux/hardirq.h             |   13
->  include/linux/sched.h               |   94 +
->  init/main.c                         |    2
->  kernel/exit.c                       |    3
->  kernel/fork.c                       |    4
->  kernel/posix-cpu-timers.c           |   34
->  kernel/sched.c                      | 2288
-> +++++++++---------------------------
->  kernel/sched_debug.c                |  152 ++
->  kernel/sched_fair.c                 |  601 +++++++++
->  kernel/sched_rt.c                   |  184 ++
->  kernel/sched_stats.h                |  235 +++
->  kernel/sysctl.c                     |   32
->  26 files changed, 2062 insertions(+), 1837 deletions(-)
+> > kernel in interesting ways.
+>
+> Hmmm I guess you confused both of them this time. CFS touches many places,
+> which is why I think the testing coverage is still very low. SD can be
+> tested faster. My real concern is : are there still people observing
+> regressions with it ? If yes, they should be fixed before even being
+> merged. If no, why not merge it as a fix for the many known corner cases
+> of current scheduler ? After all, it's already in -mm.
+>
+> Willy
 
-Sorry, my bad. I looked at a diffstat of the ck full set. Not only the
-SD part of it.
+Willy, you're making far too much sense. Are you replying to the correct 
+mailing list?
 
-	tglx
-
-
+-- 
+-ck
