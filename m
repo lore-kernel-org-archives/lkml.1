@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031357AbXD2URU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030760AbXD2UWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031357AbXD2URU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031359AbXD2URU
+	id S1030760AbXD2UWU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031377AbXD2UWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:17:20 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:32774 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031357AbXD2URT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:17:19 -0400
-Date: Sun, 29 Apr 2007 22:17:29 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070429201729.GQ3468@stusta.de>
-References: <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070429214007.9ea12e96.diegocg@gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 29 Apr 2007 16:22:20 -0400
+Received: from pat.uio.no ([129.240.10.15]:45487 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030760AbXD2UWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 16:22:19 -0400
+Subject: Re: NR_UNSTABLE_FS vs. NR_FILE_DIRTY: double counting pages?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ethan Solomita <solo@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+In-Reply-To: <4632A1A6.90702@google.com>
+References: <4632A1A6.90702@google.com>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 16:22:15 -0400
+Message-Id: <1177878135.6400.37.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.182)
+X-UiO-Scanned: 50FC59319932307473DD4106F726C70C1843BE2B
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 283 total 1403828 max/h 8345 blacklist 0 greylist 1 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 09:40:07PM +0200, Diego Calleja wrote:
->...
-> So unless someone is willing to write such tool (which I doubt, since it
-> doesn't looks easy), all this discussion seems pointless, and we should
-> stick with this http://kernelnewbies.org/known_regressions page
-> which is showing to be quite useful :)
+On Fri, 2007-04-27 at 18:21 -0700, Ethan Solomita wrote:
+> There are several places where we add together NR_UNSTABLE_FS and
+> NF_FILE_DIRTY:
+> 
+> sync_inodes_sb()
+> balance_dirty_pages()
+> wakeup_pdflush()
+> wb_kupdate()
+> prefetch_suitable()
+> 
+>     I can trace a standard codepath where it seems both of these are set
+> on the same page:
+> 
+> nfs_file_aops.commit_write ->
+>     nfs_commit_write
+>     nfs_updatepages
+>     nfs_writepage_setup
+>     nfs_wb_page
+>     nfs_wb_page_priority
+>     nfs_writepage_locked
+>     nfs_flush_mapping
+>     nfs_flush_list
+>     nfs_flush_multi
+>     nfs_write_partial_ops.rpc_call_done
+>     nfs_writeback_done_partial
+>     nfs_writepage_release
+>     nfs_reschedule_unstable_write
+>     nfs_mark_request_commit
+>     incr NR_UNSTABLE_NFS
+> 
+> nfs_file_aops.commit_write ->
+>     nfs_commit_write
+>     nfs_updatepage
+>     __set_page_dirty_nobuffers
+>     incr NF_FILE_DIRTY
+> 
+> 
+>     This is the standard code path that derives from sys_write(). Can
+> someone either show how this code sequence can't happen, or confirm for
+> me that there's a bug?
+>     -- Ethan
 
-This list currently contains 29 known regressions.
-Someone has to manually add them.
-Someone has to manually track the status of all of them.
-Someone has to manually group related regressions (e.g. in the same 
-subsystem) together.
+It should not happen. If the page is on the unstable list, then it will
+be committed before nfs_updatepage is allowed to redirty it. See the
+recent fixes in 2.6.21-rc7.
 
-The kernel Bugzilla currently contains 1600 open bugs.
-
-Maintaining a regression list by hand was really a pain when during 
-2.6.21-rc we had 36 known regressions.
-
-Any approach that does not involve some kind of tracker with some kind 
-of database simply doesn't scale.
-
-Bugzilla might not be perfect, but it works and it's better than doing 
-it by hand.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Trond
 
