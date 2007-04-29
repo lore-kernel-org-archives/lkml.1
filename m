@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbXD2LCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXD2LCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755114AbXD2LCv (ORCPT <rfc822;w@1wt.eu>);
+	id S933159AbXD2LCv (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 29 Apr 2007 07:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756343AbXD2LBX
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbXD2LBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:01:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51240 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755130AbXD2KxC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 06:53:02 -0400
-From: Andi Kleen <ak@suse.de>
-References: <200704291252.514680000@suse.de>
-In-Reply-To: <200704291252.514680000@suse.de>
-To: Ralf Baechle <ralf@linux-mips.org>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [13/48] x86_64: fix ia32_binfmt.c build error
-Message-Id: <20070429105301.7B2A1151CA@wotan.suse.de>
-Date: Sun, 29 Apr 2007 12:53:01 +0200 (CEST)
+	Sun, 29 Apr 2007 07:01:25 -0400
+Received: from cb2.northrockquote.com ([64.251.14.146]:2836 "EHLO
+	dejavu.debianpt.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755131AbXD2KxE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 06:53:04 -0400
+X-Greylist: delayed 1508 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Apr 2007 06:53:04 EDT
+Message-ID: <46347335.7080601@debianpt.org>
+Date: Sun, 29 Apr 2007 11:28:05 +0100
+From: Miguel Figueiredo <elmig@debianpt.org>
+Organization: DebianPT.org
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.21 frozen for a few minutes, swapping to disk
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-From: Ralf Baechle <ralf@linux-mips.org>
+today, with 2.6.21, my laptop had a really odd behaviour. It started 
+writing to disk for a few minutes with no interactivity at all (no 
+redraw on screen, only hdd led on). It's the first time i noticed 
+OOM-killer started do kill programs.
 
-Reorder code to avoid multiple inclusion of elf.h.
+It was totally unresponsive for minutes, after back to life it had a 
+load of ~19.0, and 300+ MB on swap (first time i saw this).
 
-#undef several symbols to avoid build errors over redefinitions.
+It's an HP pavillon core duo 2.0 GHz, 1 GB RAM
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+kern.log details: 
+http://www.debianpt.org/~elmig/pool/kernel/20070429/kern.log
+.config: http://www.debianpt.org/~elmig/pool/kernel/20070429/2.6.21.config
+dmesg: http://www.debianpt.org/~elmig/pool/kernel/20070429/dmesg
 
- arch/x86_64/ia32/ia32_binfmt.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+As this is the first time it happened and it felt odd i am reporting.
 
-Index: linux/arch/x86_64/ia32/ia32_binfmt.c
-===================================================================
---- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-+++ linux/arch/x86_64/ia32/ia32_binfmt.c
-@@ -5,6 +5,11 @@
-  * This tricks binfmt_elf.c into loading 32bit binaries using lots 
-  * of ugly preprocessor tricks. Talk about very very poor man's inheritance.
-  */ 
-+#define __ASM_X86_64_ELF_H 1
-+
-+#undef ELF_CLASS
-+#define ELF_CLASS ELFCLASS32
-+
- #include <linux/types.h>
- #include <linux/stddef.h>
- #include <linux/rwsem.h>
-@@ -50,9 +55,6 @@ struct elf_phdr; 
- #undef ELF_ARCH
- #define ELF_ARCH EM_386
- 
--#undef ELF_CLASS
--#define ELF_CLASS ELFCLASS32
--
- #define ELF_DATA	ELFDATA2LSB
- 
- #define USE_ELF_CORE_DUMP 1
-@@ -136,7 +138,7 @@ struct elf_prpsinfo
- 
- #define user user32
- 
--#define __ASM_X86_64_ELF_H 1
-+#undef elf_read_implies_exec
- #define elf_read_implies_exec(ex, executable_stack)     (executable_stack != EXSTACK_DISABLE_X)
- //#include <asm/ia32.h>
- #include <linux/elf.h>
+If aditional info is needed please CC me as i am not on the list.
+
+-- 
+
+Com os melhores cumprimentos/Best regards,
+
+Miguel Figueiredo
+http://www.DebianPT.org
