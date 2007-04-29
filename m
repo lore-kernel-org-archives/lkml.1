@@ -1,76 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbXD2HXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbXD2HYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbXD2HXI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 03:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbXD2HXH
+	id S1756260AbXD2HYj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 03:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756261AbXD2HYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 03:23:07 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:36591 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1755017AbXD2HXG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 03:23:06 -0400
-Date: Sat, 28 Apr 2007 23:43:09 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: David Miller <davem@davemloft.net>
-cc: mrechberger@gmail.com, torvalds@linux-foundation.org, bunk@stusta.de,
-       diegocg@gmail.com, cebbert@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070428.204048.125894473.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.63.0704282339220.11975@qynat.qvtvafvgr.pbz>
-References: <20070428195320.GZ3468@stusta.de><alpine.LFD.0.98.0704281529080.
- 9964@woody.linux-foundation.org><d9def9db0704281558r57460a6ft76bbddcc480058
- eb@mail.gmail.com> <20070428.204048.125894473.davem@davemloft.net>
+	Sun, 29 Apr 2007 03:24:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:40805 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756258AbXD2HYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 03:24:38 -0400
+Message-ID: <4634483E.9030307@goop.org>
+Date: Sun, 29 Apr 2007 00:24:46 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org> <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, David Miller wrote:
-
-> 
-> From: "Markus Rechberger" <mrechberger@gmail.com>
-> Date: Sun, 29 Apr 2007 00:58:09 +0200
+Eric W. Biederman wrote:
+> All it does is set a flag that tells a bootloader.
+> "Hey. I can run when loaded a non-default address, and this is what
+>  you have to align me to."
 >
->> On 4/29/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>>
->>>
->>> On Sat, 28 Apr 2007, Adrian Bunk wrote:
->>>>
->>>> We are already quite good at ignoring bug reports that come through
->>>> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more
->>>> than 1600 open bugs because this tells how bad we are at handling bugs.
->>>
->>> No, it just shows that bugzilla doesn't matter for most of the kernel.
->>>
->>> Don't say that "bugzilla tells how bad we are at handling bugs". It tells
->>> how bad *bugzilla* is for handling bugs, nothing more.
->>>
->>
->> I totally disagree here, bugzilla is a very good tool.
->
-> No, Bugzilla really does suck, and I personally refuse to use it when
-> I have a choice.  And guess what?  You better be concerned about that
-> because I maintain all of the networking code :-)
->
-> It puts the onus FAR too much on the developer and not enough on the
-> reporter and other minions.  We have a small resource of developers,
-> yet lots of users, bug reporters, and minions, so something that
-> doesn't take advantage of the larger resource we have is going to
-> not function efficiently at all.  Yet that is what bugzilla does.
+> All relocation processing happens in the kernel itself.
+>   
 
-I'll say that as a user I hate having to deal with bugzilla.
+Is it possible to decompress and extract the kernel image from the
+bzImage without executing it?  Ie, is there enough information to find
+the compressed data part of the bzImage by inspection?
 
-there's nothing more frustrating then spending a good chunk of time trying to 
-find a similar bug, then jumping through all the bugzilla hoops to file a report 
-to eventually (days/weeks later) get a message 'closed becouse it's a duplicate 
-report), then have to go and track down what it's a duplicate of, read through 
-that bug report, only to find that it's not solved there either, and to top it 
-off, the people working on that bug won't see my report or that I'm available to 
-troubleshoot it.
+At some point we'll need to change the Xen domain builder to handle
+bzImage files, and it would be best if we didn't need to run them.
 
-from a user poit of view, e-mailing the kernel list (retrying a few days later 
-of there is no response) tends to work _much_ better.
-
-David Lang
+    J
