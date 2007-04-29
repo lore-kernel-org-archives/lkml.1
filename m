@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756478AbXD2NhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbXD2Nke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756478AbXD2NhO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 09:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbXD2NhO
+	id S1755265AbXD2Nke (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 09:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756474AbXD2Nkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 09:37:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:47842 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756478AbXD2NhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 09:37:11 -0400
-Subject: [PATCH 2/2] lguest: handle new paravirt lazy mode (fix userspace
-	segfaults)
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Zachary Amsden <zach@vmware.com>
-In-Reply-To: <1177853697.30071.179.camel@localhost.localdomain>
-References: <1177853697.30071.179.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 23:36:58 +1000
-Message-Id: <1177853818.30071.182.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 09:40:33 -0400
+Received: from mail1.vetienne.net ([87.98.219.23]:2765 "EHLO
+	mail1.vetienne.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265AbXD2Nkc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 09:40:32 -0400
+From: Vincent ETIENNE <ve@vetienne.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: [linux-usb-devel] USB HID bug (was [PROBLEM] Bonding driver in linux-2.6.21-rc6-mm1)
+Date: Sun, 29 Apr 2007 15:40:27 +0200
+User-Agent: KMail/1.9.6
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Paul Walmsley <paul@booyaka.com>
+References: <Pine.LNX.4.44L0.0704281547260.14565-100000@netrider.rowland.org> <200704282243.54950.ve@vetienne.net> <Pine.LNX.4.64.0704291315080.7370@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0704291315080.7370@jikos.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200704291540.28326.ve@vetienne.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There's a new paravirt_lazy_mode mode in town.
+Le Sunday 29 April 2007 13:18:31 Jiri Kosina, vous avez écrit :
+>
+> Hi Vincent,
 
-Well, it's spelled "mode", but it's pronounced "hack".
+	Hi Jiri,
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/lguest.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+>
+> yes, the device is messed up, but it shouldn't have any consequences for
+> you - the HID driver is able to correctly handle that, so as soon as we
+> don't need to add any extra quirks for such device, everything should be
+> fine. I have removed the WARN_ON from the code in my tree. I think we
+> still don't want users to add quirks for such broken devices (as it would
+> collide with hid_blakclist[] terminator), so I have left the initial
+> condition in usbhid_modify_dquirk() untouched.
+>
 
-===================================================================
---- a/drivers/lguest/lguest.c
-+++ b/drivers/lguest/lguest.c
-@@ -59,9 +59,13 @@ static enum paravirt_lazy_mode lazy_mode
- static enum paravirt_lazy_mode lazy_mode;
- static void lguest_lazy_mode(enum paravirt_lazy_mode mode)
- {
--	lazy_mode = mode;
--	if (mode == PARAVIRT_LAZY_NONE)
-+	if (mode == PARAVIRT_LAZY_FLUSH)
- 		hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
-+	else {
-+		lazy_mode = mode;
-+		if (mode == PARAVIRT_LAZY_NONE)
-+			hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
-+	}
- }
- 
- static void lazy_hcall(unsigned long call,
+Thanks a lot for the explanation and the patch, now i better understand 
+the "problem". Sorry to have bother you with just noise. The patch will 
+certainly be of some help with dumb user (who have dump hardware ) 
+like me.
 
+I have very appreciate the attention you ( and all other from this feed ) have 
+take with me. So a big thanks for your work and the next time (if any), i 
+will try to better analyse the problem to avoid unnecessary work.
 
+Vincent
