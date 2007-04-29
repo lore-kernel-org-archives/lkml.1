@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXD2BYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXD2B1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbXD2BYH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 21:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbXD2BYH
+	id S1752966AbXD2B1x (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 21:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXD2B1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 21:24:07 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:26533 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbXD2BYE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 21:24:04 -0400
-Date: Sat, 28 Apr 2007 19:22:43 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PCI Express MMCONFIG and BIOS Bug messages..
-In-reply-to: <46279358.1010002@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org
-Message-id: <4633F363.4000009@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=windows-1252; format=flowed
-Content-transfer-encoding: 7bit
-References: <4626C514.5010605@shaw.ca> <46279358.1010002@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 28 Apr 2007 21:27:53 -0400
+Received: from mx2.suse.de ([195.135.220.15]:60105 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752851AbXD2B1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 21:27:52 -0400
+Date: Sat, 28 Apr 2007 18:23:38 -0700
+From: Greg KH <gregkh@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Hans-J?rgen Koch <hjk@linutronix.de>,
+       Bill Davidsen <davidsen@tmr.com>, Linus Torvalds <torvalds@osdl.org>,
+       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Benedikt Spranger <b.spranger@linutronix.de>
+Subject: Re: [GIT PATCH] UIO patches for 2.6.21
+Message-ID: <20070429012338.GA11147@suse.de>
+References: <20070427224957.GA17967@kroah.com> <4633A6D7.3030806@tmr.com> <200704282203.31141.hjk@linutronix.de> <20070428211515.4e9fd8c5@the-village.bc.nu> <1177792297.7646.297.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177792297.7646.297.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> Robert Hancock wrote:
->> I've seen a lot of systems (including brand new Xeon-based servers from
->> IBM and HP) that output messages on boot like:
->>
->> PCI: BIOS Bug: MCFG area at f0000000 is not E820-reserved
->> PCI: Not using MMCONFIG.
->>
->>
->> So Microsoft is explicitly telling the BIOS developers that there is no
->> need to reserve the MMCONFIG space in the E820 table because Windows
->> doesn't care. On that basis it doesn't seem like a valid check to
->> require it to be so reserved, then.
->>
->> Really, I think we should be basing this check on whether the
->> corresponding memory range is reserved in the ACPI resources, like
->> Windows expects. This does require putting more fingers into ACPI from
->> this early boot stage, though..
->>
+On Sat, Apr 28, 2007 at 10:31:37PM +0200, Thomas Gleixner wrote:
+> On Sat, 2007-04-28 at 21:15 +0100, Alan Cox wrote:
+> > > > I have a political question, if I have a user space driver, is my kernel 
+> > > > tainted or not? 
+> > > 
+> > > Surely not. By using the kernel's userspace interface, you create no
+> > > "derived work" of the kernel. See COPYING in the root directory of the 
+> > > kernel sources for details.
+> > 
+> > That only covers normal system calls - but I don't think thats what is
+> > relevant, taints are for debug assistance not politics.
+> > 
+> > I think we should have a taint flag for UIO type drivers. Not for any
+> > licensing or political reason but for the simple fact it means that there
+> > may be other complexities to debugging - and not the same one as a binary
+> > module. Probably we want the same marker for mmap /dev/mem too.
 > 
-> Intel had posted patches to do exactly that, but they were rejected.
-> I don't remember why now...
+> I agree, if we make it entirely clear that the flag is nonpolitical. 
 
-I tried adapting a patch by Rajesh Shah to do this for current kernels:
+Hm, I don't know, what makes this different from the fact that we can
+mmap PCI device space today through the proc and sysfs entries?  That's
+how X gets direct access to the hardware for a number of different
+cards, and that's pretty much the same thing as the UIO interface is
+doing.
 
-http://lkml.org/lkml/2006/6/23/365
+Unless you think we should also use the same "taint" flag on those
+accesses too, and if so, I have no objection.
 
-It walks through all the motherboard resource devices and tries to pull 
-out the resource settings for all of them using the _CRS method. 
-(Depending on how you do the probing, the _STA method is called as well, 
-either before or after.) From my limited ACPI knowledge, the problem is 
-that the PCI MMCONFIG initialization is called before the main ACPI 
-interpreter is enabled, and these control methods may try to access 
-operation regions who don't have handlers set up for them yet, so a 
-bunch of "no handler for region" errors show up.
+thanks,
 
-I think some earlier version of this patch was in -mm for a while back 
-in 2.6.18 times, I actually complained about it back then because it 
-falsely detected the region wasn't reserved on my system since it bailed 
-out on the first such error before it found the reservation. On my 
-system it turns out that the device called EXPL that has the MCFG table 
-reservation in it has the addresses statically defined in the _CRS 
-method and doesn't need to access any regions, so if you make the search 
-continue on after errors, it does actually work, but there's probably no 
-guarantee that all systems will have the MCFG reservation statically 
-defined like this, and we can't have all those ACPI errors from other 
-devices clogging the logs either.
-
-So essentially if we want to do this check based on ACPI resource 
-reservations, we need to be able to execute control methods at the point 
-that MMCONFIG is set up. Is there a reason why this can't be made 
-possible (like by moving the necessary parts of ACPI initialization 
-earlier)?
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
-
+greg k-h
