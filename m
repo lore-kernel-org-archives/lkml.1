@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbXD2DWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754514AbXD2DW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbXD2DWc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 23:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbXD2DWc
+	id S1754514AbXD2DW5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 23:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbXD2DWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 23:22:32 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:36229 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbXD2DWa (ORCPT
+	Sat, 28 Apr 2007 23:22:33 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:34270 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328AbXD2DWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 23:22:30 -0400
+	Sat, 28 Apr 2007 23:22:31 -0400
 X-IronPort-AV: i="4.14,465,1170651600"; 
-   d="scan'208"; a="28603020:sNHT22239658"
+   d="scan'208"; a="36822432:sNHT23407979"
 From: Bryan Wu <bryan.wu@analog.com>
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Cc: Bryan Wu <bryan.wu@analog.com>
-Subject: [PATCH 1/7] blackfin arch: fix coding style in ints-priority-sc C file
-Date: Sun, 29 Apr 2007 11:23:07 +0800
-Message-Id: <11778169952438-git-send-email-bryan.wu@analog.com>
+Subject: [PATCH 2/7] blackfin arch: fix bug refuse to boot if rootfs image is not attached when MTD_UCLINUX is selected
+Date: Sun, 29 Apr 2007 11:23:08 +0800
+Message-Id: <11778169952824-git-send-email-bryan.wu@analog.com>
 X-Mailer: git-send-email 1.5.1.2
 In-Reply-To: <11778169933996-git-send-email-bryan.wu@analog.com>
 References: <11778169933996-git-send-email-bryan.wu@analog.com>
@@ -26,122 +26,24 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bryan Wu <bryan.wu@analog.com>
 ---
- arch/blackfin/mach-common/ints-priority-sc.c |   77 +++++++++++--------------
- 1 files changed, 34 insertions(+), 43 deletions(-)
+ arch/blackfin/kernel/setup.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/mach-common/ints-priority-sc.c b/arch/blackfin/mach-common/ints-priority-sc.c
-index c30726b..34b6228 100644
---- a/arch/blackfin/mach-common/ints-priority-sc.c
-+++ b/arch/blackfin/mach-common/ints-priority-sc.c
-@@ -329,11 +329,9 @@ static unsigned int bfin_gpio_irq_startup(unsigned int irq)
- 	u16 gpionr = irq - IRQ_PF0;
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index 76e1f10..6a2190f 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -293,6 +293,11 @@ void __init setup_arch(char **cmdline_p)
  
- 	if (!(gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))) {
--
- 		ret = gpio_request(gpionr, NULL);
--		if(ret)
-+		if (ret)
- 			return ret;
--
- 	}
+ 	memory_end -= mtd_size;
  
- 	gpio_enabled[gpio_bank(gpionr)] |= gpio_bit(gpionr);
-@@ -355,55 +353,49 @@ static int bfin_gpio_irq_type(unsigned int irq, unsigned int type)
- 	unsigned int ret;
- 	u16 gpionr = irq - IRQ_PF0;
- 
-+	if (type == IRQ_TYPE_PROBE) {
-+		/* only probe unenabled GPIO interrupt lines */
-+		if (gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))
-+			return 0;
-+		type = IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING;
++	if (mtd_size == 0) {
++		console_init();
++		panic("Don't boot kernel without rootfs attached.\n");
 +	}
++
+ 	/* Relocate MTD image to the top of memory after the uncached memory area */
+ 	dma_memcpy((char *)memory_end, __bss_stop, mtd_size);
  
--		if (type == IRQ_TYPE_PROBE) {
--			/* only probe unenabled GPIO interrupt lines */
--			if (gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))
--				return 0;
--			type = IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING;
--
--		}
--
--		if (type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING |
--			    IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW)) {
--
-+	if (type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING |
-+	            IRQ_TYPE_LEVEL_HIGH | IRQ_TYPE_LEVEL_LOW))
-+	{
- 		if (!(gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))) {
--
- 			ret = gpio_request(gpionr, NULL);
--			if(ret)
-+			if (ret)
- 				return ret;
--
--		}
--
--			gpio_enabled[gpio_bank(gpionr)] |= gpio_bit(gpionr);
--		} else {
--			gpio_enabled[gpio_bank(gpionr)] &= ~gpio_bit(gpionr);
--			return 0;
- 		}
- 
-+		gpio_enabled[gpio_bank(gpionr)] |= gpio_bit(gpionr);
-+	} else {
-+		gpio_enabled[gpio_bank(gpionr)] &= ~gpio_bit(gpionr);
-+		return 0;
-+	}
- 
--		set_gpio_dir(gpionr, 0);
--		set_gpio_inen(gpionr, 1);
--
-+	set_gpio_dir(gpionr, 0);
-+	set_gpio_inen(gpionr, 1);
- 
--		if (type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING)) {
--			gpio_edge_triggered[gpio_bank(gpionr)] |= gpio_bit(gpionr);
--			set_gpio_edge(gpionr, 1);
--		} else {
--			set_gpio_edge(gpionr, 0);
--			gpio_edge_triggered[gpio_bank(gpionr)] &= ~gpio_bit(gpionr);
--		}
-+	if (type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING)) {
-+		gpio_edge_triggered[gpio_bank(gpionr)] |= gpio_bit(gpionr);
-+		set_gpio_edge(gpionr, 1);
-+	} else {
-+		set_gpio_edge(gpionr, 0);
-+		gpio_edge_triggered[gpio_bank(gpionr)] &= ~gpio_bit(gpionr);
-+	}
- 
--		if ((type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING))
--		    == (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING))
--			set_gpio_both(gpionr, 1);
--		else
--			set_gpio_both(gpionr, 0);
-+	if ((type & (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING))
-+	    == (IRQ_TYPE_EDGE_RISING | IRQ_TYPE_EDGE_FALLING))
-+		set_gpio_both(gpionr, 1);
-+	else
-+		set_gpio_both(gpionr, 0);
- 
--		if ((type & (IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_LEVEL_LOW)))
--			set_gpio_polar(gpionr, 1);	/* low or falling edge denoted by one */
--		else
--			set_gpio_polar(gpionr, 0);	/* high or rising edge denoted by zero */
-+	if ((type & (IRQ_TYPE_EDGE_FALLING | IRQ_TYPE_LEVEL_LOW)))
-+		set_gpio_polar(gpionr, 1);	/* low or falling edge denoted by one */
-+	else
-+		set_gpio_polar(gpionr, 0);	/* high or rising edge denoted by zero */
- 
- 	SSYNC();
- 
-@@ -416,7 +408,6 @@ static int bfin_gpio_irq_type(unsigned int irq, unsigned int type)
- }
- 
- 
--
- static struct irq_chip bfin_gpio_irqchip = {
- 	.ack = bfin_gpio_ack_irq,
- 	.mask = bfin_gpio_mask_irq,
 -- 
 1.5.1.2
