@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161369AbXD2VGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161379AbXD2VGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161369AbXD2VGG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161361AbXD2VFe
+	id S1161379AbXD2VGJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161368AbXD2VGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:05:34 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48225 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161340AbXD2VF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:05:28 -0400
-Message-id: <884911045191324382@wsc.cz>
-In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 18/21] Char: cyclades, fix tty device unregister
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 23:05:27 +0200 (CEST)
+	Sun, 29 Apr 2007 17:06:08 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46013 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161340AbXD2VFk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:05:40 -0400
+Date: Sun, 29 Apr 2007 17:05:37 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: git@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE] Guilt v0.24
+Message-ID: <20070429210537.GD4163@filer.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, fix tty device unregister
+Sorry for the delayed announcement...
 
-put_tty_driver after unregistering devices
+Guilt v0.24 is available for download.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
+queues-like functionality and interface to git.
 
----
-commit 0d1d9602e00c115e03e04ee01f3ecc92adbbf504
-tree dbb15b2d6088652a00d30b717bd476ecc697da08
-parent fb2b658e64e69e56c52b1242b9957e9d96f28ade
-author Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 11:27:08 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 11:27:08 +0200
+Tarballs:
+http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
 
- drivers/char/cyclades.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Git repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index 620e17c..f23d481 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -5285,8 +5285,6 @@ static void __exit cy_cleanup_module(void)
- 		printk(KERN_ERR "failed to unregister Cyclades serial "
- 				"driver(%d)\n", e1);
- 
--	put_tty_driver(cy_serial_driver);
--
- #ifdef CONFIG_PCI
- 	pci_unregister_driver(&cy_pci_driver);
- #endif
-@@ -5310,6 +5308,8 @@ static void __exit cy_cleanup_module(void)
- 				tty_unregister_device(cy_serial_driver, e1);
- 		}
- 	}
-+
-+	put_tty_driver(cy_serial_driver);
- } /* cy_cleanup_module */
- 
- module_init(cy_init);
+
+The major changes are in status and fork commands. guilt-status now accepts
+a number of flags to display only certain subset of changed files (e.g.,
+only newly added files). guilt-fork is now smarter about the naming of
+patches - following quilt's lead.
+
+Additionally, Brandon Philips, went a head, and create a Debian package for
+Guilt. So, if you are a Debian Unstable user, you can Guilt through apt.
+
+As always, patches, and other feedback is welcome.
+
+Josef "Jeff" Sipek.
+
+------------
+Changes since v0.23:
+
+Eric Lesh (4):
+      guilt-fork: Rename patches sequentially (ala quilt)
+      guilt-fork: Use first argument (if given) as name of new patch
+      Documentation/guilt-fork: document argument to choose name of new patch
+      guilt: Add -h option to show man pages
+
+Josef 'Jeff' Sipek (7):
+      status: Major cleanup of status
+      Docs: Document all options for status
+      status: Added -n to hide status prefix from ouput
+      status: change into the top of the repo before checking for changes
+      Docs: Fixed up description of series -v
+      pop: Added -f to force popping of the patch
+      Guilt v0.24
