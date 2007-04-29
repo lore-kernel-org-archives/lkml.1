@@ -1,58 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756519AbXD2QYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbXD2QZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756519AbXD2QYu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 12:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756517AbXD2QYu
+	id S1756518AbXD2QZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 12:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbXD2QZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 12:24:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42172 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756519AbXD2QYt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 12:24:49 -0400
-Date: Sun, 29 Apr 2007 17:27:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Greg KH <gregkh@suse.de>,
-       Hans-J?rgen Koch <hjk@linutronix.de>, Bill Davidsen <davidsen@tmr.com>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org,
-       Benedikt Spranger <b.spranger@linutronix.de>
-Subject: Re: [GIT PATCH] UIO patches for 2.6.21
-Message-ID: <20070429172749.53843a21@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.61.0704291403080.506@yvahk01.tjqt.qr>
-References: <20070427224957.GA17967@kroah.com>
-	<4633A6D7.3030806@tmr.com>
-	<200704282203.31141.hjk@linutronix.de>
-	<20070428211515.4e9fd8c5@the-village.bc.nu>
-	<1177792297.7646.297.camel@localhost.localdomain>
-	<20070429012338.GA11147@suse.de>
-	<1177835453.5791.7.camel@localhost.localdomain>
-	<Pine.LNX.4.61.0704291403080.506@yvahk01.tjqt.qr>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 12:25:26 -0400
+Received: from lucidpixels.com ([75.144.35.66]:47390 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756518AbXD2QZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 12:25:23 -0400
+Date: Sun, 29 Apr 2007 12:25:19 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: xfs@oss.sgi.com
+cc: linux-kernel@vger.kernel.org
+Subject: Re: mkfs.xfs cannot make sector size 64 KiB?
+In-Reply-To: <Pine.LNX.4.64.0704291218190.10418@p34.internal.lan>
+Message-ID: <Pine.LNX.4.64.0704291225070.10607@p34.internal.lan>
+References: <Pine.LNX.4.64.0704291218190.10418@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Right, this is just a hint, that something in user space is accessing
-> >the hardware directly. Not a too bad idea, but pretty much useless when
-> >we add X to the picture as it will be set always :)
-> 
-> Index: linux-2.6.21-mm_20040728/drivers/char/mem.c
-> ===================================================================
-> --- linux-2.6.21-mm_20040728.orig/drivers/char/mem.c
-> +++ linux-2.6.21-mm_20040728/drivers/char/mem.c
-> @@ -274,6 +274,9 @@ static int mmap_mem(struct file * file, 
->  	if (!private_mapping_ok(vma))
->  		return -ENOSYS;
->  
-> +	if (strcmp(current->comm, "Xorg") != 0)
-> +		tainted |= TAINT_USER;
-> +
+Adding LKML to cc list.
 
-The X server has many names.  Xorg isn't the name of the server here for
-example (its "X"). 
+On Sun, 29 Apr 2007, Justin Piszcz wrote:
 
-Alan
+>> From the manpage:
+>
+>       -b     Block size options.
+>
+>              This option specifies the fundamental block size of the 
+> filesys-
+>              tem.   The  valid suboptions are: log=value and size=value; 
+> only
+>              one can be supplied.  The block size is specified  either  as 
+> a
+>              base two logarithm value with log=, or in bytes with size=. 
+> The
+>              default value is 4096 bytes (4 KiB), the minimum is 512, and 
+> the
+>              maximum is 65536 (64 KiB).  XFS on Linux currently only 
+> supports
+>              pagesize or smaller blocks.
+>
+> The maximum size is 64 KiB, yet it seems only up to 32 KiB is valid?
+>
+> I am running x86_64.
+>
+> $ uname -m
+> x86_64
+>
+>
+> p34:~# mkfs.xfs -b size=512 /dev/md3
+> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
+> mkfs.xfs: Use the -f option to force overwrite.
+> p34:~# mkfs.xfs -b size=4096 /dev/md3
+> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
+> mkfs.xfs: Use the -f option to force overwrite.
+> p34:~# mkfs.xfs -b size=8192 /dev/md3
+> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
+> mkfs.xfs: Use the -f option to force overwrite.
+> p34:~# mkfs.xfs -b size=16384 /dev/md3
+> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
+> mkfs.xfs: Use the -f option to force overwrite.
+> p34:~# mkfs.xfs -b size=32768 /dev/md3
+> mkfs.xfs: /dev/md3 appears to contain an existing filesystem (xfs).
+> mkfs.xfs: Use the -f option to force overwrite.
+> p34:~# mkfs.xfs -b size=65536 /dev/md3
+> illegal sector size 65536
+> Usage: mkfs.xfs
+> /* blocksize */         [-b log=n|size=num]
+> /* data subvol */       [-d agcount=n,agsize=n,file,name=xxx,size=num,
+>                            (sunit=value,swidth=value|su=num,sw=num),
+>                            sectlog=n|sectsize=num,unwritten=0|1]
+> /* inode size */        [-i log=n|perblock=n|size=num,maxpct=n,attr=0|1|2]
+> /* log subvol */        [-l agnum=n,internal,size=num,logdev=xxx,version=n
+>                            sunit=value|su=num,sectlog=n|sectsize=num]
+> /* label */             [-L label (maximum 12 characters)]
+> /* naming */            [-n log=n|size=num,version=n]
+> /* prototype file */    [-p fname]
+> /* quiet */             [-q]
+> /* realtime subvol */   [-r extsize=num,size=num,rtdev=xxx]
+> /* sectorsize */        [-s log=n|size=num]
+> /* version */           [-V]
+>                        devicename
+> <devicename> is required unless -d name=xxx is given.
+> <num> is xxx (bytes), xxxs (sectors), xxxb (fs blocks), xxxk (xxx KiB),
+>      xxxm (xxx MiB), xxxg (xxx GiB), xxxt (xxx TiB) or xxxp (xxx PiB).
+> <value> is xxx (512 byte blocks).
+> p34:~#
+>
+> Unless, the page size is not <= 64 for x86_64?
+>
+> Justin.
+>
+>
