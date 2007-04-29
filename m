@@ -1,98 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161497AbXD2Wvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161506AbXD2WyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161497AbXD2Wvj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 18:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161521AbXD2Wvj
+	id S1161506AbXD2WyX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 18:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161521AbXD2WyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 18:51:39 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37218 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161497AbXD2Wvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 18:51:38 -0400
-Date: Mon, 30 Apr 2007 00:52:12 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] HID and USB HID updates for 2.6.22 merge window
-Message-ID: <Pine.LNX.4.64.0704292348550.7370@jikos.suse.cz>
+	Sun, 29 Apr 2007 18:54:22 -0400
+Received: from neon.samage.net ([85.17.153.66]:44720 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161506AbXD2WyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 18:54:21 -0400
+Message-ID: <1898.81.207.0.53.1177887257.squirrel@secure.samage.net>
+In-Reply-To: <1177874733.5791.137.camel@localhost.localdomain>
+References: <4655.81.207.0.53.1177863612.squirrel@secure.samage.net>
+    <1177874733.5791.137.camel@localhost.localdomain>
+Date: Mon, 30 Apr 2007 00:54:17 +0200 (CEST)
+Subject: Re: [2.6.21] BUG: clocksource_watchdog isn't reset after resume
+From: "Indan Zupancic" <indan@nul.nu>
+To: tglx@linutronix.de
+Cc: johnstul@us.ibm.com, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: bbdeaaa4d227adae8d620e69c05793d6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sun, April 29, 2007 21:25, Thomas Gleixner wrote:
+> On Sun, 2007-04-29 at 18:20 +0200, Indan Zupancic wrote:
+>> Hello,
+>>
+>> After s2ram, basically the following happens, which shouldn't happen:
+>>
+>> [    0.880234] Clocksource tsc unstable (delta = 449782067799 ns)
+>> [    0.881221] Time: pit clocksource has been installed.
+>>
+>> Looking at the source, it seems that clocksource_watchdog isn't reset
+>> after resume, while the clock source used is, and hence it thinks that
+>> the clock is unstable.
+>
+> Yup, missed that. I was looking into the resume path anyway for other
+> reasons. Does the patch below fix your problem ?
 
-could you please pull from 'for-linus' branch of
+Yes it does, thanks!
 
-        master.kernel.org:/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+Just wondering, but is it expected that tsc doesn't show up in
+/proc/timer_list? Output below:
 
-to receive 2.6.22 merge window updates for HID core layer and  USB HID layer. 
-The patches have been in -mm for quite some time.
+$ cat /proc/timer_list
+Timer List Version: v0.3
+HRTIMER_MAX_CLOCK_BASES: 2
+now at 557820361144 nsecs
 
- drivers/hid/Kconfig                           |    2 +
- drivers/hid/Makefile                          |    4 +
- drivers/hid/hid-core.c                        |    9 +-
- drivers/hid/hid-input.c                       |   27 +-
- drivers/hid/usbhid/Kconfig                    |  149 +++
- drivers/hid/usbhid/Makefile                   |   35 +
- drivers/hid/usbhid/hid-core.c                 | 1114 +++++++++++++++++++
- drivers/{usb/input => hid/usbhid}/hid-ff.c    |    2 +
- drivers/{usb/input => hid/usbhid}/hid-lgff.c  |    1 +
- drivers/{usb/input => hid/usbhid}/hid-pidff.c |    0 
- drivers/{usb/input => hid/usbhid}/hid-plff.c  |    0 
- drivers/hid/usbhid/hid-quirks.c               |  681 ++++++++++++
- drivers/{usb/input => hid/usbhid}/hid-tmff.c  |    0 
- drivers/{usb/input => hid/usbhid}/hid-zpff.c  |    0 
- drivers/{usb/input => hid/usbhid}/hiddev.c    |    0 
- drivers/{usb/input => hid/usbhid}/usbhid.h    |    0 
- drivers/{usb/input => hid/usbhid}/usbkbd.c    |   13 +-
- drivers/{usb/input => hid/usbhid}/usbmouse.c  |   15 +-
- drivers/usb/Makefile                          |    3 -
- drivers/usb/input/Kconfig                     |  145 ---
- drivers/usb/input/Makefile                    |   28 -
- drivers/usb/input/hid-core.c                  | 1477 -------------------------
- include/linux/hid.h                           |   14 +-
- 23 files changed, 2054 insertions(+), 1665 deletions(-)
+cpu: 0
+ clock 0:
+  .index:      0
+  .resolution: 999848 nsecs
+  .get_time:   ktime_get_real
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 999848 nsecs
+  .get_time:   ktime_get
+active timers:
+ #0: <b6e12f10>, it_real_fn, S:01
+ # expires at 557838167583 nsecs [in 17806439 nsecs]
+ #1: <b6e12f10>, it_real_fn, S:01
+ # expires at 577078756293 nsecs [in 19258395149 nsecs]
+ #2: <b6e12f10>, hrtimer_wakeup, S:01
+ # expires at 607716759262 nsecs [in 49896398118 nsecs]
+ #3: <b6e12f10>, it_real_fn, S:01
+ # expires at 3656633914145 nsecs [in 3098813553001 nsecs]
 
-Alan Stern (1):
-      USB HID: fix retry & reset logic
 
-Chris Clayton (1):
-      HID: enable dead keys on a belkin wireless keyboard
+Tick Device: mode:     0
+Clock Event Device: pit
+ max_delta_ns:   27461866
+ min_delta_ns:   12571
+ mult:           5124677
+ shift:          32
+ mode:           4
+ next_event:     0 nsecs
+ set_next_event: pit_next_event
+ set_mode:       init_pit_timer
+ event_handler:  clockevents_handle_noop
+tick_broadcast_mask: 00000000
 
-Daniel P. Engel (1):
-      USB HID: add QUIRK_HIDDEV for Belkin Flip KVM
 
-Dmitry Torokhov (1):
-      USB HID: usbkbd/usbmouse - handle errors when registering devices
+Tick Device: mode:     0
+Clock Event Device: lapic
+ max_delta_ns:   674685450
+ min_delta_ns:   1206
+ mult:           53400874
+ shift:          32
+ mode:           2
+ next_event:     0 nsecs
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  tick_handle_periodic
 
-Jiri Kosina (7):
-      USB HID: move usbhid code from drivers/usb/input to drivers/hid/usbhid
-      USB HID: consolidate vendor/product ids
-      USB HID: extend quirk for Logitech S510 keyboard
-      USB HID: Logitech MX3000 keyboard needs report descriptor quirk
-      USB HID: add FF support for Logitech Force 3D Pro Joystick
-      HID: update copyright and authorship macro
-      USB HID: don't warn on idVendor == 0
+Greetings,
 
-Paul Walmsley (5):
-      USB HID: specify explicit size for hid_blacklist.quirks
-      USB HID: encapsulate quirk handling into hid-quirks.c
-      USB HID: clarify static quirk handling as squirks
-      USB HID: add support for dynamically-created quirks
-      USB HID: add 'quirks' module parameter
+Indan
 
-Paul Zaremba (1):
-      USB HID: EMS USBII device needs HID_QUIRK_MULTI_INPUT
 
-Pete Zaitcev (1):
-      USB HID: numlock quirk for dell W7658 keyboard
-
-Ronny Peine (1):
-      USB HID: Thustmaster firestorm dual power v1 support
-
-Sam Liddicott (1):
-      USB HID: add support for WiseGroup MP-8800 Quad Joypad
-
-Simon Budig (1):
-      HID: introduce proper zeroing of unused bits in output reports
