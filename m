@@ -1,79 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbXD2AVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbXD2AXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470AbXD2AVY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 20:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXD2AVX
+	id S1754471AbXD2AXA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 20:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbXD2AXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 20:21:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:50634 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754470AbXD2AVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 20:21:20 -0400
-Message-ID: <4633E507.7070002@goop.org>
-Date: Sat, 28 Apr 2007 17:21:27 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 28 Apr 2007 20:23:00 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46448 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbXD2AW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 20:22:59 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4633E55B.1080601@s5r6.in-berlin.de>
+Date: Sun, 29 Apr 2007 02:22:51 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] i386: init early_gdt_descr and idle task properly on voyager
-Content-Type: text/plain; charset=UTF-8
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: random thoughts on DEPRECATED and OBSOLETE
+References: <Pine.LNX.4.64.0704280925270.24691@localhost.localdomain> <46337BD2.7000701@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281320560.27098@localhost.localdomain> <4633ACE4.50004@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281635190.28274@localhost.localdomain> <4633CA7F.6010505@s5r6.in-berlin.de> <Pine.LNX.4.64.0704281933160.29552@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0704281933160.29552@localhost.localdomain>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize early_gdt_descr and idle task properly.
+Robert P. J. Day wrote:
+> i think this online definition matches what i have in mind:
+> 
+> http://www.google.com/search?hl=en&rls=GGGL,GGGL:2006-10,GGGL:en&defl=en&q=define:Deprecated&sa=X&oi=glossary_definition&ct=title
 
-[ Incremental fix for "i386: introduce voyager smp_ops, fix voyager build" ]
+"Definitions of Deprecated on the Web: [...] This term is used to refer
+to /obsolete/ structures that should not be used for new applications".
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+Emphasis is mine.
+I can agree with this and the other definitions at this search result.
 
----
- arch/i386/kernel/smpboot.c           |    3 ---
- arch/i386/mach-voyager/voyager_smp.c |    2 ++
- include/asm-i386/processor.h         |    3 +++
- 3 files changed, 5 insertions(+), 3 deletions(-)
+> p.s.  just FYI, even *i'm* getting bored of this.  :-)
 
-===================================================================
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -763,9 +763,6 @@ static inline struct task_struct * alloc
- #define alloc_idle_task(cpu) fork_idle(cpu)
- #endif
- 
--/* Defined in head.S */
--extern struct Xgt_desc_struct early_gdt_descr;
--
- static int __cpuinit do_boot_cpu(int apicid, int cpu)
- /*
-  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
-===================================================================
---- a/arch/i386/mach-voyager/voyager_smp.c
-+++ b/arch/i386/mach-voyager/voyager_smp.c
-@@ -580,6 +580,8 @@ do_boot_cpu(__u8 cpu)
- 	stack_start.esp = (void *) idle->thread.esp;
- 
- 	init_gdt(cpu);
-+ 	per_cpu(current_task, cpu) = idle;
-+	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
- 	irq_ctx_init(cpu);
- 
- 	/* Note: Don't modify initial ss override */
-===================================================================
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -749,6 +749,9 @@ extern void enable_sep_cpu(void);
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
- 
-+/* Defined in head.S */
-+extern struct Xgt_desc_struct early_gdt_descr;
-+
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(void);
- extern void cpu_init(void);
-
+I thought so. :-)
+-- 
+Stefan Richter
+-=====-=-=== -=-- ===-=
+http://arcgraph.de/sr/
