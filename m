@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161386AbXD2VHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161151AbXD2VJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161386AbXD2VHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161383AbXD2VHv
+	id S1161151AbXD2VJc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161339AbXD2VJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:07:51 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48236 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161339AbXD2VHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:07:35 -0400
-Message-id: <1206432213194323666@wsc.cz>
-In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 21/21] Char: cyclades, copyright and version changes
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 23:07:33 +0200 (CEST)
+	Sun, 29 Apr 2007 17:09:32 -0400
+Received: from web32406.mail.mud.yahoo.com ([68.142.207.199]:39145 "HELO
+	web32406.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161151AbXD2VJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:09:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=tauUgYMe7gUfIW1+6Lkh54RV6NH+gATxugkIt9Y/KuO9JfLkDfyPMBqk5XIL37bU2TP5IUHXkeRaa2SbWGfcV0EsqbY183/TEJUWZAovpn3ixg+kfY9ERFcbWs7eh5NqqnLpR6MfuoqgsJFnN5vt3oJhoJlx1WtZ6g9zinSdN1M=;
+X-YMail-OSG: yJZhNG0VM1mV0s7a9yBi6gyr4KTShvz0PvkOub1yWVyxxOxvP65ovy4oQRLatj0fRbvBwwzeU1nNfB4vR8OjRhFrQd0XOE3VyqXJ.JyK9rPgMPVPPqXJs_Vs5nAZ4w--
+Date: Sun, 29 Apr 2007 14:09:29 -0700 (PDT)
+From: Giridhar Pemmasani <pgiri@yahoo.com>
+Subject: Re: Boot failure with 2.6.21 with snd-maestro3
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jaroslav Kysela <perex@suse.cz>, Clemens Ladisch <clemens@ladisch.de>,
+       Takashi Iwai <tiwai@suse.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       alsa-devel@alsa-project.org
+In-Reply-To: <20070429173559.GP3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <768801.1756.qm@web32406.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, copyright and version changes
+--- Adrian Bunk <bunk@stusta.de> wrote:
 
-- add copyright
-- move version one number upper and use MODULE_VERSION
+> On Sun, Apr 29, 2007 at 09:55:18AM -0700, Giridhar Pemmasani wrote:
+> > When snd-maestro3 (ESS Maestro 3 driver) is enabled, kernel 2.6.21 fails
+> to
+> > boot - it seems to stop at various points depending on what other modules
+> are
+> > enabled. Disabling snd-maestro3 fixes all issues. Moreover, with
+> everything
+> > else being same, using maestro3.c from 2.6.20 kernel and using it in
+> 2.6.21
+> > kernel also works - i.e., system boots fine. I will try to isolate the
+> issue
+> > and follow up.
+> 
+> There were only the two attached patches between 2.6.20 and 2.6.21 to 
+> this driver:
+> - maestro3: add request_firmware()
+> - maestro3 - Use quirk list helper function
+> 
+> 2.6.21 + 2.6.20 maestro3.c works for you.
+> 
+> Does 2.6.21 + 2.6.20 maestro3.c + patch-maestro3-1 work?
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+2.6.21 with 2.6.20's maestro3.c with patch-maestro3-1 exhibited the same
+issue. However, I identified the cause: maestro3 driver in 2.6.21 (even just
+patch-maestro3-1) tries to load firmware file from user space. But each time
+request_firmware is called it takes about 1 minute to timeout (because I
+don't have the firmware installed?). If I let the system take its time, even
+with maestro3.c from 2.6.21, it boots after timing out twice. So after about
+2 minutes of no activity, system does boot. Following are trace messages I
+added to identify the issue:
 
----
-commit 8f3cdfa90cfef76f4249331f4f6d7e06654f777d
-tree d573fe3d21dde85e3aeb50233efa766b7d9f5bb1
-parent c3f3dcbfe41732ece2f09a7c6e31e7a2b378a0f7
-author Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 22:21:46 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sun, 29 Apr 2007 22:21:46 +0200
+[   17.004000] input: TPPS/2 IBM TrackPoint as /class/input/input5
+[   70.904000] sound/pci/maestro3.c (snd_m3_create:2763): -2
+[   70.920000] sound/pci/maestro3.c (snd_m3_create:2774): -2
+[  130.940000] sound/pci/maestro3.c (snd_m3_create:2777): -2
+[  130.956000] sound/pci/maestro3.c (snd_m3_create:2788): -2
+[  130.972000] sound/pci/maestro3.c (snd_m3_create:2794): 0
+[  130.992000] sound/pci/maestro3.c (snd_m3_create:2797): 0
+[  131.012000] sound/pci/maestro3.c (snd_m3_create:2802): 0
+[  131.044000] sound/pci/maestro3.c (snd_m3_create:2804): 0
+[  131.580000] sound/pci/maestro3.c (snd_m3_create:2807): 0
+[  131.596000] sound/pci/maestro3.c (snd_m3_create:2810): 0
+[  131.612000] sound/pci/maestro3.c (snd_m3_create:2814): 0
+[  131.628000] sound/pci/maestro3.c (snd_m3_create:2821): 0
+[  132.364000] device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised:
+dm-d
+evel@redhat.com
 
- drivers/char/cyclades.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index a17ff90..ff961a3 100644
---- a/drivers/char/cyclades.c
-+++ b/drivers/char/cyclades.c
-@@ -10,15 +10,14 @@
-  *
-  * Initially written by Randolph Bentson <bentson@grieg.seaslug.org>.
-  * Modified and maintained by Marcio Saito <marcio@cyclades.com>.
-- * Currently maintained by Cyclades team <async@cyclades.com>.
-  *
-- * For Technical support and installation problems, please send e-mail
-- * to support@cyclades.com.
-+ * Copyright (C) 2007 Jiri Slaby <jirislaby@gmail.com>
-  *
-  * Much of the design and some of the code came from serial.c
-  * which was copyright (C) 1991, 1992  Linus Torvalds.  It was
-  * extensively rewritten by Theodore Ts'o, 8/16/92 -- 9/14/92,
-  * and then fixed as suggested by Michael K. Johnson 12/12/92.
-+ * Converted to pci probing and cleaned up by Jiri Slaby.
-  *
-  * This version supports shared IRQ's (only for PCI boards).
-  *
-@@ -591,7 +590,7 @@
-  *
-  */
- 
--#define CY_VERSION	"2.4"
-+#define CY_VERSION	"2.5"
- 
- /* If you need to install more boards than NR_CARDS, change the constant
-    in the definition below. No other change is necessary to support up to
-@@ -5240,3 +5239,4 @@ module_init(cy_init);
- module_exit(cy_cleanup_module);
- 
- MODULE_LICENSE("GPL");
-+MODULE_VERSION(CY_VERSION);
+Giri
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
