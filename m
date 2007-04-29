@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbXD2J1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755136AbXD2JgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbXD2J1t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 05:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbXD2J1t
+	id S1755136AbXD2JgH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 05:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbXD2JgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 05:27:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36486 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755055AbXD2J1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 05:27:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Back to the future.
-Date: Sun, 29 Apr 2007 11:32:10 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704291057.48747.rjw@sisk.pl> <20070429085937.GD1900@elf.ucw.cz>
-In-Reply-To: <20070429085937.GD1900@elf.ucw.cz>
+	Sun, 29 Apr 2007 05:36:07 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60211 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755121AbXD2JgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 05:36:05 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <463466C3.3090604@s5r6.in-berlin.de>
+Date: Sun, 29 Apr 2007 11:34:59 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Lang <david.lang@digitalinsight.com>
+CC: David Miller <davem@davemloft.net>, mrechberger@gmail.com,
+       torvalds@linux-foundation.org, bunk@stusta.de, diegocg@gmail.com,
+       cebbert@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.21
+References: <20070428195320.GZ3468@stusta.de><alpine.LFD.0.98.0704281529080. 9964@woody.linux-foundation.org><d9def9db0704281558r57460a6ft76bbddcc480058 eb@mail.gmail.com> <20070428.204048.125894473.davem@davemloft.net> <Pine.LNX.4.63.0704282339220.11975@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0704282339220.11975@qynat.qvtvafvgr.pbz>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704291132.11409.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 29 April 2007 10:59, Pavel Machek wrote:
-> Hi!
+David Lang wrote:
+> I'll say that as a user I hate having to deal with bugzilla.
 > 
-> > > Ie we do have history of _not_ freezing things.  The freezing came later, 
-> > > and came with the subsystem that had more problems..
-> > 
-> > It doesn't have that many problems as you are trying to suggest.  At present,
-> > the only problems with it happen if someone tries to "improve" it in the way
-> > I did with the workqueues.
-> > 
-> > Anyway, the freezing of tasks, including kernel threads, is one of the few
-> > things on which Pavel, Nigel and me completely agree that they should be done,
-> > so perhaps you could accept that?
-> 
-> Actually, if we want to support OLPC _nicely_, we'll need to get rid
-> of freezer from suspend-to-RAM. Of course, that _will_ put more
-> pressure at the drivers -- and break few of them...
+> there's nothing more frustrating then spending a good chunk of time
+> trying to find a similar bug, then jumping through all the bugzilla
+> hoops to file a report to eventually (days/weeks later) get a message
+> 'closed becouse it's a duplicate report), then have to go and track down
+> what it's a duplicate of, read through that bug report, only to find
+> that it's not solved there either, and to top it off, the people working
+> on that bug won't see my report or that I'm available to troubleshoot it.
 
-I think the removal of sys_sync() from freeze_processes() in the s2ram case
-might help.
+Ideally, joining duplicate reports should be a low-cost, lossless operation.
 
-I'm really afraid of dropping the freezing of kernel threads from the
-hibernation/suspend altogether before we know we won't break drivers, because
-we can introduce some very subtle and difficult to debug problems this way.
+That said, when bug B is marked as duplicate of bug A, people at bug A
+at least get a link to bug B, aren't they?  If they are too lazy to read
+the report B, they obviously are not very interested in A either.  Tough
+luck.  Vice versa, people at bug B get notified that the matter is now
+continued at bug A and can add their Cc there.  Of course that addition
+is one of the very few things that could probably be automated.
 
-Moreover, apart from speeding up the suspend slightly (kernel threads are
-frozen very quickly) this won't buy us anything, since kprobes uses the freezer
-and all of the infrastructure is needed anyway.
+Joining duplicate reports at a mailinglist involves responding to
+multiple threads and send links into web archives of the list, which
+happens to be redundant to and disparate from your local e-mail storage.
+ I can't see how this aspect of bug-handling works easier on mailinglists.
 
-Greetings,
-Rafael
+> from a user poit of view, e-mailing the kernel list (retrying a few days
+> later of there is no response) tends to work _much_ better.
+
+What I from a maintainer's POV agree with is that a report to the
+appropriate mailinglist is often easier to triage than a report at
+bugzilla, because the reporter often needs initial help to properly
+define the problem.  Bugzilla becomes useful after a report reached a
+minimum level of quality (after minimum initial triage) and if the bug
+can be clearly associated with a maintained subsystem of the kernel (as
+e.g. Linus already pointed out in this thread).
+-- 
+Stefan Richter
+-=====-=-=== -=-- ===-=
+http://arcgraph.de/sr/
