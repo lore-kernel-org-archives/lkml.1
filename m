@@ -1,116 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161596AbXD2XvC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161578AbXD2XvC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161596AbXD2XvC (ORCPT <rfc822;w@1wt.eu>);
+	id S1161578AbXD2XvC (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 29 Apr 2007 19:51:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161605AbXD2XrA
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161624AbXD2Xq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:47:00 -0400
-Received: from ns1.suse.de ([195.135.220.2]:41961 "EHLO mx1.suse.de"
+	Sun, 29 Apr 2007 19:46:58 -0400
+Received: from mail.suse.de ([195.135.220.2]:41964 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161602AbXD2Xq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:46:27 -0400
+	id S1161603AbXD2Xqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:46:30 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430146.588463000@suse.de>
 In-Reply-To: <20070430146.588463000@suse.de>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [17/26] i386: Use menuconfig objects - APM
-Message-Id: <20070429234626.D0A1C150F2@wotan.suse.de>
-Date: Mon, 30 Apr 2007 01:46:26 +0200 (CEST)
+To: davej@redhat.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [19/26] i386: Enable bank 0 on non K7 Athlon
+Message-Id: <20070429234628.F1E2C151C5@wotan.suse.de>
+Date: Mon, 30 Apr 2007 01:46:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+As a bug workaround bank 0 on K7s is normally disabled, but no need
+to do that on other AMD CPUs.
 
-(I hope Andi is the right one to Cc, otherwise please add, thanks!)
+Cc: davej@redhat.com
 
-
-Use menuconfigs instead of menus, so the whole menu can be disabled at        
-once instead of going through all options.
-
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/i386/Kconfig |   17 +++++------------
- 1 file changed, 5 insertions(+), 12 deletions(-)
+ arch/i386/kernel/cpu/mcheck/k7.c |   10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Index: linux/arch/i386/Kconfig
+Index: linux/arch/i386/kernel/cpu/mcheck/k7.c
 ===================================================================
---- linux.orig/arch/i386/Kconfig
-+++ linux/arch/i386/Kconfig
-@@ -915,12 +915,9 @@ source kernel/power/Kconfig
+--- linux.orig/arch/i386/kernel/cpu/mcheck/k7.c
++++ linux/arch/i386/kernel/cpu/mcheck/k7.c
+@@ -82,9 +82,13 @@ void amd_mcheck_init(struct cpuinfo_x86 
+ 	nr_mce_banks = l & 0xff;
  
- source "drivers/acpi/Kconfig"
- 
--menu "APM (Advanced Power Management) BIOS Support"
--depends on PM && !X86_VISWS
--
--config APM
-+menuconfig APM
- 	tristate "APM (Advanced Power Management) BIOS support"
--	depends on PM
-+	depends on PM && !X86_VISWS
- 	---help---
- 	  APM is a BIOS specification for saving power using several different
- 	  techniques. This is mostly useful for battery powered laptops with
-@@ -977,9 +974,10 @@ config APM
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called apm.
- 
-+if APM
-+
- config APM_IGNORE_USER_SUSPEND
- 	bool "Ignore USER SUSPEND"
--	depends on APM
- 	help
- 	  This option will ignore USER SUSPEND requests. On machines with a
- 	  compliant APM BIOS, you want to say N. However, on the NEC Versa M
-@@ -987,7 +985,6 @@ config APM_IGNORE_USER_SUSPEND
- 
- config APM_DO_ENABLE
- 	bool "Enable PM at boot time"
--	depends on APM
- 	---help---
- 	  Enable APM features at boot time. From page 36 of the APM BIOS
- 	  specification: "When disabled, the APM BIOS does not automatically
-@@ -1005,7 +1002,6 @@ config APM_DO_ENABLE
- 
- config APM_CPU_IDLE
- 	bool "Make CPU Idle calls when idle"
--	depends on APM
- 	help
- 	  Enable calls to APM CPU Idle/CPU Busy inside the kernel's idle loop.
- 	  On some machines, this can activate improved power savings, such as
-@@ -1017,7 +1013,6 @@ config APM_CPU_IDLE
- 
- config APM_DISPLAY_BLANK
- 	bool "Enable console blanking using APM"
--	depends on APM
- 	help
- 	  Enable console blanking using the APM. Some laptops can use this to
- 	  turn off the LCD backlight when the screen blanker of the Linux
-@@ -1031,7 +1026,6 @@ config APM_DISPLAY_BLANK
- 
- config APM_ALLOW_INTS
- 	bool "Allow interrupts during APM BIOS calls"
--	depends on APM
- 	help
- 	  Normally we disable external interrupts while we are making calls to
- 	  the APM BIOS as a measure to lessen the effects of a badly behaving
-@@ -1042,13 +1036,12 @@ config APM_ALLOW_INTS
- 
- config APM_REAL_MODE_POWER_OFF
- 	bool "Use real mode APM BIOS call to power off"
--	depends on APM
- 	help
- 	  Use real mode APM BIOS calls to switch off the computer. This is
- 	  a work-around for a number of buggy BIOSes. Switch this option on if
- 	  your computer crashes instead of powering off properly.
- 
--endmenu
-+endif # APM
- 
- source "arch/i386/kernel/cpu/cpufreq/Kconfig"
- 
+ 	/* Clear status for MC index 0 separately, we don't touch CTL,
+-	 * as some Athlons cause spurious MCEs when its enabled. */
+-	wrmsr (MSR_IA32_MC0_STATUS, 0x0, 0x0);
+-	for (i=1; i<nr_mce_banks; i++) {
++	 * as some K7 Athlons cause spurious MCEs when its enabled. */
++	if (boot_cpu_data.x86 == 6) {
++		wrmsr (MSR_IA32_MC0_STATUS, 0x0, 0x0);
++		i = 1;
++	} else
++		i = 0;
++	for (; i<nr_mce_banks; i++) {
+ 		wrmsr (MSR_IA32_MC0_CTL+4*i, 0xffffffff, 0xffffffff);
+ 		wrmsr (MSR_IA32_MC0_STATUS+4*i, 0x0, 0x0);
+ 	}
