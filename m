@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbXD2EKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbXD2Evd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754552AbXD2EKK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 00:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXD2EKK
+	id S1754575AbXD2Evd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 00:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbXD2Evd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 00:10:10 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45630 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754552AbXD2EKB (ORCPT
+	Sun, 29 Apr 2007 00:51:33 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:46151 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754575AbXD2Evb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 00:10:01 -0400
-X-Sasl-enc: xhkXvfrYB1O9NUQVQSRPiqJ2eaKK2fgg1p3rcPkGvrVm 1177819798
-Date: Sun, 29 Apr 2007 01:09:53 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [-mm patch] make drivers/misc/thinkpad_acpi:fan_mutex static
-Message-ID: <20070429040953.GA29832@khazad-dum.debian.net>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070428191938.GO3468@stusta.de> <20070428195821.GC2392@khazad-dum.debian.net> <20070429025008.GK3468@stusta.de>
-MIME-Version: 1.0
+	Sun, 29 Apr 2007 00:51:31 -0400
+Date: Sun, 29 Apr 2007 10:20:24 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+Message-ID: <20070429045024.GA27000@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <20070428758.455116000@suse.de> <20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org> <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4633B0BB.6080600@zytor.com> <m1bqh8dy79.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070429025008.GK3468@stusta.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <m1bqh8dy79.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007, Adrian Bunk wrote:
-> Forward declarations of static functions (if required) and actual 
-> variables (like fan_mutex) belong into the C file, not the header.
-
-Very well.  I will fix the mess for 2.6.23, or, time permitting, 2.6.22.
-
-> > Maybe I should just break the driver into multiple files in a subdirectory?
-> > That would certainly make it *much* cleaner...
+On Sat, Apr 28, 2007 at 02:46:18PM -0600, Eric W. Biederman wrote:
+> "H. Peter Anvin" <hpa@zytor.com> writes:
 > 
-> But even more in this case, you will not want to have actual variables 
-> or prototypes of static functions in the header file.
+> > Eric W. Biederman wrote:
+> >> 
+> >> The boot protocol change is in 2.6.21 for arch/i386.
+> >> 
+> >> HPA looked at it a while ago.
+> >> 
+> >> All it does is set a flag that tells a bootloader.
+> >> "Hey. I can run when loaded a non-default address, and this is what
+> >>  you have to align me to."
+> >> 
+> >> All relocation processing happens in the kernel itself.
+> >> 
+> >> So it is all pretty trivial.
+> >> 
+> >
+> > Indeed.  We *did* find some problems with Grub with the early versions,
+> > those were addressed.
+> 
+> We found some failures that weren't root caused so we went to this
+> more conservative version.
+> 
+> RHEL5 is actually shipping the original version of these patches if I
+> recall correctly.
+> 
 
-I would not have to, in that case.  The driver would be much easier to
-write, and I will need to break it in two for an alsa module anyway, might
-as well break it in one subdriver per file.
+Yes, RHEL5 is shipping original version of patches where an where and ELF
+header has been added to describe bzImage.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Thanks
+Vivek
