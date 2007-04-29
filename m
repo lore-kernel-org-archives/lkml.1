@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbXD2ORI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXD2OVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756493AbXD2ORI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 10:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756501AbXD2ORH
+	id S933265AbXD2OVz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 10:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbXD2OVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 10:17:07 -0400
-Received: from mx1.suse.de ([195.135.220.2]:37074 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756493AbXD2ORF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 10:17:05 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] [37/48] i386: ignore vgacon if hardware not present
-Date: Sun, 29 Apr 2007 16:16:58 +0200
+	Sun, 29 Apr 2007 10:21:55 -0400
+Received: from mcr-smtp-002.bulldogdsl.com ([212.158.248.8]:2153 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933265AbXD2OVy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 10:21:54 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Syren Baran <sbaran@gmx.de>
+Subject: Re: Probable PCIE prob
+Date: Sun, 29 Apr 2007 15:21:48 +0100
 User-Agent: KMail/1.9.6
-Cc: Rusty Russell <rusty@rustcorp.com.au>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-References: <200704291252.514680000@suse.de> <200704291524.54080.ak@suse.de> <1177855838.17715.18.camel@daplas>
-In-Reply-To: <1177855838.17715.18.camel@daplas>
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <1177790017.3649.23.camel@excalibur>
+In-Reply-To: <1177790017.3649.23.camel@excalibur>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200704291616.58361.ak@suse.de>
+Message-Id: <200704291521.48769.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 April 2007 16:10:38 Antonino A. Daplas wrote:
-> On Sun, 2007-04-29 at 15:24 +0200, Andi Kleen wrote:
-> > > The subject does not reflect the content of the patch :-). And I believe
-> > > ignore-vgacon-if-hardware-not-present is already in mainline.
-> > 
-> > Patch dropped thanks
-> 
-> Note that this is the patch which have the above title. So I don't know
-> if you have to drop the patch or just change the title to an appropriate
-> one.
+On Saturday 28 April 2007 20:53:37 Syren Baran wrote:
+> Hi,
+>
+> i got a problem with the combination of an Asrock AM2NF4G-SATA2
+> mainboard with a Radeon X1900 (chip 1002,724b) graphics
+> card. /i386/pci/mmconfig.c reports a buggy bios (e0000000 is not
+> E820-reserved). System crashes only happen when viewing films (neither
+> xine nor mplayer run with root privileges) and independent of video
+> drivers (framebuffer, vesa and fglrx). Logs dont show any anomalies
+> before crashing. Anybody got a clue?
 
-I dropped the patch completely because you said it was already in mainline
-or queued elsewhere. Was that wrong?
+This is a pretty bizarre crash. It might be a hardware problem. Try running a 
+load intensive task, something that heats your CPU up, for a long period. See 
+if it lasts longer than 30 minutes..
 
--Andi
+Another thing you could try doing was eliminating X completely, by using 
+mplayer on a vesafb console..
 
+-- 
+Cheers,
+Alistair.
+
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
