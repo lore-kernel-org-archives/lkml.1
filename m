@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031080AbXD2TbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031290AbXD2TjC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031080AbXD2TbY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 15:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031283AbXD2TbY
+	id S1031290AbXD2TjC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 15:39:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031294AbXD2TjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 15:31:24 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3980 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031080AbXD2TbX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 15:31:23 -0400
-Date: Sun, 29 Apr 2007 20:31:10 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070429193109.GA6533@flint.arm.linux.org.uk>
-Mail-Followup-To: Andi Kleen <andi@firstfloor.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070429180909.GA30604@one.firstfloor.org>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 29 Apr 2007 15:39:01 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:55649 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031290AbXD2TjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 15:39:00 -0400
+Date: Sun, 29 Apr 2007 21:38:43 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andrew Wang <andrewxwang@yahoo.com.tw>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Why ask Sun for ZFS while we have ReiserFS4 !?
+In-Reply-To: <660658.6960.qm@web73512.mail.tp2.yahoo.com>
+Message-ID: <Pine.LNX.4.61.0704292052050.22744@yvahk01.tjqt.qr>
+References: <660658.6960.qm@web73512.mail.tp2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.5 points, 6.0 required
+	0.5 PLING_QUERY            Subject has exclamation mark and question mark
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 08:09:09PM +0200, Andi Kleen wrote:
-> >  - a lot of reporters will not use bugzilla, because it's damn 
-> >    inconvenient even for reporting. If you propose something that uses 
-> 
-> Don't think that's true. There are plenty of projects who only
-> accept bugs through bugzilla (mozilla, various distributions, etc.) 
-> and I don't see any evidence of your claim being true.
 
-There's an ARM category in the kernel.org bugzilla.  Folk are completely
-free to submit ARM bugs to either the (closed) mailing list or bugzilla.
+On Apr 30 2007 02:18, Andrew Wang wrote:
+>
+>ZFS has some nice features, but ReiserFS4 also is a
+>good file system.
+>
+>Why do we want Sun to release ZFS under GPL, while
+>ReiserFS4 is already available under GPL!?
 
-99.99999999% of bug reports in the ARM community come via the mailing
-list.  I think to date there's been about 10 bugzilla entries since
-Feb 2004.
+Do we?
 
-This is inspite of me linking to the kernel.org bugzilla from my
-website.
+>I know that ReiserFS4 breaks Linux coding standards.
+>However, even if Sun releases ZFS under GPL, we still
+>need to port it to the Linux kernel.
+>
+>I think for those who ask/beg Sun to release ZFS under
+>GPL should do the work to get ReiserFS4 to Linux!
 
-So it seems that virtually all the folk involved with the ARM kernel,
-given a completely free choice, _prefer_ to send email-based bug
-reports over touching bugzilla.
+It's already there for Linux. It's just that you have to
+merge it yourself.
 
-That's quite a different metric to projects forcing bugzilla on people,
-and I'd say is a more valid metric to gauge whether bugzilla is really
-suitable.
 
+RR:
+Some people have different opinions about what constitutes
+a good filesystem. One half goes with ext, the other with
+<CENSORED>, mainly because "it works" for them, has "proven
+to be stable enough", "<CENSORED> has not proven to be
+stable", or perhaps just out of fs beliefs/conviction.
+I myself would not 'want' either zfs or r4 at this time,
+and there's even an objective reason behind it.
+
+
+
+Jan
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
