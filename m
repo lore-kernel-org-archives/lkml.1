@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbXD2Qeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbXD2Qmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbXD2Qeu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 12:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756540AbXD2Qeu
+	id S1755195AbXD2Qmr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 12:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXD2Qmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 12:34:50 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:52188 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756517AbXD2Qet (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 12:34:49 -0400
-Message-ID: <4634C8F8.1060109@s5r6.in-berlin.de>
-Date: Sun, 29 Apr 2007 18:34:00 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andi Kleen <andi@firstfloor.org>, Adrian Bunk <bunk@stusta.de>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-References: <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 12:42:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48226 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755195AbXD2Qmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 12:42:40 -0400
+Date: Sun, 29 Apr 2007 18:42:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: matthieu castet <castet.matthieu@free.fr>
+Cc: Lee Revell <rlrevell@joe-job.com>, tglx@linutronix.de,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: High Resolution Timer DOS
+Message-ID: <20070429164230.GA23337@elte.hu>
+References: <4633C269.9050806@free.fr> <1177798389.7646.320.camel@localhost.localdomain> <75b66ecd0704281537s54134967ybc3ddef0b87b6bf5@mail.gmail.com> <20070429071743.GA4532@elte.hu> <4634C2F0.8050101@free.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4634C2F0.8050101@free.fr>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Sun, 29 Apr 2007, Andi Kleen wrote:
->> - Ask more people to just categorize and reassign bugs (anybody interested?)
->> - Give more people in bugzilla the power to reassign arbitary bugs
->>   (bugzilla maintainers would need to do that)
-> 
-> I think both of these are good ideas, but I don't think it's enough. There 
-> must be some better form of bug tracking than bugzilla. Some relly 
-> distributed way of letting people work together, *without* having to 
-> congregate on some central web-site kind of thing. A "git for bugs", where 
-> you can track bugs locally and without a web interface.
-> 
-> And I think it would be something much closer to "distributed email mbox 
-> with status tracking facilities", _not_ a web clicky interface.
 
-It has to be able to suck in reports from people who don't know much
-about how the Linux guys handle bugs, and has to keep the reporters
-involved up until a bug can be closed.  IOW it has to be compatible with
-integrators, developers, and reporters/testers.  Luckily though, not all
-of them need all of that system's features.  ('system' == the right
-people with the right tools)
--- 
-Stefan Richter
--=====-=-=== -=-- ===-=
-http://arcgraph.de/sr/
+* matthieu castet <castet.matthieu@free.fr> wrote:
+
+> Ok, may be DOS was not the correct term, [...]
+
+ok, good that have that issue put aside ;-)
+
+> [...] but with the 2.6.21 hrt there is a great difference between an 
+> infinite loop and the high-rate context-switching task (you can try 
+> attached programs). With the first I the system is still responsive, 
+> with the latter it isn't (new process take lot's of time to get 
+> created, other process are very slow). If it is "just 'CPU time used 
+> up'", why I see a such difference between the 2 cases ?
+
+this is a pure scheduler thing: the scheduler treats sleepers 
+differently than CPU hogs. Try the same test for example under the 
+(ob'plug) CFS scheduler:
+
+   http://redhat.com/~mingo/cfs-scheduler/
+
+and you'll see small_sleep.c being handled the same way as 
+infinite_loop.c. This is a CFS box with 20 small_sleep's running:
+
+ top - 20:41:02 up 1 min,  2 users,  load average: 4.92, 1.27, 0.43
+ Tasks:  89 total,  22 running,  67 sleeping,   0 stopped,   0 zombie
+ Cpu(s):  5.2%us, 46.5%sy,  1.7%ni, 17.7%id, 28.5%wa,  0.3%hi,  0.1%si,  0.0%st
+ Mem:   2053204k total,   103300k used,  1949904k free,    12096k buffers
+ Swap:  4096564k total,        0k used,  4096564k free,    43040k cached
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+  2208 mingo     20   0  1576  256  208 R  4.5  0.0   0:01.08 small_sleep
+  2252 mingo     20   0  1580  260  208 R  4.5  0.0   0:00.71 small_sleep
+  2254 mingo     20   0  1576  256  208 R  4.5  0.0   0:00.61 small_sleep
+
+and the system is still completely usable.
+
+This isnt really about timers - you can achieve similar effects without 
+using any timers.
+
+	Ingo
