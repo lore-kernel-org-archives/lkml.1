@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXD2VBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161303AbXD2VCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161323AbXD2VBz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161303AbXD2VBz
+	id S1161303AbXD2VCh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161327AbXD2VCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:01:55 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:48250 "EHLO smtp.wsc.cz"
+	Sun, 29 Apr 2007 17:02:37 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:48255 "EHLO smtp.wsc.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161323AbXD2VBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:01:54 -0400
-Message-id: <181033173971179592@wsc.cz>
+	id S1161303AbXD2VCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:02:36 -0400
+Message-id: <484326980603325451@wsc.cz>
 In-reply-to: <1726067771982725064@wsc.cz>
-Subject: [PATCH 13/21] Char: cyclades, fix blockmove
+Subject: [PATCH 14/21] Char: cyclades, timers cleanup
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: <linux-kernel@vger.kernel.org>
-Date: Sun, 29 Apr 2007 23:01:52 +0200 (CEST)
+Date: Sun, 29 Apr 2007 23:02:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cyclades, fix blockmove
-
-tty has no longer flip buffers accessible externally. Fix it by moving the
-code to the tty_*flip* helpers.
+cyclades, timers cleanup
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 
 ---
-commit 147542c38691d4e5049b916b083dc93bc3bf8c3b
-tree 8986e0764afc717d7d283326b87aa5e3dff8b052
-parent 300e8efee2151f3bd26ed824f932fba53a7313f4
-author Jiri Slaby <jirislaby@gmail.com> Fri, 27 Apr 2007 15:48:28 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Sat, 28 Apr 2007 23:48:17 +0200
+commit 86d2bb56b6a8f3c51b7bd537634645fa14862085
+tree cfd901e1b728863f734124200ae9ce8220625a24
+parent 147542c38691d4e5049b916b083dc93bc3bf8c3b
+author Jiri Slaby <jirislaby@gmail.com> Fri, 27 Apr 2007 16:12:25 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 28 Apr 2007 23:48:32 +0200
 
- drivers/char/cyclades.c |   34 ++++++++++++++++------------------
- 1 files changed, 16 insertions(+), 18 deletions(-)
+ drivers/char/cyclades.c |   17 +++++------------
+ 1 files changed, 5 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
-index c236e9f..9160953 100644
+index 9160953..14652c1 100644
 --- a/drivers/char/cyclades.c
 +++ b/drivers/char/cyclades.c
-@@ -1560,7 +1560,7 @@ cyz_handle_rx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
- 	int char_count;
- 	int len;
- #ifdef BLOCKMOVE
--	int small_count;
-+	unsigned char *buf;
- #else
- 	char data;
+@@ -932,15 +932,9 @@ do_softint(struct work_struct *work)
+ 	if (test_and_clear_bit(Cy_EVENT_OPEN_WAKEUP, &info->event))
+ 		wake_up_interruptible(&info->open_wait);
+ #ifdef CONFIG_CYZ_INTR
+-	if (test_and_clear_bit(Cy_EVENT_Z_RX_FULL, &info->event)) {
+-		if (cyz_rx_full_timer[info->line].function == NULL) {
+-			cyz_rx_full_timer[info->line].expires = jiffies + 1;
+-			cyz_rx_full_timer[info->line].function = cyz_rx_restart;
+-			cyz_rx_full_timer[info->line].data =
+-						(unsigned long)info;
+-			add_timer(&cyz_rx_full_timer[info->line]);
+-		}
+-	}
++	if (test_and_clear_bit(Cy_EVENT_Z_RX_FULL, &info->event) &&
++			!timer_pending(&cyz_rx_full_timer[info->line]))
++		mod_timer(&cyz_rx_full_timer[info->line], jiffies + 1);
  #endif
-@@ -1596,25 +1596,23 @@ cyz_handle_rx(struct cyclades_port *info, struct CH_CTRL __iomem *ch_ctrl,
- 		/* we'd like to use memcpy(t, f, n) and memset(s, c, count)
- 		   for performance, but because of buffer boundaries, there
- 		   may be several steps to the operation */
--			while (0 < (small_count = min_t(unsigned int,
--					rx_bufsize - new_rx_get,
--					min_t(unsigned int, TTY_FLIPBUF_SIZE -
--						tty->flip.count, char_count)))){
--				memcpy_fromio(tty->flip.char_buf_ptr,
--					(char *)(cinfo->base_addr + rx_bufaddr +
--						new_rx_get),
--					small_count);
-+			while (1) {
-+				len = tty_prepare_flip_string(tty, &buf,
-+						char_count);
-+				if (!len)
-+					break;
+ 	if (test_and_clear_bit(Cy_EVENT_DELTA_WAKEUP, &info->event))
+ 		wake_up_interruptible(&info->delta_msr_wait);
+@@ -1887,7 +1881,6 @@ static void cyz_rx_restart(unsigned long arg)
+ 		printk(KERN_ERR "cyc:cyz_rx_restart retval on ttyC%d was %x\n",
+ 			info->line, retval);
+ 	}
+-	cyz_rx_full_timer[info->line].function = NULL;
+ 	CY_UNLOCK(info, flags);
+ }
  
--				tty->flip.char_buf_ptr += small_count;
--				memset(tty->flip.flag_buf_ptr, TTY_NORMAL,
--					small_count);
--				tty->flip.flag_buf_ptr += small_count;
--				new_rx_get = (new_rx_get + small_count) &
-+				len = min_t(unsigned int, min(len, char_count),
-+						rx_bufsize - new_rx_get);
-+
-+				memcpy_fromio(buf, cinfo->base_addr +
-+						rx_bufaddr + new_rx_get, len);
-+
-+				new_rx_get = (new_rx_get + len) &
- 						(rx_bufsize - 1);
--				char_count -= small_count;
--				info->icount.rx += small_count;
--				info->idle_stats.recv_bytes += small_count;
--				tty->flip.count += small_count;
-+				char_count -= len;
-+				info->icount.rx += len;
-+				info->idle_stats.recv_bytes += len;
- 			}
- #else
- 			len = tty_buffer_request_room(tty, char_count);
+@@ -4529,8 +4522,8 @@ static void __devinit cy_init_card(struct cyclades_card *cinfo)
+ 			else
+ 				info->xmit_fifo_size = 4 * CYZ_FIFO_SIZE;
+ #ifdef CONFIG_CYZ_INTR
+-			init_timer(&cyz_rx_full_timer[port]);
+-			cyz_rx_full_timer[port].function = NULL;
++			setup_timer(&cyz_rx_full_timer[port],
++				cyz_rx_restart, (unsigned long)info);
+ #endif
+ 		} else {
+ 			info->type = PORT_CIRRUS;
