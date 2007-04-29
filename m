@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752966AbXD2B1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbXD2B2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752966AbXD2B1x (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 21:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbXD2B1x
+	id S1753589AbXD2B2f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 21:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXD2B2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 21:27:53 -0400
-Received: from mx2.suse.de ([195.135.220.15]:60105 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752851AbXD2B1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 21:27:52 -0400
-Date: Sat, 28 Apr 2007 18:23:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Hans-J?rgen Koch <hjk@linutronix.de>,
-       Bill Davidsen <davidsen@tmr.com>, Linus Torvalds <torvalds@osdl.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Benedikt Spranger <b.spranger@linutronix.de>
-Subject: Re: [GIT PATCH] UIO patches for 2.6.21
-Message-ID: <20070429012338.GA11147@suse.de>
-References: <20070427224957.GA17967@kroah.com> <4633A6D7.3030806@tmr.com> <200704282203.31141.hjk@linutronix.de> <20070428211515.4e9fd8c5@the-village.bc.nu> <1177792297.7646.297.camel@localhost.localdomain>
+	Sat, 28 Apr 2007 21:28:35 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:38121 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbXD2B2d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 21:28:33 -0400
+Date: Sat, 28 Apr 2007 18:25:08 -0700
+From: Greg KH <greg@kroah.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Gene Heskett <gene.heskett@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Jeff Mahoney <jeffm@suse.com>, Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       Riccardo Ricci <rricci@nuovanetmore.it>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Giorgio Lando <patroclo7@gmail.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       H??kan Lindqvist <lindqvist@netstar.se>,
+       Fran??ois Valenduc <francois.valenduc@skynet.be>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-acpi@vger.kernel.org, Thomas Meyer <thomas.mey@web.de>,
+       stable@kernel.org, Len Brown <len.brown@intel.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       netdev@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Francois SIMOND <curio@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, reiserfs-dev@namesys.com
+Subject: Re: [stable] 2.6.21 known regressions (v2) (for -stable team)
+Message-ID: <20070429012508.GA11629@kroah.com>
+References: <463375E5.5040108@googlemail.com> <200704281252.20381.gene.heskett@gmail.com> <20070428181933.GA9811@kroah.com> <m3647gchzh.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1177792297.7646.297.camel@localhost.localdomain>
+In-Reply-To: <m3647gchzh.fsf@maximus.localdomain>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 10:31:37PM +0200, Thomas Gleixner wrote:
-> On Sat, 2007-04-28 at 21:15 +0100, Alan Cox wrote:
-> > > > I have a political question, if I have a user space driver, is my kernel 
-> > > > tainted or not? 
-> > > 
-> > > Surely not. By using the kernel's userspace interface, you create no
-> > > "derived work" of the kernel. See COPYING in the root directory of the 
-> > > kernel sources for details.
-> > 
-> > That only covers normal system calls - but I don't think thats what is
-> > relevant, taints are for debug assistance not politics.
-> > 
-> > I think we should have a taint flag for UIO type drivers. Not for any
-> > licensing or political reason but for the simple fact it means that there
-> > may be other complexities to debugging - and not the same one as a binary
-> > module. Probably we want the same marker for mmap /dev/mem too.
+On Sat, Apr 28, 2007 at 11:21:54PM +0200, Krzysztof Halasa wrote:
+> Greg KH <greg@kroah.com> writes:
 > 
-> I agree, if we make it entirely clear that the flag is nonpolitical. 
+> >> Also, assignation of ttyUSB#'s is volatile depending on phase of the
+> >> moon when booted.
+> >
+> > That's always been the case, ever since the 2.2 kernel releases.  Please
+> > use udev if you want persistent device names for your tty USB devices.
+> 
+> I don't know how udev (or anything) could help here. AFAIK the
+> converters have no serial numbers and no other means to
+> differentiate.
 
-Hm, I don't know, what makes this different from the fact that we can
-mmap PCI device space today through the proc and sysfs entries?  That's
-how X gets direct access to the hardware for a number of different
-cards, and that's pretty much the same thing as the UIO interface is
-doing.
-
-Unless you think we should also use the same "taint" flag on those
-accesses too, and if so, I have no objection.
+Some do have serial numbers, and others do not.  You can also use hints
+on which port they are plugged into, which is usually the best way to
+name these types of things persistently.
 
 thanks,
 
