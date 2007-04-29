@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXD2Brz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbXD2B5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbXD2Brz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 21:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXD2Brz
+	id S1753868AbXD2B5W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 21:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXD2B5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 21:47:55 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38546 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753570AbXD2Brx (ORCPT
+	Sat, 28 Apr 2007 21:57:22 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:41962 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbXD2B5V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 21:47:53 -0400
-Date: Sat, 28 Apr 2007 18:47:44 -0700
-From: Paul Jackson <pj@sgi.com>
-To: menage@google.com
-Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
-       devel@openvz.org
-Subject: Re: [PATCH 0/9] Containers (V9): Generic Process Containers
-Message-Id: <20070428184744.bc0345a0.pj@sgi.com>
-In-Reply-To: <20070427104607.252541000@menage.corp.google.com>
-References: <20070427104607.252541000@menage.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Apr 2007 21:57:21 -0400
+Message-ID: <4633FBFF.7050202@oracle.com>
+Date: Sat, 28 Apr 2007 18:59:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: Simon Arlott <simon@fire.lp0.eu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       herbert@gondor.apana.org.au, michal@logix.cz
+Subject: Re: [PATCH] crypto: Remove pointless padlock module
+References: <4633DB56.6070000@simon.arlott.org.uk>
+In-Reply-To: <4633DB56.6070000@simon.arlott.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> - decide whether "Containers" is an acceptable name for the system
-> given its usage by some other development groups, or whether something
-> else (ProcessSets? ResourceGroups? TaskGroups?) would be better
+Simon Arlott wrote:
+> When this is compiled in it is run too early to do anything useful:
+> [    6.052000] padlock: No VIA PadLock drivers have been loaded.
+> [    6.052000] padlock: Using VIA PadLock ACE for AES algorithm.
+> [    6.052000] padlock: Using VIA PadLock ACE for SHA1/SHA256 algorithms.
+> 
+> When it's a module it isn't doing anything special, the same 
+> functionality can be provided in userspace by "probeall padlock 
+> padlock-aes padlock-sha" in modules.conf if it is required.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: Michal Ludvig <michal@logix.cz>
+> ---
+> drivers/crypto/Kconfig   |   16 ++----------
+> drivers/crypto/Makefile  |    1 -
+> drivers/crypto/padlock.c |   58 
+> ----------------------------------------------
+> 3 files changed, 3 insertions(+), 72 deletions(-)
+> delete mode 100644 drivers/crypto/padlock.c
+> 
+> diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+> index ff8c4be..f85cecc 100644
+> --- a/drivers/crypto/Kconfig
+> +++ b/drivers/crypto/Kconfig
+> @@ -1,10 +1,10 @@
+> menu "Hardware crypto devices"
+> 
+> config CRYPTO_DEV_PADLOCK
+> -    tristate "Support for VIA PadLock ACE"
+> -    depends on X86_32
+> +    bool "Support for VIA PadLock ACE"
+> +    depends on CRYPTO && X86_32
 
-I place in nomination:
+All of drivers/crypto/Kconfig already depends on CRYPTO, so just
+	depends on X86_32
+should be enough.
 
-	tasksets
+> +    default y
+>     select CRYPTO_ALGAPI
+> -    default m
+>     help
+>       Some VIA processors come with an integrated crypto engine
+>       (so called VIA PadLock ACE, Advanced Cryptography Engine)
 
-However this would conflict with the taskset utility in Robert Loves
-schedutils package.  The 'taskset' command "is used  to set or retrieve
-the CPU affinity of a running process given its PID or to launch a new
-COMMAND with a given CPU affinity."
-
-The various alternatives you listed all have the advantage of stating
-both that we have a container/group/set/collection/... of something,
-and -what- that something might be - process/resource/task/...
-
-"tasksets" is the shortest spelling I could think of for such a compond
-"Something-Collection" form.
-
-If the conflict with the schedutils utility is a concern, then the
-next best alternative would be:
-
-	taskgroups
-
-This is the next shortest way to spell this "Something-Collection" form.
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
