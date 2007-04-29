@@ -1,188 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755008AbXD2HiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbXD2HjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755008AbXD2HiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 03:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbXD2HiQ
+	id S1755023AbXD2HjW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 03:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbXD2HjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 03:38:16 -0400
-Received: from mga05.intel.com ([192.55.52.89]:21935 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754958AbXD2HiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 03:38:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,465,1170662400"; 
-   d="scan'208";a="238568536"
-Subject: [PATCH] reduce AER init error information
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: lenb@kernel.org, us15@os.inf.tu-dresden.de, gregkh@suse.de,
-       davej@redhat.com
-Content-Type: text/plain; charset=utf-8
-Date: Sun, 29 Apr 2007 15:38:04 +0800
-Message-Id: <1177832284.14017.270.camel@ymzhang>
+	Sun, 29 Apr 2007 03:39:22 -0400
+Received: from 1wt.eu ([62.212.114.60]:2360 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754958AbXD2HjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 03:39:21 -0400
+Date: Sun, 29 Apr 2007 09:38:19 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070429073819.GD23638@1wt.eu>
+References: <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <20070429073030.GA5253@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429073030.GA5253@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-PCI-Express AER support in kernel requires BIOS to provide _OSC support
-to allow the AER Root port service driver to request for native control
-of AER. If a root port supports AER capablity, but BIOS doesn't provide
-_OSC for it, aerdriver will print many debug information to system console.
-Below is a log example.
+On Sun, Apr 29, 2007 at 09:30:30AM +0200, Ingo Molnar wrote:
+> > In fact, what I'd like to see in 2.6.22 is something better for 
+> > everybody and with *no* regression, even if it's not perfect.
+> >
+> > I had the feeling that SD matched that goal right now, [...]
+> 
+> curious, which are the reports where in your opinion CFS behaves worse 
+> than vanilla?
 
-*******************Error information example************
-Evaluate _OSC Set fails. Status = 0x0005
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - Run ACPI _OSC fails
-aer: probe of 0000:00:02.0:pcie01 failed with error 2
-Evaluate _OSC Set fails. Status = 0x0005
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - Run ACPI _OSC fails
-aer: probe of 0000:00:04.0:pcie01 failed with error 2
-Evaluate _OSC Set fails. Status = 0x0005
-Evaluate _OSC Set fails. Status = 0x0005
-aer_init: AER service init fails - Run ACPI _OSC fails
-aer: probe of 0000:00:06.0:pcie01 failed with error 2
-******************End of Error information example******
+see below :-)
 
+> There were two audio skipping reports against CFS, the 
+> most serious one got resolved and i hope the other one has been resolved 
+> by the same fix as well. (i'm still waiting for feedback on that one)
 
-As _OSC is an optional capability of BIOS, such error information looks
-like overly-verbosed. The patch against kernel 2.6.21 changes it to just
-print one line report messages if aerdriver fails to attach the root port
-service device.
+your answer to your question above ;-)
+Yes, we're all waiting for feedback. And I said I did not track the
+versions involved, so it is possible that all previously encountered
+regressions are fixed by now.
 
-Below is an example of new output.
-AER service couldn't init device 0000:00:02.0:pcie01 - no _OSC support
+> > [...] except for Mike who has not tested recent versions. [...]
+> 
+> actually, dont discount Mark Lord's test results either. And it might be 
+> a good idea for Mike to re-test SD 0.46?
 
+In any case, it might be a good idea because Mike encountered a problem
+that nobody could reproduce. It may come from hardware, scheduler design,
+scheduler bug, or any other bug, but whatever the cause, it would be
+interesting to conclude on it.
 
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+> 	Ingo
 
----
+Willy
 
-diff -Nraup linux-2.6.21/drivers/pci/pci-acpi.c linux-2.6.21_aer/drivers/pci/pci-acpi.c
---- linux-2.6.21/drivers/pci/pci-acpi.c	2007-02-05 02:44:54.000000000 +0800
-+++ linux-2.6.21_aer/drivers/pci/pci-acpi.c	2007-04-30 22:03:08.000000000 +0800
-@@ -55,8 +55,6 @@ acpi_query_osc (
- 
- 	status = acpi_evaluate_object(handle, "_OSC", &input, &output);
- 	if (ACPI_FAILURE (status)) {
--		printk(KERN_DEBUG  
--			"Evaluate _OSC Set fails. Status = 0x%04x\n", status);
- 		*ret_status = status;
- 		return status;
- 	}
-@@ -124,11 +122,9 @@ acpi_run_osc (
- 	in_params[3].buffer.pointer 	= (u8 *)context;
- 
- 	status = acpi_evaluate_object(handle, "_OSC", &input, &output);
--	if (ACPI_FAILURE (status)) {
--		printk(KERN_DEBUG  
--			"Evaluate _OSC Set fails. Status = 0x%04x\n", status);
-+	if (ACPI_FAILURE (status))
- 		return status;
--	}
-+
- 	out_obj = output.pointer;
- 	if (out_obj->type != ACPI_TYPE_BUFFER) {
- 		printk(KERN_DEBUG  
-diff -Nraup linux-2.6.21/drivers/pci/pcie/aer/aerdrv_acpi.c linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_acpi.c
---- linux-2.6.21/drivers/pci/pcie/aer/aerdrv_acpi.c	2007-02-05 02:44:54.000000000 +0800
-+++ linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_acpi.c	2007-04-30 21:06:43.000000000 +0800
-@@ -27,10 +27,9 @@
-  * Invoked when PCIE bus loads AER service driver. To avoid conflict with
-  * BIOS AER support requires BIOS to yield AER control to OS native driver.
-  **/
--int aer_osc_setup(struct pci_dev *dev)
-+acpi_status aer_osc_setup(struct pci_dev *dev)
- {
--	int retval = OSC_METHOD_RUN_SUCCESS;
--	acpi_status status;
-+	acpi_status status = AE_NOT_FOUND;
- 	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
- 	struct pci_dev *pdev = dev;
- 	struct pci_bus *parent;
-@@ -51,18 +50,12 @@ int aer_osc_setup(struct pci_dev *dev)
- 	}
- 
- 	if (!handle)
--		return OSC_METHOD_NOT_SUPPORTED;
-+		return status;
- 
- 	pci_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
- 	status = pci_osc_control_set(handle, OSC_PCI_EXPRESS_AER_CONTROL |
- 		OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
--	if (ACPI_FAILURE(status)) {
--		if (status == AE_SUPPORT)
--			retval = OSC_METHOD_NOT_SUPPORTED;
--	 	else
--			retval = OSC_METHOD_RUN_FAILURE;
--	}
- 
--	return retval;
-+	return status;
- }
- 
-diff -Nraup linux-2.6.21/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_core.c
---- linux-2.6.21/drivers/pci/pcie/aer/aerdrv_core.c	2007-02-05 02:44:54.000000000 +0800
-+++ linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_core.c	2007-04-30 22:33:16.000000000 +0800
-@@ -733,19 +733,19 @@ void aer_delete_rootport(struct aer_rpc 
-  **/
- int aer_init(struct pcie_device *dev)
- {
--	int status;
-+	acpi_status	status;
- 
- 	/* Run _OSC Method */
- 	status = aer_osc_setup(dev->port);
- 
--	if(status != OSC_METHOD_RUN_SUCCESS) {
--		printk(KERN_DEBUG "%s: AER service init fails - %s\n",
--		__FUNCTION__,
--		(status == OSC_METHOD_NOT_SUPPORTED) ?
--			"No ACPI _OSC support" : "Run ACPI _OSC fails");
-+	if (ACPI_FAILURE(status)) {
-+		printk(KERN_DEBUG "AER service couldn't init device %s - %s\n",
-+		    dev->device.bus_id,
-+		    (status == AE_SUPPORT || status == AE_NOT_FOUND) ?
-+		    "no _OSC support" : "Run ACPI _OSC fails");
- 
- 		if (!forceload)
--			return status;
-+			return -ENXIO;
- 	}
- 
- 	return AER_SUCCESS;
-diff -Nraup linux-2.6.21/drivers/pci/pcie/aer/aerdrv.h linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv.h
---- linux-2.6.21/drivers/pci/pcie/aer/aerdrv.h	2007-04-30 20:25:38.000000000 +0800
-+++ linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv.h	2007-04-30 21:26:43.000000000 +0800
-@@ -9,6 +9,8 @@
- #define _AERDRV_H_
- 
- #include <linux/pcieport_if.h>
-+#include <linux/acpi.h>
-+#include <linux/pci-acpi.h>
- #include <linux/aer.h>
- 
- #define AER_NONFATAL			0
-@@ -18,10 +20,6 @@
- #define AER_ERROR_MASK			0x001fffff
- #define AER_ERROR(d)			(d & AER_ERROR_MASK)
- 
--#define OSC_METHOD_RUN_SUCCESS		0
--#define OSC_METHOD_NOT_SUPPORTED	1
--#define OSC_METHOD_RUN_FAILURE		2
--
- /* Root Error Status Register Bits */
- #define ROOT_ERR_STATUS_MASKS			0x0f
- 
-@@ -120,6 +118,6 @@ extern void aer_delete_rootport(struct a
- extern int aer_init(struct pcie_device *dev);
- extern void aer_isr(struct work_struct *work);
- extern void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
--extern int aer_osc_setup(struct pci_dev *dev);
-+extern acpi_status aer_osc_setup(struct pci_dev *dev);
- 
- #endif //_AERDRV_H_
