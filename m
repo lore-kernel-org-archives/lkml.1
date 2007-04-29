@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031412AbXD2UsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031393AbXD2Utb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031412AbXD2UsI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031423AbXD2UsH
+	id S1031393AbXD2Utb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031431AbXD2Utb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:48:07 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:33483 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031412AbXD2UsG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:48:06 -0400
-Message-ID: <4635041F.10507@wpkg.org>
-Date: Sun, 29 Apr 2007 22:46:23 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Sun, 29 Apr 2007 16:49:31 -0400
+Received: from rtr.ca ([64.26.128.89]:1587 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031393AbXD2Ut3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 16:49:29 -0400
+Message-ID: <463504D7.7040002@rtr.ca>
+Date: Sun, 29 Apr 2007 16:49:27 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.21
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+ FS is under heavy write load (massive starvation)
+References: <1177660767.6567.41.camel@Homer.simpson.net>	 <20070427013350.d0d7ac38.akpm@linux-foundation.org>	 <Pine.LNX.4.64.0704282242280.16099@artax.karlin.mff.cuni.cz> <75b66ecd0704281412x33352e97kc9c646ea594ef9ee@mail.gmail.com>
+In-Reply-To: <75b66ecd0704281412x33352e97kc9c646ea594ef9ee@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-
->> Don't think that's true. There are plenty of projects who only
->> accept bugs through bugzilla (mozilla, various distributions, etc.) 
->> and I don't see any evidence of your claim being true.
+Lee Revell wrote:
+> On 4/28/07, Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz> wrote:
+>> I most wonder, why vim fsyncs its swapfile regularly (blocking typing
+>> during that) and doesn't fsync the resulting file on :w  :-/
 > 
-> That explains why my bugs don't get looked at for months if
-> not years when I submit them to such projects.
-> 
-> I reported a bug that eats people's hard disks due to a bug
-> in the X.ORG PCI support code on sparc, NOBODY has fixed
-> the bug in 2 years even though a full bugzilla entry with
-> even a full patch fix is in there.
+> Never seen this.  Why would fsync block typing unless vim was doing
+> disk IO for every keystroke?
 
-And how fast was the bug fixed when you posted it to the X.ORG list?
-
-
-> Bugzilla sucks, emails rules because it is in your face and
-> gets people to work on things.
-
-Bugzilla can be configured to send emails, too (to the list for a newly 
-reported bug for example).
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
+It does do that, for the crash-recovery files it maintains.
