@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031320AbXD2TsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031331AbXD2TtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031320AbXD2TsK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 15:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031331AbXD2TsK
+	id S1031331AbXD2TtF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 15:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031332AbXD2TtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 15:48:10 -0400
-Received: from mx27.mail.ru ([194.67.23.64]:15557 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031320AbXD2TsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 15:48:08 -0400
-Date: Sun, 29 Apr 2007 23:46:00 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Greg KH <gregkh@suse.de>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [ANNOUNCE] battery2 git repository
-Message-ID: <20070429194600.GA32107@zarina>
-Reply-To: cbou@mail.ru
-References: <20070426232902.GA10423@zarina> <20070427000928.GA5303@suse.de> <1177653814.2755.466.camel@pmac.infradead.org> <20070427235553.GC24476@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <20070427235553.GC24476@suse.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Sun, 29 Apr 2007 15:49:04 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:47896 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031331AbXD2TtB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 15:49:01 -0400
+Date: Sun, 29 Apr 2007 12:48:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dan Kruchinin" <dubalom@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-rc7-mm2
+Message-Id: <20070429124831.a7a78c78.akpm@linux-foundation.org>
+In-Reply-To: <a8f16e2b0704291219k4c26ca3cj6c16346f22a2fe5d@mail.gmail.com>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<a8f16e2b0704291219k4c26ca3cj6c16346f22a2fe5d@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 04:55:53PM -0700, Greg KH wrote:
-> On Fri, Apr 27, 2007 at 07:03:34AM +0100, David Woodhouse wrote:
-> > On Thu, 2007-04-26 at 17:09 -0700, Greg KH wrote:
-> > > So, I'm still not quite understanding this, is David giving up on his
-> > > code now that you have pulled his changes into your tree?  Or is there
-> > > some reason there are still two competing versions here?
-> > 
-> > Anton hasn't pulled my changes -- it's a separate implementation,
-> > although very similar. In return for the account on git.infradead.org he
-> > said he was going to port the two drivers I already had (PMU and OLPC)
-> > to his framework.
-> 
-> Hopefully he took the driver model fixes you did.  Anton, care to send a
-> new set of patches, so we can review them?
+On Sun, 29 Apr 2007 23:19:49 +0400 "Dan Kruchinin" <dubalom@gmail.com> wrote:
 
-Okay... Today in IRC conversation David came to conclusion that we can
-merge "external_power" and "battery" meanings, thus merge these classes.
+> I have troubles with rtc on my macbook with mm2:
+> ----
+> ....
+> [126588.386116] rtc: lost some interrupts at 1024Hz.
+> [126588.404842] rtc: lost some interrupts at 1024Hz.
+> [126588.423566] rtc: lost some interrupts at 1024Hz.
+> [126588.442292] rtc: lost some interrupts at 1024Hz.
+> [126588.461016] rtc: lost some interrupts at 1024Hz.
+> [126588.479741] rtc: lost some interrupts at 1024Hz.
+> [126588.498466] rtc: lost some interrupts at 1024Hz.
+> [126588.517198] rtc: lost some interrupts at 1024Hz.
+> [126588.535923] rtc: lost some interrupts at 1024Hz.
+> [126588.554643] rtc: lost some interrupts at 1024Hz.
+> ....
+> ----
+> cat /proc/sys/dev/rtc/max-user-freq
+> 64
 
-So, new set of patches will delay a bit more... how long is depends on
-David and further testing on real world devices. I'm still in hope that
-we'll be in time for 2.6.22.
+I don't think there are any rtc changes in -mm which could have caused
+this.  Possibly there's something in there which is holding interrupts off
+for too long.
 
-> thanks,
-> 
-> greg k-h
+> On 2.6.20 there wasn't such problem.
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+Can you try 2.6.21 please?
