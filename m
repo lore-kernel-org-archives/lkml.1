@@ -1,65 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbXD2MLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbXD2MMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbXD2MLY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 08:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbXD2MLY
+	id S1756426AbXD2MMx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 08:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756427AbXD2MMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 08:11:24 -0400
-Received: from www.osadl.org ([213.239.205.134]:38000 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756418AbXD2MLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 08:11:23 -0400
-Subject: Re: [patch] CFS scheduler, -v6
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+	Sun, 29 Apr 2007 08:12:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37112 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756418AbXD2MMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 08:12:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.22
+Date: Sun, 29 Apr 2007 14:17:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-In-Reply-To: <1177848054.9756.30.camel@localhost>
-References: <200704261041.04838.gene.heskett@gmail.com>
-	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
-	 <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost>
-	 <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu>
-	 <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu>
-	 <1177842654.5791.85.camel@localhost.localdomain>
-	 <20070429111159.GH23638@1wt.eu>  <1177848054.9756.30.camel@localhost>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 14:13:30 +0200
-Message-Id: <1177848810.5791.104.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Miles Lane <miles.lane@gmail.com>, lollul@wp.pl,
+       Helge Hafting <helgehaf@aitel.hist.no>
+References: <200704290102.33533.lenb@kernel.org> <20070429010104.68c51d1a.akpm@linux-foundation.org> <20070429115244.GE11115@waste.org>
+In-Reply-To: <20070429115244.GE11115@waste.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704291417.02362.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 14:00 +0200, Kasper Sandberg wrote:
-> On Sun, 2007-04-29 at 13:11 +0200, Willy Tarreau wrote:
-> > On Sun, Apr 29, 2007 at 12:30:54PM +0200, Thomas Gleixner wrote:
-> <snip>
-> > Contrarily to most people, I don't see them as competitors. I see SD as
-> > a first step with a low risk of regression, and CFS as an ultimate
-> > solution relying on a more solid framework.
+On Sunday, 29 April 2007 13:52, Matt Mackall wrote:
+> On Sun, Apr 29, 2007 at 01:01:04AM -0700, Andrew Morton wrote:
+> > On Sun, 29 Apr 2007 01:02:33 -0400 Len Brown <lenb@kernel.org> wrote:
 > > 
-> See this is the part i dont understand, what makes CFS the ultimate
-> solution compared to SD?
+> > > please pull from: 
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> > > 
+> > > This batch mostly updates the platform-specific drivers that use ACPI.
+> > > The EC and sbs changes are primarily cleanups.
+> > > There are no changes to the ACPICA core, except a single bugfix
+> > > that was related to a 2.6.21 boot regression on some older machines.
+> > > And then the usual mix of random tweaks.
+> > 
+> > There might still be a few regressions in this lot:
+> > 
+> > - Miles Lane's "2.6.21-rc7-mm2 -- gnome-power-manager always shows the
+> >   power as coming from AC"
+> > 
+> > - "battery caching introduces a lock up"
+> >   http://bugzilla.kernel.org/show_bug.cgi?id=8351
+> > 
+> > These are older and might have been fixed:
+> > 
+> > - Mat Mackall's "Thinkpads not waking up on lid open with -rc6-mm1"
+> 
+> This seems to be related to suspend to disk. After the first suspend
+> to disk/resume, suspend to ram stops resuming from lid open and needs
+> me to hit the power button. As I just started using suspend to disk in
+> the past couple weeks, this may be a long-standing bug.
+> 
+> I think it's still present in -rc7-mm1 but I don't have my laptop
+> handy to double-check.
 
-SD is a one to one replacement of the existing scheduler guts - with a
-different behaviour.
+Can you please check if the appended debug patch helps?
 
-CFS is a huge step into a modular and hierarchical scheduler design,
-which allows more than just implementing a clever scheduler for a single
-purpose. In a hierarchical scheduler you can implement resource
-management and other fancy things, in the monolitic design of the
-current scheduler (and it's proposed replacement SD) you can't. But SD
-can be made one of the modular variants.
+Rafael
 
-	tglx
+---
+ kernel/power/disk.c |    4 ++--
+ kernel/power/user.c |    8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-
+Index: linux-2.6.21-rc7/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21-rc7.orig/kernel/power/disk.c
++++ linux-2.6.21-rc7/kernel/power/disk.c
+@@ -170,9 +170,9 @@ int pm_suspend_disk(void)
+ 
+ 	if (in_suspend) {
+ 		enable_nonboot_cpus();
+-		platform_finish();
+ 		device_resume();
+ 		resume_console();
++		platform_finish();
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write();
+ 		if (!error)
+@@ -189,9 +189,9 @@ int pm_suspend_disk(void)
+  Enable_cpus:
+ 	enable_nonboot_cpus();
+  Resume_devices:
+-	platform_finish();
+ 	device_resume();
+ 	resume_console();
++	platform_finish();
+  Thaw:
+ 	unprepare_processes();
+  Finish:
+Index: linux-2.6.21-rc7/kernel/power/user.c
+===================================================================
+--- linux-2.6.21-rc7.orig/kernel/power/user.c
++++ linux-2.6.21-rc7/kernel/power/user.c
+@@ -170,11 +170,11 @@ static inline int snapshot_suspend(int p
+ 	}
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	mutex_unlock(&pm_mutex);
+ 	return error;
+@@ -202,11 +202,11 @@ static inline int snapshot_restore(int p
+ 
+ 	enable_nonboot_cpus();
+  Resume_devices:
++	device_resume();
++	resume_console();
+ 	if (platform_suspend)
+ 		platform_finish();
+ 
+-	device_resume();
+-	resume_console();
+  Finish:
+ 	pm_restore_console();
+ 	mutex_unlock(&pm_mutex);
