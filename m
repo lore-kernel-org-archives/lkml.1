@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbXD2HjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXD2HnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755023AbXD2HjW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 03:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbXD2HjW
+	id S1755029AbXD2HnZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 03:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXD2HnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 03:39:22 -0400
-Received: from 1wt.eu ([62.212.114.60]:2360 "EHLO 1wt.eu"
+	Sun, 29 Apr 2007 03:43:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:55414 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754958AbXD2HjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 03:39:21 -0400
-Date: Sun, 29 Apr 2007 09:38:19 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kasper Sandberg <lkml@metanurb.dk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070429073819.GD23638@1wt.eu>
-References: <200704261041.04838.gene.heskett@gmail.com> <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu> <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost> <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <20070429073030.GA5253@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070429073030.GA5253@elte.hu>
-User-Agent: Mutt/1.5.11
+	id S1754958AbXD2HnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 03:43:24 -0400
+Message-ID: <46344CA5.6000900@goop.org>
+Date: Sun, 29 Apr 2007 00:43:33 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private
+ data
+References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org> <20070428062839.GA6535@gondor.apana.org.au>
+In-Reply-To: <20070428062839.GA6535@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 09:30:30AM +0200, Ingo Molnar wrote:
-> > In fact, what I'd like to see in 2.6.22 is something better for 
-> > everybody and with *no* regression, even if it's not perfect.
-> >
-> > I had the feeling that SD matched that goal right now, [...]
-> 
-> curious, which are the reports where in your opinion CFS behaves worse 
-> than vanilla?
+Herbert Xu wrote:
+> BTW, the version I posted to you is missing the following line.
+>   
+> --- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
+> +++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
+> @@ -89,6 +89,7 @@
+>  	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
+>  	if (skb->h.raw >= skb->tail)
+>  		goto out;
+> +	skb->csum_start = skb->h.raw - skb->head;
+>  	switch (skb->nh.iph->protocol) {
+>  	case IPPROTO_TCP:
+>  		skb->csum_offset = offsetof(struct tcphdr, check);
+>   
 
-see below :-)
+drivers/xen/core/skbuff.c?  What's that?
 
-> There were two audio skipping reports against CFS, the 
-> most serious one got resolved and i hope the other one has been resolved 
-> by the same fix as well. (i'm still waiting for feedback on that one)
-
-your answer to your question above ;-)
-Yes, we're all waiting for feedback. And I said I did not track the
-versions involved, so it is possible that all previously encountered
-regressions are fixed by now.
-
-> > [...] except for Mike who has not tested recent versions. [...]
-> 
-> actually, dont discount Mark Lord's test results either. And it might be 
-> a good idea for Mike to re-test SD 0.46?
-
-In any case, it might be a good idea because Mike encountered a problem
-that nobody could reproduce. It may come from hardware, scheduler design,
-scheduler bug, or any other bug, but whatever the cause, it would be
-interesting to conclude on it.
-
-> 	Ingo
-
-Willy
-
+    J
