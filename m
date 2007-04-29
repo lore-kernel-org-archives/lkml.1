@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031317AbXD2Tpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031320AbXD2TsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031317AbXD2Tpe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 15:45:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031332AbXD2Tpe
+	id S1031320AbXD2TsK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 15:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031331AbXD2TsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 15:45:34 -0400
-Received: from www.osadl.org ([213.239.205.134]:57695 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031320AbXD2TpA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 15:45:00 -0400
-From: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 3/3] UIO: Hilscher CIF card driver (with patch)
-Date: Sun, 29 Apr 2007 21:44:32 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org
-References: <20070427224957.GA17967@kroah.com> <11777142633770-git-send-email-gregkh@suse.de> <11777142681853-git-send-email-gregkh@suse.de>
-In-Reply-To: <11777142681853-git-send-email-gregkh@suse.de>
+	Sun, 29 Apr 2007 15:48:10 -0400
+Received: from mx27.mail.ru ([194.67.23.64]:15557 "EHLO mx27.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031320AbXD2TsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 15:48:08 -0400
+Date: Sun, 29 Apr 2007 23:46:00 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Greg KH <gregkh@suse.de>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [ANNOUNCE] battery2 git repository
+Message-ID: <20070429194600.GA32107@zarina>
+Reply-To: cbou@mail.ru
+References: <20070426232902.GA10423@zarina> <20070427000928.GA5303@suse.de> <1177653814.2755.466.camel@pmac.infradead.org> <20070427235553.GC24476@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-Message-Id: <200704292144.32958.hjk@linutronix.de>
+In-Reply-To: <20070427235553.GC24476@suse.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag 28 April 2007 00:50 schrieb Greg Kroah-Hartman:
+On Fri, Apr 27, 2007 at 04:55:53PM -0700, Greg KH wrote:
+> On Fri, Apr 27, 2007 at 07:03:34AM +0100, David Woodhouse wrote:
+> > On Thu, 2007-04-26 at 17:09 -0700, Greg KH wrote:
+> > > So, I'm still not quite understanding this, is David giving up on his
+> > > code now that you have pulled his changes into your tree?  Or is there
+> > > some reason there are still two competing versions here?
+> > 
+> > Anton hasn't pulled my changes -- it's a separate implementation,
+> > although very similar. In return for the account on git.infradead.org he
+> > said he was going to port the two drivers I already had (PMU and OLPC)
+> > to his framework.
+> 
+> Hopefully he took the driver model fixes you did.  Anton, care to send a
+> new set of patches, so we can review them?
 
-> +static int __devinit hilscher_pci_probe(struct pci_dev *dev,
-> +					const struct pci_device_id *id)
-> +{
-> +	struct uio_info *info;
-> +
-> +	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
-> +	if (!info)
-> +		return -ENOMEM;
-> +
-> +	if (pci_enable_device(dev))
-> +		goto out_free;
-> +
-> +	if (pci_request_regions(dev, "hilscher"))
-> +		goto out_disable;
-> +
-> +	info->mem[0].addr = pci_resource_start(dev, 0);
-> +	if (!info->mem[0].addr)
-> +		goto out_release;
-> +	info->mem[0].internal_addr = ioremap_nocache(pci_resource_start(dev, 0),
-> +						     pci_resource_len(dev, 0));
-> +	if (!info->mem[0].internal_addr)
-> +		goto out_release;
+Okay... Today in IRC conversation David came to conclusion that we can
+merge "external_power" and "battery" meanings, thus merge these classes.
 
-Alan Cox pointed out (offlist) that ioremap_nocache() is unneccessary here.
-This patch replaces it with ioremap():
+So, new set of patches will delay a bit more... how long is depends on
+David and further testing on real world devices. I'm still in hope that
+we'll be in time for 2.6.22.
 
-Thanks, Alan!
+> thanks,
+> 
+> greg k-h
 
-hjk
+Thanks,
 
-Index: linux-2.6.22-rc/drivers/uio/uio_cif.c
-===================================================================
---- linux-2.6.22-rc.orig/drivers/uio/uio_cif.c	2007-04-29 21:34:45.000000000 +0200
-+++ linux-2.6.22-rc/drivers/uio/uio_cif.c	2007-04-29 21:36:31.000000000 +0200
-@@ -64,9 +64,8 @@
- 	info->mem[0].addr = pci_resource_start(dev, 0);
- 	if (!info->mem[0].addr)
- 		goto out_release;
--	info->mem[0].internal_addr = ioremap_nocache(
--						pci_resource_start(dev, 0),
--						pci_resource_len(dev, 0) );
-+	info->mem[0].internal_addr = ioremap(pci_resource_start(dev, 0),
-+					     pci_resource_len(dev, 0) );
- 	if (!info->mem[0].internal_addr)
- 		goto out_release;
- 
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
