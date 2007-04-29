@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXD2IIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932837AbXD2IL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXD2IIE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 04:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932796AbXD2IHl
+	id S932837AbXD2IL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 04:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932950AbXD2IL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 04:07:41 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2497 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932785AbXD2IGr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 04:06:47 -0400
-Date: Sun, 29 Apr 2007 18:05:15 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private data
-Message-ID: <20070429080515.GA16942@gondor.apana.org.au>
-References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org> <20070428062839.GA6535@gondor.apana.org.au> <46344CA5.6000900@goop.org>
+	Sun, 29 Apr 2007 04:11:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49353 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932837AbXD2ILY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 04:11:24 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+XtqchkcyXUmf8XvEhk5Me6r2ktJedOy3YctuZTL
+	7zpn//MO6Zbkow
+Subject: Re: [patch] CFS scheduler, -v6
+From: Mike Galbraith <efault@gmx.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Ingo Molnar <mingo@elte.hu>, Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+In-Reply-To: <20070429071627.GC23638@1wt.eu>
+References: <20070425214704.GA32572@elte.hu>
+	 <1177596399.14496.1.camel@localhost>
+	 <200704261041.04838.gene.heskett@gmail.com>
+	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
+	 <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost>
+	 <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu>
+	 <20070429065900.GB32281@elte.hu>  <20070429071627.GC23638@1wt.eu>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 10:11:17 +0200
+Message-Id: <1177834277.6264.44.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46344CA5.6000900@goop.org>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 12:43:33AM -0700, Jeremy Fitzhardinge wrote:
-> Herbert Xu wrote:
-> > BTW, the version I posted to you is missing the following line.
-> >   
-> > --- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
-> > +++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
-> > @@ -89,6 +89,7 @@
-> >  	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
-> >  	if (skb->h.raw >= skb->tail)
-> >  		goto out;
-> > +	skb->csum_start = skb->h.raw - skb->head;
-> >  	switch (skb->nh.iph->protocol) {
-> >  	case IPPROTO_TCP:
-> >  		skb->csum_offset = offsetof(struct tcphdr, check);
-> >   
-> 
-> drivers/xen/core/skbuff.c?  What's that?
+On Sun, 2007-04-29 at 09:16 +0200, Willy Tarreau wrote:
 
-It's part of the skb_checksum_setup function which we still need
-for this because the current netback protocol doesn't pass the
-csum_start and csum_offset values along.
+> In fact, what I'd like to see in 2.6.22 is something better for everybody
+> and with *no* regression, even if it's not perfect. I had the feeling
+> that SD matched that goal right now, except for Mike who has not tested
+> recent versions. Don't get me wrong, I still think that CFS is a more
+> interesting long-term target.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+While I haven't tested recent SD versions, unless it's design has
+radically changed recently, I know what to expect.  CFS is giving me a
+very high quality experience already (it's at a whopping v7), while
+RSDL/SD irritated me greatly at version v40.  As far as I'm concerned,
+CFS is the superior target, short-term, long-term whatever-term.  For
+the tree where I make the decisions, the hammer has fallen, and RSDL/SD
+is history.  Heck, I'm _almost_ ready to rm -rf my own scheduler trees
+as well... I could really use some free disk space.
+
+	-Mike
+
