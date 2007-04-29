@@ -1,127 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161619AbXD2Xss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161590AbXD2Xt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161619AbXD2Xss (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161595AbXD2XrT
+	id S1161590AbXD2Xt0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 19:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161616AbXD2XrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:47:19 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:38458 "EHLO mx2.suse.de"
+	Sun, 29 Apr 2007 19:47:08 -0400
+Received: from ns1.suse.de ([195.135.220.2]:41950 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161582AbXD2XqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:46:21 -0400
+	id S1161597AbXD2XqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:46:24 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430146.588463000@suse.de>
 In-Reply-To: <20070430146.588463000@suse.de>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, patches@x86-64.org,
+To: Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, patches@x86-64.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [11/26] i386: clean up identify_cpu
-Message-Id: <20070429234620.6FFCD150F2@wotan.suse.de>
-Date: Mon, 30 Apr 2007 01:46:20 +0200 (CEST)
+Subject: [PATCH] [14/26] x86_64: Clean up asm-x86_64/bugs.h
+Message-Id: <20070429234623.9FCA3150F2@wotan.suse.de>
+Date: Mon, 30 Apr 2007 01:46:23 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Jeremy Fitzhardinge <jeremy@goop.org>
-identify_cpu() is used to identify both the boot CPU and secondary
-CPUs, but it performs some actions which only apply to the boot CPU.
-Those functions are therefore really __init functions, but because
-they're called by identify_cpu(), they must be marked __cpuinit.
-
-This patch splits identify_cpu() into identify_boot_cpu() and
-identify_secondary_cpu(), and calls the appropriate init functions
-from each.  Also, identify_boot_cpu() and all the functions it
-dominates are marked __init.
+Most of asm-x86_64/bugs.h is code which should be in a C file, so put it there.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 
 ---
- arch/i386/kernel/cpu/common.c |   21 ++++++++++++++-------
- arch/i386/kernel/smpboot.c    |    2 +-
- arch/i386/kernel/sysenter.c   |    2 +-
- include/asm-i386/processor.h  |    3 ++-
- 4 files changed, 18 insertions(+), 10 deletions(-)
+ arch/x86_64/kernel/Makefile      |    3 ++-
+ arch/x86_64/kernel/bugs.c        |   28 ++++++++++++++++++++++++++++
+ include/asm-x86_64/alternative.h |    1 +
+ include/asm-x86_64/bugs.h        |   30 ++++--------------------------
+ 4 files changed, 35 insertions(+), 27 deletions(-)
 
 ===================================================================
-Index: linux/arch/i386/kernel/cpu/common.c
+Index: linux/arch/x86_64/kernel/Makefile
 ===================================================================
---- linux.orig/arch/i386/kernel/cpu/common.c
-+++ linux/arch/i386/kernel/cpu/common.c
-@@ -394,7 +394,7 @@ __setup("serialnumber", x86_serial_nr_se
- /*
-  * This does the hard work of actually picking apart the CPU stuff...
-  */
--void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
-+static void __cpuinit identify_cpu(struct cpuinfo_x86 *c)
- {
- 	int i;
+--- linux.orig/arch/x86_64/kernel/Makefile
++++ linux/arch/x86_64/kernel/Makefile
+@@ -8,7 +8,8 @@ obj-y	:= process.o signal.o entry.o trap
+ 		ptrace.o time.o ioport.o ldt.o setup.o i8259.o sys_x86_64.o \
+ 		x8664_ksyms.o i387.o syscall.o vsyscall.o \
+ 		setup64.o bootflag.o e820.o reboot.o quirks.o i8237.o \
+-		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o sched-clock.o
++		pci-dma.o pci-nommu.o alternative.o hpet.o tsc.o sched-clock.o \
++		bugs.o
  
-@@ -505,15 +505,22 @@ void __cpuinit identify_cpu(struct cpuin
- 
- 	/* Init Machine Check Exception if available. */
- 	mcheck_init(c);
-+}
- 
--	if (c == &boot_cpu_data)
--		sysenter_setup();
-+void __init identify_boot_cpu(void)
+ obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
+ obj-$(CONFIG_X86_MCE)		+= mce.o therm_throt.o
+Index: linux/arch/x86_64/kernel/bugs.c
+===================================================================
+--- /dev/null
++++ linux/arch/x86_64/kernel/bugs.c
+@@ -0,0 +1,28 @@
++/*
++ *  arch/x86_64/kernel/bugs.c
++ *
++ *  Copyright (C) 1994  Linus Torvalds
++ *  Copyright (C) 2000  SuSE
++ *
++ * This is included by init/main.c to check for architecture-dependent bugs.
++ *
++ * Needs:
++ *	void check_bugs(void);
++ */
++
++#include <linux/kernel.h>
++#include <asm/alternative.h>
++#include <asm/processor.h>
++#include <asm/i387.h>
++#include <asm/msr.h>
++#include <asm/pda.h>
++
++void __init check_bugs(void)
 +{
 +	identify_cpu(&boot_cpu_data);
-+	sysenter_setup();
- 	enable_sep_cpu();
-+	mtrr_bp_init();
++#if !defined(CONFIG_SMP)
++	printk("CPU: ");
++	print_cpu_info(&boot_cpu_data);
++#endif
++	alternative_instructions();
 +}
- 
--	if (c == &boot_cpu_data)
--		mtrr_bp_init();
--	else
--		mtrr_ap_init();
-+void __cpuinit identify_secondary_cpu(struct cpuinfo_x86 *c)
-+{
-+	BUG_ON(c == &boot_cpu_data);
-+	identify_cpu(c);
-+	enable_sep_cpu();
-+	mtrr_ap_init();
- }
- 
- #ifdef CONFIG_X86_HT
-Index: linux/arch/i386/kernel/smpboot.c
+Index: linux/include/asm-x86_64/alternative.h
 ===================================================================
---- linux.orig/arch/i386/kernel/smpboot.c
-+++ linux/arch/i386/kernel/smpboot.c
-@@ -155,7 +155,7 @@ static void __cpuinit smp_store_cpu_info
+--- linux.orig/include/asm-x86_64/alternative.h
++++ linux/include/asm-x86_64/alternative.h
+@@ -16,6 +16,7 @@ struct alt_instr {
+ 	u8  pad[5];
+ };
  
- 	*c = boot_cpu_data;
- 	if (id!=0)
--		identify_cpu(c);
-+		identify_secondary_cpu(c);
- 	/*
- 	 * Mask B, Pentium, but not Pentium MMX
- 	 */
-Index: linux/arch/i386/kernel/sysenter.c
++extern void alternative_instructions(void);
+ extern void apply_alternatives(struct alt_instr *start, struct alt_instr *end);
+ 
+ struct module;
+Index: linux/include/asm-x86_64/bugs.h
 ===================================================================
---- linux.orig/arch/i386/kernel/sysenter.c
-+++ linux/arch/i386/kernel/sysenter.c
-@@ -72,7 +72,7 @@ extern const char vsyscall_int80_start, 
- extern const char vsyscall_sysenter_start, vsyscall_sysenter_end;
- static struct page *syscall_pages[1];
+--- linux.orig/include/asm-x86_64/bugs.h
++++ linux/include/asm-x86_64/bugs.h
+@@ -1,28 +1,6 @@
+-/*
+- *  include/asm-x86_64/bugs.h
+- *
+- *  Copyright (C) 1994  Linus Torvalds
+- *  Copyright (C) 2000  SuSE
+- *
+- * This is included by init/main.c to check for architecture-dependent bugs.
+- *
+- * Needs:
+- *	void check_bugs(void);
+- */
++#ifndef _ASM_X86_64_BUGS_H
++#define _ASM_X86_64_BUGS_H
  
--int __cpuinit sysenter_setup(void)
-+int __init sysenter_setup(void)
- {
- 	void *syscall_page = (void *)get_zeroed_page(GFP_ATOMIC);
- 	syscall_pages[0] = virt_to_page(syscall_page);
-Index: linux/include/asm-i386/processor.h
-===================================================================
---- linux.orig/include/asm-i386/processor.h
-+++ linux/include/asm-i386/processor.h
-@@ -116,7 +116,8 @@ extern char ignore_fpu_irq;
+-#include <asm/processor.h>
+-#include <asm/i387.h>
+-#include <asm/msr.h>
+-#include <asm/pda.h>
++void check_bugs(void);
  
- void __init cpu_detect(struct cpuinfo_x86 *c);
- 
--extern void identify_cpu(struct cpuinfo_x86 *);
-+extern void identify_boot_cpu(void);
-+extern void identify_secondary_cpu(struct cpuinfo_x86 *);
- extern void print_cpu_info(struct cpuinfo_x86 *);
- extern unsigned int init_intel_cacheinfo(struct cpuinfo_x86 *c);
- extern unsigned short num_cache_leaves;
+-extern void alternative_instructions(void);
+-
+-static void __init check_bugs(void)
+-{
+-	identify_cpu(&boot_cpu_data);
+-#if !defined(CONFIG_SMP)
+-	printk("CPU: ");
+-	print_cpu_info(&boot_cpu_data);
+-#endif
+-	alternative_instructions(); 
+-}
++#endif	/* _ASM_X86_64_BUGS_H */
