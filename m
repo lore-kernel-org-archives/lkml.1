@@ -1,201 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161469AbXD2Vga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161451AbXD2Vly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161469AbXD2Vga (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161468AbXD2Vga
+	id S1161451AbXD2Vly (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161464AbXD2Vly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:36:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38854 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161464AbXD2Vg1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:36:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Dan Kruchinin" <dubalom@gmail.com>
-Subject: Re: 2.6.21-rc7-mm2 suspend bug. [kernel/kthread.c]
-Date: Sun, 29 Apr 2007 23:40:30 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com> <200704292227.45215.rjw@sisk.pl> <a8f16e2b0704291346h40519e7dp76798bedfd9e150e@mail.gmail.com>
-In-Reply-To: <a8f16e2b0704291346h40519e7dp76798bedfd9e150e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 29 Apr 2007 17:41:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33117
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1161451AbXD2Vlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:41:53 -0400
+Date: Sun, 29 Apr 2007 14:41:50 -0700 (PDT)
+Message-Id: <20070429.144150.65190684.davem@davemloft.net>
+To: andi@firstfloor.org
+Cc: torvalds@linux-foundation.org, bunk@stusta.de, diegocg@gmail.com,
+       cebbert@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.21
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070429212643.GA32750@one.firstfloor.org>
+References: <20070429180909.GA30604@one.firstfloor.org>
+	<20070429.130143.21926295.davem@davemloft.net>
+	<20070429212643.GA32750@one.firstfloor.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704292340.30637.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Please don't drop addresses from the CC list]
+From: Andi Kleen <andi@firstfloor.org>
+Date: Sun, 29 Apr 2007 23:26:43 +0200
 
-On Sunday, 29 April 2007 22:46, Dan Kruchinin wrote:
-> On 4/30/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > Hi,
-> >
-> > On Sunday, 29 April 2007 21:51, Dan Kruchinin wrote:
-> > > Hi all.
-> > >
-> > > There is a problem on my macbook core duo with suspend.
-> > > after suspending when i'm trying to 'wake up' my notebook, it seems
-> > > that it works, but i don't see anything at my monitor. So i have to
-> > > reboot it to continue my work.
-> >
-> > What exactly do you do to suspend?
-> >
-> > Rafael
-> >
-> >
-> > > ---
-> > > Apr 29 23:31:16 midgard kernel: [140594.900856] BUG: at
-> > > kernel/kthread.c:166 kthread_bind()
-> > > Apr 29 23:31:16 midgard kernel: [140594.900870]  [<c0142c9b>]
-> > > _cpu_down+0x16b/0x250
-> > > Apr 29 23:31:16 midgard kernel: [140594.900893]  [<c0142f80>]
-> > > disable_nonboot_cpus+0x60/0xf0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900903]  [<c0147efa>]
-> > > enter_state+0x22a/0x240
-> > > Apr 29 23:31:16 midgard kernel: [140594.900913]  [<c0147fcd>]
-> > > state_store+0xbd/0xd0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900920]  [<c0147f10>]
-> > > state_store+0x0/0xd0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900927]  [<c01c1559>]
-> > > subsys_attr_store+0x29/0x40
-> > > Apr 29 23:31:16 midgard kernel: [140594.900937]  [<c01c1774>]
-> > > sysfs_write_file+0xd4/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900948]  [<c0180eb6>]
-> > > vfs_write+0xa6/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900958]  [<c01c16a0>]
-> > > sysfs_write_file+0x0/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900966]  [<c0181601>]
-> > > sys_write+0x41/0x70
-> > > Apr 29 23:31:16 midgard kernel: [140594.900974]  [<c018c70b>]
-> > > sys_dup2+0xeb/0x120
-> > > Apr 29 23:31:16 midgard kernel: [140594.900984]  [<c0104116>]
-> > > sysenter_past_esp+0x5f/0x85
-> > > Apr 29 23:31:16 midgard kernel: [140594.900999]  =======================
-> > > ---
-> > >
-> > > dmesg output:
-> > > ----
-> > > ....
-> > > Apr 29 23:31:16 midgard kernel: [140594.788697] Suspending device vtcon0
-> > > Apr 29 23:31:16 midgard kernel: [140594.788700] Suspending device platform
-> > > Apr 29 23:31:16 midgard kernel: [140594.788704] Disabling non-boot CPUs ...
-> > > Apr 29 23:31:16 midgard kernel: [140594.900464] CPU 1 is now offline
-> > > Apr 29 23:31:16 midgard kernel: [140594.900469] SMP alternatives:
-> > > switching to UP code
-> > > Apr 29 23:31:16 midgard kernel: [140594.900856] BUG: at
-> > > kernel/kthread.c:166 kthread_bind()
-> > > Apr 29 23:31:16 midgard kernel: [140594.900870]  [<c0142c9b>]
-> > > _cpu_down+0x16b/0x250
-> > > Apr 29 23:31:16 midgard kernel: [140594.900893]  [<c0142f80>]
-> > > disable_nonboot_cpus+0x60/0xf0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900903]  [<c0147efa>]
-> > > enter_state+0x22a/0x240
-> > > Apr 29 23:31:16 midgard kernel: [140594.900913]  [<c0147fcd>]
-> > > state_store+0xbd/0xd0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900920]  [<c0147f10>]
-> > > state_store+0x0/0xd0
-> > > Apr 29 23:31:16 midgard kernel: [140594.900927]  [<c01c1559>]
-> > > subsys_attr_store+0x29/0x40
-> > > Apr 29 23:31:16 midgard kernel: [140594.900937]  [<c01c1774>]
-> > > sysfs_write_file+0xd4/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900948]  [<c0180eb6>]
-> > > vfs_write+0xa6/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900958]  [<c01c16a0>]
-> > > sysfs_write_file+0x0/0x160
-> > > Apr 29 23:31:16 midgard kernel: [140594.900966]  [<c0181601>]
-> > > sys_write+0x41/0x70
-> > > Apr 29 23:31:16 midgard kernel: [140594.900974]  [<c018c70b>]
-> > > sys_dup2+0xeb/0x120
-> > > Apr 29 23:31:16 midgard kernel: [140594.900984]  [<c0104116>]
-> > > sysenter_past_esp+0x5f/0x85
-> > > Apr 29 23:31:16 midgard kernel: [140594.900999]  =======================
-> > > Apr 29 23:31:16 midgard kernel: [140594.902843] CPU1 is down
-> > > Apr 29 23:31:16 midgard kernel: [18014366.415769] Enabling non-boot CPUs ...
-> > > Apr 29 23:31:16 midgard kernel: [18014366.426999] SMP alternatives:
-> > > switching to SMP code
-> > > Apr 29 23:31:16 midgard kernel: [18014366.427165] Booting processor 1/1 eip 3000
-> > > Apr 29 23:31:16 midgard kernel: [18014366.436913] Initializing CPU#1
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509141] Calibrating delay
-> > > using timer specific routine.. 3994.69 BogoMIPS (lpj=7989390)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509152] monitor/mwait feature present.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509156] CPU: L1 I cache:
-> > > 32K, L1 D cache: 32K
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509158] CPU: L2 cache: 2048K
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509160] CPU: Physical Processor ID: 0
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509161] CPU: Processor Core ID: 1
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509637] CPU1: Intel Genuine
-> > > Intel(R) CPU            1500  @ 2.00GHz stepping 08
-> > > Apr 29 23:31:16 midgard kernel: [18014366.509659] checking TSC
-> > > synchronization [CPU#0 -> CPU#1]:
-> > > Apr 29 23:31:16 midgard kernel: [18014366.529627] Measured 68812018716
-> > > cycles TSC warp between CPUs, turning off TSC clock.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.529630] Marking TSC unstable
-> > > due to: check_tsc_sync_source failed.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.529641] Time: hpet
-> > > clocksource has been installed.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.530137] speedstep-centrino
-> > > with X86_SPEEDSTEP_CENTRINO_ACPI config is deprecated.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.530139]  Use
-> > > X86_ACPI_CPUFREQ (acpi-cpufreq) instead.
-> > > Apr 29 23:31:16 midgard kernel: [18014366.530209] CPU1 is up
-> > > Apr 29 23:31:16 midgard kernel: [18014366.614003] Clocksource tsc
-> > > unstable (delta = 4125051653052 ns)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.730352] ACPI: PCI Interrupt
-> > > 0000:00:02.0[A] -> GSI 16 (level, low) -> IRQ 16
-> > > Apr 29 23:31:16 midgard kernel: [18014366.745126] ACPI: PCI Interrupt
-> > > 0000:00:1b.0[A] -> GSI 22 (level, low) -> IRQ 22
-> > > Apr 29 23:31:16 midgard kernel: [18014366.894946] ACPI: PCI Interrupt
-> > > 0000:00:1c.0[A] -> GSI 17 (level, low) -> IRQ 17
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895025] ACPI: PCI Interrupt
-> > > 0000:00:1c.1[B] -> GSI 16 (level, low) -> IRQ 16
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895039] PCI: Enabling device
-> > > 0000:00:1d.0 (0000 -> 0001)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895042] ACPI: PCI Interrupt
-> > > 0000:00:1d.0[A] -> GSI 21 (level, low) -> IRQ 21
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895104] usb usb1: root hub
-> > > lost power or was reset
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895141] PCI: Enabling device
-> > > 0000:00:1d.1 (0000 -> 0001)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895144] ACPI: PCI Interrupt
-> > > 0000:00:1d.1[B] -> GSI 19 (level, low) -> IRQ 19
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895204] usb usb2: root hub
-> > > lost power or was reset
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895237] PCI: Enabling device
-> > > 0000:00:1d.2 (0000 -> 0001)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895240] ACPI: PCI Interrupt
-> > > 0000:00:1d.2[C] -> GSI 18 (level, low) -> IRQ 18
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895299] usb usb3: root hub
-> > > lost power or was reset
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895328] PCI: Enabling device
-> > > 0000:00:1d.3 (0000 -> 0001)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895331] ACPI: PCI Interrupt
-> > > 0000:00:1d.3[D] -> GSI 16 (level, low) -> IRQ 16
-> > > Apr 29 23:31:16 midgard kernel: [18014366.895391] usb usb4: root hub
-> > > lost power or was reset
-> > > Apr 29 23:31:16 midgard kernel: [18014366.909854] PCI: Enabling device
-> > > 0000:00:1d.7 (0000 -> 0002)
-> > > Apr 29 23:31:16 midgard kernel: [18014366.909857] ACPI: PCI Interrupt
-> > > 0000:00:1d.7[A] -> GSI 21 (level, low) -> IRQ 21
-> > > Apr 29 23:31:16 midgard kernel: [18014366.910032] ACPI: PCI Interrupt
-> > > 0000:00:1f.1[A] -> GSI 18 (level, low) -> IRQ 18
-> > > Apr 29 23:31:16 midgard kernel: [18014366.924871] ACPI: PCI Interrupt
-> > > 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 19
-> > > Apr 29 23:31:16 midgard kernel: [18014366.939965] sky2 eth0: enabling interface
-> > > Apr 29 23:31:16 midgard kernel: [18014366.941763] sky2 eth0: ram buffer 48K
-> > > Apr 29 23:31:16 midgard kernel: [18014367.006976] ohci1394: fw-host0:
-> > > OHCI-1394 1.0 (PCI): IRQ=[19]  MMIO=[90000000-900007ff]  Max
-> > > Packet=[2048]  IR/IT contexts=[8/8]
-> > > ...
-> > > ---
-> > >
-> > > Thanks.
-> > > Dan Kruchinin.
-> >
+> > I reported a bug that eats people's hard disks due to a bug
+> > in the X.ORG PCI support code on sparc, NOBODY has fixed
+> > the bug in 2 years even though a full bugzilla entry with
+> > even a full patch fix is in there.
 > 
-> echo "mem" > /sys/power/state
+> Well but at least they could find it again if they wanted.
+> If you sent it by email and it had gotten lost for some reason
+> (nobody interested, which seems to be the real issue here) then
+> it would be lost forever.
 
-What's the last good kernel?
+WRONG!  If I have sent it to the main developer list the damn patch
+would be applied by now.
 
-Rafael
+WHY?
+
+BECAUSE EMAIL ENGAGES PEOPLE AND BUGZILLA DOES NOT!
+
+Nobody looks at the bugzilla because there is too much junk in there
+to make the signal any useful to search for, there's simply too much
+noise.
