@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXD2Pv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbXD2Pv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933317AbXD2Pv4 (ORCPT <rfc822;w@1wt.eu>);
+	id S933275AbXD2Pv4 (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 29 Apr 2007 11:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933275AbXD2Put
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933318AbXD2Pur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 11:50:49 -0400
-Received: from il.qumranet.com ([82.166.9.18]:34351 "EHLO il.qumranet.com"
+	Sun, 29 Apr 2007 11:50:47 -0400
+Received: from il.qumranet.com ([82.166.9.18]:34344 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756515AbXD2PuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 11:50:25 -0400
+	id S1756514AbXD2PuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 11:50:24 -0400
 From: Avi Kivity <avi@qumranet.com>
 To: kvm-devel@lists.sourceforge.net
 Cc: linux-kernel@vger.kernel.org, Anthony Liguori <aliguori@us.ibm.com>,
        Avi Kivity <avi@qumranet.com>
-Subject: [PATCH 1/7] KVM: VMX: Properly shadow the CR0 register in the vcpu struct
-Date: Sun, 29 Apr 2007 18:50:16 +0300
-Message-Id: <11778618221380-git-send-email-avi@qumranet.com>
+Subject: [PATCH 2/7] KVM: VMX: Add lazy FPU support for VT
+Date: Sun, 29 Apr 2007 18:50:17 +0300
+Message-Id: <1177861822300-git-send-email-avi@qumranet.com>
 X-Mailer: git-send-email 1.5.0.6
 In-Reply-To: <1177861822889-git-send-email-avi@qumranet.com>
 References: <1177861822889-git-send-email-avi@qumranet.com>
@@ -24,147 +24,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Anthony Liguori <aliguori@us.ibm.com>
 
-Set all of the host mask bits for CR0 so that we can maintain a proper
-shadow of CR0.  This exposes CR0.TS, paving the way for lazy fpu handling.
+Only save/restore the FPU host state when the guest is actually using the
+FPU.
 
 Signed-off-by: Anthony Liguori <aliguori@us.ibm.com>
 Signed-off-by: Avi Kivity <avi@qumranet.com>
 ---
- drivers/kvm/kvm.h      |    2 +-
- drivers/kvm/kvm_main.c |    8 +++-----
- drivers/kvm/svm.c      |    4 ++--
- drivers/kvm/vmx.c      |   14 ++++++++------
- 4 files changed, 14 insertions(+), 14 deletions(-)
+ drivers/kvm/vmx.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 files changed, 52 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/kvm/kvm.h b/drivers/kvm/kvm.h
-index 61ff085..f99e89e 100644
---- a/drivers/kvm/kvm.h
-+++ b/drivers/kvm/kvm.h
-@@ -397,7 +397,7 @@ struct kvm_arch_ops {
- 	void (*set_segment)(struct kvm_vcpu *vcpu,
- 			    struct kvm_segment *var, int seg);
- 	void (*get_cs_db_l_bits)(struct kvm_vcpu *vcpu, int *db, int *l);
--	void (*decache_cr0_cr4_guest_bits)(struct kvm_vcpu *vcpu);
-+	void (*decache_cr4_guest_bits)(struct kvm_vcpu *vcpu);
- 	void (*set_cr0)(struct kvm_vcpu *vcpu, unsigned long cr0);
- 	void (*set_cr3)(struct kvm_vcpu *vcpu, unsigned long cr3);
- 	void (*set_cr4)(struct kvm_vcpu *vcpu, unsigned long cr4);
-diff --git a/drivers/kvm/kvm_main.c b/drivers/kvm/kvm_main.c
-index 6755403..cdf0b17 100644
---- a/drivers/kvm/kvm_main.c
-+++ b/drivers/kvm/kvm_main.c
-@@ -510,7 +510,6 @@ EXPORT_SYMBOL_GPL(set_cr0);
- 
- void lmsw(struct kvm_vcpu *vcpu, unsigned long msw)
- {
--	kvm_arch_ops->decache_cr0_cr4_guest_bits(vcpu);
- 	set_cr0(vcpu, (vcpu->cr0 & ~0x0ful) | (msw & 0x0f));
- }
- EXPORT_SYMBOL_GPL(lmsw);
-@@ -1117,7 +1116,6 @@ int emulate_clts(struct kvm_vcpu *vcpu)
- {
- 	unsigned long cr0;
- 
--	kvm_arch_ops->decache_cr0_cr4_guest_bits(vcpu);
- 	cr0 = vcpu->cr0 & ~CR0_TS_MASK;
- 	kvm_arch_ops->set_cr0(vcpu, cr0);
- 	return X86EMUL_CONTINUE;
-@@ -1318,7 +1316,7 @@ void realmode_lmsw(struct kvm_vcpu *vcpu, unsigned long msw,
- 
- unsigned long realmode_get_cr(struct kvm_vcpu *vcpu, int cr)
- {
--	kvm_arch_ops->decache_cr0_cr4_guest_bits(vcpu);
-+	kvm_arch_ops->decache_cr4_guest_bits(vcpu);
- 	switch (cr) {
- 	case 0:
- 		return vcpu->cr0;
-@@ -1934,7 +1932,7 @@ static int kvm_vcpu_ioctl_get_sregs(struct kvm_vcpu *vcpu,
- 	sregs->gdt.limit = dt.limit;
- 	sregs->gdt.base = dt.base;
- 
--	kvm_arch_ops->decache_cr0_cr4_guest_bits(vcpu);
-+	kvm_arch_ops->decache_cr4_guest_bits(vcpu);
- 	sregs->cr0 = vcpu->cr0;
- 	sregs->cr2 = vcpu->cr2;
- 	sregs->cr3 = vcpu->cr3;
-@@ -1985,7 +1983,7 @@ static int kvm_vcpu_ioctl_set_sregs(struct kvm_vcpu *vcpu,
- #endif
- 	vcpu->apic_base = sregs->apic_base;
- 
--	kvm_arch_ops->decache_cr0_cr4_guest_bits(vcpu);
-+	kvm_arch_ops->decache_cr4_guest_bits(vcpu);
- 
- 	mmu_reset_needed |= vcpu->cr0 != sregs->cr0;
- 	kvm_arch_ops->set_cr0(vcpu, sregs->cr0);
-diff --git a/drivers/kvm/svm.c b/drivers/kvm/svm.c
-index 2a7a039..bddd023 100644
---- a/drivers/kvm/svm.c
-+++ b/drivers/kvm/svm.c
-@@ -738,7 +738,7 @@ static void svm_set_gdt(struct kvm_vcpu *vcpu, struct descriptor_table *dt)
- 	vcpu->svm->vmcb->save.gdtr.base = dt->base ;
- }
- 
--static void svm_decache_cr0_cr4_guest_bits(struct kvm_vcpu *vcpu)
-+static void svm_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
- {
- }
- 
-@@ -1759,7 +1759,7 @@ static struct kvm_arch_ops svm_arch_ops = {
- 	.get_segment = svm_get_segment,
- 	.set_segment = svm_set_segment,
- 	.get_cs_db_l_bits = svm_get_cs_db_l_bits,
--	.decache_cr0_cr4_guest_bits = svm_decache_cr0_cr4_guest_bits,
-+	.decache_cr4_guest_bits = svm_decache_cr4_guest_bits,
- 	.set_cr0 = svm_set_cr0,
- 	.set_cr3 = svm_set_cr3,
- 	.set_cr4 = svm_set_cr4,
 diff --git a/drivers/kvm/vmx.c b/drivers/kvm/vmx.c
-index d28c848..0960811 100644
+index 0960811..1d2b41b 100644
 --- a/drivers/kvm/vmx.c
 +++ b/drivers/kvm/vmx.c
-@@ -810,11 +810,8 @@ static void exit_lmode(struct kvm_vcpu *vcpu)
- 
- #endif
- 
--static void vmx_decache_cr0_cr4_guest_bits(struct kvm_vcpu *vcpu)
-+static void vmx_decache_cr4_guest_bits(struct kvm_vcpu *vcpu)
- {
--	vcpu->cr0 &= KVM_GUEST_CR0_MASK;
--	vcpu->cr0 |= vmcs_readl(GUEST_CR0) & ~KVM_GUEST_CR0_MASK;
--
- 	vcpu->cr4 &= KVM_GUEST_CR4_MASK;
- 	vcpu->cr4 |= vmcs_readl(GUEST_CR4) & ~KVM_GUEST_CR4_MASK;
+@@ -101,6 +101,13 @@ static inline int is_page_fault(u32 intr_info)
+ 		(INTR_TYPE_EXCEPTION | PF_VECTOR | INTR_INFO_VALID_MASK);
  }
-@@ -1205,7 +1202,7 @@ static int vmx_vcpu_setup(struct kvm_vcpu *vcpu)
- 	vmcs_writel(TPR_THRESHOLD, 0);
+ 
++static inline int is_no_device(u32 intr_info)
++{
++	return (intr_info & (INTR_INFO_INTR_TYPE_MASK | INTR_INFO_VECTOR_MASK |
++			     INTR_INFO_VALID_MASK)) ==
++		(INTR_TYPE_EXCEPTION | NM_VECTOR | INTR_INFO_VALID_MASK);
++}
++
+ static inline int is_external_interrupt(u32 intr_info)
+ {
+ 	return (intr_info & (INTR_INFO_INTR_TYPE_MASK | INTR_INFO_VALID_MASK))
+@@ -216,6 +223,16 @@ static void vmcs_write64(unsigned long field, u64 value)
+ #endif
+ }
+ 
++static void vmcs_clear_bits(unsigned long field, u32 mask)
++{
++	vmcs_writel(field, vmcs_readl(field) & ~mask);
++}
++
++static void vmcs_set_bits(unsigned long field, u32 mask)
++{
++	vmcs_writel(field, vmcs_readl(field) | mask);
++}
++
+ /*
+  * Switches to specified vcpu, until a matching vcpu_put(), but assumes
+  * vcpu mutex is already taken.
+@@ -833,6 +850,11 @@ static void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+ 	}
  #endif
  
--	vmcs_writel(CR0_GUEST_HOST_MASK, KVM_GUEST_CR0_MASK);
-+	vmcs_writel(CR0_GUEST_HOST_MASK, ~0UL);
- 	vmcs_writel(CR4_GUEST_HOST_MASK, KVM_GUEST_CR4_MASK);
++	if (!(cr0 & CR0_TS_MASK)) {
++		vcpu->fpu_active = 1;
++		vmcs_clear_bits(EXCEPTION_BITMAP, CR0_TS_MASK);
++	}
++
+ 	vmcs_writel(CR0_READ_SHADOW, cr0);
+ 	vmcs_writel(GUEST_CR0,
+ 		    (cr0 & ~KVM_GUEST_CR0_MASK) | KVM_VM_CR0_ALWAYS_ON);
+@@ -842,6 +864,12 @@ static void vmx_set_cr0(struct kvm_vcpu *vcpu, unsigned long cr0)
+ static void vmx_set_cr3(struct kvm_vcpu *vcpu, unsigned long cr3)
+ {
+ 	vmcs_writel(GUEST_CR3, cr3);
++
++	if (!(vcpu->cr0 & CR0_TS_MASK)) {
++		vcpu->fpu_active = 0;
++		vmcs_set_bits(GUEST_CR0, CR0_TS_MASK);
++		vmcs_set_bits(EXCEPTION_BITMAP, 1 << NM_VECTOR);
++	}
+ }
  
- 	vcpu->cr0 = 0x60000010;
-@@ -1557,6 +1554,11 @@ static int handle_cr(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
- 			return 1;
- 		};
- 		break;
-+	case 2: /* clts */
-+		vcpu_load_rsp_rip(vcpu);
-+		set_cr0(vcpu, vcpu->cr0 & ~CR0_TS_MASK);
-+		skip_emulated_instruction(vcpu);
+ static void vmx_set_cr4(struct kvm_vcpu *vcpu, unsigned long cr4)
+@@ -1368,6 +1396,15 @@ static int handle_exception(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		asm ("int $2");
+ 		return 1;
+ 	}
++
++	if (is_no_device(intr_info)) {
++		vcpu->fpu_active = 1;
++		vmcs_clear_bits(EXCEPTION_BITMAP, 1 << NM_VECTOR);
++		if (!(vcpu->cr0 & CR0_TS_MASK))
++			vmcs_clear_bits(GUEST_CR0, CR0_TS_MASK);
 +		return 1;
++	}
++
+ 	error_code = 0;
+ 	rip = vmcs_readl(GUEST_RIP);
+ 	if (intr_info & INTR_INFO_DELIEVER_CODE_MASK)
+@@ -1556,7 +1593,11 @@ static int handle_cr(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
+ 		break;
+ 	case 2: /* clts */
+ 		vcpu_load_rsp_rip(vcpu);
+-		set_cr0(vcpu, vcpu->cr0 & ~CR0_TS_MASK);
++		vcpu->fpu_active = 1;
++		vmcs_clear_bits(EXCEPTION_BITMAP, 1 << NM_VECTOR);
++		vmcs_clear_bits(GUEST_CR0, CR0_TS_MASK);
++		vcpu->cr0 &= ~CR0_TS_MASK;
++		vmcs_writel(CR0_READ_SHADOW, vcpu->cr0);
+ 		skip_emulated_instruction(vcpu);
+ 		return 1;
  	case 1: /*mov from cr*/
- 		switch (cr) {
- 		case 3:
-@@ -2112,7 +2114,7 @@ static struct kvm_arch_ops vmx_arch_ops = {
- 	.get_segment = vmx_get_segment,
- 	.set_segment = vmx_set_segment,
- 	.get_cs_db_l_bits = vmx_get_cs_db_l_bits,
--	.decache_cr0_cr4_guest_bits = vmx_decache_cr0_cr4_guest_bits,
-+	.decache_cr4_guest_bits = vmx_decache_cr4_guest_bits,
- 	.set_cr0 = vmx_set_cr0,
- 	.set_cr3 = vmx_set_cr3,
- 	.set_cr4 = vmx_set_cr4,
+@@ -1806,8 +1847,10 @@ again:
+ 	if (vcpu->guest_debug.enabled)
+ 		kvm_guest_debug_pre(vcpu);
+ 
+-	fx_save(vcpu->host_fx_image);
+-	fx_restore(vcpu->guest_fx_image);
++	if (vcpu->fpu_active) {
++		fx_save(vcpu->host_fx_image);
++		fx_restore(vcpu->guest_fx_image);
++	}
+ 
+ #ifdef CONFIG_X86_64
+ 	if (is_long_mode(vcpu)) {
+@@ -1965,8 +2008,11 @@ again:
+ 	}
+ #endif
+ 
+-	fx_save(vcpu->guest_fx_image);
+-	fx_restore(vcpu->host_fx_image);
++	if (vcpu->fpu_active) {
++		fx_save(vcpu->guest_fx_image);
++		fx_restore(vcpu->host_fx_image);
++	}
++
+ 	vcpu->interrupt_window_open = (vmcs_read32(GUEST_INTERRUPTIBILITY_INFO) & 3) == 0;
+ 
+ 	asm ("mov %0, %%ds; mov %0, %%es" : : "r"(__USER_DS));
+@@ -2078,6 +2124,7 @@ static int vmx_create_vcpu(struct kvm_vcpu *vcpu)
+ 	vmcs_clear(vmcs);
+ 	vcpu->vmcs = vmcs;
+ 	vcpu->launched = 0;
++	vcpu->fpu_active = 1;
+ 
+ 	return 0;
+ 
 -- 
 1.5.0.6
 
