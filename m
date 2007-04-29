@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbXD2AVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbXD2AVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754463AbXD2AVB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 20:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbXD2AVB
+	id S1754470AbXD2AVY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 20:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXD2AVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 20:21:01 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:46657 "EHLO gherkin.frus.com"
+	Sat, 28 Apr 2007 20:21:23 -0400
+Received: from gw.goop.org ([64.81.55.164]:50634 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754463AbXD2AVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 20:21:00 -0400
-Subject: Re: Linux 2.6.21
-In-Reply-To: <alpine.LFD.0.98.0704281629440.9964@woody.linux-foundation.org>
- "from Linus Torvalds at Apr 28, 2007 04:40:31 pm"
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 28 Apr 2007 19:20:46 -0500 (CDT)
-CC: Markus Rechberger <mrechberger@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	id S1754470AbXD2AVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 20:21:20 -0400
+Message-ID: <4633E507.7070002@goop.org>
+Date: Sat, 28 Apr 2007 17:21:27 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] i386: init early_gdt_descr and idle task properly on voyager
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070429002046.AC3EBDBA1@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Sun, 29 Apr 2007, Markus Rechberger wrote:
-> > How else should bugs get handled, sending them to the lkml?
-> 
-> Actually, looking at Adrian's regression lists, yes. lkml worked better 
-> than bugzilla did. By at _least_ a factor of two.
+Initialize early_gdt_descr and idle task properly.
 
-Since 1992, lkml (with "Cc:" to the appropriate subsystem mailing list
-if applicable) and the presumed responsible parties are the only channels
-I've used to report the bugs I encounter.
+[ Incremental fix for "i386: introduce voyager smp_ops, fix voyager build" ]
 
-Other methods come and go, but old habits die hard, particularly when
-they have a knack for producing the desired result.  Historically,
-requiring a developer to fire up a GUI to read a bug report decreases
-the chance that bug report will be noticed.  The development community
-can do whatever flips its collective switch as far as tracking bugs,
-but the bugs have to be reported and noticed before tracking becomes a
-meaningful activity.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
 
-One more thought and I'll get off your screens...  We've steadfastly
-resisted making lkml and friends subscriber-only mailing lists precisely
-because we don't want to miss a potential bug report because a would-be
-submitter isn't subscribed.  If people aren't looking for bug reports
-here, what's the point?
+---
+ arch/i386/kernel/smpboot.c           |    3 ---
+ arch/i386/mach-voyager/voyager_smp.c |    2 ++
+ include/asm-i386/processor.h         |    3 +++
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
---Bob Tracy
-rct@frus.com
+===================================================================
+--- a/arch/i386/kernel/smpboot.c
++++ b/arch/i386/kernel/smpboot.c
+@@ -763,9 +763,6 @@ static inline struct task_struct * alloc
+ #define alloc_idle_task(cpu) fork_idle(cpu)
+ #endif
+ 
+-/* Defined in head.S */
+-extern struct Xgt_desc_struct early_gdt_descr;
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ /*
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+===================================================================
+--- a/arch/i386/mach-voyager/voyager_smp.c
++++ b/arch/i386/mach-voyager/voyager_smp.c
+@@ -580,6 +580,8 @@ do_boot_cpu(__u8 cpu)
+ 	stack_start.esp = (void *) idle->thread.esp;
+ 
+ 	init_gdt(cpu);
++ 	per_cpu(current_task, cpu) = idle;
++	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+ 	irq_ctx_init(cpu);
+ 
+ 	/* Note: Don't modify initial ss override */
+===================================================================
+--- a/include/asm-i386/processor.h
++++ b/include/asm-i386/processor.h
+@@ -749,6 +749,9 @@ extern void enable_sep_cpu(void);
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
++/* Defined in head.S */
++extern struct Xgt_desc_struct early_gdt_descr;
++
+ extern void cpu_set_gdt(int);
+ extern void switch_to_new_gdt(void);
+ extern void cpu_init(void);
+
