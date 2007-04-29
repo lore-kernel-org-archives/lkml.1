@@ -1,102 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754372AbXD2Ref@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030573AbXD2Reh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754372AbXD2Ref (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 13:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbXD2Rbj
+	id S1030573AbXD2Reh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 13:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXD2Rbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 13:31:39 -0400
-Received: from gw.goop.org ([64.81.55.164]:57190 "EHLO mail.goop.org"
+	Sun, 29 Apr 2007 13:31:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:58982 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030573AbXD2Raj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 13:30:39 -0400
-Message-Id: <20070429172916.655120000@goop.org>
+	id S1754379AbXD2Rac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 13:30:32 -0400
+Message-Id: <20070429172913.887034000@goop.org>
 References: <20070429172835.284784000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Sun, 29 Apr 2007 10:29:05 -0700
+Date: Sun, 29 Apr 2007 10:28:52 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 30/32] xen: diddle netfront
-Content-Disposition: inline; filename=xen-netfront-diddle.patch
+Subject: [patch 17/32] xen: lazy-mmu operations
+Content-Disposition: inline; filename=xen-lazy-mmu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move things around a bit to match xen-unstable netfront.
+This patch uses the lazy-mmu hooks to batch mmu operations where
+possible.  This is primarily useful for batching operations applied to
+active pagetables, which happens during mprotect, munmap, mremap and
+the like (mmap does not do bulk pagetable operations, so it isn't
+helped).
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
 ---
- drivers/net/xen-netfront.c |   36 +++++++++++++++++-------------------
- 1 file changed, 17 insertions(+), 19 deletions(-)
+ arch/i386/xen/enlighten.c  |   56 +++++++++++++++++++++++++++-----------------
+ arch/i386/xen/mmu.c        |   56 ++++++++++++++++++++++++++++++++------------
+ arch/i386/xen/multicalls.c |    4 +--
+ 3 files changed, 78 insertions(+), 38 deletions(-)
 
 ===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -750,19 +750,6 @@ no_skb:
- 		notify_remote_via_irq(np->irq);
- }
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -451,28 +451,38 @@ static void xen_apic_write(unsigned long
  
--static void xennet_move_rx_slot(struct netfront_info *np, struct sk_buff *skb,
--				grant_ref_t ref)
--{
--	int new = xennet_rxidx(np->rx.req_prod_pvt);
--
--	BUG_ON(np->rx_skbs[new]);
--	np->rx_skbs[new] = skb;
--	np->grant_rx_ref[new] = ref;
--	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->id = new;
--	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->gref = ref;
--	np->rx.req_prod_pvt++;
--}
--
- static void xennet_make_frags(struct sk_buff *skb, struct net_device *dev,
- 			      struct netif_tx_request *tx)
+ static void xen_flush_tlb(void)
  {
-@@ -944,6 +931,19 @@ static irqreturn_t netif_int(int irq, vo
- 	spin_unlock_irqrestore(&np->tx_lock, flags);
- 
- 	return IRQ_HANDLED;
-+}
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_TLB_FLUSH_LOCAL;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
 +
-+static void xennet_move_rx_slot(struct netfront_info *np, struct sk_buff *skb,
-+				grant_ref_t ref)
-+{
-+	int new = xennet_rxidx(np->rx.req_prod_pvt);
++	op = mcs.args;
++	op->cmd = MMUEXT_TLB_FLUSH_LOCAL;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
 +
-+	BUG_ON(np->rx_skbs[new]);
-+	np->rx_skbs[new] = skb;
-+	np->grant_rx_ref[new] = ref;
-+	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->id = new;
-+	RING_GET_REQUEST(&np->rx, np->rx.req_prod_pvt)->gref = ref;
-+	np->rx.req_prod_pvt++;
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
  }
  
- static void handle_incoming_queue(struct net_device *dev, struct sk_buff_head *rxq)
-@@ -1169,7 +1169,8 @@ static RING_IDX xennet_fill_frags(struct
- 	return cons;
- }
- 
--static int xennet_set_skb_gso(struct sk_buff *skb, struct netif_extra_info *gso)
-+static int xennet_set_skb_gso(struct sk_buff *skb,
-+			      struct netif_extra_info *gso)
+ static void xen_flush_tlb_single(unsigned long addr)
  {
- 	if (!gso->u.gso.size) {
- 		if (net_ratelimit())
-@@ -1456,11 +1457,8 @@ static void netif_release_rx_bufs(struct
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_INVLPG_LOCAL;
+-	op.arg1.linear_addr = addr & PAGE_MASK;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
++
++	op = mcs.args;
++	op->cmd = MMUEXT_INVLPG_LOCAL;
++	op->arg1.linear_addr = addr & PAGE_MASK;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
  
- 		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
- 			/* Do all the remapping work and M2P updates. */
--			mcl->op = __HYPERVISOR_mmu_update;
--			mcl->args[0] = (unsigned long)np->rx_mmu;
--			mcl->args[1] = mmu - np->rx_mmu;
--			mcl->args[2] = 0;
--			mcl->args[3] = DOMID_SELF;
-+			MULTI_mmu_update(mcl, np->rx_mmu, mmu - np->rx_mmu,
-+					 0, DOMID_SELF);
- 			mcl++;
- 			HYPERVISOR_multicall(np->rx_mcl, mcl - np->rx_mcl);
- 		}
+ static void xen_flush_tlb_others(const cpumask_t *cpus, struct mm_struct *mm,
+ 				 unsigned long va)
+ {
+-	struct mmuext_op op;
++	struct {
++		struct mmuext_op op;
++		cpumask_t mask;
++	} *args;
+ 	cpumask_t cpumask = *cpus;
++	struct multicall_space mcs;
+ 
+ 	/*
+ 	 * A couple of (to be removed) sanity checks:
+@@ -489,17 +499,21 @@ static void xen_flush_tlb_others(const c
+ 	if (cpus_empty(cpumask))
+ 		return;
+ 
++	mcs = xen_mc_entry(sizeof(*args));
++	args = mcs.args;
++	args->mask = cpumask;
++	args->op.arg2.vcpumask = &args->mask;
++
+ 	if (va == TLB_FLUSH_ALL) {
+-		op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+-		op.arg2.vcpumask = (void *)cpus;
++		args->op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+ 	} else {
+-		op.cmd = MMUEXT_INVLPG_MULTI;
+-		op.arg1.linear_addr = va;
+-		op.arg2.vcpumask = (void *)cpus;
+-	}
+-
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++		args->op.cmd = MMUEXT_INVLPG_MULTI;
++		args->op.arg1.linear_addr = va;
++	}
++
++	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+ static unsigned long xen_read_cr2(void)
+===================================================================
+--- a/arch/i386/xen/mmu.c
++++ b/arch/i386/xen/mmu.c
+@@ -56,12 +56,20 @@ void make_lowmem_page_readwrite(void *va
+ 
+ void xen_set_pmd(pmd_t *ptr, pmd_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pmd_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pmd_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ /*
+@@ -104,20 +112,38 @@ void xen_set_pte_at(struct mm_struct *mm
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, pte_t pteval)
+ {
+-	if ((mm != current->mm && mm != &init_mm) ||
+-	    HYPERVISOR_update_va_mapping(addr, pteval, 0) != 0)
+-		xen_set_pte(ptep, pteval);
++	if (mm == current->mm || mm == &init_mm) {
++		if (xen_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
++			struct multicall_space mcs;
++			mcs = xen_mc_entry(0);
++
++			MULTI_update_va_mapping(mcs.mc, addr, pteval, 0);
++			xen_mc_issue(PARAVIRT_LAZY_MMU);
++			return;
++		} else
++			if (HYPERVISOR_update_va_mapping(addr, pteval, 0) == 0)
++				return;
++	}
++	xen_set_pte(ptep, pteval);
+ }
+ 
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pud(pud_t *ptr, pud_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pud_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pud_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+===================================================================
+--- a/arch/i386/xen/multicalls.c
++++ b/arch/i386/xen/multicalls.c
+@@ -5,8 +5,8 @@
+ 
+ #include "multicalls.h"
+ 
+-#define MC_BATCH	8
+-#define MC_ARGS		(MC_BATCH * 32 / sizeof(u64))
++#define MC_BATCH	32
++#define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
+ 
+ struct mc_buffer {
+ 	struct multicall_entry entries[MC_BATCH];
 
 -- 
 
