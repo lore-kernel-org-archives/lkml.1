@@ -1,45 +1,30 @@
-Return-Path: <linux-kernel-owner@vger.kernel.org>
-X-Sieve: CMU Sieve 2.2
+Return-Path: <linux-kernel-owner+akpm=40zip.com.au-S1751250AbXD2PQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbXD0Pgz (ORCPT <rfc822;rjwysocki@sisk.pl>);
-	Fri, 27 Apr 2007 11:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756006AbXD0Pgz
+	id S1751250AbXD2PQI (ORCPT <rfc822;akpm@zip.com.au>);
+	Sun, 29 Apr 2007 11:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756283AbXD2PQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Apr 2007 11:36:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57317 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755874AbXD0Pgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Apr 2007 11:36:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm 0/2] Separate freezer from PM code (take 2)
-Date: Sat, 28 Apr 2007 11:35:55 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-        Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
-        Pekka Enberg <penberg@cs.helsinki.fi>,
-        LKML <linux-kernel@vger.kernel.org>
+	Sun, 29 Apr 2007 11:16:08 -0400
+Received: from naig.caltech.edu ([131.215.239.125]:48441 "EHLO
+	naig.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbXD2PQG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 11:16:06 -0400
+Date: Sun, 29 Apr 2007 17:15:54 +0200
+From: "Mhyar Deisenroth" <Mhyar_Deisenroth@anonpairot.com>
+Reply-To: "Mhyar Deisenroth" <Mhyar_Deisenroth@anonpairot.com>
+Message-ID: <285519889819.703050045182@anonpairot.com>
+To: <mlist-linux-kernel@nntp-server.caltech.edu>
+Subject: Symbol alert.
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200704281135.56275.linux-kernel-owner@vger.kernel.org>
-X-Length: 1307
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
 
-Hi,
+I used those words to make my meaning easier to understand.
+http://s6.bilder-hosting.de/img/VONK3.jpg
+GERMAN EXCHANGES ARE HOT!
 
-The first patch in the series separates the tasks freezer from the PM code and
-moves it to kernel/freezer.c .  No changes to the moved code are made.
-
-The second one moves all of the freezer-specific per-task flags to a separate
-filed of task_struct and defines functions for manipulating them with the help
-of set_bit() and friends.
-
-The patches are against 2.6.21-rc7-mm2 with
-move-frozen_process-to-kernel-power-processc.patch applied.
-
-Greetings,
-Rafael
