@@ -1,154 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031346AbXD2UJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030342AbXD2UOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031346AbXD2UJn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031382AbXD2UJm
+	id S1030342AbXD2UOQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031357AbXD2UOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:09:42 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:15500 "EHLO
-	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1031346AbXD2UJl (ORCPT
+	Sun, 29 Apr 2007 16:14:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38599 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030342AbXD2UOO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:09:41 -0400
-Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Florin Iucha <florin@iucha.net>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070429194129.GA747@bitwizard.nl>
-References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
-	 <20070417195823.943f9472.akpm@linux-foundation.org>
-	 <1176865565.6796.16.camel@heimdal.trondhjem.org>
-	 <20070418033055.GA24044@iucha.net>
-	 <1176868485.6796.42.camel@heimdal.trondhjem.org>
-	 <20070418040730.GC24044@iucha.net>
-	 <20070417211350.ebba1493.akpm@linux-foundation.org>
-	 <20070418043040.GD24044@iucha.net>
-	 <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
-	 <20070417223738.8f49a39f.akpm@linux-foundation.org>
-	 <20070429194129.GA747@bitwizard.nl>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 22:09:38 +0200
-Message-Id: <1177877378.28223.41.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Apr 2007 16:14:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: Linux 2.6.21
+Date: Sun, 29 Apr 2007 22:18:10 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070426040806.GJ3468@stusta.de> <200704292050.56575.rjw@sisk.pl> <20070429191432.GA31445@one.firstfloor.org>
+In-Reply-To: <20070429191432.GA31445@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200704292218.11242.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 21:41 +0200, Rogier Wolff wrote:
-> On Tue, Apr 17, 2007 at 10:37:38PM -0700, Andrew Morton wrote:
-> > Florin, can we please see /proc/meminfo as well?
+On Sunday, 29 April 2007 21:14, Andi Kleen wrote:
+> On Sun, Apr 29, 2007 at 08:50:55PM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 29 April 2007 19:37, Andi Kleen wrote:
+> > > > My personal experience with bugzilla is that it's very unfriendly to
+> > > > reporters.  IMHO it's suitable for tracking unresolved problems along with
+> > > > debug patches, system information etc., but not for _reporting_ new ones.
+> > > 
+> > > What did you find unfriendly? 
 > > 
-> > Also the result of `echo m > /proc/sysrq-trigger'
+> > - You are required to select a category and 'component' for your report, which
+> > often is difficult (especially if you're not a kernel expert)
 > 
-> Hi,
+> Usually there is other and then someone else figures it out.
 > 
-> It's been a while since this thread died out, but maybe I'm 
-> having the same problem. Networking, large part of memory is 
-> buffering writes..... 
+> > - You need to have a bugzilla account (or to create one, if you don't)
+> > - If you want to add an address to the CC list, it must be known to bugzilla
+> > and there's no (obvious) way to check which addresses are known (bugzilla
+> > rejects the report if there's a 'wrong' email address in the list)  [IMO this is
+> > really really broken.]
 > 
-> In my case I'm using NBD. 
+> The Novell bugzilla actually has that fixed. You have a search email button
+> to look up addresses.  Perhaps that feature will be ported someday into
+> the kernel.org one (I would like to have it too) 
 > 
-> Oh, 
+> > - You are asked to provide many details that need not be relevant and casual
+> > reporters don't know that they can skip this part
+> > - Attaching files is tedious and referring to attachments unintuitive
 > 
-> /sys/block/nbd0/stat gives:
->      636       88     5353     1700      991    19554   162272    63156       43  1452000 61802352
-> I put some debugging stuff in nbd, and it DOES NOT KNOW about the
-> 43 requests that the io scheduler claims are in flight at the
-> driver.... 
+> Anyways that are mostly all detail (except the registration requirement) that
+> could be probably all easily fixed.
+> 
+> > And I think they are two _totally_ conceptually different things.  You report
+> > a bug to let somebody know that there's a problem and this doesn't necessarily
+> 
+> The problem is we need a way to route those reports to the right people.
+> Routing it to a single person or broadcasting it just doesn't scale.
+> And the best way I know of is to use some database that keeps track of the state.
+> 
+> That is what bugzilla is essentially.
+> 
+> > For this reason there should be a simple means of filing initial bug reports
+> > with someone to look at them and forward them to appropriate people who will
+> > decide if the problem needs to be tracked.  If they do, it's time to use
+> > bugzilla.  Not earlier.
+> 
+> The only sane way to do that would be to save them somewhere and keep
+> a list and then let a group of people process them.
 
-AFAIK nbd is a tad broken; the following patch used to fix it, although
-not in the proper way. Hence it never got merged.
+But emailed reports _are_ saved anyway and we _know_ how to get a copy.
+>From lkml.org, for example.  Why don't we use that?  The only missing piece
+is the 'keep a list' thing, but that's not a rocket science, IMHO.
 
-There is a race where the plug state of the device queue gets confused,
-which causes requests to just sit on the queue, without further action.
+[For example, you can create a bugzilla entry with a link to the lkml.org copy
+of the relevant message, so why to require the reporter to file the report with
+the bugzilla himself?]
 
----
+_Moreover_, some LKML archives, for example at http://marc.info/?l=linux-kernel,
+keep track of each thread separately, so you can browse any of them at any
+time.  In particular, you can see the _history_ of each bug report sent to LKML
+if you have a link to any message in its thread.
 
-Subject: nbd: request_fn fixup
+Really, if we ask reporters to put '[BUG]' in the subjects of their messages,
+you'll even be able to use the lkml.org archives plus wget and a couple of
+shell scripts to cherry pick the links to all bug reports sent to the list
+within a given time interval.
 
-Dropping the queue_lock opens up a nasty race, fix this race by
-plugging the device when we're done.
+All of this functionality is out there already.
 
-Also includes a small cleanup.
+> Hmm, wait... sounds like bugzilla, doesn't it?
+> 
+> > You are right, email is not suitable for tracking bugs.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Daniel Phillips <phillips@google.com>
-CC: Pavel Machek <pavel@ucw.cz>
----
- drivers/block/nbd.c |   67 ++++++++++++++++++++++++++++++++++++++--------------
- 1 file changed, 49 insertions(+), 18 deletions(-)
+Well, now, I think that even this statement is not exactly right. :-)
 
-Index: linux-2.6/drivers/block/nbd.c
-===================================================================
---- linux-2.6.orig/drivers/block/nbd.c	2006-09-07 17:20:52.000000000 +0200
-+++ linux-2.6/drivers/block/nbd.c	2006-09-07 17:35:05.000000000 +0200
-@@ -97,20 +97,24 @@ static const char *nbdcmd_to_ascii(int c
- }
- #endif /* NDEBUG */
- 
--static void nbd_end_request(struct request *req)
-+static void __nbd_end_request(struct request *req)
- {
- 	int uptodate = (req->errors == 0) ? 1 : 0;
--	request_queue_t *q = req->q;
--	unsigned long flags;
- 
- 	dprintk(DBG_BLKDEV, "%s: request %p: %s\n", req->rq_disk->disk_name,
- 			req, uptodate? "done": "failed");
- 
--	spin_lock_irqsave(q->queue_lock, flags);
--	if (!end_that_request_first(req, uptodate, req->nr_sectors)) {
-+	if (!end_that_request_first(req, uptodate, req->nr_sectors))
- 		end_that_request_last(req, uptodate);
--	}
--	spin_unlock_irqrestore(q->queue_lock, flags);
-+}
-+
-+static void nbd_end_request(struct request *req)
-+{
-+	request_queue_t *q = req->q;
-+
-+	spin_lock_irq(q->queue_lock);
-+	__nbd_end_request(req);
-+	spin_unlock_irq(q->queue_lock);
- }
- 
- /*
-@@ -435,10 +439,8 @@ static void do_nbd_request(request_queue
- 			mutex_unlock(&lo->tx_lock);
- 			printk(KERN_ERR "%s: Attempted send on closed socket\n",
- 			       lo->disk->disk_name);
--			req->errors++;
--			nbd_end_request(req);
- 			spin_lock_irq(q->queue_lock);
--			continue;
-+			goto error_out;
- 		}
- 
- 		lo->active_req = req;
-@@ -463,10 +465,13 @@ static void do_nbd_request(request_queue
- 
- error_out:
- 		req->errors++;
--		spin_unlock(q->queue_lock);
--		nbd_end_request(req);
--		spin_lock(q->queue_lock);
-+		__nbd_end_request(req);
- 	}
-+	/*
-+	 * q->queue_lock has been dropped, this opens up a race
-+	 * plug the device to close it.
-+	 */
-+	blk_plug_device(q);
- 	return;
- }
- 
+> > Still, it works quite well as a means of sending initial reports.
+>
+> I disagree. It works small scale but does not really scale well.
 
+IMO that depends on how you handle it.
 
+Greetings,
+Rafael
