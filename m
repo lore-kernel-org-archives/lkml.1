@@ -1,78 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbXD2UDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031346AbXD2UJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752869AbXD2UDj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 16:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbXD2UDj
+	id S1031346AbXD2UJn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 16:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031382AbXD2UJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 16:03:39 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:2840 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbXD2UDi (ORCPT
+	Sun, 29 Apr 2007 16:09:42 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:15500 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1031346AbXD2UJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 16:03:38 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: Best nice level for X with SD
-Date: Sun, 29 Apr 2007 22:03:34 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-References: <200704241552.52552.Martin@lichtvoll.de> <200704262211.53393.Martin@lichtvoll.de> <200704271011.21340.Martin@lichtvoll.de> (sfid-20070427_101601_340096_0740B834)
-In-Reply-To: <200704271011.21340.Martin@lichtvoll.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 29 Apr 2007 16:09:41 -0400
+Subject: Re: [PATCH 0/4] 2.6.21-rc7 NFS writes: fix a series of issues
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Florin Iucha <florin@iucha.net>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070429194129.GA747@bitwizard.nl>
+References: <20070418011946.11679.34920.stgit@heimdal.trondhjem.org>
+	 <20070417195823.943f9472.akpm@linux-foundation.org>
+	 <1176865565.6796.16.camel@heimdal.trondhjem.org>
+	 <20070418033055.GA24044@iucha.net>
+	 <1176868485.6796.42.camel@heimdal.trondhjem.org>
+	 <20070418040730.GC24044@iucha.net>
+	 <20070417211350.ebba1493.akpm@linux-foundation.org>
+	 <20070418043040.GD24044@iucha.net>
+	 <alpine.LFD.0.98.0704172148490.31155@woody.linux-foundation.org>
+	 <20070417223738.8f49a39f.akpm@linux-foundation.org>
+	 <20070429194129.GA747@bitwizard.nl>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 22:09:38 +0200
+Message-Id: <1177877378.28223.41.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704292203.34783.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 27 April 2007 schrieb Martin Steigerwald:
-> Am Freitag 27 April 2007 schrieb Con Kolivas:
-> > Clearly there are some serious regressions for audio playback with
-> > CFS. This is incredible effort to go to with CFS.
->
-> Hi Con!
->
-> Well, at least on my two ThinkPads T42 and T23.
->
-> I perceive sd-0.46 as more mature as CFSv6. And if asked to include one
-> of them in the kernel *right now* or *soonish*, I would probably choose
-> sd-0.46 and give Ingo a bit more time.
+On Sun, 2007-04-29 at 21:41 +0200, Rogier Wolff wrote:
+> On Tue, Apr 17, 2007 at 10:37:38PM -0700, Andrew Morton wrote:
+> > Florin, can we please see /proc/meminfo as well?
+> > 
+> > Also the result of `echo m > /proc/sysrq-trigger'
+> 
+> Hi,
+> 
+> It's been a while since this thread died out, but maybe I'm 
+> having the same problem. Networking, large part of memory is 
+> buffering writes..... 
+> 
+> In my case I'm using NBD. 
+> 
+> Oh, 
+> 
+> /sys/block/nbd0/stat gives:
+>      636       88     5353     1700      991    19554   162272    63156       43  1452000 61802352
+> I put some debugging stuff in nbd, and it DOES NOT KNOW about the
+> 43 requests that the io scheduler claims are in flight at the
+> driver.... 
 
-Hi!
+AFAIK nbd is a tad broken; the following patch used to fix it, although
+not in the proper way. Hence it never got merged.
 
-I tried cfs-v7 where Ingo fixed a 'big bug' he found while looking at the 
-debug data I provided to him.
+There is a race where the plug state of the device queue gets confused,
+which causes requests to just sit on the queue, without further action.
 
-Well, its rocking now on both my Amarok machine, the T23, and the T42. 
-Absolutely smooth music playback, no matter what. No freezes anymore 
-whatsoever.
+---
 
-Even when stress testing with my usual naive user tests, having make-kpkg 
-linux_image running, starting tons of apps and solid moving Amarok window 
-like mad - that was on my T23.  On my T42 I repeated that Kaffeine test, 
-playing a video with it, while moving the window like mad, no complete 
-freezes anymore...
+Subject: nbd: request_fn fixup
 
-Congrats, Ingo! cfs-v7 is rocking now ;-).
+Dropping the queue_lock opens up a nasty race, fix this race by
+plugging the device when we're done.
+
+Also includes a small cleanup.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Daniel Phillips <phillips@google.com>
+CC: Pavel Machek <pavel@ucw.cz>
+---
+ drivers/block/nbd.c |   67 ++++++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 49 insertions(+), 18 deletions(-)
+
+Index: linux-2.6/drivers/block/nbd.c
+===================================================================
+--- linux-2.6.orig/drivers/block/nbd.c	2006-09-07 17:20:52.000000000 +0200
++++ linux-2.6/drivers/block/nbd.c	2006-09-07 17:35:05.000000000 +0200
+@@ -97,20 +97,24 @@ static const char *nbdcmd_to_ascii(int c
+ }
+ #endif /* NDEBUG */
+ 
+-static void nbd_end_request(struct request *req)
++static void __nbd_end_request(struct request *req)
+ {
+ 	int uptodate = (req->errors == 0) ? 1 : 0;
+-	request_queue_t *q = req->q;
+-	unsigned long flags;
+ 
+ 	dprintk(DBG_BLKDEV, "%s: request %p: %s\n", req->rq_disk->disk_name,
+ 			req, uptodate? "done": "failed");
+ 
+-	spin_lock_irqsave(q->queue_lock, flags);
+-	if (!end_that_request_first(req, uptodate, req->nr_sectors)) {
++	if (!end_that_request_first(req, uptodate, req->nr_sectors))
+ 		end_that_request_last(req, uptodate);
+-	}
+-	spin_unlock_irqrestore(q->queue_lock, flags);
++}
++
++static void nbd_end_request(struct request *req)
++{
++	request_queue_t *q = req->q;
++
++	spin_lock_irq(q->queue_lock);
++	__nbd_end_request(req);
++	spin_unlock_irq(q->queue_lock);
+ }
+ 
+ /*
+@@ -435,10 +439,8 @@ static void do_nbd_request(request_queue
+ 			mutex_unlock(&lo->tx_lock);
+ 			printk(KERN_ERR "%s: Attempted send on closed socket\n",
+ 			       lo->disk->disk_name);
+-			req->errors++;
+-			nbd_end_request(req);
+ 			spin_lock_irq(q->queue_lock);
+-			continue;
++			goto error_out;
+ 		}
+ 
+ 		lo->active_req = req;
+@@ -463,10 +465,13 @@ static void do_nbd_request(request_queue
+ 
+ error_out:
+ 		req->errors++;
+-		spin_unlock(q->queue_lock);
+-		nbd_end_request(req);
+-		spin_lock(q->queue_lock);
++		__nbd_end_request(req);
+ 	}
++	/*
++	 * q->queue_lock has been dropped, this opens up a race
++	 * plug the device to close it.
++	 */
++	blk_plug_device(q);
+ 	return;
+ }
+ 
 
 
-Tested on 2.6.21.1 with sws2 2.2.9.13, dynticks and CONFIG_HZ=300 as the 
-older kernels I tested with.
-
-That is without X renicing just like I run sd-0.46 as well.
-
-Now it seems that I have *two* schedulers to choose from. ;-) I am 
-satisfied with both sd-0.46 and cfs-v7 now.
-
-Actually cfs-v7 feels a bit smoother for me now. Thats nothing concrete at 
-the moment, nothing I can get a hold of it.  cfs-v7 just feels a bit 
-smoother to me.
-
-Will do some longer term testing with cfs-v7 now.
-
-Regards,
--- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
