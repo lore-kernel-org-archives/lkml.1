@@ -1,46 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161397AbXD2V0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161430AbXD2Vaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161397AbXD2V0r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 17:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161430AbXD2V0r
+	id S1161430AbXD2Vaf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 17:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161444AbXD2Vaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 17:26:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40189 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161397AbXD2V0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 17:26:46 -0400
-Date: Sun, 29 Apr 2007 23:26:43 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: David Miller <davem@davemloft.net>
-Cc: andi@firstfloor.org, torvalds@linux-foundation.org, bunk@stusta.de,
-       diegocg@gmail.com, cebbert@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.21
-Message-ID: <20070429212643.GA32750@one.firstfloor.org>
-References: <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org> <20070429.130143.21926295.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070429.130143.21926295.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 29 Apr 2007 17:30:35 -0400
+Received: from main.gmane.org ([80.91.229.2]:46353 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161430AbXD2VaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 17:30:10 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bart Oldeman <bartoldeman@users.sourceforge.net>
+Subject: Re: [PATCH] [FAT] fix VFAT compat ioctls on 64-bit systems
+Date: Sun, 29 Apr 2007 21:24:31 +0000 (UTC)
+Message-ID: <slrnf3a38j.vjp.enbeo@localhost.localdomain>
+References: <Pine.LNX.4.64.0704291342180.18631@localhost.localdomain> <87fy6j0xdx.fsf@duaron.myhome.or.jp>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: modemcable013.103-131-66.mc.videotron.ca
+User-Agent: slrn/0.9.8.1pl1 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I reported a bug that eats people's hard disks due to a bug
-> in the X.ORG PCI support code on sparc, NOBODY has fixed
-> the bug in 2 years even though a full bugzilla entry with
-> even a full patch fix is in there.
+On 2007-04-29, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> wrote:
+>
+> I think we should use filldir() callback on compat_ioctl too, and it
+> should fix all bugs of compat code.
+>
+> The untested patch is below, although the code seems not clean
+> enough. What do you think?
 
-Well but at least they could find it again if they wanted.
-If you sent it by email and it had gotten lost for some reason
-(nobody interested, which seems to be the real issue here) then
-it would be lost forever.
+There is one problem:
+-		ret = __fat_readdir(inode, filp, &buf, fat_ioctl_filldir,
++		ret = __fat_readdir(inode, filp, &buf, filldir,
 
-Of course a database is not a silver bullet by itself, it still
-needs people to use it correctly and then actually work on the bugs.
+With that change it works and this solution looks cleaner then my
+patch.
 
-A database just a tool to move some work humans are bad at (keeping track 
-of a lot of data and deriving trends out of it) to a a computer which is 
-much better at this.
+Signed-off-by: Bart Oldeman <bartoldeman@users.sourceforge.net> 
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> 
 
--Andi
+--- linux-2.6/fs/fat/dir.c.old	2007-04-29 16:03:55.000000000 -0400
++++ linux-2.6/fs/fat/dir.c	2007-04-29 16:54:43.000000000 -0400
+@@ -422,7 +422,7 @@ EODir:
+ EXPORT_SYMBOL_GPL(fat_search_long);
+ 
+ struct fat_ioctl_filldir_callback {
+-	struct dirent __user *dirent;
++	void __user *dirent;
+ 	int result;
+ 	/* for dir ioctl */
+ 	const char *longname;
+@@ -647,62 +647,85 @@ static int fat_readdir(struct file *filp
+ 	return __fat_readdir(inode, filp, dirent, filldir, 0, 0);
+ }
+ 
+-static int fat_ioctl_filldir(void *__buf, const char *name, int name_len,
+-			     loff_t offset, u64 ino, unsigned int d_type)
++#define FAT_IOCTL_FILLDIR_FUNC(func, dirent_type)			   \
++static int func(void *__buf, const char *name, int name_len,		   \
++			     loff_t offset, u64 ino, unsigned int d_type)  \
++{									   \
++	struct fat_ioctl_filldir_callback *buf = __buf;			   \
++	struct dirent_type __user *d1 = buf->dirent;			   \
++	struct dirent_type __user *d2 = d1 + 1;				   \
++									   \
++	if (buf->result)						   \
++		return -EINVAL;						   \
++	buf->result++;							   \
++									   \
++	if (name != NULL) {						   \
++		/* dirent has only short name */			   \
++		if (name_len >= sizeof(d1->d_name))			   \
++			name_len = sizeof(d1->d_name) - 1;		   \
++									   \
++		if (put_user(0, d2->d_name)			||	   \
++		    put_user(0, &d2->d_reclen)			||	   \
++		    copy_to_user(d1->d_name, name, name_len)	||	   \
++		    put_user(0, d1->d_name + name_len)		||	   \
++		    put_user(name_len, &d1->d_reclen))			   \
++			goto efault;					   \
++	} else {							   \
++		/* dirent has short and long name */			   \
++		const char *longname = buf->longname;			   \
++		int long_len = buf->long_len;				   \
++		const char *shortname = buf->shortname;			   \
++		int short_len = buf->short_len;				   \
++									   \
++		if (long_len >= sizeof(d1->d_name))			   \
++			long_len = sizeof(d1->d_name) - 1;		   \
++		if (short_len >= sizeof(d1->d_name))			   \
++			short_len = sizeof(d1->d_name) - 1;		   \
++									   \
++		if (copy_to_user(d2->d_name, longname, long_len)	|| \
++		    put_user(0, d2->d_name + long_len)			|| \
++		    put_user(long_len, &d2->d_reclen)			|| \
++		    put_user(ino, &d2->d_ino)				|| \
++		    put_user(offset, &d2->d_off)			|| \
++		    copy_to_user(d1->d_name, shortname, short_len)	|| \
++		    put_user(0, d1->d_name + short_len)			|| \
++		    put_user(short_len, &d1->d_reclen))			   \
++			goto efault;					   \
++	}								   \
++	return 0;							   \
++efault:									   \
++	buf->result = -EFAULT;						   \
++	return -EFAULT;							   \
++}
++
++FAT_IOCTL_FILLDIR_FUNC(fat_ioctl_filldir, dirent)
++
++static int fat_ioctl_readdir(struct inode *inode, struct file *filp,
++			     void __user *dirent, filldir_t filldir,
++			     int short_only, int both)
+ {
+-	struct fat_ioctl_filldir_callback *buf = __buf;
+-	struct dirent __user *d1 = buf->dirent;
+-	struct dirent __user *d2 = d1 + 1;
+-
+-	if (buf->result)
+-		return -EINVAL;
+-	buf->result++;
+-
+-	if (name != NULL) {
+-		/* dirent has only short name */
+-		if (name_len >= sizeof(d1->d_name))
+-			name_len = sizeof(d1->d_name) - 1;
+-
+-		if (put_user(0, d2->d_name)			||
+-		    put_user(0, &d2->d_reclen)			||
+-		    copy_to_user(d1->d_name, name, name_len)	||
+-		    put_user(0, d1->d_name + name_len)		||
+-		    put_user(name_len, &d1->d_reclen))
+-			goto efault;
+-	} else {
+-		/* dirent has short and long name */
+-		const char *longname = buf->longname;
+-		int long_len = buf->long_len;
+-		const char *shortname = buf->shortname;
+-		int short_len = buf->short_len;
+-
+-		if (long_len >= sizeof(d1->d_name))
+-			long_len = sizeof(d1->d_name) - 1;
+-		if (short_len >= sizeof(d1->d_name))
+-			short_len = sizeof(d1->d_name) - 1;
+-
+-		if (copy_to_user(d2->d_name, longname, long_len)	||
+-		    put_user(0, d2->d_name + long_len)			||
+-		    put_user(long_len, &d2->d_reclen)			||
+-		    put_user(ino, &d2->d_ino)				||
+-		    put_user(offset, &d2->d_off)			||
+-		    copy_to_user(d1->d_name, shortname, short_len)	||
+-		    put_user(0, d1->d_name + short_len)			||
+-		    put_user(short_len, &d1->d_reclen))
+-			goto efault;
++	struct fat_ioctl_filldir_callback buf;
++	int ret;
++
++	buf.dirent = dirent;
++	buf.result = 0;
++	mutex_lock(&inode->i_mutex);
++	ret = -ENOENT;
++	if (!IS_DEADDIR(inode)) {
++		ret = __fat_readdir(inode, filp, &buf, filldir,
++				    short_only, both);
+ 	}
+-	return 0;
+-efault:
+-	buf->result = -EFAULT;
+-	return -EFAULT;
++	mutex_unlock(&inode->i_mutex);
++	if (ret >= 0)
++		ret = buf.result;
++	return ret;
+ }
+ 
+-static int fat_dir_ioctl(struct inode * inode, struct file * filp,
+-		  unsigned int cmd, unsigned long arg)
++static int fat_dir_ioctl(struct inode *inode, struct file *filp,
++			 unsigned int cmd, unsigned long arg)
+ {
+-	struct fat_ioctl_filldir_callback buf;
+-	struct dirent __user *d1;
+-	int ret, short_only, both;
++	struct dirent __user *d1 = (struct dirent __user *)arg;
++	int short_only, both;
+ 
+ 	switch (cmd) {
+ 	case VFAT_IOCTL_READDIR_SHORT:
+@@ -717,7 +740,6 @@ static int fat_dir_ioctl(struct inode * 
+ 		return fat_generic_ioctl(inode, filp, cmd, arg);
+ 	}
+ 
+-	d1 = (struct dirent __user *)arg;
+ 	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct dirent[2])))
+ 		return -EFAULT;
+ 	/*
+@@ -728,69 +750,48 @@ static int fat_dir_ioctl(struct inode * 
+ 	if (put_user(0, &d1->d_reclen))
+ 		return -EFAULT;
+ 
+-	buf.dirent = d1;
+-	buf.result = 0;
+-	mutex_lock(&inode->i_mutex);
+-	ret = -ENOENT;
+-	if (!IS_DEADDIR(inode)) {
+-		ret = __fat_readdir(inode, filp, &buf, fat_ioctl_filldir,
+-				    short_only, both);
+-	}
+-	mutex_unlock(&inode->i_mutex);
+-	if (ret >= 0)
+-		ret = buf.result;
+-	return ret;
++	return fat_ioctl_readdir(inode, filp, d1, fat_ioctl_filldir,
++				 short_only, both);
+ }
+ 
+ #ifdef CONFIG_COMPAT
+ #define	VFAT_IOCTL_READDIR_BOTH32	_IOR('r', 1, struct compat_dirent[2])
+ #define	VFAT_IOCTL_READDIR_SHORT32	_IOR('r', 2, struct compat_dirent[2])
+ 
+-static long fat_compat_put_dirent32(struct dirent *d,
+-				    struct compat_dirent __user *d32)
+-{
+-        if (!access_ok(VERIFY_WRITE, d32, sizeof(struct compat_dirent)))
+-                return -EFAULT;
++FAT_IOCTL_FILLDIR_FUNC(fat_compat_ioctl_filldir, compat_dirent)
+ 
+-        __put_user(d->d_ino, &d32->d_ino);
+-        __put_user(d->d_off, &d32->d_off);
+-        __put_user(d->d_reclen, &d32->d_reclen);
+-        if (__copy_to_user(d32->d_name, d->d_name, d->d_reclen))
+-		return -EFAULT;
+-
+-        return 0;
+-}
+-
+-static long fat_compat_dir_ioctl(struct file *file, unsigned cmd,
++static long fat_compat_dir_ioctl(struct file *filp, unsigned cmd,
+ 				 unsigned long arg)
+ {
+-	struct compat_dirent __user *p = compat_ptr(arg);
+-	int ret;
+-	mm_segment_t oldfs = get_fs();
+-	struct dirent d[2];
++	struct inode *inode = filp->f_path.dentry->d_inode;
++	struct compat_dirent __user *d1 = compat_ptr(arg);
++	int short_only, both;
+ 
+ 	switch (cmd) {
+-	case VFAT_IOCTL_READDIR_BOTH32:
+-		cmd = VFAT_IOCTL_READDIR_BOTH;
+-		break;
+ 	case VFAT_IOCTL_READDIR_SHORT32:
+-		cmd = VFAT_IOCTL_READDIR_SHORT;
++		short_only = 1;
++		both = 0;
++		break;
++	case VFAT_IOCTL_READDIR_BOTH32:
++		short_only = 0;
++		both = 1;
+ 		break;
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
+ 
+-	set_fs(KERNEL_DS);
+-	lock_kernel();
+-	ret = fat_dir_ioctl(file->f_path.dentry->d_inode, file,
+-			    cmd, (unsigned long) &d);
+-	unlock_kernel();
+-	set_fs(oldfs);
+-	if (ret >= 0) {
+-		ret |= fat_compat_put_dirent32(&d[0], p);
+-		ret |= fat_compat_put_dirent32(&d[1], p + 1);
+-	}
+-	return ret;
++	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct compat_dirent[2])))
++		return -EFAULT;
++	/*
++	 * Yes, we don't need this put_user() absolutely. However old
++	 * code didn't return the right value. So, app use this value,
++	 * in order to check whether it is EOF.
++	 */
++	if (put_user(0, &d1->d_reclen))
++		return -EFAULT;
++
++	return fat_ioctl_readdir(inode, filp, d1, fat_compat_ioctl_filldir,
++				 short_only, both);
+ }
+ #endif /* CONFIG_COMPAT */
+ 
+
