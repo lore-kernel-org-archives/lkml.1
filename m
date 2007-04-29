@@ -1,74 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbXD2LSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbXD2LXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756363AbXD2LSD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 07:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756369AbXD2LSD
+	id S1756370AbXD2LXI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 07:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbXD2LXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 07:18:03 -0400
-Received: from styx.suse.cz ([82.119.242.94]:53822 "EHLO mail.suse.cz"
+	Sun, 29 Apr 2007 07:23:08 -0400
+Received: from www.osadl.org ([213.239.205.134]:60596 "EHLO mail.tglx.de"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756371AbXD2LSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 07:18:00 -0400
-Date: Sun, 29 Apr 2007 13:18:31 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Vincent ETIENNE <ve@vetienne.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>,
+	id S1756371AbXD2LXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 07:23:05 -0400
+Subject: Re: [patch] CFS scheduler, -v6
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net, Paul Walmsley <paul@booyaka.com>
-Subject: Re: [linux-usb-devel] USB HID bug (was [PROBLEM] Bonding driver in
- linux-2.6.21-rc6-mm1)
-In-Reply-To: <200704282243.54950.ve@vetienne.net>
-Message-ID: <Pine.LNX.4.64.0704291315080.7370@jikos.suse.cz>
-References: <Pine.LNX.4.44L0.0704281547260.14565-100000@netrider.rowland.org>
- <200704282243.54950.ve@vetienne.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+In-Reply-To: <1177843688.9756.28.camel@localhost>
+References: <20070425214704.GA32572@elte.hu>
+	 <1177596399.14496.1.camel@localhost>
+	 <200704261041.04838.gene.heskett@gmail.com>
+	 <1177618164.14496.5.camel@localhost> <20070427115344.GA30706@elte.hu>
+	 <20070427115526.GA7699@elte.hu> <1177774551.21279.8.camel@localhost>
+	 <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu>
+	 <20070429065900.GB32281@elte.hu>  <20070429071627.GC23638@1wt.eu>
+	 <1177842654.5791.85.camel@localhost.localdomain>
+	 <1177843688.9756.28.camel@localhost>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 13:25:12 +0200
+Message-Id: <1177845912.5791.87.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007, Vincent ETIENNE wrote:
+On Sun, 2007-04-29 at 12:48 +0200, Kasper Sandberg wrote:
+> On Sun, 2007-04-29 at 12:30 +0200, Thomas Gleixner wrote:
+> > Willy,
+> <snip>
+> > As a sidenote: I really wonder if anybody noticed yet, that the whole
+> > CFS / SD comparison is so ridiculous, that it is not even funny anymore.
+> > CFS modifies the scheduler and nothing else, SD fiddles all over the
+> > kernel in interesting ways. 
+> > 
+> 
+> have you looked at diffstat lately? :)
+> 
+> sd:
+>  Documentation/sched-design.txt  |  241 +++++++
+>  Documentation/sysctl/kernel.txt |   14
+>  Makefile                        |    2
+>  fs/pipe.c                       |    7
+>  fs/proc/array.c                 |    2
+>  include/linux/init_task.h       |    4
+>  include/linux/sched.h           |   32 -
+>  kernel/sched.c                  | 1279
+> +++++++++++++++++++---------------------
+>  kernel/softirq.c                |    2
+>  kernel/sysctl.c                 |   26
+>  kernel/workqueue.c              |    2
+>  11 files changed, 919 insertions(+), 692 deletions(-)
+> 
+> cfs:
+>  Documentation/kernel-parameters.txt |   43
+>  Documentation/sched-design-CFS.txt  |  107 +
+>  Makefile                            |    2
+>  arch/i386/kernel/smpboot.c          |   13
+>  arch/i386/kernel/tsc.c              |    8
+>  arch/ia64/kernel/setup.c            |    6
+>  arch/mips/kernel/smp.c              |   11
+>  arch/sparc/kernel/smp.c             |   10
+>  arch/sparc64/kernel/smp.c           |   36
+>  fs/proc/array.c                     |   11
+>  fs/proc/base.c                      |    2
+>  fs/proc/internal.h                  |    1
+>  include/asm-i386/unistd.h           |    3
+>  include/asm-x86_64/unistd.h         |    4
+>  include/linux/hardirq.h             |   13
+>  include/linux/sched.h               |   94 +
+>  init/main.c                         |    2
+>  kernel/exit.c                       |    3
+>  kernel/fork.c                       |    4
+>  kernel/posix-cpu-timers.c           |   34
+>  kernel/sched.c                      | 2288
+> +++++++++---------------------------
+>  kernel/sched_debug.c                |  152 ++
+>  kernel/sched_fair.c                 |  601 +++++++++
+>  kernel/sched_rt.c                   |  184 ++
+>  kernel/sched_stats.h                |  235 +++
+>  kernel/sysctl.c                     |   32
+>  26 files changed, 2062 insertions(+), 1837 deletions(-)
 
-> > No, it isn't a problem in the USB core.  The device itself is messed up;
-> > it really does report idVendor and idProduct both equal to 0.
-> So is it just a scary trace but without consequence that i could ignored 
-> ? May i ask you what is the device which is messed up ? ( Maybe should i 
-> change it ? )
+Sorry, my bad. I looked at a diffstat of the ck full set. Not only the
+SD part of it.
 
-Hi Vincent,
-
-yes, the device is messed up, but it shouldn't have any consequences for 
-you - the HID driver is able to correctly handle that, so as soon as we 
-don't need to add any extra quirks for such device, everything should be 
-fine. I have removed the WARN_ON from the code in my tree. I think we 
-still don't want users to add quirks for such broken devices (as it would 
-collide with hid_blakclist[] terminator), so I have left the initial 
-condition in usbhid_modify_dquirk() untouched.
+	tglx
 
 
-From: Jiri Kosina <jkosina@suse.cz>
-
-USB HID: don't warn on idVendor == 0
-
-It turns out that there are broken devices out there that incorrectly
-report VID/PID as 0x000, see http://lkml.org/lkml/2007/4/27/496
-
-Therefore we should not confuse users by dumping warnings and stacktraces
-in such situation. It is not possible to add quirks for such horribly
-broken devices, but currently that's not needed.
-
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index 27188bd..17a8755 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -477,8 +477,6 @@ static struct hid_blacklist *usbhid_exis
- 	struct quirks_list_struct *q;
- 	struct hid_blacklist *bl_entry = NULL;
- 
--	WARN_ON(idVendor == 0);
--
- 	list_for_each_entry(q, &dquirks_list, node) {
- 		if (q->hid_bl_item.idVendor == idVendor &&
- 				q->hid_bl_item.idProduct == idProduct) {
