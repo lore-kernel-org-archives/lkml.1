@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755029AbXD2HnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbXD2Hug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755029AbXD2HnZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 03:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbXD2HnZ
+	id S1756312AbXD2Hug (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 03:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbXD2Hug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 03:43:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:55414 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754958AbXD2HnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 03:43:24 -0400
-Message-ID: <46344CA5.6000900@goop.org>
-Date: Sun, 29 Apr 2007 00:43:33 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sun, 29 Apr 2007 03:50:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:49768 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756309AbXD2Huf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 03:50:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=HZYC2QDKSFz2tghslI4BgNLnJQuF7yFsJo+ZC8kpyMqLd+DGD7/kHSEWDJg2/kwU6JwnAuRhSqR/F46L3+iSj1VsvBB7um02yK4dGMwISV41k8n3IA+nyBFcUh6Y1zB31Bdt/Q/G4wTtt7IF/S20fsnIX/yF8RqyuxPrzTQ37lo=
+Message-ID: <46344E45.8040701@gmail.com>
+Date: Sun, 29 Apr 2007 16:50:29 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Subject: Re: [PATCH 22/25] xen: xen-netfront: use skb.cb for storing private
- data
-References: <20070423215638.563901986@goop.org> <20070423215713.550883195@goop.org> <20070424014528.GA27789@gondor.apana.org.au> <462D88EF.9030007@goop.org> <20070424055731.GA30018@gondor.apana.org.au> <46327706.80508@goop.org> <20070427223742.GA2742@gondor.apana.org.au> <463286D9.7090609@goop.org> <20070428062839.GA6535@gondor.apana.org.au>
-In-Reply-To: <20070428062839.GA6535@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jeff@garzik.org>
+CC: Rolf Eike Beer <eike-kernel@sf-tec.de>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: [DOC] Fix wrong identifier name in Documentation/driver-model/devres.txt
+References: <200704260926.33826.eike-kernel@sf-tec.de> <463364CF.20801@garzik.org>
+In-Reply-To: <463364CF.20801@garzik.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> BTW, the version I posted to you is missing the following line.
->   
-> --- linux-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:16.000000000 +1000
-> +++ build-2.6.20.i386/drivers/xen/core/skbuff.c	2007-04-28 15:30:52.000000000 +1000
-> @@ -89,6 +89,7 @@
->  	skb->h.raw = (unsigned char *)skb->nh.iph + 4*skb->nh.iph->ihl;
->  	if (skb->h.raw >= skb->tail)
->  		goto out;
-> +	skb->csum_start = skb->h.raw - skb->head;
->  	switch (skb->nh.iph->protocol) {
->  	case IPPROTO_TCP:
->  		skb->csum_offset = offsetof(struct tcphdr, check);
->   
+Jeff Garzik wrote:
+> Now that devres is in the kernel, I don't think I am the best person to
+> merge these sort of patches.  Certainly I can, and I know the code from
+> my original review and subsequent usage, but I think the patch is more
+> appropriate for Greg, going through normal maintainership channels.
+> 
+> IOW, I think devres is too generic to be queued via libata-dev.git.
+> 
+> Tejun, comments?
 
-drivers/xen/core/skbuff.c?  What's that?
+I don't have problem either way.  If it's okay with Greg, I'll queue
+future devres updates through Greg.
 
-    J
+BTW, converting network drivers to devres is on my ever-growing todo
+list and when those are done they will go through you, Jeff.  :-)
+
+-- 
+tejun
