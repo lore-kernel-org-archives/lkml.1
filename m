@@ -1,170 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161523AbXD2XD5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161532AbXD2XHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161523AbXD2XD5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:03:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161532AbXD2XD5
+	id S1161532AbXD2XHh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 19:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161535AbXD2XHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:03:57 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42122 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161523AbXD2XDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:03:55 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Mon, 30 Apr 2007 01:03:14 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [GIT PULL] ieee1394 updates post 2.6.21
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net
-Message-ID: <tkrat.1171a59b9de88f9c@s5r6.in-berlin.de>
+	Sun, 29 Apr 2007 19:07:36 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:1973 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161532AbXD2XHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 19:07:35 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: Bart Oldeman <bartoldeman@users.sourceforge.net>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [FAT] fix VFAT compat ioctls on 64-bit systems
+References: <Pine.LNX.4.64.0704291730040.32422@localhost.localdomain>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Mon, 30 Apr 2007 08:07:26 +0900
+In-Reply-To: <Pine.LNX.4.64.0704291730040.32422@localhost.localdomain> (Bart Oldeman's message of "Sun\, 29 Apr 2007 17\:31\:40 -0400 \(EDT\)")
+Message-ID: <87bqh63hld.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.0.98 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from the for-linus branch at
+Bart Oldeman <bartoldeman@users.sourceforge.net> writes:
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+> I found your reply on linux-kernel via an archive but am not subscribed.
 
-to receive IEEE 1394 subsystem updates as listed further below.
-They are mostly cleanups in ieee1394 core and in eth1394 and two
-more or less visible bugfixes:
+Sorry. I CCed actually, but sf.net rejected my email configuration.
 
-  - eth1394 was always loaded by hotplug event as soon as a FireWire
-    controller was initialized.  This irritated and frustrated a lot
-    of users and distributors, since it influenced the order in which
-    networking interfaces were added, and since a few users had
-    difficulties to capture video if eth1394 was loaded.
+> Anyway, I like your approach but there was one small bug.
 
-    From now on, eth1394 is only loaded by hotplug if an external
-    IP over 1394 capable device is plugged in.  The old behaviour can
-    be emulated by these lines in /etc/modprobe.conf:
-    install ohci1394 /sbin/modprobe eth1394; \
-                     /sbin/modprobe --ignore-install ohci1394
-
-  - eth1394 did not work over S100B...S400B (as opposed to S100A...
-    S400A and S800B)
-
-All of the patches have been in -mm for a while, just this 2nd small
-bugfix and some trivial changes like in Kconfig help texts are quite
-new.  All of the patches have been seen on the linux1394-devel
-mailinglist, some also on lkml or netdev or linux-scsi.
-
-I built the for-linus branch upon commit
-b9099ff63c75216d6ca10bce5a1abcd9293c27e6 "Merge branch 'upstream-linus'
-of master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6" from
-Sat, 28 Apr 2007 00:49:50 +0000 (17:49 -0700) to simplify the merge.
-
-The stat and the shortlog:
-
- drivers/ieee1394/Kconfig                 |   52 +--
- drivers/ieee1394/config_roms.c           |   93 +---
- drivers/ieee1394/config_roms.h           |   20 +-
- drivers/ieee1394/csr1212.c               |  870 ++++++++++++------------------
- drivers/ieee1394/csr1212.h               |  483 +++--------------
- drivers/ieee1394/dma.c                   |   24 +
- drivers/ieee1394/dma.h                   |   22 +-
- drivers/ieee1394/eth1394.c               |  798 ++++++++++++---------------
- drivers/ieee1394/eth1394.h               |   25 +-
- drivers/ieee1394/highlevel.c             |   89 +++-
- drivers/ieee1394/highlevel.h             |   55 +--
- drivers/ieee1394/hosts.c                 |   23 +-
- drivers/ieee1394/hosts.h                 |   10 +-
- drivers/ieee1394/ieee1394_core.c         |  461 +++++++++-------
- drivers/ieee1394/ieee1394_core.h         |  100 +---
- drivers/ieee1394/ieee1394_transactions.c |   43 ++-
- drivers/ieee1394/ieee1394_transactions.h |   20 -
- drivers/ieee1394/iso.c                   |   85 +++-
- drivers/ieee1394/iso.h                   |   35 +--
- drivers/ieee1394/nodemgr.c               |   61 ++-
- drivers/ieee1394/nodemgr.h               |   24 +-
- drivers/ieee1394/ohci1394.c              |   12 +-
- drivers/ieee1394/ohci1394.h              |    4 +-
- drivers/ieee1394/raw1394.c               |    3 +-
- drivers/ieee1394/sbp2.c                  |   39 +-
- drivers/ieee1394/sbp2.h                  |    8 +-
- 26 files changed, 1446 insertions(+), 2013 deletions(-)
-
-
-Adrian Bunk (1):
-      ieee1394: unexport highlevel_host_reset
-
-Akinobu Mita (1):
-      ieee1394: eth1394: fix error path in module_init
-
-Andrew Morton (2):
-      ieee1394: sbp2: include fixes
-      ieee1394: iso.c needs sched.h
-
-Bernhard Kauer (1):
-      ieee1394: ohci1394: remove unnecessary rcvPhyPkt bit flipping in LinkControl register
-
-Jean Delvare (1):
-      ieee1394: eth1394: Move common recv_init code to helper function
-
-Milind Arun Choudhary (1):
-      ieee1394: SPIN_LOCK_UNLOCKED cleanup
-
-Randy Dunlap (1):
-      ieee1394: ieee1394_core printk format
-
-Simon Arlott (1):
-      ieee1394: ohci1394: Fix mistake in printk message.
-
-Stefan Richter (46):
-      ieee1394: sbp2: remove unnecessary alignments of struct members
-      ieee1394: sbp2: enforce 32bit DMA mapping
-      ieee1394: sbp2: optimize DMA direction of s/g tables
-      ieee1394: sbp2: move some memory allocations into non-atomic context
-      ieee1394: remove declarations of nonexisting functions
-      ieee1394: move some comments from declaration to definition
-      ieee1394: small header cleanup
-      ieee1394: remove unused csr1212 code
-      ieee1394: drop csr1212's support for external compilation
-      ieee1394: csr1212: rename some types
-      ieee1394: stricter error checks in csr1212
-      ieee1394: de-inline some functions
-      ieee1394: replace vmalloc by kmalloc in csr1212
-      ieee1394: csr1212: coding style
-      ieee1394: shrink csr1212_new_string_descriptor_leaf
-      ieee1394: csr1212: warn on unreachable code
-      ieee1394: csr1212: more sensible names for jump targets
-      ieee1394: csr1212: log if devices have CRC errors in their ROM
-      ieee1394: remove usage of skb_queue as packet queue
-      ieee1394: some more includes
-      ieee1394: unroll a weird macro
-      ieee1394: nodemgr: less noise in dmesg
-      ieee1394: nodemgr: unify some error messages
-      ieee1394: send async streams at S100
-      ieee1394: eth1394: unregister address space in failure case
-      ieee1394: eth1394: clean up host removal
-      ieee1394: eth1394: reduce excessive function inlining
-      ieee1394: eth1394: don't autoload by hotplug when ohci1394 starts
-      ieee1394: eth1394: coding style
-      ieee1394: eth1394: .probe and .update may sleep
-      ieee1394: eth1394: refactor .probe and .update
-      ieee1394: eth1394: correct a memset argument
-      ieee1394: eth1394: shorter error messages
-      ieee1394: eth1394: contain host reset
-      ieee1394: eth1394: allow MTU bigger than 1500
-      ieee1394: eth1394: CONFIG_INET is always defined
-      ieee1394: eth1394: omit useless set_mac_address callback
-      ieee1394: eth1394: don't use alloc_etherdev
-      ieee1394: eth1394: clean up fragment_overlap
-      ieee1394: eth1394: some conditions are unlikely
-      ieee1394: eth1394: hard_start_xmit is called in atomic context
-      ieee1394: eth1394: correct return codes in hard_start_xmit
-      ieee1394: eth1394: send async streams at S100 on 1394b buses
-      ieee1394: ohci1394: fix cosmetic problem in error logging
-      ieee1394: more help in Kconfig
-      ieee1394: remove garbage from Kconfig
-
-Torsten Kaiser (1):
-      ieee1394: ieee1394_transactions needs sched.h
-
+Thanks for fixing my stupid bug.
 -- 
-Stefan Richter
--=====-=-=== -=-- ====-
-http://arcgraph.de/sr/
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
+
+[PATCH] fat: fix VFAT compat ioctls on 64-bit systems
+
+If you compile and run the below test case in an msdos or vfat directory 
+on an x86-64 system with -m32 you'll get garbage in the kernel_dirent 
+struct followed by a SIGSEGV.
+
+The patch fixes this.
+
+Reported and initial fix by Bart Oldeman
+
+Signed-off-by: Bart Oldeman <bartoldeman@users.sourceforge.net>
+Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+
+ fs/fat/dir.c |  199 +++++++++++++++++++++++++++++------------------------------
+ 1 file changed, 100 insertions(+), 99 deletions(-)
+
+diff -puN fs/fat/dir.c~fat-compait_ioctl-fix fs/fat/dir.c
+--- linux-2.6/fs/fat/dir.c~fat-compait_ioctl-fix	2007-04-30 07:56:47.000000000 +0900
++++ linux-2.6-hirofumi/fs/fat/dir.c	2007-04-30 07:56:47.000000000 +0900
+@@ -422,7 +422,7 @@ EODir:
+ EXPORT_SYMBOL_GPL(fat_search_long);
+ 
+ struct fat_ioctl_filldir_callback {
+-	struct dirent __user *dirent;
++	void __user *dirent;
+ 	int result;
+ 	/* for dir ioctl */
+ 	const char *longname;
+@@ -647,62 +647,85 @@ static int fat_readdir(struct file *filp
+ 	return __fat_readdir(inode, filp, dirent, filldir, 0, 0);
+ }
+ 
+-static int fat_ioctl_filldir(void *__buf, const char *name, int name_len,
+-			     loff_t offset, u64 ino, unsigned int d_type)
++#define FAT_IOCTL_FILLDIR_FUNC(func, dirent_type)			   \
++static int func(void *__buf, const char *name, int name_len,		   \
++			     loff_t offset, u64 ino, unsigned int d_type)  \
++{									   \
++	struct fat_ioctl_filldir_callback *buf = __buf;			   \
++	struct dirent_type __user *d1 = buf->dirent;			   \
++	struct dirent_type __user *d2 = d1 + 1;				   \
++									   \
++	if (buf->result)						   \
++		return -EINVAL;						   \
++	buf->result++;							   \
++									   \
++	if (name != NULL) {						   \
++		/* dirent has only short name */			   \
++		if (name_len >= sizeof(d1->d_name))			   \
++			name_len = sizeof(d1->d_name) - 1;		   \
++									   \
++		if (put_user(0, d2->d_name)			||	   \
++		    put_user(0, &d2->d_reclen)			||	   \
++		    copy_to_user(d1->d_name, name, name_len)	||	   \
++		    put_user(0, d1->d_name + name_len)		||	   \
++		    put_user(name_len, &d1->d_reclen))			   \
++			goto efault;					   \
++	} else {							   \
++		/* dirent has short and long name */			   \
++		const char *longname = buf->longname;			   \
++		int long_len = buf->long_len;				   \
++		const char *shortname = buf->shortname;			   \
++		int short_len = buf->short_len;				   \
++									   \
++		if (long_len >= sizeof(d1->d_name))			   \
++			long_len = sizeof(d1->d_name) - 1;		   \
++		if (short_len >= sizeof(d1->d_name))			   \
++			short_len = sizeof(d1->d_name) - 1;		   \
++									   \
++		if (copy_to_user(d2->d_name, longname, long_len)	|| \
++		    put_user(0, d2->d_name + long_len)			|| \
++		    put_user(long_len, &d2->d_reclen)			|| \
++		    put_user(ino, &d2->d_ino)				|| \
++		    put_user(offset, &d2->d_off)			|| \
++		    copy_to_user(d1->d_name, shortname, short_len)	|| \
++		    put_user(0, d1->d_name + short_len)			|| \
++		    put_user(short_len, &d1->d_reclen))			   \
++			goto efault;					   \
++	}								   \
++	return 0;							   \
++efault:									   \
++	buf->result = -EFAULT;						   \
++	return -EFAULT;							   \
++}
++
++FAT_IOCTL_FILLDIR_FUNC(fat_ioctl_filldir, dirent)
++
++static int fat_ioctl_readdir(struct inode *inode, struct file *filp,
++			     void __user *dirent, filldir_t filldir,
++			     int short_only, int both)
+ {
+-	struct fat_ioctl_filldir_callback *buf = __buf;
+-	struct dirent __user *d1 = buf->dirent;
+-	struct dirent __user *d2 = d1 + 1;
+-
+-	if (buf->result)
+-		return -EINVAL;
+-	buf->result++;
+-
+-	if (name != NULL) {
+-		/* dirent has only short name */
+-		if (name_len >= sizeof(d1->d_name))
+-			name_len = sizeof(d1->d_name) - 1;
+-
+-		if (put_user(0, d2->d_name)			||
+-		    put_user(0, &d2->d_reclen)			||
+-		    copy_to_user(d1->d_name, name, name_len)	||
+-		    put_user(0, d1->d_name + name_len)		||
+-		    put_user(name_len, &d1->d_reclen))
+-			goto efault;
+-	} else {
+-		/* dirent has short and long name */
+-		const char *longname = buf->longname;
+-		int long_len = buf->long_len;
+-		const char *shortname = buf->shortname;
+-		int short_len = buf->short_len;
+-
+-		if (long_len >= sizeof(d1->d_name))
+-			long_len = sizeof(d1->d_name) - 1;
+-		if (short_len >= sizeof(d1->d_name))
+-			short_len = sizeof(d1->d_name) - 1;
+-
+-		if (copy_to_user(d2->d_name, longname, long_len)	||
+-		    put_user(0, d2->d_name + long_len)			||
+-		    put_user(long_len, &d2->d_reclen)			||
+-		    put_user(ino, &d2->d_ino)				||
+-		    put_user(offset, &d2->d_off)			||
+-		    copy_to_user(d1->d_name, shortname, short_len)	||
+-		    put_user(0, d1->d_name + short_len)			||
+-		    put_user(short_len, &d1->d_reclen))
+-			goto efault;
++	struct fat_ioctl_filldir_callback buf;
++	int ret;
++
++	buf.dirent = dirent;
++	buf.result = 0;
++	mutex_lock(&inode->i_mutex);
++	ret = -ENOENT;
++	if (!IS_DEADDIR(inode)) {
++		ret = __fat_readdir(inode, filp, &buf, filldir,
++				    short_only, both);
+ 	}
+-	return 0;
+-efault:
+-	buf->result = -EFAULT;
+-	return -EFAULT;
++	mutex_unlock(&inode->i_mutex);
++	if (ret >= 0)
++		ret = buf.result;
++	return ret;
+ }
+ 
+-static int fat_dir_ioctl(struct inode * inode, struct file * filp,
+-		  unsigned int cmd, unsigned long arg)
++static int fat_dir_ioctl(struct inode *inode, struct file *filp,
++			 unsigned int cmd, unsigned long arg)
+ {
+-	struct fat_ioctl_filldir_callback buf;
+-	struct dirent __user *d1;
+-	int ret, short_only, both;
++	struct dirent __user *d1 = (struct dirent __user *)arg;
++	int short_only, both;
+ 
+ 	switch (cmd) {
+ 	case VFAT_IOCTL_READDIR_SHORT:
+@@ -717,7 +740,6 @@ static int fat_dir_ioctl(struct inode * 
+ 		return fat_generic_ioctl(inode, filp, cmd, arg);
+ 	}
+ 
+-	d1 = (struct dirent __user *)arg;
+ 	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct dirent[2])))
+ 		return -EFAULT;
+ 	/*
+@@ -728,69 +750,48 @@ static int fat_dir_ioctl(struct inode * 
+ 	if (put_user(0, &d1->d_reclen))
+ 		return -EFAULT;
+ 
+-	buf.dirent = d1;
+-	buf.result = 0;
+-	mutex_lock(&inode->i_mutex);
+-	ret = -ENOENT;
+-	if (!IS_DEADDIR(inode)) {
+-		ret = __fat_readdir(inode, filp, &buf, fat_ioctl_filldir,
+-				    short_only, both);
+-	}
+-	mutex_unlock(&inode->i_mutex);
+-	if (ret >= 0)
+-		ret = buf.result;
+-	return ret;
++	return fat_ioctl_readdir(inode, filp, d1, fat_ioctl_filldir,
++				 short_only, both);
+ }
+ 
+ #ifdef CONFIG_COMPAT
+ #define	VFAT_IOCTL_READDIR_BOTH32	_IOR('r', 1, struct compat_dirent[2])
+ #define	VFAT_IOCTL_READDIR_SHORT32	_IOR('r', 2, struct compat_dirent[2])
+ 
+-static long fat_compat_put_dirent32(struct dirent *d,
+-				    struct compat_dirent __user *d32)
+-{
+-        if (!access_ok(VERIFY_WRITE, d32, sizeof(struct compat_dirent)))
+-                return -EFAULT;
++FAT_IOCTL_FILLDIR_FUNC(fat_compat_ioctl_filldir, compat_dirent)
+ 
+-        __put_user(d->d_ino, &d32->d_ino);
+-        __put_user(d->d_off, &d32->d_off);
+-        __put_user(d->d_reclen, &d32->d_reclen);
+-        if (__copy_to_user(d32->d_name, d->d_name, d->d_reclen))
+-		return -EFAULT;
+-
+-        return 0;
+-}
+-
+-static long fat_compat_dir_ioctl(struct file *file, unsigned cmd,
++static long fat_compat_dir_ioctl(struct file *filp, unsigned cmd,
+ 				 unsigned long arg)
+ {
+-	struct compat_dirent __user *p = compat_ptr(arg);
+-	int ret;
+-	mm_segment_t oldfs = get_fs();
+-	struct dirent d[2];
++	struct inode *inode = filp->f_path.dentry->d_inode;
++	struct compat_dirent __user *d1 = compat_ptr(arg);
++	int short_only, both;
+ 
+ 	switch (cmd) {
+-	case VFAT_IOCTL_READDIR_BOTH32:
+-		cmd = VFAT_IOCTL_READDIR_BOTH;
+-		break;
+ 	case VFAT_IOCTL_READDIR_SHORT32:
+-		cmd = VFAT_IOCTL_READDIR_SHORT;
++		short_only = 1;
++		both = 0;
++		break;
++	case VFAT_IOCTL_READDIR_BOTH32:
++		short_only = 0;
++		both = 1;
+ 		break;
+ 	default:
+ 		return -ENOIOCTLCMD;
+ 	}
+ 
+-	set_fs(KERNEL_DS);
+-	lock_kernel();
+-	ret = fat_dir_ioctl(file->f_path.dentry->d_inode, file,
+-			    cmd, (unsigned long) &d);
+-	unlock_kernel();
+-	set_fs(oldfs);
+-	if (ret >= 0) {
+-		ret |= fat_compat_put_dirent32(&d[0], p);
+-		ret |= fat_compat_put_dirent32(&d[1], p + 1);
+-	}
+-	return ret;
++	if (!access_ok(VERIFY_WRITE, d1, sizeof(struct compat_dirent[2])))
++		return -EFAULT;
++	/*
++	 * Yes, we don't need this put_user() absolutely. However old
++	 * code didn't return the right value. So, app use this value,
++	 * in order to check whether it is EOF.
++	 */
++	if (put_user(0, &d1->d_reclen))
++		return -EFAULT;
++
++	return fat_ioctl_readdir(inode, filp, d1, fat_compat_ioctl_filldir,
++				 short_only, both);
+ }
+ #endif /* CONFIG_COMPAT */
+ 
+_
