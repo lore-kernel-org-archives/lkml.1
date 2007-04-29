@@ -1,78 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754490AbXD2AiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbXD2Aip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754490AbXD2AiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Apr 2007 20:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbXD2AiQ
+	id S1754505AbXD2Aip (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Apr 2007 20:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbXD2Aip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Apr 2007 20:38:16 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47391 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbXD2AiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Apr 2007 20:38:15 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4633E8EF.1080604@s5r6.in-berlin.de>
-Date: Sun, 29 Apr 2007 02:38:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Sat, 28 Apr 2007 20:38:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55896 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754514AbXD2Ain (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Apr 2007 20:38:43 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: stable@kernel.org
+Subject: [2.6.21.stable PATCH] ACPI: Fix 2.6.21 boot regression on P4/HT
+Date: Sat, 28 Apr 2007 20:37:26 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: maturity levels:  a first pass
-References: <Pine.LNX.4.64.0704281735470.29040@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0704281735470.29040@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704282037.26662.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> +	  This feature gives you the ability to de-select entire sets of
-> +	  kernel features based on how they've been tagged with the
-> +	  "maturity" directive.
+Up through 2.6.20 we cleared the FADT.CSTATE_CONTROL field
+for FADT versions before r3, because it made no sense
+for that reserved field to be set for pre-ACPI 2.0 systems.
 
-Why expose the end-user to implementation details like "been tagged with
-the 'maturity' directive"?
+It turns out that not clearing this field exposes
+Linux to SMM BIOS failures, so do the same in 2.6.21.
 
-...
-> +config MATURITY_DEPRECATED
-> +	bool "Display DEPRECATED features."
-...
+http://bugzilla.kernel.org/show_bug.cgi?id=8346
 
-Maybe you rather want
-
-	bool "Allow to select DEPRECATED features."
-
-because MATURITY_DEPRECATED=N probably means "Do not allow to select
-DEPRECATED features" which implies that deprecated features will be
-deselected.  In your wording, MATURITY_DEPRECATED=N would be just "Do
-not display DEPRECATED features" which is probably less than what you
-want it to be.
-
-That said, I don't know if the approach is going into the right
-direction.  For example, the way you are starting it requires updates to
-all Kconfig UIs/scripts, to work correctly.  Otherwise, users could
-select ACTIVATE_MATURITY but the tags would still be ignored.
-
-Another approach could be to
-  - continue to use "config EXPERIMENTAL" and "depends on EXPERIMENTAL"
-    and extend it for OBSOLETE, and if you cannot resist, for
-    DEPRECATED,
-  - extend interactive UIs like xconfig and menuconfig and oldconfig to
-    display an EXPERIMENTAL sign alongside the title of an option
-    which depends on EXPERIMENTAL,
-  - delete occurrences of the string EXPERIMENTAL from titles of options
-    and help texts,
-  - vice versa for OBSOLETE, and if you cannot resist, for
-    DEPRECATED.
-This does what you want while it keeps contents separate from
-presentation and avoids to extend the Kconfig language.  A simple
-Kconfig language without presentational ballast allows for creation of a
-multitude of fine-tuned configurator UIs/scripts, which can be extended
-by all sorts of features, e.g. better support in dealing with obsolete
-configuration options.
--- 
-Stefan Richter
--=====-=-=== -=-- ===-=
-http://arcgraph.de/sr/
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+diff --git a/drivers/acpi/tables/tbfadt.c b/drivers/acpi/tables/tbfadt.c
+index 807c711..d341491 100644
+--- a/drivers/acpi/tables/tbfadt.c
++++ b/drivers/acpi/tables/tbfadt.c
+@@ -347,6 +347,20 @@ static void acpi_tb_convert_fadt(void)
+ 		acpi_gbl_xpm1b_enable.space_id = acpi_gbl_FADT.xpm1a_event_block.space_id;
+ 
+ 	}
++	/*
++	 * _CST object and C States change notification start with
++	 * ACPI 2.0 (FADT r3).  Although the field should be Reserved
++	 * and 0 before then, some pre-r3 FADT set this field and
++	 * it results in SMM-related boot failures.  For them, clear it.
++	 */
++	if ((acpi_gbl_FADT.header.revision < 3) &&
++		(acpi_gbl_FADT.cst_control != 0)) {
++			ACPI_WARNING((AE_INFO,
++				"Ignoring BIOS FADT r%u C-state control",
++				acpi_gbl_FADT.header.revision));
++		 	acpi_gbl_FADT.cst_control = 0;
++	}
++
+ }
+ 
+ /******************************************************************************
