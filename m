@@ -1,116 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423477AbXD3PuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423488AbXD3PuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423477AbXD3PuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423485AbXD3PuJ
+	id S1423488AbXD3PuT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423486AbXD3PuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:50:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34394 "EHLO mx2.suse.de"
+	Mon, 30 Apr 2007 11:50:17 -0400
+Received: from ns1.suse.de ([195.135.220.2]:45059 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423477AbXD3PuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1423478AbXD3PuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Apr 2007 11:50:04 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430549.617098000@suse.de>
 In-Reply-To: <20070430549.617098000@suse.de>
-To: zach@vmware.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [29/34] i386: pte simplify ops
-Message-Id: <20070430155002.9305815206@wotan.suse.de>
-Date: Mon, 30 Apr 2007 17:50:02 +0200 (CEST)
+To: suresh.b.siddha@intel.com, andi@firstfloor.org, dada1@cosmosbay.com,
+       rientjes@google.com, clameter@engr.sgi.com, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [25/34] x86_64: skip cache_free_alien() on non NUMA
+Message-Id: <20070430154958.51788151CA@wotan.suse.de>
+Date: Mon, 30 Apr 2007 17:49:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Zachary Amsden <zach@vmware.com>
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
 
-Add comment and condense code to make use of native_local_ptep_get_and_clear
-function.  Also, it turns out the 2-level and 3-level paging definitions were
-identical, so move the common definition into pgtable.h
+Set use_alien_caches to 0 on non NUMA platforms.  And avoid calling the
+cache_free_alien() when use_alien_caches is not set.  This will avoid the
+cache miss that happens while dereferencing slabp to get nodeid.
 
-Signed-off-by: Zachary Amsden <zach@vmware.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/asm-i386/pgtable-2level.h |   10 ----------
- include/asm-i386/pgtable-3level.h |   10 ----------
- include/asm-i386/pgtable.h        |   17 +++++++++++++++--
- 3 files changed, 15 insertions(+), 22 deletions(-)
+ mm/slab.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux/include/asm-i386/pgtable-2level.h
+Index: linux/mm/slab.c
 ===================================================================
---- linux.orig/include/asm-i386/pgtable-2level.h
-+++ linux/include/asm-i386/pgtable-2level.h
-@@ -41,16 +41,6 @@ static inline void native_pte_clear(stru
- 	*xp = __pte(0);
- }
+--- linux.orig/mm/slab.c
++++ linux/mm/slab.c
+@@ -1146,7 +1146,7 @@ static inline int cache_free_alien(struc
+ 	 * Make sure we are not freeing a object from another node to the array
+ 	 * cache on this cpu.
+ 	 */
+-	if (likely(slabp->nodeid == node) || unlikely(!use_alien_caches))
++	if (likely(slabp->nodeid == node))
+ 		return 0;
  
--/* local pte updates need not use xchg for locking */
--static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
--{
--	pte_t res;
--
--	res = *ptep;
--	native_pte_clear(NULL, 0, ptep);
--	return res;
--}
--
- #ifdef CONFIG_SMP
- static inline pte_t native_ptep_get_and_clear(pte_t *xp)
- {
-Index: linux/include/asm-i386/pgtable-3level.h
-===================================================================
---- linux.orig/include/asm-i386/pgtable-3level.h
-+++ linux/include/asm-i386/pgtable-3level.h
-@@ -139,16 +139,6 @@ static inline void pud_clear (pud_t * pu
- #define pmd_offset(pud, address) ((pmd_t *) pud_page(*(pud)) + \
- 			pmd_index(address))
+ 	l3 = cachep->nodelists[node];
+@@ -1394,6 +1394,9 @@ void __init kmem_cache_init(void)
+ 	int order;
+ 	int node;
  
--/* local pte updates need not use xchg for locking */
--static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
--{
--	pte_t res;
--
--	res = *ptep;
--	native_pte_clear(NULL, 0, ptep);
--	return res;
--}
--
- #ifdef CONFIG_SMP
- static inline pte_t native_ptep_get_and_clear(pte_t *ptep)
- {
-Index: linux/include/asm-i386/pgtable.h
-===================================================================
---- linux.orig/include/asm-i386/pgtable.h
-+++ linux/include/asm-i386/pgtable.h
-@@ -269,6 +269,16 @@ extern void vmalloc_sync_all(void);
- #define pte_update_defer(mm, addr, ptep)	do { } while (0)
- #endif
- 
-+/* local pte updates need not use xchg for locking */
-+static inline pte_t native_local_ptep_get_and_clear(pte_t *ptep)
-+{
-+	pte_t res = *ptep;
++	if (num_possible_nodes() == 1)
++		use_alien_caches = 0;
 +
-+	/* Pure native function needs no input for mm, addr */
-+	native_pte_clear(NULL, 0, ptep);
-+	return res;
-+}
-+
- /*
-  * We only update the dirty/accessed state if we set
-  * the dirty bit by hand in the kernel, since the hardware
-@@ -343,8 +353,11 @@ static inline pte_t ptep_get_and_clear_f
- {
- 	pte_t pte;
- 	if (full) {
--		pte = *ptep;
--		native_pte_clear(mm, addr, ptep);
-+		/*
-+		 * Full address destruction in progress; paravirt does not
-+		 * care about updates and native needs no locking
-+		 */
-+		pte = native_local_ptep_get_and_clear(ptep);
- 	} else {
- 		pte = ptep_get_and_clear(mm, addr, ptep);
- 	}
+ 	for (i = 0; i < NUM_INIT_LISTS; i++) {
+ 		kmem_list3_init(&initkmem_list3[i]);
+ 		if (i < MAX_NUMNODES)
+@@ -3563,7 +3566,7 @@ static inline void __cache_free(struct k
+ 	check_irq_off();
+ 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
+ 
+-	if (cache_free_alien(cachep, objp))
++	if (use_alien_caches && cache_free_alien(cachep, objp))
+ 		return;
+ 
+ 	if (likely(ac->avail < ac->limit)) {
