@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423034AbXD3F0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422999AbXD3Fas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423034AbXD3F0l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:26:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423037AbXD3F0l
+	id S1422999AbXD3Fas (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423037AbXD3Fas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:26:41 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33790 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423034AbXD3F0j (ORCPT
+	Mon, 30 Apr 2007 01:30:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54002 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422999AbXD3Far (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:26:39 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-References: <20070428758.455116000@suse.de>
-	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
-	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
-	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
-	<1177902195.30071.203.camel@localhost.localdomain>
-	<463572B7.90202@zytor.com>
-	<1177909434.30071.216.camel@localhost.localdomain>
-Date: Sun, 29 Apr 2007 23:25:53 -0600
-In-Reply-To: <1177909434.30071.216.camel@localhost.localdomain> (Rusty
-	Russell's message of "Mon, 30 Apr 2007 15:03:54 +1000")
-Message-ID: <m1d51m77ry.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 30 Apr 2007 01:30:47 -0400
+Date: Sun, 29 Apr 2007 22:30:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <20070427235247.3576a463.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0704292225540.1978@schroedinger.engr.sgi.com>
+References: <20070426195357.597ffd7e.akpm@linux-foundation.org>
+ <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704262239580.4758@schroedinger.engr.sgi.com>
+ <20070426235542.bad7035a.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704270007100.5388@schroedinger.engr.sgi.com>
+ <20070427002640.22a71d06.akpm@linux-foundation.org>
+ <20070427163620.GI32602149@melbourne.sgi.com> <20070427173432.GJ32602149@melbourne.sgi.com>
+ <20070427121108.9ee05710.akpm@linux-foundation.org>
+ <20070428031739.GK32602149@melbourne.sgi.com> <20070427215634.325606a9.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704272158360.7342@schroedinger.engr.sgi.com>
+ <20070427223632.52def99e.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704272319170.7610@schroedinger.engr.sgi.com>
+ <20070427235247.3576a463.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell <rusty@rustcorp.com.au> writes:
+On Fri, 27 Apr 2007, Andrew Morton wrote:
 
-> On Sun, 2007-04-29 at 21:38 -0700, H. Peter Anvin wrote:
->> Rusty Russell wrote:
->> > 
->> > Dammit, Eric, you spend a lot of time using words like "insane" where
->> > you mean we didn't do everything all at once.
->> > 
->> > It's *not* clear that using %esi is sane, but nothing in the current
->> > code prevents that.
->> 
->> Why not?
->
-> (I assume you mean why isn't it clear?)
->
-> Because VMI uses the presence of a ROM to indicate it's not native.  KVM
-> uses a magic MSR IIRC.
+> By misunderstanding any suggestions, misrepresenting them, making incorrect
+> statements about them, by not suggesting any alternatives yourself, all of
+> it buttressed by a stolid refusal to recognise that this patch has any
+> costs.
 
-Reasonable, if you don't mid a little hardware emulation.
+That was even mentioned in the initial post.... Definitely it would 
+require significant changes but getting there is fairly straightforward 
+with the use of compound pages.
+ 
+> This effectively leaves it up to others to find time to think about and to
+> implement possible alternative solutions to the problems which you're
+> observing.
 
-> I think it makes sense for lguest to change over, tho.  Patches welcome
-> 8)
+They are working on other problems like radix tree scalability it seems. 
 
-Sure.
+> The altenative which is on the table (and there may be others) is
+> populating pagecache with physically contiguous pages.  This will fix the
+> HBA problem and is much less costly in terms of maintenance and will
+> improve all workloads on all machines and doesn't have the additional
+> runtime costs of pagecache wastage and more memset() overhead with small
+> files and it doesn't require administrator intervention.
+> 
+> OTOH (yes!  there are tradeoffs!) it will consume an unknown amount more
+> CPU and it doesn't address the large-fs-blocksize requirement, but I don't
+> know how important the latter is and given the unrelenting advocacy storm
+> coming from the SGI direction I don't know how to find that out, frankly.
 
-Peter do we want to use the bootloader byte and assign lguest it's own
-bootloader type or do we want to add another field specific to 
-paravirtualized environments?
+This is certainly a nice approach if it works and may address one 
+issue that motivated this patchset but it does not address all.
 
-Eric
