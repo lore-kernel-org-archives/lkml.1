@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423679AbXD3VeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423694AbXD3VgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423679AbXD3VeY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 17:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423691AbXD3VeX
+	id S1423694AbXD3VgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 17:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423696AbXD3VgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 17:34:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52357 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423687AbXD3VeV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 17:34:21 -0400
-Date: Mon, 30 Apr 2007 14:30:57 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
-       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
-       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
-       netdev@vger.kernel.org,
-       =?UTF-8?B?SMOla2Fu?= Lindqvist <lindqvist@netstar.se>,
-       Vincent Frentzel <zcecc22@ucl.ac.uk>,
-       =?UTF-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
-       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
-       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
-Message-ID: <20070430143057.41ec75db@freekitty>
-In-Reply-To: <463375E5.5040108@googlemail.com>
-References: <463375E5.5040108@googlemail.com>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+	Mon, 30 Apr 2007 17:36:22 -0400
+Received: from www.osadl.org ([213.239.205.134]:60775 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423694AbXD3VgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 17:36:21 -0400
+Subject: Re: Linux 2.6.21: pmtmr losing time
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Joerg Sommrey <jo@sommrey.de>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070430163944.GA29206@sommrey.de>
+References: <20070430125200.GA5379@sommrey.de>
+	 <1177950216.5791.241.camel@localhost.localdomain>
+	 <20070430163944.GA29206@sommrey.de>
+Content-Type: text/plain
+Date: Mon, 30 Apr 2007 23:38:34 +0200
+Message-Id: <1177969115.5791.244.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-04-30 at 18:39 +0200, Joerg Sommrey wrote:
+> Here it is.  Maybe this problem is related to the usage of the
+> "experimental" amd76x_pm module?
 
-> Subject    : 2.6.21: sky2 "hw csum failure" problem
-> References : http://lkml.org/lkml/2007/4/28/105
-> Submitter  : Håkan Lindqvist <lindqvist@netstar.se>
-> Status     : unknown
-> 
+Can you please verify what happens w/o that module ?
 
-This is not a "regression" it is a bug, that has shown up for
-some users for quite a while, see:
- http://bugzilla.kernel.org/show_bug.cgi?id=7579
+Thanks,
+
+	tglx
 
 
--- 
-Stephen Hemminger <shemminger@linux-foundation.org>
