@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423125AbXD3HqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423146AbXD3Hye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423125AbXD3HqR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 03:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423130AbXD3HqQ
+	id S1423146AbXD3Hye (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 03:54:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423148AbXD3Hye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 03:46:16 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:34163 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423125AbXD3HqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 03:46:14 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <alpine.LFD.0.98.0704291419310.9964@woody.linux-foundation.org>
-References: <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org> <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com> <20070429201729.GQ3468@stusta.de> <alpine.LFD.0.98.0704291330280.9964@woody.linux-foundation.org> <20070429210505.GS3468@stusta.de> <alpine.LFD.0.98.0704291419310.9964@woody.linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <03BFE01C-A2C9-421D-A52E-1B19FA5CC9D0@cam.ac.uk>
-Cc: Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>, Chuck Ebbert <cebbert@redhat.com>,
+	Mon, 30 Apr 2007 03:54:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:54082 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1423146AbXD3Hyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 03:54:33 -0400
+X-Authenticated: #428038
+X-Provags-ID: V01U2FsdGVkX19QXnEFQi1QpmZSeg5n+xYcLJ7ZKwxcguMnQu+kyH
+	xEBjpYYg6JmLq5
+Date: Mon, 30 Apr 2007 09:54:29 +0200
+From: Matthias Andree <matthias.andree@gmx.de>
+To: Indan Zupancic <indan@nul.nu>
+Cc: Johannes Stezenbach <js@linuxtv.org>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
 Subject: Re: Linux 2.6.21
-Date: Mon, 30 Apr 2007 08:45:43 +0100
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
+Message-ID: <20070430075429.GB27563@merlin.emma.line.org>
+Mail-Followup-To: Indan Zupancic <indan@nul.nu>,
+	Johannes Stezenbach <js@linuxtv.org>, Adrian Bunk <bunk@stusta.de>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org> <20070429173500.GA30248@one.firstfloor.org> <20070429223649.GA12672@linuxtv.org> <2722.81.207.0.53.1177888737.squirrel@secure.samage.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2722.81.207.0.53.1177888737.squirrel@secure.samage.net>
+X-PGP-Key: http://home.pages.de/~mandree/keys/GPGKEY.asc
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29 Apr 2007, at 22:24, Linus Torvalds wrote:
-> Exactly because I don't think anybody has shown any better  
-> automation than
-> bugzilla. But that doesn't make bugzilla "the One Choice". That's  
-> not how
-> it works. If there is no automation, manual tracking is still  
-> better than
-> *crap* automation.
+On Mon, 30 Apr 2007, Indan Zupancic wrote:
 
-Have you seen/used RT? -> http://bestpractical.com/rt
+> I don't know, but what about telling the hapless person who went
+> through the process of posting a bug what's wrong with the bug report?
 
-We use it here at work and it works great.  People can report bugs  
-both by email or via web interface.  We get everything that comes in  
-emailed to us and we can respond by email and RT recognizes the  
-responses being in the same thread and lumps them into the same bug   
-(and when the origin was by email that is even without evil bug  
-numbers appearing in the subject with the help of some perl scrip  
-magic (aka RT action script)).  The only time I ever go into the web  
-interface is about once a week to have a look at my list of open bugs  
-and to do some tidying like merging bug reports and things like that.
+It's a tedious process you keep doing over and over and over and over again,
+and my experience shows it's sheer luck if people can actually fill in
+the missing bits given the list.
 
-It also has some cool features like "extract this into the FAQ" and  
-there is a "FAQ" in RT that contains an autogenerated FAQ from what  
-people have pulled out in that way.
+Usually you have to ask thrice to obtain even the most essential
+information such as version. Let alone vendor patches.
 
-Only problem is for the kernel we would need a beefy system (needs  
-fast database or it gets very slow when you get into 100k+ bugs  
-region) and someone who knows RT well and has a lot of spare time to  
-set it up to your liking and then to maintain it...  (RT takes a  
-while to set up because you can tweak just about everything and you  
-can add/modify/remove functionality at will as it is very modular and  
-written in Perl so pretty much anyone can adapt it to do exactly what  
-they want without even needing to wait for lengthy recompiles to  
-happen...)
+Anyways, the solution to this problem is someone _politely_ asking
+reporters to provide necessary information and also point out that they
+cannot ever hope to have their bug fixed without making a best-effort
+attempt at answering all questions the first time they're being asked.
 
-You could for example automate sorting of bug reports into queues  
-(e.g. SCSI, Net, FS, etc) by grepping the emailed bug report (or  
-website generated one although on the website people can choose the  
-queue by hand if they want) and sorting appropriately.  Admittedly  
-for this to be at all useful someone would have to spend some time  
-working out intelligent things to grep for or all bugs would match to  
-all queues when they contain dmesg output for example... (-;
+There are notable exceptions, people pinpointing code fragments at fault
+and everything, but those are usually tech people and not end users.
 
-This might not be perfect but in comparison to bugzilla it is  
-actually usable and at least we here at work like it so much we  
-adopted it into our workflow voluntarily which says something...
+> That said, if someone is an obvious idiot, ignoring saves time. But I
+> think that's quite rare, and in general you should give the reporter
+> feedback, and then ignore the bug report. (Until it improves.)
 
-Best regards,
+And that is what happens all too often (not in absolute figures, but in
+the developer's perception of it) - insufficient information to debug.
 
-	Anton
+Yes I know, some of the bugs hide themselves so well you actually need
+four or five reports by different people to actually pinpoint the bug,
+perhaps accompanied by insufficient interface documentation that make it
+difficult to verify assumptions/expectations or assess potential
+solutions (such as the res_init() issue in fetchmail, or probably the khubd going
+south issue in Linux), but that's not the point.
+
 -- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+Matthias Andree
