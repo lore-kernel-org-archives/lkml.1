@@ -1,61 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031114AbXD3Tui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031132AbXD3Twh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031114AbXD3Tui (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031110AbXD3Tui
+	id S1031132AbXD3Twh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031126AbXD3Twh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:50:38 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:22390 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031114AbXD3Tuf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:50:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=bZNm8GxOqeluUEUeVVZBg7bOshzlY6rIYW7PEeoz2nF5rU6ZNhH1rkVSQFV44MrnCSpC8imvnfABvFRpBjQJ5H0YQH9hh3MkUERIRKgC/k+7gtBUjnSOoraX8o9v8+IpVtWCObZwadLW4f0Wz+0MeT4+c6Lb5i0hHXffNoQTkg0=
-Message-ID: <4635C35D.1020807@gmail.com>
-Date: Mon, 30 Apr 2007 12:22:21 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 30 Apr 2007 15:52:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40967 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031110AbXD3Twg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 15:52:36 -0400
+Message-ID: <46364901.4000907@redhat.com>
+Date: Mon, 30 Apr 2007 15:52:33 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: William Thompson <wt@electro-mechanical.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20 libata cdrom
-References: <20070427175205.GD7809@electro-mechanical.com>
-In-Reply-To: <20070427175205.GD7809@electro-mechanical.com>
-X-Enigmail-Version: 0.95.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata updates
+References: <20070429161542.GA12501@havoc.gtf.org>
+In-Reply-To: <20070429161542.GA12501@havoc.gtf.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-William Thompson wrote:
-> I've been playing with libata on a few machines and I found that this machine
-> (An old Dell Dimension L866r) gives me this when it loads and does not give me
-> access to the cdrom.  This is the only machine that I've tested that I know
-> for a fact cannot do DMA on the cdrom.  I searched and noticed a similar
-> problem with 2.6.19-rc versions but I'm not sure if it's the same problem.
+Jeff Garzik wrote:
 > 
-> dmesg output:
-> libata version 2.00 loaded.
-> ata_piix 0000:00:1f.1: version 2.00ac7
-> PCI: Setting latency timer of device 0000:00:1f.1 to 64
-> ata1: PATA max UDMA/66 cmd 0x1F0 ctl 0x3F6 bmdma 0xFFA0 irq 14
-> ata2: PATA max UDMA/66 cmd 0x170 ctl 0x376 bmdma 0xFFA8 irq 15
-> scsi0 : ata_piix
-> ata1.00: ATA-4, max UDMA/33, 10018890 sectors: LBA
-> ata1.00: ata1: dev 0 multi count 16
-> ata1.00: configured for UDMA/33
-> scsi1 : ata_piix
-> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x1)
+> Jeff Garzik (8):
+>       libata/IDE: remove combined mode quirk
 
-Hmm... IDENTIFY failed on the second port.  How reproducible is the
-problem?  Every time?  Does it work with the IDE driver?  If so, please
-post the result of 'hdparm -I /dev/hdX'.
-
--- 
-tejun
+You can't just remove the "combined_mode=" kernel parameter or
+every Linux user who uses that will get an unbootable kernel
+with no good way of diagnosing the problem. It should still
+be accepted and just print a warning.
 
