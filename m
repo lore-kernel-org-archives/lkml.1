@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbXD3O6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbXD3O7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbXD3O6y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 10:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbXD3O6y
+	id S1755336AbXD3O7e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 10:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755339AbXD3O7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 10:58:54 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43523 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755307AbXD3O6x (ORCPT
+	Mon, 30 Apr 2007 10:59:34 -0400
+Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:50085 "EHLO
+	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755336AbXD3O7c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 10:58:53 -0400
-Date: Mon, 30 Apr 2007 16:02:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andreas Mohr <andi@rhlx01.fht-esslingen.de>
-Cc: Juergen Beisert <juergen127@kreuzholzen.de>, linux-kernel@vger.kernel.org
-Subject: Re: Geode-GX1 processor in 2.6.21
-Message-ID: <20070430160241.79efca76@the-village.bc.nu>
-In-Reply-To: <20070430122022.GA9896@rhlx01.hs-esslingen.de>
-References: <200704301251.05697.juergen127@kreuzholzen.de>
-	<20070430122022.GA9896@rhlx01.hs-esslingen.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Apr 2007 10:59:32 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <524f69650704300726l38c855fds49b00b9bd98360ac@mail.gmail.com>
+References: <524f69650704300726l38c855fds49b00b9bd98360ac@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FF9E865E-BD98-477F-A48D-1E501F516FB2@cam.ac.uk>
+Cc: linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: UID/GID override on CIFS mounts to Samba and proposed new mount parameter to disable Unix Extensions on the client
+Date: Mon, 30 Apr 2007 15:59:02 +0100
+To: Steve French <smfrench@gmail.com>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In arch/i386/kernel/cpu/cyrix.c function geode_configure() tries to enable 
-> > the "suspend on halt power saving feature". This is the line:
-> > 
-> > 	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+On 30 Apr 2007, at 15:26, Steve French wrote:
+> When CIFS Unix Extensions are negotiated we get the Unix uid and gid
+> owners of the file from the server (on the Unix Query Path Info
+> levels), but if the server's uids don't match the client uid's users
+> were having to disable the Unix Extensions (which turned off features
+> they still wanted).   The attached patch allows users to override uid
+> and/or gid for file/directory owner with a default uid and/or gid
+> specified at mount (as is often done when mounting from Linux cifs
+> client to Windows server).  The attached patch also displays the uid
+> and gid used by default in /proc/mounts (if applicable).
+>
+> I also would like suggestions on what we should call a proposed mount
+> option (not coded yet) which would disable the CIFS Unix Extensions on
+> a per-mount basis (or more likely actually would require it on the
+> first mount to the server, subsequent mounts would probably inherit
+> the capabilities).  Current cifs code can disable mount options before
+> a mount by specifying
+>
+>     "echo 0 > /proc/fs/cifs/LinuxExtensionsEnabled")
+>
+> but it might be easier to specify it on mount (e.g.
+> "nolinuxextensions" or "linuxextensions=no" ?).    Slightly harder
+> would be disabling Unix Extensions after the user has already mounted
+> (with Unix Extensions) to the same server (perhaps to a different
+> share).  How important would it be to have two mounts to the same
+> server one with unix extensions and one without?
 
-That will go wrong
+Why "linuxextensions"?  I thought those are the "UNIX extensions"  
+that Samba provides no matter on which platform it is run such as  
+Linux, Mac OS X, Solaris, etc...
 
-> > #define setCx86(reg, data) do { \
-> >          outb((reg), 0x22); \
-> >          outb((data), 0x23); \
-> > } while (0)
-> > 
-> > Maybe the compiler does the wrong thing if someone uses these macros in the 
-> > same instruction?
-> 
-> Sounds quite likely.
+Best regards,
 
-The problem is the macro evaluates to
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
-	outb(reg, 0x22);
-	[Then the getCx86]
-	outb(data, 0x23);
 
-which isn't valid for 6x86 control. Looks like someone overoptimised it.
-
-Either make it "inline" or split it up and it'll work
-
-> Also, it would probably be good to convert these macros into inline functions
-> in this header.
-
-Agreed - they must be issued in order in the right way as they are CPU
-level magic.
