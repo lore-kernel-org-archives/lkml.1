@@ -1,69 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXD3Bud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422727AbXD3Bve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422716AbXD3Bud (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 21:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXD3Bud
+	id S1422727AbXD3Bve (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 21:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422743AbXD3Bve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 21:50:33 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:63441 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422716AbXD3Bub (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 21:50:31 -0400
-Date: Sun, 29 Apr 2007 21:50:22 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Linux 2.6.21
-In-reply-to: <6bffcb0e0704291251i527b9231m1ff02a61aeac7f53@mail.gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: "Diego Calleja" <diegocg@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@stusta.de>, "Chuck Ebbert" <cebbert@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Message-id: <200704292150.22956.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070426224148.69b91b2e.diegocg@gmail.com>
- <20070429214007.9ea12e96.diegocg@gmail.com>
- <6bffcb0e0704291251i527b9231m1ff02a61aeac7f53@mail.gmail.com>
-User-Agent: KMail/1.9.6
+	Sun, 29 Apr 2007 21:51:34 -0400
+Received: from pat.uio.no ([129.240.10.15]:50332 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422727AbXD3Bvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 21:51:32 -0400
+Subject: Re: NR_UNSTABLE_FS vs. NR_FILE_DIRTY: double counting pages?
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Ethan Solomita <solo@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+In-Reply-To: <463537C2.5050804@google.com>
+References: <4632A1A6.90702@google.com>
+	 <1177878135.6400.37.camel@heimdal.trondhjem.org>
+	 <463537C2.5050804@google.com>
+Content-Type: text/plain
+Date: Sun, 29 Apr 2007 21:51:29 -0400
+Message-Id: <1177897889.6400.49.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.150)
+X-UiO-Scanned: 26947120E62E04D3C03AD1859F4E1DD3A65FB9BE
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 184 total 1405718 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 April 2007, Michal Piotrowski wrote:
->Hi Diego,
->
->On 29/04/07, Diego Calleja <diegocg@gmail.com> wrote:
->[..]
->
->> So unless someone is willing to write such tool (which I doubt, since it
->> doesn't looks easy), all this discussion seems pointless, and we should
->> stick with this http://kernelnewbies.org/known_regressions page
->> which is showing to be quite useful :)
+On Sun, 2007-04-29 at 17:26 -0700, Ethan Solomita wrote:
+> Trond Myklebust wrote:
+> > On Fri, 2007-04-27 at 18:21 -0700, Ethan Solomita wrote:
+> >> There are several places where we add together NR_UNSTABLE_FS and
+> >> NF_FILE_DIRTY:
+> >>
+> >> sync_inodes_sb()
+> >> balance_dirty_pages()
+> >> wakeup_pdflush()
+> >> wb_kupdate()
+> >> prefetch_suitable()
+> >>
+> >>     I can trace a standard codepath where it seems both of these are set
+> >> on the same page:
+> >>
+> >> nfs_file_aops.commit_write ->
+> >>     nfs_commit_write
+> >>     nfs_updatepages
+> >>     nfs_writepage_setup
+> >>     nfs_wb_page
+> >>     nfs_wb_page_priority
+> >>     nfs_writepage_locked
+> >>     nfs_flush_mapping
+> >>     nfs_flush_list
+> >>     nfs_flush_multi
+> >>     nfs_write_partial_ops.rpc_call_done
+> >>     nfs_writeback_done_partial
+> >>     nfs_writepage_release
+> >>     nfs_reschedule_unstable_write
+> >>     nfs_mark_request_commit
+> >>     incr NR_UNSTABLE_NFS
+> >>
+> >> nfs_file_aops.commit_write ->
+> >>     nfs_commit_write
+> >>     nfs_updatepage
+> >>     __set_page_dirty_nobuffers
+> >>     incr NF_FILE_DIRTY
+> >>
+> >>
+> >>     This is the standard code path that derives from sys_write(). Can
+> >> someone either show how this code sequence can't happen, or confirm for
+> >> me that there's a bug?
+> >>     -- Ethan
+> > 
+> > It should not happen. If the page is on the unstable list, then it will
+> > be committed before nfs_updatepage is allowed to redirty it. See the
+> > recent fixes in 2.6.21-rc7.
+> 
+> 	Above I present a codepath called straight from sys_write() which seems 
+> to do what I say. I could be wrong, but can you address the code paths I 
+> show above which seem to set both?
+> 	-- Ethan
 
-Usefull?  For what?  Having seen the link at the time I was fighting with yet 
-another rearranged USB setup, and I swear the boot process uses Schrodingers 
-Cat to determine which device found in the usb scan gets the first ttyUSB, 
-and which gets the second, so I went to this site to see if it could be more 
-productive than bugzilla (I'd like to toss about 10 pounds of C4 into the 
-only code repository on the planet that thing is built from), but no, sorry, 
-no bisquit.
+Look carefully at nfs_update_request(): if !nfs_dirty_request(), then it
+returns -EBUSY, and so nfs_writepage_setup() will loop on nfs_wb_page().
+IOW: if PG_NEED_COMMIT is set (which it should be if on the commit list)
+then nfs_writepage_setup() will loop...
 
-Why?  First, its yet another password I have to scribble on the wall along 
-with enough surrounding data so I might be able to find it the next time.
+Trond
 
-You can't have it even do a search to see if it already has something similar 
-without creating an account and logging in.  Since I'm out of wall space, and 
-the missus is bugging me to paint over all that, I left.
-
-I repeat:  Usefull?  For what?
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Simon: (to Jayne) "Enemies?  You?  No, how can it be?"
-				--Episode #7, "Jaynestown"
