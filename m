@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161648AbXD3Ftf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423030AbXD3Ftk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161648AbXD3Ftf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161650AbXD3Ftf
+	id S1423030AbXD3Ftk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423037AbXD3Ftk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:49:35 -0400
-Received: from smtp106.plus.mail.re2.yahoo.com ([206.190.53.31]:31955 "HELO
-	smtp106.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1161648AbXD3Fte (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:49:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=NO/zv3qjNevoR7seu9AdJ4vz6QxF847SlPXDP7aO6TxXTZfLpA9+M+uuOJGiytw1V+oDoQghPnYfmRhypxmVWNCQnZYxeO+dh8iCCI/cOtxj3AL4gQPEGIzm6Gf/7S44XcQAYBZ1ZelYh1fMyXpI8qNrksI6G8uKHExLwJ5UhGY=  ;
-X-YMail-OSG: jvrNSzsVM1l1bkFaih1mWm5Cs3vJmOqVfGTRmlgb4.87.aB2weGRVrxY6uVHsLHCOpRIovoOgA--
-Date: Mon, 30 Apr 2007 07:49:27 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andi Kleen <ak@suse.de>
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [9/26] x86_64: Fix vmalloc_32 to really allocate <4GB on 64bit platforms
-Message-ID: <20070430054927.GB4772@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070430146.588463000@suse.de> <20070429234618.4CC7E150F2@wotan.suse.de> <20070430050133.GA4772@gollum.tnic>
+	Mon, 30 Apr 2007 01:49:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:32959 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423030AbXD3Ftj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 01:49:39 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070430050133.GA4772@gollum.tnic>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17973.33249.852991.342860@cargo.ozlabs.ibm.com>
+Date: Mon, 30 Apr 2007 15:42:57 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Anton Blanchard <anton@samba.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Incorrect order of last two arguments of ptrace for requests
+	PPC_PTRACE_GETREGS, SETREGS, GETFPREGS, SETFPREGS
+In-Reply-To: <20061204215825.GB22514@krispykreme>
+References: <453F421A.6070507@in.ibm.com>
+	<1164220580.12365.8.camel@hades.cambridge.redhat.com>
+	<20061204215825.GB22514@krispykreme>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry, I meant this one:
+Anton Blanchard writes:
 
+> I looked at this a while ago and my decision at the time was to keep the
+> old implementation around for a while and create two new ones that match
+> the x86 numbering:
+> 
+> #define PTRACE_GETREGS            12
+> #define PTRACE_SETREGS            13
+> #define PTRACE_GETFPREGS          14
+> #define PTRACE_SETFPREGS          15
+> 
+> I hate gratuitous differences, each ptrace app ends up with a sea of
+> ifdefs.
+> 
+> Also I think it would be worth changing getregs/setregs to grab the
+> entire pt_regs structure. Otherwise most ops (gdb, strace etc) will just
+> have to make multiple ptrace calls to get the nia etc.
 
-Index: 2.6.21/mm/vmalloc.c
-===================================================================
---- 2.6.21.orig/mm/vmalloc.c
-+++ 2.6.21/mm/vmalloc.c
-@@ -577,6 +577,16 @@ void *vmalloc_exec(unsigned long size)
- 	return __vmalloc(size, GFP_KERNEL | __GFP_HIGHMEM, PAGE_KERNEL_EXEC);
- }
- 
-+#if defined(CONFIG_64BIT)
-+  #if defined(CONFIG_ZONE_DMA32)
-+  #define GFP_VMALLOC32 GFP_DMA32
-+  #elif defined(CONFIG_ZONE_DMA)
-+  #define GFP_VMALLOC32 GFP_DMA
-+  #endif
-+#else
-+  #define GFP_VMALLOC32 GFP_KERNEL
-+#endif
-+
- /**
-  *	vmalloc_32  -  allocate virtually contiguous memory (32bit addressable)
-  *	@size:		allocation size
--- 
-Regards/Gruﬂ,
-    Boris.
+Did you do a patch to do that?
+
+Paul.
