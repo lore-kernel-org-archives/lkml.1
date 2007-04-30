@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031067AbXD3LfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031091AbXD3LfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031067AbXD3LfA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 07:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031090AbXD3LfA
+	id S1031091AbXD3LfI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 07:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031090AbXD3LfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 07:35:00 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:39788 "EHLO mailer.gwdg.de"
+	Mon, 30 Apr 2007 07:35:08 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:11205 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031067AbXD3Le7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 07:34:59 -0400
-Date: Mon, 30 Apr 2007 13:33:19 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Corey Minyard <minyard@acm.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       openipmi-developer@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 11/36] Use menuconfig objects II - IPMI
-In-Reply-To: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704301332570.29151@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1031091AbXD3LfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 07:35:06 -0400
+Date: Mon, 30 Apr 2007 13:30:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>, Neil Brown <neilb@suse.de>,
+       Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm patch] i386: enable 4k stacks by default
+Message-ID: <20070430113044.GJ21015@kernel.dk>
+References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <17973.44824.631204.926723@notabene.brown> <20070430085916.GA31397@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430085916.GA31397@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 30 2007, Christoph Hellwig wrote:
+> On Mon, Apr 30, 2007 at 06:55:52PM +1000, Neil Brown wrote:
+> > On Saturday April 28, zlynx@acm.org wrote:
+> > > On Sat, 2007-04-28 at 21:19 +0200, Adrian Bunk wrote:
+> > > > 4k stacks have become a well-tested feature used fore a long time in
+> > > > Fedora and even in RHEL 4.
+> > > 
+> > > So has anyone fixed the bugs involving ext3 and LVM snapshots on top of
+> > > DM mirror?
+> > 
+> > Well -mm has a patch which makes stacked block devices much less of an
+> > issue, but this hasn't made it -linus yet - I think the dm developer
+> > isn't happy that dm works properly with it.
+> 
+> I get a little tired about this objection.  If the particular dm code
+> was racy before and this can in theory make it worse it's their problem,
+> and putting in perfectly fine code will give them an incentive to
+> fix their year old race.
 
-Change Kconfig objects from "menu, config" into "menuconfig" so
-that the user can disable the whole feature without having to
-enter the menu first.
+Agree, Neil would you mind if I merged the patch?
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+-- 
+Jens Axboe
 
----
- drivers/char/ipmi/Kconfig |   12 ++++--------
- 1 file changed, 4 insertions(+), 8 deletions(-)
-
---- linux-2.6.21-mm_20070428.orig/drivers/char/ipmi/Kconfig
-+++ linux-2.6.21-mm_20070428/drivers/char/ipmi/Kconfig
-@@ -2,8 +2,7 @@
- # IPMI device configuration
- #
- 
--menu "IPMI"
--config IPMI_HANDLER
-+menuconfig IPMI_HANDLER
-        tristate 'IPMI top-level message handler'
-        help
-          This enables the central IPMI message handler, required for IPMI
-@@ -16,9 +15,10 @@ config IPMI_HANDLER
- 
- 	 If unsure, say N.
- 
-+if IPMI_HANDLER
-+
- config IPMI_PANIC_EVENT
-        bool 'Generate a panic event to all BMCs on a panic'
--       depends on IPMI_HANDLER
-        help
-          When a panic occurs, this will cause the IPMI message handler to
- 	 generate an IPMI event describing the panic to each interface
-@@ -38,14 +38,12 @@ config IPMI_PANIC_STRING
- 
- config IPMI_DEVICE_INTERFACE
-        tristate 'Device interface for IPMI'
--       depends on IPMI_HANDLER
-        help
-          This provides an IOCTL interface to the IPMI message handler so
- 	 userland processes may use IPMI.  It supports poll() and select().
- 
- config IPMI_SI
-        tristate 'IPMI System Interface handler'
--       depends on IPMI_HANDLER
-        help
-          Provides a driver for System Interfaces (KCS, SMIC, BT).
- 	 Currently, only KCS and SMIC are supported.  If
-@@ -53,15 +51,13 @@ config IPMI_SI
- 
- config IPMI_WATCHDOG
-        tristate 'IPMI Watchdog Timer'
--       depends on IPMI_HANDLER
-        help
-          This enables the IPMI watchdog timer.
- 
- config IPMI_POWEROFF
-        tristate 'IPMI Poweroff'
--       depends on IPMI_HANDLER
-        help
-          This enables a function to power off the system with IPMI if
- 	 the IPMI management controller is capable of this.
- 
--endmenu
-+endif # IPMI_HANDLER
