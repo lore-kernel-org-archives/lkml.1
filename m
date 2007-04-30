@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423686AbXD3VeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423679AbXD3VeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423686AbXD3VeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 17:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423679AbXD3VeT
+	id S1423679AbXD3VeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 17:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423691AbXD3VeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 17:34:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:26188 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423675AbXD3VeS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 17:34:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,472,1170662400"; 
-   d="scan'208";a="221916945"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: condingstyle, was Re: utrace comments
-Date: Mon, 30 Apr 2007 14:34:12 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A016A5EDA@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070430100917.439ebfc8.akpm@linux-foundation.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: condingstyle, was Re: utrace comments
-Thread-Index: AceLZCehqJkN3CyrTrmwnXTRS4HL1wACOl1w
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Christoph Hellwig" <hch@infradead.org>
-CC: "Roland McGrath" <roland@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
-       <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>
-X-OriginalArrivalTime: 30 Apr 2007 21:34:13.0683 (UTC) FILETIME=[4C0BF030:01C78B6F]
+	Mon, 30 Apr 2007 17:34:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423687AbXD3VeV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 17:34:21 -0400
+Date: Mon, 30 Apr 2007 14:30:57 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: stable@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Riccardo Ricci <rricci@nuovanetmore.it>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Len Brown <len.brown@intel.com>, David Brownell <david-b@pacbell.net>,
+       Jeff Mahoney <jeffm@suse.com>, reiserfs-dev@namesys.com,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Francois SIMOND <curio@free.fr>,
+       netdev@vger.kernel.org,
+       =?UTF-8?B?SMOla2Fu?= Lindqvist <lindqvist@netstar.se>,
+       Vincent Frentzel <zcecc22@ucl.ac.uk>,
+       =?UTF-8?B?RnJhbsOnb2lz?= Valenduc <francois.valenduc@skynet.be>,
+       Thomas Meyer <thomas.mey@web.de>, Giorgio Lando <patroclo7@gmail.com>,
+       Dave Jones <davej@redhat.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.21 known regressions (v2) (for -stable team)
+Message-ID: <20070430143057.41ec75db@freekitty>
+In-Reply-To: <463375E5.5040108@googlemail.com>
+References: <463375E5.5040108@googlemail.com>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm a bit lost here.  Are we referring to
->
->	if (expr) {
->		...
->	} else {
->		...
->	}
->
-> versus
->
->	if (expr) {
->		...
->	}
->	else {
->		...
->	}
 
-This one is already covered by Documentation/CodingStyle (with the Justification
-that this is the way that K&R do it, so it must be right).
+> Subject    : 2.6.21: sky2 "hw csum failure" problem
+> References : http://lkml.org/lkml/2007/4/28/105
+> Submitter  : Håkan Lindqvist <lindqvist@netstar.se>
+> Status     : unknown
+> 
 
-> This is
->
->	if (expr1 &&
->		expr2)
->
-> versus
->
->	if (expr1
->		&& expr2)
+This is not a "regression" it is a bug, that has shown up for
+some users for quite a while, see:
+ http://bugzilla.kernel.org/show_bug.cgi?id=7579
 
-This isn't covered ... CodingStyle merely says that long lines
-should be broken into "sensible chunks".  Perhaps we should add
-some words about breaking long lines leaving binary operators
-trailing on the end of the line (my preferred style).  But the
-only examples of this I could find leafing through K&R they
-put the binary operator on the start of the continuation line
-(could the prophets have been wrong here :-)
 
--Tony
+-- 
+Stephen Hemminger <shemminger@linux-foundation.org>
