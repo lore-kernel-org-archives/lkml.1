@@ -1,465 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423230AbXD3NGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423236AbXD3NKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423230AbXD3NGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 09:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423227AbXD3NGT
+	id S1423236AbXD3NKG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 09:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423235AbXD3NKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 09:06:19 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:9326 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423230AbXD3NGN (ORCPT
+	Mon, 30 Apr 2007 09:10:05 -0400
+Received: from bill.weihenstephan.org ([82.135.35.21]:56106 "EHLO
+	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423233AbXD3NKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 09:06:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BW7EK4zqAS596mKMLLWV1HYsJOQNPsZBtZZr0+knw0NUwGOYH6uY38HqUpAMeea9yOwRitjyWCPW56yDI5WzMacRHtw6W8LTfNXnNcL50d3VI3GFNmTMmAFljv4dOjY6nHpAlzdyameCf2ZdJYMrTL7f5rqM7QXrvP84oDxC0Ks=
-Message-ID: <d9def9db0704300606r34e0d05av4a9b54eeae94b404@mail.gmail.com>
-Date: Mon, 30 Apr 2007 15:06:11 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Uwe Bugla" <uwe.bugla@gmx.de>
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and pseudo-authorities
-Cc: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       mkrufky@linuxtv.org, hermann-pitton@arcor.de
-In-Reply-To: <20070430123716.119970@gmx.net>
+	Mon, 30 Apr 2007 09:10:04 -0400
+From: Juergen Beisert <juergen127@kreuzholzen.de>
+Organization: Privat
+To: linux-kernel@vger.kernel.org, Mikael Pettersson <mikpe@it.uu.se>
+Subject: [PATCH] [1/1] CPU-i386-Geode: Chipset access macros do not work as expected
+Date: Mon, 30 Apr 2007 15:09:58 +0200
+User-Agent: KMail/1.9.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070429182209.267430@gmx.net>
-	 <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
-	 <20070429205925.129920@gmx.net>
-	 <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
-	 <20070429230037.95120@gmx.net>
-	 <1177894713.3046.5.camel@pc06.localdom.local>
-	 <20070430110255.267000@gmx.net>
-	 <d9def9db0704300448g6d7f4bd2ob7d6117d6c5f0cfb@mail.gmail.com>
-	 <20070430123716.119970@gmx.net>
+Message-Id: <200704301509.58776.juergen127@kreuzholzen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/30/07, Uwe Bugla <uwe.bugla@gmx.de> wrote:
->
-> -------- Original-Nachricht --------
-> Datum: Mon, 30 Apr 2007 13:48:34 +0200
-> Von: "Markus Rechberger" <mrechberger@gmail.com>
-> An: "Uwe Bugla" <uwe.bugla@gmx.de>
-> CC: "hermann pitton" <hermann-pitton@arcor.de>, mkruky@linuxtv.org,
-> akpm@linux-foundation.org, torvalds@linux-foundation.org,
-> linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
-> Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
-> pseudo-authorities
->
-> > On 4/30/07, Uwe Bugla <uwe.bugla@gmx.de> wrote:
-> > >
-> > > -------- Original-Nachricht --------
-> > > Datum: Mon, 30 Apr 2007 02:58:33 +0200
-> > > Von: hermann pitton <hermann-pitton@arcor.de>
-> > > An: Uwe Bugla <uwe.bugla@gmx.de>
-> > > CC: Linus Torvalds <torvalds@linux-foundation.org>, mkruky@linuxtv.org,
-> > > akpm@linux-foundation.org, linux-dvb@linuxtv.org,
-> > > linux-kernel@vger.kernel.org
-> > > Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21
-> > > and	pseudo-authorities
-> > >
-> > > > Am Montag, den 30.04.2007, 01:00 +0200 schrieb Uwe Bugla:
-> > > > > -------- Original-Nachricht --------
-> > > > > Datum: Sun, 29 Apr 2007 14:19:22 -0700 (PDT)
-> > > > > Von: Linus Torvalds <torvalds@linux-foundation.org>
-> > > > > An: Uwe Bugla <uwe.bugla@gmx.de>
-> > > > > CC: linux-dvb@linuxtv.org, mkruky@linuxtv.org,
-> > mchehab@infradead.org,
-> > > > linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-> > > > > Betreff: Re: Critical points about kernel 2.6.21 and
-> > pseudo-authorities
-> > > > >
-> > > > > >
-> > > > > >
-> > > > > > On Sun, 29 Apr 2007, Uwe Bugla wrote:
-> > > > > > >
-> > > > > > > I have been trying diff and other tools in various variants
-> > (except
-> > > > > > > git-bisect that I cannot handle because I do not understand the
-> > > > practice
-> > > > > > > of it).
-> > > > > >
-> > > > > > git bisect is _really_ simple if you already have a git tree
-> > anyway.
-> > > > And
-> > > > > > even if you don't, getting one isn't really hard either. Just do
-> > > > > >
-> > > > > > 	git clone
-> > > > > >
-> > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> > > > linux-2.6
-> > > > > >
-> > > > > > and you have a tree (it will take a little while - it's going to
-> > > > dowload
-> > > > > > about 170MB or so of stuff, so the initial clone is going to be a
-> > bit
-> > > > > > painful unless you have a fast internet connection).
-> > > > > >
-> > > > > > Once you have the git tree, assuming that 2.6.21-rc7 worked for
-> > you,
-> > > > it's
-> > > > > > really as easy as just saying
-> > > > > >
-> > > > > > 	git bisect start
-> > > > > > 	git bisect good v2.6.21-rc7
-> > > > > > 	git bisect bad v2.6.21
-> > > > > >
-> > > > > > and git will think for a short while (most of the time is going to
-> > be
-> > > > > > checking out the new tree) and give you a tree to test.
-> > > > > >
-> > > > > > Just build, boot, and test that tree.
-> > > > > >
-> > > > > > If it was fine, do
-> > > > > >
-> > > > > > 	git bisect good
-> > > > > >
-> > > > > > and git will pick a new tree to test. And if it wasn't, instead
-> > just
-> > > > do
-> > > > > > "git bisect bad", and git will pick _another_ version to test. Do
-> > this
-> > > > a
-> > > > > > few times, and git will tell you which commit introduced them.
-> > > > > >
-> > > > > > There were just 125 commits in between 2.6.21-rc7 and the final
-> > one,
-> > > > so it
-> > > > > > should be quite quick - bisection basically does a binary search,
-> > so
-> > > > doing
-> > > > > > seven reboots should have you with the result.
-> > > > > >
-> > > > > > The fact that it already works in 2.6.21-git2 obviously means that
-> > _I_
-> > > > end
-> > > > > > up being less interested, but the -stable tree people would love
-> > to
-> > > > hear
-> > > > > > what broke!
-> > > > >
-> > > > > Hi again Linus,
-> > > > > my deep thanks for your excellent explication of git-bisect.
-> > > > > But I unfortunately owe a 100Kbit flatrate, and so downloading some
-> > 170
-> > > > MB git tree will need the time amount of one entire night (11.5 kb /s
-> > if I
-> > > > am lucky - no more).
-> > > > > Just to take up a different approach:
-> > > > >
-> > > > > The difference between 2.6.21-rc7 and 2.6.21 official does not play
-> > any
-> > > > role at all.
-> > > > >
-> > > > > On the other hand I found out that:
-> > > > > 2.6.21-rc7 made my AMD K7 router work fine
-> > > > > 2.6.21 official hung my AMD K7 router up
-> > > > > 2.6.21-git1 hung my AMD K7 router up
-> > > > > 2.6.21-git2 made my AMD K7 router work.
-> > > > >
-> > > > > In so far the diff between 2.6.21-git1 and 2.6.21-git2 obviously
-> > solves
-> > > > the problem.
-> > > > > Or am I saying something wrong as far as logical terms are
-> > concerned?
-> > > > >
-> > > > > >
-> > > > > > > I like small and effective kernels instead of blown up RAM
-> > waste.
-> > > > > > > This is no Windoze, man, this is Linux!
-> > > > > >
-> > > > > > Yes. But if you cannot be polite and *RESPECTFUL*, you won't get
-> > > > anywhere
-> > > > > > at all.
-> > > > > >
-> > > > > > This is Linux, not Windows. But that also means that those
-> > developers
-> > > > that
-> > > > > > you denigrate aren't getting paid by you, and if you don't show
-> > them
-> > > > > > respect, they'll totally ignore you.
-> > > > > >
-> > > > > > 		Linus
-> > > > >
-> > > > > Now this is the old problem about it all: the hypocricy factor, the
-> > > > utmost small, if not to say pre-pubertarian character plus some other
-> > > obviously
-> > > > counter-productive character traits in those so-called "maintainers"
-> > who
-> > > > behave like kids, but not like grown-ups at all!
-> > > > > Not only you, but also Andrew perfectly and willingly step into the
-> > > > hypocritic trap and do not even feel that they are trapped!
-> > > > >
-> > > > > For the majority of all cases of the so-called "maintainer
-> > personnel" at
-> > > > linuxtv.org the statement of some missing "politeness" or some missing
-> > > > "respect" is nothing but an utmost dumb, kiddish, human mediocre and
-> > > utmost
-> > > > stupid and utmost hypocritic excuse for bare naked incompatibility,
-> > > dumbness,
-> > > > wrong solidarity, kiddishness and technical incompetence.
-> > > > >
-> > > > > They are building up pseudo-authorities to hide their lack of
-> > > > competence, no matter if their lack of competence funds on technical
-> > or
-> > > human lacks.
-> > > > > And at least the Brazilian Mauro Carvalho Chehab does go even so far
-> > to
-> > > > soap in Andrew Morton's face with this enourmous threat of
-> > incompetence,
-> > > > kiddishness, incompatibility, hypocricy, lies, stigmatisations,
-> > > stubbornness,
-> > > > lack of experience, pre-pubertarian behaviour, fascistoid opinion
-> > > > dictatorship as part of a deep immature anti-democratic and
-> > reactionary
-> > > personality
-> > > > structure.
-> > > > >
-> > > > > Would you call Mauro Carvalho Chehab a maintainer!
-> > > > > I can certify you that I cannot, even if I try. And I want him to be
-> > > > substituted as quick as possible as he is the biggest mismatch of
-> > > gatekeeper
-> > > > one can ever imagine.
-> > > > >
-> > > > > And it is not only me personally perceiving this that there are
-> > people
-> > > > missing who can go upright and offer sophisticated and good work.
-> > > > > Plus a real sophisticated discussion behaviour, in technical and in
-> > > > human terms.
-> > > > > Going upright is thus far away from the behaviour NOT to be able to
-> > > > tolerate any criticism at all.
-> > > > >
-> > > > > Solution: This whole new quite young linuxtv.org team is missing a
-> > real
-> > > > grown up and experienced team leader. Not only that is definitely too
-> > much
-> > > > for Mauro Carvalho Chehab. That is the pain - the consistence of the
-> > whole
-> > > > group is the pain, that's all. Too young, too many lacks of human
-> > skills,
-> > > > and missing an appropriate team leader.............
-> > > > >
-> > > > > So, if I show respect or not, or if I show politeness or not will
-> > never
-> > > > change the whole structural situation at all, as great parts of the
-> > whole
-> > > > team is a disease:
-> > > > > 1. By Chehab being the team leader the whole fish stinks from the
-> > head
-> > > > startup.
-> > > > > Solution: Substitution of Mauro Carvalho Chehab as quick as possible
-> > -
-> > > > even quicker than a storm!
-> > > > > 2. By Krufky being one part of it, doing good work, but executing
-> > wrong
-> > > > solidarities by his bowing behaviour towards pseudo-authorities
-> > although
-> > > he
-> > > > knows better at least technically this is a question of wrong or right
-> > > > leadership, nothing else
-> > > > > 3. By Abraham offering us great ranting aims that never are being
-> > put
-> > > > into practice out of certified missing human skills and missing
-> > technical
-> > > > knowledge (the four completely unusable 2.6 kernels were never
-> > apologized
-> > > by
-> > > > himself) urgent substitution  is utmost necessary.
-> > > > >
-> > > > > CLEARER: If anyone of the people knowing the deeper context claims
-> > those
-> > > > "gatekeeper methods" to be a consequence of missing "respect" or
-> > missing
-> > > > "politeness" then those people are either strictly dumb and
-> > superficial,
-> > > or
-> > > > they owe a gesture that I would call a "Well, I know, but I do not
-> > want to
-> > > > see what's going on"-disease, nothing else.
-> > > > >
-> > > > > Another term to describe the latter would be "bureaucratic lamb head
-> > > > behaviour".
-> > > > >
-> > > > > See, Linus, if for instance Andrew Morton mails me some statement
-> > from
-> > > > that Chehab going: "Again, do not take the patches from Uwe - he is
-> > always
-> > > > regarding things through his personal prisma, and the rest he simply
-> > does
-> > > > not perceive at all"
-> > > > >
-> > > > > then this is nothing but a gesture full of lies (somehow typical for
-> > > > this Brazilian fascistoid opinion block head dictator), but it simply
-> > > shows
-> > > > that the linuxtv.org teamleader is a horrible mismatch, nothing else!
-> > > > >
-> > > > > His mediocrity and dumbness simply defines through the fact that he
-> > is
-> > > > using stigmatizations very soon in a so-called "discussion" because he
-> > > > misses
-> > > > > a. human skills
-> > > > > b. technical proven arguments and theses
-> > > > > c. enough experience, human or technical one.
-> > > > >
-> > > > > And the biggest threat and shame is the proven fact that Andrew
-> > Morton
-> > > > does obey to such a stupid reactionary idiot and let his face soap in
-> > by
-> > > > this dirty Brazilian hypocrite instead of giving contributions at
-> > least a
-> > > > chance through his mm-tree.
-> > > > >
-> > > > > So there are exactly two solutions:
-> > > > > 1. Andrew Morton should not obey to Chehab anymore and be real open
-> > > > > 2. Chehab and Abraham should be substituted as quick as possible
-> > without
-> > > > any hesitation in no way!!!!
-> > > > >
-> > > > > The one that got to be fired with the most urgent priority is called
-> > > > Mauro Carvalho Chehab. This is no maintainer, this is no gatekeeper,
-> > but
-> > > this
-> > > > is nothing but a real personified ape or disease.
-> > > > >
-> > > > > And the argument whether those people are paid for their work or not
-> > is
-> > > > exactly as important as if a sack of rice falls down somewhere in
-> > > > capitalist China or not.....
-> > > > > OBSOLETE!!!
-> > > > >
-> > > > > Yours sincerely
-> > > > > Uwe
-> > > > >
-> > > >
-> > > > If eventually somebody thinks this kind of stuff could be helpful,
-> > > > please say so and give us some pointers.
-> > > >
-> > > > Hermann
-> > > >
-> > > Hi Hermann,
-> > >
-> > > now if you are searching for helpful stuff I can make public a ten
-> > Emails
-> > > ping pong
-> > > betwwen stupid Chehab and me about my almost excellent dst-deselection
-> > patch
-> > > contributions.
-> > >
-> > > In this ten Emails you will yourself see the intellectual and technical
-> > > proof in how far Mr. Chehab is acting with nothing else but:
-> > >
-> > > a. Lies
-> > > b. Unproven thesis
-> > > c. Stigmatizations
-> > >
-> > > and so on.
-> > >
-> > > THIS MAN HAS NO IDEA, BUT HE HAS THE POWER!
-> > >
-> > > That's it what I cannot live with!
-> > > I swear I never stumbled over such an utomst stubborn, stupid and
-> > horrible
-> > > idiot in my whole year lasting Linux experience, and I thought I could
-> > not
-> > > trust my eyes when I saw what incredible crap work was pushed into
-> > mainline
-> > > by the signature of this
-> > > incredible and horrible team chief from Brazil.
-> > >
-> > > If you want to see the Emails, just ask me and I will forward them with
-> > a
-> > > couple of CCs. They will show the truth about the real consistence of
-> > this
-> > > "maintainer leader".
-> > >
-> >
-> > Uwe,
-> >
-> > which patches do you refer to?
-> > Can you submit a list of your patches which got no attention (I'm only
-> > interested in the patches, not in discussions you had)
-> >
-> > Markus
->
-> Hi Markus,
-> a thousands of thanks for your friendly response - very nice! What a
-> pleasure!
->
-> I do not send in the two patches for one more time. I have sent them in so
-> often!
-> If you take a closer look at the mailing list you will easily find them.
->
-> One is a docu fix, and the other one, causing so much trouble out of nothing
-> but Chehab's stubbornness and incompetence, is the one that makes the two
-> DST modules
-> deselectable (i. e. DST itself for TwinHan DST and clones plus DST_CA for
-> TwinHan cards with CA slot and Pinnacle PCTV SAT cards with CI extension for
-> example).
->
-> Chehab told me some crap about unresolved symbols which never existed as
-> this second patch just runs fine.
+From: Juergen Beisert <juergen.beisert@weihenstephan.org>
 
-> The compiler errors are the following:
-> WARNING: "dst_ca_attach" [drivers/media/dvb/bt8xx/dvb-bt8xx.ko] undefined!
-> WARNING: "dst_attach" [drivers/media/dvb/bt8xx/dvb-bt8xx.ko] undefined!
-> WARNING: "dvb_pll_configure" [drivers/media/dvb/bt8xx/dvb-bt8xx.ko] undefined!
-> WARNING: "dvb_pll_lg_tdvs_h06xf" [drivers/media/dvb/bt8xx/dvb-bt8xx.ko] undefined!
+Replace NSC/Cyrix specific chipset access macros by inlined functions.
+With the macros a line like this fails (and does nothing):
+	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+With inlined functions this line will work as expected.
 
-> WARNING: /lib/modules/2.6.19-rc5/kernel/drivers/media/dvb/bt8xx/dvb-bt8xx.ko needs unknown symbol dst_attach
-> WARNING: /lib/modules/2.6.19-rc5/kernel/drivers/media/dvb/bt8xx/dvb-bt8xx.ko needs unknown symbol dst_ca_attach
-> WARNING: /lib/modules/2.6.19-rc5/kernel/drivers/media/dvb/bt8xx/dvb-bt8xx.ko needs unknown symbol dvb_pll_lg_tdvs_h06xf
-> WARNING: /lib/modules/2.6.19-rc5/kernel/drivers/media/dvb/bt8xx/dvb-bt8xx.ko needs unknown symbol dvb_pll_configure
+Note about a side effect: Seems on Geode GX1 based systems the
+"suspend on halt power saving feature" was never enabled due to this
+wrong macro expansion. With inlined functions it will be enabled, but
+this will stop the TSC when the CPU runs into a HLT instruction.
+Kernel output something like this:
+	Clocksource tsc unstable (delta = -472746897 ns)
+Tested on a Geode GX1 system.
 
-I just looked over the patches and Mauro's response shortly, Mauro
-just wrote that your patch leaves undefined symbols. That way Mauro
-won't commit any patches, nevermind if the patch comes from you or
-someone else.
+Signed-off-by: Juergen Beisert <juergen.beisert@weihenstephan.org>
 
-I'll have a closer look at what your patch causes tonight, afterwards
-I can say more about it.
-If these symbols aren't needed you might insert dummy functions which
-print that the real implementation isn't compiled into the kernel
-(dvb_attach does it that way)
+Index: linux-2.6.21/include/asm-i386/processor.h
+===================================================================
+--- linux-2.6.21.orig/include/asm-i386/processor.h
++++ linux-2.6.21/include/asm-i386/processor.h
+@@ -202,37 +202,6 @@ static inline void clear_in_cr4 (unsigne
+ 	write_cr4(cr4);
+ }
 
-Some of your mails only contain 10% information about what you really
-want to solve please cut out the private abusive stuff. The people you
-judge here contributed alot during the last years, it probably
-wouldn't even be possible to compile the whole project that easy if
-these people wouldn't have done all that work for everyone.
+-/*
+- *      NSC/Cyrix CPU configuration register indexes
+- */
+-
+-#define CX86_PCR0 0x20
+-#define CX86_GCR  0xb8
+-#define CX86_CCR0 0xc0
+-#define CX86_CCR1 0xc1
+-#define CX86_CCR2 0xc2
+-#define CX86_CCR3 0xc3
+-#define CX86_CCR4 0xe8
+-#define CX86_CCR5 0xe9
+-#define CX86_CCR6 0xea
+-#define CX86_CCR7 0xeb
+-#define CX86_PCR1 0xf0
+-#define CX86_DIR0 0xfe
+-#define CX86_DIR1 0xff
+-#define CX86_ARR_BASE 0xc4
+-#define CX86_RCR_BASE 0xdc
+-
+-/*
+- *      NSC/Cyrix CPU indexed register access macros
+- */
+-
+-#define getCx86(reg) ({ outb((reg), 0x22); inb(0x23); })
+-
+-#define setCx86(reg, data) do { \
+-	outb((reg), 0x22); \
+-	outb((data), 0x23); \
+-} while (0)
+-
+ /* Stop speculative execution */
+ static inline void sync_core(void)
+ {
+Index: linux-2.6.21/include/asm-i386/processor-cyrix.h
+===================================================================
+--- /dev/null
++++ linux-2.6.21/include/asm-i386/processor-cyrix.h
+@@ -0,0 +1,35 @@
++/*
++ * NSC/Cyrix CPU configuration register indexes
++ */
++#define CX86_PCR0 0x20
++#define CX86_GCR  0xb8
++#define CX86_CCR0 0xc0
++#define CX86_CCR1 0xc1
++#define CX86_CCR2 0xc2
++#define CX86_CCR3 0xc3
++#define CX86_CCR4 0xe8
++#define CX86_CCR5 0xe9
++#define CX86_CCR6 0xea
++#define CX86_CCR7 0xeb
++#define CX86_PCR1 0xf0
++#define CX86_DIR0 0xfe
++#define CX86_DIR1 0xff
++#define CX86_ARR_BASE 0xc4
++#define CX86_RCR_BASE 0xdc
++
++/*
++ * NSC/Cyrix CPU indexed register access
++ */
++static inline u8 getCx86(u8 reg)
++{
++	outb(reg,0x22);
++	return inb(0x23);
++}
++
++static inline void setCx86(u8 reg, u8 data)
++{
++	outb(reg,0x22);
++	outb(data,0x23);
++}
++
++/* end of file processor-cyrix.h */
+Index: linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/cpu/cyrix.c
++++ linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
+@@ -4,7 +4,7 @@
+ #include <linux/pci.h>
+ #include <asm/dma.h>
+ #include <asm/io.h>
+-#include <asm/processor.h>
++#include <asm/processor-cyrix.h>
+ #include <asm/timer.h>
+ #include <asm/pci-direct.h>
 
-2.6.21 won't be the last kernel out there, the right place to fix that
-problem is the v4l-dvb repository on linuxtv.org first.
+Index: linux-2.6.21/arch/i386/kernel/cpu/mtrr/cyrix.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/cpu/mtrr/cyrix.c
++++ linux-2.6.21/arch/i386/kernel/cpu/mtrr/cyrix.c
+@@ -3,6 +3,7 @@
+ #include <asm/mtrr.h>
+ #include <asm/msr.h>
+ #include <asm/io.h>
++#include <asm/processor-cyrix.h>
+ #include "mtrr.h"
 
-Markus
-
-> I also did not miss any warning lines in the deselection menu that I
-> programmed and I can swear I definitely missed no chance to convince Chehab
-> and others that my patches are close to being real perfect! IN VAIN!
->
-> So, if you do not find my patches on the mailing list or if there are any
-> questions as far as what concerns that issue please feel free to ask me as I
-> believe that you are really open-minded towards that.
->
-> Above that I want to confirm the utmost necessity to rip Trent Piepho's
-> regressive work out of 2.6.21-git2 as it is in fact technically the most
-> regressive and reactionary crap that I ever have seen......
->
-> So please Linus - rip that crap out of 2.6.21-git2. And if you do see
-> questions what parts you need to rip out, please feel free to ask me....
->
-> Cheers
-> Uwe
->
-> --
-> "Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-> Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
->
-
-
--- 
-Markus Rechberger
+ int arr3_protected;
