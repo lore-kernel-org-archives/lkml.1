@@ -1,77 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946616AbXD3Su4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946619AbXD3Su4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946616AbXD3Su4 (ORCPT <rfc822;w@1wt.eu>);
+	id S1946619AbXD3Su4 (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 30 Apr 2007 14:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946625AbXD3Suz
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946617AbXD3Su4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:50:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:41849 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946616AbXD3SuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:50:00 -0400
-Message-ID: <46363A68.6080201@goop.org>
-Date: Mon, 30 Apr 2007 11:50:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
-       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org> <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 30 Apr 2007 14:50:56 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58427 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946620AbXD3Sug (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 14:50:36 -0400
+Date: Mon, 30 Apr 2007 11:50:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH][ 3/5] sched: implement staircase deadline cpu scheduler
+Message-Id: <20070430115014.0fff7772.akpm@linux-foundation.org>
+In-Reply-To: <200703271210.39429.kernel@kolivas.org>
+References: <200703271210.39429.kernel@kolivas.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> I have several ideas on how we can make this work but first I have to
-> ask what is it that you are trying to accomplish?
->   
+On Tue, 27 Mar 2007 13:10:39 +1100
+Con Kolivas <kernel@kolivas.org> wrote:
 
-The requirements are:
+> Staircase Deadline cpu scheduler policy
 
-   1. the domain builder needs to get various information about the
-      guest kernel by inspecting its ELF notes
-   2. we start the kernel in 32-bit mode with paging enabled, in ring 1
-   3. the guest kernel needs various pieces of runtime information from
-      the hypervisor about its runtime environment
+I'll be dropping this from -mm now.  I don't think we're learning anything
+more by having it in there and I generally want to get things more back
+into sync.
 
-At the moment we just load a bare vmlinux kernel with a xen-specific
-entrypoint, so 1 and 2 are easy.  3 is achieved by having the domain
-builder start the kernel with %esi pointing to a Xen info structure
-which tells the kernel what it needs to know.
+For the record, I don't recall any problem reports arising from SD's
+presence in -mm (Except for possibly Jiri's recent "many processes end up
+in D state", but we don't have a clue what's causing that yet).
 
-That works OK for a kernel which is compiled to run under Xen and can't
-run in any other environment, but now that we can generate a single
-kernel which can run in any number of different environments, its
-unfortunate that we still need multiple variants of the kernel image.
 
-Clearly the Xen domain builder needs to be extended to deal with a
-bzImage format kernel directly, so we can use the same actual kernel
-image for native and Xen booting.  Since we're changing the domain
-builder anyway, I can change the details of how it works so long as the
-3 requirements can still be met.
-
-So, I have no problem in also building a boot protocol info structure,
-and passing that in %esi, so long as I can store a pointer to the
-Xen-specific info as well.  Some info will be duplicated, like the
-initrd location, but that's OK.
-
-I'd already reserved a Xen bootloader ID specifically with this in mind;
-all I really need is a place where I can stash the pointer.
-
-I think I'd prefer to have the domain builder decompress/relocate the
-kernel from the bzImage and start it directly, rather than have it
-decompress/relocate itself, but I'm not really set on that.  It depends
-on how well it can deal with having paging enabled and being in ring 1. 
-Looks like it might just be a matter of starting up with "enough" memory
-mapped.
-
-So the biggest unknown is where to put the Xen ELF notes.
-
-    J
