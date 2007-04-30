@@ -1,54 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423169AbXD3JAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423174AbXD3JBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423169AbXD3JAl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 05:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423173AbXD3JAl
+	id S1423174AbXD3JBK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 05:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423173AbXD3JAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 05:00:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48652 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1423169AbXD3I7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 04:59:51 -0400
-X-Authenticated: #428038
-X-Provags-ID: V01U2FsdGVkX1+uurMVaEeuKo/7qqM106q/h3NxHfUmNLmuL9ExiQ
-	4D0kAmAST0lhcx
-Date: Mon, 30 Apr 2007 10:59:48 +0200
-From: Matthias Andree <matthias.andree@gmx.de>
-To: Andrew Wang <andrewxwang@yahoo.com.tw>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Why ask Sun for ZFS while we have ReiserFS4 !?
-Message-ID: <20070430085948.GC3701@merlin.emma.line.org>
-Mail-Followup-To: Andrew Wang <andrewxwang@yahoo.com.tw>,
-	linux-kernel@vger.kernel.org
-References: <660658.6960.qm@web73512.mail.tp2.yahoo.com>
-MIME-Version: 1.0
+	Mon, 30 Apr 2007 05:00:42 -0400
+Received: from main.gmane.org ([80.91.229.2]:33424 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423167AbXD3JAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 05:00:14 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Mat <jackdachef@gmail.com>
+Subject: Re: Reiser4: Transparent compression support. Further development and compatibility.
+Date: Mon, 30 Apr 2007 08:39:18 +0000 (UTC)
+Message-ID: <loom.20070430T103722-842@post.gmane.org>
+References: <200703150357.24405.edward@namesys.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <660658.6960.qm@web73512.mail.tp2.yahoo.com>
-X-PGP-Key: http://home.pages.de/~mandree/keys/GPGKEY.asc
-User-Agent: Mutt/1.5.15 (2007-04-24)
-X-Y-GMX-Trusted: 0
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 84.114.179.145 (Mozilla/5.0 (X11; U; Linux i686; de; rv:1.8.1.3) Gecko/20070416 Firefox/2.0.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007, Andrew Wang wrote:
+Thanks a lot, 
 
-> ZFS has some nice features, but ReiserFS4 also is a
-> good file system.
-> 
-> Why do we want Sun to release ZFS under GPL, while
-> ReiserFS4 is already available under GPL!?
+this 'plugin' seems to be pretty mature already, me & several other GNU/Gentoo
+users are using it right now for storing more efficiently the portage-tree
 
-Reiser4 doesn't appear to work anywhere except with Linux AFAICT, and
-being able to move storage between operating systems sure looks
-interesting...
-
-> I think for those who ask/beg Sun to release ZFS under
-> GPL should do the work to get ReiserFS4 to Linux!
-
-Perhaps you might ask them first if they have looked into porting
-Reiser4 to kernel style, ripping out duplicate code - or they decided
-that would be a more boring job than porting ZFS :-)
-
--- 
-Matthias Andree
