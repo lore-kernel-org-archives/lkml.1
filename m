@@ -1,267 +1,474 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945998AbXD3QNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946252AbXD3QOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945998AbXD3QNU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 12:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946255AbXD3QNS
+	id S1946252AbXD3QOP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 12:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946265AbXD3QNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 12:13:18 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:34472 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423743AbXD3QNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 12:13:05 -0400
-Subject: [GIT PATCH] SCSI updates for 2.6.21
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Mon, 30 Apr 2007 12:13:42 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:44307 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946254AbXD3QNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 12:13:22 -0400
+Subject: Re: [PATCH] change global zonelist order v4 [1/2] change zonelist
+	ordering.
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, clameter@sgi.com
+In-Reply-To: <20070427150445.895cf76f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20070427150445.895cf76f.kamezawa.hiroyu@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Mon, 30 Apr 2007 11:12:28 -0500
-Message-Id: <1177949549.3674.29.camel@mulgrave.il.steeleye.com>
+Organization: HP/OSLO
+Date: Mon, 30 Apr 2007 12:12:58 -0400
+Message-Id: <1177949579.5623.40.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an intermediate flush of my queue.  Surprisingly I got quite a
-lot of updates after 2.6.21 went public, which I'll try to send in the
-next week (before the merge window closes).
+On Fri, 2007-04-27 at 15:04 +0900, KAMEZAWA Hiroyuki wrote:
+> Make zonelist creation policy selectable from sysctl v4.
+> Automatic configuration itself is provided by the next patch.
+> 
+> [Description]
+> Assume 2 node NUMA, only node(0) has ZONE_DMA.
+> (ia64's ZONE_DMA is below 4GB...x86_64's ZONE_DMA32)
+> 
+> In this case, current default (node0's) zonelist order is
+> 
+> Node(0)'s NORMAL -> Node(0)'s DMA -> Node(1)"s NORMAL.
+> 
+> This means Node(0)'s DMA will be used before Node(1)'s NORMAL.
+> 
+> This patch changes *default* zone order to
+> 
+> Node(0)'s NORMAL -> Node(1)'s NORMAL -> Node(0)'s DMA.
+> 
+> But, if Node(0)'s memory is too small (near or below 4G), Node(0)'s process has
+> to allocate its memory from Node(1) even if there are free memory in Node(0).
+> Some applications/uses will dislike this.
+> This patch adds a knob to change zonelist ordering.
+> 
+> [What this patch adds]
+> 
+> command:
+> %echo N > /proc/sys/vm/numa_zonelist_order
+> 
+> Will rebuild zonelist in following order(old style, NODE order).
+> 
+> Node(0)'s NORMAL -> Node(0)'s DMA -> Node(0)'s NORMAL.
+> 
+> means put more priority on locality.
+> 
+> command:
+> %echo Z > /proc/sys/vm/numa_zonelist_order
+> 
+> Will rebuild zonelist in following order(new style, ZONE order)
+> 
+> Node(0)'s NORMAL -> Node(1)'s NORMAL -> Node(0)'s DMA.
+> 
+> means put more priority on zone_type.
+> 
+> And you can specify this option as boot param.
+> 
+> Because autoconfig function does nothing. Default is "Node" order.
+> 
+> Tested on ia64 2-Node NUMA. works well.
+> 
+> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-The update is available here:
+sysctl documentation could use a bit of cleanup [spelling, inconsistent
+statements re:  default ordering], but this can be addressed in a
+separate patch.  Code looks/tested OK.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
-
-The short changelog is:
-
-Adrian Bunk (4):
-      aic7xxx: make functions static
-      aacraid: cleanups
-      dpt_i2o: remove dead code
-      fusion: make mptspi_target_destroy() static
-
-Alan Stern (1):
-      sg: cap reserved_size values at max_sectors
-
-Andrew Vasquez (5):
-      qla2xxx: Update version number to 8.01.07-k6.
-      qla2xxx: Allow the extended-error-logging flag to be dynamic.
-      qla2xxx: Drop acquisition of hardware_lock during flash manipulations.
-      qla2xxx: Add cond_resched() calls during HBA flash manipulation.
-      qla2xxx: Add scan_[start|finish]() callbacks for ISP24xx HBAs.
-
-Anton Blanchard (1):
-      lpfc: fix oops when parsing dodgy VPD
-
-Bastian Blank (1):
-      tgt: fix rdma transfer bugs
-
-Bernhard Walle (1):
-      qla2xxx: Remove duplicate pci_disable_device() call
-
-Brian King (13):
-      scsi_error.c: Add EH Start Unit retry
-      ipr: Driver version to 2.3.2
-      ipr: Faster sg list fetch
-      ipr: Return better qc_issue errors
-      ipr: Disrupt device error
-      ipr: Improve async error logging level control
-      ipr: PCI unblock config access fix
-      ipr: Fix for oops following SATA request sense
-      ipr: Log error for SAS dual path switch
-      ipr: Enable logging of debug error data for all devices
-      ipr: Add new PCI-E IDs to device table
-      ipr: Remove auto RAID create module parameter
-      ipr: Make adapter operational timeout be per adapter type
-
-Christof Schmitt (1):
-      zfcp: fix initialization of FSF timer
-
-David Miller (1):
-      qla2xxx: fix regression on sparc64
-
-Eric Moore (2):
-      fusion: fix domain validation loops
-      fusion: remove VMWare guest OS remounted as read only work around
-
-FUJITA Tomonori (3):
-      tgt: remove the code to build sense
-      tgt: fix scsi command leak
-      tgt: fix sesnse buffer problems
-
-Heiko Carstens (1):
-      zfcp: fix likely/unlikely usage
-
-Henrik Kretzschmar (1):
-      dpt: whitespace cleanup
-
-Horms (2):
-      fusion: honour return value of pci_enable_device() in mpt_resume()
-      fusion: remove unnecessary code in mptscsih_resume()
-
-James Bottomley (5):
-      fix scsi_wait_scan build problem
-      sd: fix up start/stop messages for new sd_printk() API
-      expose eh_timed_out to the host template
-      make scsi_wait_scan always modular
-      sd: typo fix: sdkp_printk should be sd_printk
-
-James Smart (1):
-      fc_transport: update potential link speeds
-
-Malahal Naineni (1):
-      qla2xxx: fix RSCN handling on big-endian systems
-
-Mark Haverkamp (7):
-      aacraid: Improved error handling
-      aacraid: fix srb ioctl for 64 bits
-      aacraid: remove un-needed references to container id (cid)
-      aacraid: Fix ioctl handling when adapter resets
-      aacraid: Fix blocking issue with container probing function (cast update)
-      aacraid: Fix struct element name issue
-      aacraid: add restart adapter platform function
-
-Martin K. Petersen (5):
-      constants.c: Update ASC list and make it const
-      sd: convert logging to new printk helpers
-      sd: make printing use a common prefix
-      Make error printing more verbose
-      constants.c: cleanup, verbose result printing
-
-Michael Tokarev (1):
-      modalias for scsi devices
-
-Mike Christie (8):
-      tgt: rm bio hacks in scsi tgt
-      iscsi_tcp: print useful error message when iscsi crc23c allocation fails
-      iscsi_tcp: increase max_sectors
-      libiscsi: use get_unaligned
-      iscsi transport: use atomic for session_nr allocations
-      iscsi: rename DEFAULT_MAX_RECV_DATA_SEGMENT_LENGTH
-      libiscsi: clear mtask
-      libiscsi: flush work before freeing connection
-
-Pete Wyckoff (1):
-      set resid in scsi_io_completion() even for check condition
-
-Randy Dunlap (1):
-      fusion: kernel-doc warning fixes
-
-Richard Knutsson (1):
-      eata_pio: Remove FALSE/TRUE defines
-
-Richard Lary (1):
-      qla2xxx: fix for byteswap in fc_host fabric_name
-
-Robert Jennings (2):
-      ibmvscsi: add slave_configure to allow device restart
-      ibmvscsi: allow for dynamic adjustment of server request_limit
-
-Robert P. J. Day (3):
-      Remove some unused SCSI-related kernel config variables.
-      pcmcia: allow drivers to be built non-modular
-      pci2000: Delete unused header file.
-
-Salyzyn, Mark (10):
-      aacraid: fix aacraid not finding device
-      aacraid: Correct SMC products in aacraid.txt
-      aacraid: [Fastboot] Panics for AACRAID driver during 'insmod' for kexec te
-      aacraid: fix print of Firmware Build Date and add TSID
-      aacraid: remove unused or deprecated firmware constants
-      aacraid: resolve compiler warnings using ptrdiff_t
-      aacraid: Add SMC and SUN products to README
-      aacraid: Add likely() and unlikely()
-      aacraid: cleanup and version stamp driver
-      aacraid: check buffer address in aac_internal_transfer
-
-Tejun Heo (2):
-      sd: implement START/STOP management
-      sd: fix return value of sd_sync_cache()
-
-Zachary Amsden (1):
-      BusLogic: stop using check_region
-
-And the diffstat:
-
- b/Documentation/scsi/aacraid.txt               |    7 
- b/Documentation/scsi/ncr53c8xx.txt             |    5 
- b/block/ll_rw_blk.c                            |    2 
- b/block/scsi_ioctl.c                           |    4 
- b/drivers/infiniband/ulp/iser/iser_initiator.c |    2 
- b/drivers/message/fusion/mptbase.c             |   27 -
- b/drivers/message/fusion/mptbase.h             |    1 
- b/drivers/message/fusion/mptscsih.c            |   35 --
- b/drivers/message/fusion/mptspi.c              |   36 +-
- b/drivers/s390/scsi/zfcp_erp.c                 |    2 
- b/drivers/s390/scsi/zfcp_fsf.c                 |   10 
- b/drivers/scsi/BusLogic.c                      |   73 ++--
- b/drivers/scsi/Kconfig                         |   22 -
- b/drivers/scsi/Makefile                        |    2 
- b/drivers/scsi/aacraid/aachba.c                |  402 ++++++++++++++----------
- b/drivers/scsi/aacraid/aacraid.h               |   76 +---
- b/drivers/scsi/aacraid/commctrl.c              |  286 ++++++++++-------
- b/drivers/scsi/aacraid/comminit.c              |    4 
- b/drivers/scsi/aacraid/commsup.c               |  112 ++----
- b/drivers/scsi/aacraid/dpcsup.c                |   35 +-
- b/drivers/scsi/aacraid/linit.c                 |   65 +++-
- b/drivers/scsi/aacraid/nark.c                  |    3 
- b/drivers/scsi/aacraid/rkt.c                   |    3 
- b/drivers/scsi/aacraid/rx.c                    |  115 ++++---
- b/drivers/scsi/aic7xxx/Kconfig.aic79xx         |   12 
- b/drivers/scsi/aic7xxx/Kconfig.aic7xxx         |   10 
- b/drivers/scsi/aic7xxx/aic79xx_osm.c           |    6 
- b/drivers/scsi/aic7xxx/aic79xx_osm.h           |    2 
- b/drivers/scsi/aic7xxx/aic7xxx.h               |    5 
- b/drivers/scsi/aic7xxx/aic7xxx_core.c          |    2 
- b/drivers/scsi/constants.c                     |  274 +++++++++-------
- b/drivers/scsi/dpt/dpti_i2o.h                  |   48 +-
- b/drivers/scsi/dpt/dpti_ioctl.h                |    2 
- b/drivers/scsi/dpt/dptsig.h                    |    4 
- b/drivers/scsi/dpt_i2o.c                       |    2 
- b/drivers/scsi/eata_generic.h                  |    7 
- b/drivers/scsi/ibmvscsi/ibmvscsi.c             |   80 +++-
- b/drivers/scsi/ibmvscsi/ibmvscsi.h             |    2 
- b/drivers/scsi/ibmvscsi/ibmvstgt.c             |   37 --
- b/drivers/scsi/ipr.c                           |  290 ++++++++++-------
- b/drivers/scsi/ipr.h                           |   45 +-
- b/drivers/scsi/iscsi_tcp.c                     |   21 -
- b/drivers/scsi/libiscsi.c                      |   29 -
- b/drivers/scsi/libsrp.c                        |   12 
- b/drivers/scsi/lpfc/lpfc_init.c                |    2 
- b/drivers/scsi/osst.c                          |    1 
- b/drivers/scsi/pcmcia/Kconfig                  |    9 
- b/drivers/scsi/qla2xxx/qla_def.h               |   13 
- b/drivers/scsi/qla2xxx/qla_init.c              |  177 ++++++++++
- b/drivers/scsi/qla2xxx/qla_mbx.c               |   16 
- b/drivers/scsi/qla2xxx/qla_os.c                |    7 
- b/drivers/scsi/qla2xxx/qla_sup.c               |   11 
- b/drivers/scsi/qla2xxx/qla_version.h           |    2 
- b/drivers/scsi/scsi.c                          |   47 +-
- b/drivers/scsi/scsi_error.c                    |   19 -
- b/drivers/scsi/scsi_lib.c                      |    8 
- b/drivers/scsi/scsi_scan.c                     |    2 
- b/drivers/scsi/scsi_sysfs.c                    |   54 +++
- b/drivers/scsi/scsi_tgt_if.c                   |    6 
- b/drivers/scsi/scsi_tgt_lib.c                  |  261 ++++------------
- b/drivers/scsi/scsi_tgt_priv.h                 |    5 
- b/drivers/scsi/scsi_transport_fc.c             |    2 
- b/drivers/scsi/scsi_transport_iscsi.c          |    6 
- b/drivers/scsi/sd.c                            |  405 +++++++++++++------------
- b/drivers/scsi/sg.c                            |   13 
- b/drivers/scsi/sr.c                            |    2 
- b/drivers/scsi/st.c                            |    1 
- b/include/scsi/iscsi_proto.h                   |   12 
- b/include/scsi/scsi.h                          |    1 
- b/include/scsi/scsi_cmnd.h                     |    3 
- b/include/scsi/scsi_dbg.h                      |   10 
- b/include/scsi/scsi_device.h                   |   14 
- b/include/scsi/scsi_host.h                     |   32 +
- b/include/scsi/scsi_tgt_if.h                   |    6 
- b/include/scsi/scsi_transport_fc.h             |    2 
- b/include/scsi/sd.h                            |   72 ++++
- drivers/scsi/pci2000.h                         |  197 ------------
- 77 files changed, 1984 insertions(+), 1653 deletions(-)
-
-James
-
+Acked-by:  Lee.Schermerhorn <lee.schermerhorn@hp.com>
+> 
+> ---
+>  Documentation/kernel-parameters.txt |   10 +
+>  Documentation/sysctl/vm.txt         |   32 ++++++
+>  include/linux/mmzone.h              |    5 
+>  kernel/sysctl.c                     |    9 +
+>  mm/page_alloc.c                     |  185 ++++++++++++++++++++++++++++++++----
+>  5 files changed, 225 insertions(+), 16 deletions(-)
+> 
+> Index: linux-2.6.21-rc7-mm2/kernel/sysctl.c
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/kernel/sysctl.c
+> +++ linux-2.6.21-rc7-mm2/kernel/sysctl.c
+> @@ -893,6 +893,15 @@ static ctl_table vm_table[] = {
+>  		.extra1		= &zero,
+>  		.extra2		= &one_hundred,
+>  	},
+> +	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname	= "numa_zonelist_order",
+> +		.data		= &numa_zonelist_order,
+> +		.maxlen		= NUMA_ZONELIST_ORDER_LEN,
+> +		.mode		= 0644,
+> +		.proc_handler	= &numa_zonelist_order_handler,
+> +		.strategy	= &sysctl_string,
+> +	},
+>  #endif
+>  #if defined(CONFIG_X86_32) || \
+>     (defined(CONFIG_SUPERH) && defined(CONFIG_VSYSCALL))
+> Index: linux-2.6.21-rc7-mm2/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/mm/page_alloc.c
+> +++ linux-2.6.21-rc7-mm2/mm/page_alloc.c
+> @@ -2024,7 +2024,8 @@ void show_free_areas(void)
+>   * Add all populated zones of a node to the zonelist.
+>   */
+>  static int __meminit build_zonelists_node(pg_data_t *pgdat,
+> -			struct zonelist *zonelist, int nr_zones, enum zone_type zone_type)
+> +			struct zonelist *zonelist, int nr_zones,
+> +			enum zone_type zone_type)
+>  {
+>  	struct zone *zone;
+>  
+> @@ -2045,7 +2046,7 @@ static int __meminit build_zonelists_nod
+>  
+>  #ifdef CONFIG_NUMA
+>  #define MAX_NODE_LOAD (num_online_nodes())
+> -static int __meminitdata node_load[MAX_NUMNODES];
+> +static int node_load[MAX_NUMNODES];
+>  /**
+>   * find_next_best_node - find the next node that should appear in a given node's fallback list
+>   * @node: node whose fallback list we're appending
+> @@ -2060,7 +2061,7 @@ static int __meminitdata node_load[MAX_N
+>   * on them otherwise.
+>   * It returns -1 if no node is found.
+>   */
+> -static int __meminit find_next_best_node(int node, nodemask_t *used_node_mask)
+> +static int find_next_best_node(int node, nodemask_t *used_node_mask)
+>  {
+>  	int n, val;
+>  	int min_val = INT_MAX;
+> @@ -2106,13 +2107,124 @@ static int __meminit find_next_best_node
+>  	return best_node;
+>  }
+>  
+> -static void __meminit build_zonelists(pg_data_t *pgdat)
+> +/*
+> + * numa_zonelist_order:
+> + *  0 = automatic detection of better ordering.
+> + *  1 = order by ([node] distance, -zonetype)
+> + *  2 = order by (-zonetype, [node] distance)
+> + */
+> +#define ZONELIST_ORDER_AUTO	0
+> +#define ZONELIST_ORDER_NODE	1
+> +#define ZONELIST_ORDER_ZONE	2
+> +static int zonelist_order = 0;
+> +
+> +/*
+> + * command line option "numa_zonelist_order"
+> + *	= "[dD]efault | "0"	- default, automatic configuration.
+> + *	= "[nN]ode"|"1" 	- order by node locality,
+> + *         			  then zone within node.
+> + *	= "[zZ]one"|"2" - order by zone, then by locality within zone
+> + */
+> +char numa_zonelist_order[NUMA_ZONELIST_ORDER_LEN] = "default";
+> +
+> +static int __parse_numa_zonelist_order(char *s)
+> +{
+> +	if (*s == 'd' || *s == 'D' || *s == '0') {
+> +		strncpy(numa_zonelist_order, "default",
+> +					NUMA_ZONELIST_ORDER_LEN);
+> +		zonelist_order = ZONELIST_ORDER_AUTO;
+> +	} else if (*s == 'n' || *s == 'N' || *s == '1') {
+> +		strncpy(numa_zonelist_order, "node",
+> +					NUMA_ZONELIST_ORDER_LEN);
+> +		zonelist_order = ZONELIST_ORDER_NODE;
+> +	} else if (*s == 'z' || *s == 'Z' || *s == '2') {
+> +		strncpy(numa_zonelist_order, "zone",
+> +					NUMA_ZONELIST_ORDER_LEN);
+> +		zonelist_order = ZONELIST_ORDER_ZONE;
+> +	} else {
+> +		printk(KERN_WARNING
+> +			"Ignoring invalid numa_zonelist_order value:  "
+> +			"%s\n", s);
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static __init int setup_numa_zonelist_order(char *s)
+> +{
+> +	if (s)
+> +		return __parse_numa_zonelist_order(s);
+> +	return 0;
+> +}
+> +early_param("numa_zonelist_order", setup_numa_zonelist_order);
+> +
+> +/*
+> + * Build zonelists ordered by node and zones within node.
+> + * This results in maximum locality--normal zone overflows into local
+> + * DMA zone, if any--but risks exhausting DMA zone.
+> + */
+> +static void build_zonelists_in_node_order(pg_data_t *pgdat, int node)
+>  {
+> -	int j, node, local_node;
+>  	enum zone_type i;
+> -	int prev_node, load;
+> +	int j;
+> +	struct zonelist *zonelist;
+> +
+> +	for (i = 0; i < MAX_NR_ZONES; i++) {
+> +		zonelist = pgdat->node_zonelists + i;
+> +		for (j = 0; zonelist->zones[j] != NULL; j++);
+> +
+> + 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, i);
+> +		zonelist->zones[j] = NULL;
+> +	}
+> +}
+> +
+> +/*
+> + * Build zonelists ordered by zone and nodes within zones.
+> + * This results in conserving DMA zone[s] until all Normal memory is
+> + * exhausted, but results in overflowing to remote node while memory
+> + * may still exist in local DMA zone.
+> + */
+> +static int node_order[MAX_NUMNODES];
+> +
+> +static void build_zonelists_in_zone_order(pg_data_t *pgdat, int nr_nodes)
+> +{
+> +	enum zone_type i;
+> +	int pos, j, node;
+> +	int zone_type;		/* needs to be signed */
+> +	struct zone *z;
+>  	struct zonelist *zonelist;
+> +
+> +	for (i = 0; i < MAX_NR_ZONES; i++) {
+> +		zonelist = pgdat->node_zonelists + i;
+> +		pos = 0;
+> +		for (zone_type = i; zone_type >= 0; zone_type--) {
+> +			for (j = 0; j < nr_nodes; j++) {
+> +				node = node_order[j];
+> +				z = &NODE_DATA(node)->node_zones[zone_type];
+> +				if (populated_zone(z))
+> +					zonelist->zones[pos++] = z;
+> +			}
+> +		}
+> +		zonelist->zones[pos] = NULL;
+> +	}
+> +}
+> +
+> +static int estimate_zonelist_order(void)
+> +{
+> +	/* dummy, just select node order. */
+> +	return ZONELIST_ORDER_NODE;
+> +}
+> +
+> +
+> +
+> +static void build_zonelists(pg_data_t *pgdat)
+> +{
+> +	int j, node, load;
+> +	enum zone_type i;
+>  	nodemask_t used_mask;
+> +	int local_node, prev_node;
+> +	struct zonelist *zonelist;
+> +	int ordering;
+>  
+>  	/* initialize zonelists */
+>  	for (i = 0; i < MAX_NR_ZONES; i++) {
+> @@ -2120,11 +2232,18 @@ static void __meminit build_zonelists(pg
+>  		zonelist->zones[0] = NULL;
+>  	}
+>  
+> +	ordering = zonelist_order;
+> +	if (ordering == ZONELIST_ORDER_AUTO)
+> +		ordering = estimate_zonelist_order();
+>  	/* NUMA-aware ordering of nodes */
+>  	local_node = pgdat->node_id;
+>  	load = num_online_nodes();
+>  	prev_node = local_node;
+>  	nodes_clear(used_mask);
+> +
+> +	memset(node_order, 0, sizeof(node_order));
+> +	j = 0;
+> +
+>  	while ((node = find_next_best_node(local_node, &used_mask)) >= 0) {
+>  		int distance = node_distance(local_node, node);
+>  
+> @@ -2140,18 +2259,20 @@ static void __meminit build_zonelists(pg
+>  		 * So adding penalty to the first node in same
+>  		 * distance group to make it round-robin.
+>  		 */
+> -
+>  		if (distance != node_distance(local_node, prev_node))
+> -			node_load[node] += load;
+> +			node_load[node] = load;
+> +
+>  		prev_node = node;
+>  		load--;
+> -		for (i = 0; i < MAX_NR_ZONES; i++) {
+> -			zonelist = pgdat->node_zonelists + i;
+> -			for (j = 0; zonelist->zones[j] != NULL; j++);
+> +		if (ordering == ZONELIST_ORDER_NODE)	/* default */
+> +			build_zonelists_in_node_order(pgdat, node);
+> +		else
+> +			node_order[j++] = node;	/* remember order */
+> +	}
+>  
+> -	 		j = build_zonelists_node(NODE_DATA(node), zonelist, j, i);
+> -			zonelist->zones[j] = NULL;
+> -		}
+> +	if (ordering == ZONELIST_ORDER_ZONE) {
+> +		/* calculate node order -- i.e., DMA last! */
+> +		build_zonelists_in_zone_order(pgdat, j);
+>  	}
+>  }
+>  
+> @@ -2173,6 +2294,37 @@ static void __meminit build_zonelist_cac
+>  	}
+>  }
+>  
+> +/*
+> + * sysctl handler for numa_zonelist_order
+> + */
+> +int numa_zonelist_order_handler(ctl_table *table, int write,
+> +		struct file *file, void __user *buffer, size_t *length,
+> +		loff_t *ppos)
+> +{
+> +	char saved_string[NUMA_ZONELIST_ORDER_LEN];
+> +	int ret;
+> +
+> +	if (write)
+> +		strncpy(saved_string, (char*)table->data,
+> +			NUMA_ZONELIST_ORDER_LEN);
+> +	ret = proc_dostring(table, write, file, buffer, length, ppos);
+> +	if (ret)
+> +		return ret;
+> +	if (write) {
+> +		int oldval = zonelist_order;
+> +		if (__parse_numa_zonelist_order((char*)table->data)) {
+> +			/*
+> +			 * bogus value.  restore saved string
+> +			 */
+> +			strncpy((char*)table->data, saved_string,
+> +				NUMA_ZONELIST_ORDER_LEN);
+> +			zonelist_order = oldval;
+> +		} else if (oldval != zonelist_order)
+> +			build_all_zonelists();
+> +	}
+> +	return 0;
+> +}
+> +
+>  #else	/* CONFIG_NUMA */
+>  
+>  static void __meminit build_zonelists(pg_data_t *pgdat)
+> @@ -2222,7 +2374,7 @@ static void __meminit build_zonelist_cac
+>  #endif	/* CONFIG_NUMA */
+>  
+>  /* return values int ....just for stop_machine_run() */
+> -static int __meminit __build_all_zonelists(void *dummy)
+> +static int __build_all_zonelists(void *dummy)
+>  {
+>  	int nid;
+>  
+> @@ -2233,12 +2385,13 @@ static int __meminit __build_all_zonelis
+>  	return 0;
+>  }
+>  
+> -void __meminit build_all_zonelists(void)
+> +void build_all_zonelists(void)
+>  {
+>  	if (system_state == SYSTEM_BOOTING) {
+>  		__build_all_zonelists(NULL);
+>  		cpuset_init_current_mems_allowed();
+>  	} else {
+> +		memset(node_load, 0, sizeof(node_load));
+>  		/* we have to stop all cpus to guaranntee there is no user
+>  		   of zonelist */
+>  		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
+> Index: linux-2.6.21-rc7-mm2/include/linux/mmzone.h
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/include/linux/mmzone.h
+> +++ linux-2.6.21-rc7-mm2/include/linux/mmzone.h
+> @@ -608,6 +608,11 @@ int sysctl_min_unmapped_ratio_sysctl_han
+>  int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
+>  			struct file *, void __user *, size_t *, loff_t *);
+>  
+> +extern int numa_zonelist_order_handler(struct ctl_table *, int,
+> +			struct file *, void __user *, size_t *, loff_t *);
+> +extern char numa_zonelist_order[];
+> +#define NUMA_ZONELIST_ORDER_LEN 16	/* string buffer size */
+> +
+>  #include <linux/topology.h>
+>  /* Returns the number of the current Node. */
+>  #ifndef numa_node_id
+> Index: linux-2.6.21-rc7-mm2/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/Documentation/kernel-parameters.txt
+> +++ linux-2.6.21-rc7-mm2/Documentation/kernel-parameters.txt
+> @@ -1500,6 +1500,16 @@ and is between 256 and 4096 characters. 
+>  			Format: <reboot_mode>[,<reboot_mode2>[,...]]
+>  			See arch/*/kernel/reboot.c or arch/*/kernel/process.c			
+>  
+> +	numa_zonelist_order [KNL,BOOT]
+> +			Select memory allocation zonelist order for NUMA
+> +			platform.  Default is automatic configuration.
+> +			"Node order" orders the zonelists by node [locality],
+> +			then zones within nodes.  "Zone order" orders the
+> +			zonelists by zone,then nodes within the zone.
+> +			This moves DMA zone, if any, to the end of the
+> +			allocation lists.
+> +			See also Documentation/sysctl/vm.txt
+> +
+>  	reserve=	[KNL,BUGS] Force the kernel to ignore some iomem area
+>  
+>  	reservetop=	[X86-32]
+> Index: linux-2.6.21-rc7-mm2/Documentation/sysctl/vm.txt
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/Documentation/sysctl/vm.txt
+> +++ linux-2.6.21-rc7-mm2/Documentation/sysctl/vm.txt
+> @@ -34,6 +34,7 @@ Currently, these files are in /proc/sys/
+>  - swap_prefetch
+>  - readahead_ratio
+>  - readahead_hit_rate
+> +- numa_zonelist_order
+>  
+>  ==============================================================
+>  
+> @@ -275,3 +276,34 @@ Possible values can be:
+>  The larger value, the more capabilities, with more possible overheads.
+>  
+>  The default value is 1.
+> +
+> +=============================================================
+> +
+> +numa_zonelist_order
+> +
+> +This sysctl is only for NUMA.
+> +
+> +numa_zonelist_order selects the order of the memory allocation zonelists.
+> +The default order [a.k.a. "node order"] orders the zonelists by node, the
+                                                                         then
+> +by zone within each node. The default is automatic configuration.
+> +Specify "[Dd]fault" or "0" to request automatic configuration.
+           "[Dd]efault"  but maybe should be "[Aa]uto" based on Kame's
+rework and to avoid confusion w/rt node order being default? ...
+> +
+> + For example, assume 2 Node NUMA.  The "Node order" kernel memory allocation
+> +order on Node(0) will be:
+> +
+> +	Node(0)NORMAL -> Node(0)DMA -> Node(1)NORMAL -> Node(1)DMA(if any)
+> +
+> +Thus, allocations that request Node(0) NORMAL may overflow onto Node(0)DMA
+> +first.  This provides maximum locality, but risks exhausting all of DMA
+> +memory while NORMAL memory exists elsewhere on the system.  This can result
+> +in OOM-KILL in ZONE_DMA.  Secify "[Zz]one" or "1" to request zone order.
+> +
+> +If numa_zonelist_order is set to "node" order, the kernel memory allocation
+> +order on Node(0) becomes:
+> +
+> +	Node(0)NORMAL -> Node(1)NORMAL -> Node(0)DMA -> Node(1)DMA(if any)
+> +
+> +In this mode, DMA memory will be used in place of NORMAL memory, only when
+> +all NORMAL zones are exhausted.  Specify "[Nn]ode" or "2" for node order.
+> +
+> +The default value is 0.
+> 
 
