@@ -1,208 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946430AbXD3QkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946393AbXD3Qkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946430AbXD3QkY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 12:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946431AbXD3QkY
+	id S1946393AbXD3Qkc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 12:40:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946428AbXD3Qkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 12:40:24 -0400
-Received: from phoenix.bawue.net ([193.7.176.60]:52390 "EHLO mail.bawue.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1946365AbXD3Qjx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 12:39:53 -0400
-Date: Mon, 30 Apr 2007 18:39:44 +0200
-From: Joerg Sommrey <jo@sommrey.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21: pmtmr losing time
-Message-ID: <20070430163944.GA29206@sommrey.de>
-Mail-Followup-To: Joerg Sommrey <jo@sommrey.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <20070430125200.GA5379@sommrey.de> <1177950216.5791.241.camel@localhost.localdomain>
+	Mon, 30 Apr 2007 12:40:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34170 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946393AbXD3Qk1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 12:40:27 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 07/12] i386: Add missing !X86_PAE dependincy to the 2G/2G split.
+References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
+	<m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
+	<m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm4p509a.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1vefd4zyj.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6q14zow.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1mz0p4zfc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1irbd4zcm.fsf_-_@ebiederm.dsl.xmission.com> <46361643.509@zytor.com>
+Date: Mon, 30 Apr 2007 10:39:58 -0600
+In-Reply-To: <46361643.509@zytor.com> (H. Peter Anvin's message of "Mon, 30
+	Apr 2007 09:16:03 -0700")
+Message-ID: <m1slah3jfl.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177950216.5791.241.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 06:23:36PM +0200, Thomas Gleixner wrote:
-> On Mon, 2007-04-30 at 14:52 +0200, Joerg Sommrey wrote:
-> > Hi all,
-> > 
-> > after switching to 2.6.21 the system clock sporadically loses time on my
-> > box (i386, Athlon MP).
-> > It's always around 4.68 seconds and happened 7 times in the last 12
-> > hours.  A simple calculation (2 ^ ACPI_PM_MASK / PMTMR_TICKS_PER_SEC =
-> > 2 ^ 24 / 3579545 = 4.686968875) shows: There is almost exactly one
-> > pmtmr-cycle missing.  Could this be caused by a pmtmr-wrap when the
-> > system is in a sleep state? 
+"H. Peter Anvin" <hpa@zytor.com> writes:
+
+> Eric W. Biederman wrote:
+>> When in PAE mode we require that the user kernel divide to be
+>> on a 1G boundary.  The 2G/2G split does not have that property
+>> so require !X86_PAE
+>
+> ?????
+>
+> 	-hpa
+
+>From arch/i386/Kconfig:
 > 
-> Hmm, looks like. That's strange we don't sleep 4.68 seconds. Can you
-> provide me the output of /proc/timer_list please ?
+> choice
+>         depends on EXPERIMENTAL
+>         prompt "Memory split" if EMBEDDED
+>         default VMSPLIT_3G
+>         help
+>           Select the desired split between kernel and user memory.
 > 
-> 	tglx
+>           If the address range available to the kernel is less than the
+>           physical memory installed, the remaining memory will be available
+>           as "high memory". Accessing high memory is a little more costly
+>           than low memory, as it needs to be mapped into the kernel first.
+>           Note that increasing the kernel address space limits the range
+>           available to user programs, making the address space there
+>           tighter.  Selecting anything other than the default 3G/1G split
+>           will also likely make your kernel incompatible with binary-only
+>           kernel modules.
 > 
+>           If you are not absolutely sure what you are doing, leave this
+>           option alone!
 > 
+>         config VMSPLIT_3G
+>                 bool "3G/1G user/kernel split"
+>         config VMSPLIT_3G_OPT
+>                 depends on !HIGHMEM
+>                 bool "3G/1G user/kernel split (for full 1G low memory)"
+>         config VMSPLIT_2G
+>                 depends on !X86_PAE
+>                 bool "2G/2G user/kernel split"
+>         config VMSPLIT_1G
+>                 bool "1G/3G user/kernel split"
+> endchoice
+> 
+> config PAGE_OFFSET
+>         hex
+>         default 0xB0000000 if VMSPLIT_3G_OPT
+>         default 0x78000000 if VMSPLIT_2G
+>         default 0x40000000 if VMSPLIT_1G
+>         default 0xC0000000
 
-Here it is.  Maybe this problem is related to the usage of the
-"experimental" amd76x_pm module?
+The default PAGE_OFFSET is at 0x7800000 for the 2G/2G split.
+All of these options were originally !X86_PAE, I assume
+the intention was to be able to have 2G of RAM without
+needing high memory.
 
--jo
+I don't really care I just saw the problem and decided to prevent
+people trying a combination that simply doesn't work.
 
-Timer List Version: v0.3
-HRTIMER_MAX_CLOCK_BASES: 2
-now at 249154808025750 nsecs
-
-cpu: 0
- clock 0:
-  .index:      0
-  .resolution: 1 nsecs
-  .get_time:   ktime_get_real
-  .offset:     1177701795305563440 nsecs
-active timers:
- clock 1:
-  .index:      1
-  .resolution: 1 nsecs
-  .get_time:   ktime_get
-  .offset:     0 nsecs
-active timers:
- #0: <e4a79f00>, tick_sched_timer, S:01
- # expires at 249154808417850 nsecs [in 392100 nsecs]
- #1: <e4a79f00>, it_real_fn, S:01
- # expires at 249154832599897 nsecs [in 24574147 nsecs]
- #2: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249154937316640 nsecs [in 129290890 nsecs]
- #3: <e4a79f00>, it_real_fn, S:01
- # expires at 249154940604253 nsecs [in 132578503 nsecs]
- #4: <e4a79f00>, it_real_fn, S:01
- # expires at 249156991584989 nsecs [in 2183559239 nsecs]
- #5: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249163930201148 nsecs [in 9122175398 nsecs]
- #6: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249163930619465 nsecs [in 9122593715 nsecs]
- #7: <e4a79f00>, it_real_fn, S:01
- # expires at 249164018722673 nsecs [in 9210696923 nsecs]
- #8: <e4a79f00>, it_real_fn, S:01
- # expires at 249164018756764 nsecs [in 9210731014 nsecs]
- #9: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249166140491719 nsecs [in 11332465969 nsecs]
- #10: <e4a79f00>, it_real_fn, S:01
- # expires at 249168890475020 nsecs [in 14082449270 nsecs]
- #11: <e4a79f00>, it_real_fn, S:01
- # expires at 249216937518155 nsecs [in 62129492405 nsecs]
- #12: <e4a79f00>, it_real_fn, S:01
- # expires at 249694958542841 nsecs [in 540150517091 nsecs]
- #13: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 252071939585424 nsecs [in 2917131559674 nsecs]
- #14: <e4a79f00>, it_real_fn, S:01
- # expires at 277954353421786 nsecs [in 28799545396036 nsecs]
-  .expires_next   : 249154808417850 nsecs
-  .hres_active    : 1
-  .nr_events      : 12571303
-  .nohz_mode      : 2
-  .idle_tick      : 249154808417850 nsecs
-  .tick_stopped   : 0
-  .idle_jiffies   : 74656449
-  .idle_calls     : 31252991
-  .idle_sleeps    : 18916982
-  .idle_entrytime : 249154806452801 nsecs
-  .idle_sleeptime : 202805663229475 nsecs
-  .last_jiffies   : 74656449
-  .next_jiffies   : 74656452
-  .idle_expires   : 249154815084516 nsecs
-jiffies: 74656449
-
-cpu: 1
- clock 0:
-  .index:      0
-  .resolution: 1 nsecs
-  .get_time:   ktime_get_real
-  .offset:     1177701795305563440 nsecs
-active timers:
- clock 1:
-  .index:      1
-  .resolution: 1 nsecs
-  .get_time:   ktime_get
-  .offset:     0 nsecs
-active timers:
- #0: <e4a79f00>, tick_sched_timer, S:01
- # expires at 249154808417850 nsecs [in 392100 nsecs]
- #1: <e4a79f00>, it_real_fn, S:01
- # expires at 249154824005495 nsecs [in 15979745 nsecs]
- #2: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249154876721584 nsecs [in 68695834 nsecs]
- #3: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249154876724658 nsecs [in 68698908 nsecs]
- #4: <e4a79f00>, it_real_fn, S:01
- # expires at 249156991445550 nsecs [in 2183419800 nsecs]
- #5: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249158033258177 nsecs [in 3225232427 nsecs]
- #6: <e4a79f00>, it_real_fn, S:01
- # expires at 249158937910855 nsecs [in 4129885105 nsecs]
- #7: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249160645185907 nsecs [in 5837160157 nsecs]
- #8: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 249288273241617 nsecs [in 133465215867 nsecs]
- #9: <e4a79f00>, it_real_fn, S:01
- # expires at 249688052597900 nsecs [in 533244572150 nsecs]
- #10: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 250127175002655 nsecs [in 972366976905 nsecs]
- #11: <e4a79f00>, hrtimer_wakeup, S:01
- # expires at 252087970262178 nsecs [in 2933162236428 nsecs]
-  .expires_next   : 249154808417850 nsecs
-  .hres_active    : 1
-  .nr_events      : 13107829
-  .nohz_mode      : 2
-  .idle_tick      : 249154805084517 nsecs
-  .tick_stopped   : 0
-  .idle_jiffies   : 74656448
-  .idle_calls     : 27583722
-  .idle_sleeps    : 11208166
-  .idle_entrytime : 249154805632934 nsecs
-  .idle_sleeptime : 197905845372598 nsecs
-  .last_jiffies   : 74656449
-  .next_jiffies   : 74656450
-  .idle_expires   : 249154935084504 nsecs
-jiffies: 74656449
-
-
-Tick Device: mode:     1
-Clock Event Device: pit
- max_delta_ns:   27461866
- min_delta_ns:   12571
- mult:           5124677
- shift:          32
- mode:           3
- next_event:     9223372036854775807 nsecs
- set_next_event: pit_next_event
- set_mode:       init_pit_timer
- event_handler:  tick_handle_oneshot_broadcast
-tick_broadcast_mask: 00000000
-tick_broadcast_oneshot_mask: 00000000
-
-
-Tick Device: mode:     1
-Clock Event Device: lapic
- max_delta_ns:   503300116
- min_delta_ns:   1000
- mult:           71585107
- shift:          32
- mode:           3
- next_event:     249154808417850 nsecs
- set_next_event: lapic_next_event
- set_mode:       lapic_timer_setup
- event_handler:  hrtimer_interrupt
-
-Tick Device: mode:     1
-Clock Event Device: lapic
- max_delta_ns:   503300116
- min_delta_ns:   1000
- mult:           71585107
- shift:          32
- mode:           3
- next_event:     249154808417850 nsecs
- set_next_event: lapic_next_event
- set_mode:       lapic_timer_setup
- event_handler:  hrtimer_interrupt
+Eric
