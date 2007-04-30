@@ -1,66 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422813AbXD3WlJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946622AbXD3WmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422813AbXD3WlJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 18:41:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXD3WlJ
+	id S1946622AbXD3WmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 18:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946869AbXD3WmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 18:41:09 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:46258 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422813AbXD3WlG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 18:41:06 -0400
-Date: Mon, 30 Apr 2007 15:41:03 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: hermann-pitton@arcor.de, Michael Krufky <mkrufky@linuxtv.org>,
-       akpm@linux-foundation.org, Linux DVB <linux-dvb@linuxtv.org>,
-       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
-       mrechberger@gmail.com
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
- pseudo-authorities
-In-Reply-To: <alpine.LFD.0.98.0704300854090.9964@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0704301458460.315@shell2.speakeasy.net>
-References: <20070429182209.267430@gmx.net> 
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
- <20070429205925.129920@gmx.net>  <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
-  <20070429230037.95120@gmx.net>  <1177894713.3046.5.camel@p
- <alpine.LFD.0.98.0704300854090.9964@woody.linux-foundation.org>
+	Mon, 30 Apr 2007 18:42:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:50695 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946622AbXD3WmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 18:42:10 -0400
+Message-ID: <463670D1.3000003@goop.org>
+Date: Mon, 30 Apr 2007 15:42:25 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <m18xc9344o.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m18xc9344o.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007, Linus Torvalds wrote:
-> Anyway, I'll get out of the discussion. There's clearly some personality
-> issues in the DVB area, and I don't know quite _why_ that is, but Uwe,
-> you're definitely not helping.
+Eric W. Biederman wrote:
+>> I think I'd prefer to have the domain builder decompress/relocate the
+>> kernel from the bzImage and start it directly, rather than have it
+>> decompress/relocate itself, but I'm not really set on that.
+>>     
+>
+> We can change a lot more implementation details arbitrarily if you don't
+> know what needs to happen for decompression and relocation.
 
-There isn't a problem here, just a lot of noise coming from one source.  I
-have no problem with Mauro and think he does a good job and is an extremely
-reasonable person.  He is just getting Uwe's thesaurus thrown at him
-because he's the closest target.
+Yes, and if it can be made to work, it ultimately means less work for me ;)
 
-Sure there are disagreements sometimes, but this is always the case.  I can
-think of plenty of lists far more full of flames and personality conflicts
-than linux-dvb.
+> We have to avoid the writes decompressor-prinnt routines 
 
-The issue with dst is just a minor missing feature to fully support the dvb
-helper module customization system.  So nobody needs to worry about this
-anymore, the last two patches in this repository will fix it correctly.
+At worst, we could set up chunk of memory as a dummy framebuffer.  That
+might be useful for debugging anyway.
 
-http://linuxtv.org/hg/~tap/dst-new?cmd=summary;style=gitweb
+> and 
+> possibly the reload of the segment registers.  But otherwise
+> we should be fine.  I don't see any other privileged instructions
+> in arch/i386/boot/compressed/{head.S, misc.c}
+>   
 
-Making dvb-pll work fully with this same system is a little more complex.
-It's on the virtual todo list, but not at the top.
+Xen will start the domain with a GDT loaded, and all the segment
+registers loaded with flat segments.  I guess boot/compressed/head.S
+could do the %cs ring check before deciding to do privileged operations.
 
-I'll finish with this completely unrelated quote.
+I presume bzImage jumps straight to startup_32 on the newly decompressed
+kernel?
 
-------------
-   "Especially important is the warning to avoid conversations with the demon.
-   We may ask what is relevant but anything beyond that is dangerous.  He is a
-   liar.  The demon is a liar.  He will lie to confuse us.  But he will also
-   mix lies with the truth to attack us.  The attack is psychological, Damien,
-   and powerful.  So don't listen to him.  Remember that - do not listen."
-    - from "The Exorcist"
+>> It depends
+>> on how well it can deal with having paging enabled and being in ring 1. 
+>> Looks like it might just be a matter of starting up with "enough" memory
+>> mapped.
+>>     
+>
+> Yes.  I think so.  There is an additional issue of exactly how do we
+> get the fixmap region allocated so we can use it but that is minor.
+>   
+
+I haven't checked if it already has this, but it would be nice if the
+bzImage had a memory range/list of memory ranges it needs mapped to get
+the kernel on its feet, so that the domain builder can just go and map
+those areas for it (either P==V mappings, or with a constant offset;
+whichever is more useful).
+
+Also, if its a PAE kernel, Xen will start with PAE mode enabled, so
+bzImage will have to deal with that.  But if its not touching
+pagetables, it won't matter.
+
+> What I really want to do is go back to sticking an ELF header on the
+> bzImage.  We still can't support multiple entry points that way but we
+> can include ELF notes fairly easily.
+>   
+
+That's OK.  We'll be able to use the boot info to go into the
+Xen-specific path shortly after startup_32 anyway.
+
+BTW, the test for a non-ring 0 %cs won't always be a good test for
+paravirtualization; we're likely to start seeing hybrid execution models
+where we run a largely paravirtualized kernel in a SVM/VT container.  If
+we can just unconditionally use the bootloader arch definition to
+determine the entry path into the kernel, it will clean things up nicely.
+
+> It looks like for the next version of booting lguest and Xen are
+> actually coming closer together again.  Yea.
+>
+> For boot protocol. 2.0.7  We currently need a subarchitecture field (16bits?).
+> default == 0, Xen, lguest, voyager?, visws?, numaq?, efi?
+>
+> We need a subarchitecture data pointer field (32bits).
+>   
+
+Do we want to support starting a 64-bit guest in 64-bit mode?
+
+> We need to target .23 because it is to late for .22.
+
+Yes.  I'll need to do a moderate amount of work on the Xen side to make
+this work, I think.
+
+    J
