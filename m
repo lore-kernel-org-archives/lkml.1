@@ -1,86 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161602AbXD3AVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161605AbXD3AXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161602AbXD3AVl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 20:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161611AbXD3AVl
+	id S1161605AbXD3AXj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 20:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161624AbXD3AXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 20:21:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:58996 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161602AbXD3AVj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 20:21:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dLhGpCZ6RN7E5nHOw68ODimAEqGv8+0W4cfiv5vCMZys1OJYZtx0MOZYp1WChmmKeA3VTufVVS3Z7lupxphp11bL3XP+ZR3dk+C8xfHn+wWNQju7JyXkgGnXR9khdOtVo23WtVyYgsCJAjgVVY8t0fgWcyH+NiuTEC/F2dx5VKw=
-Message-ID: <6700d24e0704291721r75518f31x87f4ce212b4c9634@mail.gmail.com>
-Date: Sun, 29 Apr 2007 17:21:37 -0700
-From: hechacker1 <hechacker1@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: "REPORT: sd-0.46 vs cfs-v6 vs mainline 2.6.21-rc7 Beryl + Video + Audio"
-In-Reply-To: <6700d24e0704280139i4bf9e9b8i67919b6d22acacb0@mail.gmail.com>
+	Sun, 29 Apr 2007 20:23:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46494 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1161605AbXD3AXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 20:23:37 -0400
+X-Authenticated: #476490
+X-Provags-ID: V01U2FsdGVkX1943Wwd0jN4vaBYOKKPu+Y6CVOegJAvHodK+xX+1A
+	gSvfBW1QV/hWMV
+From: Oliver Endriss <o.endriss@gmx.de>
+Reply-To: linux-dvb@linuxtv.org
+Organization: ESCAPE GmbH EDV-Loesungen
+To: linux-dvb@linuxtv.org
+Subject: Re: [linux-dvb] Re: [PATCH] Re: More than 2Gb problem (dvb related) ?
+Date: Mon, 30 Apr 2007 02:22:36 +0200
+User-Agent: KMail/1.9.4
+Cc: Jon Burgess <jburgess777@googlemail.com>, linux-kernel@vger.kernel.org,
+       v4l-dvb-maintainer@linuxtv.org, Lee Revell <rlrevell@joe-job.com>,
+       Gregoire Favre <Gregoire.Favre@gmail.com>
+References: <20070427111047.GB10284@gmail.com> <1177780652.7152.14.camel@localhost.localdomain> <1177791277.5170.11.camel@localhost.localdomain>
+In-Reply-To: <1177791277.5170.11.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6700d24e0704280139i4bf9e9b8i67919b6d22acacb0@mail.gmail.com>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_MbTNG/A636/kEwY"
+Message-Id: <200704300222.36934@orion.escape-edv.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Another update:
+--Boundary-00=_MbTNG/A636/kEwY
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-This is the same testing but for cfs-v7.
+Jon Burgess wrote:
+> On Sat, 2007-04-28 at 18:17 +0100, Jon Burgess wrote:
+> > On Fri, 2007-04-27 at 18:06 -0400, Lee Revell wrote:
+> > > On 4/27/07, Jon Burgess <jburgess777@googlemail.com> wrote:
+> > > > Interesting - I see similar symptoms after upgrading my PC:
+> > > > * old PC was AMD Athlon 64 3000 w/ 2GB of RAM which had no issues
+> > > > * new PC is a Intel Core 2 Duo w/ 4GB of RAM and fails in the way you
+> > > > describe.
+> > > 
+> > > Driver using an incorrect DMA mask?
+> > > 
+> > > Lee
+> > 
+> > It appears the problem is that the driver is using streamed PCI and
+> > needs to explicitly sync the data otherwise it breaks when the SWIOTLB
+> > is in use. A call to pci_unmap_sg() was missing too.
+> > 
+> > This patch is against the current v4l-dvb HG tree.
+> > 
+> > I've only tested the change with a budget-ci card.
+> > 
+> > 	Jon
+> > 
+> > Signed-off-by: Jon Burgess <jburgess777@googlemail.com>
+> 
+> While the above patch works, it seems the underlying causes is that
+> vmalloc_32() is providing memory above 4Gb on x86-64 which is not what
+> the driver expects. This same issue came up a few weeks ago with regards
+> to DRM on radeon http://lkml.org/lkml/2007/4/1/257
+> 
+> Andi Kleen included a patch to ensure vmalloc_32() returns memory <4Gb
+> in a patch which is currently in -mm
+>  http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/x86_64-mm-vmalloc-32.patch
+> 
+> With this patch applied the current driver appears to work OK. 
+> 
+> Attached is a smaller patch against v4l-dvb which just adds the missing
+> pci_unmap_sg() call.
 
-Summary:
-1. context switch rate is much higher than for cfs-v6 for the same
-sched_granularity_ns 200000
-2. Video playback suffered. FPS is much lower.
-3. Trying different values of sched-granularity_ns didn't help
-(neither did the default).
-4. Firefox is actually much more responsive when the system isn't
-under stress, better than any other scheduler so far.
-5. Generally the system completes operations faster with cfs-v7, but
-beryl FPS suffers.
-6. I've monitored idle context switch rates at ~2000, and some spikes
-at ~35000 (emerge -s firefox) for example.
+Imo your patch is correct and should be applied.
+Any objections?
 
-------------------------------------------------------------------------------
-cfs-v7
-700m kernel # cat sched_granularity_ns
-2000000
+After digging through the code, kernel DMA docs and the saa7146
+datasheet, I think that we should remove the scatter-gatter voodoo
+from the budget and av7110 driver. ;-)
 
-procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
- r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
- 2  0      0 888828    536 882672    0    0   100     0 3793 13889 67  6 27  0
- 5  0      0 888708    536 882768    0    0    96     0 3435 13969 69  7 24  0
- 1  0      0 888468    536 882992    0    0    96     0 3704 13645 64  8 28  0
- 0  0      0 888284    536 883064    0    0    72     0 4378 13557 53  7 40  0
- 6  0      0 888224    536 883132    0    0    68     0 3909 13700 60  9 31  0
- 0  0      0 888164    536 883216    0    0    84     0 3726 13670 65  6 29  0
+What about the attached patch?
+- easy to understand and maintain
+- saves 1 page of memory (page table of the SAA7146 MMU)
+- saves PCI bandwidth (SAA7146 does not read page table anymore)
 
-top - 16:53:54 up 10 min,  5 users,  load average: 3.33, 2.78, 1.43
-Tasks: 102 total,   2 running, 100 sleeping,   0 stopped,   0 zombie
-Cpu(s): 57.9%us,  5.7%sy,  0.0%ni, 35.4%id,  0.0%wa,  0.7%hi,  0.3%si,  0.0%st
-Mem:   2057700k total,  1172136k used,   885564k free,      536k buffers
-Swap:   987988k total,        0k used,   987988k free,   885976k cached
+Comments?
 
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-11701 hechacke  20   0 51268  30m  18m R 18.9  1.5   1:46.30 gmplayer
-11620 hechacke  20   0  127m  35m  18m S 15.3  1.7   0:40.64 mono
-11695 hechacke  20   0  180m  67m  20m S 14.3  3.4   1:51.19 totem
- 9421 root      20   0  272m  49m  15m S 11.3  2.4   0:59.29 Xorg
-11442 hechacke  20   0 63304 6232 4316 S  3.7  0.3   0:11.86 beryl
+CU
+Oliver
 
-Observation:
-Music plays perfectly.
-Audio of video's play perfectly.
-New Processes start in about the same amount of time as cfs-v6
-Already open applications are responsive.
-Behavior of video:
-video's both moving forward. totem is doing ~0.9fps.
-mplayer is doing ~1 fps.
-Video's are slideshows in cfs-v7 vs cfs-v6 which was had more fps.
+-- 
+--------------------------------------------------------
+VDR Remote Plugin 0.3.9 available at
+http://www.escape-edv.de/endriss/vdr/
+-------------------------------------------------------
 
-Going back to sd-0.46 since so far it provides the most constant FPS
-under load (and thus the most responsiveness/smoothness).
+--Boundary-00=_MbTNG/A636/kEwY
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="budget_dmabuf_simple.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="budget_dmabuf_simple.diff"
+
+diff -r e9e1b86b7892 linux/drivers/media/dvb/ttpci/budget-core.c
+--- a/linux/drivers/media/dvb/ttpci/budget-core.c	Mon Apr 23 07:41:13 2007 +0200
++++ b/linux/drivers/media/dvb/ttpci/budget-core.c	Mon Apr 30 01:29:42 2007 +0200
+@@ -74,6 +74,7 @@ static int start_ts_capture(struct budge
+ static int start_ts_capture(struct budget *budget)
+ {
+ 	struct saa7146_dev *dev = budget->dev;
++	u32 dma_base = (u32) budget->dma;
+ 
+ 	dprintk(2, "budget: %p\n", budget);
+ 
+@@ -137,16 +138,16 @@ static int start_ts_capture(struct budge
+ 	saa7146_write(dev, MC2, (MASK_08 | MASK_24));
+ 	mdelay(10);
+ 
+-	saa7146_write(dev, BASE_ODD3, 0);
++	saa7146_write(dev, BASE_ODD3, dma_base);
+ 	if (budget->buffer_size > budget->buffer_height * budget->buffer_width) {
+ 		// using odd/even buffers
+-		saa7146_write(dev, BASE_EVEN3, budget->buffer_height * budget->buffer_width);
++		saa7146_write(dev, BASE_EVEN3, dma_base + budget->buffer_height * budget->buffer_width);
+ 	} else {
+ 		// using a single buffer
+-		saa7146_write(dev, BASE_EVEN3, 0);
+-	}
+-	saa7146_write(dev, PROT_ADDR3, budget->buffer_size);
+-	saa7146_write(dev, BASE_PAGE3, budget->pt.dma | ME1 | 0x90);
++		saa7146_write(dev, BASE_EVEN3, dma_base);
++	}
++	saa7146_write(dev, PROT_ADDR3, dma_base + budget->buffer_size);
++	saa7146_write(dev, BASE_PAGE3, 0x90);
+ 
+ 	saa7146_write(dev, PITCH3, budget->buffer_width);
+ 	saa7146_write(dev, NUM_LINE_BYTE3,
+@@ -190,9 +191,9 @@ static void vpeirq(unsigned long data)
+ static void vpeirq(unsigned long data)
+ {
+ 	struct budget *budget = (struct budget *) data;
+-	u8 *mem = (u8 *) (budget->grabbing);
++	u8 *mem = budget->grabbing;
+ 	u32 olddma = budget->ttbp;
+-	u32 newdma = saa7146_read(budget->dev, PCI_VDP3);
++	u32 newdma = saa7146_read(budget->dev, PCI_VDP3) - (u32) budget->dma;
+ 	u32 count;
+ 
+ 	/* nearest lower position divisible by 188 */
+@@ -510,8 +511,9 @@ int ttpci_budget_init(struct budget *bud
+ 
+ 	ttpci_eeprom_parse_mac(&budget->i2c_adap, budget->dvb_adapter.proposed_mac);
+ 
+-	if (NULL ==
+-	    (budget->grabbing = saa7146_vmalloc_build_pgtable(dev->pci, budget->buffer_size, &budget->pt))) {
++	budget->grabbing = pci_alloc_consistent(dev->pci, budget->buffer_size,
++						&budget->dma);
++	if (NULL == budget->grabbing) {
+ 		ret = -ENOMEM;
+ 		goto err;
+ 	}
+@@ -526,13 +528,15 @@ int ttpci_budget_init(struct budget *bud
+ 	if (bi->type != BUDGET_FS_ACTIVY)
+ 		saa7146_setgpio(dev, 2, SAA7146_GPIO_OUTHI);
+ 
+-	if (budget_register(budget) == 0) {
++	if (budget_register(budget) == 0)
+ 		return 0;
+-	}
++
+ err:
+ 	i2c_del_adapter(&budget->i2c_adap);
+ 
+-	vfree(budget->grabbing);
++	if (budget->grabbing)	
++		pci_free_consistent(dev->pci, budget->buffer_size,
++				    budget->grabbing, budget->dma);
+ 
+ 	dvb_unregister_adapter(&budget->dvb_adapter);
+ 
+@@ -561,9 +565,8 @@ int ttpci_budget_deinit(struct budget *b
+ 
+ 	tasklet_kill(&budget->vpe_tasklet);
+ 
+-	saa7146_pgtable_free(dev->pci, &budget->pt);
+-
+-	vfree(budget->grabbing);
++	pci_free_consistent(dev->pci, budget->buffer_size,
++			    budget->grabbing, budget->dma);
+ 
+ 	return 0;
+ }
+diff -r e9e1b86b7892 linux/drivers/media/dvb/ttpci/budget.h
+--- a/linux/drivers/media/dvb/ttpci/budget.h	Mon Apr 23 07:41:13 2007 +0200
++++ b/linux/drivers/media/dvb/ttpci/budget.h	Mon Apr 30 01:32:53 2007 +0200
+@@ -48,9 +48,6 @@ struct budget {
+ 	struct i2c_adapter i2c_adap;
+ 	struct budget_info *card;
+ 
+-	unsigned char *grabbing;
+-	struct saa7146_pgtable pt;
+-
+ 	struct tasklet_struct fidb_tasklet;
+ 	struct tasklet_struct vpe_tasklet;
+ 
+@@ -63,6 +60,8 @@ struct budget {
+ 	int ci_present;
+ 	int video_port;
+ 
++	void *grabbing;
++	dma_addr_t dma;
+ 	u32 buffer_width;
+ 	u32 buffer_height;
+ 	u32 buffer_size;
+
+--Boundary-00=_MbTNG/A636/kEwY--
+
