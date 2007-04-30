@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423049AbXD3F5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423051AbXD3F66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423049AbXD3F5S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423052AbXD3F5R
+	id S1423051AbXD3F66 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423054AbXD3F66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:57:17 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54805 "EHLO
+	Mon, 30 Apr 2007 01:58:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54849 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423037AbXD3F5P (ORCPT
+	with ESMTP id S1423051AbXD3F65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:57:15 -0400
-Date: Mon, 30 Apr 2007 15:56:32 +1000
-From: David Chinner <dgc@sgi.com>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 0/5] fallocate system call
-Message-ID: <20070430055632.GR32602149@melbourne.sgi.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com> <20070430052559.GA13145@tuatara.stupidest.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430052559.GA13145@tuatara.stupidest.org>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 30 Apr 2007 01:58:57 -0400
+Date: Sun, 29 Apr 2007 22:58:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Shan, Guo Wen (Gavin)" <gshan@alcatel-lucent.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
+ time?
+In-Reply-To: <20070428172939.35689110@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0704292257080.2910@schroedinger.engr.sgi.com>
+References: <2AC135F730C4A045BAE4F1C1CB83FD4B03EF6F87@exch03.qd.lucent.com>
+ <Pine.LNX.4.64.0704281006380.25313@localhost.localdomain>
+ <20070428172939.35689110@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 10:25:59PM -0700, Chris Wedgwood wrote:
-> On Mon, Apr 30, 2007 at 10:47:02AM +1000, David Chinner wrote:
+On Sat, 28 Apr 2007, Alan Cox wrote:
+
+> > > drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
+> > > drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
+> > >
+> > >   clarification?
+> > 
+> > oh, i'm *aware* of the definitions of those flags, but every single
+> > source i've ever read has *strongly* suggested that you don't use
 > 
-> > For FA_ALLOCATE, it's supposed to change the file size if we
-> > allocate past EOF, right?
-> 
-> I would argue no.  Use truncate for that.
+> I don't believe either of those is doing what the author intended 8).
 
-I'm going from the ext4 implementation because the semantics
-have not been documented yet.
+Well sortof. First of all kmalloc may not even allocate a page to 
+satisfy the request. If it does then we do essentially GFP_KERNEL | 
+__GFP_HIGH meaning a allocation where we can sleep etc but are allowed to 
+dip into the reserves.
 
-IIRC, the argument for FA_ALLOCATE changing file size is that
-posix_fallocate() is supposed to change the file size. I think
-that having a mode for real preallocation and another for
-posix_fallocate is a valid thing to do...
-
-Note that the way XFS implements growing the file size after the
-allocation is via a truncate....
-
-> > For FA_DEALLOCATE, does it change the filesize at all?
-> 
-> Same as above.
-> 
-> > Or does
-> > it just punch a hole in the file?
-> 
-> Yes.
-
-That's would what I did because otherwise you'd use ftruncate64().
-Without documented behaviour or an ext4 implementation, I have to
-ask what it's supposed to do, though ;)
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
