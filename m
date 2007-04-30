@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161520AbXD3APo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161621AbXD3AQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161520AbXD3APo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 20:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161602AbXD3APn
+	id S1161621AbXD3AQU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 20:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161611AbXD3AQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 20:15:43 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:51404 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161520AbXD3APZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 20:15:25 -0400
-Message-ID: <463535B8.7020101@oracle.com>
-Date: Sun, 29 Apr 2007 17:18:00 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-References: <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org> <20070428171101.GC20646@redhat.com> <20070428172154.GA11115@waste.org> <20070429163701.fb994561.randy.dunlap@oracle.com> <20070430000925.GK11115@waste.org>
-In-Reply-To: <20070430000925.GK11115@waste.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Sun, 29 Apr 2007 20:16:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36825 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161621AbXD3AQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 20:16:17 -0400
+Date: Sun, 29 Apr 2007 20:13:51 -0400
+From: Dave Jones <davej@redhat.com>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070430001351.GD14857@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+	Chuck Ebbert <cebbert@redhat.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de> <20070429235535.GC19937@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070429235535.GC19937@thunk.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Sun, Apr 29, 2007 at 04:37:01PM -0700, Randy Dunlap wrote:
->> On Sat, 28 Apr 2007 12:21:54 -0500 Matt Mackall wrote:
->>
->>> On Sat, Apr 28, 2007 at 01:11:01PM -0400, Dave Jones wrote:
->>>> On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
->>>>  > > I'm all ears for additional regexps, bug reports or other suggestions.
->>>>  > 
->>>>  > Neat.
->>>>  > 
->>>>  > Does it check for:
->>>>  > 
->>>>  > functions marked extern?
->> 	data marked extern?
-> 
-> It's perfectly reasonable to have a data extern declaration in a header file.
+On Sun, Apr 29, 2007 at 07:55:35PM -0400, Theodore Tso wrote:
 
-but it's not perfectly acceptable to have
+ > but if the goal is to
+ > make it easier to archive and track information about a bug, at
+ > *least* with the Debian BTS, when you reply to an e-mail message, the
+ > reply is automatically appended to the bug log!
 
-extern unsigned long volatile jiffies;
+bugzilla does that too.
 
-in a .c file.
-
-The biggest problem I'm seeing ATM is that this script is a bit too
-simplistic.  It doesn't know what it's looking at.  We'll have to
-address that, I think.
-
+	Dave
 
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+http://www.codemonkey.org.uk
