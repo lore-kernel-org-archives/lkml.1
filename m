@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423494AbXD3SVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423514AbXD3SVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423494AbXD3SVK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423401AbXD3SVK
+	id S1423514AbXD3SVt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423507AbXD3SVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:21:10 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40312 "EHLO
+	Mon, 30 Apr 2007 14:21:48 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56275 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423507AbXD3SVH (ORCPT
+	by vger.kernel.org with ESMTP id S1423514AbXD3SVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:21:07 -0400
-Date: Mon, 30 Apr 2007 11:20:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-cc: Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070430180952.GC23336@stusta.de>
-Message-ID: <alpine.LFD.0.98.0704301113240.3419@woody.linux-foundation.org>
-References: <p73d51n1fup.fsf@bingen.suse.de>
- <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
- <20070429173500.GA30248@one.firstfloor.org>
- <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
- <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com>
- <20070429201729.GQ3468@stusta.de> <alpine.LFD.0.98.0704291330280.9964@woody.linux-foundation.org>
- <20070429210505.GS3468@stusta.de> <alpine.LFD.0.98.0704291419310.9964@woody.linux-foundation.org>
- <20070430180952.GC23336@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 30 Apr 2007 14:21:46 -0400
+Date: Mon, 30 Apr 2007 11:21:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
+ (-1)
+Message-Id: <20070430112130.b64321d3.akpm@linux-foundation.org>
+In-Reply-To: <4636248E.7030309@imap.cc>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+	<46338AEB.2070109@imap.cc>
+	<20070428141024.887342bd.akpm@linux-foundation.org>
+	<4636248E.7030309@imap.cc>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 30 Apr 2007 19:17:02 +0200
+Tilman Schmidt <tilman@imap.cc> wrote:
 
-
-On Mon, 30 Apr 2007, Adrian Bunk wrote:
+> >> With kernel 2.6.21-rc7-mm2, my Dell Optiplex GX110 (P3/933) regularly
+> >> crashes during the SuSE 10.1 startup sequence. When booting to RL5,
+> >> it panicblinks shortly after the graphical login screen appears.
+> >> Booting to RL3, it hangs after the startup message:
 > 
-> My ideal was always that reported bugs should be fixed.
+> I have now bisected this down to the section in the series file between
+> #GREGKH-DRIVER-START and #GREGKH-DRIVER-END, and therefore added GregKH
+> to the CC list.
 
-..and this is where we differ.
+This is rather good news.  I was staring at about 200-300 MM patches
+wondering which one was buggy.  Thanks heaps for doing the bisect.  Now the
+main worry is Randy's dead box.
 
-OF COURSE bugs should be fixed. But you seem to think that there is 
-something magical and special about every single bug-report.
+A lot of Greg's driver tree has gone upstream, so please check current
+mainline.  If that's OK then we need to pick through the difference between
+2.6.21-rc7-mm2's driver tree and the patches which went into mainline.  And
+that's a pretty small set.
 
-You have a new home assignment: watch the "every sperm is sacred" thing 
-from Monty Python's "Meaning of Life". Google for it.
+> I'll try bisecting further inside that section (unless
+> you tell me not to), but it may take some time.
+> 
+> The exact point during the startup sequence when the crash occurred and
+> the amount of BUG messages produced varied somewhat during these tests.
+> The common denominator, and my criterion for the good/bad decisions
+> during the bisect, was the crash (panic blink) just before completion
+> of the system startup.
+> Sometimes there weren't any BUG messages in the log (or perhaps they
+> just didn't make it to the disk.) Sometimes I just had a couple of the
+> "sleeping function called from invalid context at mm/slab.c:3054"
+> ones but no "Eeek! page_mapcount(page) went negative!" one before them.
+> However, whenever the "Eeek!" did appear it announced "getcfg-interfac"
+> as the current process and was followed by a few of the "mm/slab.c:3054"
+> ones.
 
-And if you cannot appreciate the absurdity and humor of that thing, maybe 
-you should think about it a bit more.
-
-And once you _can_ appreciate the humor of that song/skit, look yourself 
-in the mirror, and ask yourself: "is every bug report sacred?"
-
-Really?
-
-> If you accept that this is anyway impossible because more bugs get added 
-> than could get fixed you might not need any tracking at all.
-
-That's a TOTALLY IDIOTIC argument.
-
-That goes from "every sperm is sacred" to "sperm doesn't count at all".
-
-Can you not see how stupid that statement of yours really is? Can you not 
-see that anybody who thinks in those kinds of black-and-white terms is 
-simply not FUNCTIONAL!
-
-Bugs are neither sacred, _nor_ should they be ignored. 
-
-Ponder that, grasshopper. And until you can see that things are not 
-"either-or", "black-and-white", "all or nothing", I don't think I really 
-can have anything worthwhile to add in this discussion to you. People who 
-think in absolutes are simply not worth talking to.
-
-			Linus
+hm, big mess.  Could be it was some glitch from Tejun's sysfs changes which
+are all being extensively redone, so perhaps we'll never hear from it
+again.  Or perhaps we just merged it into mainline.
