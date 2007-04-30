@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423023AbXD3FQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161639AbXD3FX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423023AbXD3FQx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423028AbXD3FQx
+	id S1161639AbXD3FX1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161640AbXD3FX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:16:53 -0400
-Received: from [212.12.190.16] ([212.12.190.16]:32828 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423023AbXD3FQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:16:53 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v7
-Date: Mon, 30 Apr 2007 08:20:49 +0300
-User-Agent: KMail/1.5
+	Mon, 30 Apr 2007 01:23:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47388 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161639AbXD3FX0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 01:23:26 -0400
+Date: Sun, 29 Apr 2007 22:23:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+cc: linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <200704281939.28868.maximlevitsky@gmail.com>
+Message-ID: <Pine.LNX.4.64.0704292221480.1978@schroedinger.engr.sgi.com>
+References: <20070424222105.883597089@sgi.com> <200704281939.28868.maximlevitsky@gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200704300820.49078.a1426z@gawab.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->
-> i'm pleased to announce release -v7 of the CFS scheduler patchset. (The
-> main goal of CFS is to implement "desktop scheduling" with as high
-> quality as technically possible.)
-:
-:
-> As usual, any sort of feedback, bugreport, fix and suggestion is more
-> than welcome,
+On Sat, 28 Apr 2007, Maxim Levitsky wrote:
 
-This one seems on par with SD, but there are still some nice issues.
+> 1) Is it possible for block device to assume that it will alway get big 
+> requests (and aligned by big blocksize) ?
 
-Try running 3 chew.c's, then renicing one to -10, starves others for some 
-seconds while switching prio-level.  Now renice it back to 10, it starves 
-for up to 45sec.
+That is one of the key problems. We hope that Mel Gorman's antifrag work 
+will get us there.
+ 
+> 2) Does metadata reading/writing occuress also using same big blocksize ?
 
-Also, nice levels are only effective on every other step; ie:
- ... -3/-2 , -1/0 , 1/2 ... yields only 20 instead of 40 prio-levels.
+It can if the filesystem decides to and sets up the order the mapping.
+ 
+> 3 If so, How __bread/__getblk are affrected? Does returned buffer_head point 
+> to whole block ?
 
-
-Thanks!
-
---
-Al
+Correct.
 
