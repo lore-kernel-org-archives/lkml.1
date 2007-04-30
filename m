@@ -1,93 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423375AbXD3XKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422936AbXD3XLk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423375AbXD3XKn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 19:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423392AbXD3XKn
+	id S1422936AbXD3XLk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 19:11:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423387AbXD3XLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 19:10:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:3479 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423387AbXD3XKR (ORCPT
+	Mon, 30 Apr 2007 19:11:40 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59501 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422936AbXD3XLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 19:10:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=R7ujBcCABWj4bO2SmCtIfKf92UFQzav858NYz+Se8EJr8Lshkm5mGIY13xDmG7hYEx+Y3nxPDaG803g9adsW+DJU3tWM3DsssOF0ptNizqeE012K51BXFRZ9njvVDlCnfbDDueBCUASlFmlCdZC/PrIPKh257N+M6XO2KaNrd1A=
-Message-ID: <21d7e9970704301610u5d5132uc282ac697c9df2be@mail.gmail.com>
-Date: Tue, 1 May 2007 09:10:00 +1000
-From: "Dave Airlie" <airlied@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Thomas Hellstr?m" <thomas@tungstengraphics.com>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Eric Anholt" <eric@anholt.net>
-In-Reply-To: <20070427163951.GA12216@kroah.com>
+	Mon, 30 Apr 2007 19:11:38 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
+	<m18xc9344o.fsf@ebiederm.dsl.xmission.com> <463670D1.3000003@goop.org>
+Date: Mon, 30 Apr 2007 17:10:59 -0600
+In-Reply-To: <463670D1.3000003@goop.org> (Jeremy Fitzhardinge's message of
+	"Mon, 30 Apr 2007 15:42:25 -0700")
+Message-ID: <m14pmx31bw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
-	 <20070427163951.GA12216@kroah.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
+
+> Eric W. Biederman wrote:
+>>> I think I'd prefer to have the domain builder decompress/relocate the
+>>> kernel from the bzImage and start it directly, rather than have it
+>>> decompress/relocate itself, but I'm not really set on that.
+>>>     
+>>
+>> We can change a lot more implementation details arbitrarily if you don't
+>> know what needs to happen for decompression and relocation.
 >
-> A few easy and simple comments based on looking at this for 5 minutes:
->   - drop the typedefs.  Yeah, they might be a drm thing, but we don't
->     need them here.
+> Yes, and if it can be made to work, it ultimately means less work
+> for me ;)
 
-Okay I think in-kernel typedefs have to go, but we have a defined DRM
-interface like it or not and I'd like to be consistent on the
-userspace interface and continue to use typedefs, I don't want to have
-a major inconsistency like half the interface in typedefs the other
-half in non-typedefs, considering the old interface is frozen...
+Now you are beginning to sound like a bootloader author.
+Make it work and forget about it :)
 
->   - the comment style for the functions is "odd" and not in kerneldoc
->     form, but something else.  Either use kerneldoc or nothing, don't
->     invent something new please.
+>> We have to avoid the writes decompressor-prinnt routines 
+>
+> At worst, we could set up chunk of memory as a dummy framebuffer.  That
+> might be useful for debugging anyway.
 
-Most likely in doxygen as that is what Mesa uses and the intersection
-of developers is higher in that area, I'll take it as a task to try
-and kerneldoc the drm at some stage..
+I'm trying to recall how we handle this on the LinuxBIOS side.
+Because we have machines without a framebuffer setup.  Oh yeah,
+we started in 32bit mode...
 
->   - what's with the /proc interface?  Don't add new proc code for
->     non-process related things.  This should all go into sysfs
->     somewhere.  And yes, I know /proc/dri/ is there today, but don't add
->     new stuff please.
+I do have some parameters to parse the command line in misc.c that
+would accomplish this goal.
 
-Well we should move all that stuff to sysfs, but we have all the
-infrastructure for publishing this stuff under /proc/dri and adding
-new files doesn't take a major amount, as much as I appreciate sysfs,
-it isn't suitable for this sort of information dump, the whole one
-value per file is quite useless to provide this sort of information
-which is uni-directional for users to send to us for debugging without
-have to install some special tool to join all the values into one
-place.. and I don't think drmfs is the answer either... or maybe it
-is....
+>> and 
+>> possibly the reload of the segment registers.  But otherwise
+>> we should be fine.  I don't see any other privileged instructions
+>> in arch/i386/boot/compressed/{head.S, misc.c}
+>>   
+>
+> Xen will start the domain with a GDT loaded, and all the segment
+> registers loaded with flat segments.  I guess boot/compressed/head.S
+> could do the %cs ring check before deciding to do privileged
+> operations.
 
->   - struct drm_bo_arg can't use an int or unsigned, as it crosses the
->     userspace/kernelspace boundry, use the proper types for all values
->     in those types of structures (__u32, etc.)
+I'm tempted to just reload the segments in setup.S, but that might
+break loadlin support or one of the other bootloaders that starts the
+kernel in 32bit mode so we need to be careful.
 
-int is defined, unsigned I'm not so sure about, the drm user space
-interface is usually specified in non-system specific types so the
-drm.h file is consistent across systems, so we would probably have to
-use uint32_t which other people have objected to, but I'd rather use
-uint32_t than unspecified types..
 
->   - there doesn't seem to be any validity checking for the arguments
->     passed into this new ioctl.  Possibly that's just the way the rest
->     of the dri interface is, which is scary, but with the memory stuff,
->     you really should check things properly...
+> I presume bzImage jumps straight to startup_32 on the newly decompressed
+> kernel?
 
-Okay this needs fixing, we do check most ioctls args, the main thing
-passed in are handles and these are all looked up in the hash table,
-it may not be so obvious, also most of the ioctls are probably going
-to end up root or DRM master only, I'd like do an ioctl fuzzer at some
-stage, I'd suspect a lot more then the dri would be oopsable with
-permissions...
+Straight isn't the way I would but it but yes. startup_32 in arch/i386/head.S
+is the first piece of code that outside of the decompressor that it runs.
 
-Thanks,
-Dave.
+> I haven't checked if it already has this, but it would be nice if the
+> bzImage had a memory range/list of memory ranges it needs mapped to get
+> the kernel on its feet, so that the domain builder can just go and map
+> those areas for it (either P==V mappings, or with a constant offset;
+> whichever is more useful).
+
+P==V mappings I suspect.
+
+> Also, if its a PAE kernel, Xen will start with PAE mode enabled, so
+> bzImage will have to deal with that.  But if its not touching
+> pagetables, it won't matter.
+
+Exactly.
+
+>> What I really want to do is go back to sticking an ELF header on the
+>> bzImage.  We still can't support multiple entry points that way but we
+>> can include ELF notes fairly easily.
+>>   
+>
+> That's OK.  We'll be able to use the boot info to go into the
+> Xen-specific path shortly after startup_32 anyway.
+
+Yes.
+
+> BTW, the test for a non-ring 0 %cs won't always be a good test for
+> paravirtualization; we're likely to start seeing hybrid execution models
+> where we run a largely paravirtualized kernel in a SVM/VT container.  If
+> we can just unconditionally use the bootloader arch definition to
+> determine the entry path into the kernel, it will clean things up nicely.
+
+Yes.  That is why we need a distinct field for this and not overloading
+the bootloader id.  That way if the field is non-zero we need to do
+something special.
+
+>> It looks like for the next version of booting lguest and Xen are
+>> actually coming closer together again.  Yea.
+>>
+>> For boot protocol. 2.0.7 We currently need a subarchitecture field (16bits?).
+>> default == 0, Xen, lguest, voyager?, visws?, numaq?, efi?
+>>
+>> We need a subarchitecture data pointer field (32bits).
+>>   
+>
+> Do we want to support starting a 64-bit guest in 64-bit mode?
+
+It's the only way that will be sane.  When I was doing my ELF header on
+bzImage work I had that working.  But it got dropped due to some unexplained,
+unreproducible testing failures and not really being necessary at the
+time.  We also need that if we want to be certain we don't play with
+page tables.
+
+The other thing the ELF headers gave was a precise accounting of where
+the kernel was, which is essentially what needs to be mapped at boot
+time.
+
+The hard part I suspect is going to be handling Xen when setup the
+physical == virtual page tables
+
+>> We need to target .23 because it is to late for .22.
+>
+> Yes.  I'll need to do a moderate amount of work on the Xen side to make
+> this work, I think.
+
+I think we all will but the upside if we design this carefully is
+something that we won't have to change.
+
+Eric
+
