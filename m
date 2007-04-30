@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946535AbXD3RQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946525AbXD3RRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946535AbXD3RQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946558AbXD3RQ0
+	id S1946525AbXD3RRv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946532AbXD3RRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:16:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41402 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946547AbXD3RQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:16:24 -0400
-Message-ID: <46362463.5010309@garzik.org>
-Date: Mon, 30 Apr 2007 13:16:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: "Theodore Ts'o" <tytso@mit.edu>
-CC: linux-ext4@vger.kernel.org, Johann Lombardi <johann.lombardi@bull.net>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>, Dave Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.21-ext4-1
-References: <E1HiXab-0001QX-Sk@candygram.thunk.org>
-In-Reply-To: <E1HiXab-0001QX-Sk@candygram.thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 30 Apr 2007 13:17:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49769 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946525AbXD3RRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 13:17:50 -0400
+Date: Mon, 30 Apr 2007 18:21:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
+ time?
+Message-ID: <20070430182135.0fae7b89@the-village.bc.nu>
+In-Reply-To: <20070430100225.353e3030.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>
+	<20070430001311.84d0291f.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0704300445460.17536@localhost.localdomain>
+	<20070430100225.353e3030.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Ts'o wrote:
-> I've respun the ext4 development patchset, with Amit's updated fallocate
-> patches.  I've added Dave's patch to add ia64 support to the fallocate
-> system call, but *not* the XFS fallocate support patches.  (Probably
-> better for them to live in an xfs tree, where they can more easily
-> tested and updated.)  Yes, we haven't reached complete closure on the
-> fallocate system call calling convention, but it's enough for us to get
-> more testing in -mm.
+> > > > drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
+> > > > drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
+> > > >
+> > > >   clarification?
+> > >
+> > > GFP_ATOMIC implies that the memory comes from the zones which
+> > > GFP_KERNEL also uses.  So the above usage of GFP_KERNEL is redundant
+> > > and should be removed.
+> > 
+> > hang on ... based on an email i just got, is that reference to
+> > GFP_KERNEL "redundant" or "conflicting"?  big difference there.  and
+> > is the proper fix to remove "GFP_KERNEL" in both cases?
+> > 
 > 
-> Also added Johann's jbd2-stats-through-procfs patches; it provides
-> useful help in turning the size of the journal, which will be useful in
-> benchmarking efforts.  In addition, Alex Tomas's patch to free
-> just-allocated patches when there is an error inserting the extent into
-> the extent tree has also been included.
-> 
-> The patches have been compile-tested on x86, and compile/run-tested on
-> x86/UML.  Would appreciate reports about testing on other platforms.
+> umm, yeah, oops.  GFP_KERNEL|GFP_ATOMIC is not a redundant combination. 
+> It's GFP_KERNEL plus "is able to access emergency pools".  We'd normally
+> represent that as GFP_KERNEL|__GFP_HIGH.
 
-Why isn't this stuff going upstream rapidly?
+i2o/device.c should be GFP_KERNEL as far as I can tell. It was meant to
+be that way and the callers appear to all be calling it in sleep capable
+contexts.
 
-AFAICT nothing much at all has happened upstream besides a mass renaming?
+aic7xxx_old.c should probably be GFP_KERNEL as ->slave_alloc methods
+appear to be able to sleep (although some drivers use GFP_ATOMIC here and
+some GFP_KERNEL).
 
-The whole point of having ext4 in the kernel is to do development 
-upstream, in the public view, getting new stuff in ASAP (even if that 
-means changing or pulling some stuff later).
-
-As it stands now, ext4 in the upstream tree is completely useless -- 
-it's the same as ext3, and has been for months (since Oct 11).
-
-Hello?  Upstream development?  Ever heard of it?
-
-	Jeff
-
-
-
+Alan
