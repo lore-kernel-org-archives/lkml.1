@@ -1,139 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423153AbXD3IEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423147AbXD3IGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423153AbXD3IEn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 04:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423148AbXD3IEn
+	id S1423147AbXD3IGK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 04:06:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423113AbXD3IGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 04:04:43 -0400
-Received: from mx-out.strefa.interia.pl ([217.74.66.53]:46211 "EHLO
-	mx-out.strefa.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423145AbXD3IEk (ORCPT
+	Mon, 30 Apr 2007 04:06:09 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:53888 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423148AbXD3IFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 04:04:40 -0400
-X-Greylist: delayed 1924 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Apr 2007 04:04:40 EDT
-Message-ID: <46359B8F.3070809@akcja.pl>
-Date: Mon, 30 Apr 2007 09:32:31 +0200
-From: Maciej Rutecki <mrutecki@akcja.pl>
-Reply-To: mrutecki@akcja.pl
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 30 Apr 2007 04:05:48 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: linux-kernel@vger.kernel.org
+Subject: [REPORT] 2.6.21.1 vs 2.6.21-sd046 vs 2.6.21-cfs-v6
+Date: Mon, 30 Apr 2007 10:05:07 +0200
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Juliusz Chroboczek <jch@pps.jussieu.fr>, Mike Galbraith <efault@gmx.de>,
+       Peter Williams <pwil3058@bigpond.net.au>, ck list <ck@vds.kolivas.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bill Davidsen <davidsen@tmr.com>, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>
 MIME-Version: 1.0
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [2.6.21-rc7-mm2] BUG while suspend to ram
-References: <463476A3.9050305@gmail.com>
-In-Reply-To: <463476A3.9050305@gmail.com>
-Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg=sha1; boundary="------------ms080005080401030000050802"
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: multipart/signed;
+  boundary="nextPart1999091.XbXi50mEoQ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704301005.33884.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1177920348;aaf8408b;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a cryptographically signed message in MIME format.
+--nextPart1999091.XbXi50mEoQ
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
---------------ms080005080401030000050802
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+i list,
 
-Maciej Rutecki pisze:
-> BUG: at kernel/kthread.c:166 kthread_bind()
->  [<c01465ac>] _cpu_down+0x16c/0x250
->  [<c0146890>] disable_nonboot_cpus+0x60/0xf0
->  [<c014cd67>] pm_suspend_disk+0x177/0x2c0
->  [<c014b645>] enter_state+0xb5/0x200
->  [<c014b84d>] state_store+0xbd/0xd0
->  [<c014b790>] state_store+0x0/0xd0
->  [<c01be189>] subsys_attr_store+0x29/0x40
->  [<c01be3a4>] sysfs_write_file+0xd4/0x160
->  [<c017b701>] vfs_write+0xc1/0x160
->  [<c01be2d0>] sysfs_write_file+0x0/0x160
->  [<c017be11>] sys_write+0x41/0x70
->  [<c0187355>] sys_dup2+0xd5/0x100
->  [<c01040f6>] sysenter_past_esp+0x5f/0x85
->  [<c0330000>] xfrm_policy_insert+0x210/0x400
->  =======================
-> 
-> dmesg:
-> http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/dmesg.txt.gz
-> lsmod:
-> http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/lsmod.txt.gz
-> ver_linux:
-> http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/ver_linux.txt.gz
-> lspci:
-> http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/lspci.txt.gz
-> config:
-> http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/config-2.6.21-rc7-mm2.gz
-> 
+meanwhile I've redone my numbercrunching tests with the following kernels:
+    2.6.21.1 (mainline)
+    2.6.21-sd046
+    2.6.21-cfs-v6
+running on a dualcore x86_64.
+[I will run the same test with 2.6.21.1-cfs-v7 over the next days,
+likely tonight]
 
-I use this script:
+The tests consist of 3 tasks (named LTMM, LTMB and LTBM). The only
+I/O they do is during init and for logging the results, the rest
+is just floating point math.
 
-http://www.unixy.pl/maciek/download/kernel/2.6.21-rc7--mm2/suspend_to_disk.sh
+There are 3 scenarios:
+    j1 - all 3 tasks run sequentially
+	 /proc/sys/kernel/sched_granularity_ns=3D4000000
+	 /proc/sys/kernel/rr_interval=3D16
+    j3 - all 3 tasks run in parallel
+	 /proc/sys/kernel/sched_granularity_ns=3D4000000
+	 /proc/sys/kernel/rr_interval=3D16
+    j3big - all 3 tasks run in parallel with timeslice extended
+            by 2 magnitudes (not run for mainline)
+            /proc/sys/kernel/sched_granularity_ns=3D400000000
+            /proc/sys/kernel/rr_interval=3D400
 
--- 
-Maciej Rutecki <mrutecki@akcja.pl>
-http://www.maciek.unixy.pl
+All 3 tasks are run while the system does nothing else except for
+the "normal" (KDE) daemons. The system had not been used for
+interactive work during the tests.
 
---------------ms080005080401030000050802
-Content-Type: application/x-pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
+I'm giving user time as provided by the "time" cmd followed by wallclock ti=
+me
+(all values in seconds).
 
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIJAzCC
-AtwwggJFoAMCAQICEBLyWQ/dl9RSVDwQQ7RU42QwDQYJKoZIhvcNAQEFBQAwYjELMAkGA1UE
-BhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMT
-I1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBMB4XDTA2MDgyOTEzNDcyOFoX
-DTA3MDgyOTEzNDcyOFowQzEfMB0GA1UEAxMWVGhhd3RlIEZyZWVtYWlsIE1lbWJlcjEgMB4G
-CSqGSIb3DQEJARYRbXJ1dGVja2lAYWtjamEucGwwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAw
-ggEKAoIBAQDOjGXhBB1tZNUE+qezno0MzCYJxWcz/yGoBkafNL8wfwlPPbGhu47NdLCbemqm
-FA1sZJ8oBZ3s29GTsPXhYIXWbPxFn8rbljCGKG96/iC1jila0UCr/EDCSK9PV303x/orT+aC
-XwEg3KA5yfMU7ypGXDiQ9mcPnNu/3JIUUtVVToFKLLx4+whn4ZcU2WOt50njRKG+gfBD1/Eo
-enzkCh4ypywezgo9XCt6W6Sd742ktAN+6q/YGFDe7hHIx/s/cVD44GU3ItfXUR1PH3JqOcCd
-I9ifNn0u6UpXb86EpP/fEC0J52rU6gv6Hy3eNoEGT713e6sMsf2lfeGz/iQavCT5AgMBAAGj
-LjAsMBwGA1UdEQQVMBOBEW1ydXRlY2tpQGFrY2phLnBsMAwGA1UdEwEB/wQCMAAwDQYJKoZI
-hvcNAQEFBQADgYEAc/EVSnVPN/TBZlpdK47pHW9mK+h+30CaET+xKRJN2jvgHqg/mAtN8Fae
-gQWRJ4cNPlqsLVNb515+9DucvpBVEUZExLc7VXo4xqkNbbuhMH8NsQatW7951mFRS9Mr5reD
-/DejuvOmgkMKXe5OSRO03LmA0mHXhkJjtf4XNcGOzzQwggLcMIICRaADAgECAhAS8lkP3ZfU
-UlQ8EEO0VONkMA0GCSqGSIb3DQEBBQUAMGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3
-dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJl
-ZW1haWwgSXNzdWluZyBDQTAeFw0wNjA4MjkxMzQ3MjhaFw0wNzA4MjkxMzQ3MjhaMEMxHzAd
-BgNVBAMTFlRoYXd0ZSBGcmVlbWFpbCBNZW1iZXIxIDAeBgkqhkiG9w0BCQEWEW1ydXRlY2tp
-QGFrY2phLnBsMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzoxl4QQdbWTVBPqn
-s56NDMwmCcVnM/8hqAZGnzS/MH8JTz2xobuOzXSwm3pqphQNbGSfKAWd7NvRk7D14WCF1mz8
-RZ/K25Ywhihvev4gtY4pWtFAq/xAwkivT1d9N8f6K0/mgl8BINygOcnzFO8qRlw4kPZnD5zb
-v9ySFFLVVU6BSiy8ePsIZ+GXFNljredJ40ShvoHwQ9fxKHp85AoeMqcsHs4KPVwrelukne+N
-pLQDfuqv2BhQ3u4RyMf7P3FQ+OBlNyLX11EdTx9yajnAnSPYnzZ9LulKV2/OhKT/3xAtCedq
-1OoL+h8t3jaBBk+9d3urDLH9pX3hs/4kGrwk+QIDAQABoy4wLDAcBgNVHREEFTATgRFtcnV0
-ZWNraUBha2NqYS5wbDAMBgNVHRMBAf8EAjAAMA0GCSqGSIb3DQEBBQUAA4GBAHPxFUp1Tzf0
-wWZaXSuO6R1vZivoft9AmhE/sSkSTdo74B6oP5gLTfBWnoEFkSeHDT5arC1TW+defvQ7nL6Q
-VRFGRMS3O1V6OMapDW27oTB/DbEGrVu/edZhUUvTK+a3g/w3o7rzpoJDCl3uTkkTtNy5gNJh
-14ZCY7X+FzXBjs80MIIDPzCCAqigAwIBAgIBDTANBgkqhkiG9w0BAQUFADCB0TELMAkGA1UE
-BhMCWkExFTATBgNVBAgTDFdlc3Rlcm4gQ2FwZTESMBAGA1UEBxMJQ2FwZSBUb3duMRowGAYD
-VQQKExFUaGF3dGUgQ29uc3VsdGluZzEoMCYGA1UECxMfQ2VydGlmaWNhdGlvbiBTZXJ2aWNl
-cyBEaXZpc2lvbjEkMCIGA1UEAxMbVGhhd3RlIFBlcnNvbmFsIEZyZWVtYWlsIENBMSswKQYJ
-KoZIhvcNAQkBFhxwZXJzb25hbC1mcmVlbWFpbEB0aGF3dGUuY29tMB4XDTAzMDcxNzAwMDAw
-MFoXDTEzMDcxNjIzNTk1OVowYjELMAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25z
-dWx0aW5nIChQdHkpIEx0ZC4xLDAqBgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJ
-c3N1aW5nIENBMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEpjxVc1X7TrnKmVoeaMB1
-BHCd3+n/ox7svc31W/Iadr1/DDph8r9RzgHU5VAKMNcCY1osiRVwjt3J8CuFWqo/cVbLrzwL
-B+fxH5E2JCoTzyvV84J3PQO+K/67GD4Hv0CAAmTXp6a7n2XRxSpUhQ9IBH+nttE8YQRAHmQZ
-cmC3+wIDAQABo4GUMIGRMBIGA1UdEwEB/wQIMAYBAf8CAQAwQwYDVR0fBDwwOjA4oDagNIYy
-aHR0cDovL2NybC50aGF3dGUuY29tL1RoYXd0ZVBlcnNvbmFsRnJlZW1haWxDQS5jcmwwCwYD
-VR0PBAQDAgEGMCkGA1UdEQQiMCCkHjAcMRowGAYDVQQDExFQcml2YXRlTGFiZWwyLTEzODAN
-BgkqhkiG9w0BAQUFAAOBgQBIjNFQg+oLLswNo2asZw9/r6y+whehQ5aUnX9MIbj4Nh+qLZ82
-L8D0HFAgk3A8/a3hYWLD2ToZfoSxmRsAxRoLgnSeJVCUYsfbJ3FXJY3dqZw5jowgT2Vfldr3
-94fWxghOrvbqNOUQGls1TXfjViF4gtwhGTXeJLHTHUb/XV9lTzGCA2QwggNgAgEBMHYwYjEL
-MAkGA1UEBhMCWkExJTAjBgNVBAoTHFRoYXd0ZSBDb25zdWx0aW5nIChQdHkpIEx0ZC4xLDAq
-BgNVBAMTI1RoYXd0ZSBQZXJzb25hbCBGcmVlbWFpbCBJc3N1aW5nIENBAhAS8lkP3ZfUUlQ8
-EEO0VONkMAkGBSsOAwIaBQCgggHDMBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZI
-hvcNAQkFMQ8XDTA3MDQzMDA3MzIzMVowIwYJKoZIhvcNAQkEMRYEFN7GkSj/qscZoY1z/Tle
-ewLwlXUVMFIGCSqGSIb3DQEJDzFFMEMwCgYIKoZIhvcNAwcwDgYIKoZIhvcNAwICAgCAMA0G
-CCqGSIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqGSIb3DQMCAgEoMIGFBgkrBgEEAYI3EAQxeDB2
-MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQKExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQu
-MSwwKgYDVQQDEyNUaGF3dGUgUGVyc29uYWwgRnJlZW1haWwgSXNzdWluZyBDQQIQEvJZD92X
-1FJUPBBDtFTjZDCBhwYLKoZIhvcNAQkQAgsxeKB2MGIxCzAJBgNVBAYTAlpBMSUwIwYDVQQK
-ExxUaGF3dGUgQ29uc3VsdGluZyAoUHR5KSBMdGQuMSwwKgYDVQQDEyNUaGF3dGUgUGVyc29u
-YWwgRnJlZW1haWwgSXNzdWluZyBDQQIQEvJZD92X1FJUPBBDtFTjZDANBgkqhkiG9w0BAQEF
-AASCAQAwVx61usOwe+tpZ/CatoS+lzgSnjUhl2SWir9SBmXsv1pQGpQxAEfA91PsBOoJ2B4t
-HIRn6JOw6tRgaEcI7nrcf2gzAIcE8hnS13Oy3y94Dneubc/G85tPymBar23H0vDaDMW29bB9
-C+ks3YnVI7fypkoGnVVNTS7pHg3iNSB3SUOxClXLxz7J6GRCO6SMUVyFxLpJdmqzyVJ2YFRT
-tkpq6y34cMKijl2ymoiVSGlJH6DXx1g56/nry9Fw8dImuBj+yNZW5d1INZKO29SmK6GSMwmX
-HXBdtT7r0cP6FtXojldXLeCk/W/t1VDmRyid8W8mX6G5TMFNcZf391MpxVmoAAAAAAAA
---------------ms080005080401030000050802--
+                LTMM
+                j1              j3              j3big
+2.6.21-cfs-v6    5655.07/ 5682   5437.84/ 5531   5434.04/ 8072
+2.6.21-sd-046    5556.44/ 5583   5446.86/ 8037   5407.50/ 8274
+2.6.21.1         5417.62/ 5439   5422.37/ 7132   na     /na
+
+                LTMB
+                j1              j3              j3big
+2.6.21-cfs-v6    7729.81/ 7755   7470.10/10244   7449.16/10186
+2.6.21-sd-046    7611.00/ 7626   7573.16/10109   7458.10/10316
+2.6.21.1         7438.31/ 7461   7620.72/11087   na     /na
+
+                LTBM
+                j1              j3              j3big
+2.6.21-cfs-v6    7720.70/ 7746   7567.09/10362   7464.17/10335
+2.6.21-sd-046    7431.06/ 7452   7539.83/10600   7474.20/10222
+2.6.21.1         7452.80/ 7481   7484.19/ 9570   na     /na
+
+                LTMM+LTMB+LTBM
+                j1              j3              j3big
+2.6.21-cfs-v6	21105.58/21183  20475.03/26137  20347.37/28593
+2.6.21-sd-046	20598.50/20661  20559.85/28746  20339.80/28812
+2.6.21.1	20308.73/20381  20527.28/27789  na      /na
+=09
+
+User time apparently is subject to some variance. I'm particularly surprised
+by the wallclock time of scenario j1 and j3 for case LTMM with 2.6.21-cfs-v=
+6.
+I'm not sure what to make of this, i.e. whether I had happening something
+else on my machine during j1 of LTMM -- that's always been the first test
+I ran and it might be that there were still some other jobs running after
+the initial boot.
+
+Assuming scenario j1 does constitute the "true" time each task requires and
+also assuming each scheduler makes maximum use of the available CPUs (the
+tests involve very little I/O) one could compute the expected wallclock tim=
+e.
+However since I suspect the j1 figures of LTMM to be somewhat "dirty" I'll
+refrain from it.
+
+However from these figures it seems as if sd does provide for the fairest
+(as in equal share for all) scheduling among the 3 schedulers tested.
+
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1999091.XbXi50mEoQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGNaNNUYYhyuxDQc4RAqXpAKCGtZ77E2gjSS0ZkB0Nh4r0y2QMLQCeOSms
+UUQDy79M9FmfIfYnZbHbc7g=
+=VTk/
+-----END PGP SIGNATURE-----
+
+--nextPart1999091.XbXi50mEoQ--
