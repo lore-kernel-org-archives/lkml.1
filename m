@@ -1,94 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423534AbXD3SZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423604AbXD3SZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423534AbXD3SZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423530AbXD3SZ3
+	id S1423604AbXD3SZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423605AbXD3SZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:25:29 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33577 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946567AbXD3SZ1 (ORCPT
+	Mon, 30 Apr 2007 14:25:51 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:49937 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423604AbXD3SZr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:25:27 -0400
-Date: Mon, 30 Apr 2007 20:25:38 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
-       Zan Lynx <zlynx@acm.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [1/6] make stack size configurable (was: Re: [-mm patch] i386:
-	enable 4k stacks by default)
-Message-ID: <20070430182538.GE23336@stusta.de>
-References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174047.GD19966@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 30 Apr 2007 14:25:47 -0400
+Date: Mon, 30 Apr 2007 11:28:38 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Steven Whitehouse <swhiteho@redhat.com>, Andi Kleen <ak@suse.de>,
+       Shai Fultheim <shai@scalex86.org>, linux-kernel@vger.kernel.org
+Subject: Re: ACPI build problem (2.6.21 CONFIG_X86_64_ACPI_NUMA)
+Message-ID: <20070430182838.GA5558@localhost.localdomain>
+References: <1177593963.5462.12.camel@quoit.chygwyn.com> <200704280159.46337.lenb@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070430174047.GD19966@holomorphy.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <200704280159.46337.lenb@kernel.org>
+User-Agent: Mutt/1.4.2.1i
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:40:47AM -0700, William Lee Irwin III wrote:
-> On Mon, Apr 30, 2007 at 10:38:19AM -0700, William Lee Irwin III wrote:
-> > Here's what I did for i386 for someone concerned about blowing the stack.
+On Sat, Apr 28, 2007 at 01:59:46AM -0400, Len Brown wrote:
+> On Thursday 26 April 2007 09:26, you wrote:
+> ... 
+> CONFIG_ACPI depends on CONFIG_PM, yet this build fails because you have
+> CONFIG_ACPI=y and CONFIG_PM=n
 > 
-> Make more stack sizes configurable, adding options for deeper stacks.
-> This is largely for differential diagnosis in cases where stack overflows
-> are suspected of silently corrupting memory or causing other problems not
-> detected immediately.
+> Unfortunately kconfig doesn't trace dependencies when "select" is used,
+> making select sort of evil.  Ie. select can't target anything which
+> itself has dependencies.
 > 
-> Signed-off-by: William Irwin <wli@holomorphy.com>
+> In 2.6.15, b0bd35e622ffbda2c01dc67a0381c6a18817a29a added the select below,
+> and subsequently ACPI became dependent on PM, which broke your build.
+> Technically, this could have broken your build in other ways too
+> since ACPI already had other dependencies.
 > 
-> 
-> Index: stack-paranoia/arch/i386/Kconfig.debug
-> ===================================================================
-> --- stack-paranoia.orig/arch/i386/Kconfig.debug	2007-04-30 10:26:15.863869853 -0700
-> +++ stack-paranoia/arch/i386/Kconfig.debug	2007-04-30 10:31:43.878562345 -0700
-> @@ -56,6 +56,10 @@
->  	  portion of the kernel code won't be covered by a 2MB TLB anymore.
->  	  If in doubt, say "N".
->  
-> +choice
-> +	prompt "Stack size"
-> +	default 8KSTACKS
+> +# Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
 > +
->  config 4KSTACKS
->  	bool "Use 4Kb for kernel stacks instead of 8Kb"
->  	depends on DEBUG_KERNEL
-> @@ -66,6 +70,37 @@
->  	  on the VM subsystem for higher order allocations. This option
->  	  will also use IRQ stacks to compensate for the reduced stackspace.
->  
-> +config 8KSTACKS
-> +	bool "Use 8KB for kernel stacks"
-> +	help
-> +	  If you say Y here, the kernel will use its standard stacksize.
->...
+> +config X86_64_ACPI_NUMA
+> +       bool "ACPI NUMA detection"
+> +       depends on NUMA
+> +       select ACPI 
+> +       select ACPI_NUMA
+> +       default y
+> +       help
+> +	 Enable ACPI SRAT based node topology detection.
+> 
+> If you de-select CONFIG_X86_64_ACPI_NUMA then the select goes away
+> and kconfig should work properly.
+> 
+> It isn't immediately clear to me how the NUMA Kconfig patch is a step
+> forward, but perhaps the authors can comment.
+>
 
-These are no questions a user should ever see, and it's impossible that 
-a user will be able to choose the right answer - that's an 
-implementation detail, and it has to be set correctly automatically 
-without bothering the user.
+Before the above change, to select NUMA for em64T systems, you *had* to
+select K8_NUMA in the 'Processor type and features'  sub menu to select
+CONFIG_NUMA, and then select ACPI NUMA from the generic PM menu, which is
+not very intuitive when you have a EM64T NUMA system.
 
-Pro of bigger stacks:
-- kernel developers have to care less about stack usage
+On x86_64 platforms, NUMA topology detection could be K8 style detection,
+ACPI based topology  or NUMA emulation.  Most of the real NUMA systems
+would need ACPI detection, older AMD platforms would need K8_NUMA, and 
+NUMA emulation is a debugging/emulation option to emulate NUMA topology on
+a regular SMP box.  Since CONFIG_NUMA + CONFIG_NUMA_EMU is a valid
+combination, and since CONFIG_NUMA + CONFIG_K8_NUMA is a valid combination,
+it makes sense to have X86_64_ACPI_NUMA on its own, and grouped along with
+other NUMA topology styles in the Processor menu.  Hope this is good enough
+reason :)
 
-Pros of smaller stacks:
-- less memory usage
-- higher order allocations are more likely to fail with fragmented
-  memory
+Regarding the subject build breakage, CONFIG_ACPI depends on CONFIG_PM with
+an explicit 'depends' keyword. If PM does not get selected and CONFIG_ACPI
+gets selected, I would think it is a Kconfig bug which needs fixing no?
+Else, we can add a workaround by selecting CONFIG_PM if X86_64_ACPI_NUMA is
+chosen.  But AFAICT the right thing is to fix the Kconfig bug.
 
-We are currently at "works with 8k stacks and without separate IRQ stacks"
-and at "works in most situations with 4k stacks", so nothing > 8k should 
-be required.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+Kiran
