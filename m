@@ -1,136 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423446AbXD3P4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423439AbXD3P4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423446AbXD3P4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423447AbXD3P40
+	id S1423439AbXD3P4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423441AbXD3P4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:56:26 -0400
-Received: from ns1.suse.de ([195.135.220.2]:44982 "EHLO mx1.suse.de"
+	Mon, 30 Apr 2007 11:56:22 -0400
+Received: from mx2.suse.de ([195.135.220.15]:34341 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423444AbXD3Ptk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:49:40 -0400
+	id S1423439AbXD3Ptl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:49:41 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070430549.617098000@suse.de>
 In-Reply-To: <20070430549.617098000@suse.de>
-To: fernando@oss.ntt.co.jp, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [7/34] x86_64: safe_apic_wait_icr_idle - x86_64
-Message-Id: <20070430154939.26208151FC@wotan.suse.de>
-Date: Mon, 30 Apr 2007 17:49:39 +0200 (CEST)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [1/34] x86_64: Move mtrr prototypes from proto.h to mtrr.h
+Message-Id: <20070430154932.B6F01151D3@wotan.suse.de>
+Date: Mon, 30 Apr 2007 17:49:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Fernando Luis VazquezCao <fernando@oss.ntt.co.jp>
 
-apic_wait_icr_idle looks like this:
-
-static __inline__ void apic_wait_icr_idle(void)
-{
-  while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-    cpu_relax();
-}
-
-The busy loop in this function would not be problematic if the
-corresponding status bit in the ICR were always updated, but that does
-not seem to be the case under certain crash scenarios. Kdump uses an IPI
-to stop the other CPUs in the event of a crash, but when any of the
-other CPUs are locked-up inside the NMI handler the CPU that sends the
-IPI will end up looping forever in the ICR check, effectively
-hard-locking the whole system.
-
-Quoting from Intel's "MultiProcessor Specification" (Version 1.4), B-3:
-
-"A local APIC unit indicates successful dispatch of an IPI by
-resetting the Delivery Status bit in the Interrupt Command
-Register (ICR). The operating system polls the delivery status
-bit after sending an INIT or STARTUP IPI until the command has
-been dispatched.
-
-A period of 20 microseconds should be sufficient for IPI dispatch
-to complete under normal operating conditions. If the IPI is not
-successfully dispatched, the operating system can abort the
-command. Alternatively, the operating system can retry the IPI by
-writing the lower 32-bit double word of the ICR. This “time-out”
-mechanism can be implemented through an external interrupt, if
-interrupts are enabled on the processor, or through execution of
-an instruction or time-stamp counter spin loop."
-
-Intel's documentation suggests the implementation of a time-out
-mechanism, which, by the way, is already being open-coded in some parts
-of the kernel that tinker with ICR.
-
-Create a apic_wait_icr_idle replacement that implements the time-out
-mechanism and that can be used to solve the aforementioned problem.
-
-AK: moved both functions out of line
-AK: Added improved loop from Keith Owens
-
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
+ include/asm-x86_64/mtrr.h  |    8 ++++++++
+ include/asm-x86_64/proto.h |    7 -------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
----
- arch/x86_64/kernel/apic.c |   22 ++++++++++++++++++++++
- include/asm-x86_64/apic.h |    8 +++-----
- 2 files changed, 25 insertions(+), 5 deletions(-)
-
-Index: linux/include/asm-x86_64/apic.h
+Index: linux/include/asm-x86_64/mtrr.h
 ===================================================================
---- linux.orig/include/asm-x86_64/apic.h
-+++ linux/include/asm-x86_64/apic.h
-@@ -2,6 +2,7 @@
- #define __ASM_APIC_H
+--- linux.orig/include/asm-x86_64/mtrr.h
++++ linux/include/asm-x86_64/mtrr.h
+@@ -135,6 +135,14 @@ struct mtrr_gentry32
  
- #include <linux/pm.h>
-+#include <linux/delay.h>
- #include <asm/fixmap.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
-@@ -47,11 +48,8 @@ static __inline unsigned int apic_read(u
- 	return *((volatile unsigned int *)(APIC_BASE+reg));
- }
+ #endif /* CONFIG_COMPAT */
  
--static __inline__ void apic_wait_icr_idle(void)
--{
--	while (apic_read( APIC_ICR ) & APIC_ICR_BUSY)
--		cpu_relax();
--}
-+extern void apic_wait_icr_idle(void);
-+extern unsigned int safe_apic_wait_icr_idle(void);
++#ifdef CONFIG_MTRR
++extern void mtrr_ap_init(void);
++extern void mtrr_bp_init(void);
++#else
++#define mtrr_ap_init() do {} while (0)
++#define mtrr_bp_init() do {} while (0)
++#endif
++
+ #endif /* __KERNEL__ */
  
- static inline void ack_APIC_irq(void)
- {
-Index: linux/arch/x86_64/kernel/apic.c
+ #endif  /*  _LINUX_MTRR_H  */
+Index: linux/include/asm-x86_64/proto.h
 ===================================================================
---- linux.orig/arch/x86_64/kernel/apic.c
-+++ linux/arch/x86_64/kernel/apic.c
-@@ -68,6 +68,28 @@ int using_apic_timer __read_mostly = 0;
+--- linux.orig/include/asm-x86_64/proto.h
++++ linux/include/asm-x86_64/proto.h
+@@ -14,13 +14,6 @@ extern void pda_init(int); 
+ extern void early_idt_handler(void);
  
- static void apic_pm_activate(void);
+ extern void mcheck_init(struct cpuinfo_x86 *c);
+-#ifdef CONFIG_MTRR
+-extern void mtrr_ap_init(void);
+-extern void mtrr_bp_init(void);
+-#else
+-#define mtrr_ap_init() do {} while (0)
+-#define mtrr_bp_init() do {} while (0)
+-#endif
+ extern void init_memory_mapping(unsigned long start, unsigned long end);
  
-+void apic_wait_icr_idle(void)
-+{
-+	while (apic_read(APIC_ICR) & APIC_ICR_BUSY)
-+		cpu_relax();
-+}
-+
-+unsigned int safe_apic_wait_icr_idle(void)
-+{
-+	unsigned int send_status;
-+	int timeout;
-+
-+	timeout = 0;
-+	do {
-+		send_status = apic_read(APIC_ICR) & APIC_ICR_BUSY;
-+		if (!send_status)
-+			break;
-+		udelay(100);
-+	} while (timeout++ < 1000);
-+
-+	return send_status;
-+}
-+
- void enable_NMI_through_LVT0 (void * dummy)
- {
- 	unsigned int v;
+ extern void system_call(void); 
