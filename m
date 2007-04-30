@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423072AbXD3G0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423075AbXD3Gbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423072AbXD3G0m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 02:26:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423075AbXD3G0m
+	id S1423075AbXD3Gbb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 02:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423070AbXD3Gbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 02:26:42 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:33713 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423072AbXD3G0k (ORCPT
+	Mon, 30 Apr 2007 02:31:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57821 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423077AbXD3Gb3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 02:26:40 -0400
-Message-ID: <46358BCB.3040303@wpkg.org>
-Date: Mon, 30 Apr 2007 08:25:15 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org
+	Mon, 30 Apr 2007 02:31:29 -0400
+Date: Sun, 29 Apr 2007 23:30:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.21
-References: <4635084A.6010506@wpkg.org> <20070430030213.GB23336@stusta.de>
-In-Reply-To: <20070430030213.GB23336@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <20070429233019.e782f949.akpm@linux-foundation.org>
+In-Reply-To: <200704300009.07257.rjw@sisk.pl>
+References: <20070426040806.GJ3468@stusta.de>
+	<200704292218.11242.rjw@sisk.pl>
+	<20070429205220.GB5997@martell.zuzino.mipt.ru>
+	<200704300009.07257.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk schrieb:
-> On Sun, Apr 29, 2007 at 11:04:10PM +0200, Tomasz Chmielewski wrote:
->> Linus Torvalds wrote:
->>
->>> On Sun, 29 Apr 2007, Adrian Bunk wrote:
->>>> The kernel Bugzilla currently contains 1600 open bugs.
->>> Adrian, why do you keep harping on this, and ignoring reality?
->>> Kernel bugzilla has 1600 open bugs BECAUSE IT SUCKS.
->>> How many of those are interesting and valid? How many of them are 
->>> relevant? How many of them are duplicates?
->> And - how many of these bug reports have kernel's bugzilla ever forwarded 
->> to lkml so that other people could see them?
->>
->> Is that number zero (because kernel's bugzilla is configured this way)?
+On Mon, 30 Apr 2007 00:09:06 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Sunday, 29 April 2007 22:52, Alexey Dobriyan wrote:
+> > On Sun, Apr 29, 2007 at 10:18:10PM +0200, Rafael J. Wysocki wrote:
+> > > [For example, you can create a bugzilla entry with a link to the lkml.org copy
+> > > of the relevant message, so why to require the reporter to file the report with
+> > > the bugzilla himself?]
+> > 
+> > Last time I did this, bugzilla at osdl.org won't let me add original
+> > reporter to goddamn CC list. It would be el neat, because not everyone
+> > followed instructions and forwarding emails between reporter and
+> > bugzilla sucks.
 > 
-> Andrew forwards incoming Bugzilla bugs to the responsible maintainers 
-> (if there are any).
-> 
-> If it is considered useful it shouldn't be a problem to automatically 
-> forward all incoming Bugzilla bugs to linux-kernel.
+> That's related to what I said before.  The requirement that the addresses on
+> the CC list must be 'known' to bugzilla is deadly wrong in every case I can
+> imagine.
 
-Why isn't it done yet? If the bugs were already forwarded to 
-linux-kernel (and perhaps, to linux-<subsystem> when possible, too), we 
-would save at least two days of this long "Linux 2.6.21" thread...
+But unknown-to-bugzilla email addresses are accepted when they're sent to
+bugme-daemon@kernel-bugs.osdl.org.  This is why I'll very often switch a
+bug report to email, copying individuals and mailing lists and
+bugme-daemon.  Then bugzilla just sits silently in the background recording
+everything.
 
-For I somehow feel that most people here dislike bugzilla because of 
-misconceptions - which only arose as bugzilla.kernel.org is *really* 
-misconfigured.
+But once a bug has switched to email, it needs to stay there - it would be
+bad if someone were to update the bug via the web UI because none of the
+emailed participants would know of the update.  So i'll often explicitly
+ask "please follow up via emailed reply-to-all".
 
+It's not great, but there's certainly enough material here for people to get
+in and work on the bug, should they be so inclined.
 
--- 
-Tomasz Chmielewski
-http://wpkg.org
+My overall approach with this stuff is: short-term bugs are handled via email
+and long-term ones are tracked in buzilla.
+
+Hence someone (Hi, Mom) needs to track all the emailed-only bug reports and get
+them filed in bugzilla once they go stale.
