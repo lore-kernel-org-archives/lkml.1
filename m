@@ -1,82 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423475AbXD3PvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423487AbXD3Pvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423475AbXD3PvI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423496AbXD3PvG
+	id S1423487AbXD3Pvs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423432AbXD3PuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:51:06 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51423 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423483AbXD3Pul (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:50:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: virtualization <virtualization@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 02/12] i386 head.S: Remove unnecessary use of %ebx as the boot cpu flag
-References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
-	<m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 30 Apr 2007 09:49:31 -0600
-In-Reply-To: <m18xc96eyq.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 30 Apr 2007 09:48:13 -0600")
-Message-ID: <m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 30 Apr 2007 11:50:14 -0400
+Received: from ns1.suse.de ([195.135.220.2]:45075 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423482AbXD3PuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:50:06 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070430549.617098000@suse.de>
+In-Reply-To: <20070430549.617098000@suse.de>
+To: akpm@linux-foundation.org, ak@suse.de, patches@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [32/34] x86_64: unexport cpu_llc_id
+Message-Id: <20070430155005.BFF61151CA@wotan.suse.de>
+Date: Mon, 30 Apr 2007 17:50:05 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Currently in head.S there are two ways we test to see if we
-are the boot cpu.  By looking at %ebx and by looking at the
-static variable ready.  When changing things around I have
-found that it gets tricky to preserve %ebx.  So this
-patch just switches head.S over to the more reliable
-test of always using ready.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Hopefully later we can kill these tests entirely.
+WARNING: arch/x86_64/kernel/built-in.o - Section mismatch: reference to .init.data:cpu_llc_id from __ksymtab between '__ksymtab_cpu_llc_id' (at offset 0x4a0) and '__ksymtab_smp_num_siblings'
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+It is strange to export a __cpuinitdata symbols to modules, and no module
+appears to use it anyway.
+
+Cc: Andi Kleen <ak@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Andi Kleen <ak@suse.de>
+
 ---
- arch/i386/kernel/head.S |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
 
-diff --git a/arch/i386/kernel/head.S b/arch/i386/kernel/head.S
-index 9b10af6..aa9e28e 100644
---- a/arch/i386/kernel/head.S
-+++ b/arch/i386/kernel/head.S
-@@ -157,7 +157,6 @@ page_pde_offset = (__PAGE_OFFSET >> 20);
- 	jb 10b
- 	movl %edi,(init_pg_tables_end - __PAGE_OFFSET)
- 
--	xorl %ebx,%ebx				/* This is the boot CPU (BSP) */
- 	jmp 3f
- /*
-  * Non-boot CPU entry point; entered from trampoline.S
-@@ -228,10 +227,6 @@ ENTRY(startup_32_smp)
- 	wrmsr
- 
- 6:
--	/* This is a secondary processor (AP) */
--	xorl %ebx,%ebx
--	incl %ebx
--
- #endif /* CONFIG_SMP */
- 3:
- 
-@@ -257,7 +252,7 @@ ENTRY(startup_32_smp)
- 	popfl
- 
- #ifdef CONFIG_SMP
--	andl %ebx,%ebx
-+	cmpb $0, ready
- 	jz  1f				/* Initial CPU cleans BSS */
- 	jmp checkCPUtype
- 1:
--- 
-1.5.1.1.181.g2de0
+ arch/x86_64/kernel/smpboot.c |    1 -
+ 1 file changed, 1 deletion(-)
 
+Index: linux/arch/x86_64/kernel/smpboot.c
+===================================================================
+--- linux.orig/arch/x86_64/kernel/smpboot.c
++++ linux/arch/x86_64/kernel/smpboot.c
+@@ -67,7 +67,6 @@ EXPORT_SYMBOL(smp_num_siblings);
+ 
+ /* Last level cache ID of each logical CPU */
+ u8 cpu_llc_id[NR_CPUS] __cpuinitdata  = {[0 ... NR_CPUS-1] = BAD_APICID};
+-EXPORT_SYMBOL(cpu_llc_id);
+ 
+ /* Bitmask of currently online CPUs */
+ cpumask_t cpu_online_map __read_mostly;
