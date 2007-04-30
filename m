@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423161AbXD3I50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423166AbXD3JAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423161AbXD3I50 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 04:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423166AbXD3I5Z
+	id S1423166AbXD3JAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 05:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423173AbXD3JAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 04:57:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:21334 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423161AbXD3I5Y (ORCPT
+	Mon, 30 Apr 2007 05:00:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48836 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423166AbXD3I7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 04:57:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=O0US4xoSorWLBufBJzNDo6qnnVSMA9XiaOMQboKORWhxaMyEjNEdjnum2JnkizIUBiCrjY9EGz2BD5xqyb9RZB2yumQpCecOkbeP8zSLbKylBP9pDwFQo6uWx4JVmmIXdhB68mZ565hNMulLtywKju4ri0ZWE5vYTd18TnA+P1U=
-Message-ID: <6bffcb0e0704300157g5bd58565pd1f1a61d63296593@mail.gmail.com>
-Date: Mon, 30 Apr 2007 10:57:20 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: Problem: 2.6.21 won't boot
-Cc: "Riccardo Ricci" <rricci@nuovanetmore.it>, linux-kernel@vger.kernel.org
-In-Reply-To: <1177765306.7646.152.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Apr 2007 04:59:48 -0400
+Date: Mon, 30 Apr 2007 09:59:16 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Neil Brown <neilb@suse.de>
+Cc: Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm patch] i386: enable 4k stacks by default
+Message-ID: <20070430085916.GA31397@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Neil Brown <neilb@suse.de>, Zan Lynx <zlynx@acm.org>,
+	Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <17973.44824.631204.926723@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <55875.172.20.1.1.1177699628.squirrel@srv01.nuovanetmore.it>
-	 <1177765306.7646.152.camel@localhost.localdomain>
+In-Reply-To: <17973.44824.631204.926723@notabene.brown>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/04/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Fri, 2007-04-27 at 20:47 +0200, Riccardo Ricci wrote:
-> > Hi to everyone,
-> > i've compiled kernel 2.6.21 on my debian PIII 650 / 256MB / Dell Latitude
-> > J650GT. With 2.6.20.8 all works very good, with 2.6.21 don't boot... While
-> > booting it stops after ACPI: PCI Interrupt Link [LNKB] (IRQs 3 4 *5 6 7 9
-> > 10 11 12 14 15).
->
-> Can you capture the 2.6.21 boot log via serial console ?
+On Mon, Apr 30, 2007 at 06:55:52PM +1000, Neil Brown wrote:
+> On Saturday April 28, zlynx@acm.org wrote:
+> > On Sat, 2007-04-28 at 21:19 +0200, Adrian Bunk wrote:
+> > > 4k stacks have become a well-tested feature used fore a long time in
+> > > Fedora and even in RHEL 4.
+> > 
+> > So has anyone fixed the bugs involving ext3 and LVM snapshots on top of
+> > DM mirror?
+> 
+> Well -mm has a patch which makes stacked block devices much less of an
+> issue, but this hasn't made it -linus yet - I think the dm developer
+> isn't happy that dm works properly with it.
 
-Or netconsole? Please read chapter 3
-http://www.stardust.webpages.pl/files/handbook/handbook-en.pdf
+I get a little tired about this objection.  If the particular dm code
+was racy before and this can in theory make it worse it's their problem,
+and putting in perfectly fine code will give them an incentive to
+fix their year old race.
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
