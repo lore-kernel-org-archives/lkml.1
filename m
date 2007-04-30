@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423480AbXD3SHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423491AbXD3SJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423480AbXD3SHn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423491AbXD3SHm
+	id S1423491AbXD3SJG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423511AbXD3SJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:07:42 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37608 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1423480AbXD3SHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:07:40 -0400
-Cc: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, helge.hafting@aitel.hist.no,
-       mchehab@infradead.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 30 Apr 2007 20:07:38 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <alpine.LFD.0.98.0704301103450.3419@woody.linux-foundation.org>
-Message-ID: <20070430180738.240520@gmx.net>
-MIME-Version: 1.0
-References: <20070429182209.267430@gmx.net> 
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
- <20070429205925.129920@gmx.net> 
- <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org> 
- <20070429230037.95120@gmx.net> <1177894713.3046.5.camel@pc06.localdom.local>
- <20070430110255.267000@gmx.net> <4635D139.4030609@aitel.hist.no>
- <20070430115000.194060@gmx.net> <4636058B.3070603@aitel.hist.no>
- <Pine.LNX.4.64.0704301742390.2985@pentafluge.infradead.org>
- <20070430172547.204810@gmx.net>
- <alpine.LFD.0.98.0704301103450.3419@woody.linux-foundation.org>
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
- pseudo-authorities
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1+kJvE80TqkurzhgHPZlyuVJjayEUvXBBjgk7osU3
- 0beEoO86WcwSI3Z9XUIm1AzQ5Wz7xRVKhLoQ== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: XgIEdcVqPTR+BDO9TjIw43Y5c2tpZIsR
+	Mon, 30 Apr 2007 14:09:05 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:42173 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423494AbXD3SJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 14:09:04 -0400
+Date: Mon, 30 Apr 2007 23:46:59 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>, Paul Jackson <pj@sgi.com>,
+       menage@google.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+       devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 0/9] Containers (V9): Generic Process Containers
+Message-ID: <20070430181659.GI24350@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070427104607.252541000@menage.corp.google.com> <20070429023721.53f249b9.pj@sgi.com> <20070430171225.GH24350@in.ibm.com> <20070430172352.GA8567@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430172352.GA8567@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 30, 2007 at 06:23:52PM +0100, Christoph Hellwig wrote:
+> Umm, no - please naje two versions with and without the lock.
 
--------- Original-Nachricht --------
-Datum: Mon, 30 Apr 2007 11:04:36 -0700 (PDT)
-Von: Linus Torvalds <torvalds@linux-foundation.org>
-An: Uwe Bugla <uwe.bugla@gmx.de>
-CC: Mauro Carvalho Chehab <mchehab@infradead.org>, helge.hafting@aitel.hist.no, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
-Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and pseudo-authorities
+Ok this patch may not be necessary (given Paul's observation that
+read_lock will suffice in update_nodemask).
 
-> 
-> 
-> Uwe, you just made my kill-list.
-> 
-> I've not actually done that in _years_. So you can feel proud. Your emails
-> will get automatically filtered to their own (ignored) folder. I told you 
-> why, and you didn't seem to understand at all.
-> 
-> 		Linus
-Wrong, but understandable reaction. But I have found somebody to help me to get this thing solved - in so far: counterproductive from your side!
+> Also Please fix up the codingstyle, the { belongs onto a line of it's own.
 
-Cheers
-Uwe
+Paul, I suspect that there are a number of Codingstyle related changes you
+may need to address in your next version (including the one pointed by 
+Christoph) 
+
+
 -- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+Regards,
+vatsa
