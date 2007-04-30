@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423604AbXD3SZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946567AbXD3SZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423604AbXD3SZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423605AbXD3SZv
+	id S1946567AbXD3SZx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423605AbXD3SZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:25:51 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:49937 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423604AbXD3SZr (ORCPT
+	Mon, 30 Apr 2007 14:25:53 -0400
+Received: from DENETHOR.UNI-MUENSTER.DE ([128.176.180.180]:38813 "EHLO
+	denethor.uni-muenster.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423624AbXD3SZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:25:47 -0400
-Date: Mon, 30 Apr 2007 11:28:38 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Len Brown <lenb@kernel.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>, Andi Kleen <ak@suse.de>,
-       Shai Fultheim <shai@scalex86.org>, linux-kernel@vger.kernel.org
-Subject: Re: ACPI build problem (2.6.21 CONFIG_X86_64_ACPI_NUMA)
-Message-ID: <20070430182838.GA5558@localhost.localdomain>
-References: <1177593963.5462.12.camel@quoit.chygwyn.com> <200704280159.46337.lenb@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 30 Apr 2007 14:25:48 -0400
+Date: Mon, 30 Apr 2007 20:13:54 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+Message-ID: <20070430181354.GC4772@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200704280159.46337.lenb@kernel.org>
-User-Agent: Mutt/1.4.2.1i
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070428195320.GZ3468@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 01:59:46AM -0400, Len Brown wrote:
-> On Thursday 26 April 2007 09:26, you wrote:
-> ... 
-> CONFIG_ACPI depends on CONFIG_PM, yet this build fails because you have
-> CONFIG_ACPI=y and CONFIG_PM=n
+On Sat, Apr 28, 2007 at 09:53:20PM +0200, Adrian Bunk wrote:
+> On Thu, Apr 26, 2007 at 02:13:08PM -0700, Linus Torvalds wrote:
+> >...
+> > (I've said this before, but I'll say it again: one thing that would 
+> > already make bugzilla better is to just always drop any bug reports that 
+> > are more than a week old and haven't been touched. It wouldn't need *much* 
+> > touching, but if a reporter cannot be bothered to say "still true with 
+> > current snapshot" once a week, then it shouldn't be seen as being somehow 
+> > up to those scare resources we call "developers" to have to go through 
+> > it).
+> >...
 > 
-> Unfortunately kconfig doesn't trace dependencies when "select" is used,
-> making select sort of evil.  Ie. select can't target anything which
-> itself has dependencies.
+> And if it's a bug in an unmaintained subsystem, a user could do this for 
+> 100 weeks without any effect.
+> There's no value in keeping reporters busy with useless tasks. [1]
 > 
-> In 2.6.15, b0bd35e622ffbda2c01dc67a0381c6a18817a29a added the select below,
-> and subsequently ACPI became dependent on PM, which broke your build.
-> Technically, this could have broken your build in other ways too
-> since ACPI already had other dependencies.
+> Don't forget:
+> A good bug report is an important contribution.
 > 
-> +# Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
-> +
-> +config X86_64_ACPI_NUMA
-> +       bool "ACPI NUMA detection"
-> +       depends on NUMA
-> +       select ACPI 
-> +       select ACPI_NUMA
-> +       default y
-> +       help
-> +	 Enable ACPI SRAT based node topology detection.
-> 
-> If you de-select CONFIG_X86_64_ACPI_NUMA then the select goes away
-> and kconfig should work properly.
-> 
-> It isn't immediately clear to me how the NUMA Kconfig patch is a step
-> forward, but perhaps the authors can comment.
->
+> We are already quite good at ignoring bug reports that come through 
+> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
+> than 1600 open bugs because this tells how bad we are at handling bugs.
+> How many thousand bug reports have been ignored during the same time on 
+> linux-kernel?
 
-Before the above change, to select NUMA for em64T systems, you *had* to
-select K8_NUMA in the 'Processor type and features'  sub menu to select
-CONFIG_NUMA, and then select ACPI NUMA from the generic PM menu, which is
-not very intuitive when you have a EM64T NUMA system.
+... and it gets better: I've been trying to fix/improve stuff I can, with
+my limited abilities as coder for some time now in the linux kernel, but there
+are simply cases where, although you're trying to even come up with a proper fix
+and adhere to all the kernel coding standards and _even_ produce a patch which
+can serve as rough cut for a probable fix, your mail simply disappears into the
+void unanswered. Then you send again, and again, yet it remains unreplied and then you
+give up and turn to something else. Some of those patches, for example, were the
+rework of the debugging scheme of libata i did more than a year ago which got
+reviewed and then .. forgotten, some kernel janitor cleanups, etc...
 
-On x86_64 platforms, NUMA topology detection could be K8 style detection,
-ACPI based topology  or NUMA emulation.  Most of the real NUMA systems
-would need ACPI detection, older AMD platforms would need K8_NUMA, and 
-NUMA emulation is a debugging/emulation option to emulate NUMA topology on
-a regular SMP box.  Since CONFIG_NUMA + CONFIG_NUMA_EMU is a valid
-combination, and since CONFIG_NUMA + CONFIG_K8_NUMA is a valid combination,
-it makes sense to have X86_64_ACPI_NUMA on its own, and grouped along with
-other NUMA topology styles in the Processor menu.  Hope this is good enough
-reason :)
-
-Regarding the subject build breakage, CONFIG_ACPI depends on CONFIG_PM with
-an explicit 'depends' keyword. If PM does not get selected and CONFIG_ACPI
-gets selected, I would think it is a Kconfig bug which needs fixing no?
-Else, we can add a workaround by selecting CONFIG_PM if X86_64_ACPI_NUMA is
-chosen.  But AFAICT the right thing is to fix the Kconfig bug.
-
-Thanks,
-Kiran
+-- 
+Regards/Gruﬂ,
+    Boris.
