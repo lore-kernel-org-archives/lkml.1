@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031551AbXD3Rbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031559AbXD3RhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031551AbXD3Rbm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031550AbXD3Rbm
+	id S1031559AbXD3RhK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031154AbXD3RhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:31:42 -0400
-Received: from warden-p.diginsite.com ([208.29.163.248]:47403 "HELO
-	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1031551AbXD3Rbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:31:41 -0400
-Date: Mon, 30 Apr 2007 09:51:41 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-X-X-Sender: dlang@dlang.diginsite.com
-To: Theodore Tso <tytso@mit.edu>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-In-Reply-To: <20070429235535.GC19937@thunk.org>
-Message-ID: <Pine.LNX.4.63.0704300948141.13031@qynat.qvtvafvgr.pbz>
-References: <4630DB24.4030005@redhat.com>  <20070426201325.8a1ebda3.diegocg@gmail.com>
-  <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> 
- <20070426224148.69b91b2e.diegocg@gmail.com> 
- <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> 
- <20070428195320.GZ3468@stusta.de>  <20070428202701.GA30343@flint.arm.linux.org.uk>
-  <20070428224904.GE3468@stusta.de>  <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
-  <p73d51n1fup.fsf@bingen.suse.de> <20070429235535.GC19937@thunk.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 30 Apr 2007 13:37:09 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:9171 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031558AbXD3RhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 13:37:07 -0400
+Date: Mon, 30 Apr 2007 19:32:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Bob Tracy <rct@gherkin.frus.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, hch@infradead.org
+Subject: Re: BAD_SG_DMA panic in aha1542
+Message-ID: <20070430173243.GP21015@kernel.dk>
+References: <20070427214709.DC44BDBA2@gherkin.frus.com> <1177712499.3688.25.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177712499.3688.25.camel@mulgrave.il.steeleye.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007, Theodore Tso wrote:
+On Fri, Apr 27 2007, James Bottomley wrote:
+> > sgpnt[0:1] page c1ee5af0/0x1ee5af0 length 32
+> > Kernel panic - not syncing: Buffer at physical address > 16 Mb used for aha1542
+> > 
+> > As before, no problems using the sda hard disk (which is the boot drive):
+> > everything works reliably until I touch the cdrom drive.
+> > 
+> > I'll be happy to assist with the debugging, but the system with the
+> > aha1542 has no development facilities, i.e., I'll have to build test
+> > kernels on a different system, and turnaround is going to be slow :-(.
+> 
+> I'm interested.
+> 
+> This is clearly a use_sg==1 path that has failed to bounce the buffer
+> for some reason ... and I was contemplating eliminating the GFP_DMA from
+> our sr driver because I thought the block bouncing had it covered.
+> 
+> It might also be helpful to apply this patch.  It should give a stack
+> trace of the problem command and not immediately panic the box.
 
-> On Sun, Apr 29, 2007 at 03:15:42PM +0200, Andi Kleen wrote:
->> This means we need people who figure out who to assign bugs too.
->> Aka bugmasters.
->>
->> BTW one big problem in our current bugzilla is that a lot of people
->> cannot reassign bugs they don't own. I sometimes see bugs that I don't
->> own bug I know who is responsible, but bugzilla doesn't allow me to do it.
->>
->> So I think what would help:
->>
->> - Ask more people to just categorize and reassign bugs (anybody interested?)
->> - Give more people in bugzilla the power to reassign arbitary bugs
->> (bugzilla maintainers would need to do that)
->
-> Folks might want to take a look at the Debian Bug Tracking System
-> (BTS).  It has a web interface which you can use to query history, but
-> *everything* is e-mail driven, and the way you submit, close, update,
-> tag/classfy bugs --- everything --- is via e-mail.
->
-> More importantly, anyone is allowed to recategorize and reassign bugs.
-> If someone does so maliciously or incorrectly, you can always revert
-> it, and if someone is being truly malicious, you can always blacklist
-> that one person.  It this respect, it is far more wiki-like than
-> bugzilla, which has always been too much like a straightjacket.
->
-> It's not perfect, but it's better than bugzilla --- but then again,
-> just about *anything* would be better than bugzilla.  (Hmm, except
-> maybe SourceForge's very tragic bug tracking system... :-)
->
-> Of course, as Linus has said, it's not a complete solution --- you
-> still need humans to be smart about things --- but if the goal is to
-> make it easier to archive and track information about a bug, at
-> *least* with the Debian BTS, when you reply to an e-mail message, the
-> reply is automatically appended to the bug log!
+It's due to the crappy ->generic_packet() ioctl stuff, it bypasses the
+block layer. So that needs to be converted to use block pc requests and
+the block layer interface, then things will just work.
 
-this, and the fact that anyone can add to the bug log by just sending an e-mail 
-are a nice feature
+Christoph had a sort-of ready patch for that some time ago. Christoph,
+did that ever materialize into a full blown patch?
 
-however, I had a reason to take a look at the debian BTS late last week to see 
-if the bugs and patch that I sent to the sysklog maintainer (both debian and 
-upstream) got included in debian 4.0.
+-- 
+Jens Axboe
 
-talk about depressing.
-
-there are about a dozen bugs _with_ patches sitting in the queue for several 
-years
-
-David Lang
