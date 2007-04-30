@@ -1,81 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423435AbXD3PtM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423438AbXD3Ptj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423435AbXD3PtM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:49:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423436AbXD3PtM
+	id S1423438AbXD3Ptj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423439AbXD3Ptj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:49:12 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51408 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423435AbXD3PtK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:49:10 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: virtualization <virtualization@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH 01/12] x86_64: Allow fixmaps to be used with the initial page table.
-References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 30 Apr 2007 09:48:13 -0600
-In-Reply-To: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
-	message of "Mon, 30 Apr 2007 09:46:17 -0600")
-Message-ID: <m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 30 Apr 2007 11:49:39 -0400
+Received: from ns1.suse.de ([195.135.220.2]:44969 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423438AbXD3Pth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:49:37 -0400
+From: Andi Kleen <ak@suse.de>
+References: <20070430549.617098000@suse.de>
+In-Reply-To: <20070430549.617098000@suse.de>
+To: bk@suse.de, akpm@linux-foundation.org, ak@suse.de, davej@codemonkey.org.uk,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [2/34] x86: Adds mtrr_save_fixed_ranges() for use in two later  patches.
+Message-Id: <20070430154933.C6BA0151F8@wotan.suse.de>
+Date: Mon, 30 Apr 2007 17:49:33 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This patch preallocates the intermediate page table entries so that
-all that is needed to setup a fixmap is to fill in the appropriate
-pte.
+From: Bernhard Kaindl <bk@suse.de>
 
-By doing this modern hardware that uses memory mapped access can be
-talked to early in boot through a fixmap. 
+In this current implementation which is used in other patches,
+mtrr_save_fixed_ranges() accepts a dummy void pointer because
+in the current implementation of one of these patches, this
+function may be called from smp_call_function_single() which
+requires that this function takes a void pointer argument.
 
-Allowing USB debugging and the like.
+This function calls get_fixed_ranges(), passing mtrr_state.fixed_ranges
+which is the element of the static struct which stores our current
+backup of the fixed-range MTRR values which all CPUs shall be
+using.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Because  mtrr_save_fixed_ranges calls get_fixed_ranges after
+kernel initialisation time, __init needs to be removed from
+the declaration of get_fixed_ranges().
+
+If CONFIG_MTRR is not set, we define mtrr_save_fixed_ranges
+as an empty statement because there is nothing to do.
+
+AK: Moved prototypes for x86-64 around to fix warnings
+
+Signed-off-by: Bernhard Kaindl <bk@suse.de>
+Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>
+
 ---
- arch/x86_64/kernel/head.S |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ arch/i386/kernel/cpu/mtrr/generic.c |    7 ++++++-
+ include/asm-i386/mtrr.h             |    2 ++
+ include/asm-x86_64/mtrr.h           |    2 ++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86_64/kernel/head.S b/arch/x86_64/kernel/head.S
-index 1fab487..1b704c4 100644
---- a/arch/x86_64/kernel/head.S
-+++ b/arch/x86_64/kernel/head.S
-@@ -74,6 +74,9 @@ startup_64:
+Index: linux/arch/i386/kernel/cpu/mtrr/generic.c
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/mtrr/generic.c
++++ linux/arch/i386/kernel/cpu/mtrr/generic.c
+@@ -37,7 +37,7 @@ get_mtrr_var_range(unsigned int index, s
+ 	rdmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+ }
  
- 	addq	%rbp, level3_ident_pgt + 0(%rip)
- 	addq	%rbp, level3_kernel_pgt + (510*8)(%rip)
-+	addq	%rbp, level3_kernel_pgt + (511*8)(%rip)
-+
-+	addq	%rbp, level2_fixmap_pgt + (506*8)(%rip)
+-static void __init
++static void
+ get_fixed_ranges(mtrr_type * frs)
+ {
+ 	unsigned int *p = (unsigned int *) frs;
+@@ -51,6 +51,11 @@ get_fixed_ranges(mtrr_type * frs)
+ 		rdmsr(MTRRfix4K_C0000_MSR + i, p[6 + i * 2], p[7 + i * 2]);
+ }
  
- 	/* Add an Identity mapping if I am above 1G */
- 	leaq	_text(%rip), %rdi
-@@ -314,7 +317,16 @@ NEXT_PAGE(level3_kernel_pgt)
- 	.fill	510,8,0
- 	/* (2^48-(2*1024*1024*1024)-((2^39)*511))/(2^30) = 510 */
- 	.quad	level2_kernel_pgt - __START_KERNEL_map + _KERNPG_TABLE
--	.fill	1,8,0
-+	.quad	level2_fixmap_pgt - __START_KERNEL_map + _KERNPG_TABLE + _PAGE_USER
++void mtrr_save_fixed_ranges(void *info)
++{
++	get_fixed_ranges(mtrr_state.fixed_ranges);
++}
 +
-+NEXT_PAGE(level2_fixmap_pgt)
-+	.fill	506,8,0
-+	.quad	level1_fixmap_pgt - __START_KERNEL_map + _KERNPG_TABLE + _PAGE_USER
-+	/* 8MB reserved for vsyscalls + a 2MB hole = 4 + 1 entries */
-+	.fill	5,8,0
-+
-+NEXT_PAGE(level1_fixmap_pgt)
-+	.fill	512,8,0
+ static void __init print_fixed(unsigned base, unsigned step, const mtrr_type*types)
+ {
+ 	unsigned i;
+Index: linux/include/asm-i386/mtrr.h
+===================================================================
+--- linux.orig/include/asm-i386/mtrr.h
++++ linux/include/asm-i386/mtrr.h
+@@ -69,6 +69,7 @@ struct mtrr_gentry
  
- NEXT_PAGE(level2_ident_pgt)
- 	/* Since I easily can, map the first 1G.
--- 
-1.5.1.1.181.g2de0
-
+ /*  The following functions are for use by other drivers  */
+ # ifdef CONFIG_MTRR
++extern void mtrr_save_fixed_ranges(void *);
+ extern int mtrr_add (unsigned long base, unsigned long size,
+ 		     unsigned int type, char increment);
+ extern int mtrr_add_page (unsigned long base, unsigned long size,
+@@ -79,6 +80,7 @@ extern void mtrr_centaur_report_mcr(int 
+ extern void mtrr_ap_init(void);
+ extern void mtrr_bp_init(void);
+ #  else
++#define mtrr_save_fixed_ranges(arg) do {} while (0)
+ static __inline__ int mtrr_add (unsigned long base, unsigned long size,
+ 				unsigned int type, char increment)
+ {
+Index: linux/include/asm-x86_64/mtrr.h
+===================================================================
+--- linux.orig/include/asm-x86_64/mtrr.h
++++ linux/include/asm-x86_64/mtrr.h
+@@ -138,9 +138,11 @@ struct mtrr_gentry32
+ #ifdef CONFIG_MTRR
+ extern void mtrr_ap_init(void);
+ extern void mtrr_bp_init(void);
++extern void mtrr_save_fixed_ranges(void *);
+ #else
+ #define mtrr_ap_init() do {} while (0)
+ #define mtrr_bp_init() do {} while (0)
++#define mtrr_save_fixed_ranges(arg) do {} while (0)
+ #endif
+ 
+ #endif /* __KERNEL__ */
