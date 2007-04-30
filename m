@@ -1,155 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423398AbXD3Pdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423390AbXD3PfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423398AbXD3Pdq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423407AbXD3Pdq
+	id S1423390AbXD3PfM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:35:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423399AbXD3PfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:33:46 -0400
-Received: from bill.weihenstephan.org ([82.135.35.21]:60115 "EHLO
-	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423398AbXD3Pdp (ORCPT
+	Mon, 30 Apr 2007 11:35:12 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53994 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423401AbXD3PfK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:33:45 -0400
-From: Juergen Beisert <juergen127@kreuzholzen.de>
-Organization: Privat
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH] [1/1] CPU-i386-Geode: Chipset access macros do not work as expected (2nd try)
-Date: Mon, 30 Apr 2007 17:33:41 +0200
-User-Agent: KMail/1.9.4
-Cc: linux-kernel@vger.kernel.org
-References: <200704301409.l3UE9sFg019392@harpo.it.uu.se>
-In-Reply-To: <200704301409.l3UE9sFg019392@harpo.it.uu.se>
+	Mon, 30 Apr 2007 11:35:10 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
+	<1177902195.30071.203.camel@localhost.localdomain>
+	<463572B7.90202@zytor.com>
+	<1177909434.30071.216.camel@localhost.localdomain>
+Date: Mon, 30 Apr 2007 09:34:20 -0600
+In-Reply-To: <1177909434.30071.216.camel@localhost.localdomain> (Rusty
+	Russell's message of "Mon, 30 Apr 2007 15:03:54 +1000")
+Message-ID: <m1ejm16flv.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704301733.41903.juergen127@kreuzholzen.de>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Juergen Beisert <juergen.beisert@weihenstephan.org>
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
-Replace NSC/Cyrix specific chipset access macros by inlined functions.
-With the macros a line like this fails (and does nothing):
-	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
-With inlined functions this line will work as expected.
+> On Sun, 2007-04-29 at 21:38 -0700, H. Peter Anvin wrote:
+>> Rusty Russell wrote:
+>> > 
+>> > Dammit, Eric, you spend a lot of time using words like "insane" where
+>> > you mean we didn't do everything all at once.
+>> > 
+>> > It's *not* clear that using %esi is sane, but nothing in the current
+>> > code prevents that.
+>> 
+>> Why not?
+>
+> (I assume you mean why isn't it clear?)
+>
+> Because VMI uses the presence of a ROM to indicate it's not native.  KVM
+> uses a magic MSR IIRC.
+>
+> I think it makes sense for lguest to change over, tho.  Patches welcome
+> 8)
 
-Note about a side effect: Seems on Geode GX1 based systems the
-"suspend on halt power saving feature" was never enabled due to this
-wrong macro expansion. With inlined functions it will be enabled, but
-this will stop the TSC when the CPU runs into a HLT instruction.
-Kernel outputs something like this:
-	Clocksource tsc unstable (delta = -472746897 ns)
-Tested on a Geode GX1 system.
+Reading this it occurs to me what I object to wasn't that clear.
 
-This is the second version with some modifications suggested by
-Mikael Pettersson
+I have no problem with the testing of %cs to see if we are not in ring0.
+That part while a little odd is fine, and we will certainly need a test
+to skip the protected instructions in head.S
 
-Signed-off-by: Juergen Beisert <juergen.beisert@weihenstephan.org>
+What I object to in particular is having (struct lguest_info?) instead
+of using the standard format for kernel parameters pointed to in %esi.
 
-Index: linux-2.6.21/include/asm-i386/processor.h
-===================================================================
---- linux-2.6.21.orig/include/asm-i386/processor.h
-+++ linux-2.6.21/include/asm-i386/processor.h
-@@ -202,37 +202,6 @@ static inline void clear_in_cr4 (unsigne
- 	write_cr4(cr4);
- }
-
--/*
-- *      NSC/Cyrix CPU configuration register indexes
-- */
--
--#define CX86_PCR0 0x20
--#define CX86_GCR  0xb8
--#define CX86_CCR0 0xc0
--#define CX86_CCR1 0xc1
--#define CX86_CCR2 0xc2
--#define CX86_CCR3 0xc3
--#define CX86_CCR4 0xe8
--#define CX86_CCR5 0xe9
--#define CX86_CCR6 0xea
--#define CX86_CCR7 0xeb
--#define CX86_PCR1 0xf0
--#define CX86_DIR0 0xfe
--#define CX86_DIR1 0xff
--#define CX86_ARR_BASE 0xc4
--#define CX86_RCR_BASE 0xdc
--
--/*
-- *      NSC/Cyrix CPU indexed register access macros
-- */
--
--#define getCx86(reg) ({ outb((reg), 0x22); inb(0x23); })
--
--#define setCx86(reg, data) do { \
--	outb((reg), 0x22); \
--	outb((data), 0x23); \
--} while (0)
--
- /* Stop speculative execution */
- static inline void sync_core(void)
- {
-Index: linux-2.6.21/include/asm-i386/processor-cyrix.h
-===================================================================
---- /dev/null
-+++ linux-2.6.21/include/asm-i386/processor-cyrix.h
-@@ -0,0 +1,33 @@
-+/*
-+ * NSC/Cyrix CPU configuration register indexes
-+ */
-+#define CX86_PCR0 0x20
-+#define CX86_GCR  0xb8
-+#define CX86_CCR0 0xc0
-+#define CX86_CCR1 0xc1
-+#define CX86_CCR2 0xc2
-+#define CX86_CCR3 0xc3
-+#define CX86_CCR4 0xe8
-+#define CX86_CCR5 0xe9
-+#define CX86_CCR6 0xea
-+#define CX86_CCR7 0xeb
-+#define CX86_PCR1 0xf0
-+#define CX86_DIR0 0xfe
-+#define CX86_DIR1 0xff
-+#define CX86_ARR_BASE 0xc4
-+#define CX86_RCR_BASE 0xdc
-+
-+/*
-+ * NSC/Cyrix CPU indexed register access
-+ */
-+static inline u8 getCx86(u8 reg)
-+{
-+	outb(reg, 0x22);
-+	return inb(0x23);
-+}
-+
-+static inline void setCx86(u8 reg, u8 data)
-+{
-+	outb(reg, 0x22);
-+	outb(data, 0x23);
-+}
-Index: linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
-===================================================================
---- linux-2.6.21.orig/arch/i386/kernel/cpu/cyrix.c
-+++ linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
-@@ -4,7 +4,7 @@
- #include <linux/pci.h>
- #include <asm/dma.h>
- #include <asm/io.h>
--#include <asm/processor.h>
-+#include <asm/processor-cyrix.h>
- #include <asm/timer.h>
- #include <asm/pci-direct.h>
-
-Index: linux-2.6.21/arch/i386/kernel/cpu/mtrr/cyrix.c
-===================================================================
---- linux-2.6.21.orig/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ linux-2.6.21/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -3,6 +3,7 @@
- #include <asm/mtrr.h>
- #include <asm/msr.h>
- #include <asm/io.h>
-+#include <asm/processor-cyrix.h>
- #include "mtrr.h"
-
- int arr3_protected;
+Eric
