@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946718AbXD3TZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946721AbXD3TZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946718AbXD3TZw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946717AbXD3TZw
+	id S1946721AbXD3TZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946719AbXD3TZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:25:52 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47651 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1946720AbXD3TZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:25:26 -0400
-X-Sasl-enc: BQX26he5eCrtXwLItRBVIJfGolI2DBpMQ7QLzaEGCiNt 1177961125
-Message-ID: <46364346.6030407@imap.cc>
-Date: Mon, 30 Apr 2007 21:28:06 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Mon, 30 Apr 2007 15:25:50 -0400
+Received: from mga02.intel.com ([134.134.136.20]:3021 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946717AbXD3TZL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 15:25:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,471,1170662400"; 
+   d="scan'208";a="236674416"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] support PCI MCFG space on Intel i915 bridges
+Date: Mon, 30 Apr 2007 12:25:21 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <fa.aWIs6SNmpl2IhGAAoSWJu6oKjPo@ifi.uio.no> <46355007.5030807@shaw.ca>
+In-Reply-To: <46355007.5030807@shaw.ca>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
- (-1)
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<46338AEB.2070109@imap.cc>	<20070428141024.887342bd.akpm@linux-foundation.org>	<4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org>
-In-Reply-To: <20070430112130.b64321d3.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6850B0B8D4D50A301B397375"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704301225.22016.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6850B0B8D4D50A301B397375
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sunday, April 29, 2007 7:10 pm Robert Hancock wrote:
+> Jesse Barnes wrote:
+> > Add support for Intel 915 bridge chips to the new PCI MMConfig
+> > detection code.  Tested and works on my sole 915 based platform (a
+> > Toshiba laptop).  I added register masking per Oliver's suggestion,
+> > and moved the __init qualifier to after the 'static const char' to
+> > match Ogawa-san's recent cleanup patches.
+> >
+> > Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
+> >
+> > diff --git a/arch/i386/pci/mmconfig-shared.c
+> > b/arch/i386/pci/mmconfig-shared.c index 747d8c6..1339d31 100644
+> > --- a/arch/i386/pci/mmconfig-shared.c
+> > +++ b/arch/i386/pci/mmconfig-shared.c
+> > @@ -72,6 +72,26 @@ static const char __init *pci_mmcfg_e7520(void)
+> >  	return "Intel Corporation E7520 Memory Controller Hub";
+> >  }
+> >
+> > +static const char __init *pci_mmcfg_intel_915(void)
+> > +{
+> > +       u32 pciexbar, len = 0;
+> > +
+> > +       pci_conf1_read(0, 0, PCI_DEVFN(0,0), 0x48, 4, &pciexbar);
+> > +
+> > +       /* No enable bit or size field, so assume 256M range is
+> > enabled. */ +       len = 0x10000000U;
+>
+> Check the 915 spec more carefully, there is an enable bit, it's in
+> the DEVEN register offset 54h, the bit is called PCIEXBAREN (bit 31).
+> If that is not set you should be setting pci_mmcfg_config_num to 0
+> and bailing out.
 
-Am 30.04.2007 20:21 schrieb Andrew Morton:
-> A lot of Greg's driver tree has gone upstream, so please check current
-> mainline.
+Right, but you patch should obsolete this stuff anyway.  I'll test it 
+out in the next few days.
 
-2.6.21-final is fine.
-
->  If that's OK then we need to pick through the difference between
-> 2.6.21-rc7-mm2's driver tree and the patches which went into mainline. =
- And
-> that's a pretty small set.
-
-I'm not quite sure how to determine that difference. Can you just provide=
-
-me with a list of patches you'd like me to test?
-
-Thanks,
-Tilman
-
---=20
-Tilman Schmidt                                  E-Mail: tilman@imap.cc
-Wehrhausweg 66                                  Fax: +49 228 4299019
-53227 Bonn
-Germany
-
-
---------------enig6850B0B8D4D50A301B397375
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGNkNOMdB4Whm86/kRAtHKAJ9Pl1M57E0ot8J4Je7eZzDk10247QCbBLDP
-R9dJxM+2y6xZgu9rjy/dEbE=
-=K3Ic
------END PGP SIGNATURE-----
-
---------------enig6850B0B8D4D50A301B397375--
+Jesse
