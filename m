@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbXD3XQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754276AbXD3XQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbXD3XQF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 19:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbXD3XQF
+	id S1754276AbXD3XQb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 19:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbXD3XQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 19:16:05 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:54289 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754106AbXD3XQD (ORCPT
+	Mon, 30 Apr 2007 19:16:31 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34325 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754266AbXD3XQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 19:16:03 -0400
-Message-ID: <463678A2.7060000@nortel.com>
-Date: Mon, 30 Apr 2007 17:15:46 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 30 Apr 2007 19:16:30 -0400
+Message-ID: <463678BA.5080609@zytor.com>
+Date: Mon, 30 Apr 2007 16:16:10 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Steve French <smfrench@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
-Subject: Re: SMB2 file system - should it be a distinct module
-References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
-In-Reply-To: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>	<m18xc9344o.fsf@ebiederm.dsl.xmission.com> <463670D1.3000003@goop.org> <m14pmx31bw.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14pmx31bw.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Apr 2007 23:15:49.0585 (UTC) FILETIME=[7D7CC410:01C78B7D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve French wrote:
+Eric W. Biederman wrote:
+> 
+> I'm tempted to just reload the segments in setup.S, but that might
+> break loadlin support or one of the other bootloaders that starts the
+> kernel in 32bit mode so we need to be careful.
+> 
 
-> ...we need to decide whether the kernel
-> implementation of SMB2 client should be a distinct module or just part
-> of the cifs.ko module.
+We already load all the segments in setup.S.  I'm retaining this in my
+rewrite.
 
-<snip>
+Given that I'm rewriting the whole thing, if there are things you want
+setup.S to do, now is the time to ask.
 
-> My guess is that less than 1/3 of the cifs module would overlap - but
-> that overlap is enough that it would be easier to do smb2 as part of
-> cifs (although it would make the cifs module somewhat larger).
-
-What about pulling out the common code into a helper module, which can 
-then be used by both cifs and smb2?
-
-Chris
+	-hpa
