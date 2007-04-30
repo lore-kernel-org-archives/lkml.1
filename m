@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423030AbXD3Ftk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423049AbXD3F5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423030AbXD3Ftk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423037AbXD3Ftk
+	id S1423049AbXD3F5S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423052AbXD3F5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:49:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:32959 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423030AbXD3Ftj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:49:39 -0400
-MIME-Version: 1.0
+	Mon, 30 Apr 2007 01:57:17 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54805 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423037AbXD3F5P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 01:57:15 -0400
+Date: Mon, 30 Apr 2007 15:56:32 +1000
+From: David Chinner <dgc@sgi.com>
+To: Chris Wedgwood <cw@f00f.org>
+Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 0/5] fallocate system call
+Message-ID: <20070430055632.GR32602149@melbourne.sgi.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com> <20070430052559.GA13145@tuatara.stupidest.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17973.33249.852991.342860@cargo.ozlabs.ibm.com>
-Date: Mon, 30 Apr 2007 15:42:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Incorrect order of last two arguments of ptrace for requests
-	PPC_PTRACE_GETREGS, SETREGS, GETFPREGS, SETFPREGS
-In-Reply-To: <20061204215825.GB22514@krispykreme>
-References: <453F421A.6070507@in.ibm.com>
-	<1164220580.12365.8.camel@hades.cambridge.redhat.com>
-	<20061204215825.GB22514@krispykreme>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20070430052559.GA13145@tuatara.stupidest.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Blanchard writes:
-
-> I looked at this a while ago and my decision at the time was to keep the
-> old implementation around for a while and create two new ones that match
-> the x86 numbering:
+On Sun, Apr 29, 2007 at 10:25:59PM -0700, Chris Wedgwood wrote:
+> On Mon, Apr 30, 2007 at 10:47:02AM +1000, David Chinner wrote:
 > 
-> #define PTRACE_GETREGS            12
-> #define PTRACE_SETREGS            13
-> #define PTRACE_GETFPREGS          14
-> #define PTRACE_SETFPREGS          15
+> > For FA_ALLOCATE, it's supposed to change the file size if we
+> > allocate past EOF, right?
 > 
-> I hate gratuitous differences, each ptrace app ends up with a sea of
-> ifdefs.
+> I would argue no.  Use truncate for that.
+
+I'm going from the ext4 implementation because the semantics
+have not been documented yet.
+
+IIRC, the argument for FA_ALLOCATE changing file size is that
+posix_fallocate() is supposed to change the file size. I think
+that having a mode for real preallocation and another for
+posix_fallocate is a valid thing to do...
+
+Note that the way XFS implements growing the file size after the
+allocation is via a truncate....
+
+> > For FA_DEALLOCATE, does it change the filesize at all?
 > 
-> Also I think it would be worth changing getregs/setregs to grab the
-> entire pt_regs structure. Otherwise most ops (gdb, strace etc) will just
-> have to make multiple ptrace calls to get the nia etc.
+> Same as above.
+> 
+> > Or does
+> > it just punch a hole in the file?
+> 
+> Yes.
 
-Did you do a patch to do that?
+That's would what I did because otherwise you'd use ftruncate64().
+Without documented behaviour or an ext4 implementation, I have to
+ask what it's supposed to do, though ;)
 
-Paul.
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
