@@ -1,225 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423077AbXD3Gbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423083AbXD3Gpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423077AbXD3Gbd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 02:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423070AbXD3Gbd
+	id S1423083AbXD3Gpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 02:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423084AbXD3Gpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 02:31:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33893 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1423080AbXD3Gba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 02:31:30 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX190OREdWOp0EewSKf5vCVHc6Hf6/tb1kESDasU88N
-	6I13wfsF04lc3g
-Message-ID: <46358D33.9030709@gmx.net>
-Date: Mon, 30 Apr 2007 08:31:15 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Mon, 30 Apr 2007 02:45:34 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:37536 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423079AbXD3Got (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 02:44:49 -0400
+Date: Sun, 29 Apr 2007 23:41:27 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [DOC] Fix wrong identifier name in
+	Documentation/driver-model/devres.txt
+Message-ID: <20070430064127.GA27437@kroah.com>
+References: <200704260926.33826.eike-kernel@sf-tec.de> <463364CF.20801@garzik.org> <46344E45.8040701@gmail.com>
 MIME-Version: 1.0
-To: lkml <linux-kernel@vger.kernel.org>, netdev <netdev@vger.kernel.org>
-Subject: man-pages-2.45 and man-pages-2.46 are released
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46344E45.8040701@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Sun, Apr 29, 2007 at 04:50:29PM +0900, Tejun Heo wrote:
+> Jeff Garzik wrote:
+> > Now that devres is in the kernel, I don't think I am the best person to
+> > merge these sort of patches.  Certainly I can, and I know the code from
+> > my original review and subsequent usage, but I think the patch is more
+> > appropriate for Greg, going through normal maintainership channels.
+> > 
+> > IOW, I think devres is too generic to be queued via libata-dev.git.
+> > 
+> > Tejun, comments?
+> 
+> I don't have problem either way.  If it's okay with Greg, I'll queue
+> future devres updates through Greg.
 
-I just released man-pages-2.45 and man-pages-2.46.
+It's fine with me, send them on :)
 
-These releases are now available for download at:
+thanks,
 
-    ftp://ftp.kernel.org/pub/linux/docs/manpages
-    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
-
-and soon at:
-
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
-
-These releases consist mainly of formatting fixes (to a large
-number of pages) to achieve greater consistency across pages.
-
-Currently there are a large number of fixes required to various man-pages.
-   There are probably different people on these lists who would be able to
-fix most of these; any assistance would be most appreciated.  A list of
-some of the more significant problems is given below.
-
-Cheers,
-
-Michael
-
-
-
-==========
-man2/futex.2
-     FIXME
-     2.6.18 adds (Ingo Molnar) priority inheritance support:
-     FUTEX_LOCK_PI, FUTEX_UNLOCK_PI, and FUTEX_TRYLOCK_PI.  These need
-     to be documented in the manual page.  Probably there is sufficient
-     material in the kernel source file Documentation/pi-futex.txt.
-
-==========
-man2/get_mempolicy.2
-     FIXME writeme -- no errors are listed on this page
-
-==========
-man2/mount.2
-     FIXME 2.6.15 added flags for "shared sub-tree" functionality:
-     MS_UNBINDABLE, MS_PRIVATE, MS_SHARED, MS_SLAVE
-     These need to be documented on this page.
-     See Documentation/sharedsubtree.txt
-
-==========
-man2/quotactl.2
-     FIXME There is much that is missing and/or out of date in this page.
-     As things stand the page more or less documents Linux 2.2 reality:
-
-==========
-man2/set_mempolicy.2
-     FIXME writeme -- no errors are listed on this page
-
-==========
-man2/shmop.2
-     FIXME A good explanation of the rationale for the existence
-     of SHMLBA would be useful here
-
-==========
-man4/initrd.4
-     FIXME the manual page should describe the pivot_root mechanism.
-
-==========
-man5/acct.5
-     FIXME this page needs to say a lot more, including mentioning
-        Version 3 format process accounting on Linux.
-
-==========
-man5/core.5
-     FIXME Is the following speculation correct?  If it is, then
-     it might be worth incorporating it into the text:
-     Always including the PID in the name of the core file made
-     sense for LinuxThreads, where each thread had a unique PID,
-     but doesn't seem to server any purpose with NPTL, where all the
-     threads in a process share the same PID (as POSIX.1 requires).
-     Probably the behaviour is maintained so that applications using
-     LinuxThreads continue appending the PID (the kernel has no easy
-     way of telling which threading implementation the userspace
-     application is using). -- mtk, April 2006
-
-==========
-man5/locale.5
-     FIXME glibc 2.2.2 added new non-standard locale categories:
-     LC_ADDRESS, LC_IDENTIFICATION, LC_MEASUREMENT, LC_NAME,
-     LC_PAPER, LC_TELEPHONE.  These need to be documented.
-
-==========
-man5/proc.5
-     FIXME 2.6.14 has /proc/PID/numa_maps (if CONFIG_NUMA is
-     enabled); this needs to be documented.
-     Info on numa_maps can be found in the patch-2.6.14
-     Changelog, but this is possibly not up to date.
-
-     FIXME 2.6.13 seems to have /proc/vmcore implemented
-     in the source code, but there is no option available under
-     'make xconfig'; eventually this should be fixed, and then info
-     from the patch-2.6.13 and change log could be used to write an
-     entry in this man page.
-
-     FIXME Describe /proc/[number]/loginuid
-           Added in 2.6.11; updating requires CAP_AUDIT_CONTROL
-
-     FIXME Describe /proc/[number]/mountstats and
-           /proc/PID/task/TID/mountstats
-          Some information can be found in the 2.6.17-rc1 change log.
-           Added in 2.6.17
-
-     FIXME Describe /proc/[number]/oom_adj
-           Added in 2.6.11; updating requires CAP_SYS_RESOURCE
-           Mention OOM_DISABLE (-17)
-     FIXME Describe /proc/[number]/oom_score
-           Added in 2.6.11; read-only
-
-     FIXME Describe /proc/[number]/seccomp
-           Added in 2.6.12
-
-     FIXME Document /proc/config.gz (new in kernel 2.6)
-
-     FIXME Actually, the following info abut the /proc/stat 'cpu' field
-           does not seem to be quite right (at least in 2.6.12)
-
-     FIXME more should be said about /proc/zoneinfo
-
-==========
-man7/capabilities.7
-     FIXME CAP_KILL also has an effect for threads + setting child
-           termination signal to other than SIGCHLD: without this
-           capability, the termination signal reverts to SIGCHLD
-           if the child does an exec().  What is the rationale
-           for this?
-
-     FIXME CAP_SETUID also an effect in exec(); document this.
-
-     FIXME CAP_SYS_NICE also has the following effect for
-     migrate_pages(2):
-         do_migrate_pages(mm, &old, &new,
-             capable(CAP_SYS_NICE) ? MPOL_MF_MOVE_ALL : MPOL_MF_MOVE);
-
-==========
-man7/ip.7
-     FIXME has someone verified that 2.1 is really 1812 compliant?
-
-     FIXME Document IP_FREEBIND
-
-     FIXME document ip_autoconfig
-
-     FIXME Document the conf/*/* sysctls
-     FIXME Document the route/* sysctls
-     FIXME document them all
-
-     FIXME Add a discussion of multicasting
-
-==========
-man7/ipv6.7
-     FIXME IPV6_CHECKSUM is not documented, and probably should be
-     FIXME IPV6_JOIN_ANYCAST is not documented, and probably should be
-     FIXME IPV6_LEAVE_ANYCAST is not documented, and probably should be
-     FIXME IPV6_V6ONLY is not documented, and probably should be
-     FIXME IPV6_RECVPKTINFO is not documented, and probably should be
-     FIXME IPV6_2292PKTINFO is not documented, and probably should be
-     FIXME there are probably many other IPV6_* socket options that
-     should be documented
-
-==========
-man7/netlink.7
-     FIXME More details on NETLINK_INET_DIAG needed.
-
-     FIXME More details on NETLINK_XFRM needed.
-
-     FIXME More details on NETLINK_ISCSI needed.
-
-     FIXME More details on NETLINK_AUDIT needed.
-
-     FIXME More details on NETLINK_FIB_LOOKUP needed.
-
-     FIXME More details on NETLINK_NETFILTER needed.
-
-     FIXME More details on NETLINK_KOBJECT_UEVENT needed.
-
-     FIXME NLM_F_ATOMIC is not used any more?
-
-     FIXME Explain more about nlmsg_seq and nlmsg_pid.
-
-
-==========
-man7/udp.7
-     FIXME document UDP_ENCAP (new in kernel 2.5.67)
-
-
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
-
-Want to help with man page maintenance?  Grab the latest tarball at
-http://www.kernel.org/pub/linux/docs/manpages/
-read the HOWTOHELP file and grep the source files for 'FIXME'.
+greg k-h
