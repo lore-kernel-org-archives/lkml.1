@@ -1,69 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946567AbXD3SZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423605AbXD3S1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946567AbXD3SZx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423605AbXD3SZx
+	id S1423605AbXD3S1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423614AbXD3S1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:25:53 -0400
-Received: from DENETHOR.UNI-MUENSTER.DE ([128.176.180.180]:38813 "EHLO
-	denethor.uni-muenster.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423624AbXD3SZs (ORCPT
+	Mon, 30 Apr 2007 14:27:03 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:34080 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423530AbXD3S1A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:25:48 -0400
-Date: Mon, 30 Apr 2007 20:13:54 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Diego Calleja <diegocg@gmail.com>, Chuck Ebbert <cebbert@redhat.com>,
+	Mon, 30 Apr 2007 14:27:00 -0400
+Subject: Re: [PATCH] i386: init early_gdt_descr and idle task properly on
+	voyager
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.21
-Message-ID: <20070430181354.GC4772@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <alpine.LFD.0.98.0704252014050.9964@woody.linux-foundation.org> <20070426040806.GJ3468@stusta.de> <20070426125802.GL3468@stusta.de> <alpine.LFD.0.98.0704260828550.9964@woody.linux-foundation.org> <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070428195320.GZ3468@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4633E507.7070002@goop.org>
+References: <4633E507.7070002@goop.org>
+Content-Type: text/plain
+Date: Mon, 30 Apr 2007 13:26:55 -0500
+Message-Id: <1177957615.3674.53.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 09:53:20PM +0200, Adrian Bunk wrote:
-> On Thu, Apr 26, 2007 at 02:13:08PM -0700, Linus Torvalds wrote:
-> >...
-> > (I've said this before, but I'll say it again: one thing that would 
-> > already make bugzilla better is to just always drop any bug reports that 
-> > are more than a week old and haven't been touched. It wouldn't need *much* 
-> > touching, but if a reporter cannot be bothered to say "still true with 
-> > current snapshot" once a week, then it shouldn't be seen as being somehow 
-> > up to those scare resources we call "developers" to have to go through 
-> > it).
-> >...
+On Sat, 2007-04-28 at 17:21 -0700, Jeremy Fitzhardinge wrote:
+> Initialize early_gdt_descr and idle task properly.
 > 
-> And if it's a bug in an unmaintained subsystem, a user could do this for 
-> 100 weeks without any effect.
-> There's no value in keeping reporters busy with useless tasks. [1]
-> 
-> Don't forget:
-> A good bug report is an important contribution.
-> 
-> We are already quite good at ignoring bug reports that come through 
-> linux-kernel, and it's an _advantage_ of the kernel Bugzilla to see more 
-> than 1600 open bugs because this tells how bad we are at handling bugs.
-> How many thousand bug reports have been ignored during the same time on 
-> linux-kernel?
+> [ Incremental fix for "i386: introduce voyager smp_ops, fix voyager build" ]
 
-... and it gets better: I've been trying to fix/improve stuff I can, with
-my limited abilities as coder for some time now in the linux kernel, but there
-are simply cases where, although you're trying to even come up with a proper fix
-and adhere to all the kernel coding standards and _even_ produce a patch which
-can serve as rough cut for a probable fix, your mail simply disappears into the
-void unanswered. Then you send again, and again, yet it remains unreplied and then you
-give up and turn to something else. Some of those patches, for example, were the
-rework of the debugging scheme of libata i did more than a year ago which got
-reviewed and then .. forgotten, some kernel janitor cleanups, etc...
+Still not quite enough.  this is what I need to complete the build:
 
--- 
-Regards/Gruﬂ,
-    Boris.
+James
+
+Index: voyager-2.6/arch/i386/kernel/cpu/common.c
+===================================================================
+--- voyager-2.6.orig/arch/i386/kernel/cpu/common.c	2007-04-30 12:49:45.000000000 -0500
++++ voyager-2.6/arch/i386/kernel/cpu/common.c	2007-04-30 13:03:42.000000000 -0500
+@@ -21,6 +21,9 @@
+ 
+ #include "cpu.h"
+ 
++DEFINE_PER_CPU(unsigned long, this_cpu_off);
++EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++
+ DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
+ 	[GDT_ENTRY_KERNEL_CS] = { 0x0000ffff, 0x00cf9a00 },
+ 	[GDT_ENTRY_KERNEL_DS] = { 0x0000ffff, 0x00cf9200 },
+@@ -650,6 +653,22 @@ void switch_to_new_gdt(void)
+ 	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
+ }
+ 
++/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
++   (still using the master per-cpu area), or a CPU doing it for a
++   secondary which will soon come up. */
++__cpuinit void init_gdt(int cpu)
++{
++	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++
++	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
++			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
++			__per_cpu_offset[cpu], 0xFFFFF,
++			0x80 | DESCTYPE_S | 0x2, 0x8);
++
++	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
++	per_cpu(cpu_number, cpu) = cpu;
++}
++
+ /*
+  * cpu_init() initializes state that is per-CPU. Some data is already
+  * initialized (naturally) in the bootstrap process, such as the GDT
+Index: voyager-2.6/arch/i386/kernel/smpboot.c
+===================================================================
+--- voyager-2.6.orig/arch/i386/kernel/smpboot.c	2007-04-30 12:49:45.000000000 -0500
++++ voyager-2.6/arch/i386/kernel/smpboot.c	2007-04-30 13:03:45.000000000 -0500
+@@ -99,9 +99,6 @@ EXPORT_SYMBOL(x86_cpu_to_apicid);
+ 
+ u8 apicid_2_node[MAX_APICID];
+ 
+-DEFINE_PER_CPU(unsigned long, this_cpu_off);
+-EXPORT_PER_CPU_SYMBOL(this_cpu_off);
+-
+ /*
+  * Trampoline 80x86 program as an array.
+  */
+@@ -764,25 +761,6 @@ static inline struct task_struct * alloc
+ #define alloc_idle_task(cpu) fork_idle(cpu)
+ #endif
+ 
+-/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
+-   (still using the master per-cpu area), or a CPU doing it for a
+-   secondary which will soon come up. */
+-static __cpuinit void init_gdt(int cpu)
+-{
+-	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
+-
+-	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
+-			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
+-			__per_cpu_offset[cpu], 0xFFFFF,
+-			0x80 | DESCTYPE_S | 0x2, 0x8);
+-
+-	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
+-	per_cpu(cpu_number, cpu) = cpu;
+-}
+-
+-/* Defined in head.S */
+-extern struct Xgt_desc_struct early_gdt_descr;
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ /*
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+Index: voyager-2.6/include/asm-i386/processor.h
+===================================================================
+--- voyager-2.6.orig/include/asm-i386/processor.h	2007-04-30 12:49:45.000000000 -0500
++++ voyager-2.6/include/asm-i386/processor.h	2007-04-30 12:54:47.000000000 -0500
+@@ -749,6 +749,10 @@ extern unsigned long boot_option_idle_ov
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
++/* Defined in head.S */
++extern struct Xgt_desc_struct early_gdt_descr;
++
++extern void init_gdt(int cpu);
+ extern void cpu_set_gdt(int);
+ extern void switch_to_new_gdt(void);
+ extern void cpu_init(void);
+
+
