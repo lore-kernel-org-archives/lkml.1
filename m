@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422822AbXD3DPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422889AbXD3D1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422822AbXD3DPg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 23:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422926AbXD3DPf
+	id S1422889AbXD3D1b (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 23:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422887AbXD3D1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 23:15:35 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50452 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422907AbXD3DPD (ORCPT
+	Sun, 29 Apr 2007 23:27:31 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:53016 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422838AbXD3D13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 23:15:03 -0400
-Date: Mon, 30 Apr 2007 13:14:43 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: [PATCH] Add preallocation beyond EOF to fallocate
-Message-ID: <20070430031443.GP32602149@melbourne.sgi.com>
-References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com>
+	Sun, 29 Apr 2007 23:27:29 -0400
+Date: Sun, 29 Apr 2007 23:26:24 -0400
+From: Josef Sipek <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       Trond.Myklebust@netapp.com, mhalcrow@us.ibm.com
+Subject: [PATCH 0/1] [RFC] New mode for path_lookup (V1)
+Message-ID: <20070430032624.GA32047@filer.fsl.cs.sunysb.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070430004702.GM32602149@melbourne.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add new mode to ->fallocate() to allow allocation to occur
-beyond the current EOF without changing the file size. Implement
-in XFS ->fallocate() vector.
+Stackable file systems frequently need to lookup paths or path components
+starting from an arbitrary point in the namespace (identified by a dentry
+and a vfsmount).  Currently, such file systems use lookup_one_len, which is
+frowned upon [1] as it does not pass the lookup intent along; not passing a
+lookup intent, for example, can trigger BUG_ON's when stacking on top of
+NFSv4.
 
-Signed-Off-By: Dave Chinner <dgc@sgi.com>
+The following patch introduces a new mode to path_lookup to allow lookup to
+start from an arbitrary point in the namespace.  This approach has been
+suggested by Christoph Hellwig at the Linux Storage & Filesystem workshop in
+February of this year.
 
----
- fs/xfs/linux-2.6/xfs_iops.c |    8 +++++---
- include/linux/fs.h          |    1 +
- 2 files changed, 6 insertions(+), 3 deletions(-)
+One indicates that the lookup should be relative to a dentry-vfsmnt pair by
+using the LOOKUP_ONE flag.  For example, the following snippet of code,
+looks up "pathcomponent" in a directory pointed to by
+parent_{dentry,vfsmnt}:
 
-Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-04-30 11:02:16.000000000 +1000
-+++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c	2007-04-30 11:09:48.233375382 +1000
-@@ -833,11 +833,13 @@ xfs_vn_fallocate(
- 						VNODE_POSITION_XFS);
- 
- 	switch (mode) {
--	case FA_ALLOCATE: /* changes file size */
--		error = xfs_change_file_space(bdp, XFS_IOC_RESVSP,
--						&bf, 0, NULL, 0);
-+	case FA_ALLOCATE:	 /* changes file size */
- 		if (offset + len > i_size_read(inode))
- 			do_setattr = offset + len;
-+		/* FALL THROUGH */
-+	case FA_PREALLOCATE:	/* no filesize change */
-+		error = xfs_change_file_space(bdp, XFS_IOC_RESVSP,
-+						&bf, 0, NULL, 0);
- 		break;
- 	case FA_DEALLOCATE:
- 		/* XXX: changes file size?  this just punches a hole */
-Index: 2.6.x-xfs-new/include/linux/fs.h
-===================================================================
---- 2.6.x-xfs-new.orig/include/linux/fs.h	2007-04-27 18:48:01.000000000 +1000
-+++ 2.6.x-xfs-new/include/linux/fs.h	2007-04-30 11:08:05.790903661 +1000
-@@ -269,6 +269,7 @@ extern int dir_notify_enable;
-  */
- #define FA_ALLOCATE	0x1
- #define FA_DEALLOCATE	0x2
-+#define FA_PREALLOCATE	0x3
- 
- #ifdef __KERNEL__
- 
+nd.dentry = parent_dentry;
+nd.mnt = parent_vfsmnt;
+
+err = path_lookup("pathcomponent", LOOKUP_ONE, &nd);
+if (!err) {
+	/* exits */
+
+	...
+
+	/* once done, release the references */
+	path_release(&nd);
+} else if (err == -ENOENT) {
+	/* doesn't exits */
+} else {
+	/* other error */
+}
+
+VFS functions such as lookup_create can be used on the nameidata structure
+to pass the create intent to the file system.
+
+Currently, there is no easy way to pass the LOOKUP_OPEN intent.  The proper
+way would be to call open_namei.
+
+We'd like to get comments about what's necessary to make stackable file
+systems do lookups right - this includes potential changes to open_namei. 
+
+Josef 'Jeff' Sipek.
+
+[1] http://marc.info/?l=linux-kernel&m=117343337823760&w=2
