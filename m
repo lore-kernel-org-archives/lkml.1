@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXD3HbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423117AbXD3Hci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423110AbXD3HbM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 03:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423113AbXD3HbM
+	id S1423117AbXD3Hci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 03:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423113AbXD3Hch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 03:31:12 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36094 "EHLO
+	Mon, 30 Apr 2007 03:32:37 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43872 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423110AbXD3HbK (ORCPT
+	by vger.kernel.org with ESMTP id S1423117AbXD3Hcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 03:31:10 -0400
-Date: Mon, 30 Apr 2007 00:30:31 -0700
+	Mon, 30 Apr 2007 03:32:36 -0400
+Date: Mon, 30 Apr 2007 00:32:28 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Miguel Figueiredo <elmig@debianpt.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21 frozen for a few minutes, swapping to disk
-Message-Id: <20070430003031.2e89fbc1.akpm@linux-foundation.org>
-In-Reply-To: <46347335.7080601@debianpt.org>
-References: <46347335.7080601@debianpt.org>
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.21-rc7-mm2] BUG while suspend to ram
+Message-Id: <20070430003228.93d3d093.akpm@linux-foundation.org>
+In-Reply-To: <463476A3.9050305@gmail.com>
+References: <463476A3.9050305@gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,65 +25,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 11:28:05 +0100 Miguel Figueiredo <elmig@debianpt.org> wrote:
+On Sun, 29 Apr 2007 12:42:43 +0200 Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
 
-> Hi all,
-> 
-> today, with 2.6.21, my laptop had a really odd behaviour. It started 
-> writing to disk for a few minutes with no interactivity at all (no 
-> redraw on screen, only hdd led on). It's the first time i noticed 
-> OOM-killer started do kill programs.
-> 
-> It was totally unresponsive for minutes, after back to life it had a 
-> load of ~19.0, and 300+ MB on swap (first time i saw this).
-> 
-> It's an HP pavillon core duo 2.0 GHz, 1 GB RAM
-> 
-> kern.log details: 
-> http://www.debianpt.org/~elmig/pool/kernel/20070429/kern.log
-> .config: http://www.debianpt.org/~elmig/pool/kernel/20070429/2.6.21.config
-> dmesg: http://www.debianpt.org/~elmig/pool/kernel/20070429/dmesg
-> 
-> As this is the first time it happened and it felt odd i am reporting.
-> 
-> If aditional info is needed please CC me as i am not on the list.
-> 
+> BUG: at kernel/kthread.c:166 kthread_bind()
+>  [<c01465ac>] _cpu_down+0x16c/0x250
+>  [<c0146890>] disable_nonboot_cpus+0x60/0xf0
+>  [<c014cd67>] pm_suspend_disk+0x177/0x2c0
+>  [<c014b645>] enter_state+0xb5/0x200
+>  [<c014b84d>] state_store+0xbd/0xd0
+>  [<c014b790>] state_store+0x0/0xd0
+>  [<c01be189>] subsys_attr_store+0x29/0x40
+>  [<c01be3a4>] sysfs_write_file+0xd4/0x160
+>  [<c017b701>] vfs_write+0xc1/0x160
+>  [<c01be2d0>] sysfs_write_file+0x0/0x160
+>  [<c017be11>] sys_write+0x41/0x70
+>  [<c0187355>] sys_dup2+0xd5/0x100
+>  [<c01040f6>] sysenter_past_esp+0x5f/0x85
+>  [<c0330000>] xfrm_policy_insert+0x210/0x400
+>  =======================
 
-hm, a genuine oom on an all-ext3 data=ordered i386 system, just like a
-million other people.  How very weird.
-
-I assume all those pages on the LRU are pagecache pages which for some
-reason we're unable to reclaim.
-
-If some privileged application went berzerk mlock()ing everything then that
-might explain it.  It sounds improbable, but then, something improbable has
-happened.
-
-We cleverly managed to not display the pagecache totals in the oom-killer
-output.  Could you please take a copy of /proc/meminfo after an
-oom-killing, send that?  And /proc/vmstat, I guess.
-
-If you're keen, we could eliminate the mlock possibility by adding this:
-
---- a/mm/mlock.c~a
-+++ a/mm/mlock.c
-@@ -127,6 +127,8 @@ asmlinkage long sys_mlock(unsigned long 
- 	unsigned long lock_limit;
- 	int error = -ENOMEM;
- 
-+	return 0;
-+
- 	if (!can_do_mlock())
- 		return -EPERM;
- 
-@@ -151,6 +153,8 @@ asmlinkage long sys_munlock(unsigned lon
- {
- 	int ret;
- 
-+	return 0;
-+
- 	down_write(&current->mm->mmap_sem);
- 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
- 	start &= PAGE_MASK;
-_
+yup, thanks - the present plan is to remove the kthread_bind() call from
+_cpu_down().  Although we don't appear to fully undersand why we're
+removing it, nor why it was added in the first place, which has me worried.
 
