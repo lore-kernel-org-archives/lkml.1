@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031555AbXD3Rli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946522AbXD3RmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031555AbXD3Rli (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946522AbXD3Rli
+	id S1946522AbXD3RmN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946536AbXD3RmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:41:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:56400 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031555AbXD3Rlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:41:36 -0400
-Date: Mon, 30 Apr 2007 10:38:19 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [-mm patch] i386: enable 4k stacks by default
-Message-ID: <20070430173819.GC19966@holomorphy.com>
-References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de>
+	Mon, 30 Apr 2007 13:42:13 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60902 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946522AbXD3RmK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 13:42:10 -0400
+Date: Mon, 30 Apr 2007 10:42:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: vmstat: use our own timer events
+In-Reply-To: <4635F938.3060706@linux.intel.com>
+Message-ID: <Pine.LNX.4.64.0704301041230.6343@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704282206530.29468@schroedinger.engr.sgi.com>
+ <20070429011518.259448ba.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0704292138480.1737@schroedinger.engr.sgi.com>
+ <4635F938.3060706@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73slaiys9v.fsf@bingen.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 02:13:16PM +0200, Andi Kleen wrote:
-> Actually looking at the code it would need some fixes first:
-> /*
->  * These should really be __section__(".bss.page_aligned") as well, but
->  * gcc's 3.0 and earlier don't handle that correctly.
->  */
-> static char softirq_stack[NR_CPUS * THREAD_SIZE]
->                 __attribute__((__aligned__(THREAD_SIZE)));
+On Mon, 30 Apr 2007, Arjan van de Ven wrote:
+
+> > Well the cache_reaper of SLAB hits hard todays anyways. This will help
+> > if they switch to slub because the counter consolidation is much lighter
+> > weight.
 > 
-> static char hardirq_stack[NR_CPUS * THREAD_SIZE]
->                 __attribute__((__aligned__(THREAD_SIZE)));
+> it's not about the weight. It's about waking up *at all*. I've been working
+> really hard to get a system with a reasonable average idle time (600ms+), but
+> I obviously had to patch the SLAB reaper to be at a different resolution...
+
+If you use SLUB then its going to be gone.
+
+> > I am fine with delaying this. I just wanted the timer guys to have a chance
+> > to shape this a bit. Not sure what they want. What they did to the
+> > cache_reaper in 2.6.20/21 is bad.
 > 
-> With 8K stacks and NR_CPUS==128 that would be 2MB statically reserved. Yuck.
-> Really needs to be dynamically allocated. I'll take a look once the .22 
-> big merge is done.
+> HUH? The cache_reaper DID NOT CHANGE with the round_jiffies() change.
+> Before it had a 3 jiffies per cpu offset, after it has a 3 jiffies per cpu
+> offset.
 
-Here's what I did for i386 for someone concerned about blowing the stack.
-
-
--- wli
+It seems that it does use round_jiffies_relative() instead?
+ 
