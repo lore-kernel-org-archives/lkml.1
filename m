@@ -1,92 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422727AbXD3Bve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422743AbXD3B7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422727AbXD3Bve (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 21:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422743AbXD3Bve
+	id S1422743AbXD3B7m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 21:59:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422744AbXD3B7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 21:51:34 -0400
-Received: from pat.uio.no ([129.240.10.15]:50332 "EHLO pat.uio.no"
+	Sun, 29 Apr 2007 21:59:42 -0400
+Received: from waste.org ([66.93.16.53]:60158 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422727AbXD3Bvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 21:51:32 -0400
-Subject: Re: NR_UNSTABLE_FS vs. NR_FILE_DIRTY: double counting pages?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ethan Solomita <solo@google.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-In-Reply-To: <463537C2.5050804@google.com>
-References: <4632A1A6.90702@google.com>
-	 <1177878135.6400.37.camel@heimdal.trondhjem.org>
-	 <463537C2.5050804@google.com>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 21:51:29 -0400
-Message-Id: <1177897889.6400.49.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.150)
-X-UiO-Scanned: 26947120E62E04D3C03AD1859F4E1DD3A65FB9BE
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 184 total 1405718 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1422743AbXD3B7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 21:59:41 -0400
+Date: Sun, 29 Apr 2007 20:59:13 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070430015913.GM11115@waste.org>
+References: <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <20070428161136.GL11166@waste.org> <20070428171101.GC20646@redhat.com> <20070428172154.GA11115@waste.org> <20070429163701.fb994561.randy.dunlap@oracle.com> <20070430000925.GK11115@waste.org> <463535B8.7020101@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463535B8.7020101@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 17:26 -0700, Ethan Solomita wrote:
-> Trond Myklebust wrote:
-> > On Fri, 2007-04-27 at 18:21 -0700, Ethan Solomita wrote:
-> >> There are several places where we add together NR_UNSTABLE_FS and
-> >> NF_FILE_DIRTY:
+On Sun, Apr 29, 2007 at 05:18:00PM -0700, Randy Dunlap wrote:
+> Matt Mackall wrote:
+> >On Sun, Apr 29, 2007 at 04:37:01PM -0700, Randy Dunlap wrote:
+> >>On Sat, 28 Apr 2007 12:21:54 -0500 Matt Mackall wrote:
 > >>
-> >> sync_inodes_sb()
-> >> balance_dirty_pages()
-> >> wakeup_pdflush()
-> >> wb_kupdate()
-> >> prefetch_suitable()
-> >>
-> >>     I can trace a standard codepath where it seems both of these are set
-> >> on the same page:
-> >>
-> >> nfs_file_aops.commit_write ->
-> >>     nfs_commit_write
-> >>     nfs_updatepages
-> >>     nfs_writepage_setup
-> >>     nfs_wb_page
-> >>     nfs_wb_page_priority
-> >>     nfs_writepage_locked
-> >>     nfs_flush_mapping
-> >>     nfs_flush_list
-> >>     nfs_flush_multi
-> >>     nfs_write_partial_ops.rpc_call_done
-> >>     nfs_writeback_done_partial
-> >>     nfs_writepage_release
-> >>     nfs_reschedule_unstable_write
-> >>     nfs_mark_request_commit
-> >>     incr NR_UNSTABLE_NFS
-> >>
-> >> nfs_file_aops.commit_write ->
-> >>     nfs_commit_write
-> >>     nfs_updatepage
-> >>     __set_page_dirty_nobuffers
-> >>     incr NF_FILE_DIRTY
-> >>
-> >>
-> >>     This is the standard code path that derives from sys_write(). Can
-> >> someone either show how this code sequence can't happen, or confirm for
-> >> me that there's a bug?
-> >>     -- Ethan
-> > 
-> > It should not happen. If the page is on the unstable list, then it will
-> > be committed before nfs_updatepage is allowed to redirty it. See the
-> > recent fixes in 2.6.21-rc7.
+> >>>On Sat, Apr 28, 2007 at 01:11:01PM -0400, Dave Jones wrote:
+> >>>>On Sat, Apr 28, 2007 at 11:11:36AM -0500, Matt Mackall wrote:
+> >>>> > > I'm all ears for additional regexps, bug reports or other 
+> >>>> suggestions.
+> >>>> > 
+> >>>> > Neat.
+> >>>> > 
+> >>>> > Does it check for:
+> >>>> > 
+> >>>> > functions marked extern?
+> >>	data marked extern?
+> >
+> >It's perfectly reasonable to have a data extern declaration in a header 
+> >file.
 > 
-> 	Above I present a codepath called straight from sys_write() which seems 
-> to do what I say. I could be wrong, but can you address the code paths I 
-> show above which seem to set both?
-> 	-- Ethan
+> but it's not perfectly acceptable to have
+> 
+> extern unsigned long volatile jiffies;
+> 
+> in a .c file.
+> 
+> The biggest problem I'm seeing ATM is that this script is a bit too
+> simplistic.  It doesn't know what it's looking at.  We'll have to
+> address that, I think.
 
-Look carefully at nfs_update_request(): if !nfs_dirty_request(), then it
-returns -EBUSY, and so nfs_writepage_setup() will loop on nfs_wb_page().
-IOW: if PG_NEED_COMMIT is set (which it should be if on the commit list)
-then nfs_writepage_setup() will loop...
+If you can make it run a regexp over the whole file at once rather
+than a line at a time, you can deal with this with multi-line regexps.
+Roughly, match:
 
-Trond
+ a +++ patch header followed by
+ any number of lines not starting with +++ followed by
+ the actual target expression
 
+So, approximately:
+
+ /+++ [\w\/]+.c(.*)\\n((([^+])|(\+[^+]))\n)*extern.*/
+
+Or you could just make search remember what file it's in as it walks
+the list of lines. But as I mentioned, multiline regexps are useful
+for things other than just remembering what file we're in.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
