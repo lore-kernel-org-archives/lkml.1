@@ -1,108 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423351AbXD3PTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423354AbXD3PWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423351AbXD3PTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423354AbXD3PTl
+	id S1423354AbXD3PWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423357AbXD3PWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:19:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58617 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1423351AbXD3PTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:19:40 -0400
-Cc: hermann-pitton@arcor.de, mkruky@linuxtv.org, akpm@linux-foundation.org,
-       linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       mrechberger@gmail.com
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 30 Apr 2007 17:19:38 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <alpine.LFD.0.98.0704300748350.9964@woody.linux-foundation.org>
-Message-ID: <20070430151938.66670@gmx.net>
-MIME-Version: 1.0
-References: <20070429182209.267430@gmx.net> 
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
- <20070429205925.129920@gmx.net> 
- <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org> 
- <20070429230037.95120@gmx.net>  <1177894713.3046.5.camel@pc06.localdom.local>
-  <20070430110255.267000@gmx.net>
- <d9def9db0704300448g6d7f4bd2ob7d6117d6c5f0cfb@mail.gmail.com>
- <20070430123716.119970@gmx.net>
- <alpine.LFD.0.98.0704300748350.9964@woody.linux-foundation.org>
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
- pseudo-authorities
-To: Linus Torvalds <torvalds@linux-foundation.org>
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1+9J/c38eO9Y3YBLAyj0fI4XL3gPt2ju8AFTctE3F
- iBPuQRdVI5IuKi0scS5l0KhpQ1ZSeg9uBkzA== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: XU18AUN9a2AoTWC4SHQySJ06OWhhaken
+	Mon, 30 Apr 2007 11:22:37 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:51340 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423354AbXD3PWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:22:36 -0400
+Date: Mon, 30 Apr 2007 10:22:30 -0500
+From: Dean Nelson <dcn@sgi.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: hch@infradead.org, akpm@osdl.org, containers@lists.osdl.org,
+       oleg@tv-sign.ru, linux-kernel@vger.kernel.org, jes@sgi.com,
+       tony.luck@intel.com
+Subject: Re: [PATCH] ia64 sn xpc: Convert to use kthread API.
+Message-ID: <20070430152230.GB22243@sgi.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969574439-git-send-email-ebiederm@xmission.com> <20070422203647.GC23015@infradead.org> <20070427174142.GA16811@sgi.com> <m1hcr1is4l.fsf@ebiederm.dsl.xmission.com> <20070427201211.GA20297@sgi.com> <m1d51pimlf.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1d51pimlf.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
--------- Original-Nachricht --------
-Datum: Mon, 30 Apr 2007 07:49:52 -0700 (PDT)
-Von: Linus Torvalds <torvalds@linux-foundation.org>
-An: Uwe Bugla <uwe.bugla@gmx.de>
-CC: Markus Rechberger <mrechberger@gmail.com>, linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org, akpm@linux-foundation.org, mkruky@linuxtv.org, hermann-pitton@arcor.de
-Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and pseudo-authorities
-
+On Fri, Apr 27, 2007 at 02:33:32PM -0600, Eric W. Biederman wrote:
+> Dean Nelson <dcn@sgi.com> writes:
 > 
+> > On Fri, Apr 27, 2007 at 12:34:02PM -0600, Eric W. Biederman wrote:
+> >> Dean Nelson <dcn@sgi.com> writes:
+> >> >
+> >> > XPC is in need of threads that can block indefinitely, which is why XPC
+> >> > is in the business of maintaining a pool of threads. Currently there is
+> >> > no such capability (that I know of) that is provided by linux. Workqueues
+> >> > can't block indefinitely.
+> >> 
+> >> I'm not certain I understand this requirement.  Do you mean block indefinitely
+> >> unless requested to stop?
+> >
+> > These threads can block waiting for a hardware DMA engine, which has a 28
+> > second timeout setpoint.
 > 
-> On Mon, 30 Apr 2007, Uwe Bugla wrote:
-> > 
-> > So please Linus - rip that crap out of 2.6.21-git2. And if you do see
-> questions what parts you need to rip out, please feel free to ask me....
-> > 
+> Ok.  So this is an interruptible sleep?
+
+No, the hardware DMA engine's software interface, doesn't sleep
+nor relinquish the CPU. But there are other spots where we do sleep
+interruptibly.
+
+> Do you have any problems being woken up out of that interruptible sleep
+> by kthread_stop?
 > 
-> Uwe. I'll say this ONCE more.
+> I am in the process of modifying kthread_stop to wake up thread in an
+> interruptible sleep and set signal_pending, so they will break out.
+
+No, this is fine, just avoid designing the kthread stop mechanism
+to require a thread being requested to stop to actually stop in some
+finite amount of time, and that by it not stopping other kthread stop
+requests are held off. Allow the thread to take as much time as it needs
+to respond to the kthread stop request.
+
+> >> > And for performance reasons these threads need to be able to be created
+> >> > quickly. These threads are involved in delivering messages to XPC's users
+> >> > (like XPNET) and we had latency issues that led us to use kernel_thread()
+> >> > directly instead of the kthread API. Additionally, XPC may need to have
+> >> > hundreds of these threads active at any given time.
+> >> 
+> >> Ugh.  Can you tell me a little more about the latency issues?
+> >
+> > After placing a message in a local message queue, one SGI system partition
+> > will interrupt another to retrieve the message. We need to minimize the
+> > time from entering XPC's interrupt handler to the time that the message
+> > can be DMA transferred and delivered to the consumer (like XPNET) to
+> > whom it was sent.
+> >
+> >> Is having a non-halting kthread_create enough to fix this?
+> >> So you don't have to context switch several times to get the
+> >> thread running?
+> >> 
+> >> Or do you need more severe latency reductions?
+> >> 
+> >> The more severe fix would require some significant changes to copy_process
+> >> and every architecture would need to be touched to fix up copy_thread.
+> >> It is possible, it is a lot of work, and the reward is far from obvious.
+> >
+> > I think a non-halting kthread_create() should be sufficient. It is in
+> > effect what XPC has now in calling kernel_thread() directly.
 > 
-> No.
-
-Sorry! Sigh! Very utmost bad decision, but I must respect it.
-The accumulative principle is the opposite of effectiveness.
-Even if you do not understand the dvb issues in git2 (well I cannot expect this, can I?), you push
-
-a. immature code
-b. a regression
-
-Isn't it a pity that the "maintainer" title has more influence than any kind of
-common sense, reason or sophisticated argumentation?
-What a horrible thought!
-
-P. S.: In former kernel releases the specific last release candidate was almost identical to the official kernel release.
-
-Not only I have largest problems to understand why this wonderful principle has been broken, with the effect, that the so-called "stable" kernel releases are unusable in the end.
-2.6.20, 2.6.21, 2.6.19, and may be former ones that I do not know about.
-
-A "Final" release should be "round", but never in this life highly incomplete, shouldn't it??
-
+> A little different but pretty close.
 > 
-> And unless you can become politer and more respectful and stop ranting all
-> the time, you'll be in the very rare situation of hitting my auto-filters 
-> and going into an email mbox of your own (read: one that I read in my 
-> copious spare time. Hint: I don't _have_ any.)
+> We call kthread_create() it prepares everything and places it on
+> a queue and wakes up kthreadd.
 > 
-> 		Linus
+> kthreadd then wakes up and forks the thread.
+> 
+> After the thread has finishing setting up it will call complete on
+> a completion so kthread_create can continue on it's merry way
+> but it should not need to go to sleep waiting for someone to
+> call kthread_bind.
+> 
+> But if you can live with what I have just described that will
+> be easy to code up.
+> 
+> It is a little slower then kernel_thread but hopefully not much.
 
-Poor Linus!
-I have got thousands of good reasons to be so rude towards some people. And I certainly know the smart polite way of the game too. I know both ways of dealing with. But if someone continues to nerve me for such a long time (whoever the specified person may be) I get out the big stick and then there will be bambule pure!
+I was aware of this behavior of kthread_create(), which I consider
+'halting' in that the thread doing the kthread_create() blocks waiting
+for kthreadd to get scheduled, call kernel_thread(), and then call
+complete(). By your mentioning a 'non-halting' kthread_create() I
+thought you were planning to create a new flavor of kthread_create()
+that called kernel_thread() directly and reparented the child thread to
+kthreadd. My mistake.
 
-Excuse me, you are only finnish origin: "Bambule" is an invention of Ulrike Meinhof and other 68ers and stands for "revolt" or something similar.
+So there will be more overhead (time-wise) for XPC in calling
+kthread_run() as opposed to it formerly calling kernel_thread() directly.
+Thus requiring XPC to utilize a pool of kthread_create()'d threads.
 
-BTW:
-Wasn't it you yourself stating that if one wants changes it is not always useful to be polite??
+> > Taking it one step further, if you added the notion of a thread pool,
+> > where upon exit, a thread isn't destroyed but rather is queued ready to
+> > handle the next kthread_create_quick() request.
+> 
+> That might happen.  So far I am avoiding the notion of a thread pool for
+> as long as I can.  There is some sense in it, especially in generalizing
+> the svc thread pool code from nfs.  But if I don't have to go there I would
+> prefer it.
 
-"If you want to change something, it's not fine to be entirely polite all the time:"
+This means that XPC will have to retain its thread pool, but I can
+understand you not wanting to go there.
 
-(Linus Torvalds, March 6, 2007, 09:57:34, public Email).
+Thanks,
+Dean
 
-Happy reflection, Mister Torvalds!
-
-Uwe
-
--- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
