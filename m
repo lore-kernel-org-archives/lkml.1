@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXD3AmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422663AbXD3Are@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422689AbXD3AmP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 20:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422675AbXD3AmP
+	id S1422663AbXD3Are (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 20:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422707AbXD3Ard
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 20:42:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41171 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422642AbXD3AmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 20:42:14 -0400
-Date: Sun, 29 Apr 2007 20:40:50 -0400
-From: Dave Jones <davej@redhat.com>
-To: Len Brown <lenb@kernel.org>
-Cc: "Moore, Robert" <robert.moore@intel.com>, Zhang@d975xbx2,
-       Yanmin <yanmin.zhang@intel.com>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux ACPI Mailing List <linux-acpi@vger.kernel.org>
-Subject: Re: ACPI interpreter errors (aer_init)
-Message-ID: <20070430004050.GE14857@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Len Brown <lenb@kernel.org>,
-	"Moore, Robert" <robert.moore@intel.com>, Zhang@d975xbx2,
-	Yanmin <yanmin.zhang@intel.com>,
-	"Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Linux ACPI Mailing List <linux-acpi@vger.kernel.org>
-References: <B28E9812BAF6E2498B7EC5C427F293A4025DC20B@orsmsx415.amr.corp.intel.com> <200704280231.52809.lenb@kernel.org>
+	Sun, 29 Apr 2007 20:47:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46739 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422663AbXD3Arb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 20:47:31 -0400
+Date: Mon, 30 Apr 2007 10:47:02 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 0/5] fallocate system call
+Message-ID: <20070430004702.GM32602149@melbourne.sgi.com>
+References: <20070321120425.GA27273@amitarora.in.ibm.com> <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200704280231.52809.lenb@kernel.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070426175056.GA25321@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Apr 28, 2007 at 02:31:52AM -0400, Len Brown wrote:
+On Thu, Apr 26, 2007 at 11:20:56PM +0530, Amit K. Arora wrote:
+> Based on the discussion, this new patchset uses following as the
+> interface for fallocate() system call:
+> 
+>  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
 
- > On a quick glance, it appears that these messages have been in the aer driver
- > since it was born.
- > Did you run with CONFIG_PCIEAER in 2.6.19 or 2.6.20 and not have them there?
- > 
- > I agree with Bob, as status 5 is AE_NOT_FOUND,
- > it appears that the driver is being overly verbose,
- > even though these appear to all be KERN_DEBUG messages.
+Ok, so now for the hard questions - what are the semantics of
+FA_ALLOCATE and FA_DEALLOCATE?
 
-See this thread.. 
+For FA_ALLOCATE, it's supposed to change the file size if we
+allocate past EOF, right? What's the return value supposed to
+be? Zero for success, error otherwise? Does this update a/m/ctime
+at all? How persistent is this preallocation? Should it be
+there "forever" or for the lifetime of the currently open fd
+that it was preallocated on?
 
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: lenb@kernel.org, us15@os.inf.tu-dresden.de, gregkh@suse.de, davej@redhat.com
-Subject: [PATCH] reduce AER init error information
+For FA_DEALLOCATE, does it change the filesize at all? Or does
+it just punch a hole in the file? If it does change file size,
+what happens when you punch out preallocation beyond EOF?
+What's the return value supposed to be?
 
-for a patch resolving this.
+> Currently we have two modes FA_ALLOCATE and FA_DEALLOCATE, for
+> preallocation and deallocation of preallocated blocks respectively. More
+> modes can be added, when required.
 
-	Dave
+FWIW, we definitely need a FA_PREALLOCATE mode (FA_ALLOCATE but does
+not change file size) so we can preallocate beyond EOF for apps which
+use O_APPEND (i.e. changing file size would cause problems for them).
 
+> ToDos:
+> =====
+> 1>   Implementation on other architectures (other than i386, x86_64, 
+> ppc64 and s390(x)) 
+
+I'll have ia64 soon.
+
+> 2>   A generic file system operation to handle fallocate
+> (generic_fallocate), for filesystems that do _not_ have the fallocate
+> inode operation implemented.
+> 3>   Changes to glibc,
+> 	a) to support fallocate() system call
+> 	b) so that posix_fallocate() and posix_fallocate64() call
+> 	   fallocate() system call
+> 4>   Changes to XFS to implement the fallocate inode operation
+
+And that's what I'm doing now, hence all the questions ;)
+
+BTW, do you have a test program for this, or will I need to write
+one myself?
+
+Cheers,
+
+Dave.
 -- 
-http://www.codemonkey.org.uk
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
