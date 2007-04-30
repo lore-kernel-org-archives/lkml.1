@@ -1,60 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXD3KdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXD3Kaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965512AbXD3KdP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 06:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965483AbXD3Kcp
+	id S965558AbXD3Kaw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 06:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbXD3K2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 06:32:45 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47171 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754646AbXD3Kcl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 06:32:41 -0400
-Date: Mon, 30 Apr 2007 11:32:38 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: utrace comments
-Message-ID: <20070430103238.GA10414@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Christoph Hellwig <hch@lst.de>, Roland McGrath <roland@redhat.com>,
-	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <20061127165138.GA2991@lst.de> <20070430040213.BF9901801A4@magilla.sf.frob.com> <20070430090840.GB31397@infradead.org> <20070430091808.GA11345@flint.arm.linux.org.uk> <20070430092200.GA15773@lst.de> <20070430093331.GB11345@flint.arm.linux.org.uk> <20070430094510.GC11345@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430094510.GC11345@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 30 Apr 2007 06:28:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:42957 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754565AbXD3K1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 06:27:49 -0400
+From: Andi Kleen <ak@suse.de>
+References: <200704301227.598020000@suse.de>
+In-Reply-To: <200704301227.598020000@suse.de>
+To: jeremy@goop.org, rusty@rustcorp.com.au, zach@vmware.com,
+       patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [11/40] i386: Fix patch site clobbers to include return register
+Message-Id: <20070430102744.7397115206@wotan.suse.de>
+Date: Mon, 30 Apr 2007 12:27:44 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:45:10AM +0100, Russell King wrote:
-> For the sake of avoiding too much rehash, here's Roland's reply to my
-> initial forrey into utrace:
-> 
->   http://marc.info/?l=linux-kernel&m=117309251916053&w=2
 
-In that mail Roland suggests keeping the singlestep code entirely
-in the arm ptrace code.  After a brief look at the arm code this
-looks easily possible.  From a brief look the arm software singlestep
-consist of the following pieces:
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Fix a few clobbers to include the return register.  The clobbers set
+is the set of all registers modified (or may be modified) by the code
+snippet, regardless of whether it was deliberate or accidental.
 
- - PTRACE_SINGLESTEP implementation.  Sets the PT_SINGLESTEP flag,
-   clears TIF_SYSCALL_TRACE, sets ->exit_code in the traced code
-   to the singlestepping signal and wakes the traced process up.
+Also, make sure that callsites which are used in contexts which don't
+allow clobbers actually save and restore all clobberable registers.
 
-   This can easily be implemented by putting alsmost equivalent code
-   into arch_ptrace.
- - clearing PT_SINGLESTEP and cancelling the breakpoint in ptrace_disable.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Andi Kleen <ak@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Zachary Amsden <zach@vmware.com>
 
-   Equivalent code can go into tracehook_disable_single_step.
+---
+ arch/i386/kernel/entry.S    |    2 +-
+ include/asm-i386/paravirt.h |   18 ++++++++++--------
+ 2 files changed, 11 insertions(+), 9 deletions(-)
 
- - Various places in signal.c that check PT_SINGLESTEP to set/clear
-   the special singlestep breakpoint.  This can stay, it just needs
-   a different place to store the singlestep flag.
-
-Do I miss something?
-
+===================================================================
+Index: linux/arch/i386/kernel/entry.S
+===================================================================
+--- linux.orig/arch/i386/kernel/entry.S
++++ linux/arch/i386/kernel/entry.S
+@@ -338,7 +338,7 @@ sysenter_past_esp:
+ 	jae syscall_badsys
+ 	call *sys_call_table(,%eax,4)
+ 	movl %eax,PT_EAX(%esp)
+-	DISABLE_INTERRUPTS(CLBR_ECX|CLBR_EDX)
++	DISABLE_INTERRUPTS(CLBR_ANY)
+ 	TRACE_IRQS_OFF
+ 	movl TI_flags(%ebp), %ecx
+ 	testw $_TIF_ALLWORK_MASK, %cx
+Index: linux/include/asm-i386/paravirt.h
+===================================================================
+--- linux.orig/include/asm-i386/paravirt.h
++++ linux/include/asm-i386/paravirt.h
+@@ -535,7 +535,7 @@ static inline unsigned long __raw_local_
+ 				  "popl %%edx; popl %%ecx")
+ 		     : "=a"(f)
+ 		     : paravirt_type(save_fl),
+-		       paravirt_clobber(CLBR_NONE)
++		       paravirt_clobber(CLBR_EAX)
+ 		     : "memory", "cc");
+ 	return f;
+ }
+@@ -620,27 +620,29 @@ static inline unsigned long __raw_local_
+ 	.popsection
+ 
+ #define INTERRUPT_RETURN					\
+-	PARA_SITE(PARA_PATCH(PARAVIRT_iret), CLBR_ANY,		\
++	PARA_SITE(PARA_PATCH(PARAVIRT_iret), CLBR_NONE,		\
+ 		  jmp *%cs:paravirt_ops+PARAVIRT_iret)
+ 
+ #define DISABLE_INTERRUPTS(clobbers)					\
+ 	PARA_SITE(PARA_PATCH(PARAVIRT_irq_disable), clobbers,		\
+-		  pushl %ecx; pushl %edx;				\
++		  pushl %eax; pushl %ecx; pushl %edx;			\
+ 		  call *%cs:paravirt_ops+PARAVIRT_irq_disable;		\
+-		  popl %edx; popl %ecx)					\
++		  popl %edx; popl %ecx; popl %eax)			\
+ 
+ #define ENABLE_INTERRUPTS(clobbers)					\
+ 	PARA_SITE(PARA_PATCH(PARAVIRT_irq_enable), clobbers,		\
+-		  pushl %ecx; pushl %edx;				\
++		  pushl %eax; pushl %ecx; pushl %edx;			\
+ 		  call *%cs:paravirt_ops+PARAVIRT_irq_enable;		\
+-		  popl %edx; popl %ecx)
++		  popl %edx; popl %ecx; popl %eax)
+ 
+ #define ENABLE_INTERRUPTS_SYSEXIT					\
+-	PARA_SITE(PARA_PATCH(PARAVIRT_irq_enable_sysexit), CLBR_ANY,	\
++	PARA_SITE(PARA_PATCH(PARAVIRT_irq_enable_sysexit), CLBR_NONE,	\
+ 		  jmp *%cs:paravirt_ops+PARAVIRT_irq_enable_sysexit)
+ 
+ #define GET_CR0_INTO_EAX			\
+-	call *paravirt_ops+PARAVIRT_read_cr0
++	push %ecx; push %edx;			\
++	call *paravirt_ops+PARAVIRT_read_cr0;	\
++	pop %edx; pop %ecx
+ 
+ #endif /* __ASSEMBLY__ */
+ #endif /* CONFIG_PARAVIRT */
