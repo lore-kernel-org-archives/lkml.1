@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422991AbXD3Ey3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422996AbXD3Eyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422991AbXD3Ey3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 00:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422996AbXD3Ey3
+	id S1422996AbXD3Eyd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 00:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422984AbXD3Eyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 00:54:29 -0400
-Received: from quechua.inka.de ([193.197.184.2]:53741 "EHLO mail.inka.de"
+	Mon, 30 Apr 2007 00:54:33 -0400
+Received: from gw.goop.org ([64.81.55.164]:35133 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422991AbXD3Ey2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 00:54:28 -0400
-From: Bernd Eckenfels <ecki@lina.inka.de>
-To: linux-kernel@vger.kernel.org
-Cc: gene.heskett@gmail.com
-Subject: Re: Linux 2.6.21
-Organization: Private Site running Debian GNU/Linux
-In-Reply-To: <200704292150.22956.gene.heskett@gmail.com>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
-Message-Id: <E1HiNu6-0000Ow-00@calista.eckenfels.net>
-Date: Mon, 30 Apr 2007 06:54:26 +0200
+	id S1422996AbXD3Eyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 00:54:31 -0400
+Message-ID: <46357694.2030206@goop.org>
+Date: Sun, 29 Apr 2007 21:54:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Roland McGrath <roland@redhat.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Zachary Amsden <zach@vmware.com>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 03/32] xen: Add nosegneg capability to the vsyscall page
+ notes
+References: <20070429190830.0CF571801A4@magilla.sf.frob.com>
+In-Reply-To: <20070429190830.0CF571801A4@magilla.sf.frob.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <200704292150.22956.gene.heskett@gmail.com> you wrote:
-> You can't have it even do a search to see if it already has something similar 
-> without creating an account and logging in.  Since I'm out of wall space, and 
-> the missus is bugging me to paint over all that, I left.
+Roland McGrath wrote:
+> I wouldn't add that macro to asm/elf.h.  There is nothing magical or
+> standard about that number.
+>   
 
-Well, thats not a bugzilla problem. upstream bugzilla allows anonymous
-search.
+It was just there for a later patch to set/clear the mask dynamically
+depending on whether we're running under Xen.  But I haven't implemented
+that yet.
 
-Infact bugme.osdl.org allows search right on the frontpage. And if you want
-to dig deeper, use the query function.
-
-This is the quicksearch on "USB":
-
-<http://bugme.osdl.org/buglist.cgi?bug_status=UNCONFIRMED&bug_status=NEW&bug_status=OPEN&bug_status=ASSIGNED&bug_status=REOPENED&field0-0-0=product&type0-0-0=substring&value0-0-0=usb&field0-0-1=component&type0-0-1=substring&value0-0-1=usb&field0-0-2=short_desc&type0-0-2=substring&value0-0-2=usb&field0-0-3=status_whiteboard&type0-0-3=substring&value0-0-3=usb>
-
-> I repeat:  Usefull?  For what?
-
-Try again.
-
-Gruss
-Bernd
+    J
