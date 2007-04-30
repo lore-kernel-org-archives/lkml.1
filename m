@@ -1,167 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946710AbXD3TUV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946718AbXD3TZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946710AbXD3TUV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:20:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946715AbXD3TUU
+	id S1946718AbXD3TZw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946717AbXD3TZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:20:20 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:36136 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946710AbXD3TTt (ORCPT
+	Mon, 30 Apr 2007 15:25:52 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47651 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1946720AbXD3TZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:19:49 -0400
-Date: Tue, 1 May 2007 00:49:34 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -mm] Allow selective freezing of the system for different events
-Message-ID: <20070430191934.GA4142@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <200704271737.31192.rjw@sisk.pl> <200704271740.17972.rjw@sisk.pl> <20070428013446.GA20242@in.ibm.com> <200704291951.05425.rjw@sisk.pl>
+	Mon, 30 Apr 2007 15:25:26 -0400
+X-Sasl-enc: BQX26he5eCrtXwLItRBVIJfGolI2DBpMQ7QLzaEGCiNt 1177961125
+Message-ID: <46364346.6030407@imap.cc>
+Date: Mon, 30 Apr 2007 21:28:06 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704291951.05425.rjw@sisk.pl>
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
+ (-1)
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<46338AEB.2070109@imap.cc>	<20070428141024.887342bd.akpm@linux-foundation.org>	<4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org>
+In-Reply-To: <20070430112130.b64321d3.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig6850B0B8D4D50A301B397375"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 07:51:04PM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> Sorry for the delay.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig6850B0B8D4D50A301B397375
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-No problems! Even I was out for the weekend.
+Am 30.04.2007 20:21 schrieb Andrew Morton:
+> A lot of Greg's driver tree has gone upstream, so please check current
+> mainline.
 
-> >  /*
-> >   * Tell the freezer to exempt this task from freezing
-> > + * for events in freeze_event_mask.
-> >   */
-> > -static inline void freezer_exempt(struct task_struct *p)
-> 
-> I, personally, would introduce
-> 
-> static inline void freezer_exempt_event(struct task_struct *p,
-> 				  unsigned long freeze_event_mask)
-> {
-> 	atomic_set_mask(freeze_event_mask, &p->freezer_flags);
-> }
-> 
-> and then
-> 
-> static inline void freezer_exempt(struct task_struct *p)
-> {
-> 	freezer_exempt_event(p, FE_ALL);
-> }
-> 
-> The patch would be shorter. ;-)
-> 
+2.6.21-final is fine.
 
-Agreed. Will do that.
+>  If that's OK then we need to pick through the difference between
+> 2.6.21-rc7-mm2's driver tree and the patches which went into mainline. =
+ And
+> that's a pretty small set.
 
-> [In that case I'd probably rename freezer_should_exempt() to
-> freezer_should_exempt_event(), for symmetry.]
-> 
+I'm not quite sure how to determine that difference. Can you just provide=
 
-Ok. 
+me with a list of patches you'd like me to test?
 
-> > +
-> > +static inline int thawable(struct task_struct *p)
-> > +{
-> > +	if (!freezeable(p))
-> > +		return 0;
-> > +
-> > +	/* Thaw p iff it is frozen for current_freezer_event alone */
-> > +	 if (process_frozen_event_mask(p) & ~current_freezer_event)
-> > +	 	return 0;
-> > +
-> > +	return 1;
-> 
-> I would do
-> 
-> 	return !(process_frozen_event_mask(p) & ~current_freezer_event);
+Thanks,
+Tilman
 
-I was wondering if the statement
-	 if (process_frozen_event_mask(p) & ~current_freezer_event)
-	 	return 0;
+--=20
+Tilman Schmidt                                  E-Mail: tilman@imap.cc
+Wehrhausweg 66                                  Fax: +49 228 4299019
+53227 Bonn
+Germany
 
-would be readable in the first place! 
-Yeah, we can do what you have suggested.
 
-> > -int freeze_processes(void)
-> > +int freeze_processes(unsigned long freeze_event)
-> >  {
-> > -	unsigned int nr_unfrozen;
-> > +	unsigned int nr_unfrozen = 0;
-> > +
-> > +	mutex_lock(&freezer_mutex);
-> > +	if (system_frozen_event_mask & freeze_event)
-> > +		goto out;
-> > +
-> > +	current_freezer_event = freeze_event;
-> >  
-> >  	printk("Stopping tasks ... ");
-> >  	nr_unfrozen = try_to_freeze_tasks(FREEZER_USER_SPACE);
-> >  	if (nr_unfrozen)
-> > -		return nr_unfrozen;
-> > +		goto out;
-> >  
-> >  	sys_sync();
-> >  	nr_unfrozen = try_to_freeze_tasks(FREEZER_KERNEL_THREADS);
-> >  	if (nr_unfrozen)
-> > -		return nr_unfrozen;
-> > +		goto out;
-> >  
-> > +	system_frozen_event_mask |= current_freezer_event;
-> >  	printk("done.\n");
-> >  	BUG_ON(in_atomic());
-> 
-> The BUG_ON() is still valid if tasks are already frozen for this event.
+--------------enig6850B0B8D4D50A301B397375
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Right! So we would need one more label. How about the following?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-	mutex_lock(&freezer_mutex);
-	/* check if already frozen for the event */
-	if (system_frozen_event_mask & freeze_event)
-		goto out_frozen;
-		.
-		.
-		.
+iD8DBQFGNkNOMdB4Whm86/kRAtHKAJ9Pl1M57E0ot8J4Je7eZzDk10247QCbBLDP
+R9dJxM+2y6xZgu9rjy/dEbE=
+=K3Ic
+-----END PGP SIGNATURE-----
 
-out_frozen: 
-	BUG_ON(in_atomic());
-out:
-	current_freezer_event = 0;
-	mutex_unlock(&freezer_mutex);
-	return nr_unfrozen;
-}
-
-> 
-
-> > -void thaw_processes(void)
-> > +void thaw_processes(unsigned long thaw_event)
-> >  {
-> > +	mutex_lock(&freezer_mutex);
-> > +	if (!(system_frozen_event_mask & thaw_event)) {
-> > +		WARN_ON(1);
-> 
-> Hmm, I wouldn't use the WARN_ON() here.  There's nothing wrong in calling
-> this twice in a row as long as we do the sanity checking.  There's even one
-> case in which that may be convenient, actually.
-
-Well, yes. But I put the warn on from the perspective of someone trying
-to thaw_processes for the event for which they have not frozen. I hadn't
-thought about a double thaw. Will rethink.
-
-Thanks for the Review.
-Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+--------------enig6850B0B8D4D50A301B397375--
