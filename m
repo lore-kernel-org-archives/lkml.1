@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946855AbXD3WJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946852AbXD3WJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946855AbXD3WJE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 18:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946854AbXD3WJE
+	id S1946852AbXD3WJb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 18:09:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946856AbXD3WJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 18:09:04 -0400
-Received: from mta15.mail.adelphia.net ([68.168.78.77]:60362 "EHLO
-	mta15.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946849AbXD3WJB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 18:09:01 -0400
-Date: Mon, 30 Apr 2007 17:08:59 -0500
-From: Corey Minyard <minyard@acm.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: linux-serial@vger.kernel.org
-Subject: Serial 8250: clear the lsr_break_flag at open
-Message-ID: <20070430220858.GA28890@localdomain>
-Reply-To: minyard@acm.org
+	Mon, 30 Apr 2007 18:09:30 -0400
+Received: from waste.org ([66.93.16.53]:52901 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946857AbXD3WJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 18:09:29 -0400
+Date: Mon, 30 Apr 2007 17:07:36 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Miles Lane <miles.lane@gmail.com>, lollul@wp.pl,
+       Helge Hafting <helgehaf@aitel.hist.no>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.22
+Message-ID: <20070430220736.GD11115@waste.org>
+References: <200704290102.33533.lenb@kernel.org> <200704302203.31757.rjw@sisk.pl> <20070430200524.GA11115@waste.org> <200704302331.43934.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <200704302331.43934.rjw@sisk.pl>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the double send, but I messed up on the subject.  I'll
-get used to mutt one of these days.
+On Mon, Apr 30, 2007 at 11:31:42PM +0200, Rafael J. Wysocki wrote:
 
-I think I've spotted a bug in the 8250 code, but I'm not really
-sure.  I'm having a hard time understanding why the lsr_break_flag
-is necessary.
+> Can you please do 'echo shutdown > /sys/power/disk' before the hibernation
+> and see what happens?
 
-Subject: Serial 8250: clear the lsr_break_flag at open
+Do I need to reboot for this test? Same behavior without a reboot.
 
-The lsr_break_flag in the 8250 driver is not cleared when the port is
-opened.  This means that on a serial console, if a break has occurred
-while the port is closed, the first call to receive_chars() will
-result in a break being delivered at that point.  Clear the flag at
-open to fix the problem.
-
-Signed-off-by: Corey Minyard <minyard@acm.org>
-
-Index: linux-2.6.21/drivers/serial/8250.c
-===================================================================
---- linux-2.6.21.orig/drivers/serial/8250.c
-+++ linux-2.6.21/drivers/serial/8250.c
-@@ -1638,6 +1638,7 @@ static int serial8250_startup(struct uar
- 
- 	up->capabilities = uart_config[up->port.type].flags;
- 	up->mcr = 0;
-+	up->lsr_break_flag = 0;
- 
- 	if (up->port.type == PORT_16C950) {
- 		/* Wake up and initialize UART */
-
+-- 
+Mathematics is the supreme nostalgia of our time.
