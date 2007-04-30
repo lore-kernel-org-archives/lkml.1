@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946796AbXD3Ubx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946788AbXD3UhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946796AbXD3Ubx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 16:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946793AbXD3Ubx
+	id S1946788AbXD3UhW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 16:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946801AbXD3UhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 16:31:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42978 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946792AbXD3Ubv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 16:31:51 -0400
-Message-ID: <46365234.6010804@garzik.org>
-Date: Mon, 30 Apr 2007 16:31:48 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 30 Apr 2007 16:37:22 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3057 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946788AbXD3UhU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 16:37:20 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH] [39/40] i386: Export paravirt_ops for non GPL modulestoo
+Date: Mon, 30 Apr 2007 13:37:15 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKOECCDHAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Stephen.Clark@seclark.us
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata updates
-References: <20070429161542.GA12501@havoc.gtf.org> <46364901.4000907@redhat.com> <46364C04.4050208@garzik.org> <46364FFA.9050500@seclark.us>
-In-Reply-To: <46364FFA.9050500@seclark.us>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <1177936139.4843.17.camel@lappy>
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 30 Apr 2007 14:37:34 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 30 Apr 2007 14:37:36 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Clark wrote:
-> Yeah the kernel will boot but the hd performance is sh*t on my laptop. I 
-> am running FC6 with
-> kernel 2.6.21 and without the combined_mode setting my disk performance 
-> goes down to a
-> whopping 1.25mb/sec from 44mb/sec when I boot with combined_mode=libata. 
-> It make my
-> system unusable!
 
+> FWIW I think doing this first will be better, exposing _all_ to non GNU
+> modules will weaken whatever case we might have to take it away later.
 
-No, that's the split-driver configuration that causes the slowdown.
+> So, NACK from me too.
 
-Now that both drivers fully support the hardware, either driver can make 
-things go full speed.
+> I don't want to hear the whining; but it was allowed in .22, so why
+> should we not be able to do this in .23.... or whatever.
 
-Please try testing the update first :)
+This is the most illogical and perverse argument I think I have *ever* seen
+on this mailing list, and that's saying something.
 
-	Jeff
+If people find legitimate uses for it while it's available, that's a proof
+that taking it away is wrong. Symbols are supposed to be marked GPL if and
+only if it's not possible to use them in non-GPL'd works. So, yeah, let's
+not risk letting people prove your position is wrong before you have a
+chance to enforce it.
+
+DS
 
 
