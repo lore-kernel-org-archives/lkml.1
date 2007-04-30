@@ -1,107 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946560AbXD3RZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031551AbXD3Rbm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946560AbXD3RZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946559AbXD3RZz
+	id S1031551AbXD3Rbm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:31:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031550AbXD3Rbm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:25:55 -0400
-Received: from mail.gmx.net ([213.165.64.20]:33512 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1946552AbXD3RZs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:25:48 -0400
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Mon, 30 Apr 2007 19:25:47 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <Pine.LNX.4.64.0704301742390.2985@pentafluge.infradead.org>
-Message-ID: <20070430172547.204810@gmx.net>
+	Mon, 30 Apr 2007 13:31:42 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:47403 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1031551AbXD3Rbl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 13:31:41 -0400
+Date: Mon, 30 Apr 2007 09:51:41 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Theodore Tso <tytso@mit.edu>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21
+In-Reply-To: <20070429235535.GC19937@thunk.org>
+Message-ID: <Pine.LNX.4.63.0704300948141.13031@qynat.qvtvafvgr.pbz>
+References: <4630DB24.4030005@redhat.com>  <20070426201325.8a1ebda3.diegocg@gmail.com>
+  <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> 
+ <20070426224148.69b91b2e.diegocg@gmail.com> 
+ <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> 
+ <20070428195320.GZ3468@stusta.de>  <20070428202701.GA30343@flint.arm.linux.org.uk>
+  <20070428224904.GE3468@stusta.de>  <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
+  <p73d51n1fup.fsf@bingen.suse.de> <20070429235535.GC19937@thunk.org>
 MIME-Version: 1.0
-References: <20070429182209.267430@gmx.net> 
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
- <20070429205925.129920@gmx.net> 
- <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org> 
- <20070429230037.95120@gmx.net> <1177894713.3046.5.camel@pc06.localdom.local>
- <20070430110255.267000@gmx.net> <4635D139.4030609@aitel.hist.no>
- <20070430115000.194060@gmx.net> <4636058B.3070603@aitel.hist.no>
- <Pine.LNX.4.64.0704301742390.2985@pentafluge.infradead.org>
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
- pseudo-authorities
-To: Mauro Carvalho Chehab <mchehab@infradead.org>, helge.hafting@aitel.hist.no
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19WhT07dkdWaZVCphuB+28RqqbLoOBsTdR5P8L8FG
- RqoLLeQd8J7C2/1Grzk5yDz+53TRpoO60oVg== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: qRADd3Q4bUk7EjK9TWgnK0BsZ2hlNwp0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 29 Apr 2007, Theodore Tso wrote:
 
--------- Original-Nachricht --------
-Datum: Mon, 30 Apr 2007 17:56:17 +0100 (BST)
-Von: Mauro Carvalho Chehab <mchehab@infradead.org>
-An: Helge Hafting <helge.hafting@aitel.hist.no>
-CC: Uwe Bugla <uwe.bugla@gmx.de>, linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, akpm@linux-foundation.org
-Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and pseudo-authorities
+> On Sun, Apr 29, 2007 at 03:15:42PM +0200, Andi Kleen wrote:
+>> This means we need people who figure out who to assign bugs too.
+>> Aka bugmasters.
+>>
+>> BTW one big problem in our current bugzilla is that a lot of people
+>> cannot reassign bugs they don't own. I sometimes see bugs that I don't
+>> own bug I know who is responsible, but bugzilla doesn't allow me to do it.
+>>
+>> So I think what would help:
+>>
+>> - Ask more people to just categorize and reassign bugs (anybody interested?)
+>> - Give more people in bugzilla the power to reassign arbitary bugs
+>> (bugzilla maintainers would need to do that)
+>
+> Folks might want to take a look at the Debian Bug Tracking System
+> (BTS).  It has a web interface which you can use to query history, but
+> *everything* is e-mail driven, and the way you submit, close, update,
+> tag/classfy bugs --- everything --- is via e-mail.
+>
+> More importantly, anyone is allowed to recategorize and reassign bugs.
+> If someone does so maliciously or incorrectly, you can always revert
+> it, and if someone is being truly malicious, you can always blacklist
+> that one person.  It this respect, it is far more wiki-like than
+> bugzilla, which has always been too much like a straightjacket.
+>
+> It's not perfect, but it's better than bugzilla --- but then again,
+> just about *anything* would be better than bugzilla.  (Hmm, except
+> maybe SourceForge's very tragic bug tracking system... :-)
+>
+> Of course, as Linus has said, it's not a complete solution --- you
+> still need humans to be smart about things --- but if the goal is to
+> make it easier to archive and track information about a bug, at
+> *least* with the Debian BTS, when you reply to an e-mail message, the
+> reply is automatically appended to the bug log!
 
-> Hi Helge and others,
-> 
-> On Mon, 30 Apr 2007, Helge Hafting wrote:
-> 
-> >> what the consequence is. To be truthful I would strategically prefare a
-> >> vacuum at the price that the work isn't even done for months.
-> >> ONLY IF there is a personnel vacuum the necessity for others to
-> volunteer 
-> >> will arise.
-> >> 
-> > A sufficiently bad maintainer will also do it.  If lots of submitters
-> send
-> > their patches to andrew in order to get past a dysfunctional maintainer,
-> > then the subsystem effectively is unmaintained.
-> 
-> The point is that Uwe patch will generate regressions by breaking for 
-> Twinhan. His patch just removes compilation for dst and dst_ca on Kconfig,
-> without taking care or driver internals. So, two initialization functions 
-> won't be called by symbol_request(). Although those two functions will be 
-> undefined, as the dvb will do the linkedition at module runtume (if 
-> DVB_ATTACH is selected), modprobe won't detect the lack of those
-> functions.
-> At the end, cards with ST chips (DST and/or DST CA) will stop working, 
-> without even printing a warning.
+this, and the fact that anyone can add to the bug log by just sending an e-mail 
+are a nice feature
 
-Mister Chehab, for the first and for the utmost last time now:
+however, I had a reason to take a look at the debian BTS late last week to see 
+if the bugs and patch that I sent to the sysklog maintainer (both debian and 
+upstream) got included in debian 4.0.
 
-My deselection patch implies a very good text to strongly discourage the use of DST
-and DST_CA in case someone does not know what he or she is doing. In so far the case that "cards with ST chips (DST and/ or DST CA) will stop working" will not happen at all.
-This patch IS NOT DONE TO MAKE ANY DST OR DST_CA MODULE REQUIRING CARD WORK - 
-THIS IS YOUR PART OF SO-CALLED LOGIC!!!!
+talk about depressing.
 
-THIS PATCH IS DONE TO AVOID RAM WASTE FOR CASES IN WHICH IT IS PROVEN THAT DST AND DST_CA ARE NOT NEEDED AT ALL!!!!
+there are about a dozen bugs _with_ patches sitting in the queue for several 
+years
 
-Example: Pinnacle PCTV SAT!!!
-
-And once again and for the last time:
-
-I did not manage to at least find one single unresolved module during compilation, and I have been working with this almost fantastic solution with several kernels for months now!
-
-Above that I gave you every proof one can ever give: You received dmesg, you received configs, you received proven thesis, you received everything.
-
-It would really be a perfect solution to bomb away the almost incredible meters thick wall in front of your head and your eyes.
-
-And at this time I will stop responding to your mails - I got enough of you!!!
-It's enough!!
-> 
-> I've tried to explain this to Uwe several times, but, at the end, he 
-> always start insulting me and/or other developers.
-> 
-> Cheers,
-> Mauro.
-
-Happy reflection, Mister Chehab!!!!!
-
--- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+David Lang
