@@ -1,37 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946092AbXD3QaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946351AbXD3Qac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946092AbXD3QaV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 12:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946353AbXD3QaU
+	id S1946351AbXD3Qac (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 12:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946354AbXD3Qac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 12:30:20 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:9424 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946092AbXD3QaS (ORCPT
+	Mon, 30 Apr 2007 12:30:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:14276 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946351AbXD3Qaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 12:30:18 -0400
-X-IronPort-AV: i="4.14,471,1170662400"; 
-   d="scan'208"; a="417089021:sNHT162092914"
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: What's in infiniband.git for 2.6.22
-X-Message-Flag: Warning: May contain useful information
-References: <adaps5rro8v.fsf@cisco.com> <20070427153016.GB1709@mellanox.co.il>
-	<adaslalm9sd.fsf@cisco.com> <20070429075112.GA7869@mellanox.co.il>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 30 Apr 2007 09:30:16 -0700
-In-Reply-To: <20070429075112.GA7869@mellanox.co.il> (Michael S. Tsirkin's message of "Sun, 29 Apr 2007 10:51:12 +0300")
-Message-ID: <adaslahlt9j.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+	Mon, 30 Apr 2007 12:30:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fLZHt4Vsx7mF8qZyJ7db+FF47bjlCOfrU+j2ALMkawbbfvXkWTZp4yF5b/OyqF1rFGrrAOc/YtNK9L2eEdbjaCkiiUK7fcdwc9oic41O7w97H1nAdRe8IJYQFeuOqbzw7PnkK1XMCvTzLDFrgnTVDJK/l+A7h6DInvqJSXEw68A=
+Message-ID: <a4e6962a0704300930r7e048a48u7c312b14beefcffd@mail.gmail.com>
+Date: Mon, 30 Apr 2007 11:30:29 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>,
+       "Latchesar Ionkov" <lionkov@gmail.com>, "Andrew Morton" <akpm@osdl.org>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
+Subject: Re: [V9fs-developer] [PATCH] 9p: create separate 9p client interface
+In-Reply-To: <20070430161318.GA29321@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Apr 2007 16:30:16.0185 (UTC) FILETIME=[D5A69690:01C78B44]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f158dc670704300832l36889bf2kfa4480addbe8cfb2@mail.gmail.com>
+	 <20070430161318.GA29321@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I think you want to queue the following obvios bugix up as well:
- > http://www.openfabrics.org/git/?p=~vlad/ofed_1_2/.git;a=blob;f=kernel_patches/fixes/ipoib_crash_on_error.patch;hb=HEAD
+On 4/30/07, Christoph Hellwig <hch@infradead.org> wrote:
+> On Mon, Apr 30, 2007 at 09:32:41AM -0600, Latchesar Ionkov wrote:
+> > Create a separate 9P client interface that can be used outside the VFS
+> > layer. In addition to VFS, the new interface can be used to export the
+> > authentication channel or from other interfaces.
+>
+> And what exact users would that be?  We have a huge dislike for putting
+> abstractions in just for the abstractions sake, so if you want this
+> merged you'd better present a highly useful client to that interface.
+>
 
-Yes, I'll get that one too.
+I'll let Lucho give more details on his possible uses for such an
+interface -- for my part we have been looking at doing in-kernel
+servers for more efficient export of devices and system services (such
+as the network stack).  We've been using user space applications for
+doing such sharing, but there are undesirable inefficiencies in such
+an approach.
+
+>>19 files changed, 1656 insertions(+), 1585 deletions(-)
+
+I believe the log message was poorly worded, it was more of a
+reorganization of the existing interface versus the creation of an
+additional interface.
+
+>
+> Also the non-filesystem interface code shouldn't live in fs/ but
+> rather in net/9p/
+>
+
+Which bits do you think are candidates for such a move?  The transport
+interfaces? (there are a few more in the wings to cover shared memory
+transports for VMMs among other things)  Should the protocol elements
+move as well? -- that seems a bit fuzzier to me.
+
+            -eric
