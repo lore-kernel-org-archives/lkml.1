@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423316AbXD3Oug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423328AbXD3OvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423316AbXD3Oug (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 10:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423328AbXD3Oug
+	id S1423328AbXD3OvN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 10:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423327AbXD3OvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 10:50:36 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:47728 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423316AbXD3Oue (ORCPT
+	Mon, 30 Apr 2007 10:51:12 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:38845 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1423330AbXD3OvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 10:50:34 -0400
-Date: Mon, 30 Apr 2007 07:49:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Uwe Bugla <uwe.bugla@gmx.de>
-cc: Markus Rechberger <mrechberger@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-dvb@linuxtv.org, akpm@linux-foundation.org, mkruky@linuxtv.org,
-       hermann-pitton@arcor.de
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
- pseudo-authorities
-In-Reply-To: <20070430123716.119970@gmx.net>
-Message-ID: <alpine.LFD.0.98.0704300748350.9964@woody.linux-foundation.org>
-References: <20070429182209.267430@gmx.net> 
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
- <20070429205925.129920@gmx.net>  <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
-  <20070429230037.95120@gmx.net>  <1177894713.3046.5.camel@pc06.localdom.local>
-  <20070430110255.267000@gmx.net> <d9def9db0704300448g6d7f4bd2ob7d6117d6c5f0cfb@mail.gmail.com>
- <20070430123716.119970@gmx.net>
+	Mon, 30 Apr 2007 10:51:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=VRBX9b3YDVxsf29AO/wu6Mwegd7AhTTSc2HPkqrPcxlIYqM3/T1BkfgDQmxPUZc7klzODHUmxVY/BhNSiQhDO39wHYiVJQQf0qdtM1pzHv5mVe+Fdb6T3D7ijl57pAV3QEWTjDLw9+D9ivA3YO9SMrJN/oy6GaDEYhfU9DEudUs=  ;
+X-YMail-OSG: MMy1Yx0VM1m3buce03bV6zBgztgxPVCUqlj8w3iJriCs_Bv7zYKQLBuX403PuNwpoPUWj_RH1w--
+From: David Brownell <david-b@pacbell.net>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch] pm: include EIO from errno-base.h
+Date: Mon, 30 Apr 2007 07:51:06 -0700
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0704291700220.1822@chino.kir.corp.google.com>
+In-Reply-To: <Pine.LNX.4.64.0704291700220.1822@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704300751.07078.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 30 Apr 2007, Uwe Bugla wrote:
+On Monday 30 April 2007, David Rientjes wrote:
+> call_platform_enable_wakeup() uses EIO, so it needs to be defined.
 > 
-> So please Linus - rip that crap out of 2.6.21-git2. And if you do see questions what parts you need to rip out, please feel free to ask me....
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+
+Actually, in that PM-is-disabled case returning zero (success)
+rather than -EIO would have been the backwards-compatible
+approach ... the hook not being there shouldn't be an error.
+And returning zero wouldn't require this #include either...
+
+- Dave
+
+
+> ---
+>  include/linux/pm.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -25,6 +25,7 @@
+>  
+>  #include <linux/list.h>
+>  #include <asm/atomic.h>
+> +#include <asm/errno.h>
+>  
+>  /*
+>   * Power management requests... these are passed to pm_send_all() and friends.
 > 
 
-Uwe. I'll say this ONCE more.
 
-No.
-
-And unless you can become politer and more respectful and stop ranting all 
-the time, you'll be in the very rare situation of hitting my auto-filters 
-and going into an email mbox of your own (read: one that I read in my 
-copious spare time. Hint: I don't _have_ any.)
-
-		Linus
