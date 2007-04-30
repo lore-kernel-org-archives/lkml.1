@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946591AbXD3Spv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946616AbXD3Su4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946591AbXD3Spv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946603AbXD3Spt
+	id S1946616AbXD3Su4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946625AbXD3Suz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:45:49 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:47723 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1946591AbXD3SpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:45:03 -0400
-Date: Mon, 30 Apr 2007 11:44:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1: many processes end up in D state
-Message-Id: <20070430114449.1dad1ab2.akpm@linux-foundation.org>
-In-Reply-To: <4af2d03a0704301114sc84b358td8781c91b8564c38@mail.gmail.com>
-References: <46360DA7.6040003@gmail.com>
-	<20070430110510.1f559d34.akpm@linux-foundation.org>
-	<4af2d03a0704301114sc84b358td8781c91b8564c38@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Apr 2007 14:50:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:41849 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946616AbXD3SuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 14:50:00 -0400
+Message-ID: <46363A68.6080201@goop.org>
+Date: Mon, 30 Apr 2007 11:50:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org> <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007 20:14:05 +0200
-"Jiri Slaby" <jirislaby@gmail.com> wrote:
+Eric W. Biederman wrote:
+> I have several ideas on how we can make this work but first I have to
+> ask what is it that you are trying to accomplish?
+>   
 
-> > > I have a problem with higher disk loads (e.g. running git-log or yum update).
-> > > Many processes end up in D state and system is unusable -- I'm not able to run
-> > > anything but smooth mouse moving when this happens.
-> > >
-> > > If I wait for a 20-30sec it becomes usable. This happens in 2.6.21-rc7-mm2 and
-> > > also in 2007-04-28-05-06 broken-out snapshot. I think 2.6.21-rc6-mm1 worked
-> > > fine, but I'm uncertain. If it is important, let me know to re-test.
-> > >
-> >
-> > It is important, but I doubt if retesting 2.6.21-rc6-mm1 will clarify
-> > things a lot.
-> >
-> > Could you try switching to a different IO scheduler please?  Anticipatory
-> > would suit.
-> 
-> As I wrote below the sysrq-t, switch to noop didn't help, but it seems
-> that it's harder to reproduce with that:
-> 
-> <cite it's_bad_to_write_anything_below_logs="true">
-> Note that yum works on lvm on raid0 and git too, but on the another md volume.
-> Both ext3s. Drivers are sata_promise and ata_piix (sata disk); CFQ scheduler.
-> Using noop is no change (but seems to be harder to reproduce with it). I figured
-> out that it probably happens when 2+ processes are on both "processors" (HT on
-> P4) and are IO wait (multiload-applet shows red above the half).
-> 
-> Swap usage is 0 all the time.
-> </cite>
+The requirements are:
 
-My comprehension skills on Monday morning are even less than usual ;)
+   1. the domain builder needs to get various information about the
+      guest kernel by inspecting its ELF notes
+   2. we start the kernel in 32-bit mode with paging enabled, in ring 1
+   3. the guest kernel needs various pieces of runtime information from
+      the hypervisor about its runtime environment
 
-I would check the anticipatory scheduler as well, please.  I don't know
-what no-op would do with a workload like that, but it probably isn't very
-good.
+At the moment we just load a bare vmlinux kernel with a xen-specific
+entrypoint, so 1 and 2 are easy.  3 is achieved by having the domain
+builder start the kernel with %esi pointing to a Xen info structure
+which tells the kernel what it needs to know.
 
-You appear to believe that it's related to the CPU scheduler?  That's a bit
-unexpected - it sounds more like a VFS/IO thing?  But stranger things have
-happened.
+That works OK for a kernel which is compiled to run under Xen and can't
+run in any other environment, but now that we can generate a single
+kernel which can run in any number of different environments, its
+unfortunate that we still need multiple variants of the kernel image.
 
-I guess it's time to end the staircase experiment in -mm. 
-http://userweb.kernel.org/~akpm/js.bz2 is my current rollup (against
-2.6.21) minus staircase and related things.  Pretty please.
+Clearly the Xen domain builder needs to be extended to deal with a
+bzImage format kernel directly, so we can use the same actual kernel
+image for native and Xen booting.  Since we're changing the domain
+builder anyway, I can change the details of how it works so long as the
+3 requirements can still be met.
+
+So, I have no problem in also building a boot protocol info structure,
+and passing that in %esi, so long as I can store a pointer to the
+Xen-specific info as well.  Some info will be duplicated, like the
+initrd location, but that's OK.
+
+I'd already reserved a Xen bootloader ID specifically with this in mind;
+all I really need is a place where I can stash the pointer.
+
+I think I'd prefer to have the domain builder decompress/relocate the
+kernel from the bzImage and start it directly, rather than have it
+decompress/relocate itself, but I'm not really set on that.  It depends
+on how well it can deal with having paging enabled and being in ring 1. 
+Looks like it might just be a matter of starting up with "enough" memory
+mapped.
+
+So the biggest unknown is where to put the Xen ELF notes.
+
+    J
