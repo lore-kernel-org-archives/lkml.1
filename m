@@ -1,86 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946098AbXD3Xgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946148AbXD3XhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946098AbXD3Xgc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 19:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946100AbXD3Xgc
+	id S1946148AbXD3XhA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 19:37:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946132AbXD3Xg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 19:36:32 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41290 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946098AbXD3Xga (ORCPT
+	Mon, 30 Apr 2007 19:36:59 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:56933 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946131AbXD3Xg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 19:36:30 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <ak@suse.de>, patches@x86-64.org,
-       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-References: <20070428758.455116000@suse.de>
-	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
-	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
-	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
-	<m18xc9344o.fsf@ebiederm.dsl.xmission.com> <463670D1.3000003@goop.org>
-	<m14pmx31bw.fsf@ebiederm.dsl.xmission.com>
-	<463678BA.5080609@zytor.com>
-Date: Mon, 30 Apr 2007 17:35:55 -0600
-In-Reply-To: <463678BA.5080609@zytor.com> (H. Peter Anvin's message of "Mon,
-	30 Apr 2007 16:16:10 -0700")
-Message-ID: <m1zm4p1llw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 30 Apr 2007 19:36:56 -0400
+Date: Mon, 30 Apr 2007 16:33:09 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Bill Irwin <bill.irwin@oracle.com>
+Cc: linux-kernel@vger.kernel.org, bunk@stusta.de, akpm@osdl.org,
+       gcoady@gmail.com, zlynx@acm.org, dgc@sgi.com, alan@lxorguk.ukuu.org.uk,
+       andi@firstfloor.org, hch@infradead.org, jengelh@linux01.gwdg.de,
+       zwane@infradead.org, neilb@suse.de, jens.axboe@oracle.com,
+       eric@provenscaling.com, wli@holomorphy.com
+Subject: [1/3] dynamically allocate IRQ stacks
+Message-ID: <20070430233309.GH26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	linux-kernel@vger.kernel.org, bunk@stusta.de, akpm@osdl.org,
+	gcoady@gmail.com, zlynx@acm.org, dgc@sgi.com,
+	alan@lxorguk.ukuu.org.uk, andi@firstfloor.org, hch@infradead.org,
+	jengelh@linux01.gwdg.de, zwane@infradead.org, neilb@suse.de,
+	jens.axboe@oracle.com, eric@provenscaling.com
+References: <20070430232351.GG26598@holomorphy.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430232351.GG26598@holomorphy.com>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Dynamically allocate IRQ stacks in order to conserve memory when using
+IRQ stacks. cpu_possible_map is not now initialized in such a manner as
+to provide a meaningful indication of how many CPU's might be in the
+system, and features to appear in the sequel also require indirection,
+so they themselves are not allocatable as per_cpu variables, but rather
+only pointers to them.
 
-> Eric W. Biederman wrote:
->> 
->> I'm tempted to just reload the segments in setup.S, but that might
->> break loadlin support or one of the other bootloaders that starts the
->> kernel in 32bit mode so we need to be careful.
->> 
->
-> We already load all the segments in setup.S.  I'm retaining this in my
-> rewrite.
+Signed-off-by: William Irwin <bill.irwin@oracle.com>
 
-Good.  I guess I had moved it there in my last cleanup but I wasn't
-brave enough yet to remove the reloads from both version of head.S
-yet.
 
-We should probably load the segment registers in trampoline.S as
-well that would simplify things a little bit.
-
-> Given that I'm rewriting the whole thing, if there are things you want
-> setup.S to do, now is the time to ask.
-
-The big wish list item would be subarch detection (at least if we need
-it early).  As we are quickly moving to infrastructure that can runtime
-switch between subarch's if we can detect the difference.
-
-For the paravirt subarchitectures we are actually going to skip past
-setup.S
-
-So the big thing we need to start doing is to document the 32bit entry
-point and what can be expected of it etc, especially in the paravirt
-context.  But that isn't a setup.S problem.
-
-Oh.  Yes.  We need a parameter structure in the kernel, that documents
-what %esi points to later.  What arguments can be found in the
-bootloader data.  If you are playing with setup.S in C that tends to
-be a setup.S function.
-
-Andi already has a call to verify_cpu so we abort if the cpu can't
-handle our current kernel.  While that is not perfect aborting
-gracefully in setup.S is a lot better then a lot of the alternatives.
-
-Mostly what we need is to sort through the requirements of this
-next boot protocol revision for paravirt loaders so we can do that
-cleanly.  It will probably need a subarch type field and a subarch
-data pointer field, but except for being stored in Setup.S that
-isn't much of a setup.S problem either.
-
-Eric
+Index: stack-paranoia/arch/i386/kernel/irq.c
+===================================================================
+--- stack-paranoia.orig/arch/i386/kernel/irq.c	2007-04-30 14:18:25.645682879 -0700
++++ stack-paranoia/arch/i386/kernel/irq.c	2007-04-30 14:27:38.513189002 -0700
+@@ -17,9 +17,11 @@
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/delay.h>
++#include <linux/bootmem.h>
+ 
+ #include <asm/apic.h>
+ #include <asm/uaccess.h>
++#include <asm/pgtable.h>
+ 
+ DEFINE_PER_CPU(irq_cpustat_t, irq_stat) ____cacheline_internodealigned_in_smp;
+ EXPORT_PER_CPU_SYMBOL(irq_stat);
+@@ -56,8 +58,8 @@
+ 	u32                     stack[THREAD_SIZE/sizeof(u32)];
+ };
+ 
+-static union irq_ctx *hardirq_ctx[NR_CPUS] __read_mostly;
+-static union irq_ctx *softirq_ctx[NR_CPUS] __read_mostly;
++static DEFINE_PER_CPU(union irq_ctx *, hardirq_ctx);
++static DEFINE_PER_CPU(union irq_ctx *, softirq_ctx);
+ #endif
+ 
+ /*
+@@ -102,7 +104,7 @@
+ #ifdef CONFIG_4KSTACKS
+ 
+ 	curctx = (union irq_ctx *) current_thread_info();
+-	irqctx = hardirq_ctx[smp_processor_id()];
++	irqctx = per_cpu(hardirq_ctx, smp_processor_id());
+ 
+ 	/*
+ 	 * this is where we switch to the IRQ stack. However, if we are
+@@ -150,11 +152,24 @@
+  * These should really be __section__(".bss.page_aligned") as well, but
+  * gcc's 3.0 and earlier don't handle that correctly.
+  */
+-static char softirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__aligned__(THREAD_SIZE)));
++static DEFINE_PER_CPU(char *, softirq_stack);
++static DEFINE_PER_CPU(char *, hardirq_stack);
+ 
+-static char hardirq_stack[NR_CPUS * THREAD_SIZE]
+-		__attribute__((__aligned__(THREAD_SIZE)));
++static void * __init __alloc_irqstack(int cpu)
++{
++	if (!cpu)
++		return __alloc_bootmem(THREAD_SIZE, THREAD_SIZE,
++						__pa(MAX_DMA_ADDRESS));
++
++	return (void *)__get_free_pages(GFP_KERNEL,
++					ilog2(THREAD_SIZE/PAGE_SIZE));
++}
++
++static void __init alloc_irqstacks(int cpu)
++{
++	per_cpu(softirq_stack, cpu) = __alloc_irqstack(cpu);
++	per_cpu(hardirq_stack, cpu) = __alloc_irqstack(cpu);
++}
+ 
+ /*
+  * allocate per-cpu stacks for hardirq and for softirq processing
+@@ -163,34 +178,36 @@
+ {
+ 	union irq_ctx *irqctx;
+ 
+-	if (hardirq_ctx[cpu])
++	if (per_cpu(hardirq_ctx, cpu))
+ 		return;
+ 
+-	irqctx = (union irq_ctx*) &hardirq_stack[cpu*THREAD_SIZE];
++	alloc_irqstacks(cpu);
++
++	irqctx = (union irq_ctx*)per_cpu(hardirq_stack, cpu);
+ 	irqctx->tinfo.task              = NULL;
+ 	irqctx->tinfo.exec_domain       = NULL;
+ 	irqctx->tinfo.cpu               = cpu;
+ 	irqctx->tinfo.preempt_count     = HARDIRQ_OFFSET;
+ 	irqctx->tinfo.addr_limit        = MAKE_MM_SEG(0);
+ 
+-	hardirq_ctx[cpu] = irqctx;
++	per_cpu(hardirq_ctx, cpu) = irqctx;
+ 
+-	irqctx = (union irq_ctx*) &softirq_stack[cpu*THREAD_SIZE];
++	irqctx = (union irq_ctx*)per_cpu(softirq_stack, cpu);
+ 	irqctx->tinfo.task              = NULL;
+ 	irqctx->tinfo.exec_domain       = NULL;
+ 	irqctx->tinfo.cpu               = cpu;
+ 	irqctx->tinfo.preempt_count     = 0;
+ 	irqctx->tinfo.addr_limit        = MAKE_MM_SEG(0);
+ 
+-	softirq_ctx[cpu] = irqctx;
++	per_cpu(softirq_ctx, cpu) = irqctx;
+ 
+ 	printk("CPU %u irqstacks, hard=%p soft=%p\n",
+-		cpu,hardirq_ctx[cpu],softirq_ctx[cpu]);
++		cpu, per_cpu(hardirq_ctx, cpu), per_cpu(softirq_ctx, cpu));
+ }
+ 
+ void irq_ctx_exit(int cpu)
+ {
+-	hardirq_ctx[cpu] = NULL;
++	per_cpu(hardirq_ctx, cpu) = NULL;
+ }
+ 
+ extern asmlinkage void __do_softirq(void);
+@@ -209,7 +226,7 @@
+ 
+ 	if (local_softirq_pending()) {
+ 		curctx = current_thread_info();
+-		irqctx = softirq_ctx[smp_processor_id()];
++		irqctx = per_cpu(softirq_ctx, smp_processor_id());
+ 		irqctx->tinfo.task = curctx->task;
+ 		irqctx->tinfo.previous_esp = current_stack_pointer;
+ 
