@@ -1,82 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423217AbXD3MvG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423215AbXD3M7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423217AbXD3MvG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 08:51:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423219AbXD3MvG
+	id S1423215AbXD3M7B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 08:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423223AbXD3M7B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 08:51:06 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:8224 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423217AbXD3MvE (ORCPT
+	Mon, 30 Apr 2007 08:59:01 -0400
+Received: from mpc-26.sohonet.co.uk ([193.203.82.251]:47999 "EHLO
+	moving-picture.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423215AbXD3M67 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 08:51:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=btf96v4PiNNUhWIjolkUms1TOgxZAHx3hiDQbQAE2QM2QIwMKnymcWk0o5BTL4cwgkB7JEYluTeNqcyb2zQ3KJ4u10uYb4MuoxLw52T0zYGkM6Lmt17fqU0opYxPwmUPjCStwYC+Ndg/9gmeUErSPB9pDmljoIjKKfnnm6OKP1I=
-Message-ID: <8f8ff01d0704300551yb0413c7m3834cc75c2d0fcdd@mail.gmail.com>
-Date: Mon, 30 Apr 2007 16:51:02 +0400
-From: "Alexey Starikovskiy" <aystarik@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: 2.6.21: ACPI related kernel panic
-Cc: "Sebastian Kemper" <sebastian_ml@gmx.net>,
-       "Len Brown" <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6bffcb0e0704300546w1eff1a92gff047117e9e756e@mail.gmail.com>
+	Mon, 30 Apr 2007 08:58:59 -0400
+Message-ID: <4635E810.80809@moving-picture.com>
+Date: Mon, 30 Apr 2007 13:58:56 +0100
+From: James Pearson <james-p@moving-picture.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040524
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: X display shift with disabled console blanking
+References: <46322E08.3040303@moving-picture.com> <1177727097.7568.6.camel@daplas>
+In-Reply-To: <1177727097.7568.6.camel@daplas>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070430122940.GA25848@anna.darkstar.lan>
-	 <6bffcb0e0704300546w1eff1a92gff047117e9e756e@mail.gmail.com>
+X-Disclaimer: This email and any attachments are confidential, may be legally
+X-Disclaimer: privileged and intended solely for the use of addressee. If you
+X-Disclaimer: are not the intended recipient of this message, any disclosure,
+X-Disclaimer: copying, distribution or any action taken in reliance on it is
+X-Disclaimer: strictly prohibited and may be unlawful. If you have received
+X-Disclaimer: this message in error, please notify the sender and delete all
+X-Disclaimer: copies from your system.
+X-Disclaimer: 
+X-Disclaimer: Email may be susceptible to data corruption, interception and
+X-Disclaimer: unauthorised amendment, and we do not accept liability for any
+X-Disclaimer: such corruption, interception or amendment or the consequences
+X-Disclaimer: thereof.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please take a look at 8385 bug report here, as it might be relevant:
-http://bugzilla.kernel.org/show_bug.cgi?id=8385
+Antonino A. Daplas wrote:
+> On Fri, 2007-04-27 at 18:08 +0100, James Pearson wrote:
+> 
+>>I have a problem whereby the X display 'shifts' to left when anything 
+>>writes to /dev/console - where console screen blanking has been disabled 
+>>i.e. doing something like:
+>>
+>>boot to run level 3
+>>
+>>If not root, then make sure /dev/console is writeable
+>>
+>>login and type:
+>>
+>>setterm -blank 0
+>>
+>>start X
+>>
+>>type into an xterm:
+>>
+>>echo "some random text" > /dev/console
+>>(may have to repeat the echo above a few times)
+>>
+>>... and the whole X display jumps (and wraps) to the left
+>>
+>>I'm using a RHEL4 based distro with a vanilla 2.6.21 x86_64 kernel 
+>>(although I've seen the problem with various x86_64 and i686 2.6.X kernels).
+>>
+>>I've seen this problem on a number of different nVidia cards - using 
+>>the vesa driver (same problem occurs with nVidia's binary driver). I 
+>>haven't tried using other makes of graphics cards.
+>>
+>>
+>>OK, this may be a strange combination of disabling the text console 
+>>blanking and running X, but something isn't right somewhere ...
+> 
+> 
+> Yep, it's strange because I can't reproduce this. And the console write
+> should not succeed if the current console is in KD_GRAPHICS mode, which
+> is done by X (unless your version is different).
 
-On 4/30/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi,
->
-> On 30/04/07, Sebastian Kemper <sebastian_ml@gmx.net> wrote:
-> > Hello all,
-> >
-> > I have updated some different boxes to 2.6.21 with success. One laptop,
-> > though, has some issue with it.
-> >
-> > It's an Acer TravelMate 4002WLMi. Sometimes it boots fine and sometimes
-> > not. Thanks to netconsole you can see what happens when it boots fine in
-> > the attached bootsie.out.good. bootsie.out shows what happens on the
-> > screen when things get out of hand (kernel panic).
-> >
-> > Also attached you'll find the output of lspci, lsusb, ver_linux and the
-> > kernel configuration.
-> >
-> > If there's more you need (git bisection or more info in general,
-> > testing ...) just say so.
-> >
-> > Thanks in advance!
-> >
-> > Regards
-> > Sebastian
-> >
-> > P.S.: Please CC.
-> >
-> >
->
-> I added this to the list of known regressions.
->
-> Len and ACPI folks CC'ed.
->
-> Regards,
-> Michal
->
-> --
-> Michal K. K. Piotrowski
-> Kernel Monkeys
-> (http://kernel.wikidot.com/start)
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+I've just installed a vanilla CentOS 4.4 on an i686 SMP machine - with 
+an nVidia Quadro4 980 XGL card.
+
+By default, this sets up X using the 'nv' driver (using RedHat's 
+xorg-x11-6.8.2-1.EL.13.37).
+
+If I follow my 'recipe' above, then the screen shifts - note: it looks 
+like you have to write several lines of text to /dev/console (at least 
+30) to trigger the problem (e.g. run the echo to /dev/console in a loop) 
+- also, I've found that switching to the console and back to X 
+(Ctrl-Alt-F1 then Ctrl-Alt-F7) while this echo loop is running can force 
+the shift to start ...
+
+This is with the RedHat based 2.6.9-42.ELsmp kernel - but I also get the 
+problem with a vanilla 2.6.21 kernel.
+
+>>Any ideas?
+> 
+> 
+> I don't.  But, what is your current console?  Is it VGA, or framebuffer?
+> Can you try doing this again in both VGA and vesafb?
+
+I'm not sure what the current console is - whatever is the default with 
+RHEL4/CentOS4 - how do I select a different type of console?
+
+> And this does not happen if there is no previous setterm -blank 0
+> command?
+
+It doesn't happen if there is no previous 'setterm -blank 0' - so, 
+arguably, this is the 'fix' ...
+
+James Pearson
