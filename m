@@ -1,104 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423224AbXD3NEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXD3NFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423224AbXD3NEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 09:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423227AbXD3NEh
+	id S1423229AbXD3NFn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 09:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423233AbXD3NFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 09:04:37 -0400
-Received: from ozlabs.org ([203.10.76.45]:45723 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423224AbXD3NEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 09:04:36 -0400
-Subject: [PATCH] lguest: properly kill guest userspace programs accessing
-	kernel mem
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: virtualization <virtualization@lists.linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 30 Apr 2007 23:04:19 +1000
-Message-Id: <1177938259.30071.219.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 30 Apr 2007 09:05:43 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:51184 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423229AbXD3NFe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 09:05:34 -0400
+Message-ID: <4635E99D.5010004@hp.com>
+Date: Mon, 30 Apr 2007 09:05:33 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Reply-To: Alan.Brunelle@hp.com
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: CFQ IO scheduler patch series - AIM7 DBase results on a 16-way
+ IA64
+References: <4635D59C.4050300@hp.com> <20070430122753.GL21015@kernel.dk>
+In-Reply-To: <20070430122753.GL21015@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kernel pages on x86 are protected by not having the _PAGE_USER bit
-set.  When guest userspace accesses a kernel page, we didn't check
-this, so we'd think we'd handled the fault and return to the guest,
-causing the guest userspace program to loop instead of segfaulting.
+Jens Axboe wrote:
+> On Mon, Apr 30 2007, Alan D. Brunelle wrote:
+>   
+>> The results from a single run of an AIM7 DBase load on a 16-way ia64 box 
+>> (64GB RAM + 144 FC disks) showed a slight regression (~0.5%) by adding 
+>> in this patch. (Graph can be found at   
+>> http://free.linux.hp.com/~adb/cfq/cfq_dbase.png   ) It is only a single 
+>> set of runs, on a single platform, but it is something to keep an eye on 
+>> as the regression showed itself across the complete run.
+>>     
+>
+> Do you know if this regression is due to worse IO performance, or
+> increased system CPU usage?
+>
+>   
+Unfortunately, the runs generate different X points - I'm going to try 
+and get a second run with the same X-points, and then I can compare 
+iostat results (these are being collected).
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/lguest/core.c        |    2 +-
- drivers/lguest/lg.h          |    2 +-
- drivers/lguest/page_tables.c |   12 ++++++++----
- 3 files changed, 10 insertions(+), 6 deletions(-)
+I do have some iostat data from these runs, and I am trying to make 
+sense of them. But, with only about a 0.5% difference in performance, 
+and different X values, not much can be gleaned. We'll see when the 
+second run of a kernel can be done, and I'll get back to you on that.
 
-===================================================================
---- a/drivers/lguest/core.c
-+++ b/drivers/lguest/core.c
-@@ -346,7 +346,7 @@ int run_guest(struct lguest *lg, char *_
- 			}
- 			break;
- 		case 14: /* We've intercepted a page fault. */
--			if (demand_page(lg, cr2, lg->regs->errcode & 2))
-+			if (demand_page(lg, cr2, lg->regs->errcode))
- 				continue;
- 
- 			/* If lguest_data is NULL, this won't hurt. */
-===================================================================
---- a/drivers/lguest/lg.h
-+++ b/drivers/lguest/lg.h
-@@ -216,7 +216,7 @@ void guest_set_pte(struct lguest *lg, un
- void guest_set_pte(struct lguest *lg, unsigned long cr3,
- 		   unsigned long vaddr, gpte_t val);
- void map_switcher_in_guest(struct lguest *lg, struct lguest_pages *pages);
--int demand_page(struct lguest *info, unsigned long cr2, int write);
-+int demand_page(struct lguest *info, unsigned long cr2, int errcode);
- void pin_page(struct lguest *lg, unsigned long vaddr);
- 
- /* lguest_user.c: */
-===================================================================
---- a/drivers/lguest/page_tables.c
-+++ b/drivers/lguest/page_tables.c
-@@ -109,7 +109,7 @@ static void check_gpgd(struct lguest *lg
- 
- /* We fault pages in, which allows us to update accessed/dirty bits.
-  * Return true if we got page. */
--int demand_page(struct lguest *lg, unsigned long vaddr, int write)
-+int demand_page(struct lguest *lg, unsigned long vaddr, int errcode)
- {
- 	gpgd_t gpgd;
- 	spgd_t *spgd;
-@@ -138,12 +140,16 @@ int demand_page(struct lguest *lg, unsig
- 		return 0;
- 
- 	/* Write to read-only page? */
--	if (write && !(gpte.flags & _PAGE_RW))
-+	if ((errcode & 2) && !(gpte.flags & _PAGE_RW))
- 		return 0;
-+
-+	/* User access to a non-user page? */
-+	if ((errcode & 4) && !(gpte.flags & _PAGE_USER))
-+		return 0;
- 
- 	check_gpte(lg, gpte);
- 	gpte.flags |= _PAGE_ACCESSED;
--	if (write)
-+	if (errcode & 2)
- 		gpte.flags |= _PAGE_DIRTY;
- 
- 	/* We're done with the old pte. */
-@@ -185,7 +200,7 @@ static int page_writable(struct lguest *
- 
- void pin_page(struct lguest *lg, unsigned long vaddr)
- {
--	if (!page_writable(lg, vaddr) && !demand_page(lg, vaddr, 0))
-+	if (!page_writable(lg, vaddr) && !demand_page(lg, vaddr, 2))
- 		kill_guest(lg, "bad stack page %#lx", vaddr);
- }
- 
-
-
+Alan
