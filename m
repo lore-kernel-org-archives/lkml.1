@@ -1,310 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161475AbXD3Lsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030924AbXD3Lun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161475AbXD3Lsk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 07:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031120AbXD3Lsj
+	id S1030924AbXD3Lun (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 07:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031120AbXD3Lun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 07:48:39 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:33361 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030924AbXD3Lsg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 07:48:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CPsbv9thevPHFqqn470uh9E+FI44j70jI7PLyC6RhMIPvXSVyejjOlxAh9SxtitJ9qZQBgxRqSbDj4bfTFWnfrjh0AEMi6uM3u1vRM0E65Umcrbif802zElbMa5wzbPhLolJgPi/lFwbUoFd0zR1Ozf/BdZnC6b06rVRl4Ol+/E=
-Message-ID: <d9def9db0704300448g6d7f4bd2ob7d6117d6c5f0cfb@mail.gmail.com>
-Date: Mon, 30 Apr 2007 13:48:34 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Uwe Bugla" <uwe.bugla@gmx.de>
-Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and pseudo-authorities
-Cc: "hermann pitton" <hermann-pitton@arcor.de>, mkruky@linuxtv.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070430110255.267000@gmx.net>
+	Mon, 30 Apr 2007 07:50:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58953 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030924AbXD3LuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 07:50:01 -0400
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, mchehab@infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Mon, 30 Apr 2007 13:50:00 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <4635D139.4030609@aitel.hist.no>
+Message-ID: <20070430115000.194060@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070429182209.267430@gmx.net>	
+ <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>	
+ <20070429205925.129920@gmx.net>	
+ <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>	
+ <20070429230037.95120@gmx.net> <1177894713.3046.5.camel@pc06.localdom.local>
+ <20070430110255.267000@gmx.net> <4635D139.4030609@aitel.hist.no>
+Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
+	pseudo-authorities
+To: Helge Hafting <helge.hafting@aitel.hist.no>
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1/sjVIi5y7sQc1hSLduyqimyFPOzk70WrUSegwAZ/
+ oLnTMfTk3NguMZuTFlmYx3cmBVvFFxbPCcLg== 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070429182209.267430@gmx.net>
-	 <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
-	 <20070429205925.129920@gmx.net>
-	 <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
-	 <20070429230037.95120@gmx.net>
-	 <1177894713.3046.5.camel@pc06.localdom.local>
-	 <20070430110255.267000@gmx.net>
+X-GMX-UID: 2uEAd7sjbUk7BjK9TWgnoApsZ2hlNwpm
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4/30/07, Uwe Bugla <uwe.bugla@gmx.de> wrote:
->
-> -------- Original-Nachricht --------
-> Datum: Mon, 30 Apr 2007 02:58:33 +0200
-> Von: hermann pitton <hermann-pitton@arcor.de>
-> An: Uwe Bugla <uwe.bugla@gmx.de>
-> CC: Linus Torvalds <torvalds@linux-foundation.org>, mkruky@linuxtv.org,
-> akpm@linux-foundation.org, linux-dvb@linuxtv.org,
-> linux-kernel@vger.kernel.org
-> Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21
-> and	pseudo-authorities
->
-> > Am Montag, den 30.04.2007, 01:00 +0200 schrieb Uwe Bugla:
-> > > -------- Original-Nachricht --------
-> > > Datum: Sun, 29 Apr 2007 14:19:22 -0700 (PDT)
-> > > Von: Linus Torvalds <torvalds@linux-foundation.org>
-> > > An: Uwe Bugla <uwe.bugla@gmx.de>
-> > > CC: linux-dvb@linuxtv.org, mkruky@linuxtv.org, mchehab@infradead.org,
-> > linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-> > > Betreff: Re: Critical points about kernel 2.6.21 and pseudo-authorities
-> > >
-> > > >
-> > > >
-> > > > On Sun, 29 Apr 2007, Uwe Bugla wrote:
-> > > > >
-> > > > > I have been trying diff and other tools in various variants (except
-> > > > > git-bisect that I cannot handle because I do not understand the
-> > practice
-> > > > > of it).
-> > > >
-> > > > git bisect is _really_ simple if you already have a git tree anyway.
-> > And
-> > > > even if you don't, getting one isn't really hard either. Just do
-> > > >
-> > > > 	git clone
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-> > linux-2.6
-> > > >
-> > > > and you have a tree (it will take a little while - it's going to
-> > dowload
-> > > > about 170MB or so of stuff, so the initial clone is going to be a bit
-> > > > painful unless you have a fast internet connection).
-> > > >
-> > > > Once you have the git tree, assuming that 2.6.21-rc7 worked for you,
-> > it's
-> > > > really as easy as just saying
-> > > >
-> > > > 	git bisect start
-> > > > 	git bisect good v2.6.21-rc7
-> > > > 	git bisect bad v2.6.21
-> > > >
-> > > > and git will think for a short while (most of the time is going to be
-> > > > checking out the new tree) and give you a tree to test.
-> > > >
-> > > > Just build, boot, and test that tree.
-> > > >
-> > > > If it was fine, do
-> > > >
-> > > > 	git bisect good
-> > > >
-> > > > and git will pick a new tree to test. And if it wasn't, instead just
-> > do
-> > > > "git bisect bad", and git will pick _another_ version to test. Do this
-> > a
-> > > > few times, and git will tell you which commit introduced them.
-> > > >
-> > > > There were just 125 commits in between 2.6.21-rc7 and the final one,
-> > so it
-> > > > should be quite quick - bisection basically does a binary search, so
-> > doing
-> > > > seven reboots should have you with the result.
-> > > >
-> > > > The fact that it already works in 2.6.21-git2 obviously means that _I_
-> > end
-> > > > up being less interested, but the -stable tree people would love to
-> > hear
-> > > > what broke!
-> > >
-> > > Hi again Linus,
-> > > my deep thanks for your excellent explication of git-bisect.
-> > > But I unfortunately owe a 100Kbit flatrate, and so downloading some 170
-> > MB git tree will need the time amount of one entire night (11.5 kb /s if I
-> > am lucky - no more).
-> > > Just to take up a different approach:
-> > >
-> > > The difference between 2.6.21-rc7 and 2.6.21 official does not play any
-> > role at all.
-> > >
-> > > On the other hand I found out that:
-> > > 2.6.21-rc7 made my AMD K7 router work fine
-> > > 2.6.21 official hung my AMD K7 router up
-> > > 2.6.21-git1 hung my AMD K7 router up
-> > > 2.6.21-git2 made my AMD K7 router work.
-> > >
-> > > In so far the diff between 2.6.21-git1 and 2.6.21-git2 obviously solves
-> > the problem.
-> > > Or am I saying something wrong as far as logical terms are concerned?
-> > >
-> > > >
-> > > > > I like small and effective kernels instead of blown up RAM waste.
-> > > > > This is no Windoze, man, this is Linux!
-> > > >
-> > > > Yes. But if you cannot be polite and *RESPECTFUL*, you won't get
-> > anywhere
-> > > > at all.
-> > > >
-> > > > This is Linux, not Windows. But that also means that those developers
-> > that
-> > > > you denigrate aren't getting paid by you, and if you don't show them
-> > > > respect, they'll totally ignore you.
-> > > >
-> > > > 		Linus
-> > >
-> > > Now this is the old problem about it all: the hypocricy factor, the
-> > utmost small, if not to say pre-pubertarian character plus some other
-> obviously
-> > counter-productive character traits in those so-called "maintainers" who
-> > behave like kids, but not like grown-ups at all!
-> > > Not only you, but also Andrew perfectly and willingly step into the
-> > hypocritic trap and do not even feel that they are trapped!
-> > >
-> > > For the majority of all cases of the so-called "maintainer personnel" at
-> > linuxtv.org the statement of some missing "politeness" or some missing
-> > "respect" is nothing but an utmost dumb, kiddish, human mediocre and
-> utmost
-> > stupid and utmost hypocritic excuse for bare naked incompatibility,
-> dumbness,
-> > wrong solidarity, kiddishness and technical incompetence.
-> > >
-> > > They are building up pseudo-authorities to hide their lack of
-> > competence, no matter if their lack of competence funds on technical or
-> human lacks.
-> > > And at least the Brazilian Mauro Carvalho Chehab does go even so far to
-> > soap in Andrew Morton's face with this enourmous threat of incompetence,
-> > kiddishness, incompatibility, hypocricy, lies, stigmatisations,
-> stubbornness,
-> > lack of experience, pre-pubertarian behaviour, fascistoid opinion
-> > dictatorship as part of a deep immature anti-democratic and reactionary
-> personality
-> > structure.
-> > >
-> > > Would you call Mauro Carvalho Chehab a maintainer!
-> > > I can certify you that I cannot, even if I try. And I want him to be
-> > substituted as quick as possible as he is the biggest mismatch of
-> gatekeeper
-> > one can ever imagine.
-> > >
-> > > And it is not only me personally perceiving this that there are people
-> > missing who can go upright and offer sophisticated and good work.
-> > > Plus a real sophisticated discussion behaviour, in technical and in
-> > human terms.
-> > > Going upright is thus far away from the behaviour NOT to be able to
-> > tolerate any criticism at all.
-> > >
-> > > Solution: This whole new quite young linuxtv.org team is missing a real
-> > grown up and experienced team leader. Not only that is definitely too much
-> > for Mauro Carvalho Chehab. That is the pain - the consistence of the whole
-> > group is the pain, that's all. Too young, too many lacks of human skills,
-> > and missing an appropriate team leader.............
-> > >
-> > > So, if I show respect or not, or if I show politeness or not will never
-> > change the whole structural situation at all, as great parts of the whole
-> > team is a disease:
-> > > 1. By Chehab being the team leader the whole fish stinks from the head
-> > startup.
-> > > Solution: Substitution of Mauro Carvalho Chehab as quick as possible -
-> > even quicker than a storm!
-> > > 2. By Krufky being one part of it, doing good work, but executing wrong
-> > solidarities by his bowing behaviour towards pseudo-authorities although
-> he
-> > knows better at least technically this is a question of wrong or right
-> > leadership, nothing else
-> > > 3. By Abraham offering us great ranting aims that never are being put
-> > into practice out of certified missing human skills and missing technical
-> > knowledge (the four completely unusable 2.6 kernels were never apologized
-> by
-> > himself) urgent substitution  is utmost necessary.
-> > >
-> > > CLEARER: If anyone of the people knowing the deeper context claims those
-> > "gatekeeper methods" to be a consequence of missing "respect" or missing
-> > "politeness" then those people are either strictly dumb and superficial,
-> or
-> > they owe a gesture that I would call a "Well, I know, but I do not want to
-> > see what's going on"-disease, nothing else.
-> > >
-> > > Another term to describe the latter would be "bureaucratic lamb head
-> > behaviour".
-> > >
-> > > See, Linus, if for instance Andrew Morton mails me some statement from
-> > that Chehab going: "Again, do not take the patches from Uwe - he is always
-> > regarding things through his personal prisma, and the rest he simply does
-> > not perceive at all"
-> > >
-> > > then this is nothing but a gesture full of lies (somehow typical for
-> > this Brazilian fascistoid opinion block head dictator), but it simply
-> shows
-> > that the linuxtv.org teamleader is a horrible mismatch, nothing else!
-> > >
-> > > His mediocrity and dumbness simply defines through the fact that he is
-> > using stigmatizations very soon in a so-called "discussion" because he
-> > misses
-> > > a. human skills
-> > > b. technical proven arguments and theses
-> > > c. enough experience, human or technical one.
-> > >
-> > > And the biggest threat and shame is the proven fact that Andrew Morton
-> > does obey to such a stupid reactionary idiot and let his face soap in by
-> > this dirty Brazilian hypocrite instead of giving contributions at least a
-> > chance through his mm-tree.
-> > >
-> > > So there are exactly two solutions:
-> > > 1. Andrew Morton should not obey to Chehab anymore and be real open
-> > > 2. Chehab and Abraham should be substituted as quick as possible without
-> > any hesitation in no way!!!!
-> > >
-> > > The one that got to be fired with the most urgent priority is called
-> > Mauro Carvalho Chehab. This is no maintainer, this is no gatekeeper, but
-> this
-> > is nothing but a real personified ape or disease.
-> > >
-> > > And the argument whether those people are paid for their work or not is
-> > exactly as important as if a sack of rice falls down somewhere in
-> > capitalist China or not.....
-> > > OBSOLETE!!!
-> > >
-> > > Yours sincerely
-> > > Uwe
-> > >
-> >
-> > If eventually somebody thinks this kind of stuff could be helpful,
-> > please say so and give us some pointers.
-> >
-> > Hermann
-> >
-> Hi Hermann,
->
-> now if you are searching for helpful stuff I can make public a ten Emails
-> ping pong
-> betwwen stupid Chehab and me about my almost excellent dst-deselection patch
-> contributions.
->
-> In this ten Emails you will yourself see the intellectual and technical
+
+-------- Original-Nachricht --------
+Datum: Mon, 30 Apr 2007 13:21:29 +0200
+Von: Helge Hafting <helge.hafting@aitel.hist.no>
+An: Uwe Bugla <uwe.bugla@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and	pseudo-authorities
+
+> Uwe Bugla wrote:
+> > In this ten Emails you will yourself see the intellectual and technical
 > proof in how far Mr. Chehab is acting with nothing else but:
->
-> a. Lies
-> b. Unproven thesis
-> c. Stigmatizations
->
-> and so on.
->
-> THIS MAN HAS NO IDEA, BUT HE HAS THE POWER!
->
-> That's it what I cannot live with!
-> I swear I never stumbled over such an utomst stubborn, stupid and horrible
-> idiot in my whole year lasting Linux experience, and I thought I could not
-> trust my eyes when I saw what incredible crap work was pushed into mainline
-> by the signature of this
-> incredible and horrible team chief from Brazil.
->
-> If you want to see the Emails, just ask me and I will forward them with a
-> couple of CCs. They will show the truth about the real consistence of this
-> "maintainer leader".
->
+> >
+> > a. Lies
+> > b. Unproven thesis
+> > c. Stigmatizations
+> >
+> > and so on.
+> >
+> > THIS MAN HAS NO IDEA, BUT HE HAS THE POWER!
+> >   
+> Please note that there are ways to replace a bad maintainer. 
+> We still try to keep it polite.
+> 
+> But note that you can't have someone "fired", no matter how bad they
+> do their job.  A bad maintainer is usually better than none - the bad
+> maintainer might improve. Or at least get some simple stuff done.
+> 
+> You therefore replace a bad maintainer by taking over the position. 
+> Contact whoever is above the maintainer (Linus or some other
+> higher-level maintainer). You explain the problem, and you must also
+> show that you have the time and knowledge to do a better job. 
 
-Uwe,
+Hi Helge,
+A. I do neither have enough skills to take up a maintainers role
+B. Linus and Andrew are high-leveled informed about the whole structural problem, but they close their eyes, they simply do not want to see the necessity of a replacement.
+That is at least my impression. 
 
-which patches do you refer to?
-Can you submit a list of your patches which got no attention (I'm only
-interested in the patches, not in discussions you had)
+> You can, for example, maintain the same subsystem in parallel.  After a 
+> while,
+> all interested parties sees that your tree works better and that
+> communicating with you is easier.
+> If you aren't prepared to do this - then you have to live with the current
+> maintainer.  There is no staff ready to replace maintainers after
+> complaints, a volunteer doing a better job is always necessary.
 
-Markus
+Neither nor: I do not livbe with persons like Chehab and others, no matter what the consequence is. To be truthful I would strategically prefare a vacuum at the price that the work isn't even done for months.
+ONLY IF there is a personnel vacuum the necessity for others to volunteer will arise.
+
+So if you want a real change you gotta first kick the reactionary dumb bastards off from their seats without any return ticket - without that there won't be any changes at all!
+
+But the practice now is the typical "Sit out and do not react at all" behaviour as far as Chehab himself is concerned - Germans remember that reactionary gesture from the time when Hellmut Kohl was chancellor for 16 horrible years.....
+
+So there will be no "soft" or "polite" solution at all, but only a harsh and rude one:
+"Kick out the Jams!"
+
+> 
+> Helge Hafting
+> 
+> 
+Cheers
+Uwe
+
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
