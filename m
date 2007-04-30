@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423702AbXD3TBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946655AbXD3TEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423702AbXD3TBA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423692AbXD3TA6
+	id S1946655AbXD3TEO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946654AbXD3TEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:00:58 -0400
-Received: from holomorphy.com ([66.93.40.71]:48470 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946632AbXD3TAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:00:42 -0400
-Date: Mon, 30 Apr 2007 11:58:01 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [4/6] go BUG on vmallocspace in __pa() (was: Re: [-mm patch] i386: enable 4k stacks by default)
-Message-ID: <20070430185801.GN19966@holomorphy.com>
-References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174510.GG19966@holomorphy.com> <20070430185242.GB11512@one.firstfloor.org>
+	Mon, 30 Apr 2007 15:04:13 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:13853 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946655AbXD3TEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 15:04:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=W9Col58tOF+RawNn5rAZnoTTi/QaR1AIC5tn6G5BXYJGS/g7Nf7BRBDtJZ3qXJDgiECSlZBJeqROyJJPw8+F70cyxqtYp2swuYDYX6nej0/3OIj/kLJJ8XCS1TNxrG4gM4bXggi60OtuwFsgKWfhWvPv0DY5Tn3Ns16sc85doDE=
+Message-ID: <a781481a0704301204i247a5123r1e6146c99b2e467e@mail.gmail.com>
+Date: Tue, 1 May 2007 00:34:10 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same time?
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070430182135.0fae7b89@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070430185242.GB11512@one.firstfloor.org>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>
+	 <20070430001311.84d0291f.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0704300445460.17536@localhost.localdomain>
+	 <20070430100225.353e3030.akpm@linux-foundation.org>
+	 <20070430182135.0fae7b89@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:38:19AM -0700, William Lee Irwin III wrote:
->>> Here's what I did for i386 for someone concerned about blowing the stack.
+On 4/30/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> i2o/device.c should be GFP_KERNEL as far as I can tell. It was meant to
+> be that way and the callers appear to all be calling it in sleep capable
+> contexts.
+>
+> aic7xxx_old.c should probably be GFP_KERNEL as ->slave_alloc methods
+> appear to be able to sleep (although some drivers use GFP_ATOMIC here and
+> some GFP_KERNEL).
 
-On Mon, Apr 30, 2007 at 10:45:10AM -0700, William Lee Irwin III wrote:
->> Add checks to __pa() so it goes BUG() on vmallocspace addresses.
-
-On Mon, Apr 30, 2007 at 08:52:42PM +0200, Andi Kleen wrote:
-> Sorry I think that's too costly to do. __pa is pretty common
-
-The original intention essentially ignored efficiency. I've no
-objection to dropping whatever pieces don't fit (or, for that matter,
-whatever sort of NIH). The hope in posting all this was that some piece
-might be found useful as an example or guide to doing the real patches
-for mainline. If any of it is useful as it stands, that's good too.
-
-
--- wli
+Yes, none of the above appear to be atomic contexts. GFP_KERNEL in
+that case would've been a bug. If they were atomic contexts, someone
+somewhere would've been seeing a lot of "BUG: sleeping function called
+from invalid context" messages and would've probably brought it to
+lkml's notice already ;-) So the GFP_ATOMIC seems to be redundant
+thing here in both cases.
