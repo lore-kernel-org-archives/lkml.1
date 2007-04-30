@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946719AbXD3T2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946723AbXD3T32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946719AbXD3T2L (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946717AbXD3T2L
+	id S1946723AbXD3T32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:29:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946724AbXD3T32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:28:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39806 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946724AbXD3T2J (ORCPT
+	Mon, 30 Apr 2007 15:29:28 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:61685 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946723AbXD3T30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:28:09 -0400
-Date: Mon, 30 Apr 2007 12:28:07 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: Please revert [PATCH] user of the jiffies rounding patch: Slab
-In-Reply-To: <46364017.2040009@linux.intel.com>
-Message-ID: <Pine.LNX.4.64.0704301221490.8075@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704281403140.12122@schroedinger.engr.sgi.com> 
- <4633D1A2.6010002@linux.intel.com>  <Pine.LNX.4.64.0704281632001.12695@schroedinger.engr.sgi.com>
- <1177803630.3477.3.camel@laptopd505.fenrus.org>
- <Pine.LNX.4.64.0704301042580.6343@schroedinger.engr.sgi.com>
- <46364017.2040009@linux.intel.com>
+	Mon, 30 Apr 2007 15:29:26 -0400
+Date: Mon, 30 Apr 2007 12:26:02 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [4/6] go BUG on vmallocspace in __pa() (was: Re: [-mm patch] i386: enable 4k stacks by default)
+Message-ID: <20070430192602.GD26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Andi Kleen <andi@firstfloor.org>,
+	Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
+	Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174510.GG19966@holomorphy.com> <20070430185242.GB11512@one.firstfloor.org> <20070430202059.4db688d3@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430202059.4db688d3@the-village.bc.nu>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007, Arjan van de Ven wrote:
+On Mon, Apr 30, 2007 at 10:38:19AM -0700, William Lee Irwin III wrote:
+>>>> Here's what I did for i386 for someone concerned about blowing the
+>>>> stack.
 
-> Christoph Lameter wrote:
-> > Umm you did not read the last bit of the description? It talks about firing
-> > all timers on all cpus at once.
-> >  
-> 
-> it talks about AVOIDING firing all timers on all cpus at once.
+On Mon, Apr 30, 2007 at 10:45:10AM -0700, William Lee Irwin III wrote:
+>>> Add checks to __pa() so it goes BUG() on vmallocspace addresses.
 
-Hmmmm... Looked fine right now. Must have gotten the deep end before.
+On Mon, 30 Apr 2007 20:52:42 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+>> Sorry I think that's too costly to do. __pa is pretty common
 
-Ok. Could you review the new 1 HZ timer that I added to vmstat.c in mm and 
-make sure that it does the right thing? I'd like to have that one run at 
-an jiffy offset of 1 instead of 3 to give you more quiet time. 
+On Mon, Apr 30, 2007 at 08:20:59PM +0100, Alan Cox wrote:
+> But not too costly to do if it is done solely with vmalloc the stack
+> for
+> debug purposes. The bigger problem with the vmalloc approach is there
+> are
+> still offenders who DMA off the kernel stack on i386 although I'd hope
+> they are all ancient... we'll find out with this anyway
 
-That one is only used for SMP. With SLUB there will be no periodic timers 
-at all for UP. SMP only has the vmstats update which should be quite 
-lightweight compared to the slab reaper and it does not need this long 
-period between them to be safe.
+Sorry about the email address switch. This is actually work-related.
 
-I'd like to have some ideas from you for NUMA. On NUMA I would like to 
-have all vm statistics refresh actions on each node be synchronized (which 
-would also significantly fix the situation on large NUMA for you).
-
-I.e. on HZ the first cpus of each node run vmstats update, on HZ + 1 the 
-second cpu run its etc. How could we make that work?
+The stack vmalloc() and __pa() patches were partially intended to catch
+or otherwise deliberately break such offenders and go BUG() on them. The
+__pa() check in particular is exclusively for the purpose of catching
+them. The primary motive being the stack vmalloc() patches remained, of
+course, establishing a guard page to trap stack overflows.
 
 
+-- wli
