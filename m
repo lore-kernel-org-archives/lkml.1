@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbXD3BhH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXD3Bud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbXD3BhH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 21:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbXD3BhG
+	id S1422716AbXD3Bud (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 21:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXD3Bud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 21:37:06 -0400
-Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:41107 "EHLO
-	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753530AbXD3BhE (ORCPT
+	Sun, 29 Apr 2007 21:50:33 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:63441 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422716AbXD3Bub (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 21:37:04 -0400
-Date: Sun, 29 Apr 2007 18:37:00 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Uwe Bugla <uwe.bugla@gmx.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, mchehab@infradead.org, mkruky@linuxtv.org,
-       linux-dvb@linuxtv.org
-Subject: Re: Critical points about kernel 2.6.21 and pseudo-authorities
-In-Reply-To: <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0704291753370.315@shell2.speakeasy.net>
-References: <20070429182209.267430@gmx.net>
- <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 29 Apr 2007 21:50:31 -0400
+Date: Sun, 29 Apr 2007 21:50:22 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Linux 2.6.21
+In-reply-to: <6bffcb0e0704291251i527b9231m1ff02a61aeac7f53@mail.gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Cc: "Diego Calleja" <diegocg@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>, "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Message-id: <200704292150.22956.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070426224148.69b91b2e.diegocg@gmail.com>
+ <20070429214007.9ea12e96.diegocg@gmail.com>
+ <6bffcb0e0704291251i527b9231m1ff02a61aeac7f53@mail.gmail.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007, Linus Torvalds wrote:
-> On Sun, 29 Apr 2007, Uwe Bugla wrote:
+On Sunday 29 April 2007, Michal Piotrowski wrote:
+>Hi Diego,
 >
-> > BUT: This 2.6.21-git2 is unusable in so far as it contains regressive code
-> > in the dvb-section, authored by Trent Piepho, acked by Michael Krufky, and signed-off-by Mauro Carvalho Chehab:
+>On 29/04/07, Diego Calleja <diegocg@gmail.com> wrote:
+>[..]
 >
-> You never explained what the problem even was, apart from compiling in
-> some code that you didn't need to before. Didn't it work in the end?
->
-> If it worked, I don't see what the big issue was. You are getting a _lot_
-> of other code in the kernel that you probably never use, you may not even
-> have realized.
+>> So unless someone is willing to write such tool (which I doubt, since it
+>> doesn't looks easy), all this discussion seems pointless, and we should
+>> stick with this http://kernelnewbies.org/known_regressions page
+>> which is showing to be quite useful :)
 
-I'd like to explain this a bit, for people seeing these messages who haven't
-been following this part of dvb development.
+Usefull?  For what?  Having seen the link at the time I was fighting with yet 
+another rearranged USB setup, and I swear the boot process uses Schrodingers 
+Cat to determine which device found in the usb scan gets the first ttyUSB, 
+and which gets the second, so I went to this site to see if it could be more 
+productive than bugzilla (I'd like to toss about 10 pounds of C4 into the 
+only code repository on the planet that thing is built from), but no, sorry, 
+no bisquit.
 
-dvb-pll is a simple driver for a number of I2C tuners, which are used in
-many many TV cards.
+Why?  First, its yet another password I have to scribble on the wall along 
+with enough surrounding data so I might be able to find it the next time.
 
-These are simple devices, and drivers for host controllers (which usually
-support quite a few different models of tv card based on the same core chip)
-often didn't use dvb-pll.  They would just re-implement an I2C tuner driver,
-sometimes more than once in the same file!
+You can't have it even do a search to see if it already has something similar 
+without creating an account and logging in.  Since I'm out of wall space, and 
+the missus is bugging me to paint over all that, I left.
 
-The dvb tree ended up with over a dozen different re-implementations of the
-same basic tuner driver.  Of course each implementation would have different
-bugs, quirks, and missing features.
+I repeat:  Usefull?  For what?
 
-So we've been removing this code and using dvb-pll.  If you look at some of
-my patches to do this:
-
- 14 files changed, 14 insertions(+), 199 deletions(-)
- 1 files changed, 4 insertions(+), 34 deletions(-)
- 4 files changed, 17 insertions(+), 204 deletions(-)
-
-These patches fixed bugs and added features, yet are very much net negative
-when if comes to lines of code in the kernel.
-
-> any chance to deselect the compilation of the dvb-pll.c-module, as its
-> deselection only works for VIDEO_V4L1_COMPAT, NOT for VIDEO_V4L1.
-
-dvb-pll has nothing to do with VIDEO_V4L1_COMPAT or VIDEO_V4L1.  Uwe is just
-confused about what is causing what.
-
-> All the almost excellent work that Michael Krufky has offered for that
-> issue at the transition from 2.6.18 to 2.6.19 or 2.6.20 (do not remeber
-> exactly) is being wiped out and rolled back with his acknowledgement!
-
-Uwe is probably talking about the dvb_attach() system, written mainly by
-Andrew de Quincey and myself, which went into 2.6.18.  The basic concept is
-that a core driver uses symbol_request() to avoid any strong references to
-its helper drivers.  This way only the helper drivers that are actually
-needed must be loaded.  We want to make dvb-pll use this system too, but it
-doesn't fully work yet.  I have several ideas about how to solve the
-problem, but it's not a high priority.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Simon: (to Jayne) "Enemies?  You?  No, how can it be?"
+				--Episode #7, "Jaynestown"
