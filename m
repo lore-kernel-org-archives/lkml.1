@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030988AbXD3LZz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030996AbXD3L3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030988AbXD3LZz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 07:25:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030994AbXD3LZy
+	id S1030996AbXD3L3A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 07:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030994AbXD3L3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 07:25:54 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54901 "EHLO mailer.gwdg.de"
+	Mon, 30 Apr 2007 07:29:00 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:60151 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030988AbXD3LZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 07:25:53 -0400
-Date: Mon, 30 Apr 2007 13:24:07 +0200 (MEST)
+	id S1030996AbXD3L27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 07:28:59 -0400
+Date: Mon, 30 Apr 2007 13:26:20 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Doug Thompson <norsk5@xmission.com>
+To: Eric Moore <Eric.Moore@lsi.com>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: [PATCH 05/36] Use menuconfig objects II - EDAC
+       Andrew Morton <akpm@linux-foundation.org>, mpt_linux_developer@lsi.com,
+       linux-scsi@vger.kernel.org
+Subject: [PATCH 06/36] Use menuconfig objects II - fusion
 In-Reply-To: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704301323080.29151@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.61.0704301325180.29151@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,61 +34,57 @@ enter the menu first.
 Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
 ---
- drivers/edac/Kconfig |   14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
+ drivers/message/fusion/Kconfig |   14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
---- linux-2.6.21-mm_20070428.orig/drivers/edac/Kconfig
-+++ linux-2.6.21-mm_20070428/drivers/edac/Kconfig
-@@ -6,10 +6,8 @@
- # $Id: Kconfig,v 1.4.2.7 2005/07/08 22:05:38 dsp_llnl Exp $
- #
+--- linux-2.6.21-mm_20070428.orig/drivers/message/fusion/Kconfig
++++ linux-2.6.21-mm_20070428/drivers/message/fusion/Kconfig
+@@ -1,14 +1,13 @@
  
--menu 'EDAC - error detection and reporting (RAS) (EXPERIMENTAL)'
+-menu "Fusion MPT device support"
 -
--config EDAC
--	tristate "EDAC core system error reporting (EXPERIMENTAL)"
-+menuconfig EDAC
-+	tristate "EDAC - error detection and reporting (EXPERIMENTAL)"
- 	depends on X86 && EXPERIMENTAL
+-config FUSION
+-	bool
++menuconfig FUSION
++	bool "Fusion MPT device support"
+ 	default n
+ 
++if FUSION
++
+ config FUSION_SPI
+ 	tristate "Fusion MPT ScsiHost drivers for SPI"
+ 	depends on PCI && SCSI
+-	select FUSION
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+ 	  SCSI HOST support for a parallel SCSI host adapters.
+@@ -23,7 +22,6 @@ config FUSION_SPI
+ config FUSION_FC
+ 	tristate "Fusion MPT ScsiHost drivers for FC"
+ 	depends on PCI && SCSI
+-	select FUSION
+ 	select SCSI_FC_ATTRS
+ 	---help---
+ 	  SCSI HOST support for a Fiber Channel host adapters.
+@@ -40,7 +38,6 @@ config FUSION_FC
+ config FUSION_SAS
+ 	tristate "Fusion MPT ScsiHost drivers for SAS"
+ 	depends on PCI && SCSI
+- 	select FUSION
+ 	select SCSI_SAS_ATTRS
+ 	---help---
+ 	  SCSI HOST support for a SAS host adapters.
+@@ -54,7 +51,6 @@ config FUSION_SAS
+ 
+ config FUSION_MAX_SGE
+ 	int "Maximum number of scatter gather entries (16 - 128)"
+-	depends on FUSION
+ 	default "128"
+ 	range 16 128
  	help
- 	  EDAC is designed to report errors in the core system.
-@@ -29,13 +27,12 @@ config EDAC
- 	  There is also a mailing list for the EDAC project, which can
- 	  be found via the sourceforge page.
+@@ -100,4 +96,4 @@ config FUSION_LAN
  
-+if EDAC
- 
- comment "Reporting subsystems"
--	depends on EDAC
- 
- config EDAC_DEBUG
- 	bool "Debugging"
--	depends on EDAC
- 	help
- 	  This turns on debugging information for the entire EDAC
- 	  sub-system. You can insert module with "debug_level=x", current
-@@ -44,7 +41,6 @@ config EDAC_DEBUG
- 
- config EDAC_MM_EDAC
- 	tristate "Main Memory EDAC (Error Detection And Correction) reporting"
--	depends on EDAC
- 	default y
- 	help
- 	  Some systems are able to detect and correct errors in main
-@@ -99,15 +95,13 @@ config EDAC_R82600
- 
- choice
- 	prompt "Error detecting method"
--	depends on EDAC
- 	default EDAC_POLL
- 
- config EDAC_POLL
- 	bool "Poll for errors"
--	depends on EDAC
- 	help
- 	  Poll the chipset periodically to detect errors.
- 
- endchoice
+ 	  If unsure whether you really want or need this, say N.
  
 -endmenu
-+endif # EDAC
++endif # FUSION
