@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946880AbXD3W7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422801AbXD3XBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946880AbXD3W7W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 18:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946881AbXD3W7W
+	id S1422801AbXD3XBR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 19:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422821AbXD3XBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 18:59:22 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:4627 "EHLO dspnet.fr.eu.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946880AbXD3W7U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 18:59:20 -0400
-Date: Tue, 1 May 2007 00:59:16 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
-Message-ID: <20070430225916.GA39223@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Robert Hancock <hancockr@shaw.ca>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@suse.de>,
-	Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-References: <4635510D.4060103@shaw.ca>
+	Mon, 30 Apr 2007 19:01:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:37252 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422801AbXD3XBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 19:01:14 -0400
+Date: Tue, 1 May 2007 00:04:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: dann frazier <dannf@hp.com>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       support@moxa.com.tw, dilinger@debian.org
+Subject: Re: old buffer overflow in moxa driver
+Message-ID: <20070501000455.2173b1e2@the-village.bc.nu>
+In-Reply-To: <20070430224829.GI31283@krebs.dannf>
+References: <20070430224829.GI31283@krebs.dannf>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4635510D.4060103@shaw.ca>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 08:14:37PM -0600, Robert Hancock wrote:
-> -Validate that the area is reserved even if we read it from the
-> chipset directly and not from the MCFG table. This catches the case
-> where the BIOS didn't set the location properly in the chipset and
-> has mapped it over other things it shouldn't have.  This might be
-> overly pessimistic - we might be able to instead verify that no
-> other reserved resources (like chipset registers) are inside this
-> memory range.
+>   I noticed that the moxa input checking security bug described by
+> CVE-2005-0504 appears to remain unfixed upstream.
+>  
+> The issue is described here:
+>   http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2005-0504
+> 
+> Debian has been shipping the following patch from Andres Salomon. I
+> tried contacting the listed maintainer a few months ago but received
+> no response.
 
-I have a fundamental problem with that: you don't validate a higher
-reliability information against a lower one.  The chipset registers
-are high reliability.  Modulo unknown hardware erratas and bugs in the
-code (and accepting f0000000 is in practice a bug in the code, the
-docs are starting to catch up with it too), the chipset *will* decode
-mmconfig at the looked up address no matter what.  On the other side,
-the ACPI data is bios generated, and that is well known to be horribly
-unreliable.  Hell, if it was reliable we could just use the MFCG ACPI
-table without questions.
 
-So you can check the ACPI stuff for coherency (MFCG vs. the rest), you
-can validate the ACPI stuff against the results of the lookup if you
-want, but validating the lookup against ACPI is nonsensical.
+       case MOXA_LOAD_BIOS:
+        case MOXA_FIND_BOARD:
+        case MOXA_LOAD_C320B:
+        case MOXA_LOAD_CODE:
+                if (!capable(CAP_SYS_RAWIO))
+                        return -EPERM;
+                break;
 
-  OG.
+At the point you abuse these calls you can already just load arbitary
+data from userspace anyway.
 
