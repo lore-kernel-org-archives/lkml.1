@@ -1,114 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030284AbXD3KGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030811AbXD3KNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030284AbXD3KGA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 06:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbXD3KF7
+	id S1030811AbXD3KNf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 06:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030852AbXD3KNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 06:05:59 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:52042 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932966AbXD3KF5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 06:05:57 -0400
-Date: Mon, 30 Apr 2007 15:35:35 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       list <linux-pm@lists.linux-foundation.org>,
-       Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, pm@smtp2.linux-foundation.org
-Subject: Re: [linux-pm] Re: 2.6.21-rc7-mm2 suspend bug. [kernel/kthread.c]
-Message-ID: <20070430100535.GA30975@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <a8f16e2b0704291251l69c1b02ahb9b22370bc468fa1@mail.gmail.com> <200704292227.45215.rjw@sisk.pl> <20070430003946.b4d856b4.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430003946.b4d856b4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.12-2006-07-14
+	Mon, 30 Apr 2007 06:13:35 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45323 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030811AbXD3KNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 06:13:33 -0400
+X-Authenticated: #4011369
+X-Provags-ID: V01U2FsdGVkX1+XlqYM5uWXpnauNhwkKELV3pMabth4IWnDg05TdY
+	b64W1NvypAdCdh
+Subject: Re: Probable PCIE prob
+From: Syren Baran <sbaran@gmx.de>
+To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200704291521.48769.s0348365@sms.ed.ac.uk>
+References: <1177790017.3649.23.camel@excalibur>
+	 <200704291521.48769.s0348365@sms.ed.ac.uk>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 30 Apr 2007 12:13:31 +0200
+Message-Id: <1177928011.3508.28.camel@excalibur>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 12:39:46AM -0700, Andrew Morton wrote:
-> On Sun, 29 Apr 2007 22:27:44 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Am Sonntag, den 29.04.2007, 15:21 +0100 schrieb Alistair John Strachan:
+> On Saturday 28 April 2007 20:53:37 Syren Baran wrote:
+> > System crashes only happen when viewing films (neither
+> > xine nor mplayer run with root privileges) and independent of video
+> > drivers (framebuffer, vesa and fglrx). Logs dont show any anomalies
+> > before crashing. Anybody got a clue?
 > 
-> > On Sunday, 29 April 2007 21:51, Dan Kruchinin wrote:
-> > > Hi all.
-> > > 
-> > > There is a problem on my macbook core duo with suspend.
-> > > after suspending when i'm trying to 'wake up' my notebook, it seems
-> > > that it works, but i don't see anything at my monitor. So i have to
-> > > reboot it to continue my work.
-> > 
-> > What exactly do you do to suspend?
-> > 
-> 
-> This is due to _cpu_down() calling kthread_bind() in state TASK_RUNNING.
+> This is a pretty bizarre crash. It might be a hardware problem. Try running a 
+> load intensive task, something that heats your CPU up, for a long period. See 
+> if it lasts longer than 30 minutes..
 
-The state should be TASK_INTERRUPTIBLE. That's the state of the thread
-'p' should be in when we do a kthread_bind(p) in _cpu_down().
+Think were getting in the right direction. Running "mencoder -ovc lavc
+-oac lavc -of mpeg -o /dev/null somefilm" causes crashes consistantly
+after a couple of minutes (using different kernels, some problem on XP).
+Exchanging the CPU with an identical chip (Sempron 2800+, family 15,
+model 79) caused the same behavior. On the other hand a highly
+sophisticated, quick test for several hours (4-12, probably closer to
+12) produced this crash:
 
-Are you sure about the TASK_RUNNING part ?
+EFLAGS: 00010093  (2.6.20-1.2944-fc6 #1)
+EIP is at dump_trace+0x5c/0x93
+eax: 75715ffd ebx: 75715f65 ecx: 0178d206 edx: 01236180
+esi: 5f6f626f edi: 75715000 ebp: c06a645e esp: dead4d95
+ds: 007b es: 007b ss:0068
+Process a.out (pid 3499, ti=dead4000, task=eb64cbb0, task.ti=ea872000)
+Stack: c06a645e c06a645e 00000018 00000000 c06a645e c0405001 c06fdc40
+c06a645e
+dead4f38 c04050b0 c06a645e c06a645e dead4e9d dead4ed5 00000002 00010046
+dead4e9d dead4ed5 c0405246 c06a645e 00000010 eb64cd44 00000dab dead4000
+Call Trace:
+[<c0405001>] show_trace_log_lvl+0x18/0x2c
+[<c04050b0>] show_trace_log_lvl+0x9b/0xa3
+[<c0405246>] show_registers+018e/0x25d
+[<c0621fcf>] notifier_call_chain+0x19/0x29
+[<c0405443>] die+0x12e/0x240
+[<c0621ee3>] do_page_fault+0x407/0x4da
+[<c0621adc>] do_page_fault+0x0/0x4da
+[<c0620744>] error_code+0x7c/0x84
+BUG: unable to handle kernel paging request at virtual address 75715f65
+printing eip:
+c0404fb2
+*pde=00000000
+Recursive die() failure, output suppressed
+<O>Kernel panic-not syncing: Fatal exception in interrupt
 
-> 
-> So I was sent the below, including worrisome changelog.
+This is probable due to overheating (didnt have any thermal paste when
+swapping the CPU´s). After waking up after 12 hours and noting the error
+the CPU was still at 82 degrees celsius.
+Unlike the crashes from mencoder, cpu temperatur below 40 degrees.
+The only meaningfull error i could get when running mencoder (sometimes
+system freezes, sometimes reboots, once got this message+freeze) "double
+fault, gdt at c17c8000".
+
+
+> Another thing you could try doing was eliminating X completely, by using 
+> mplayer on a vesafb console..
+
+Did the above tests in runlevel 3, thus eliminating X as a possible
+cause. Also removed the gfx card to exclude electromagnetical
+interference (onboard nv4 is sufficient).
+Doesnt seem like a kernel bug, but (usermode-) mencoder causing a crash
+on different kernels and OS´s is wierd.
 > 
 
-Ok, it should not be that worrisome!
-By the time we would be doing kthread_stop(p) in _cpu_down(), 'p' would have
-been moved over to some other online cpu, due to the migrate_dead_tasks() 
-called in CPU_DEAD handling of migration_call (kernel/sched.c).
+Syren
 
-So we are safe. Anyway, I apologise for causing any worry :-)
+PS: the source code for the sophisticated a.out
+int main(char *argv[], int argc){
+        int i;
+        while (1){
+                i++;
+        }
+} 
 
-Thanks and Regards
-gautham.
-> 
-> 
-> 
-> From: Gautham R Shenoy <ego@in.ibm.com>
-> 
-> We are anyway kthread_stop()ping other per-cpu kernel threads after
-> move_task_off_dead_cpu(), so we can do it with the stop_machine_run thread
-> as well.
-> 
-> I just checked with Vatsa if there was any subtle reason why they
-> had put in the kthread_bind() in cpu.c. Vatsa cannot seem to recollect
-> any and I can't see any. So let us just remove the kthread_bind.
-> 
-> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-> Cc: Oleg Nesterov <oleg@tv-sign.ru>
-> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-> Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  kernel/cpu.c |    4 ----
->  1 files changed, 4 deletions(-)
-> 
-> diff -puN kernel/cpu.c~remvoe-kthread_bind-call-from-_cpu_down kernel/cpu.c
-> --- a/kernel/cpu.c~remvoe-kthread_bind-call-from-_cpu_down
-> +++ a/kernel/cpu.c
-> @@ -175,10 +175,6 @@ static int _cpu_down(unsigned int cpu)
->  	/* This actually kills the CPU. */
->  	__cpu_die(cpu);
-> 
-> -	/* Move it here so it can run. */
-> -	kthread_bind(p, get_cpu());
-> -	put_cpu();
-> -
->  	/* CPU is completely dead: tell everyone.  Too late to complain. */
->  	if (raw_notifier_call_chain(&cpu_chain, CPU_DEAD, hcpu) == NOTIFY_BAD)
->  		BUG();
-> _
-> 
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
-
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
