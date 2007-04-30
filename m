@@ -1,105 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422654AbXD3Aki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422689AbXD3AmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422654AbXD3Aki (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 20:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422642AbXD3Aki
+	id S1422689AbXD3AmP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 20:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422675AbXD3AmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 20:40:38 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44523 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422654AbXD3AkL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 20:40:11 -0400
-Date: Sun, 29 Apr 2007 17:43:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-Id: <20070429174319.222cfac5.randy.dunlap@oracle.com>
-In-Reply-To: <ada1wi5npam.fsf@cisco.com>
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-	<20070425143011.57247c1d.akpm@linux-foundation.org>
-	<20070425172447.1576c399.akpm@linux-foundation.org>
-	<20070426003911.GA19383@redhat.com>
-	<4630109F.6090002@oracle.com>
-	<20070425200207.77a2721a.akpm@linux-foundation.org>
-	<20070428030805.GA13331@redhat.com>
-	<ada1wi5npam.fsf@cisco.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 29 Apr 2007 20:42:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41171 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422642AbXD3AmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 20:42:14 -0400
+Date: Sun, 29 Apr 2007 20:40:50 -0400
+From: Dave Jones <davej@redhat.com>
+To: Len Brown <lenb@kernel.org>
+Cc: "Moore, Robert" <robert.moore@intel.com>, Zhang@d975xbx2,
+       Yanmin <yanmin.zhang@intel.com>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux ACPI Mailing List <linux-acpi@vger.kernel.org>
+Subject: Re: ACPI interpreter errors (aer_init)
+Message-ID: <20070430004050.GE14857@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Len Brown <lenb@kernel.org>,
+	"Moore, Robert" <robert.moore@intel.com>, Zhang@d975xbx2,
+	Yanmin <yanmin.zhang@intel.com>,
+	"Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux ACPI Mailing List <linux-acpi@vger.kernel.org>
+References: <B28E9812BAF6E2498B7EC5C427F293A4025DC20B@orsmsx415.amr.corp.intel.com> <200704280231.52809.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200704280231.52809.lenb@kernel.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 20:36:17 -0700 Roland Dreier wrote:
+On Sat, Apr 28, 2007 at 02:31:52AM -0400, Len Brown wrote:
 
->  > http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
->  > what fell out of running it on my mbox of lkml from the past month.
->  > Some of them are kinda noisy, and perhaps should be moved under --pedantic
->  > 
->  > I'm all ears for additional regexps, bug reports or other suggestions.
-> 
-> Looks great... however I notice a few obvious false positives in the
-> example log:
-> 
->  > Don't init statics to 0/NULL:
->  > 94312:+static const struct in6_addr in6addr_v4mapped = { { { [10] = 0xff, [11] = 0xff } } };
-> 
-> ummm?
+ > On a quick glance, it appears that these messages have been in the aer driver
+ > since it was born.
+ > Did you run with CONFIG_PCIEAER in 2.6.19 or 2.6.20 and not have them there?
+ > 
+ > I agree with Bob, as status 5 is AE_NOT_FOUND,
+ > it appears that the driver is being overly verbose,
+ > even though these appear to all be KERN_DEBUG messages.
 
-fixed
+See this thread.. 
 
->  > 137054:+static uint32_t drvr_ver  = 0x02200207;
-> 
-> that ain't zero...
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: lenb@kernel.org, us15@os.inf.tu-dresden.de, gregkh@suse.de, davej@redhat.com
+Subject: [PATCH] reduce AER init error information
 
-not?  fixed.
+for a patch resolving this.
 
->  > 230079:+                path->static_rate = 0;
-> 
-> and that ain't a static variable.
+	Dave
 
-ack, fixed.
-
-> I guess trying to parse C in a regexp is a little tricky.
-> 
-> Also, it would be nice to be able to do something like
-> 
->     git diff v2.6.20..|perl ~/checkpatch.pl -
-
-I'll check into how to treat "-" as STDIN.
-
-> rather than having to create a temp file -- as it stands that command
-> produces
-> 
->     unknown option: -
->     usage: findbugs.pl [-options] file(s)
->       -allsource : check entire source file, not just '+' patch lines
->       -pedantic : TBD
->       -style : TBD
->       -v, --verbose : verbose
->       -h, --help : this help text
->     Version: 002
-> 
-> And even worse
-> 
->     git diff v2.6.20..|perl ~/checkpatch.pl
-> 
-> just silently does nothing (maybe a "no input files" warning would be
-> a good clue for people).
-
-or print usage info?
-
-
-Thanks.
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+http://www.codemonkey.org.uk
