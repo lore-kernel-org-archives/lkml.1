@@ -1,52 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423061AbXD3GKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423064AbXD3GOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423061AbXD3GKp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 02:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423052AbXD3GKp
+	id S1423064AbXD3GOm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 02:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423065AbXD3GOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 02:10:45 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:33705 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423061AbXD3GKo (ORCPT
+	Mon, 30 Apr 2007 02:14:42 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55430 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423064AbXD3GOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 02:10:44 -0400
-Message-ID: <46358809.4070909@wpkg.org>
-Date: Mon, 30 Apr 2007 08:09:13 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Mon, 30 Apr 2007 02:14:41 -0400
+Date: Sun, 29 Apr 2007 23:14:40 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.org
+cc: Nate Diller <nate.diller@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] zero_user_page uses in fs/buffer.c and fs/libfs.c
+Message-ID: <Pine.LNX.4.64.0704292313060.3018@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.21
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
+There are a couple of places where kmap_atomic is surrounding two
+memory operations. Usually only one of them is performed. So it is
+possible to also use zero_user_page there.
 
->> > I reported a bug that eats people's hard disks due to a bug
->> > in the X.ORG PCI support code on sparc, NOBODY has fixed
->> > the bug in 2 years even though a full bugzilla entry with
->> > even a full patch fix is in there.
->> 
->> Well but at least they could find it again if they wanted.
->> If you sent it by email and it had gotten lost for some reason
->> (nobody interested, which seems to be the real issue here) then
->> it would be lost forever.
-> 
-> WRONG!  If I have sent it to the main developer list the damn patch
-> would be applied by now.
+Cc: Nate Diller <nate.diller@gmail.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Why didn't you do it then? Why didn't you send your patch to the main 
-developer?
-Wouldn't be your problem fixed if you did it?
+---
+ fs/buffer.c |   29 ++++++++++-------------------
+ fs/libfs.c  |   12 ++++++------
+ 2 files changed, 16 insertions(+), 25 deletions(-)
 
-
-> WHY?
-> 
-> BECAUSE EMAIL ENGAGES PEOPLE AND BUGZILLA DOES NOT!
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
+Index: linux-2.6.21-rc7-mm1/fs/buffer.c
+===================================================================
+--- linux-2.6.21-rc7-mm1.orig/fs/buffer.c	2007-04-25 00:20:35.000000000 -0700
++++ linux-2.6.21-rc7-mm1/fs/buffer.c	2007-04-25 00:24:05.000000000 -0700
+@@ -1796,19 +1796,12 @@ static int __block_prepare_write(struct 
+ 					set_buffer_uptodate(bh);
+ 					continue;
+ 				}
+-				if (block_end > to || block_start < from) {
+-					void *kaddr;
+-
+-					kaddr = kmap_atomic(page, KM_USER0);
+-					if (block_end > to)
+-						memset(kaddr+to, 0,
+-							block_end-to);
+-					if (block_start < from)
+-						memset(kaddr+block_start,
+-							0, from-block_start);
+-					flush_dcache_page(page);
+-					kunmap_atomic(kaddr, KM_USER0);
+-				}
++				if (block_end > to)
++					zero_user_page(page, to,
++						block_end - to, KM_USER0);
++				if (block_start < from)
++					zero_user_page(page, block_start,
++						from - block_start, KM_USER0);
+ 				continue;
+ 			}
+ 		}
+@@ -2224,7 +2217,6 @@ int nobh_prepare_write(struct page *page
+ 	unsigned block_in_page;
+ 	unsigned block_start;
+ 	sector_t block_in_file;
+-	char *kaddr;
+ 	int nr_reads = 0;
+ 	int i;
+ 	int ret = 0;
+@@ -2264,13 +2256,12 @@ int nobh_prepare_write(struct page *page
+ 		if (PageUptodate(page))
+ 			continue;
+ 		if (buffer_new(&map_bh) || !buffer_mapped(&map_bh)) {
+-			kaddr = kmap_atomic(page, KM_USER0);
+ 			if (block_start < from)
+-				memset(kaddr+block_start, 0, from-block_start);
++				zero_user_page(page, block_start,
++					from - block_start, KM_USER0);
+ 			if (block_end > to)
+-				memset(kaddr + to, 0, block_end - to);
+-			flush_dcache_page(page);
+-			kunmap_atomic(kaddr, KM_USER0);
++				zero_user_page(page, to,
++					block_end - to, KM_USER0);
+ 			continue;
+ 		}
+ 		if (buffer_uptodate(&map_bh))
+Index: linux-2.6.21-rc7-mm1/fs/libfs.c
+===================================================================
+--- linux-2.6.21-rc7-mm1.orig/fs/libfs.c	2007-04-25 00:24:10.000000000 -0700
++++ linux-2.6.21-rc7-mm1/fs/libfs.c	2007-04-25 00:25:56.000000000 -0700
+@@ -337,12 +337,12 @@ int simple_prepare_write(struct file *fi
+ 			unsigned from, unsigned to)
+ {
+ 	if (!PageUptodate(page)) {
+-		if (to - from != PAGE_CACHE_SIZE) {
+-			void *kaddr = kmap_atomic(page, KM_USER0);
+-			memset(kaddr, 0, from);
+-			memset(kaddr + to, 0, PAGE_CACHE_SIZE - to);
+-			flush_dcache_page(page);
+-			kunmap_atomic(kaddr, KM_USER0);
++		if (to - from != PAGE_CACHE_SIZE)
++			if (from)
++				zero_user_page(page, 0, from, KM_USER0);
++			if (to < PAGE_CACHE_SIZE)
++				zero_user_page(page, to,
++					PAGE_CACHE_SIZE - to, KM_USER0);
+ 		}
+ 	}
+ 	return 0;
