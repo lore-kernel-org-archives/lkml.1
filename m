@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbXD3Kay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965512AbXD3KdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754545AbXD3Kay (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 06:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbXD3K2s
+	id S965512AbXD3KdP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 06:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965483AbXD3Kcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 06:28:48 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42968 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754637AbXD3K1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 06:27:50 -0400
-From: Andi Kleen <ak@suse.de>
-References: <200704301227.598020000@suse.de>
-In-Reply-To: <200704301227.598020000@suse.de>
-To: jeremy@goop.org, zach@vmware.com, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [16/40] i386: revert map_pt_hook.
-Message-Id: <20070430102749.C622F151CA@wotan.suse.de>
-Date: Mon, 30 Apr 2007 12:27:49 +0200 (CEST)
+	Mon, 30 Apr 2007 06:32:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47171 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754646AbXD3Kcl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 06:32:41 -0400
+Date: Mon, 30 Apr 2007 11:32:38 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: utrace comments
+Message-ID: <20070430103238.GA10414@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Christoph Hellwig <hch@lst.de>, Roland McGrath <roland@redhat.com>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+References: <20061127165138.GA2991@lst.de> <20070430040213.BF9901801A4@magilla.sf.frob.com> <20070430090840.GB31397@infradead.org> <20070430091808.GA11345@flint.arm.linux.org.uk> <20070430092200.GA15773@lst.de> <20070430093331.GB11345@flint.arm.linux.org.uk> <20070430094510.GC11345@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430094510.GC11345@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 30, 2007 at 10:45:10AM +0100, Russell King wrote:
+> For the sake of avoiding too much rehash, here's Roland's reply to my
+> initial forrey into utrace:
+> 
+>   http://marc.info/?l=linux-kernel&m=117309251916053&w=2
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Back out the map_pt_hook to clear the way for kmap_atomic_pte.
+In that mail Roland suggests keeping the singlestep code entirely
+in the arm ptrace code.  After a brief look at the arm code this
+looks easily possible.  From a brief look the arm software singlestep
+consist of the following pieces:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Zachary Amsden <zach@vmware.com>
+ - PTRACE_SINGLESTEP implementation.  Sets the PT_SINGLESTEP flag,
+   clears TIF_SYSCALL_TRACE, sets ->exit_code in the traced code
+   to the singlestepping signal and wakes the traced process up.
 
----
- arch/i386/kernel/paravirt.c |    2 --
- arch/i386/kernel/vmi.c      |    2 ++
- include/asm-i386/paravirt.h |    7 -------
- include/asm-i386/pgtable.h  |   23 ++++-------------------
- 4 files changed, 6 insertions(+), 28 deletions(-)
+   This can easily be implemented by putting alsmost equivalent code
+   into arch_ptrace.
+ - clearing PT_SINGLESTEP and cancelling the breakpoint in ptrace_disable.
 
-===================================================================
-Index: linux/arch/i386/kernel/paravirt.c
-===================================================================
---- linux.orig/arch/i386/kernel/paravirt.c
-+++ linux/arch/i386/kernel/paravirt.c
-@@ -302,8 +302,6 @@ struct paravirt_ops paravirt_ops = {
- 	.flush_tlb_single = native_flush_tlb_single,
- 	.flush_tlb_others = native_flush_tlb_others,
- 
--	.map_pt_hook = paravirt_nop,
--
- 	.alloc_pt = paravirt_nop,
- 	.alloc_pd = paravirt_nop,
- 	.alloc_pd_clone = paravirt_nop,
-Index: linux/arch/i386/kernel/vmi.c
-===================================================================
---- linux.orig/arch/i386/kernel/vmi.c
-+++ linux/arch/i386/kernel/vmi.c
-@@ -851,8 +851,10 @@ static inline int __init activate_vmi(vo
- 		paravirt_ops.release_pt = vmi_release_pt;
- 		paravirt_ops.release_pd = vmi_release_pd;
- 	}
-+#if 0
- 	para_wrap(map_pt_hook, vmi_map_pt_hook, set_linear_mapping,
- 		  SetLinearMapping);
-+#endif
- 
- 	/*
- 	 * These MUST always be patched.  Don't support indirect jumps
-Index: linux/include/asm-i386/paravirt.h
-===================================================================
---- linux.orig/include/asm-i386/paravirt.h
-+++ linux/include/asm-i386/paravirt.h
-@@ -169,8 +169,6 @@ struct paravirt_ops
- 	void (*flush_tlb_others)(const cpumask_t *cpus, struct mm_struct *mm,
- 				 unsigned long va);
- 
--	void (*map_pt_hook)(int type, pte_t *va, u32 pfn);
--
- 	/* Hooks for allocating/releasing pagetable pages */
- 	void (*alloc_pt)(u32 pfn);
- 	void (*alloc_pd)(u32 pfn);
-@@ -862,11 +860,6 @@ static inline void flush_tlb_others(cpum
- 	PVOP_VCALL3(flush_tlb_others, &cpumask, mm, va);
- }
- 
--static inline void paravirt_map_pt_hook(int type, pte_t *va, u32 pfn)
--{
--	PVOP_VCALL3(map_pt_hook, type, va, pfn);
--}
--
- static inline void paravirt_alloc_pt(unsigned pfn)
- {
- 	PVOP_VCALL1(alloc_pt, pfn);
-Index: linux/include/asm-i386/pgtable.h
-===================================================================
---- linux.orig/include/asm-i386/pgtable.h
-+++ linux/include/asm-i386/pgtable.h
-@@ -267,7 +267,6 @@ extern void vmalloc_sync_all(void);
-  */
- #define pte_update(mm, addr, ptep)		do { } while (0)
- #define pte_update_defer(mm, addr, ptep)	do { } while (0)
--#define paravirt_map_pt_hook(slot, va, pfn)	do { } while (0)
- 
- #define raw_ptep_get_and_clear(xp)     native_ptep_get_and_clear(xp)
- #endif
-@@ -476,24 +475,10 @@ extern pte_t *lookup_address(unsigned lo
- #endif
- 
- #if defined(CONFIG_HIGHPTE)
--#define pte_offset_map(dir, address)				\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE0);\
--	paravirt_map_pt_hook(KM_PTE0,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
--#define pte_offset_map_nested(dir, address)			\
--({								\
--	pte_t *__ptep;						\
--	unsigned pfn = pmd_val(*(dir)) >> PAGE_SHIFT;	   	\
--	__ptep = (pte_t *)kmap_atomic(pfn_to_page(pfn),KM_PTE1);\
--	paravirt_map_pt_hook(KM_PTE1,__ptep, pfn);		\
--	__ptep = __ptep + pte_index(address);			\
--	__ptep;							\
--})
-+#define pte_offset_map(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE0) + pte_index(address))
-+#define pte_offset_map_nested(dir, address) \
-+	((pte_t *)kmap_atomic(pmd_page(*(dir)),KM_PTE1) + pte_index(address))
- #define pte_unmap(pte) kunmap_atomic(pte, KM_PTE0)
- #define pte_unmap_nested(pte) kunmap_atomic(pte, KM_PTE1)
- #else
+   Equivalent code can go into tracehook_disable_single_step.
+
+ - Various places in signal.c that check PT_SINGLESTEP to set/clear
+   the special singlestep breakpoint.  This can stay, it just needs
+   a different place to store the singlestep flag.
+
+Do I miss something?
+
