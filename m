@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423295AbXD3Ofg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423319AbXD3Ofg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423295AbXD3Ofg (ORCPT <rfc822;w@1wt.eu>);
+	id S1423319AbXD3Ofg (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 30 Apr 2007 10:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423320AbXD3Ofg
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423317AbXD3Off
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 10:35:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58048 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423295AbXD3Oex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 10:35:35 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45517 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423304AbXD3Oex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Apr 2007 10:34:53 -0400
-To: Juergen Beisert <juergen127@kreuzholzen.de>
-Cc: linux-kernel@vger.kernel.org, Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH] [1/1] CPU-i386-Geode: Chipset access macros do not work as expected
-References: <200704301509.58776.juergen127@kreuzholzen.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 30 Apr 2007 17:32:04 +0200
-In-Reply-To: <200704301509.58776.juergen127@kreuzholzen.de>
-Message-ID: <p73odl5zxmz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=SZz3Aqfh11oYyJ1BRVSFL8NGLEKu7455micjE6blxIOjqQjXvaywMFVRuY5x5rf0E
+	9DVYNADtu2pQcYqYj00aw==
+Date: Mon, 30 Apr 2007 07:34:37 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Jones <davej@codemonkey.org.uk>
+cc: linux-kernel@vger.kernel.org
+Subject: [patch] cpufreq: do not declare undefined functions
+Message-ID: <Pine.LNX.4.64.0704291657060.1822@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Juergen Beisert <juergen127@kreuzholzen.de> writes:
+fill_powernow_table_pstate() and fill_powernow_table_fidvid() are only
+defined and used for X86_POWERNOW_K8_ACPI.
 
-> From: Juergen Beisert <juergen.beisert@weihenstephan.org>
-> 
-> Replace NSC/Cyrix specific chipset access macros by inlined functions.
-> With the macros a line like this fails (and does nothing):
-> 	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
-> With inlined functions this line will work as expected.
+Cc: Dave Jones <davej@codemonkey.org.uk>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ arch/i386/kernel/cpu/cpufreq/powernow-k8.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Why do the macros not work? 
-
--Andi
+diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
+--- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
++++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
+@@ -215,8 +215,10 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid);
+ 
+ static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index);
+ 
++#ifdef CONFIG_X86_POWERNOW_K8_ACPI
+ static int fill_powernow_table_pstate(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
+ static int fill_powernow_table_fidvid(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
++#endif
+ 
+ #ifdef CONFIG_SMP
+ static inline void define_siblings(int cpu, cpumask_t cpu_sharedcore_mask[])
