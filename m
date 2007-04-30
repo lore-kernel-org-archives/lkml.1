@@ -1,305 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422745AbXD3CO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422746AbXD3CYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422745AbXD3CO7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 22:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422749AbXD3CO7
+	id S1422746AbXD3CYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 22:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422749AbXD3CYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 22:14:59 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:15439 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422745AbXD3CO5 (ORCPT
+	Sun, 29 Apr 2007 22:24:23 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28158 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422746AbXD3CYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 22:14:57 -0400
-Date: Sun, 29 Apr 2007 20:14:37 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
- resources
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Message-id: <4635510D.4060103@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sun, 29 Apr 2007 22:24:21 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent:from;
+	b=d9iycDs9NpGyGnVwValQbM/7AxeiFTTdPrBmtbQpAAEY+BOe2c8jwjePwaWP7j+Sd
+	5GCgHR3wf8o34Z9+RbhmQ==
+Date: Sun, 29 Apr 2007 19:24:07 -0700
+To: ak@suse.de, vojtech@suse.cz
+Cc: linux-kernel@vger.kernel.org, akpm@google.com
+Subject: [PATCH] x86_64: support poll() on /dev/mcelog
+Message-ID: <20070430022406.GA10158@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: thockin@google.com (Tim Hockin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This path adds validation of the MMCONFIG table against the ACPI reserved
-motherboard resources. If the MMCONFIG table is found to be reserved in
-ACPI, we don't bother checking the E820 table. The PCI Express firmware spec
-apparently tells BIOS developers that reservation in ACPI is required and
-E820 reservation is optional, so checking against ACPI first makes sense.
-Many BIOSes don't reserve the MMCONFIG region in E820 even though it is
-perfectly functional, the existing check needlessly disables MMCONFIG in
-these cases.
+From: Tim Hockin <thockin@google.com>
 
-In order to do this, MMCONFIG setup has been split into two phases. If PCI
-configuration type 1 is not available (like on EFI Macs) then MMCONFIG is
-enabled early as before. Otherwise, it is enabled later after the ACPI
-interpreter is enabled, since we need to be able to execute control methods
-in order to check the ACPI reserved resources. Presently this is just triggered
-off the end of ACPI interpreter initialization.
+Background:
+ /dev/mcelog is typically polled manually.  This is less than optimal for
+ some situations.  Calling poll() on /dev/mcelog does not work.
 
-There are a few other behavioral changes here:
+Description:
+ This patch adds support for poll() to /dev/mcelog.  This results in
+ immediate wakeup of user apps whenever the poller finds MCEs.  Because
+ the exception handler can not take any locks, it can not call the wakeup
+ itself.  Instead, it uses a thread_info flag (TIF_MCE_NOTIFY) which is
+ caught at the next return from interrupt, calling the mce_user_notify()
+ routine.
 
--Validate all MMCONFIG configurations provided, not just the first one.
+ This patch also does some small cleanup for essentially unused variables,
+ and moves the user notification into the body of the poller, so it is
+ only called once, rather than once per CPU.
 
--Validate the entire required length of each configuration according to the
-provided ending bus number is reserved, not just the minimum required allocation.
+Result:
+ Applications can now poll() on /dev/mcelog.  When an error is logged
+ (whether through the poller or through an exception) the applications are
+ woken up promptly.  This should not affect any previous behaviors.  If no
+ MCEs are being logged, there is no overhead.
 
--Validate that the area is reserved even if we read it from the chipset directly
-and not from the MCFG table. This catches the case where the BIOS didn't set the
-location properly in the chipset and has mapped it over other things it shouldn't have.
-This might be overly pessimistic - we might be able to instead verify that no other
-reserved resources (like chipset registers) are inside this memory range.
+Alternatives:
+ I considered simply supporting poll() through the poller and not using
+ TIF_MCE_NOTIFY at all.  However, the time between an uncorrectable error
+ happening and the user application being notified is *the*most* critical
+ window for us.  Many uncorrectable errors can be logged to the network if
+ given a chance.
 
-Some testing is needed to see if this rejects MMCONFIG on all systems where it
-is problematic. There were some patches floating around to read the table
-location out of the chipset for Intel 915 and 965, I think the author found the
-latter to be problematic since the chipset had the table mapped over top of
-motherboard resources. The extra checking here may catch that case if we add
-that chipset-specific support.
+Testing:
+ I used an error-injecting DIMM to create lots of correctable DRAM errors
+ and verified that my user app is woken up in sync with the polling interval.
+ I also used the northbridge to inject uncorrectable ECC errors, and
+ verified (printk() to the rescue) that the notify routine is called and the
+ user app does wake up.
 
-Applies to 2.6.21.1.
+Patch:
+ This patch is against 2.6.21-rc7.
 
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+Signed-Off-By: Tim Hockin <thockin@google.com>
 
-diff -up linux-2.6.21.1/arch/i386/pci/init.c linux-2.6.21.1edit/arch/i386/pci/init.c
---- linux-2.6.21.1/arch/i386/pci/init.c	2007-04-27 15:49:26.000000000 -0600
-+++ linux-2.6.21.1edit/arch/i386/pci/init.c	2007-04-29 18:36:32.000000000 -0600
-@@ -12,7 +12,7 @@ static __init int pci_access_init(void)
- 	type = pci_direct_probe();
- #endif
- #ifdef CONFIG_PCI_MMCONFIG
--	pci_mmcfg_init(type);
-+	pci_mmcfg_early_init(type);
- #endif
- 	if (raw_pci_ops)
- 		return 0;
-diff -up linux-2.6.21.1/arch/i386/pci/mmconfig-shared.c linux-2.6.21.1edit/arch/i386/pci/mmconfig-shared.c
---- linux-2.6.21.1/arch/i386/pci/mmconfig-shared.c	2007-04-27 15:49:26.000000000 -0600
-+++ linux-2.6.21.1edit/arch/i386/pci/mmconfig-shared.c	2007-04-29 19:47:57.000000000 -0600
-@@ -191,9 +191,77 @@ static void __init pci_mmcfg_insert_reso
+---
+
+This is the first public version version of this patch.  The TIF_*
+approach was suggested by Mike Waychison and Andi did not yell at me when
+I suggested it. :)
+
+
+diff -pruN linux-2.6.20+th/arch/x86_64/kernel/entry.S linux-2.6.20+th2v2/arch/x86_64/kernel/entry.S
+--- linux-2.6.20+th/arch/x86_64/kernel/entry.S	2007-04-24 22:46:19.000000000 -0700
++++ linux-2.6.20+th2v2/arch/x86_64/kernel/entry.S	2007-04-29 18:10:40.000000000 -0700
+@@ -585,7 +585,7 @@ bad_iret:
+ retint_careful:
+ 	CFI_RESTORE_STATE
+ 	bt    $TIF_NEED_RESCHED,%edx
+-	jnc   retint_signal
++	jnc   retint_mce
+ 	TRACE_IRQS_ON
+ 	sti
+ 	pushq %rdi
+@@ -597,7 +597,23 @@ retint_careful:
+ 	cli
+ 	TRACE_IRQS_OFF
+ 	jmp retint_check
+-	
++
++	/* handle a waiting machine check */
++retint_mce:
++	bt $TIF_MCE_NOTIFY,%edx
++	jnc retint_signal
++	TRACE_IRQS_ON
++	sti
++	pushq %rdi
++	CFI_ADJUST_CFA_OFFSET	8
++	call mce_notify_user
++	popq %rdi		
++	CFI_ADJUST_CFA_OFFSET	-8
++	GET_THREAD_INFO(%rcx)
++	cli
++	TRACE_IRQS_OFF
++	jmp retint_check
++
+ retint_signal:
+ 	testl $(_TIF_SIGPENDING|_TIF_NOTIFY_RESUME|_TIF_SINGLESTEP),%edx
+ 	jz    retint_swapgs
+diff -pruN linux-2.6.20+th/arch/x86_64/kernel/mce.c linux-2.6.20+th2v2/arch/x86_64/kernel/mce.c
+--- linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 14:19:08.000000000 -0700
++++ linux-2.6.20+th2v2/arch/x86_64/kernel/mce.c	2007-04-29 18:27:22.000000000 -0700
+@@ -20,6 +20,8 @@
+ #include <linux/percpu.h>
+ #include <linux/ctype.h>
+ #include <linux/kmod.h>
++#include <linux/poll.h>
++#include <linux/thread_info.h>
+ #include <asm/processor.h> 
+ #include <asm/msr.h>
+ #include <asm/mce.h>
+@@ -39,8 +41,7 @@ static int mce_dont_init;
+ static int tolerant = 1;
+ static int banks;
+ static unsigned long bank[NR_BANKS] = { [0 ... NR_BANKS-1] = ~0UL };
+-static unsigned long console_logged;
+-static int notify_user;
++static unsigned long notify_user;
+ static int rip_msr;
+ static int mce_bootlog = 1;
+ static atomic_t mce_events;
+@@ -48,6 +49,8 @@ static atomic_t mce_events;
+ static char trigger[128];
+ static char *trigger_argv[2] = { trigger, NULL };
+ 
++static DECLARE_WAIT_QUEUE_HEAD(mce_wait);
++
+ /*
+  * Lockless MCE logging infrastructure.
+  * This avoids deadlocks on printk locks without having to break locks. Also
+@@ -94,8 +97,7 @@ void mce_log(struct mce *mce)
+ 	mcelog.entry[entry].finished = 1;
+ 	wmb();
+ 
+-	if (!test_and_set_bit(0, &console_logged))
+-		notify_user = 1;
++	set_bit(0, &notify_user);
+ }
+ 
+ static void print_mce(struct mce *m)
+@@ -167,15 +169,19 @@ static inline void mce_get_rip(struct mc
  	}
  }
  
--static void __init pci_mmcfg_reject_broken(int type)
-+static acpi_status __init check_mcfg_resource(struct acpi_resource *res,
-+		void *data)
-+{
-+	struct resource *mcfg_res = data;
-+	struct acpi_resource_address64 address;
-+	acpi_status status;
-+
-+	if (res->type == ACPI_RESOURCE_TYPE_FIXED_MEMORY32) {
-+		struct acpi_resource_fixed_memory32 *fixmem32 =
-+			&res->data.fixed_memory32;
-+		if (!fixmem32)
-+			return AE_OK;
-+		if ((mcfg_res->start >= fixmem32->address) &&
-+			(mcfg_res->end <= (fixmem32->address +
-+					   fixmem32->address_length))) {
-+			mcfg_res->flags = 1;
-+			return AE_CTRL_TERMINATE;
-+		}
-+	}
-+	if ((res->type != ACPI_RESOURCE_TYPE_ADDRESS32) &&
-+			(res->type != ACPI_RESOURCE_TYPE_ADDRESS64))
-+		return AE_OK;
-+
-+	status = acpi_resource_to_address64(res, &address);
-+	if (ACPI_FAILURE(status) || (address.address_length <= 0) ||
-+			(address.resource_type != ACPI_MEMORY_RANGE))
-+		return AE_OK;
-+
-+	if ((mcfg_res->start >= address.minimum) &&
-+			(mcfg_res->end <=
-+			 (address.minimum +address.address_length))) {
-+		mcfg_res->flags = 1;
-+		return AE_CTRL_TERMINATE;
-+	}
-+	return AE_OK;
-+}
-+
-+static acpi_status __init find_mboard_resource(acpi_handle handle, u32 lvl,
-+		void *context, void **rv)
-+{
-+	struct resource *mcfg_res = context;
-+
-+	acpi_walk_resources(handle, METHOD_NAME__CRS,
-+	  		    check_mcfg_resource, context);
-+
-+	if (mcfg_res->flags)
-+		return AE_CTRL_TERMINATE;
-+
-+	return AE_OK;
-+}
-+
-+static int __init is_acpi_reserved(unsigned long start, unsigned long end)
-+{
-+	struct resource mcfg_res;
-+	
-+	mcfg_res.start = start;
-+	mcfg_res.end = end;
-+	mcfg_res.flags = 0;
-+
-+	acpi_get_devices("PNP0C01", find_mboard_resource, &mcfg_res, NULL);
-+	
-+	if( !mcfg_res.flags )
-+		acpi_get_devices("PNP0C02", find_mboard_resource, &mcfg_res, NULL);
-+
-+	return mcfg_res.flags;
-+}
-+
-+static void __init pci_mmcfg_reject_broken(void)
+-static void do_mce_trigger(void)
++/*
++ * This is only called in normal interrupt context.  This is where we do
++ * anything we need to alert userspace.  This is called directly from the
++ * poller and also from entry.S thanks to TIF_MCE_NOTIFY.
++ */
++void mce_notify_user(void)
  {
- 	typeof(pci_mmcfg_config[0]) *cfg;
-+	int i;
- 
- 	if ((pci_mmcfg_config_num == 0) ||
- 	    (pci_mmcfg_config == NULL) ||
-@@ -213,18 +281,36 @@ static void __init pci_mmcfg_reject_brok
- 		       "Rejected as broken MCFG.\n");
- 		goto reject;
- 	}
--
--	/*
--	 * Only do this check when type 1 works. If it doesn't work
--	 * assume we run on a Mac and always use MCFG
--	 */
--	if (type == 1 && !e820_all_mapped(cfg->address,
--					  cfg->address + MMCONFIG_APER_MIN,
--					  E820_RESERVED)) {
--		printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
--		       " E820-reserved\n", cfg->address);
--		goto reject;
-+	
-+	for(i=0; i < pci_mmcfg_config_num; i++) {
-+		u32 size = (cfg->end_bus_number + 1) << 20;
-+		cfg = &pci_mmcfg_config[i];
-+		printk(KERN_NOTICE "PCI: MCFG configuration %d: base %p segment %hu buses %u - %u\n",
-+			i, (void*)cfg->address, cfg->pci_segment, 
-+			(unsigned int)cfg->start_bus_number,
-+			(unsigned int)cfg->end_bus_number);
-+		if(is_acpi_reserved(cfg->address,
-+				    cfg->address + size - 1))
-+			printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
-+				"in ACPI motherboard resources\n",
-+				cfg->address);
-+		else {
-+			printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not "
-+				"reserved in ACPI motherboard resources\n",
-+				cfg->address);
-+			/* Don't try to do this check unless configuration type 1 is
-+			   available. */
-+			if((pci_probe & PCI_PROBE_CONF1) && 
-+			   e820_all_mapped(cfg->address,
-+					   cfg->address + size - 1,
-+					   E820_RESERVED))
-+				printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved in E820\n",
-+					cfg->address);
-+			else
-+				goto reject;
-+		}
- 	}
+-	static atomic_t mce_logged;
+-	int events = atomic_read(&mce_events);
+-	if (events != atomic_read(&mce_logged) && trigger[0]) {
+-		/* Small race window, but should be harmless.  */
+-		atomic_set(&mce_logged, events);
++	clear_thread_flag(TIF_MCE_NOTIFY);
++	clear_bit(0, &notify_user);
 +
- 	return;
- 
- reject:
-@@ -234,20 +320,46 @@ reject:
- 	pci_mmcfg_config_num = 0;
- }
- 
--void __init pci_mmcfg_init(int type)
-+void __init pci_mmcfg_early_init(int type)
-+{
-+	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
-+		return;
-+	
-+	/* If type 1 access is available, no need to enable MMCONFIG yet, we can
-+	   defer until later when the ACPI interpreter is available to better
-+	   validate things. */
-+	if( type == 1 )
-+		return;
-+
-+	acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
-+
-+	if ((pci_mmcfg_config_num == 0) ||
-+	    (pci_mmcfg_config == NULL) ||
-+	    (pci_mmcfg_config[0].address == 0))
-+		return;
-+
-+	if (pci_mmcfg_arch_init())
-+		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
-+}
-+
-+void __init pci_mmcfg_late_init(void)
- {
- 	int known_bridge = 0;
- 
-+	/* MMCONFIG disabled */
- 	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
- 		return;
-+		
-+	/* MMCONFIG already enabled */
-+	if (!(pci_probe & PCI_PROBE_MASK & ~PCI_PROBE_MMCONF))
-+		return;
- 
--	if (type == 1 && pci_mmcfg_check_hostbridge())
-+	if ((pci_probe & PCI_PROBE_CONF1) && pci_mmcfg_check_hostbridge())
- 		known_bridge = 1;
--
--	if (!known_bridge) {
-+	else
- 		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
--		pci_mmcfg_reject_broken(type);
++	wake_up_interruptible(&mce_wait);
++	if (trigger[0])
+ 		call_usermodehelper(trigger, trigger_argv, NULL, -1);
 -	}
+ }
+ 
+ /* 
+@@ -251,12 +257,8 @@ void do_machine_check(struct pt_regs * r
+ 	}
+ 
+ 	/* Never do anything final in the polling timer */
+-	if (!regs) {
+-		/* Normal interrupt context here. Call trigger for any new
+-		   events. */
+-		do_mce_trigger();
++	if (!regs)
+ 		goto out;
+-	}
+ 
+ 	/* If we didn't find an uncorrectable error, pick
+ 	   the last one (shouldn't happen, just being safe). */
+@@ -288,6 +290,9 @@ void do_machine_check(struct pt_regs * r
+ 			do_exit(SIGBUS);
+ 	}
+ 
++	/* notify userspace ASAP */
++	set_thread_flag(TIF_MCE_NOTIFY);
 +
-+	pci_mmcfg_reject_broken();
+  out:
+ 	/* Last thing done in the machine check exception to clear state. */
+ 	wrmsrl(MSR_IA32_MCG_STATUS, 0);
+@@ -344,20 +349,18 @@ static void mcheck_timer(struct work_str
+ 	on_each_cpu(mcheck_check_cpu, NULL, 1, 1);
  
- 	if ((pci_mmcfg_config_num == 0) ||
- 	    (pci_mmcfg_config == NULL) ||
-@@ -255,7 +367,7 @@ void __init pci_mmcfg_init(int type)
- 		return;
+ 	/*
+-	 * It's ok to read stale data here for notify_user and
+-	 * console_logged as we'll simply get the updated versions
+-	 * on the next mcheck_timer execution and atomic operations
+-	 * on console_logged act as synchronization for notify_user
+-	 * writes.
++	 * It's ok to read stale data here for notify_user as we'll simply
++	 * get the updated version on the next mcheck_timer execution.
+ 	 */
+-	if (notify_user && console_logged) {
++	if (notify_user) {
+ 		static unsigned long last_print;
+ 		unsigned long now = jiffies;
  
- 	if (pci_mmcfg_arch_init()) {
--		if (type == 1)
-+		if (pci_probe & PCI_PROBE_CONF1)
- 			unreachable_devices();
- 		if (known_bridge)
- 			pci_mmcfg_insert_resources();
-diff -up linux-2.6.21.1/arch/i386/pci/pci.h linux-2.6.21.1edit/arch/i386/pci/pci.h
---- linux-2.6.21.1/arch/i386/pci/pci.h	2007-04-27 15:49:26.000000000 -0600
-+++ linux-2.6.21.1edit/arch/i386/pci/pci.h	2007-04-29 18:33:21.000000000 -0600
-@@ -91,7 +91,8 @@ extern int pci_conf1_read(unsigned int s
- extern int pci_direct_probe(void);
- extern void pci_direct_init(int type);
- extern void pci_pcbios_init(void);
--extern void pci_mmcfg_init(int type);
-+extern void pci_mmcfg_early_init(int type);
-+extern void pci_mmcfg_late_init(void);
- extern void pcibios_sort(void);
++		/* alert userspace */
++		mce_notify_user();
++
+ 		/* if we logged an MCE, reduce the polling interval */
+ 		next_interval = max(next_interval/2, HZ/100);
+-		notify_user = 0;
+-		clear_bit(0, &console_logged);
+ 		if (time_after_eq(now, last_print + (check_interval*HZ))) {
+ 			last_print = now;
+ 			printk(KERN_INFO "Machine check events logged\n");
+@@ -530,6 +533,14 @@ static ssize_t mce_read(struct file *fil
+ 	return err ? -EFAULT : buf - ubuf; 
+ }
  
- /* pci-mmconfig.c */
-diff -ruw linux-2.6.21.1/drivers/acpi/bus.c linux-2.6.21.1edit/drivers/acpi/bus.c
---- linux-2.6.21.1/drivers/acpi/bus.c	2007-04-27 15:49:26.000000000 -0600
-+++ linux-2.6.21.1edit/drivers/acpi/bus.c	2007-04-29 19:22:07.000000000 -0600
-@@ -42,6 +42,7 @@
- ACPI_MODULE_NAME("bus");
- #ifdef	CONFIG_X86
- extern void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger);
-+extern void __init pci_mmcfg_late_init(void);
- #endif
++static unsigned int mce_poll(struct file *file, poll_table *wait)
++{
++	poll_wait(file, &mce_wait, wait);
++	if (rcu_dereference(mcelog.next))
++		return POLLIN | POLLRDNORM;
++	return 0;
++}
++
+ static int mce_ioctl(struct inode *i, struct file *f,unsigned int cmd, unsigned long arg)
+ {
+ 	int __user *p = (int __user *)arg;
+@@ -554,6 +565,7 @@ static int mce_ioctl(struct inode *i, st
  
- struct acpi_device *acpi_root;
-@@ -753,6 +754,9 @@
- 	result = acpi_bus_init();
+ static const struct file_operations mce_chrdev_ops = {
+ 	.read = mce_read,
++	.poll = mce_poll,
+ 	.ioctl = mce_ioctl,
+ };
  
- 	if (!result) {
-+#ifdef CONFIG_X86
-+		pci_mmcfg_late_init();
-+#endif		
- #ifdef CONFIG_PM_LEGACY
- 		if (!PM_IS_ACTIVE())
- 			pm_active = 1;
+diff -pruN linux-2.6.20+th/include/asm-x86_64/thread_info.h linux-2.6.20+th2v2/include/asm-x86_64/thread_info.h
+--- linux-2.6.20+th/include/asm-x86_64/thread_info.h	2007-02-04 10:44:54.000000000 -0800
++++ linux-2.6.20+th2v2/include/asm-x86_64/thread_info.h	2007-04-27 23:13:59.000000000 -0700
+@@ -115,6 +115,7 @@ static inline struct thread_info *stack_
+ #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
+ #define TIF_SECCOMP		8	/* secure computing */
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal */
++#define TIF_MCE_NOTIFY		10	/* notify userspace of an MCE */
+ /* 16 free */
+ #define TIF_IA32		17	/* 32bit process */ 
+ #define TIF_FORK		18	/* ret_from_fork */
+@@ -133,6 +134,7 @@ static inline struct thread_info *stack_
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SECCOMP		(1<<TIF_SECCOMP)
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
++#define _TIF_MCE_NOTIFY		(1<<TIF_MCE_NOTIFY)
+ #define _TIF_IA32		(1<<TIF_IA32)
+ #define _TIF_FORK		(1<<TIF_FORK)
+ #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
