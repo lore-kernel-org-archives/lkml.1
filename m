@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423032AbXD3F0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423034AbXD3F0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423032AbXD3F0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423039AbXD3F0H
+	id S1423034AbXD3F0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423037AbXD3F0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:26:07 -0400
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:24936 "HELO
-	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1423032AbXD3F0F (ORCPT
+	Mon, 30 Apr 2007 01:26:41 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33790 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423034AbXD3F0j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:26:05 -0400
-X-YMail-OSG: 8AC.XHkVM1k1OIUaS66VuE4A9ak4Zz3i5RldyffApDgJ2fcxY0x7uKF83Ic1n_vsKfUDfpVNYQ--
-Date: Sun, 29 Apr 2007 22:25:59 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 0/5] fallocate system call
-Message-ID: <20070430052559.GA13145@tuatara.stupidest.org>
-References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com>
+	Mon, 30 Apr 2007 01:26:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
+	<1177902195.30071.203.camel@localhost.localdomain>
+	<463572B7.90202@zytor.com>
+	<1177909434.30071.216.camel@localhost.localdomain>
+Date: Sun, 29 Apr 2007 23:25:53 -0600
+In-Reply-To: <1177909434.30071.216.camel@localhost.localdomain> (Rusty
+	Russell's message of "Mon, 30 Apr 2007 15:03:54 +1000")
+Message-ID: <m1d51m77ry.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430004702.GM32602149@melbourne.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:47:02AM +1000, David Chinner wrote:
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
-> For FA_ALLOCATE, it's supposed to change the file size if we
-> allocate past EOF, right?
+> On Sun, 2007-04-29 at 21:38 -0700, H. Peter Anvin wrote:
+>> Rusty Russell wrote:
+>> > 
+>> > Dammit, Eric, you spend a lot of time using words like "insane" where
+>> > you mean we didn't do everything all at once.
+>> > 
+>> > It's *not* clear that using %esi is sane, but nothing in the current
+>> > code prevents that.
+>> 
+>> Why not?
+>
+> (I assume you mean why isn't it clear?)
+>
+> Because VMI uses the presence of a ROM to indicate it's not native.  KVM
+> uses a magic MSR IIRC.
 
-I would argue no.  Use truncate for that.
+Reasonable, if you don't mid a little hardware emulation.
 
-> For FA_DEALLOCATE, does it change the filesize at all?
+> I think it makes sense for lguest to change over, tho.  Patches welcome
+> 8)
 
-Same as above.
+Sure.
 
-> Or does
-> it just punch a hole in the file?
+Peter do we want to use the bootloader byte and assign lguest it's own
+bootloader type or do we want to add another field specific to 
+paravirtualized environments?
 
-Yes.
-
-> FWIW, we definitely need a FA_PREALLOCATE mode (FA_ALLOCATE but does
-> not change file size) so we can preallocate beyond EOF for apps
-> which use O_APPEND (i.e. changing file size would cause problems for
-> them).
-
-FA_ALLOCATE should be able to allocate past-EOF I would argue.
+Eric
