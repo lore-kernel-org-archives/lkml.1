@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946525AbXD3RRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946563AbXD3RZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946525AbXD3RRv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946532AbXD3RRv
+	id S1946563AbXD3RZy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946558AbXD3RZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:17:51 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49769 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1946525AbXD3RRu (ORCPT
+	Mon, 30 Apr 2007 13:25:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56834 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946531AbXD3RYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:17:50 -0400
-Date: Mon, 30 Apr 2007 18:21:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
- time?
-Message-ID: <20070430182135.0fae7b89@the-village.bc.nu>
-In-Reply-To: <20070430100225.353e3030.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>
-	<20070430001311.84d0291f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0704300445460.17536@localhost.localdomain>
-	<20070430100225.353e3030.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Mon, 30 Apr 2007 13:24:50 -0400
+Date: Mon, 30 Apr 2007 18:23:52 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Paul Jackson <pj@sgi.com>, menage@google.com, akpm@linux-foundation.org,
+       dev@sw.ru, xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+       devel@openvz.org
+Subject: Re: [PATCH 0/9] Containers (V9): Generic Process Containers
+Message-ID: <20070430172352.GA8567@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Srivatsa Vaddagiri <vatsa@in.ibm.com>, Paul Jackson <pj@sgi.com>,
+	menage@google.com, akpm@linux-foundation.org, dev@sw.ru,
+	xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
+	haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+	ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+	devel@openvz.org
+References: <20070427104607.252541000@menage.corp.google.com> <20070429023721.53f249b9.pj@sgi.com> <20070430171225.GH24350@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430171225.GH24350@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> > > > drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
-> > > >
-> > > >   clarification?
-> > >
-> > > GFP_ATOMIC implies that the memory comes from the zones which
-> > > GFP_KERNEL also uses.  So the above usage of GFP_KERNEL is redundant
-> > > and should be removed.
-> > 
-> > hang on ... based on an email i just got, is that reference to
-> > GFP_KERNEL "redundant" or "conflicting"?  big difference there.  and
-> > is the proper fix to remove "GFP_KERNEL" in both cases?
-> > 
+On Mon, Apr 30, 2007 at 10:42:25PM +0530, Srivatsa Vaddagiri wrote:
+> On Sun, Apr 29, 2007 at 02:37:21AM -0700, Paul Jackson wrote:
+> > It builds and boots and mounts the cpuset file system ok.
+> > But trying to write the 'mems' file hangs the system hard.
 > 
-> umm, yeah, oops.  GFP_KERNEL|GFP_ATOMIC is not a redundant combination. 
-> It's GFP_KERNEL plus "is able to access emergency pools".  We'd normally
-> represent that as GFP_KERNEL|__GFP_HIGH.
+> Basically we are attempting a read_lock(&tasklist_lock) in
+> container_task_count() after taking write_lock_irq(&tasklist_lock) in
+> update_nodemask()!
+> 
+> This patch seems to fix the prb for me:
+> 
+> 
+> Fix write_lock() followed by read_lock() bug by introducing a 2nd
+> argument to be passed into container_task_count. Other choice is to
+> introduce a lock and unlocked versions of container_task_count() ..
+> 
+> Signed-off-by : Srivatsa Vaddagiri <vatsa@in.ibm.com>
 
-i2o/device.c should be GFP_KERNEL as far as I can tell. It was meant to
-be that way and the callers appear to all be calling it in sleep capable
-contexts.
+> -int container_task_count(const struct container *cont) {
+> +int container_task_count(const struct container *cont, int take_lock) {
+>  	int count = 0;
+>  	struct task_struct *g, *p;
+>  	struct container_subsys_state *css;
+>  	int subsys_id;
+>  	get_first_subsys(cont, &css, &subsys_id);
+>  
+> -	read_lock(&tasklist_lock);
+> +	if (take_lock)
+> +		read_lock(&tasklist_lock);
+>  	do_each_thread(g, p) {
+>  		if (task_subsys_state(p, subsys_id) == css)
+>  			count ++;
+>  	} while_each_thread(g, p);
+> -	read_unlock(&tasklist_lock);
+> +	if (take_lock)
+> +		read_unlock(&tasklist_lock);
+>  	return count;
 
-aic7xxx_old.c should probably be GFP_KERNEL as ->slave_alloc methods
-appear to be able to sleep (although some drivers use GFP_ATOMIC here and
-some GFP_KERNEL).
+Umm, no - please naje two versions with and without the lock.  Also
+Please fix up the codingstyle, the { belongs onto a line of it's own.
 
-Alan
