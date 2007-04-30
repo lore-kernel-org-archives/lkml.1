@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXD3A4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422717AbXD3BNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422665AbXD3A4y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 20:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422675AbXD3A4y
+	id S1422717AbXD3BNN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 21:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422710AbXD3BNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 20:56:54 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48586 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422665AbXD3A4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 20:56:53 -0400
-Date: Sun, 29 Apr 2007 17:59:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Jones <davej@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-Message-Id: <20070429175925.1c1d63b3.randy.dunlap@oracle.com>
-In-Reply-To: <20070427221803.2a117c23.akpm@linux-foundation.org>
-References: <20070423141123.GA21174@skybase>
-	<20070423104534.51bac974.akpm@linux-foundation.org>
-	<20070425112133.4ae86399.randy.dunlap@oracle.com>
-	<20070425143011.57247c1d.akpm@linux-foundation.org>
-	<20070425172447.1576c399.akpm@linux-foundation.org>
-	<20070426003911.GA19383@redhat.com>
-	<4630109F.6090002@oracle.com>
-	<20070425200207.77a2721a.akpm@linux-foundation.org>
-	<20070428030805.GA13331@redhat.com>
-	<20070427221803.2a117c23.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 29 Apr 2007 21:13:13 -0400
+Received: from ozlabs.org ([203.10.76.45]:51685 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422707AbXD3BNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 21:13:12 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Message-ID: <17973.16109.113219.634346@cargo.ozlabs.ibm.com>
+Date: Mon, 30 Apr 2007 10:57:17 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch 20/38] Minor fault path optimization.
+In-Reply-To: <20070428083409.GA22156@infradead.org>
+References: <20070427140503.087958775@de.ibm.com>
+	<20070427140516.523272684@de.ibm.com>
+	<17970.53875.506097.699517@cargo.ozlabs.ibm.com>
+	<20070428083409.GA22156@infradead.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 22:18:03 -0700 Andrew Morton wrote:
+Christoph Hellwig writes:
 
-> On Fri, 27 Apr 2007 23:08:05 -0400 Dave Jones <davej@redhat.com> wrote:
-> 
-> > You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
-> 
-> hm.
-> 
-...
+> Well, here's my powerpc patch to do the direct call that I sent out
+> a few weeks ago.  It not just speed up the pagefault path a lot, 
+> but also is a major code cleanup.  Andi and Anton didn't like it
+> because they have ambition for murky debugger code to possibly
+> use it one day..
 
-> box:/usr/src/25> ~/checkpatch.pl patches/git-powerpc.patch
-> Checking patches/git-powerpc.patch:  signoffs = 427       
-> kmalloc return shouldn't be cast.
-> 10969:+ char *out = (char*)kmalloc(count + 1, GFP_KERNEL);
-> 
-> Use 'inline' instead of '__inline__'26644:+static __inline__ void atomic_scrub(void *va, u32 size)
+Looks good.  Could you resend it to me with a proper description and a
+sign-off?
 
-Fixed missing \n.
-
-...
-
-> A good start, thanks.  The BUG_ON() thing might be unpopular, but I think it's
-> for the best.  It should skip BUILD_BUG_ON though.
-
-BUILD_BUG_ON is now skipped (in my script, not sent to DaveJ yet).
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Thanks,
+Paul.
