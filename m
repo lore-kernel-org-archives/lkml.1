@@ -1,70 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031584AbXD3T6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423554AbXD3T7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031584AbXD3T6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031585AbXD3T6t
+	id S1423554AbXD3T7I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423550AbXD3T7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:58:49 -0400
-Received: from pool-72-92-185-191.albyny.east.verizon.net ([72.92.185.191]:50959
-	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031584AbXD3T6r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:58:47 -0400
-Message-ID: <46364A75.9080003@tmr.com>
-Date: Mon, 30 Apr 2007 15:58:45 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
+	Mon, 30 Apr 2007 15:59:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42810 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423522AbXD3T7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 15:59:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.22
+Date: Mon, 30 Apr 2007 22:03:30 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Miles Lane <miles.lane@gmail.com>, lollul@wp.pl,
+       Helge Hafting <helgehaf@aitel.hist.no>
+References: <200704290102.33533.lenb@kernel.org> <200704291417.02362.rjw@sisk.pl> <20070430153304.GT11115@waste.org>
+In-Reply-To: <20070430153304.GT11115@waste.org>
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Linux Kernel M/L <linux-kernel@vger.kernel.org>
-Subject: Re: [REPORT] 2.6.21 vs. 2.6.21-sd046 vs. 2.6.21-CFSv7
-References: <463643A9.5040009@tmr.com>
-In-Reply-To: <463643A9.5040009@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200704302203.31757.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> System: Intel 6600 Core2duo, 2GB RAM, X nice 0 for all tests, display 
-> using i945G framebuffer
+On Monday, 30 April 2007 17:33, Matt Mackall wrote:
+> On Sun, Apr 29, 2007 at 02:17:01PM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, 29 April 2007 13:52, Matt Mackall wrote:
+> > > On Sun, Apr 29, 2007 at 01:01:04AM -0700, Andrew Morton wrote:
+> > > > On Sun, 29 Apr 2007 01:02:33 -0400 Len Brown <lenb@kernel.org> wrote:
+> > > > 
+> > > > > please pull from: 
+> > > > > 
+> > > > > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> > > > > 
+> > > > > This batch mostly updates the platform-specific drivers that use ACPI.
+> > > > > The EC and sbs changes are primarily cleanups.
+> > > > > There are no changes to the ACPICA core, except a single bugfix
+> > > > > that was related to a 2.6.21 boot regression on some older machines.
+> > > > > And then the usual mix of random tweaks.
+> > > > 
+> > > > There might still be a few regressions in this lot:
+> > > > 
+> > > > - Miles Lane's "2.6.21-rc7-mm2 -- gnome-power-manager always shows the
+> > > >   power as coming from AC"
+> > > > 
+> > > > - "battery caching introduces a lock up"
+> > > >   http://bugzilla.kernel.org/show_bug.cgi?id=8351
+> > > > 
+> > > > These are older and might have been fixed:
+> > > > 
+> > > > - Mat Mackall's "Thinkpads not waking up on lid open with -rc6-mm1"
+> > > 
+> > > This seems to be related to suspend to disk. After the first suspend
+> > > to disk/resume, suspend to ram stops resuming from lid open and needs
+> > > me to hit the power button. As I just started using suspend to disk in
+> > > the past couple weeks, this may be a long-standing bug.
+> > > 
+> > > I think it's still present in -rc7-mm1 but I don't have my laptop
+> > > handy to double-check.
+> > 
+> > Can you please check if the appended debug patch helps?
 > 
-> Test: playing a 'toon with mplayer while kernel build -j20 running.
+> Nope.
 > 
-> Tuning: not yet, all scheduler parameters were default
-> 
-> Result: base 2.6.21 showed some pauses and after the pause the sound got 
-> louder for a short time (<500ms). With sd-0.46 the playback had many 
-> glitches and finally just stopped with the display looping on a small 
-> number of frames and no sound. The skips were repeatable, the hang was 
-> only two of five runs, I didn't let them go until the make finished 
-> (todo list) but killed the mplayer after 10-15 sec. No glitches observed 
-> with cfsv7, I thought I saw one but repeating with granularity set to 
-> 500000 and then with no make running convinced me that it's just a 
-> crappy piece of animation at that point.
-> 
-> I ran glxgears, again sd-0.46 had frequent pauses and uneven fps 
-> reported. Stock 2.6.21 had a visible pause when the frame rate was 
-> output, otherwise minimal pauses. CFSv7 appeared smooth at about 250 fps.
-> 
-> All tests gave acceptable typing echo, it seems that X is getting enough 
-> time at that load to echo without major issues.
-> 
-> I will be doing tests with server load later this week, have to add disk 
-> for the database.
-> 
-> Hope this initial report is useful, I may be able to update ctxbench 
-> later today and try that.
-> 
-Followup: I reran with sd-0.46, setting rr_interval to 40, and then 5 
-(default was 16). Neither appeared to give a useful video playback. I 
-did try setting the make to nice 10, and that made the playback 
-perfectly smooth, as well as response to skip forward and volume change 
-happening when the key was pressed instead of eventually.
+> boot into new kernel
+> lid switch -> suspend
+> lid switch -> resume
+> power button -> hibernate
+> power button -> resume
+> lid switch -> suspend
+> lid switch -> nothing
+> power button -> resume
+> echo LID > /proc/acpi/wakeup -> "*disabled"
+> echo LID > /proc/acpi/wakeup -> "*enabled"
+> lid switch -> suspend
+> lid switch -> nothing
 
-I also tried raising the nice of X to -10, that made things better on 
-display, but I winder if it will let X run ahead of the nice-0 raid threads.
+Then this is unrelated.
 
-Is this my hardware or is there a really odd behavior here? The sd seems 
-to be too fair to cope well with this realistic load, and expecting 
-users to nice things is probably morally correct but unrealistic.
+What does 'cat /sys/power/disk' show?
+
+Rafael
+
+
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
