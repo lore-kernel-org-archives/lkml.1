@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946872AbXD3WoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753306AbXD3Wpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946872AbXD3WoF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 18:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946871AbXD3WoF
+	id S1753306AbXD3Wpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 18:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbXD3Wpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 18:44:05 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59939 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946872AbXD3WoB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 18:44:01 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <463670DB.9090003@s5r6.in-berlin.de>
-Date: Tue, 01 May 2007 00:42:35 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Mon, 30 Apr 2007 18:45:43 -0400
+Received: from holomorphy.com ([66.93.40.71]:58648 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753673AbXD3Wpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 18:45:41 -0400
+Date: Mon, 30 Apr 2007 15:45:36 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Matt Keenan <tank.en.mate@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Bradley Chapman <kakadu@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_HIGHMEM4G and 1GB RAM
+Message-ID: <20070430224536.GQ19966@holomorphy.com>
+References: <e294b46e0704281326w60f9cecfuace3442791f147b3@mail.gmail.com> <20070430001755.e9f203c9.akpm@linux-foundation.org> <20070430074044.GB19966@holomorphy.com> <46366B34.3050003@gmail.com>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same time?
-References: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>	 <20070430001311.84d0291f.akpm@linux-foundation.org>	 <Pine.LNX.4.64.0704300445460.17536@localhost.localdomain>	 <20070430100225.353e3030.akpm@linux-foundation.org>	 <20070430182135.0fae7b89@the-village.bc.nu> <a781481a0704301204i247a5123r1e6146c99b2e467e@mail.gmail.com>
-In-Reply-To: <a781481a0704301204i247a5123r1e6146c99b2e467e@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46366B34.3050003@gmail.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> On 4/30/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> i2o/device.c should be GFP_KERNEL as far as I can tell. It was meant to
->> be that way and the callers appear to all be calling it in sleep capable
->> contexts.
->>
->> aic7xxx_old.c should probably be GFP_KERNEL as ->slave_alloc methods
->> appear to be able to sleep (although some drivers use GFP_ATOMIC here and
->> some GFP_KERNEL).
-> 
-> Yes, none of the above appear to be atomic contexts. GFP_KERNEL in
-> that case would've been a bug. If they were atomic contexts, someone
-> somewhere would've been seeing a lot of "BUG: sleeping function called
-> from invalid context" messages and would've probably brought it to
-> lkml's notice already ;-) So the GFP_ATOMIC seems to be redundant
-> thing here in both cases.
+William Lee Irwin III wrote:
+>> The CONFIG_VMSPLIT config options were merged for such cases.
+>> It should be able to split on any 4MB-aligned boundary in
+>> CONFIG_HIGHMEM4G. CONFIG_VMSPLIT_3G_OPT appears to do something of
+>> this sort to use an entire 1GB RAM with minimal user address space
+>> reduction.
+>> This is an ELF ABI violation but the number of major applications
+>> that break is apparently low.
 
-Documentation/scsi/scsi_mid_low_api.txt agrees that ->slave_alloc is
-allowed to sleep.
--- 
-Stefan Richter
--=====-=-=== -=-= ----=
-http://arcgraph.de/sr/
+On Mon, Apr 30, 2007 at 11:18:28PM +0100, Matt Keenan wrote:
+> wine and some java implementations being two of the big caveats.
+
+Understand that when I say this, I remain one of the more staunch
+critics of the ABI-violating aspect of the CONFIG_VMSPLIT options.
+
+I would be more in favor of reorganizing the kernel virtual address
+space for the case of 1GB laptops. The primary reason it now requires
+highmem is that otherwise vmallocspace would alias ZONE_NORMAL, which
+is not handled.
+
+The way to handle the aliasing is simple except for the case of vmap();
+simply allocate the backing pages for vmalloc() from the virtual
+address range aliasing it. IOW, implement vmalloc() as __get_free_pages(),
+save for supporting cases beyond power-of-two alignment. vmap() must
+carry out a similar reservation to obtain a virtually contiguous range
+of memory; however, it must not use the underlying pages. Instead, it
+must map the physical pages specified by the caller in the range of
+virtual address space reserved in tandem with the physically contiguous
+allocation. The physical pages underlying the virtual mapping window,
+without a way to window into them as per CONFIG_HIGHMEM, merely stay
+reserved until the virtual mapping established by vmap() that clashes
+with their static virtual mapping is undone.
+
+In such a manner the static virtualspace reservation for vmallocspace
+can be eliminated, and the case of 1GB laptops handled efficiently with
+neither highmem nor ABI violations.
+
+If this sounds invasive or difficult, that's because it probably is.
+Taking this idea seriously is indicative of the gravity I consider
+the issues of laptop/desktop users to have.
+
+
+-- wli
