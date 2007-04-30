@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423069AbXD3G0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423072AbXD3G0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423069AbXD3G0R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 02:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423070AbXD3G0R
+	id S1423072AbXD3G0m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 02:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423075AbXD3G0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 02:26:17 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:51180 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423069AbXD3G0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 02:26:16 -0400
-Date: Mon, 30 Apr 2007 08:25:41 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Li Yu <raise.sail@gmail.com>
-cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Greg Kroah Hartman <greg@kroah.com>,
-       linux-usb-devel <linux-usb-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Vincent Legoll <vincentlegoll@gmail.com>,
-       "Zephaniah E. Hull" <warp@aehallh.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Harold Sargeant <harold-sargeant@ntlworld.com>,
-       liyu <liyu@ccoss.com.cn>
-Subject: Re: [PATCH] usb/hid:The HID Simple Driver Patches 0.5.1
-In-Reply-To: <200704301419090949930@gmail.com>
-Message-ID: <Pine.LNX.4.64.0704300822530.20657@twin.jikos.cz>
-References: <200704301419090949930@gmail.com>
+	Mon, 30 Apr 2007 02:26:42 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:33713 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423072AbXD3G0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 02:26:40 -0400
+Message-ID: <46358BCB.3040303@wpkg.org>
+Date: Mon, 30 Apr 2007 08:25:15 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.21
+References: <4635084A.6010506@wpkg.org> <20070430030213.GB23336@stusta.de>
+In-Reply-To: <20070430030213.GB23336@stusta.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007, Li Yu wrote:
+Adrian Bunk schrieb:
+> On Sun, Apr 29, 2007 at 11:04:10PM +0200, Tomasz Chmielewski wrote:
+>> Linus Torvalds wrote:
+>>
+>>> On Sun, 29 Apr 2007, Adrian Bunk wrote:
+>>>> The kernel Bugzilla currently contains 1600 open bugs.
+>>> Adrian, why do you keep harping on this, and ignoring reality?
+>>> Kernel bugzilla has 1600 open bugs BECAUSE IT SUCKS.
+>>> How many of those are interesting and valid? How many of them are 
+>>> relevant? How many of them are duplicates?
+>> And - how many of these bug reports have kernel's bugzilla ever forwarded 
+>> to lkml so that other people could see them?
+>>
+>> Is that number zero (because kernel's bugzilla is configured this way)?
+> 
+> Andrew forwards incoming Bugzilla bugs to the responsible maintainers 
+> (if there are any).
+> 
+> If it is considered useful it shouldn't be a problem to automatically 
+> forward all incoming Bugzilla bugs to linux-kernel.
 
-> This patch set include :
-> 	1. usb/hid: The HID Simple Driver Interface 0.5.0 (core)
-> 	2. usb/hid:Microsoft Natural Ergonomic Keyboard 4000 Driver 0.5.1
-> 	3. Some related kbuild changes.
-> The changelog since 0.5.0:
-> 	1. The parameter ascii_keycode of usbnek4k.ko is on default. so 
->          the five custom keys can work without any care.
-> 	2. Add the parameter zoom_scroll of usbnek4k.ko, so we can use 
->          zoomin/zoomout handlers as mouse scrollwheel. this is on 
->          default too.
+Why isn't it done yet? If the bugs were already forwarded to 
+linux-kernel (and perhaps, to linux-<subsystem> when possible, too), we 
+would save at least two days of this long "Linux 2.6.21" thread...
 
-Hi Li,
+For I somehow feel that most people here dislike bugzilla because of 
+misconceptions - which only arose as bugzilla.kernel.org is *really* 
+misconfigured.
 
-is there any chance that you rather split up the hid bus patch you have 
-been working on recently into independent reviewable patches instead, as 
-we were discussing it previously?
-
-Thanks,
 
 -- 
-Jiri Kosina
+Tomasz Chmielewski
+http://wpkg.org
