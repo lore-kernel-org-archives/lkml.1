@@ -1,48 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423177AbXD3MHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423190AbXD3MN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423177AbXD3MHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 08:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423182AbXD3MHy
+	id S1423190AbXD3MN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 08:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423193AbXD3MN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 08:07:54 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:63420 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423177AbXD3MHx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 08:07:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=BvhbPRw9V+O1fMxNlnDKZxGadU4A48Odm2eFiztVUvlIzRE06iM3PIjPxzH/VPikzs7IRgJcQRCIZA7VR5NMRlKRTARXgBPhRkVkGUwEgNsseg4XVD2yIqqjdRmHckfwXLJtOjZ9fF5VsZRTW0T7mBb7GwaaMrDL1rtG97SKQOM=
-Message-ID: <4635DC15.6090705@gmail.com>
-Date: Mon, 30 Apr 2007 06:07:49 -0600
-From: "Berck E. Nash" <flyboy@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm1 BUG at kernel/sched-clock.c:175 init_sched_clock()
-References: <462E4C4D.9020806@gmail.com> <20070425011654.222a2b4b.akpm@linux-foundation.org> <462F1481.8010807@gmail.com> <20070425085432.GD17130@htj.dyndns.org> <20070425093044.GE17130@htj.dyndns.org> <462FE982.7030906@gmail.com> <46354620.4060902@gmail.com>
-In-Reply-To: <46354620.4060902@gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Apr 2007 08:13:59 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:40255 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423190AbXD3MN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 08:13:58 -0400
+Date: Mon, 30 Apr 2007 14:13:52 +0200 (MEST)
+Message-Id: <200704301213.l3UCDqgN018906@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: juergen127@kreuzholzen.de, linux-kernel@vger.kernel.org
+Subject: Re: Geode-GX1 processor in 2.6.21
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
+On Mon, 30 Apr 2007 12:51:05 +0200, Juergen Beisert wrote:
+> 	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+> 
+> If this register is 0x00 before, it is still 0x00 after this line. If I change 
+> the line into this:
+> 
+> 	ccr2 = getCx86(CX86_CCR2);
+> 	ccr2 |= 0x88;
+> 	setCx86(CX86_CCR2, ccr2);
+> 
+> register ccr2 is 0x88 after the setCx86 call and the power saving feature is 
+> active (and BTW: the TSC is useless then, because it also stops when the CPU 
+> runs into a HLT instruction).
+> 
+> setCx86 and getCx86 are macros defined in include/asm-i386/processor.h:
+> 
+> #define getCx86(reg) ({ outb((reg), 0x22); inb(0x23); })
+> 
+> #define setCx86(reg, data) do { \
+>          outb((reg), 0x22); \
+>          outb((data), 0x23); \
+> } while (0)
+> 
+> Maybe the compiler does the wrong thing if someone uses these macros in the 
+> same instruction?
 
-> Hmmm... Once properly initialized, ahci is highly unlikely to cause
-> runaway IRQs which results in nobody cared.  It has proper IRQ mask and
-> pending bits allowing the driver to reliably detect when and why the
-> controller is raising interrupt and disable it if necessary.  Can you
-> try without the NVIDIA module?
+The compiler is fine, it's the setCx86() macro that is utter crap
+because it fails to behave like a function by not evaluating its
+arguments before performing its outb() statements.
 
-I'm beginning to think it was a one-time hardware error of some sort.
-I've been running 2.6.21-rc7-mm2 for awhile now and the problem hasn't
-reoccurred, so I think you can consider the matter settled...
+Converting them to static inlines would be the best solution. Something like
 
-Thanks,
-Berck
+static inline u8 getCx86(unsigned int reg)
+{
+	outb(reg, 0x22);
+	return inb(0x23);
+}
+
+static inline void setCx86(unsigned int reg, u8 data)
+{
+	outb(reg, 0x22);
+	outb(data, 0x23);
+}
+
+ought to work.
+
+/Mikael
