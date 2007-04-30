@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423102AbXD3HNP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbXD3HR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423102AbXD3HNP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 03:13:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423101AbXD3HNP
+	id S1752897AbXD3HR7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 03:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbXD3HR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 03:13:15 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60908 "EHLO
+	Mon, 30 Apr 2007 03:17:59 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60462 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423102AbXD3HNO (ORCPT
+	by vger.kernel.org with ESMTP id S1752897AbXD3HR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 03:13:14 -0400
-Date: Mon, 30 Apr 2007 00:13:11 -0700
+	Mon, 30 Apr 2007 03:17:58 -0400
+Date: Mon, 30 Apr 2007 00:17:55 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: can a kmalloc be both GFP_ATOMIC and GFP_KERNEL at the same
- time?
-Message-Id: <20070430001311.84d0291f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>
-References: <Pine.LNX.4.64.0704280937060.24917@localhost.localdomain>
+To: "Bradley Chapman" <kakadu@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_HIGHMEM4G and 1GB RAM
+Message-Id: <20070430001755.e9f203c9.akpm@linux-foundation.org>
+In-Reply-To: <e294b46e0704281326w60f9cecfuace3442791f147b3@mail.gmail.com>
+References: <e294b46e0704281326w60f9cecfuace3442791f147b3@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,37 +25,31 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 09:40:39 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+On Sat, 28 Apr 2007 21:26:42 +0100 "Bradley Chapman" <kakadu@gmail.com> wrote:
 
+> After installing a second 512MB SODIMM into my laptop, I noticed that
+> my 2.6.18.3 kernel only detected and used 896MB of the resulting 1GB,
+> and informed me that I needed to enable high memory in order to access
+> the remaining 127MB.
 > 
->   i'd always assumed that the type flags of GFP_ATOMIC and GFP_KERNEL
-> were mutually exclusive when it came to calling kmalloc(), at least
-> based on everything i'd read.  so i'm not sure how to interpret the
-> following:
+> While doing so, I noticed that the help text stated that enabling high
+> memory (in my case, CONFIG_HIGHMEM4G) should only be done if the
+> system the kernel is running on has more than 1GB, but less than 4GB -
+> it said that systems with 1GB should leave it off, which resulted in
+> an eighth of the installed memory going missing. A bit more research
+> found a three year old thread on this list where it was stated that
+> enabling CONFIG_HIGHMEM4G sometimes slows the system down due to
+> sometimes undesirable changes to the way the kernel sets up the memory
+> map.
 > 
-> drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
+> Basically, all I want to know is whether or not enabling
+> CONFIG_HIGHMEM4G for a laptop that has exactly 1GB of RAM will result
+> in any performance degradation.
 > 
->   clarification?
 
-GFP_ATOMIC implies that the memory comes from the zones which GFP_KERNEL
-also uses.  So the above usage of GFP_KERNEL is redundant and should be
-removed.
+I would expect the advantages of the additional 128MB to considerably
+outweigh the cost of turning on CONFIG_HIGHMEM4G.
 
-The way to understand this is to look at the definitions:
+That cost will be a little extra CPU consumption inside the kernel, but the
+great majority of CPU consumption usually happens in userspace anyway.
 
-#define GFP_ATOMIC	(__GFP_HIGH)
-#define GFP_NOIO	(__GFP_WAIT)
-#define GFP_NOFS	(__GFP_WAIT | __GFP_IO)
-#define GFP_KERNEL	(__GFP_WAIT | __GFP_IO | __GFP_FS)
-#define GFP_USER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HARDWALL)
-#define GFP_HIGHUSER	(__GFP_WAIT | __GFP_IO | __GFP_FS | __GFP_HARDWALL | \
-			 __GFP_HIGHMEM)
-
-
-GFP_KERNEL: can sleep, can do IO, can enter filesystems
-
-GFP_ATOMIC: cannot sleep, cannot do IO, cannot enter filesystems
-
-Neither of them contains __GFP_DMA or __GFP_HIGHMEM, so both of them refer
-to ZONE_NORMAL and any lower zones (ie: ZONE_DMA)
