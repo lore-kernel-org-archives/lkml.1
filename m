@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbXD3KvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbXD3Kzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbXD3KvM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 06:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbXD3KvM
+	id S1754461AbXD3Kzh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 06:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXD3Kzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 06:51:12 -0400
-Received: from bill.weihenstephan.org ([82.135.35.21]:51805 "EHLO
-	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbXD3KvK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 06:51:10 -0400
-From: Juergen Beisert <juergen127@kreuzholzen.de>
-Organization: Privat
+	Mon, 30 Apr 2007 06:55:37 -0400
+Received: from mail.suse.de ([195.135.220.2]:53882 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754461AbXD3Kyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 06:54:49 -0400
+From: Andreas Schwab <schwab@suse.de>
 To: linux-kernel@vger.kernel.org
-Subject: Geode-GX1 processor in 2.6.21
-Date: Mon, 30 Apr 2007 12:51:05 +0200
-User-Agent: KMail/1.9.4
+Subject: [PATCH] Fix error handling in HDIO_GETGEO compat wrapper
+X-Yow: C'MON, everybody!!  I've flown in LESLIE GORE and two dozen KOSHER
+ BUTCHERS!  They'll be doing intricate MILITARY MANEUVERS to the
+ soundtrack from "OKLAHOMA"!!
+Date: Mon, 30 Apr 2007 12:54:48 +0200
+Message-ID: <jefy6ixhc7.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.0.97 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200704301251.05697.juergen127@kreuzholzen.de>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Don't clobber error from sys_ioctl in HDIO_GETGEO compat wrapper.
 
-I do not understand it, but setting up some chipset features (tweaks) fail on 
-Geode GX1.
+Signed-off-by: Andreas Schwab <schwab@suse.de>
 
-In arch/i386/kernel/cpu/cyrix.c function geode_configure() tries to enable 
-the "suspend on halt power saving feature". This is the line:
+---
+ fs/compat_ioctl.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+--- linux-2.6.21.orig/fs/compat_ioctl.c	2007-04-26 13:40:52.000000000 +0200
++++ linux-2.6.21/fs/compat_ioctl.c	2007-04-29 23:50:45.000000000 +0200
+@@ -670,8 +670,10 @@ static int hdio_getgeo(unsigned int fd, 
+ 	if (!err) {
+ 		err = copy_to_user (ugeo, &geo, 4);
+ 		err |= __put_user (geo.start, &ugeo->start);
++		if (err)
++			err = -EFAULT;
+ 	}
+-	return err ? -EFAULT : 0;
++	return err;
+ }
+ 
+ static int hdio_ioctl_trans(unsigned int fd, unsigned int cmd, unsigned long arg)
 
-If this register is 0x00 before, it is still 0x00 after this line. If I change 
-the line into this:
+Andreas.
 
-	ccr2 = getCx86(CX86_CCR2);
-	ccr2 |= 0x88;
-	setCx86(CX86_CCR2, ccr2);
-
-register ccr2 is 0x88 after the setCx86 call and the power saving feature is 
-active (and BTW: the TSC is useless then, because it also stops when the CPU 
-runs into a HLT instruction).
-
-setCx86 and getCx86 are macros defined in include/asm-i386/processor.h:
-
-#define getCx86(reg) ({ outb((reg), 0x22); inb(0x23); })
-
-#define setCx86(reg, data) do { \
-         outb((reg), 0x22); \
-         outb((data), 0x23); \
-} while (0)
-
-Maybe the compiler does the wrong thing if someone uses these macros in the 
-same instruction?
-
-Regards
-Juergen
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
