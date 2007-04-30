@@ -1,104 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422832AbXD3DLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422863AbXD3DOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422832AbXD3DLq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 23:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422765AbXD3DLq
+	id S1422863AbXD3DOJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 23:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422854AbXD3DOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 23:11:46 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50285 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422856AbXD3DLo (ORCPT
+	Sun, 29 Apr 2007 23:14:09 -0400
+Received: from imf07aec.mail.bellsouth.net ([205.152.59.55]:33213 "EHLO
+	imf07aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422824AbXD3DOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 23:11:44 -0400
-Date: Mon, 30 Apr 2007 13:11:21 +1000
-From: David Chinner <dgc@sgi.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: [PATCH] XFS ->fallocate() support
-Message-ID: <20070430031121.GO32602149@melbourne.sgi.com>
-References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430004702.GM32602149@melbourne.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 29 Apr 2007 23:14:07 -0400
+X-Greylist: delayed 1911 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Apr 2007 23:14:06 EDT
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: csnook@redhat.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       atl1-devel@lists.sourceforge.net
+Subject: [PATCH 0/2] atl1: minor cleanup
+Date: Sun, 29 Apr 2007 21:42:09 -0500
+Message-Id: <11779009311121-git-send-email-jacliburn@bellsouth.net>
+X-Mailer: git-send-email 1.5.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add XFS support for ->fallocate() vector.
 
-Signed-Off-By: Dave Chinner <dgc@sgi.com>
+Please accept the following trivial patches to the atl1 driver.
 
----
- fs/xfs/linux-2.6/xfs_iops.c |   48 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 48 insertions(+)
+- use dev_printk macros
+- fix whitespace damage
 
-Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c
-===================================================================
---- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-02-07 13:24:32.000000000 +1100
-+++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c	2007-04-30 11:02:16.225095992 +1000
-@@ -812,6 +812,53 @@ xfs_vn_removexattr(
- 	return namesp->attr_remove(vp, attr, xflags);
- }
- 
-+STATIC long
-+xfs_vn_fallocate(
-+	struct inode	*inode,
-+	int		mode,
-+	loff_t		offset,
-+	loff_t		len)
-+{
-+	long		error = -EOPNOTSUPP;
-+	bhv_vnode_t	*vp = vn_from_inode(inode);
-+	bhv_desc_t	*bdp;
-+	int		do_setattr = 0;
-+	xfs_flock64_t	bf;
-+
-+	bf.l_whence = 0;
-+	bf.l_start = offset;
-+	bf.l_len = len;
-+
-+	bdp = bhv_lookup_range(VN_BHV_HEAD(vp), VNODE_POSITION_XFS,
-+						VNODE_POSITION_XFS);
-+
-+	switch (mode) {
-+	case FA_ALLOCATE: /* changes file size */
-+		error = xfs_change_file_space(bdp, XFS_IOC_RESVSP,
-+						&bf, 0, NULL, 0);
-+		if (offset + len > i_size_read(inode))
-+			do_setattr = offset + len;
-+		break;
-+	case FA_DEALLOCATE:
-+		/* XXX: changes file size?  this just punches a hole */
-+		error = xfs_change_file_space(bdp, XFS_IOC_UNRESVSP,
-+						&bf, 0, NULL, 0);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	/* Change file size if needed */
-+	if (!error && do_setattr) {
-+		bhv_vattr_t	va;
-+
-+		va.va_mask = XFS_AT_SIZE;
-+		va.va_size = do_setattr;
-+		error = bhv_vop_setattr(vp, &va, 0, NULL);
-+	}
-+
-+	return error;
-+}
- 
- struct inode_operations xfs_inode_operations = {
- 	.permission		= xfs_vn_permission,
-@@ -822,6 +869,7 @@ struct inode_operations xfs_inode_operat
- 	.getxattr		= xfs_vn_getxattr,
- 	.listxattr		= xfs_vn_listxattr,
- 	.removexattr		= xfs_vn_removexattr,
-+	.fallocate		= xfs_vn_fallocate,
- };
- 
- struct inode_operations xfs_dir_inode_operations = {
+ drivers/net/atl1/atl1_ethtool.c |   19 +++------
+ drivers/net/atl1/atl1_hw.c      |   44 ++++++++++-----------
+ drivers/net/atl1/atl1_main.c    |   83 +++++++++++++++++---------------------
+ drivers/net/atl1/atl1_param.c   |   31 +++++++--------
+ 4 files changed, 79 insertions(+), 98 deletions(-)
