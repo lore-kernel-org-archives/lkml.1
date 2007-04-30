@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946577AbXD3Sb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423530AbXD3ScF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946577AbXD3Sb3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423628AbXD3Sb2
+	id S1423530AbXD3ScF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:32:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423570AbXD3ScE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:31:28 -0400
-Received: from mailout05.sul.t-online.com ([194.25.134.82]:54340 "EHLO
-	mailout05.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423570AbXD3Sb0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:31:26 -0400
-Message-Id: <6.1.1.1.2.20070430202358.01f0fec0@192.168.6.12>
-X-Mailer: QUALCOMM Windows Eudora Version 6.1.1.1
-Date: Mon, 30 Apr 2007 20:30:51 +0200
-To: linux-kernel@vger.kernel.org
-From: Roger While <simrw@sim-basis.de>
-Subject: Slanging Lunx 2.6.21 (Was Linux 2.6.21)
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-X-SIMBasis-MailScanner-Information: Please contact the ISP for more information
-X-SIMBasis-MailScanner: Found to be clean
-X-SIMBasis-MailScanner-From: simrw@sim-basis.de
-X-ID: Gc6vAeZOreQK-rvEbmYVR0nhnYeb21dYt6+cdJZGlquYeqqCo4gR49@t-dialin.net
-X-TOI-MSGID: ec3f1772-3f9e-4acc-92e8-d15124348ba2
+	Mon, 30 Apr 2007 14:32:04 -0400
+Received: from holomorphy.com ([66.93.40.71]:59718 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423530AbXD3ScA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 14:32:00 -0400
+Date: Mon, 30 Apr 2007 11:32:23 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
+       Zan Lynx <zlynx@acm.org>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [1/6] make stack size configurable (was: Re: [-mm patch] i386: enable 4k stacks by default)
+Message-ID: <20070430183223.GL19966@holomorphy.com>
+References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174047.GD19966@holomorphy.com> <20070430182538.GE23336@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430182538.GE23336@stusta.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I would ask Linus and the list maintainers to stop
-the main thread.
-When Linus posts a release, then I expect
-that threads pertain to this release and not
-start some sort of flame war.
-If I have a problem with 2.6.21 (or any 2.x.x), I do
-not expect to have to go through 100+ mails to
-see if a problem has been reported.
+On Mon, Apr 30, 2007 at 08:25:38PM +0200, Adrian Bunk wrote:
+> These are no questions a user should ever see, and it's impossible that 
+> a user will be able to choose the right answer - that's an 
+> implementation detail, and it has to be set correctly automatically 
+> without bothering the user.
+> Pro of bigger stacks:
+> - kernel developers have to care less about stack usage
+> Pros of smaller stacks:
+> - less memory usage
+> - higher order allocations are more likely to fail with fragmented
+>   memory
+> We are currently at "works with 8k stacks and without separate IRQ stacks"
+> and at "works in most situations with 4k stacks", so nothing > 8k should 
+> be required.
 
-Absolute misuse of reply-to.
+freitag mentioned that IRQ stacks should be bootmem allocated, so I
+dredged up a series of debug patches I had that did so. This is in no
+way intended as a suggestion we should e.g. merge config options as
+in 1/6 for 64KB stacks.
 
-Roger While
+This is all sort of meant to be cherrypicked mostly for 5/6's bootmem
+allocation of IRQ stacks. Otherwise it's just a set of debug patches
+I wrote. 1/6 is merely needed for 5/6 to eventually apply. 5/6 can't
+really be used verbatim because it does various handling for vmalloc()
+of stacks and depends on the patches in the series prior to it, but
+it is something in the way of bootmem allocation of IRQ stacks being
+out there already.
 
 
+-- wli
