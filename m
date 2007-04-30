@@ -1,52 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422808AbXD3DKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422832AbXD3DLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422808AbXD3DKe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 23:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422797AbXD3DKY
+	id S1422832AbXD3DLq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 23:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422765AbXD3DLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 23:10:24 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:54461 "EHLO
-	outbound7-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422822AbXD3DKE convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 23:10:04 -0400
-X-BigFish: V
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [patch]add the ATI  SB700 SATA controller device id  to AHCI pci table
-Date: Mon, 30 Apr 2007 11:09:52 +0800
-Message-ID: <FFECF24D2A7F6D418B9511AF6F35860201927D68@shacnexch2.atitech.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch]add the ATI  SB700 SATA controller device id  to AHCI pci table
-Thread-Index: AceK1QVA5tGXl0txRaWzOYC3cTRbqw==
-From: "Henry Su" <henry.su@amd.com>
-To: <jgarzik@pobox.com>
-Cc: <linux-ide@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 30 Apr 2007 03:10:00.0924 (UTC) FILETIME=[0A5331C0:01C78AD5]
+	Sun, 29 Apr 2007 23:11:46 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50285 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1422856AbXD3DLo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 23:11:44 -0400
+Date: Mon, 30 Apr 2007 13:11:21 +1000
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
+       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: [PATCH] XFS ->fallocate() support
+Message-ID: <20070430031121.GO32602149@melbourne.sgi.com>
+References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430004702.GM32602149@melbourne.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: henry.su@amd.com
-Adding the device ID to AHCI pci table for ATI SB700 SATA controller,
-the subsequent chipset of SB600.
-Signed-off-by:henry su<henry.su@amd.com>
-----------------------------
-diff -Nur linux-2.6.21.orig/drivers/ata/ahci.c
-linux-2.6.21/drivers/ata/ahci.c
---- linux-2.6.21.orig/drivers/ata/ahci.c 2007-04-29 07:00:15.000000000
-+0800
-+++ linux-2.6.21/drivers/ata/ahci.c 2007-04-29 07:06:04.000000000 +0800
-@@ -415,6 +415,7 @@
-/* ATI */
-{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 non-raid */
-{ PCI_VDEVICE(ATI, 0x4381), board_ahci }, /* ATI SB600 raid */
-+ { PCI_VDEVICE(ATI, 0x4390), board_ahci_sb600 }, /* ATI SB700 */
+Add XFS support for ->fallocate() vector.
 
-/* VIA */
-{ PCI_VDEVICE(VIA, 0x3349), board_ahci_vt8251 }, /* VIA VT8251 */
+Signed-Off-By: Dave Chinner <dgc@sgi.com>
 
+---
+ fs/xfs/linux-2.6/xfs_iops.c |   48 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
+
+Index: 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/linux-2.6/xfs_iops.c	2007-02-07 13:24:32.000000000 +1100
++++ 2.6.x-xfs-new/fs/xfs/linux-2.6/xfs_iops.c	2007-04-30 11:02:16.225095992 +1000
+@@ -812,6 +812,53 @@ xfs_vn_removexattr(
+ 	return namesp->attr_remove(vp, attr, xflags);
+ }
+ 
++STATIC long
++xfs_vn_fallocate(
++	struct inode	*inode,
++	int		mode,
++	loff_t		offset,
++	loff_t		len)
++{
++	long		error = -EOPNOTSUPP;
++	bhv_vnode_t	*vp = vn_from_inode(inode);
++	bhv_desc_t	*bdp;
++	int		do_setattr = 0;
++	xfs_flock64_t	bf;
++
++	bf.l_whence = 0;
++	bf.l_start = offset;
++	bf.l_len = len;
++
++	bdp = bhv_lookup_range(VN_BHV_HEAD(vp), VNODE_POSITION_XFS,
++						VNODE_POSITION_XFS);
++
++	switch (mode) {
++	case FA_ALLOCATE: /* changes file size */
++		error = xfs_change_file_space(bdp, XFS_IOC_RESVSP,
++						&bf, 0, NULL, 0);
++		if (offset + len > i_size_read(inode))
++			do_setattr = offset + len;
++		break;
++	case FA_DEALLOCATE:
++		/* XXX: changes file size?  this just punches a hole */
++		error = xfs_change_file_space(bdp, XFS_IOC_UNRESVSP,
++						&bf, 0, NULL, 0);
++		break;
++	default:
++		break;
++	}
++
++	/* Change file size if needed */
++	if (!error && do_setattr) {
++		bhv_vattr_t	va;
++
++		va.va_mask = XFS_AT_SIZE;
++		va.va_size = do_setattr;
++		error = bhv_vop_setattr(vp, &va, 0, NULL);
++	}
++
++	return error;
++}
+ 
+ struct inode_operations xfs_inode_operations = {
+ 	.permission		= xfs_vn_permission,
+@@ -822,6 +869,7 @@ struct inode_operations xfs_inode_operat
+ 	.getxattr		= xfs_vn_getxattr,
+ 	.listxattr		= xfs_vn_listxattr,
+ 	.removexattr		= xfs_vn_removexattr,
++	.fallocate		= xfs_vn_fallocate,
+ };
+ 
+ struct inode_operations xfs_dir_inode_operations = {
