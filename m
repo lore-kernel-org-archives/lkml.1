@@ -1,189 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946578AbXD3SMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946551AbXD3SOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946578AbXD3SMc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946555AbXD3SM3
+	id S1946551AbXD3SOJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945895AbXD3SOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:12:29 -0400
-Received: from gw.goop.org ([64.81.55.164]:57743 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946564AbXD3SMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:12:25 -0400
-Message-ID: <4636314D.7070006@goop.org>
-Date: Mon, 30 Apr 2007 11:11:25 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 30 Apr 2007 14:14:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:13482 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946552AbXD3SOG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 14:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mJ0lF5gCZ13n7rCxwI0rWwcCAPqqzrKOjQTkZcvI0sCwgaJFfK/cHcULHhyajKke0ORPhKpyTOuQDZvJTybAZVGQUikjaity9chVn+WrYB8dtxxUpd1+sxFczVk2VpAhLZfi4A47YzrA0H565gOHsgcRc2LJUTgiLDUbaVpuDMw=
+Message-ID: <4af2d03a0704301114sc84b358td8781c91b8564c38@mail.gmail.com>
+Date: Mon, 30 Apr 2007 20:14:05 +0200
+From: "Jiri Slaby" <jirislaby@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-mm1: many processes end up in D state
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070430110510.1f559d34.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: [patch 27/32] xen: Add the Xen virtual network device driver.
-References: <20070429172835.284784000@goop.org> <20070429172916.025602000@goop.org> <20070429175942.GA3551@infradead.org>
-In-Reply-To: <20070429175942.GA3551@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46360DA7.6040003@gmail.com>
+	 <20070430110510.1f559d34.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Sun, Apr 29, 2007 at 10:29:02AM -0700, Jeremy Fitzhardinge wrote:
->   
->> +#include <linux/version.h>
->>     
+On 4/30/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Mon, 30 Apr 2007 17:39:19 +0200
+> Jiri Slaby <jirislaby@gmail.com> wrote:
 >
-> not needed.
->   
-
-Yup.
-
->> +#include <xen/xenbus.h>
->> +#include <xen/interface/io/netif.h>
->> +#include <xen/interface/memory.h>
->> +#ifdef CONFIG_XEN_BALLOON
->> +#include <xen/balloon.h>
->> +#endif
->> +#include <xen/interface/grant_table.h>
->>     
+> > Hi,
+> >
+> > I have a problem with higher disk loads (e.g. running git-log or yum update).
+> > Many processes end up in D state and system is unusable -- I'm not able to run
+> > anything but smooth mouse moving when this happens.
+> >
+> > If I wait for a 20-30sec it becomes usable. This happens in 2.6.21-rc7-mm2 and
+> > also in 2007-04-28-05-06 broken-out snapshot. I think 2.6.21-rc6-mm1 worked
+> > fine, but I'm uncertain. If it is important, let me know to re-test.
+> >
 >
-> Please don't try to put such a fucked up include hierachy in.
-> Just move everything under include/xen or you will soon get
-> problems with the 80 line length limit for your includes..
->   
-
-I'm trying to draw the distinction between kernel-internal Xen-related
-headers, and the Xen hypervisor ABI itself.  The stuff under
-xen/interface is more or less copied in from the main Xen tree, so it
-would be nice to keep it distinct.
-
-> Also please make sure that <xen/balloon.h> can be included unconditionally,
-> as we really don't like ifdefs around includes.
->   
-
-The balloon driver isn't in this patch set, so I'll drop all references
-to it.
-
->> +	grant_ref_t gref_tx_head;
->>     
+> It is important, but I doubt if retesting 2.6.21-rc6-mm1 will clarify
+> things a lot.
 >
-> What's a grant_ref_t?  Should this really be a typedef or better
-> a struct type?
+> Could you try switching to a different IO scheduler please?  Anticipatory
+> would suit.
 
-Structurally it's just a u32.  I could wrap it up in a structure for
-typedef reasons, I suppose.
+As I wrote below the sysrq-t, switch to noop didn't help, but it seems
+that it's harder to reproduce with that:
 
->   Also it really wants a xen_ prefix instead of someting
-> so generic.
->   
+<cite it's_bad_to_write_anything_below_logs="true">
+Note that yum works on lvm on raid0 and git too, but on the another md volume.
+Both ext3s. Drivers are sata_promise and ata_piix (sata disk); CFQ scheduler.
+Using noop is no change (but seems to be harder to reproduce with it). I figured
+out that it probably happens when 2+ processes are on both "processors" (HT on
+P4) and are IO wait (multiload-applet shows red above the half).
 
-OK.
+Swap usage is 0 all the time.
+</cite>
 
->> + * Implement our own carrier flag: the network stack's version causes delays
->> + * when the carrier is re-enabled (in particular, dev_activate() may not
->> + * immediately be called, which can cause packet loss).
->> + */
->>     
->
-> Did you talk to the networking folks about these problems?
->   
+> Please keep a close eye on mainline, too.  Wait for it to appear there :(
 
-Not sure what the deliberations were leading to those changes.
+Ok, I'll try to play with that...
 
-Herbert, Keir?
-
-
->> +#define netfront_carrier_on(netif)	((netif)->carrier = 1)
->> +#define netfront_carrier_off(netif)	((netif)->carrier = 0)
->> +#define netfront_carrier_ok(netif)	((netif)->carrier)
->>     
->
-> Please use proper symbolic names for the ctal states and kill these
-> wrappers.
->   
-
-OK.
-
->
-> Any chance you could avoid these forward-prototypes by reordering
-> the functions a little?
->   
-
-I'll give it a go.
-
-> Also a lot of these names are horribly generic.  A proper xennet_
-> prefix would probably help.
->   
-
-Yes.
-
->> +static int __devexit netfront_remove(struct xenbus_device *dev)
->> +{
->> +	struct netfront_info *info = dev->dev.driver_data;
->> +
->> +	dev_dbg(&dev->dev, "%s\n", dev->nodename);
->> +
->> +	netif_disconnect_backend(info);
->> +
->> +	del_timer_sync(&info->rx_refill_timer);
->> +
->> +	xennet_sysfs_delif(info->netdev);
->> +
->> +	unregister_netdev(info->netdev);
->> +
->> +	free_netdev(info->netdev);
->>     
->
-> This looks like very wrong ordering to me.  unregister_netdev should
-> be the first thing in the remove function.
->   
-
-I know this ordering was the result of a relatively recent bugfix
-replacing something that was completely broken.
-
->> +	SHARED_RING_INIT(rxs);
->> +	FRONT_RING_INIT(&info->rx, rxs, PAGE_SIZE);
->>     
->
-> Can you replace these shouting macros with proper named functions?
->   
-
-Will do.
-
->> +	 * receive ring. This creates a less bursty demand on the memory
->> +	 * allocator, so should reduce the chance of failed allocation requests
->> +	 * both for ourself and for other kernel subsystems.
->> +	 */
->> +	batch_target = np->rx_target - (req_prod - np->rx.rsp_cons);
->> +	for (i = skb_queue_len(&np->rx_batch); i < batch_target; i++) {
->> +		/*
->> +		 * Allocate an skb and a page. Do not use __dev_alloc_skb as
->> +		 * that will allocate page-sized buffers which is not
->> +		 * necessary here.
->> +		 * 16 bytes added as necessary headroom for netif_receive_skb.
->> +		 */
->> +		skb = alloc_skb(RX_COPY_THRESHOLD + 16 + NET_IP_ALIGN,
->> +				GFP_ATOMIC | __GFP_NOWARN);
->>     
->
-> This comment doesn't make any sense, __dev_alloc_skb is:
->   
-
-Yes, it has probably dated.  I'll give it another look.
-
->> +		skb->nh.raw = (void *)skb_shinfo(skb)->frags[0].page;
->> +		skb->h.raw = skb->nh.raw + rx->offset;
->>     
->
-> Stuff like this won't compile anymore in the current tree.
->   
-
-Fixed later in the series.
-
-Thanks,
-    J
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
