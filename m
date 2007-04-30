@@ -1,62 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423572AbXD3QA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423506AbXD3QBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423572AbXD3QA7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 12:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423506AbXD3P4I
+	id S1423506AbXD3QBB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 12:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423474AbXD3P6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:56:08 -0400
-Received: from mail.suse.de ([195.135.220.2]:44998 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423453AbXD3Pto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:49:44 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070430549.617098000@suse.de>
-In-Reply-To: <20070430549.617098000@suse.de>
-To: fernando@oss.ntt.co.jp, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [11/34] x86_64: use safe_apic_wait_icr_idle in smpboot.c -  x86_64
-Message-Id: <20070430154943.61E60151CA@wotan.suse.de>
-Date: Mon, 30 Apr 2007 17:49:43 +0200 (CEST)
+	Mon, 30 Apr 2007 11:58:53 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:33558 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423441AbXD3P6p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:58:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: virtualization <virtualization@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [PATCH 04/12] i386 voyager: Use modern techniques to setup and teardown low identiy mappings.
+References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
+	<m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
+	<m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm4p509a.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Mon, 30 Apr 2007 09:57:40 -0600
+In-Reply-To: <m1zm4p509a.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Mon, 30 Apr 2007 09:51:13 -0600")
+Message-ID: <m1vefd4zyj.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Fernando Luis VazquezCao <fernando@oss.ntt.co.jp>
+This is a trivial and hopefully obviously correct patch to setup
+and teardown the identity mappings the way the rest of arch/i386
+does.
 
-inquire_remote_apic is used for APIC debugging, so use
-safe_apic_wait_icr_idle  instead of apic_wait_icr_idle to avoid possible
-lockups when APIC delivery fails.
+My new page table setup code will break some assumptions below so
+this is my attempt to keep voyager working. 
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-Signed-off-by: Andi Kleen <ak@suse.de>
-
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
+ arch/i386/mach-voyager/voyager_smp.c |   38 +++++----------------------------
+ 1 files changed, 6 insertions(+), 32 deletions(-)
 
----
- arch/x86_64/kernel/smpboot.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+diff --git a/arch/i386/mach-voyager/voyager_smp.c b/arch/i386/mach-voyager/voyager_smp.c
+index b9ce33c..5e98ae7 100644
+--- a/arch/i386/mach-voyager/voyager_smp.c
++++ b/arch/i386/mach-voyager/voyager_smp.c
+@@ -536,15 +536,6 @@ do_boot_cpu(__u8 cpu)
+ 		& ~( voyager_extended_vic_processors
+ 		     & voyager_allowed_boot_processors);
+ 
+-	/* For the 486, we can't use the 4Mb page table trick, so
+-	 * must map a region of memory */
+-#ifdef CONFIG_M486
+-	int i;
+-	unsigned long *page_table_copies = (unsigned long *)
+-		__get_free_page(GFP_KERNEL);
+-#endif
+-	pgd_t orig_swapper_pg_dir0;
+-
+ 	/* This is an area in head.S which was used to set up the
+ 	 * initial kernel stack.  We need to alter this to give the
+ 	 * booting CPU a new stack (taken from its idle process) */
+@@ -587,24 +578,11 @@ do_boot_cpu(__u8 cpu)
+ 	VDEBUG(("VOYAGER SMP: Booting CPU%d at 0x%lx[%x:%x], stack %p\n", cpu, 
+ 		(unsigned long)hijack_source.val, hijack_source.idt.Segment,
+ 		hijack_source.idt.Offset, stack_start.esp));
+-	/* set the original swapper_pg_dir[0] to map 0 to 4Mb transparently
+-	 * (so that the booting CPU can find start_32 */
+-	orig_swapper_pg_dir0 = swapper_pg_dir[0];
+-#ifdef CONFIG_M486
+-	if(page_table_copies == NULL)
+-		panic("No free memory for 486 page tables\n");
+-	for(i = 0; i < PAGE_SIZE/sizeof(unsigned long); i++)
+-		page_table_copies[i] = (i * PAGE_SIZE) 
+-			| _PAGE_RW | _PAGE_USER | _PAGE_PRESENT;
+-
+-	((unsigned long *)swapper_pg_dir)[0] = 
+-		((virt_to_phys(page_table_copies)) & PAGE_MASK)
+-		| _PAGE_RW | _PAGE_USER | _PAGE_PRESENT;
+-#else
+-	((unsigned long *)swapper_pg_dir)[0] = 
+-		(virt_to_phys(pg0) & PAGE_MASK)
+-		| _PAGE_RW | _PAGE_USER | _PAGE_PRESENT;
+-#endif
++
++	/* init lowmem identity mapping */
++	clone_pgd_range(swapper_pg_dir, swapper_pg_dir + USER_PGD_PTRS,
++			min_t(unsigned long, KERNEL_PGD_PTRS, USER_PGD_PTRS));
++	flush_tlb_all();
+ 
+ 	if(quad_boot) {
+ 		printk("CPU %d: non extended Quad boot\n", cpu);
+@@ -647,11 +625,7 @@ do_boot_cpu(__u8 cpu)
+ 		udelay(100);
+ 	}
+ 	/* reset the page table */
+-	swapper_pg_dir[0] = orig_swapper_pg_dir0;
+-	local_flush_tlb();
+-#ifdef CONFIG_M486
+-	free_page((unsigned long)page_table_copies);
+-#endif
++	zap_low_mappings();
+ 	  
+ 	if (cpu_booted_map) {
+ 		VDEBUG(("CPU%d: Booted successfully, back in CPU %d\n",
+-- 
+1.5.1.1.181.g2de0
 
-Index: linux/arch/x86_64/kernel/smpboot.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/smpboot.c
-+++ linux/arch/x86_64/kernel/smpboot.c
-@@ -391,7 +391,8 @@ static void inquire_remote_apic(int apic
- {
- 	unsigned i, regs[] = { APIC_ID >> 4, APIC_LVR >> 4, APIC_SPIV >> 4 };
- 	char *names[] = { "ID", "VERSION", "SPIV" };
--	int timeout, status;
-+	int timeout;
-+	unsigned int status;
- 
- 	printk(KERN_INFO "Inquiring remote APIC #%d...\n", apicid);
- 
-@@ -401,7 +402,9 @@ static void inquire_remote_apic(int apic
- 		/*
- 		 * Wait for idle.
- 		 */
--		apic_wait_icr_idle();
-+		status = safe_apic_wait_icr_idle();
-+		if (status)
-+			printk("a previous APIC delivery may have failed\n");
- 
- 		apic_write(APIC_ICR2, SET_APIC_DEST_FIELD(apicid));
- 		apic_write(APIC_ICR, APIC_DM_REMRD | regs[i]);
