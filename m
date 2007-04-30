@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161584AbXD2X4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161582AbXD3AFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161584AbXD2X4B (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Apr 2007 19:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161598AbXD2X4B
+	id S1161582AbXD3AFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Apr 2007 20:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161600AbXD3AFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Apr 2007 19:56:01 -0400
-Received: from thunk.org ([69.25.196.29]:34622 "EHLO thunker.thunk.org"
+	Sun, 29 Apr 2007 20:05:38 -0400
+Received: from neon.samage.net ([85.17.153.66]:53318 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161584AbXD2Xz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Apr 2007 19:55:59 -0400
-Date: Sun, 29 Apr 2007 19:55:35 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	id S1161582AbXD3AFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Apr 2007 20:05:36 -0400
+Message-ID: <1182.81.207.0.53.1177891524.squirrel@secure.samage.net>
+In-Reply-To: <20070429234102.GA13344@linuxtv.org>
+References: <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org>
+    <p73d51n1fup.fsf@bingen.suse.de>
+    <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
+    <20070429173500.GA30248@one.firstfloor.org>
+    <20070429223649.GA12672@linuxtv.org>
+    <2722.81.207.0.53.1177888737.squirrel@secure.samage.net>
+    <20070429234102.GA13344@linuxtv.org>
+Date: Mon, 30 Apr 2007 02:05:24 +0200 (CEST)
 Subject: Re: Linux 2.6.21
-Message-ID: <20070429235535.GC19937@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-	Chuck Ebbert <cebbert@redhat.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4630DB24.4030005@redhat.com> <20070426201325.8a1ebda3.diegocg@gmail.com> <alpine.LFD.0.98.0704261126010.9964@woody.linux-foundation.org> <20070426224148.69b91b2e.diegocg@gmail.com> <alpine.LFD.0.98.0704261354560.9964@woody.linux-foundation.org> <20070428195320.GZ3468@stusta.de> <20070428202701.GA30343@flint.arm.linux.org.uk> <20070428224904.GE3468@stusta.de> <alpine.LFD.0.98.0704281601060.9964@woody.linux-foundation.org> <p73d51n1fup.fsf@bingen.suse.de>
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Johannes Stezenbach" <js@linuxtv.org>
+Cc: "Adrian Bunk" <bunk@stusta.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Diego Calleja" <diegocg@gmail.com>, "Andi Kleen" <andi@firstfloor.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73d51n1fup.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: a2d32f98be707cbcda8602d5fffa976a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 03:15:42PM +0200, Andi Kleen wrote:
-> This means we need people who figure out who to assign bugs too.
-> Aka bugmasters.
-> 
-> BTW one big problem in our current bugzilla is that a lot of people
-> cannot reassign bugs they don't own. I sometimes see bugs that I don't
-> own bug I know who is responsible, but bugzilla doesn't allow me to do it.
-> 
-> So I think what would help:
-> 
-> - Ask more people to just categorize and reassign bugs (anybody interested?)
-> - Give more people in bugzilla the power to reassign arbitary bugs
-> (bugzilla maintainers would need to do that)
+On Mon, April 30, 2007 01:41, Johannes Stezenbach wrote:
+> Developers are just humans and if they have no incentive to
+> act on a bug report they will ignore it. I think this is a
+> fact that you have to deal with.
 
-Folks might want to take a look at the Debian Bug Tracking System
-(BTS).  It has a web interface which you can use to query history, but
-*everything* is e-mail driven, and the way you submit, close, update,
-tag/classfy bugs --- everything --- is via e-mail.
+Reporters are just humans too and if they have no incentive to
+post bugs they won't. So it's a lose/lose situation, really.
+With a group of people working together they should try to
+motivate each other, not demoralize everyone.
 
-More importantly, anyone is allowed to recategorize and reassign bugs.
-If someone does so maliciously or incorrectly, you can always revert
-it, and if someone is being truly malicious, you can always blacklist
-that one person.  It this respect, it is far more wiki-like than
-bugzilla, which has always been too much like a straightjacket.
+(I know, each bug report is a pain, voicing someone's failure.
+So ignoring it might make people feel better, but it doesn't
+fix anything.)
 
-It's not perfect, but it's better than bugzilla --- but then again,
-just about *anything* would be better than bugzilla.  (Hmm, except
-maybe SourceForge's very tragic bug tracking system... :-)
 
-Of course, as Linus has said, it's not a complete solution --- you
-still need humans to be smart about things --- but if the goal is to
-make it easier to archive and track information about a bug, at
-*least* with the Debian BTS, when you reply to an e-mail message, the
-reply is automatically appended to the bug log!
-	
-						- Ted
+> It's also not necessarily the fault of the reporter if
+> a bug report gets ignored, but for every report a developer
+> has to make a decision to handle it or not, and there are
+> lots of reasons why he may decide to not handle it, or
+> at least not now (and then forget about it).
+
+True. There's also a difference between a bad bug report and
+one that a specific developer won't handle. In the former case
+anyone could recognize it and tell the reporter about it. The
+latter is a bit trickier, but if the developer thinks about
+looking at it later, he better can tell the reporter just that.
+A short "I'll take a look at it, later, when I've more time."
+is so much better than plain silence.
+
+
+> But I'm quite sure that an important bug would be reported
+> again until fixed.
+
+I wouldn't be so sure about that. What's worse, why would the
+reporter bother telling that the bug is fixed in version N+1?
+No one cared about it anyway, so there's no one to tell it to.
+That would explain a lot open bugs too.
+
+Greetings,
+
+Indan
+
+
