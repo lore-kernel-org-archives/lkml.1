@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422973AbXD3FLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423023AbXD3FQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422973AbXD3FLt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 01:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423019AbXD3FLt
+	id S1423023AbXD3FQx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 01:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423028AbXD3FQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 01:11:49 -0400
-Received: from web50907.mail.re2.yahoo.com ([206.190.38.127]:31554 "HELO
-	web50907.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1422973AbXD3FLs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 01:11:48 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Apr 2007 01:11:48 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=nwIgaqon5K86JSYxFcHPa7VV/bVjEsRSCYet/+NupxP15VHFG9/WgIW39Efu6iw1zbyWBElF7T+gE9VAjqJbW31CqOsqjayMZFbVDoU8ltEUmB2PTNbIHnDVsgp1+T3HbBSRVuLy9tswwpDj7LzYifag2ACMmRe5/tYtXgiWFpQ=;
-X-YMail-OSG: z3bfqO8VM1kjOc38MGHzKkpiV3YFiIGP0wmLNk1C0dvtxFe2vsTALzvzNIAhxGnT3QheIqmd528IV5Bdypr6asPVGlgA4Vv0Ef91J4kI_o7k5jikHEO3D1Rlv6.1mtdhLCjKJwmk0FfBtZ8-
-Date: Sun, 29 Apr 2007 22:05:07 -0700 (PDT)
-From: Dharmosoth Seetharam <seetharam_21@yahoo.com>
-Subject: gdb-6.4: is not handling input 'q' properly 
-To: binutils@sourceware.org, linux-kernel@vger.kernel.org, nfsv4@linux-nfs.org
+	Mon, 30 Apr 2007 01:16:53 -0400
+Received: from [212.12.190.16] ([212.12.190.16]:32828 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1423023AbXD3FQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 01:16:53 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v7
+Date: Mon, 30 Apr 2007 08:20:49 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <538815.34014.qm@web50907.mail.re2.yahoo.com>
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200704300820.49078.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+Ingo Molnar wrote:
+>
+> i'm pleased to announce release -v7 of the CFS scheduler patchset. (The
+> main goal of CFS is to implement "desktop scheduling" with as high
+> quality as technically possible.)
+:
+:
+> As usual, any sort of feedback, bugreport, fix and suggestion is more
+> than welcome,
 
-The following result was the effect of "info threads"
-command
+This one seems on par with SD, but there are still some nice issues.
 
-Architecture: x86_64 , Linux kernel : 2.6.7 and 2.6.20
+Try running 3 chew.c's, then renicing one to -10, starves others for some 
+seconds while switching prio-level.  Now renice it back to 10, it starves 
+for up to 45sec.
 
-
-
-34 process 541  0xffffffffa017544e in ?? ()
-  33 process 540  schedule_timeout
-(timeout=1101144554856)
-    at kernel/timer.c:1164
-  32 process 493  md_thread (arg=0xffffffff8068c800)
-at drivers/md/md.c:4526
-  31 process 384  schedule_timeout
-(timeout=9223372036854775807)
----Type <return> to continue, or q <return> to
-quit---q
- at kernel/timerQuit
-  30 process 383  schedule_timeout
-(timeout=1100444515608)
-    at kernel/timer.c:1164
-  29 process 382  0xffffffff801656b7 in worker_thread
-(__cwq=0x100fb134650)
-    at include/linux/sched.h:1163
-  28 process 381  0xffffffff801656b7 in worker_thread
-(__cwq=0x100fb134190)
-    at include/linux/sched.h:1163
+Also, nice levels are only effective on every other step; ie:
+ ... -3/-2 , -1/0 , 1/2 ... yields only 20 instead of 40 prio-levels.
 
 
+Thanks!
 
-It displays the --- continue Or quit --- 
-I have entered the 'q' (want to stop scrolling).
+--
+Al
 
-But, it shows the "Quit" and continues to scroll down.
-
-We can observe that - the last line (24th line) on
-cosole has a wrapped text (ie "at kernel/").
-
-Please update me with the change.
-
-Thanks
-RAM
-
-
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
