@@ -1,52 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423319AbXD3Ofg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423324AbXD3OgC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423319AbXD3Ofg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 10:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423317AbXD3Off
+	id S1423324AbXD3OgC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 10:36:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423315AbXD3Ofm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 10:35:35 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:45517 "EHLO
+	Mon, 30 Apr 2007 10:35:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45738 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423304AbXD3Oex (ORCPT
+	with ESMTP id S1423316AbXD3OfY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 10:34:53 -0400
+	Mon, 30 Apr 2007 10:35:24 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:x-x-sender:to:cc:subject:message-id:
 	mime-version:content-type;
-	b=SZz3Aqfh11oYyJ1BRVSFL8NGLEKu7455micjE6blxIOjqQjXvaywMFVRuY5x5rf0E
-	9DVYNADtu2pQcYqYj00aw==
-Date: Mon, 30 Apr 2007 07:34:37 -0700 (PDT)
+	b=XKuLQv3muoS+a4Dj9ZPLLFZxkkvhuR5ACV0NUw6x0ITYdloqEvlgVyglQxk4eGHJ0
+	MWIwPgufvAvBRrFMT+4vw==
+Date: Mon, 30 Apr 2007 07:35:00 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dave Jones <davej@codemonkey.org.uk>
-cc: linux-kernel@vger.kernel.org
-Subject: [patch] cpufreq: do not declare undefined functions
-Message-ID: <Pine.LNX.4.64.0704291657060.1822@chino.kir.corp.google.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Neela Kolli <Neela.Kolli@engenio.com>,
+       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
+Subject: [patch] megaraid: fix CONFIG_PROC_FS compile errors
+Message-ID: <Pine.LNX.4.64.0704291658140.1822@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fill_powernow_table_pstate() and fill_powernow_table_fidvid() are only
-defined and used for X86_POWERNOW_K8_ACPI.
+Only declare mega_proc_dir_entry() in CONFIG_PROC_FS.  We should call
+mega_create_proc_entry() only in this configuration so make sure it's defined
+if we call it.
 
-Cc: Dave Jones <davej@codemonkey.org.uk>
+Only define mega_adapinq() in CONFIG_PROC_FS.  mega_internal_dev_inquiry()
+and mega_print_inquiry() were never declared without CONFIG_PROC_FS so
+make sure we don't have prototypes for them if we aren't going to define
+them.
+
+Move the declaration of 'buf' in mega_remove_one() because we only use it
+in the CONFIG_PROC_FS case.
+
+Cc: Neela Kolli <Neela.Kolli@engenio.com>
+Cc: Christoph Hellwig <hch@infradead.org>
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- arch/i386/kernel/cpu/cpufreq/powernow-k8.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/scsi/megaraid.c |   10 +++++++++-
+ drivers/scsi/megaraid.h |    5 +++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-@@ -215,8 +215,10 @@ static int core_frequency_transition(struct powernow_k8_data *data, u32 reqfid);
+diff --git a/drivers/scsi/megaraid.c b/drivers/scsi/megaraid.c
+--- a/drivers/scsi/megaraid.c
++++ b/drivers/scsi/megaraid.c
+@@ -84,7 +84,10 @@ MODULE_PARM_DESC(max_mbox_busy_wait, "Maximum wait for mailbox in microseconds i
  
- static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index);
- 
-+#ifdef CONFIG_X86_POWERNOW_K8_ACPI
- static int fill_powernow_table_pstate(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
- static int fill_powernow_table_fidvid(struct powernow_k8_data *data, struct cpufreq_frequency_table *powernow_table);
+ static int hba_count;
+ static adapter_t *hba_soft_state[MAX_CONTROLLERS];
++
++#ifdef CONFIG_PROC_FS
+ static struct proc_dir_entry *mega_proc_dir_entry;
 +#endif
  
- #ifdef CONFIG_SMP
- static inline void define_siblings(int cpu, cpumask_t cpu_sharedcore_mask[])
+ /* For controller re-ordering */
+ static struct mega_hbas mega_hbas[MAX_CONTROLLERS];
+@@ -4342,6 +4345,7 @@ mega_support_cluster(adapter_t *adapter)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PROC_FS
+ 
+ /**
+  * mega_adapinq()
+@@ -4448,6 +4452,7 @@ mega_internal_dev_inquiry(adapter_t *adapter, u8 ch, u8 tgt,
+ 	return rval;
+ }
+ 
++#endif
+ 
+ /**
+  * mega_internal_command()
+@@ -4890,7 +4895,9 @@ megaraid_probe_one(struct pci_dev *pdev, const struct pci_device_id *id)
+ 
+ 	pci_set_drvdata(pdev, host);
+ 
++#ifdef CONFIG_PROC_FS
+ 	mega_create_proc_entry(hba_count, mega_proc_dir_entry);
++#endif
+ 
+ 	error = scsi_add_host(host, &pdev->dev);
+ 	if (error)
+@@ -4965,7 +4972,6 @@ megaraid_remove_one(struct pci_dev *pdev)
+ {
+ 	struct Scsi_Host *host = pci_get_drvdata(pdev);
+ 	adapter_t *adapter = (adapter_t *)host->hostdata;
+-	char	buf[12] = { 0 };
+ 
+ 	scsi_remove_host(host);
+ 
+@@ -4982,6 +4988,8 @@ megaraid_remove_one(struct pci_dev *pdev)
+ 
+ #ifdef CONFIG_PROC_FS
+ 	if (adapter->controller_proc_dir_entry) {
++		char buf[12] = { 0 };
++
+ 		remove_proc_entry("stat", adapter->controller_proc_dir_entry);
+ 		remove_proc_entry("config",
+ 				adapter->controller_proc_dir_entry);
+diff --git a/drivers/scsi/megaraid.h b/drivers/scsi/megaraid.h
+--- a/drivers/scsi/megaraid.h
++++ b/drivers/scsi/megaraid.h
+@@ -1002,7 +1002,9 @@ static int megaraid_reset(Scsi_Cmnd *);
+ static int megaraid_abort_and_reset(adapter_t *, Scsi_Cmnd *, int);
+ static int megaraid_biosparam(struct scsi_device *, struct block_device *,
+ 		sector_t, int []);
++#ifdef CONFIG_PROC_FS
+ static int mega_print_inquiry(char *, char *);
++#endif
+ 
+ static int mega_build_sglist (adapter_t *adapter, scb_t *scb,
+ 			      u32 *buffer, u32 *length);
+@@ -1040,10 +1042,9 @@ static int proc_rdrv_20(char *, char **, off_t, int, int *, void *);
+ static int proc_rdrv_30(char *, char **, off_t, int, int *, void *);
+ static int proc_rdrv_40(char *, char **, off_t, int, int *, void *);
+ static int proc_rdrv(adapter_t *, char *, int, int);
+-#endif
+-
+ static int mega_adapinq(adapter_t *, dma_addr_t);
+ static int mega_internal_dev_inquiry(adapter_t *, u8, u8, dma_addr_t);
++#endif
+ 
+ static int mega_support_ext_cdb(adapter_t *);
+ static mega_passthru* mega_prepare_passthru(adapter_t *, scb_t *,
