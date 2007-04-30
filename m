@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946723AbXD3T32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946676AbXD3T3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946723AbXD3T32 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 15:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946724AbXD3T32
+	id S1946676AbXD3T3t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 15:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946725AbXD3T3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 15:29:28 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:61685 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946723AbXD3T30 (ORCPT
+	Mon, 30 Apr 2007 15:29:49 -0400
+Received: from pool-72-92-185-191.albyny.east.verizon.net ([72.92.185.191]:50869
+	"EHLO posidon.tmr.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1946676AbXD3T3r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 15:29:26 -0400
-Date: Mon, 30 Apr 2007 12:26:02 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [4/6] go BUG on vmallocspace in __pa() (was: Re: [-mm patch] i386: enable 4k stacks by default)
-Message-ID: <20070430192602.GD26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Andi Kleen <andi@firstfloor.org>,
-	Christoph Hellwig <hch@infradead.org>, David Chinner <dgc@sgi.com>,
-	Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174510.GG19966@holomorphy.com> <20070430185242.GB11512@one.firstfloor.org> <20070430202059.4db688d3@the-village.bc.nu>
+	Mon, 30 Apr 2007 15:29:47 -0400
+Message-ID: <463643A9.5040009@tmr.com>
+Date: Mon, 30 Apr 2007 15:29:45 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430202059.4db688d3@the-village.bc.nu>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Linux Kernel M/L <linux-kernel@vger.kernel.org>
+Subject: [REPORT] 2.6.21 vs. 2.6.21-sd046 vs. 2.6.21-CFSv7
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:38:19AM -0700, William Lee Irwin III wrote:
->>>> Here's what I did for i386 for someone concerned about blowing the
->>>> stack.
+System: Intel 6600 Core2duo, 2GB RAM, X nice 0 for all tests, display 
+using i945G framebuffer
 
-On Mon, Apr 30, 2007 at 10:45:10AM -0700, William Lee Irwin III wrote:
->>> Add checks to __pa() so it goes BUG() on vmallocspace addresses.
+Test: playing a 'toon with mplayer while kernel build -j20 running.
 
-On Mon, 30 Apr 2007 20:52:42 +0200 Andi Kleen <andi@firstfloor.org> wrote:
->> Sorry I think that's too costly to do. __pa is pretty common
+Tuning: not yet, all scheduler parameters were default
 
-On Mon, Apr 30, 2007 at 08:20:59PM +0100, Alan Cox wrote:
-> But not too costly to do if it is done solely with vmalloc the stack
-> for
-> debug purposes. The bigger problem with the vmalloc approach is there
-> are
-> still offenders who DMA off the kernel stack on i386 although I'd hope
-> they are all ancient... we'll find out with this anyway
+Result: base 2.6.21 showed some pauses and after the pause the sound got 
+louder for a short time (<500ms). With sd-0.46 the playback had many 
+glitches and finally just stopped with the display looping on a small 
+number of frames and no sound. The skips were repeatable, the hang was 
+only two of five runs, I didn't let them go until the make finished 
+(todo list) but killed the mplayer after 10-15 sec. No glitches observed 
+with cfsv7, I thought I saw one but repeating with granularity set to 
+500000 and then with no make running convinced me that it's just a 
+crappy piece of animation at that point.
 
-Sorry about the email address switch. This is actually work-related.
+I ran glxgears, again sd-0.46 had frequent pauses and uneven fps 
+reported. Stock 2.6.21 had a visible pause when the frame rate was 
+output, otherwise minimal pauses. CFSv7 appeared smooth at about 250 fps.
 
-The stack vmalloc() and __pa() patches were partially intended to catch
-or otherwise deliberately break such offenders and go BUG() on them. The
-__pa() check in particular is exclusively for the purpose of catching
-them. The primary motive being the stack vmalloc() patches remained, of
-course, establishing a guard page to trap stack overflows.
+All tests gave acceptable typing echo, it seems that X is getting enough 
+time at that load to echo without major issues.
 
+I will be doing tests with server load later this week, have to add disk 
+for the database.
 
--- wli
+Hope this initial report is useful, I may be able to update ctxbench 
+later today and try that.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
