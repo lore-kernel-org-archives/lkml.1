@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030672AbXD3LPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbXD3LRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030672AbXD3LPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 07:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbXD3LPk
+	id S1754643AbXD3LRu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 07:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbXD3LRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 07:15:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54871 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754643AbXD3LPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 07:15:39 -0400
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [-mm patch] i386: enable 4k stacks by default
-References: <20070428191927.GN3468@stusta.de>
-	<1177795118.7828.6.camel@localhost>
-	<20070430035838.GC77450368@melbourne.sgi.com>
-	<20070430091754.24df88df@the-village.bc.nu>
-	<p73wszuyx7h.fsf@bingen.suse.de>
-	<20070430104806.GA14944@infradead.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 30 Apr 2007 14:13:16 +0200
-In-Reply-To: <20070430104806.GA14944@infradead.org>
-Message-ID: <p73slaiys9v.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 30 Apr 2007 07:17:50 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:49025 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbXD3LRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 07:17:49 -0400
+Message-ID: <4635D01A.40806@web.de>
+Date: Mon, 30 Apr 2007 13:16:42 +0200
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-kernel@vger.kernel.org
+CC: Andi Kleen <ak@suse.de>
+Subject: [PATCH] i386: avoid redundant preempt_disable in __unlazy_fpu
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigB199D9DB81BCF5426021FFB0"
+X-Provags-ID: V01U2FsdGVkX18EM1fBo194x6mtgNda7z42pFcMCHLMG99TOTUr
+	kihNuUh79RIwNDVlBidDT2Gz2JrJIgBcgXnSBBKLHM8ZGh4Vgy
+	O+mLd8v/s=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigB199D9DB81BCF5426021FFB0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, Apr 30, 2007 at 12:26:42PM +0200, Andi Kleen wrote:
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> > 
-> > > If this still occurs for some
-> > > combinations then the fix would be 8K + 4K IRQ stack, not just to use 8K
-> > > stack
-> > 
-> > Yes i've been thinking for some time doing that would be a good idea.
-> 
-> Yes, the non-irqstack case should definitively go away.  And 8k
-> kernel stacks isn't that little given how much most 64bit architectures
-> have.
+There are two callers of __unlazy_fpu, unlazy_fpu and __switch_to, and
+none of them appear to require additional preempt_disable/enable here.
+Let's open-code save_init_fpu in __unlazy_fpu to save a few ops.
 
-Actually looking at the code it would need some fixes first:
+Signed-off-by: Jan Kiszka <jan.kiszka@web.de>
 
-/*
- * These should really be __section__(".bss.page_aligned") as well, but
- * gcc's 3.0 and earlier don't handle that correctly.
- */
-static char softirq_stack[NR_CPUS * THREAD_SIZE]
-                __attribute__((__aligned__(THREAD_SIZE)));
+---
+ include/asm-i386/i387.h |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-static char hardirq_stack[NR_CPUS * THREAD_SIZE]
-                __attribute__((__aligned__(THREAD_SIZE)));
+Index: linux-2.6/include/asm-i386/i387.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/include/asm-i386/i387.h
++++ linux-2.6/include/asm-i386/i387.h
+@@ -74,11 +74,12 @@ static inline void __save_init_fpu( stru
+ 	task_thread_info(tsk)->status &=3D ~TS_USEDFPU;
+ }
+=20
+-#define __unlazy_fpu( tsk ) do { \
+-	if (task_thread_info(tsk)->status & TS_USEDFPU) \
+-		save_init_fpu( tsk ); 			\
+-	else						\
+-		tsk->fpu_counter =3D 0;			\
++#define __unlazy_fpu( tsk ) do {				\
++	if (task_thread_info(tsk)->status & TS_USEDFPU) {	\
++		__save_init_fpu(tsk);				\
++		stts();						\
++	} else							\
++		tsk->fpu_counter =3D 0;				\
+ } while (0)
+=20
+ #define __clear_fpu( tsk )					\
 
 
-With 8K stacks and NR_CPUS==128 that would be 2MB statically reserved. Yuck.
-Really needs to be dynamically allocated. I'll take a look once the .22 
-big merge is done.
+--------------enigB199D9DB81BCF5426021FFB0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--Andi
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGNdAbniDOoMHTA+kRAmg9AJ9ra0veYkEh6RWVdtTH0BZXUSOe+gCeMROq
+y8tNOcJyaeZ5kHfHgdwCJ7U=
+=CCWM
+-----END PGP SIGNATURE-----
+
+--------------enigB199D9DB81BCF5426021FFB0--
