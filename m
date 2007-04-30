@@ -1,99 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946393AbXD3Qkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946409AbXD3QlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946393AbXD3Qkc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 12:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946428AbXD3Qkb
+	id S1946409AbXD3QlI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 12:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946410AbXD3QlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 12:40:31 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:34170 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946393AbXD3Qk1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 12:40:27 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 07/12] i386: Add missing !X86_PAE dependincy to the 2G/2G split.
-References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
-	<m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
-	<m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm4p509a.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vefd4zyj.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6q14zow.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1mz0p4zfc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1irbd4zcm.fsf_-_@ebiederm.dsl.xmission.com> <46361643.509@zytor.com>
-Date: Mon, 30 Apr 2007 10:39:58 -0600
-In-Reply-To: <46361643.509@zytor.com> (H. Peter Anvin's message of "Mon, 30
-	Apr 2007 09:16:03 -0700")
-Message-ID: <m1slah3jfl.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 30 Apr 2007 12:41:07 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:50242 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946403AbXD3QlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 12:41:00 -0400
+Subject: Re: [PATCH] change global zonelist order v4 [2/2] auto
+	configuration
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, clameter@sgi.com
+In-Reply-To: <20070427151722.dfd142b1.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20070427151722.dfd142b1.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 30 Apr 2007 12:26:57 -0400
+Message-Id: <1177950417.5623.44.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
-
-> Eric W. Biederman wrote:
->> When in PAE mode we require that the user kernel divide to be
->> on a 1G boundary.  The 2G/2G split does not have that property
->> so require !X86_PAE
->
-> ?????
->
-> 	-hpa
-
->From arch/i386/Kconfig:
+On Fri, 2007-04-27 at 15:17 +0900, KAMEZAWA Hiroyuki wrote:
+> Add auto zone ordering configuration.
 > 
-> choice
->         depends on EXPERIMENTAL
->         prompt "Memory split" if EMBEDDED
->         default VMSPLIT_3G
->         help
->           Select the desired split between kernel and user memory.
+> This function will select ZONE_ORDER_NODE when
 > 
->           If the address range available to the kernel is less than the
->           physical memory installed, the remaining memory will be available
->           as "high memory". Accessing high memory is a little more costly
->           than low memory, as it needs to be mapped into the kernel first.
->           Note that increasing the kernel address space limits the range
->           available to user programs, making the address space there
->           tighter.  Selecting anything other than the default 3G/1G split
->           will also likely make your kernel incompatible with binary-only
->           kernel modules.
+> - There are only ZONE_DMA or ZONE_DMA32.
+> (or) size of (ZONE_DMA/DMA32) > (System Total Memory)/2
+> (or) Assume Node(A)
+> 	* Node (A)'s total memory > System Total Memory/num_of_node+1
+> 	(and) Node (A)'s ZONE_DMA/DMA32 occupies 60% of Node(A)'s memory.
 > 
->           If you are not absolutely sure what you are doing, leave this
->           option alone!
+> otherwise, ZONE_ORDER_ZONE is selected.
 > 
->         config VMSPLIT_3G
->                 bool "3G/1G user/kernel split"
->         config VMSPLIT_3G_OPT
->                 depends on !HIGHMEM
->                 bool "3G/1G user/kernel split (for full 1G low memory)"
->         config VMSPLIT_2G
->                 depends on !X86_PAE
->                 bool "2G/2G user/kernel split"
->         config VMSPLIT_1G
->                 bool "1G/3G user/kernel split"
-> endchoice
+> Note: a user can specifiy this ordering from boot option.
+                   specify
 > 
-> config PAGE_OFFSET
->         hex
->         default 0xB0000000 if VMSPLIT_3G_OPT
->         default 0x78000000 if VMSPLIT_2G
->         default 0x40000000 if VMSPLIT_1G
->         default 0xC0000000
+> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-The default PAGE_OFFSET is at 0x7800000 for the 2G/2G split.
-All of these options were originally !X86_PAE, I assume
-the intention was to be able to have 2G of RAM without
-needing high memory.
+Minor editorial [spelling, ...] comments.
 
-I don't really care I just saw the problem and decided to prevent
-people trying a combination that simply doesn't work.
+Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> 
+> ---
+>  mm/page_alloc.c |   44 +++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 43 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.21-rc7-mm2/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.21-rc7-mm2.orig/mm/page_alloc.c	2007-04-27 15:39:49.000000000 +0900
+> +++ linux-2.6.21-rc7-mm2/mm/page_alloc.c	2007-04-27 15:55:51.000000000 +0900
+> @@ -2211,8 +2211,50 @@
+>  
+>  static int estimate_zonelist_order(void)
+>  {
+> -	/* dummy, just select node order. */
+> -	return ZONELIST_ORDER_NODE;
+> +	int nid, zone_type;
+> +	unsigned long low_kmem_size,total_size;
+> +	struct zone *z;
+> +	int average_size;
+> +	/* ZONE_DMA and ZONE_DMA32 can be very small area in the sytem.
+> +	   If they are really small and used heavily,
+> +	   the system can fall into OOM very easily.
+> +	   This function detect ZONE_DMA/DMA32 size and confgigure
+                           detects                        configures
+> +	   zone ordering */
+> +	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
+> +	low_kmem_size = 0;
+> +	total_size = 0;
+> +	for_each_online_node(nid) {
+> +		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+> +			z = &NODE_DATA(nid)->node_zones[zone_type];
+> +			if (populated_zone(z)) {
+> +				if (zone_type < ZONE_NORMAL)
+> +					low_kmem_size += z->present_pages;
+> +				total_size += z->present_pages;
+> +			}
+> +		}
+> +	}
+> +	if (!low_kmem_size ||  /* there is no DMA area. */
+> +	    !low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
+> +		return ZONELIST_ORDER_NODE;
+> +	/* look into each node's config. where all processes starts... */
+> +	/* average size..a bit smaller than real average size */
+> +	average_size = total_size / (num_online_nodes() + 1);
+> +	for_each_online_node(nid) {
+> +		low_kmem_size = 0;
+> +		total_size = 0;
+> +		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
+> +			z = &NODE_DATA(nid)->node_zones[zone_type];
+> +			if (populated_zone(z)) {
+> +				if (zone_type < ZONE_NORMAL)
+> +					low_kmem_size += z->present_pages;
+> +				total_size += z->present_pages;
+> +			}
+> +		}
+> +		if (total_size > average_size && /* ignore unbalanced node */
+> +		    low_kmem_size > total_size * 60/100)
+> +			return ZONELIST_ORDER_NODE;
+> +	}
+> +	return ZONELIST_ORDER_ZONE;
+>  }
+>  
+> 
+> 
 
-Eric
