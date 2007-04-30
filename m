@@ -1,45 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946540AbXD3R4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946541AbXD3R67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946540AbXD3R4d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 13:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946541AbXD3R4d
+	id S1946541AbXD3R67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 13:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946547AbXD3R67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 13:56:33 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:5093 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946540AbXD3R4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 13:56:31 -0400
-Date: Mon, 30 Apr 2007 19:52:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Bob Tracy <rct@gherkin.frus.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: BAD_SG_DMA panic in aha1542
-Message-ID: <20070430175208.GQ21015@kernel.dk>
-References: <20070427214709.DC44BDBA2@gherkin.frus.com> <1177712499.3688.25.camel@mulgrave.il.steeleye.com> <20070430173243.GP21015@kernel.dk> <20070430173927.GA10522@infradead.org>
+	Mon, 30 Apr 2007 13:58:59 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:51934 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946541AbXD3R65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 13:58:57 -0400
+Date: Mon, 30 Apr 2007 23:36:53 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Paul Menage" <menage@google.com>
+Cc: "Paul Jackson" <pj@sgi.com>, akpm@linux-foundation.org, dev@sw.ru,
+       xemul@sw.ru, serue@us.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
+       devel@openvz.org
+Subject: Re: [PATCH 0/9] Containers (V9): Generic Process Containers
+Message-ID: <20070430180653.GA31001@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070427104607.252541000@menage.corp.google.com> <20070429023721.53f249b9.pj@sgi.com> <20070430171225.GH24350@in.ibm.com> <6599ad830704301009k11100a78we98e20deba9b1fdc@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070430173927.GA10522@infradead.org>
+In-Reply-To: <6599ad830704301009k11100a78we98e20deba9b1fdc@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30 2007, Christoph Hellwig wrote:
-> On Mon, Apr 30, 2007 at 07:32:45PM +0200, Jens Axboe wrote:
-> > It's due to the crappy ->generic_packet() ioctl stuff, it bypasses the
-> > block layer. So that needs to be converted to use block pc requests and
-> > the block layer interface, then things will just work.
-> > 
-> > Christoph had a sort-of ready patch for that some time ago. Christoph,
-> > did that ever materialize into a full blown patch?
-> 
-> I had a fullblown patch somewhere.  The only drawback was that I didn't
-> convert pcd because I neither understand enough of the hardware nor do
-> I really understand what's going on there.
+On Mon, Apr 30, 2007 at 10:09:38AM -0700, Paul Menage wrote:
+> Paul, is there any reason why we need to do a write_lock() on
+> tasklist_lock if we're just trying to block fork, or is it just
+> historical accident? Wouldn't it be fine to do a read_lock()?
 
-Cool, pass the patch and I'll try to see if I can convert pcd.
+Good point ..read_lock() will probably suffice in update_nodemask which
+means we don't need the patch I sent earlier.
+
+Paul (Jackson),
+	This made me see another race in update_nodemask vs fork:
+
+Lets say cpuset CS1 has only one task T1 to begin with.
+
+update_nodemask(CS1)			T1 in do_fork()
+	CPU0				     CPU1
+=============================================================
+
+
+					cpuset_fork();
+					mpol_copy();
+
+
+ntasks = atomic_read(&cs->count);
+[ntasks = 2, accounting new born child T2]
+cs->mems_allowed = something;
+set_cpuset_being_rebound()
+
+
+write/read_lock(tasklist_lock);
+
+
+do_each_thread {
+
+	/* Finds only T1 */
+
+	mmarray[] = ..
+
+} while_each_thread();
+
+write/read_unlock(tasklist_lock);
+
+					write_lock(tasklist_lock);
+
+					/* Add T2, child of T1 to tasklist */
+
+					write_unlock(tasklist_lock);
+
+
+for (i = 0; i < n; i++) {
+
+	mpol_rebind_mm(..);
+
+}
+
+
+In this for loop, we migrate only T1's ->mm. T2's->mm isn't migrated
+AFAICS.
+
+Is that fine?
 
 -- 
-Jens Axboe
-
+Regards,
+vatsa
