@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423432AbXD3Pvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423496AbXD3Pwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423432AbXD3Pvs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 11:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423485AbXD3PuN
+	id S1423496AbXD3Pwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 11:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423493AbXD3Pwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 11:50:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34400 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423432AbXD3PuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 11:50:05 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070430549.617098000@suse.de>
-In-Reply-To: <20070430549.617098000@suse.de>
-To: ebiederm@xmission.com, ak@suse.de, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [31/34] i386: convert to the kthread API
-Message-Id: <20070430155004.B340D151D3@wotan.suse.de>
-Date: Mon, 30 Apr 2007 17:50:04 +0200 (CEST)
+	Mon, 30 Apr 2007 11:52:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40729 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423494AbXD3Pw0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 11:52:26 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: virtualization <virtualization@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Dave Jones <davej@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: [PATCH 03/12] i386 head.S: Always run the full set of paging state
+References: <m1d51l6f1y.fsf@ebiederm.dsl.xmission.com>
+	<m18xc96eyq.fsf@ebiederm.dsl.xmission.com>
+	<m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Mon, 30 Apr 2007 09:51:13 -0600
+In-Reply-To: <m14pmx6ewk.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Mon, 30 Apr 2007 09:49:31 -0600")
+Message-ID: <m1zm4p509a.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-
-This patch just trivial converts from calling kernel_thread and daemonize
-to just calling kthread_run.
+I am preparing to convert the boot time page table to the kernels
+native format.  To achieve that I need to enable PAE. Enabling PSE
+and the no execute bit would not hurt.  So this patch modifies
+the boot cpu path to execute all of the kernels enable code
+if and only if we have the proper bits set in mmu_cr4_features.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <ak@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
+ arch/i386/kernel/head.S |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
- arch/i386/kernel/io_apic.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+diff --git a/arch/i386/kernel/head.S b/arch/i386/kernel/head.S
+index aa9e28e..248d44c 100644
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -181,6 +181,8 @@ ENTRY(startup_32_smp)
+ 	movl %eax,%es
+ 	movl %eax,%fs
+ 	movl %eax,%gs
++#endif /* CONFIG_SMP */
++3:
+ 
+ /*
+  *	New page tables may be in 4Mbyte page mode and may
+@@ -227,8 +229,6 @@ ENTRY(startup_32_smp)
+ 	wrmsr
+ 
+ 6:
+-#endif /* CONFIG_SMP */
+-3:
+ 
+ /*
+  * Enable paging
+-- 
+1.5.1.1.181.g2de0
 
-Index: linux/arch/i386/kernel/io_apic.c
-===================================================================
---- linux.orig/arch/i386/kernel/io_apic.c
-+++ linux/arch/i386/kernel/io_apic.c
-@@ -35,6 +35,7 @@
- #include <linux/msi.h>
- #include <linux/htirq.h>
- #include <linux/freezer.h>
-+#include <linux/kthread.h>
- 
- #include <asm/io.h>
- #include <asm/smp.h>
-@@ -661,8 +662,6 @@ static int balanced_irq(void *unused)
- 	unsigned long prev_balance_time = jiffies;
- 	long time_remaining = balanced_irq_interval;
- 
--	daemonize("kirqd");
--	
- 	/* push everything to CPU 0 to give us a starting point.  */
- 	for (i = 0 ; i < NR_IRQS ; i++) {
- 		irq_desc[i].pending_mask = cpumask_of_cpu(0);
-@@ -722,10 +721,9 @@ static int __init balanced_irq_init(void
- 	}
- 	
- 	printk(KERN_INFO "Starting balanced_irq\n");
--	if (kernel_thread(balanced_irq, NULL, CLONE_KERNEL) >= 0) 
-+	if (!IS_ERR(kthread_run(balanced_irq, NULL, "kirqd")))
- 		return 0;
--	else 
--		printk(KERN_ERR "balanced_irq_init: failed to spawn balanced_irq");
-+	printk(KERN_ERR "balanced_irq_init: failed to spawn balanced_irq");
- failed:
- 	for_each_possible_cpu(i) {
- 		kfree(irq_cpu_data[i].irq_delta);
