@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423605AbXD3S1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946558AbXD3S2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423605AbXD3S1D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 14:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423614AbXD3S1D
+	id S1946558AbXD3S2G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 14:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423614AbXD3S2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 14:27:03 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:34080 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423530AbXD3S1A (ORCPT
+	Mon, 30 Apr 2007 14:28:06 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:32913 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423530AbXD3S2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 14:27:00 -0400
-Subject: Re: [PATCH] i386: init early_gdt_descr and idle task properly on
-	voyager
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
+	Mon, 30 Apr 2007 14:28:03 -0400
+Date: Mon, 30 Apr 2007 11:27:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Adrian Bunk <bunk@stusta.de>
+cc: Diego Calleja <diegocg@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4633E507.7070002@goop.org>
-References: <4633E507.7070002@goop.org>
-Content-Type: text/plain
-Date: Mon, 30 Apr 2007 13:26:55 -0500
-Message-Id: <1177957615.3674.53.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: Linux 2.6.21
+In-Reply-To: <alpine.LFD.0.98.0704301113240.3419@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0704301123230.3419@woody.linux-foundation.org>
+References: <p73d51n1fup.fsf@bingen.suse.de>
+ <alpine.LFD.0.98.0704290848360.9964@woody.linux-foundation.org>
+ <20070429173500.GA30248@one.firstfloor.org>
+ <alpine.LFD.0.98.0704291040580.9964@woody.linux-foundation.org>
+ <20070429180909.GA30604@one.firstfloor.org> <20070429214007.9ea12e96.diegocg@gmail.com>
+ <20070429201729.GQ3468@stusta.de> <alpine.LFD.0.98.0704291330280.9964@woody.linux-foundation.org>
+ <20070429210505.GS3468@stusta.de> <alpine.LFD.0.98.0704291419310.9964@woody.linux-foundation.org>
+ <20070430180952.GC23336@stusta.de>
+ <alpine.LFD.0.98.0704301113240.3419@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-671838492-1177957647=:3419"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-28 at 17:21 -0700, Jeremy Fitzhardinge wrote:
-> Initialize early_gdt_descr and idle task properly.
-> 
-> [ Incremental fix for "i386: introduce voyager smp_ops, fix voyager build" ]
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Still not quite enough.  this is what I need to complete the build:
-
-James
-
-Index: voyager-2.6/arch/i386/kernel/cpu/common.c
-===================================================================
---- voyager-2.6.orig/arch/i386/kernel/cpu/common.c	2007-04-30 12:49:45.000000000 -0500
-+++ voyager-2.6/arch/i386/kernel/cpu/common.c	2007-04-30 13:03:42.000000000 -0500
-@@ -21,6 +21,9 @@
- 
- #include "cpu.h"
- 
-+DEFINE_PER_CPU(unsigned long, this_cpu_off);
-+EXPORT_PER_CPU_SYMBOL(this_cpu_off);
-+
- DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
- 	[GDT_ENTRY_KERNEL_CS] = { 0x0000ffff, 0x00cf9a00 },
- 	[GDT_ENTRY_KERNEL_DS] = { 0x0000ffff, 0x00cf9200 },
-@@ -650,6 +653,22 @@ void switch_to_new_gdt(void)
- 	asm("mov %0, %%fs" : : "r" (__KERNEL_PERCPU) : "memory");
- }
- 
-+/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
-+   (still using the master per-cpu area), or a CPU doing it for a
-+   secondary which will soon come up. */
-+__cpuinit void init_gdt(int cpu)
-+{
-+	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
-+
-+	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
-+			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
-+			__per_cpu_offset[cpu], 0xFFFFF,
-+			0x80 | DESCTYPE_S | 0x2, 0x8);
-+
-+	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
-+	per_cpu(cpu_number, cpu) = cpu;
-+}
-+
- /*
-  * cpu_init() initializes state that is per-CPU. Some data is already
-  * initialized (naturally) in the bootstrap process, such as the GDT
-Index: voyager-2.6/arch/i386/kernel/smpboot.c
-===================================================================
---- voyager-2.6.orig/arch/i386/kernel/smpboot.c	2007-04-30 12:49:45.000000000 -0500
-+++ voyager-2.6/arch/i386/kernel/smpboot.c	2007-04-30 13:03:45.000000000 -0500
-@@ -99,9 +99,6 @@ EXPORT_SYMBOL(x86_cpu_to_apicid);
- 
- u8 apicid_2_node[MAX_APICID];
- 
--DEFINE_PER_CPU(unsigned long, this_cpu_off);
--EXPORT_PER_CPU_SYMBOL(this_cpu_off);
--
- /*
-  * Trampoline 80x86 program as an array.
-  */
-@@ -764,25 +761,6 @@ static inline struct task_struct * alloc
- #define alloc_idle_task(cpu) fork_idle(cpu)
- #endif
- 
--/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
--   (still using the master per-cpu area), or a CPU doing it for a
--   secondary which will soon come up. */
--static __cpuinit void init_gdt(int cpu)
--{
--	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
--
--	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
--			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
--			__per_cpu_offset[cpu], 0xFFFFF,
--			0x80 | DESCTYPE_S | 0x2, 0x8);
--
--	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
--	per_cpu(cpu_number, cpu) = cpu;
--}
--
--/* Defined in head.S */
--extern struct Xgt_desc_struct early_gdt_descr;
--
- static int __cpuinit do_boot_cpu(int apicid, int cpu)
- /*
-  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
-Index: voyager-2.6/include/asm-i386/processor.h
-===================================================================
---- voyager-2.6.orig/include/asm-i386/processor.h	2007-04-30 12:49:45.000000000 -0500
-+++ voyager-2.6/include/asm-i386/processor.h	2007-04-30 12:54:47.000000000 -0500
-@@ -749,6 +749,10 @@ extern unsigned long boot_option_idle_ov
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
- 
-+/* Defined in head.S */
-+extern struct Xgt_desc_struct early_gdt_descr;
-+
-+extern void init_gdt(int cpu);
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(void);
- extern void cpu_init(void);
+---1463790079-671838492-1177957647=:3419
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 
 
+
+On Mon, 30 Apr 2007, Linus Torvalds wrote:
+
+> Ponder that, grasshopper. And until you can see that things are not 
+> "either-or", "black-and-white", "all or nothing", I don't think I really 
+> can have anything worthwhile to add in this discussion to you. People who 
+> think in absolutes are simply not worth talking to.
+
+This is another case of "perfect is the enemy of good".
+
+Tryng to reach perfect is not only guaranteed to fail, but trying to reach 
+it AND NOT REALIZING that it's stupid and wrong is actually much WORSE 
+than just trying to do a reasonable job.
+
+And if you put some _totally_idiotic_ expectation that all bugreports can 
+be fixed, and should always be totally blocking, that's guaranteed to just 
+cause a totally unusuable bug reporting system.
+
+And your bugzilla arguments seem to be exactly that. A naïve and totally 
+unrealistic expectation of "every bugreport is sacred" is BAD.
+
+In other words: perfection not only isn't even possible, BUT IT IS NOT 
+EVEN WORTH TRYING TO REACH FOR!
+
+			Linus
+---1463790079-671838492-1177957647=:3419--
