@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423106AbXD3HZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXD3HbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423106AbXD3HZr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 03:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423110AbXD3HZq
+	id S1423110AbXD3HbM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 03:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423113AbXD3HbM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 03:25:46 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:48223
-	"EHLO gwia-smtp.id2.novell.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1423106AbXD3HZp convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 03:25:45 -0400
-Message-Id: <4635B62D.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Mon, 30 Apr 2007 08:26:05 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Bryan O'Sullivan" <bos@pathscale.com>, "Andi Kleen" <ak@suse.de>
-Cc: "Roland Dreier" <rolandd@cisco.com>, <linux-kernel@vger.kernel.org>,
-       <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [8/35] x86_64: a memcpy that tries to
-	reducecache pressure
-References: <20070428752.712152000@suse.de>
- <20070428175232.5A688151CA@wotan.suse.de>
-In-Reply-To: <20070428175232.5A688151CA@wotan.suse.de>
+	Mon, 30 Apr 2007 03:31:12 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36094 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423110AbXD3HbK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 03:31:10 -0400
+Date: Mon, 30 Apr 2007 00:30:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miguel Figueiredo <elmig@debianpt.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21 frozen for a few minutes, swapping to disk
+Message-Id: <20070430003031.2e89fbc1.akpm@linux-foundation.org>
+In-Reply-To: <46347335.7080601@debianpt.org>
+References: <46347335.7080601@debianpt.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->+	testb	$8, %dxl	/* rdx is 3,5,6,7,9..15 */
+On Sun, 29 Apr 2007 11:28:05 +0100 Miguel Figueiredo <elmig@debianpt.org> wrote:
 
-Could you use the more conventional name %dl (or whatever is being meant)
-here?
+> Hi all,
+> 
+> today, with 2.6.21, my laptop had a really odd behaviour. It started 
+> writing to disk for a few minutes with no interactivity at all (no 
+> redraw on screen, only hdd led on). It's the first time i noticed 
+> OOM-killer started do kill programs.
+> 
+> It was totally unresponsive for minutes, after back to life it had a 
+> load of ~19.0, and 300+ MB on swap (first time i saw this).
+> 
+> It's an HP pavillon core duo 2.0 GHz, 1 GB RAM
+> 
+> kern.log details: 
+> http://www.debianpt.org/~elmig/pool/kernel/20070429/kern.log
+> .config: http://www.debianpt.org/~elmig/pool/kernel/20070429/2.6.21.config
+> dmesg: http://www.debianpt.org/~elmig/pool/kernel/20070429/dmesg
+> 
+> As this is the first time it happened and it felt odd i am reporting.
+> 
+> If aditional info is needed please CC me as i am not on the list.
+> 
 
->+.L42:
->+	prefetchnta	128(%rsi)
+hm, a genuine oom on an all-ext3 data=ordered i386 system, just like a
+million other people.  How very weird.
 
-I think I commented similarly on a previous version of the patch: This will 
-- result in still bringing the first 128 bytes into the cache
-- prevent caching of memory beyond the buffer being dealt with
+I assume all those pages on the LRU are pagecache pages which for some
+reason we're unable to reclaim.
 
->+	sfence
+If some privileged application went berzerk mlock()ing everything then that
+might explain it.  It sounds improbable, but then, something improbable has
+happened.
 
-Similarly, I continue to believe this is wrong here (again I commented before
-that this is likely unnecessary, or if at all, it should be an lfence).
+We cleverly managed to not display the pagecache totals in the oom-killer
+output.  Could you please take a copy of /proc/meminfo after an
+oom-killing, send that?  And /proc/vmstat, I guess.
 
->+	orl	%edx, %edx
+If you're keen, we could eliminate the mlock possibility by adding this:
 
-Operations of this type generally should use 'test', not 'or' or 'and'.
-
-Jan
-
+--- a/mm/mlock.c~a
++++ a/mm/mlock.c
+@@ -127,6 +127,8 @@ asmlinkage long sys_mlock(unsigned long 
+ 	unsigned long lock_limit;
+ 	int error = -ENOMEM;
+ 
++	return 0;
++
+ 	if (!can_do_mlock())
+ 		return -EPERM;
+ 
+@@ -151,6 +153,8 @@ asmlinkage long sys_munlock(unsigned lon
+ {
+ 	int ret;
+ 
++	return 0;
++
+ 	down_write(&current->mm->mmap_sem);
+ 	len = PAGE_ALIGN(len + (start & ~PAGE_MASK));
+ 	start &= PAGE_MASK;
+_
 
