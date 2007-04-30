@@ -1,79 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXD3XEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbXD3XFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbXD3XEV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 19:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXD3XEV
+	id S1754247AbXD3XFv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 19:05:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbXD3XFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 19:04:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43464 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbXD3XEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 19:04:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Linux 2.6.21
-Date: Tue, 1 May 2007 01:08:33 +0200
-User-Agent: KMail/1.9.5
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Diego Calleja <diegocg@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20070426040806.GJ3468@stusta.de> <200704300009.07257.rjw@sisk.pl> <20070429233019.e782f949.akpm@linux-foundation.org>
-In-Reply-To: <20070429233019.e782f949.akpm@linux-foundation.org>
+	Mon, 30 Apr 2007 19:05:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39365 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753999AbXD3XFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 19:05:49 -0400
+Cc: linux-dvb@linuxtv.org, akpm@linux-foundation.org, mkrufky@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 01 May 2007 01:05:48 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <Pine.LNX.4.58.0704301458460.315@shell2.speakeasy.net>
+Message-ID: <20070430230548.181650@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+References: <20070429182209.267430@gmx.net> 
+	<alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org> 
+	<20070429205925.129920@gmx.net>
+	<alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
+	<20070429230037.95120@gmx.net>  <1177894713.3046.5.camel@p
+	<alpine.LFD.0.98.0704300854090.9964@woody.linux-foundation.org>
+ <Pine.LNX.4.58.0704301458460.315@shell2.speakeasy.net>
+Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and
+	pseudo-authorities
+To: Trent Piepho <xyzzy@speakeasy.org>, torvalds@linux-foundation.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+B0T0Am5uBDTrnTNMQTzN8JrxUnxuViBBtIwFOsI
+ OX8/ozqvmGMPjZaSy2FdTOTqqSVcy5cYSa0Q== 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705010108.35248.rjw@sisk.pl>
+X-GMX-UID: KhJeC84nbHIhc3a2RjQ0grUiJihyalCL
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 30 April 2007 08:30, Andrew Morton wrote:
-> On Mon, 30 Apr 2007 00:09:06 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+-------- Original-Nachricht --------
+Datum: Mon, 30 Apr 2007 15:41:03 -0700 (PDT)
+Von: Trent Piepho <xyzzy@speakeasy.org>
+An: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing list <linux-kernel@vger.kernel.org>, Michael Krufky <mkrufky@linuxtv.org>, akpm@linux-foundation.org, Linux DVB <linux-dvb@linuxtv.org>
+Betreff: Re: [linux-dvb] Re: Critical points about kernel 2.6.21 and	pseudo-authorities
+
+> On Mon, 30 Apr 2007, Linus Torvalds wrote:
+> > Anyway, I'll get out of the discussion. There's clearly some personality
+> > issues in the DVB area, and I don't know quite _why_ that is, but Uwe,
+> > you're definitely not helping.
 > 
-> > On Sunday, 29 April 2007 22:52, Alexey Dobriyan wrote:
-> > > On Sun, Apr 29, 2007 at 10:18:10PM +0200, Rafael J. Wysocki wrote:
-> > > > [For example, you can create a bugzilla entry with a link to the lkml.org copy
-> > > > of the relevant message, so why to require the reporter to file the report with
-> > > > the bugzilla himself?]
-> > > 
-> > > Last time I did this, bugzilla at osdl.org won't let me add original
-> > > reporter to goddamn CC list. It would be el neat, because not everyone
-> > > followed instructions and forwarding emails between reporter and
-> > > bugzilla sucks.
-> > 
-> > That's related to what I said before.  The requirement that the addresses on
-> > the CC list must be 'known' to bugzilla is deadly wrong in every case I can
-> > imagine.
+> There isn't a problem here, just a lot of noise coming from one source.  I
+> have no problem with Mauro and think he does a good job and is an
+> extremely
+> reasonable person.  He is just getting Uwe's thesaurus thrown at him
+> because he's the closest target.
 > 
-> But unknown-to-bugzilla email addresses are accepted when they're sent to
-> bugme-daemon@kernel-bugs.osdl.org.  This is why I'll very often switch a
-> bug report to email, copying individuals and mailing lists and
-> bugme-daemon.  Then bugzilla just sits silently in the background recording
-> everything.
-
-If I wanted to do this, what would I have to do?  I mean, assume I have a bug
-report that I want to send to someone whom the bugzilla doesn't like.
-What's the right procedure in such a case?
-
-> But once a bug has switched to email, it needs to stay there - it would be
-> bad if someone were to update the bug via the web UI because none of the
-> emailed participants would know of the update.  So i'll often explicitly
-> ask "please follow up via emailed reply-to-all".
+> Sure there are disagreements sometimes, but this is always the case.  I
+> can
+> think of plenty of lists far more full of flames and personality conflicts
+> than linux-dvb.
 > 
-> It's not great, but there's certainly enough material here for people to get
-> in and work on the bug, should they be so inclined.
+> The issue with dst is just a minor missing feature to fully support the
+> dvb
+> helper module customization system.  So nobody needs to worry about this
+> anymore, the last two patches in this repository will fix it correctly.
 > 
-> My overall approach with this stuff is: short-term bugs are handled via email
-> and long-term ones are tracked in buzilla.
+> http://linuxtv.org/hg/~tap/dst-new?cmd=summary;style=gitweb
+> 
+> Making dvb-pll work fully with this same system is a little more complex.
+> It's on the virtual todo list, but not at the top.
+> 
+> I'll finish with this completely unrelated quote.
+> 
+> ------------
+>    "Especially important is the warning to avoid conversations with the
+> demon.
+>    We may ask what is relevant but anything beyond that is dangerous.  He
+> is a
+>    liar.  The demon is a liar.  He will lie to confuse us.  But he will
+> also
+>    mix lies with the truth to attack us.  The attack is psychological,
+> Damien,
+>    and powerful.  So don't listen to him.  Remember that - do not listen."
+>     - from "The Exorcist"
+> 
+> _______________________________________________
+> linux-dvb mailing list
+> linux-dvb@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
 
-I think that's reasonable, I've always done it this way, AFAIR.
+Piepho, you are a devil, and your links do not work at all!
+Uwe
 
-> Hence someone (Hi, Mom) needs to track all the emailed-only bug reports and get
-> them filed in bugzilla once they go stale.
 
-I can do that with suspend/hibernation-related bug reports, but sometimes
-I'm not sure who is the right person to notify in the first place.
-
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
