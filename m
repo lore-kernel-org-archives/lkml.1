@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946819AbXD3U7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946805AbXD3VMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946819AbXD3U7K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 16:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946820AbXD3U7K
+	id S1946805AbXD3VMG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 17:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946824AbXD3VMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 16:59:10 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:56512 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946819AbXD3U7H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 16:59:07 -0400
-Date: Mon, 30 Apr 2007 14:02:38 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: David Rientjes <rientjes@google.com>
-Cc: David Brownell <david-b@pacbell.net>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] pm: include EIO from errno-base.h
-Message-Id: <20070430140238.ff65e3e0.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0704301215190.17664@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0704291700220.1822@chino.kir.corp.google.com>
-	<200704300751.07078.david-b@pacbell.net>
-	<Pine.LNX.4.64.0704301215190.17664@chino.kir.corp.google.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 30 Apr 2007 17:12:05 -0400
+Received: from 216-99-213-120.dsl.aracnet.com ([216.99.213.120]:49663 "EHLO
+	clueserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946805AbXD3VMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 17:12:03 -0400
+X-Greylist: delayed 1262 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Apr 2007 17:12:03 EDT
+Date: Mon, 30 Apr 2007 13:51:00 -0700 (PDT)
+From: alan <alan@clueserver.org>
+X-X-Sender: alan@blackbox.fnordora.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Stephen.Clark@seclark.us, Jeff Garzik <jeff@garzik.org>,
+       Chuck Ebbert <cebbert@redhat.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata updates
+In-Reply-To: <20070430213127.49e4bd73@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0704301348060.31107@blackbox.fnordora.org>
+References: <20070429161542.GA12501@havoc.gtf.org> <46364901.4000907@redhat.com>
+ <46364C04.4050208@garzik.org> <46364FFA.9050500@seclark.us>
+ <20070430213127.49e4bd73@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007 12:15:57 -0700 (PDT) David Rientjes wrote:
+On Mon, 30 Apr 2007, Alan Cox wrote:
 
-> For backwards compatibility, call_platform_enable_wakeup() can return 0 
-> instead of -EIO since we aren't guaranteed to have errno defined.
-> 
-> Cc: David Brownell <david-b@pacbell.net>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  include/linux/pm.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -328,7 +328,7 @@ static inline void dpm_runtime_resume(struct device * dev)
->  
->  static inline int call_platform_enable_wakeup(struct device *dev, int is_on)
->  {
-> -	return -EIO;
-> +	return 0;
->  }
->  
->  #endif
+>> Yeah the kernel will boot but the hd performance is sh*t on my laptop. I
+>> am running FC6 with
+>> kernel 2.6.21 and without the combined_mode setting my disk performance
+>> goes down to a
+>> whopping 1.25mb/sec from 44mb/sec when I boot with combined_mode=libata.
+>
+> Then something is very wrong with the way you are setting it up, or the
+> current code. Please post a dmesg booting with libata driving all your
+> disks and it can get fixed before 2.6.22
+>
+> Do you happen to know how FC7test4 behaves on your box btw
 
+I did the upgrade last night.  Drive performance was SLLOOWW.  When it 
+came time to the reboot, I had a corrupted disk.  (Not certain if that was 
+the fault of the upgrade.  I have to finish the fsck repairs first.) And 
+this is with ext3.  Not good.
 
-Andrew,
-Can you fasttrack this one?  otherwise allnoconfig fails.  :(
+I have been seeing real bad driver performance on the latest FC6 kernel as 
+well.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+-- 
+"Invoking the supernatural can explain anything, and hence explains nothing."
+                   - University of Utah bioengineering professor Gregory Clark
