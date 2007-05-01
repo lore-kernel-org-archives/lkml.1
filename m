@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031170AbXEALzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031676AbXEALzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031170AbXEALzN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 07:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031663AbXEALzM
+	id S1031676AbXEALzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 07:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031679AbXEALzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 07:55:12 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:35406 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031170AbXEALyr (ORCPT
+	Tue, 1 May 2007 07:55:38 -0400
+Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:59874
+	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1031676AbXEALzg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 07:54:47 -0400
-Subject: Re: VMware, x86_64 and 2.6.21.
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Michael Gerdau <mgd@technosis.de>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.61.0705011309450.18504@yvahk01.tjqt.qr>
-References: <1177998147.8981.16.camel@nigel.suspend2.net>
-	 <200705010924.51590.mgd@technosis.de>
-	 <1178004981.8981.27.camel@nigel.suspend2.net>
-	 <Pine.LNX.4.61.0705011309450.18504@yvahk01.tjqt.qr>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-RZc6HEckO6peP1rjrYeD"
-Date: Tue, 01 May 2007 21:54:45 +1000
-Message-Id: <1178020485.13953.0.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 1 May 2007 07:55:36 -0400
+Message-ID: <46372AB6.7000902@seclark.us>
+Date: Tue, 01 May 2007 07:55:34 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Chuck Ebbert <cebbert@redhat.com>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata updates
+References: <20070429161542.GA12501@havoc.gtf.org> <46364901.4000907@redhat.com> <46364C04.4050208@garzik.org> <46364FFA.9050500@seclark.us> <46365234.6010804@garzik.org>
+In-Reply-To: <46365234.6010804@garzik.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
 
---=-RZc6HEckO6peP1rjrYeD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>Stephen Clark wrote:
+>  
+>
+>>Yeah the kernel will boot but the hd performance is sh*t on my laptop. I 
+>>am running FC6 with
+>>kernel 2.6.21 and without the combined_mode setting my disk performance 
+>>goes down to a
+>>whopping 1.25mb/sec from 44mb/sec when I boot with combined_mode=libata. 
+>>It make my
+>>system unusable!
+>>    
+>>
+>
+>
+>No, that's the split-driver configuration that causes the slowdown.
+>
+>Now that both drivers fully support the hardware, either driver can make 
+>things go full speed.
+>
+>Please try testing the update first :)
+>
+>	Jeff
+>
+>
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+>  
+>
+Ok, I'am willing to test it out, but how to I get a patch file from the 
+git stuff?
 
-Hi.
+I currently have the 2.6.21 kernel source.
 
-On Tue, 2007-05-01 at 13:10 +0200, Jan Engelhardt wrote:
-> On May 1 2007 17:36, Nigel Cunningham wrote:
-> >On Tue, 2007-05-01 at 09:24 +0200, Michael Gerdau wrote:
-> >> > Does anyone have VMware working on x86_64 with 2.6.21?
-> >>=20
-> >> VMware server 1.0.2 (free edition) is working fine here with 2.6.21.1
-> >> using vmware-any-any-update109.
-> >>=20
-> >> System is Intel Core2 T7600 (x86_64)
-> >
-> >Ok. Maybe I'll try the any-any update. I'm using the Workstation 6 beta.
-> >Could I get you to send me your .config, just in case?
->=20
-> the AA updates are not for WS6 AFAICT (at least this was the case with aa=
-105).
+Steve
 
-Yeah. It turns out that I was still on WS 6 beta 1. Upgrading to beta 2
-made the problem go away.
+-- 
 
-Regards,
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
 
-Nigel
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
 
---=-RZc6HEckO6peP1rjrYeD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGNyqFN0y+n1M3mo0RAj62AKCSt8VPdvRR+WeV9nWPZYRveuswDgCfZD4b
-rYQEFXaQ/p+drEtrQ6No3/4=
-=E0Xy
------END PGP SIGNATURE-----
-
---=-RZc6HEckO6peP1rjrYeD--
 
