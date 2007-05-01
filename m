@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754233AbXEAQXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbXEAQX2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754233AbXEAQXH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXEAQXG
+	id S1754369AbXEAQX2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 12:23:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXEAQX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:23:06 -0400
-Received: from inetc.connecttech.com ([64.7.140.42]:2702 "EHLO
-	inetc.connecttech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbXEAQXF (ORCPT
+	Tue, 1 May 2007 12:23:28 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54545 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754369AbXEAQX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:23:05 -0400
-From: "Stuart MacDonald" <stuartm@connecttech.com>
-To: "'Satyam Sharma'" <satyam.sharma@gmail.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>
-Cc: "'Christoph Hellwig'" <hch@infradead.org>,
-       "'Roland McGrath'" <roland@redhat.com>,
-       "'Christoph Hellwig'" <hch@lst.de>, <linux-kernel@vger.kernel.org>,
-       <linux-arch@vger.kernel.org>
-Subject: RE: condingstyle, was Re: utrace comments
-Date: Tue, 1 May 2007 12:15:00 -0400
-Organization: Connect Tech Inc.
-Message-ID: <001601c78c0b$deb12a30$294b82ce@stuartm>
+	Tue, 1 May 2007 12:23:27 -0400
+Date: Tue, 1 May 2007 09:23:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [AF_RXRPC]: Make the in-kernel AFS filesystem use AF_RXRPC.
+In-Reply-To: <Pine.LNX.4.64.0705011734410.27246@anakin>
+Message-ID: <alpine.LFD.0.98.0705010918550.3808@woody.linux-foundation.org>
+References: <200704271707.l3RH7H5Z032671@hera.kernel.org>
+ <Pine.LNX.4.64.0705011734410.27246@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook, Build 10.0.6626
-In-Reply-To: <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: On Behalf Of Satyam Sharma
-> readable and obvious at first glance itself. For example, consider:
-               ^^^^^^^^^^^^^^^^^^^^^^^
+
+
+On Tue, 1 May 2007, Geert Uytterhoeven wrote:
 > 
-> 	if (veryverylengthycondition1 &&
-> 		smallcond2 &&
-> 		(conditionnumber3a ||
-> 		condition3b)) {
-> 		...
-> 	}
+> This causes a compile failure on m68k:
 > 
-> versus
+> | linux/fs/afs/fsclient.c: In function 'afs_deliver_fs_fetch_data':
+> | linux/fs/afs/fsclient.c:269: warning: dereferencing 'void *' pointer
+> | linux/fs/afs/fsclient.c:269: error: request for member 'virtual' in something not a structure or union
+> 
+> Probably you wanted to assign call->reply3 to a struct page pointer first, like you do for the call->unmarshall == 2 case.
 
-Whoops! You've got an unterminated if there, let me fix it up...
+Hmm. Wouldn't it be nicer to make "kmap_atomic()" be an inline function 
+instead? That way, if you pass it a "void *", it still just works, and you 
+get a much nicer/more readable error message too when the types actually 
+don't match?
 
-> 	if (veryverylengthycondition1) {
-> 	    && smallcond2
-> 	    && (conditionnumber3a
-> 	        || condition3b)) {
-> 		...
-> 	}> 
+Of course, there may be some reason why <linux/highmem.h> does those with 
+#define's rather than inline functions. Maybe "page_address()" or 
+"pagefault_disabled()" is not declared at that point, and asking it to be 
+declared might cause header file inclusion recursion?
 
-From: On Behalf Of Scott Preece
-> I still find the leading-operator style much more readable. The most
-> important thing in reading a long, complex conditional is
-> understanding the structure of the operators, not the operands.
-
-Since there's a mix of pre-, post- and infix, the structure of the
-operators _depends on_ the operands.
-
-> However, there's a lot of difference of opinion on this (perhaps
-> rooted in differences in cognition and reading behavior). For me it's
-> not even close - expressions broken so the operators are at the head
-> of the line snap into focus and those with operators at the ends of
-> the lines look like undifferentiated goo. Since some of the style
-
-I'm exactly opposite; the "uncorrected" line above is a typo because
-there's no continuation item at the end of the line. I don't even see
-the following lines because they are, by definition, not part of the
-code I'm looking at. Leaving the operators at the end of the line I
-easily see that it's a binary operator, and there's no second operand
-so the next line must contain it, parse the next line as well.
-
-Hm. I didn't realise this but the unspoken underlying factor for me is
-the "one instruction per line" style. If you must break over multiple
-lines, there must be a continuation item to indicate that. This is how
-I detect missing semicolons.
-
-..Stu
-
+		Linus
