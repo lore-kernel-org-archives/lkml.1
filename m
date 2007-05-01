@@ -1,190 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXEAKRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXEAKRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161199AbXEAKRG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030528AbXEAKRG
+	id S1030367AbXEAKRa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030346AbXEAKR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:17:06 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:42190 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030346AbXEAKQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:16:56 -0400
-Date: Tue, 1 May 2007 11:16:51 +0100
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, apw@shadowen.org,
-       clameter@sgi.com, y-goto@jp.fujitsu.com
-Subject: fragmentation avoidance Re: 2.6.22 -mm merge plans
-Message-ID: <20070501101651.GA29957@skynet.ie>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	Tue, 1 May 2007 06:17:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51108 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030323AbXEAKR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:17:26 -0400
+Subject: [DLM] interface for purge (2/2) [18/34]
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: cluster-devel@redhat.com
+Cc: linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>
+In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
+References: <1178013376.5462.127.camel@quoit.chygwyn.com>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 01 May 2007 11:12:51 +0100
+Message-Id: <1178014371.5462.163.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-From: mel@skynet.ie (Mel Gorman)
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (30/04/07 16:20), Andrew Morton didst pronounce:
->  add-apply_to_page_range-which-applies-a-function-to-a-pte-range.patch
->  add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix.patch
->  safer-nr_node_ids-and-nr_node_ids-determination-and-initial.patch
->  use-zvc-counters-to-establish-exact-size-of-dirtyable-pages.patch
->  proper-prototype-for-hugetlb_get_unmapped_area.patch
->  mm-remove-gcc-workaround.patch
->  slab-ensure-cache_alloc_refill-terminates.patch
->  mm-more-rmap-checking.patch
->  mm-make-read_cache_page-synchronous.patch
->  fs-buffer-dont-pageuptodate-without-page-locked.patch
->  allow-oom_adj-of-saintly-processes.patch
->  introduce-config_has_dma.patch
->  mm-slabc-proper-prototypes.patch
->  mm-detach_vmas_to_be_unmapped-fix.patch
-> 
-> Misc MM things.  Will merge.
+>From 72c2be776bd6eec5186e316e6d9dd4aab78d314d Mon Sep 17 00:00:00 2001
+From: David Teigland <teigland@redhat.com>
+Date: Fri, 30 Mar 2007 15:06:16 -0500
+Subject: [PATCH] [DLM] interface for purge (2/2)
 
-After Andy's mail, I am guessing that the patch below is also going here
-in the stack as a cleanup.
+Add code to accept purge commands from userland.
 
-add-pfn_valid_within-helper-for-sub-max_order-hole-detection.patch
+Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
->  add-a-bitmap-that-is-used-to-track-flags-affecting-a-block-of-pages.patch
->  add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
->  split-the-free-lists-for-movable-and-unmovable-allocations.patch
->  choose-pages-from-the-per-cpu-list-based-on-migration-type.patch
->  add-a-configure-option-to-group-pages-by-mobility.patch
->  drain-per-cpu-lists-when-high-order-allocations-fail.patch
->  move-free-pages-between-lists-on-steal.patch
->  group-short-lived-and-reclaimable-kernel-allocations.patch
->  group-high-order-atomic-allocations.patch
->  do-not-group-pages-by-mobility-type-on-low-memory-systems.patch
->  bias-the-placement-of-kernel-pages-at-lower-pfns.patch
->  be-more-agressive-about-stealing-when-migrate_reclaimable-allocations-fallback.patch
->  fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
-
-Plus the patch below from Andy's pfn_valid_within() series would be here:
-
-   anti-fragmentation-switch-over-to-pfn_valid_within.patch
-
-These patches are the grouping pages by mobility patches. They get tested
-every time someone boots the machine from the perspective that they affect
-the page allocator. It is working to keep fragmentation problems to a
-minimum and being exercised.  We have beaten it heavily here on tests
-with a variety of machines using the system that drives test.kernel.org
-for both functionality and performance testing. That covers x86, x86_64,
-ppc64 and occasionally IA64. Granted, there are corner-case machines out
-there or we'd never receive bug reports at all.
-
-They are currently being reviewed by Christoph Lameter. His feedback in
-the linux-mm thread "Antifrag patchset comments" has given me a TODO list
-which I'm currently working through. So far, there has been no fundamental
-mistake in my opinion and the additional work is logical extensions.
-
-The closest thing to a fundamental mistake was grouping pages by
-MAX_ORDER_NR_PAGES instead of an arbitrary order. What I did was fine for
-x86_64, i386 and ppc64 but not as useful for IA64 with 1GB worth of memory
-in MAX_ORDER_NR_PAGES. I also missed some temporary allocations as picked
-up in Christophs review.
-
->  create-the-zone_movable-zone.patch
->  allow-huge-page-allocations-to-use-gfp_high_movable.patch
->  x86-specify-amount-of-kernel-memory-at-boot-time.patch
->  ppc-and-powerpc-specify-amount-of-kernel-memory-at-boot-time.patch
->  x86_64-specify-amount-of-kernel-memory-at-boot-time.patch
->  ia64-specify-amount-of-kernel-memory-at-boot-time.patch
->  add-documentation-for-additional-boot-parameter-and-sysctl.patch
->  handle-kernelcore=-boot-parameter-in-common-code-to-avoid-boot-problem-on-ia64.patch
-> 
-> Mel's moveable-zone work.
-
-These patches are what creates ZONE_MOVABLE. The last 6 patches should be
-collapsed into a single patch:
-
-	handle-kernelcore=-generic
-
-I believe Yasunori Goto is looking at these from the perspective of memory
-hot-remove and has caught a few bugs in the past. Goto-san may be able to
-comment on whether they have been reviewed recently.
-
-The main complexity is in one function in patch one which determines where
-the PFN is in each node for ZONE_MOVABLE. Getting that right so that the
-requested amount of kernel memory spread as evenly as possible is just
-not straight-forward.
-
-> I don't believe that this has had sufficient review and I'm sure that it
-> hasn't had sufficient third-party testing.  Most of the approbations thus far
-> have consisted of people liking the overall idea, based on the changelogs and
-> multi-year-old discussions.
-> 
-> For such a large and core change I'd have expected more detailed reviewing
-> effort and more third-party testing.  And I STILL haven't made time to review
-> the code in detail myself.
-> 
-> So I'm a bit uncomfortable with moving ahead with these changes.
-> 
-
-Ok. It is getting reviewed by Christoph and I'm going through the TODO items
-it yielded. Andy has also been regularly reviewing them which is probably
-why they have had less public errors than you might expect from something
-like this. Christoph may like to comment more here.
-
-> <snip>
-> 
->  lumpy-reclaim-v4.patch
-
-And I guess this patch also moves here
-
-lumpy-move-to-using-pfn_valid_within.patch
-
-> 
-> This is in a similar situation to the moveable-zone work.  Sounds great on
-> paper, but it needs considerable third-party testing and review.  It is a
-> major change to core MM and, we hope, a significant advance.  On paper.
-
-Andy will probably comment more here. Like the fragmentation stuff, we have
-beaten this heavily in tests.
-
-I'm not sure of it's review situation.
-
-> More Mel things, and linkage between Mel-things and lumpy reclaim.  It's here
-> where the patch ordering gets into a mess and things won't improve if
-> moveable-zones and lumpy-reclaim get deferred.  Such a deferral would limit my
-> ability to queue more MM changes for 2.6.23.
-> 
-
-This is where the three patches were originally. From the other thread,
-I am assuming these are sorted out.
-
-> <snip>
-> 
->  bias-the-location-of-pages-freed-for-min_free_kbytes-in-the-same-max_order_nr_pages-blocks.patch
->  remove-page_group_by_mobility.patch
->  dont-group-high-order-atomic-allocations.patch
-> 
-> More moveable-zone work.
-> 
-
-This is the MIGRATE_RESERVE patch and two patches that back out parts of the
-grouping pages by mobility stack. If possible, these patches should move to
-the end of that stack. To fix the ordering, would it be helpful to provide
-a fresh stack based on 2.6.21? That would delete 4 patches in all. The two
-that introduce configuration items and highorder atomic groupings and these
-two patches that subsequently remove them.
-
-> <SNIP>
-> 
->  slub-exploit-page-mobility-to-increase-allocation-order.patch
-> 
-> Slub entanglement with moveable-zones.  Will merge if moveable-zones is merged.
-> 
-
-Well, grouping pages by mobility is what it really depends on. The
-ZONE_MOVABLE is not required for SLUB. However, I get the point and agree
-with it. If the rest of SLUB gets merged, this patch could be moved to the
-end of the grouping by mobility stack.
-
+diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
+index 0843a30..64fc4ec 100644
+--- a/fs/dlm/lock.h
++++ b/fs/dlm/lock.h
+@@ -41,6 +41,8 @@ int dlm_user_unlock(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
+ 	uint32_t flags, uint32_t lkid, char *lvb_in);
+ int dlm_user_cancel(struct dlm_ls *ls,  struct dlm_user_args *ua_tmp,
+ 	uint32_t flags, uint32_t lkid);
++int dlm_user_purge(struct dlm_ls *ls, struct dlm_user_proc *proc,
++	int nodeid, int pid);
+ void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc);
+ 
+ static inline int is_master(struct dlm_rsb *r)
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index c978c67..3e746a6 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -56,6 +56,7 @@ struct dlm_write_request32 {
+ 	union  {
+ 		struct dlm_lock_params32 lock;
+ 		struct dlm_lspace_params lspace;
++		struct dlm_purge_params purge;
+ 	} i;
+ };
+ 
+@@ -92,6 +93,9 @@ static void compat_input(struct dlm_write_request *kb,
+ 		kb->i.lspace.flags = kb32->i.lspace.flags;
+ 		kb->i.lspace.minor = kb32->i.lspace.minor;
+ 		strcpy(kb->i.lspace.name, kb32->i.lspace.name);
++	} else if (kb->cmd == DLM_USER_PURGE) {
++		kb->i.purge.nodeid = kb32->i.purge.nodeid;
++		kb->i.purge.pid = kb32->i.purge.pid;
+ 	} else {
+ 		kb->i.lock.mode = kb32->i.lock.mode;
+ 		kb->i.lock.namelen = kb32->i.lock.namelen;
+@@ -320,6 +324,22 @@ fail:
+ 	return error;
+ }
+ 
++static int device_user_purge(struct dlm_user_proc *proc,
++			     struct dlm_purge_params *params)
++{
++	struct dlm_ls *ls;
++	int error;
++
++	ls = dlm_find_lockspace_local(proc->lockspace);
++	if (!ls)
++		return -ENOENT;
++
++	error = dlm_user_purge(ls, proc, params->nodeid, params->pid);
++
++	dlm_put_lockspace(ls);
++	return error;
++}
++
+ static int device_create_lockspace(struct dlm_lspace_params *params)
+ {
+ 	dlm_lockspace_t *lockspace;
+@@ -522,6 +542,14 @@ static ssize_t device_write(struct file *file, const char __user *buf,
+ 		error = device_remove_lockspace(&kbuf->i.lspace);
+ 		break;
+ 
++	case DLM_USER_PURGE:
++		if (!proc) {
++			log_print("no locking on control device");
++			goto out_sig;
++		}
++		error = device_user_purge(proc, &kbuf->i.purge);
++		break;
++
+ 	default:
+ 		log_print("Unknown command passed to DLM device : %d\n",
+ 			  kbuf->cmd);
+diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
+index 2a2dd18..c2735ca 100644
+--- a/include/linux/dlm_device.h
++++ b/include/linux/dlm_device.h
+@@ -19,7 +19,7 @@
+ 
+ /* Version of the device interface */
+ #define DLM_DEVICE_VERSION_MAJOR 5
+-#define DLM_DEVICE_VERSION_MINOR 0
++#define DLM_DEVICE_VERSION_MINOR 1
+ #define DLM_DEVICE_VERSION_PATCH 0
+ 
+ /* struct passed to the lock write */
+@@ -44,6 +44,11 @@ struct dlm_lspace_params {
+ 	char name[0];
+ };
+ 
++struct dlm_purge_params {
++	__u32 nodeid;
++	__u32 pid;
++};
++
+ struct dlm_write_request {
+ 	__u32 version[3];
+ 	__u8 cmd;
+@@ -53,6 +58,7 @@ struct dlm_write_request {
+ 	union  {
+ 		struct dlm_lock_params   lock;
+ 		struct dlm_lspace_params lspace;
++		struct dlm_purge_params  purge;
+ 	} i;
+ };
+ 
+@@ -76,6 +82,7 @@ struct dlm_lock_result {
+ #define DLM_USER_QUERY        3
+ #define DLM_USER_CREATE_LOCKSPACE  4
+ #define DLM_USER_REMOVE_LOCKSPACE  5
++#define DLM_USER_PURGE        6
+ 
+ /* Arbitrary length restriction */
+ #define MAX_LS_NAME_LEN 64
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.5.1.2
+
+
+
