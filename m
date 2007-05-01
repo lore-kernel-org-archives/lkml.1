@@ -1,80 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXEAUJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbXEAUMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753669AbXEAUJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:09:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbXEAUJJ
+	id S1753972AbXEAUMX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:12:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbXEAUMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:09:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:58498 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753669AbXEAUJI (ORCPT
+	Tue, 1 May 2007 16:12:23 -0400
+Received: from hu-out-0506.google.com ([72.14.214.235]:12533 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972AbXEAUMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:09:08 -0400
+	Tue, 1 May 2007 16:12:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=iOX6duclRX/2HGBNJuH1e75V5XyjPAMuypcByX1/zZ5tZNN5ZG58J4gBnul+WiLGobIUnzKm9oStD9HStKMHrS7dgPsj1/ZQk/q0ywEykUsL7DJZta9fjMjztTl4lfpwbuvnxzj24893Npsoqf+DlPfNTWGZ8UKYwne+CraoDys=
-Date: Tue, 1 May 2007 23:09:02 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <281618366.20070501230902@gmail.com>
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-CC: ian <spyro@f2s.com>, kernel-discuss@handhelds.org,
-       <linux-kernel@vger.kernel.org>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
-In-Reply-To: <46379027.7050202@gmail.com>
-References: <1354376306.20070501080806@gmail.com>  <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com>  <46376AD9.3020701@gmail.com> <1178042924.15769.5.camel@wirenth> <46379027.7050202@gmail.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=R+B+NglETifwCYC0ecGCqffsj+3jHkCZYi9PSdEu13BE7uTHTmQSQo3miqy1yxiyzzT32vK0tFJQaRaJx9v1tJe+4psEU+wirsqwtLSoOzaBz/NI5ILPml5EWlMM1oSfHvbuAQyI2zapyK1XPIvvfp8uRyDmxVoc5jcEG8eBuY8=
+Message-ID: <a781481a0705011312h44245a54k89ac9344424548be@mail.gmail.com>
+Date: Wed, 2 May 2007 01:42:20 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Subject: Re: condingstyle, was Re: utrace comments
+Cc: "David Woodhouse" <dwmw2@infradead.org>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roland McGrath" <roland@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <alpine.DEB.0.98.0705011054060.12931@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20061127165138.GA2991@lst.de>
+	 <20070430040213.BF9901801A4@magilla.sf.frob.com>
+	 <20070430091121.GC31397@infradead.org>
+	 <20070430100917.439ebfc8.akpm@linux-foundation.org>
+	 <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
+	 <Pine.LNX.4.64.0705011058330.27246@anakin>
+	 <1178028973.2875.78.camel@pmac.infradead.org>
+	 <alpine.DEB.0.98.0705011054060.12931@sigma.j-a-k-j.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dmitry,
+On 5/1/07, John Anthony Kazos Jr. <jakj@j-a-k-j.com> wrote:
+> > It's horrid. I'd much rather see
+> >
+> >         if (veryverylengthycondition1 &&
+> >             smallcond2 &&
+> >             (conditionnumber3a || condition3b)) {
+> >                 ...
+> >         }
+>
+>         if (veryverylengthycondition1
+>                 && smallcond2
+>                 && (conditionnumber3a
+>                         || condition3b)) {
+>                 ...
+>         }
+>
+> Clear, crisp, and 80-wide. I also like how the logical operator on the
+> following line is indented slightly into the condition of the previous
+> line. I think this is much more sensical and sensible than using spaces to
+> line them up with the parentheses. Makes clear for each operator the
+> condition to which it applies.
 
-Tuesday, May 1, 2007, 10:08:23 PM, you wrote:
-
-> ian wrote:
->> On Tue, 2007-05-01 at 20:29 +0400, Dmitry Krivoschekov wrote:
->>> If you used ASIC acronym it would be more appropriate and not so
->>> ambiguous. 
->>
->> Actually, thats not bad. I'd be ok with that is SoC isnt used.
->>
-> I'm ok with that too, i.e. very rough definition is:
-> SoC (system-on-chip) is  a platform level chip which incorporates processor
-> devices (CPU, cache, coprocessors, memory controller etc.), system devices
-> (timers, interrupt controllers etc.) and peripheral devices
-> (UARTs, LCD controllers, USB controllers etc),
-> while ASIC (Application-specific integrated circuit) is also a platform
-> level
-> chip which incorporates peripheral and system devices but does not include
-> processor devices.  ASICs are designed to expand processor functionality,
-> it could supplement a normal processor (non-SoC) and also could supplement
-> a SoC processor.
-
-
-> ASIC-related code (I mean core) forms additional platform layer, so I
-> suggest
-> adding ASIC helpers to generic platform code i.e. drivers/platform.c, but
-> ASIC drivers to drivers/asic/ directory.
-
-        There problem here is the same - our target chips are not
-just ASICs. It just happens that the one we start with called such,
-but we have different ones too. It's still important that they contain
-blocks with different functionality, and drivers we propose deal with
-basic, common functionality of chips. Now that it was pointed out that
-there's place in the tree for such drivers, it would be not wise to
-try to create another one.
-
-
-
-> Regards,
-> Dmitry
-
-
--- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
-
+Hmmm ... I did use the spaces to line up the operators with the
+starting column of the _expression_ in the previous lines, not the
+parentheses (that would be gross!). Of course, && and || are binary
+operators so they apply both to the expression on the previous line as
+well as the expression following it on the same line.
