@@ -1,229 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031578AbXEAHRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031582AbXEAHXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031578AbXEAHRO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031580AbXEAHRN
+	id S1031582AbXEAHXu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031590AbXEAHXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:17:13 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:33331 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031578AbXEAHRM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:17:12 -0400
-Message-ID: <4636E970.3010602@interia.pl>
-Date: Tue, 01 May 2007 09:17:04 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+	Tue, 1 May 2007 03:23:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:57896 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031582AbXEAHXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:23:48 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] [8/30] x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu
+Date: Tue, 1 May 2007 09:23:33 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <20070501557.815359000@suse.de> <20070501035805.9FA9513CAF@wotan.suse.de> <4636D6E5.8090006@goop.org>
+In-Reply-To: <4636D6E5.8090006@goop.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Natsemi DP83815 driver spaming
-References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org>
-In-Reply-To: <20070430205522.abad2481.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-EMID: 2208acc
+Content-Disposition: inline
+Message-Id: <200705010923.33771.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
->> [...]
-> 
-> It seems to be repeatedly setting the same duplex setting.  The closest
-> thing I can see in there in recent times is
-> 68c90166e4aaa15ddcdd4778ad30bfb8b32534be, "Add support for using MII port
-> with no PHY".
 
-I have this terminal only one week, so it doesn't have to be recent regresion.
- 
-> Does applying the below backout patch fix things?
+> Use linux/elfnote.h?
 
-Unfortunatly no. But messages are a bit different sometimes.
+Good point. Will fix. I just copied it from i386, but it probably
+should be there fixed too.
 
-VFS: Mounted root (ext2 filesystem).
-Freeing unused kernel memory: 120k freed
-eth0: DSPCFG accepted after 0 usec.
-eth0: link up.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 40 usec.
-[...]
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x200000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 40 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x200000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 80 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 80 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-eth0: increased tx threshold, txcfg 0xd0f01004.
-eth0: DSPCFG accepted after 0 usec.
-eth0: Wake-up event 0x80000a
-eth0: Setting full-duplex based on negotiated link capability.
-[...]
+Actually they are not completely equivalent because the old macro
+generates the section name differently from the name in the payload
+(kernelversion, Linux). But I split that up into two notes now.
 
-Please CC me.
+If that is done on i386 it might break gdb reading core files though?
 
-Thank You
-Rafał
+BTW if anybody noticed the patch also contained a few dead hunks (two unused functions/
+prototypes and some white space change). These are already gone now too.
 
-
-
-----------------------------------------------------------------------
-NIE KUPUJ!!!
-...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
-
-
-
+-Andi
