@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbXEAXSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbXEAXUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbXEAXSn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 19:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXEAXSm
+	id S1754839AbXEAXUb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 19:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXEAXUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 19:18:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:6481 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754845AbXEAXSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 19:18:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=VugIAE1Y0N0BWZA9A5/hprJR2BNTkIUcx325UG9EQ/bofoGUMqyBOKdti3g/+hpFmHB/xAI78amjRKVAxcwMSz+dc8SvuIl3pG4VEGf0Uq2BxBdcc8ZLSPNX0xK0mAmLqcQ4IJO2aOxu7++g03c+3fOj3HTTrlLyUhVCB42VApw=
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-In-Reply-To: <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org>
-References: <463698D5.20102@zytor.com>
-	 <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
-	 <4637A3F6.70508@gmail.com>
-	 <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 07:18:29 +0800
-Message-Id: <1178061509.4606.27.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 19:20:31 -0400
+Received: from waste.org ([66.93.16.53]:33256 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754854AbXEAXUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 19:20:30 -0400
+Date: Tue, 1 May 2007 18:15:48 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Bill Irwin <bill.irwin@oracle.com>, Christoph Hellwig <hch@infradead.org>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2/6] add config option to vmalloc stacks (was: Re: [-mm patch] i386: enable 4k stacks by default)
+Message-ID: <20070501231548.GF11115@waste.org>
+References: <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174310.GE19966@holomorphy.com> <20070430181104.GB14739@infradead.org> <20070430190952.GP31925@holomorphy.com> <20070430191511.GA25318@infradead.org> <20070501223606.GQ11166@waste.org> <20070501225125.GU26598@holomorphy.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070501225125.GU26598@holomorphy.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 14:41 -0700, Linus Torvalds wrote:
+On Tue, May 01, 2007 at 03:51:25PM -0700, Bill Irwin wrote:
+> On Mon, Apr 30, 2007 at 08:15:11PM +0100, Christoph Hellwig wrote:
+> >> So if you want to invest some time into getting this into mergeable
+> >> shape I'd suggest you redo the patch series in the following way:
+> >>  patch 1: dynamic allocated irq stacks
 > 
-> On Tue, 1 May 2007, Rene Herman wrote:
-> > 
-
-> And yes, I'm literally talking about the *text* modes. Not all of us want 
-> to have fbcon built in - I prefer my text-mode lean and mean and fast as 
-> hell, and if I want a frame buffer, I'll take X11, thank you very much.
+> On Tue, May 01, 2007 at 05:36:06PM -0500, Matt Mackall wrote:
+> > Can we register them lazily at request_irq time?
 > 
+> These IRQ stacks are per-cpu, not per-IRQ. It may make sense to
+> implement per-IRQ stacks, in which case dynamic allocation at the time
+> of request_irq() will make sense.
+> 
+> Would you like me to implement per-IRQ IRQ stacks?
 
-I would agree with the lean and mean, but faster, that's another
-question.  Even vesafb at 640x480-8 with ypan and mtrr is 30% faster
-than vgacon (And for those of you with vesafb that cannot ypan, try
-vgacon with the 'no-scroll' option for a more apple-to-apple
-comparison).  And with chipset-specific drivers, it can be as much as 3x
-faster than vgacon.
+It's probably the "right" thing to do, but it does have higher
+overhead for most systems.
 
-Anyway, my default console is still text mode, even though I'm the
-framebuffer maintainer :-)
+But it also gives a very obvious migration path to -rt's irq threads.
 
-Tony
-
-
+-- 
+Mathematics is the supreme nostalgia of our time.
