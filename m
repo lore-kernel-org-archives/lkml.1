@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXEARS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbXEARTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbXEARS3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 13:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXEARS2
+	id S1754830AbXEARTF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbXEARTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 13:18:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:45244 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754929AbXEARS1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 13:18:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=n8y3JCetzOsUZ43sow42ySnqp5TP1Q/hLG1dOiRDKiYEMEP7h60oVLgaY150z0tI0Sq0a4YTR8jsCIV5K/Iq3H//mH8SRHlngfq5JsAAWqvR3Cqo+Nr92fja01zU2gdQMQvgjAO+dBlZohspqM5MkV4QQKRFZG49J3LmdbQz9h0=
-Date: Tue, 1 May 2007 20:18:21 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <97946200.20070501201821@gmail.com>
-To: Richard Purdie <rpurdie@rpsys.net>
-CC: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
-       <kernel-discuss@handhelds.org>, <linux-kernel@vger.kernel.org>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [RFC, PATCH 0/4] SoC base drivers
-In-Reply-To: <1178031675.5883.67.camel@localhost.localdomain>
-References: <1354376306.20070501080806@gmail.com> <46374645.2030900@gmail.com>  <1068016897.20070501173657@gmail.com> <1178031675.5883.67.camel@localhost.localdomain>
+	Tue, 1 May 2007 13:19:05 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:59746 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754830AbXEARTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 13:19:03 -0400
+Date: Tue, 1 May 2007 19:18:42 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: so ... what *are* candidates for removal?
+In-Reply-To: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
+Message-ID: <Pine.LNX.4.61.0705011918040.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 2.0 points, 6.0 required
+	2.0 REMOVE_PAGE            URI: URL of page called "remove"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Richard,
 
-Tuesday, May 1, 2007, 6:01:15 PM, you wrote:
+On May 1 2007 11:01, Robert P. J. Day wrote:
+>
+>  at the risk of spawning yet another thread and another flamefest,
+>what *are* the kernel features that should be considered candidates
+>for removal, either now or at some point in the future.
+>
+>  please, no discussions about mechanisms or kernel warnings or the
+>like -- just the features whose value is nearing their end.  i'll even
+>volunteer to collect all that info and summarize it here:
+>
+>http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
+>
+>because that's just the kind of guy i am, and i have the week off, and
+>i'm bored. :-)
 
-> On Tue, 2007-05-01 at 17:36 +0300, Paul Sokolovsky wrote:
->>         Either way, I don't pledge to be a HW designer with
->> contemporary lexicon. The aim was simple - as a single word would be
->> too ambiguous, general, or vice-versa, omitting, then acronym is
->> needed, hopefully existing, and not new, and SoC is the most fitting
->> TLA, IMHO. But I'm open to specific suggestions for improvement. For
->> example, if I was to write a Documentation/ entry for that, I'd mention
->> companion chips, peripheral/integrated controllers, etc. But renaming
->> drivers/soc/ to drivers/companion/ would be more confusing, as the
->> concept described is not tied to companion chips per se (even though
->> many of chips we (handhelds.org) deal with, can be classified as
->> such).
-
-> A while back I proposed drivers/mfd/ (multi function devices) and there
-> are a couple of drivers in there in mainline which probably fit your
-> description of SoC. The code I had once intended for there is probably
-> more ASoC related now...
-
-        Well, while description catches the essence of course, TLA is
-far from being perfect: 1) Completely unknown; 2) can be easily
-confused with mtd.
-
-        But it's even more funny: there *is* drivers/mfd/ already in
-mainline. I'd say that we were blind, but even you say "proposed", not
-"exists", nor anybody else brought that to attention. I'm afraid, that
-proves point 1 above ;-).
-
-        Well, now that it's there, we have little choice but use it, so
-we'll move our stuff there.
-
-        Thanks everyone for hints!
-
-> Richard
+You could work on the menuconfig objects - I don't think I was done. :p
 
 
-
-
-
-
-
+Jan
 -- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
-
