@@ -1,86 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423810AbXEAFzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946596AbXEAF5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423810AbXEAFzk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 01:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423811AbXEAFzk
+	id S1946596AbXEAF5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 01:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946598AbXEAF5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 01:55:40 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39265 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423810AbXEAFy7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 01:54:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: vgoyal@in.ibm.com, Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, Jurriaan <thunder7@xs4all.nl>,
-       Helge Hafting <helgehaf@aitel.hist.no>, Horms <horms@verge.net.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] x86_64: Reflect the relocatability of the kernel in the ELF header.
-References: <m1slah6gm0.fsf@ebiederm.dsl.xmission.com>
-	<200704301717.08230.ak@suse.de> <20070501035539.GA15472@in.ibm.com>
-	<m14pmx18ey.fsf@ebiederm.dsl.xmission.com>
-	<20070501050657.GA23111@in.ibm.com>
-	<m1zm4pyuzp.fsf@ebiederm.dsl.xmission.com>
-	<20070501062554.GT25929@bingen.suse.de>
-Date: Mon, 30 Apr 2007 23:54:22 -0600
-In-Reply-To: <20070501062554.GT25929@bingen.suse.de> (Andi Kleen's message of
-	"Tue, 1 May 2007 08:25:55 +0200")
-Message-ID: <m1r6q1ytpt.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 1 May 2007 01:57:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:50056 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946597AbXEAF5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 01:57:40 -0400
+Message-ID: <4636D6E5.8090006@goop.org>
+Date: Mon, 30 Apr 2007 22:57:57 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andi Kleen <ak@suse.de>
+CC: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [8/30] x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu
+References: <20070501557.815359000@suse.de> <20070501035805.9FA9513CAF@wotan.suse.de>
+In-Reply-To: <20070501035805.9FA9513CAF@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
-
-> On Mon, Apr 30, 2007 at 11:26:50PM -0600, Eric W. Biederman wrote:
->> Vivek Goyal <vgoyal@in.ibm.com> writes:
->> 
->> 
->> >> At least without a core file it is working on with gdb 6.4.
->> >>
->> >
->> > This seems to be a problem with gdb 6.5. I transferred the dump to a
->> > different machine having GNU gdb 6.4, and it works fine there.
->> 
->> Ok.  The difference between those two symbols didn't seem to make
->> any sense, so a gdb bug makes sense.
->> 
->> Cool.  Then the patch is good. :)
+Andi Kleen wrote:
+> This implements new vDSO for x86-64.  The concept is similar
+> to the existing vDSOs on i386 and PPC.  x86-64 has had static
+> vsyscalls before,  but these are not flexible enough anymore.
 >
-> It would still make any gdb 6.5 users unhappy. If no workaround can be found
-> I guess we'll need a CONFIG of some sort?
+> A vDSO is a ELF shared library supplied by the kernel that is mapped into 
+> user address space.  The vDSO mapping is randomized for each process
+> for security reasons.
+>
+> Doing this was needed for clock_gettime, because clock_gettime
+> always needs a syscall fallback and having one at a fixed
+> address would have made buffer overflow exploits too easy to write.
+>
+> The vdso can be disabled with vdso=0
+>
+> It currently includes a new gettimeofday implemention and optimized
+> clock_gettime(). The gettimeofday implementation is slightly faster
+> than the one in the old vsyscall.  clock_gettime is significantly faster 
+> than the syscall for CLOCK_MONOTONIC and CLOCK_REALTIME.
+>
+> The new calls are generally faster than the old vsyscall. 
+>
+> TBD: add new benchmarks
+>
+> Advantages over the old x86-64 vsyscalls:
+> - Extensible
+> - Randomized
+> - Cleaner
+> - Easier to virtualize (the old static address range previously causes
+> overhead e.g. for Xen because it has to create special page tables for it) 
+>
+> Weak points: 
+> - glibc support still to be written
+>
+> The VM interface is partly based on Ingo Molnar's i386 version.
+>
+> Signed-off-by: Andi Kleen <ak@suse.de>
+>
+> ---
+>  Documentation/kernel-parameters.txt |    2 
+>  arch/x86_64/Makefile                |    3 
+>  arch/x86_64/ia32/ia32_binfmt.c      |    1 
+>  arch/x86_64/kernel/time.c           |    1 
+>  arch/x86_64/kernel/vmlinux.lds.S    |   12 +++
+>  arch/x86_64/kernel/vsyscall.c       |   22 +----
+>  arch/x86_64/mm/init.c               |   17 ++++
+>  arch/x86_64/vdso/Makefile           |   49 ++++++++++++
+>  arch/x86_64/vdso/vclock_gettime.c   |  120 +++++++++++++++++++++++++++++++
+>  arch/x86_64/vdso/vdso-note.S        |   25 ++++++
+>  arch/x86_64/vdso/vdso-start.S       |    2 
+>  arch/x86_64/vdso/vdso.S             |    2 
+>  arch/x86_64/vdso/vdso.lds.S         |   77 ++++++++++++++++++++
+>  arch/x86_64/vdso/vextern.h          |   16 ++++
+>  arch/x86_64/vdso/vgetcpu.c          |   50 +++++++++++++
+>  arch/x86_64/vdso/vma.c              |  137 ++++++++++++++++++++++++++++++++++++
+>  arch/x86_64/vdso/voffset.h          |    1 
+>  arch/x86_64/vdso/vvar.c             |   12 +++
+>  include/asm-x86_64/auxvec.h         |    2 
+>  include/asm-x86_64/elf.h            |   13 +++
+>  include/asm-x86_64/mmu.h            |    1 
+>  include/asm-x86_64/pgtable.h        |    8 +-
+>  include/asm-x86_64/vgtod.h          |   29 +++++++
+>  include/asm-x86_64/vsyscall.h       |    3 
+>  24 files changed, 583 insertions(+), 22 deletions(-)
+>
+> Index: linux/arch/x86_64/ia32/ia32_binfmt.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
+> +++ linux/arch/x86_64/ia32/ia32_binfmt.c
+> @@ -38,6 +38,7 @@
+>  
+>  int sysctl_vsyscall32 = 1;
+>  
+> +#undef ARCH_DLINFO
+>  #define ARCH_DLINFO do {  \
+>  	if (sysctl_vsyscall32) { \
+>  	NEW_AUX_ENT(AT_SYSINFO, (u32)(u64)VSYSCALL32_VSYSCALL); \
+> Index: linux/arch/x86_64/kernel/vmlinux.lds.S
+> ===================================================================
+> --- linux.orig/arch/x86_64/kernel/vmlinux.lds.S
+> +++ linux/arch/x86_64/kernel/vmlinux.lds.S
+> @@ -94,6 +94,9 @@ SECTIONS
+>    .vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data))
+>  		{ *(.vsyscall_gtod_data) }
+>    vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
+> +  .vsyscall_clock : AT(VLOAD(.vsyscall_clock))
+> +		{ *(.vsyscall_clock) }
+> +  vsyscall_clock = VVIRT(.vsyscall_clock);
+>  
+>  
+>    .vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1))
+> @@ -153,6 +156,8 @@ SECTIONS
+>  
+>    . = ALIGN(4096);		/* Init code and data */
+>    __init_begin = .;
+> +
+> +
+>    .init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+>  	_sinittext = .;
+>  	*(.init.text)
+> @@ -190,6 +195,12 @@ SECTIONS
+>    .exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) { *(.exit.text) }
+>    .exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) { *(.exit.data) }
+>  
+> +/* vdso blob that is mapped into user space */
+> +  vdso_start = . ;
+> +  .vdso  : AT(ADDR(.vdso) - LOAD_OFFSET) { *(.vdso) }
+> +  . = ALIGN(4096);
+> +  vdso_end = .;
+> +
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>    . = ALIGN(4096);
+>    __initramfs_start = .;
+> @@ -202,6 +213,7 @@ SECTIONS
+>    .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
+>    __per_cpu_end = .;
+>    . = ALIGN(4096);
+> +
+>    __init_end = .;
+>  
+>    . = ALIGN(4096);
+> Index: linux/arch/x86_64/mm/init.c
+> ===================================================================
+> --- linux.orig/arch/x86_64/mm/init.c
+> +++ linux/arch/x86_64/mm/init.c
+> @@ -159,6 +159,14 @@ static __init void set_pte_phys(unsigned
+>  	__flush_tlb_one(vaddr);
+>  }
+>  
+> +void __init
+> +set_kernel_map(void *vaddr,unsigned long len,unsigned long phys,pgprot_t prot)
+> +{
+> +	void *end = vaddr + ALIGN(len, PAGE_SIZE);
+> +	for (; vaddr < end; vaddr += PAGE_SIZE, phys += PAGE_SIZE)
+> +		set_pte_phys((unsigned long)vaddr, phys, prot);
+> +}
+> +
+>  /* NOTE: this is meant to be run only at boot */
+>  void __init 
+>  __set_fixmap (enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
+> @@ -756,3 +764,12 @@ int in_gate_area_no_task(unsigned long a
+>  {
+>  	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
+>  }
+> +
+> +const char *arch_vma_name(struct vm_area_struct *vma)
+> +{
+> +	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
+> +		return "[vdso]";
+> +	if (vma == &gate_vma)
+> +		return "[vsyscall]";
+> +	return NULL;
+> +}
+> Index: linux/arch/x86_64/vdso/vdso-note.S
+> ===================================================================
+> --- /dev/null
+> +++ linux/arch/x86_64/vdso/vdso-note.S
+> @@ -0,0 +1,25 @@
+> +/*
+> + * This supplies .note.* sections to go into the PT_NOTE inside the vDSO text.
+> + * Here we can supply some information useful to userland.
+> + */
+> +
+> +#include <linux/uts.h>
+> +#include <linux/version.h>
+> +
+> +#define ASM_ELF_NOTE_BEGIN(name, flags, vendor, type)			      \
+>   
 
-It is probably worth reproducing this bug with a PIE executable.
-But it looks very much like gdb got it wrong, or else there is some
-slight mismatch between our core dump and gdb.
+Use linux/elfnote.h?
 
-Given that gdb 6.5 handles the vmlinux fine when it isn't in conjunction
-with a core dump I would not say the problem is in vmlinux.
-
-Rather there seems to be something messed up when gdb 6.5 tries to match
-up the kernel core dump with the kernel.  The offset for the symbol
-Vivek gave was 0x7fff70e9. ???  Although that is almost 2M...
-
-Vivek could we see the program headers of your core file?
-
->From what I can tell what is left to figure out is do we have
-a bug in gdb 6.5 or do we have a bug in our core file generation.
-
-Right now I'm inclined to believe that the fedora core 6? gdb 6.5 got it
-wrong.  I'm probably just burnt out with binutils problems whenever
-I try and do something interesting.  But I'm just not inclined that
-the bleeding edge tools are working properly while there kernel
-core dump mechanism would mess up with a two byte field change.
-
-It does make sense to root cause this if we can.  If it's a gdb
-problem it should also apply to PIE executables, and should irritate
-a few users.
-
-Regardless last I heard it was crash that was the primary analysis
-tool and not gdb anyway.  With gdb serving as the double check to make
-certain that the kernel core dump was in a reasonably standard format.
-
-Eric
+    J
