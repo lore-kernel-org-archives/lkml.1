@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbXEAID0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbXEAILR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbXEAID0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 04:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbXEAIDZ
+	id S1754647AbXEAILR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 04:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbXEAILQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 04:03:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:60317 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754692AbXEAIDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 04:03:21 -0400
-Message-ID: <4636F45A.50003@goop.org>
-Date: Tue, 01 May 2007 01:03:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 1 May 2007 04:11:16 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2065 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754647AbXEAILO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 04:11:14 -0400
+Message-ID: <4636F626.7030609@shadowen.org>
+Date: Tue, 01 May 2007 09:11:18 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <ak@suse.de>, patches@x86-64.org,
-       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	 <20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	 <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>	 <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>	 <1177902195.30071.203.camel@localhost.localdomain>	 <463572B7.90202@zytor.com>	 <1177909434.30071.216.camel@localhost.localdomain>	 <m1ejm16flv.fsf@ebiederm.dsl.xmission.com>	 <1177990722.28659.39.camel@localhost.localdomain>	 <m18xc919im.fsf@ebiederm.dsl.xmission.com>  <4636D200.3010406@goop.org> <1178004868.28659.57.camel@localhost.localdomain>
-In-Reply-To: <1178004868.28659.57.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.22 -mm merge plans -- pfn_valid_within
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Well there aren't that many instructions between startup_32 and
-> lguest_init at the moment, but I guess if we end up going through
-> bzImage decompression it makes more sense...
+Andrew Morton wrote:
 
-Yes, that's what I was thinking.  If we boot compressed kernels in a
-novel environment, there's going to be plenty of early debugging going
-on.  Fortunately for me, I can just start it up under gdb, so it isn't
-all that arduous.
+>  add-pfn_valid_within-helper-for-sub-max_order-hole-detection.patch
+>  anti-fragmentation-switch-over-to-pfn_valid_within.patch
+>  lumpy-move-to-using-pfn_valid_within.patch
+> 
+> More Mel things, and linkage between Mel-things and lumpy reclaim.  It's here
+> where the patch ordering gets into a mess and things won't improve if
+> moveable-zones and lumpy-reclaim get deferred.  Such a deferral would limit my
+> ability to queue more MM changes for 2.6.23.
 
-    J
+The first of these is really a cleanup and should slide into the stack
+before Mobility and Lumpy.  The other two should then join their
+respective stacks anti-fragmentation-... to Mobility and lumpy-... to
+Lumpy.  I would not expect them to increase linkage that way.
 
+-apw
