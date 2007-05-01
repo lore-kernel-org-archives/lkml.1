@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030844AbXEAEdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030524AbXEAEfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030844AbXEAEdx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031585AbXEAEdx
+	id S1030524AbXEAEfi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:35:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423720AbXEAEfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:33:53 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:57925 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030844AbXEAEdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 00:33:51 -0400
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both
-	of	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-From: Daniel Walker <dwalker@mvista.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <4636B4F9.6040406@rtr.ca>
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
-	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>
-	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>
-	 <6bffcb0e0704301707w7287f1bdk32be8bc8ce7cda80@mail.gmail.com>
-	 <463685BD.8010604@rtr.ca> <1177978391.12796.301.camel@imap.mvista.com>
-	 <4636B4F9.6040406@rtr.ca>
-Content-Type: text/plain
-Date: Mon, 30 Apr 2007 21:32:13 -0700
-Message-Id: <1177993933.12796.314.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 1 May 2007 00:35:38 -0400
+Received: from mail.queued.net ([207.210.101.209]:1079 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030825AbXEAEey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 00:34:54 -0400
+X-Greylist: delayed 1731 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 00:34:54 EDT
+Message-ID: <4636BCA7.2090301@debian.org>
+Date: Tue, 01 May 2007 00:05:59 -0400
+From: Andres Salomon <dilinger@debian.org>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: dann frazier <dannf@hp.com>
+CC: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       support@moxa.com.tw
+Subject: Re: old buffer overflow in moxa driver
+References: <20070430224829.GI31283@krebs.dannf>
+In-Reply-To: <20070430224829.GI31283@krebs.dannf>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-30 at 23:33 -0400, Mark Lord wrote:
-> Daniel Walker wrote:
-> > 
-> > I'm interested in which clocksource is getting used, which is in the
-> > boot log.
-> 
-> Well then, send me a patch that dumps that information out just before it locks up.
-> We know (first post in this thread) that the lockup occurs just after
-> these two messages:
-> 
->   "switched to high resolution mode on cpu 1"
->   "switched to high resolution mode on cpu 0"
-> 
-> So just dump out anything else you need to see at the same time,
-> and it'll still be on my screen when the darned thing locks up.
-> 
-> Simple, eh.  We both get to run around a treadmill this way.  ;)
+Wow, I'd forgotten all about this one.
 
-I guess I could make due with the successful boot (less running for us
-both).. It's using the hpet clocksource .. You could try adding
-clocksource=acpi_pm to the boot args , in the off chance it's an hpet
-clock issue.
+Signed-off-by: Andres Salomon <dilinger@debian.org>
 
-Daniel
+dann frazier wrote:
+> hey,
+>   I noticed that the moxa input checking security bug described by
+> CVE-2005-0504 appears to remain unfixed upstream.
+>  
+> The issue is described here:
+>   http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2005-0504
+> 
+> Debian has been shipping the following patch from Andres Salomon. I
+> tried contacting the listed maintainer a few months ago but received
+> no response.
+> 
+> I've tested that this still applies to and compiles against 2.6.21.
+> 
+> Signed-off-by: dann frazier <dannf@hp.com>
+> 
+> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+> index 7dbaee8..e0d35c2 100644
+> --- a/drivers/char/moxa.c
+> +++ b/drivers/char/moxa.c
+> @@ -1582,7 +1582,7 @@ copy:
+>  
+>  	if(copy_from_user(&dltmp, argp, sizeof(struct dl_str)))
+>  		return -EFAULT;
+> -	if(dltmp.cardno < 0 || dltmp.cardno >= MAX_BOARDS)
+> +	if(dltmp.cardno < 0 || dltmp.cardno >= MAX_BOARDS || dltmp.len < 0)
+>  		return -EINVAL;
+>  
+>  	switch(cmd)
+> @@ -2529,6 +2529,8 @@ static int moxaloadbios(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr;
+>  	int i;
+>  
+> +	if(len < 0 || len > sizeof(moxaBuff))
+> +		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+>  	baseAddr = moxa_boards[cardno].basemem;
+> @@ -2576,7 +2578,7 @@ static int moxaload320b(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr;
+>  	int i;
+>  
+> -	if(len > sizeof(moxaBuff))
+> +	if(len < 0 || len > sizeof(moxaBuff))
+>  		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+> @@ -2596,6 +2598,8 @@ static int moxaloadcode(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr, *ofsAddr;
+>  	int retval, port, i;
+>  
+> +	if(len < 0 || len > sizeof(moxaBuff))
+> +		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+>  	baseAddr = moxa_boards[cardno].basemem;
+> 
 
