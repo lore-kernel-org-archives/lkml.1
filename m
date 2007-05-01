@@ -1,136 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423673AbXEAEaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030308AbXEAEd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423673AbXEAEaK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030524AbXEAEaK
+	id S1030308AbXEAEd1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030524AbXEAEd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:30:10 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33324 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030515AbXEAEaG (ORCPT
+	Tue, 1 May 2007 00:33:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:30883 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030308AbXEAEdY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 00:30:06 -0400
-From: Balbir Singh <balbir@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Balbir Singh <balbir@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
-Date: Tue, 01 May 2007 10:00:00 +0530
-Message-Id: <20070501043000.14787.54833.sendpatchset@balbir-laptop>
-Subject: [PATCH CFS V7] Fix warnings in sched and sched_debug
+	Tue, 1 May 2007 00:33:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=uYbZUui9tCSddjV7FS/j/F8mp3qnuAO4cFHiT4MxQgdqLB9RLdczFEBqXb21Qjk32hPIfNxWY4sPfdjYQ4PnblroeGvJCfPnYL6xx/6L45BE5JQg5hqm4sawuNqj15LobNLv1OmC8rs1zmKH4eYuw6ugFYsIEnq3Kc0rOPRbemM=
+Message-ID: <4636C2C7.8090206@gmail.com>
+Date: Tue, 01 May 2007 06:32:07 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: William Thompson <wt@electro-mechanical.com>
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       albertcc@tw.ibm.com
+Subject: Re: 2.6.20 libata cdrom
+References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com>
+In-Reply-To: <20070430202107.GF5942@electro-mechanical.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The first patch I sent out did not have a sign-off; I had trouble with my patch 
-tools.
+[cc'ing linux-ide and Albert, Hi!]
 
-This patch fixes all warnings seen on powerpc during compilation of the
-CFS patch. It also fixes errors (side-effect of the warnings), where
-some of the data is printed as negative values.
+William Thompson wrote:
+> On Mon, Apr 30, 2007 at 12:22:21PM +0200, Tejun Heo wrote:
+>> William Thompson wrote:
+>>> I've been playing with libata on a few machines and I found that this machine
+>>> (An old Dell Dimension L866r) gives me this when it loads and does not give me
+>>> access to the cdrom.  This is the only machine that I've tested that I know
+>>> for a fact cannot do DMA on the cdrom.  I searched and noticed a similar
+>>> problem with 2.6.19-rc versions but I'm not sure if it's the same problem.
+>>>
+>>> dmesg output:
+>>> libata version 2.00 loaded.
+>>> ata_piix 0000:00:1f.1: version 2.00ac7
+>>> PCI: Setting latency timer of device 0000:00:1f.1 to 64
+>>> ata1: PATA max UDMA/66 cmd 0x1F0 ctl 0x3F6 bmdma 0xFFA0 irq 14
+>>> ata2: PATA max UDMA/66 cmd 0x170 ctl 0x376 bmdma 0xFFA8 irq 15
+>>> scsi0 : ata_piix
+>>> ata1.00: ATA-4, max UDMA/33, 10018890 sectors: LBA
+>>> ata1.00: ata1: dev 0 multi count 16
+>>> ata1.00: configured for UDMA/33
+>>> scsi1 : ata_piix
+>>> ata2.00: failed to IDENTIFY (I/O error, err_mask=0x1)
+>> Hmm... IDENTIFY failed on the second port.  How reproducible is the
+>> problem?  Every time?  Does it work with the IDE driver?  If so, please
+>> post the result of 'hdparm -I /dev/hdX'.
+> 
+> Reproducible?  Everytime
+> 
+> Yes, it works fine with the IDE driver, so long as DMA is disabled.
+> 
+> hdparm -I:
+> /dev/hdc:
+> 
+> ATAPI CD-ROM, with removable media
+>         Model Number:           Lite-On LTN483S 48x Max
+>         Serial Number:
+>         Firmware Revision:      PD02
+> Standards:
+>         Used: ATAPI for CD-ROMs, SFF-8020i, r2.5
+>         Supported: CD-ROM ATAPI-1
+> Configuration:
+>         DRQ response: <=10ms with INTRQ
+>         Packet size: 12 bytes
+> Capabilities:
+>         LBA, IORDY(can be disabled)
+>         DMA: sdma0 sdma1 sdma2 mdma0 mdma1 mdma2 udma0 udma1 *udma2
+>              Cycle time: min=120ns recommended=120ns
+>         PIO: pio0 pio1 pio2 pio3 pio4
+>              Cycle time: no flow control=120ns  IORDY flow control=120ns
 
-Applies on top of cfs v7
+The err_mask is AC_ERR_DEV indicating that the device raised aborted the
+IDENTIFY command.  I wonder what's going on.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Can you change "#undef ATA_DEBUG" in include/linux/libata.h to "#define
+ATA_DEBUG" and report the resulting dmesg?  There will be a LOT of
+messages so you probably want to increase printk buffer size and detach
+other devices if possible.  It would be best if your root device isn't
+driven by libata so that you can just insert the module and store the
+resulting dmesg.
 
- kernel/sched.c       |   34 +++++++++++++++++-----------------
- kernel/sched_debug.c |   16 ++++++++--------
- 2 files changed, 25 insertions(+), 25 deletions(-)
-
-diff -puN kernel/sched.c~cfs-v7-fix-sched-debug-warnings kernel/sched.c
---- linux-2.6.21/kernel/sched.c~cfs-v7-fix-sched-debug-warnings	2007-05-01 09:55:14.000000000 +0530
-+++ linux-2.6.21-balbir/kernel/sched.c	2007-05-01 09:55:14.000000000 +0530
-@@ -229,7 +229,7 @@ char * sched_print_task_state(struct tas
- 	unsigned long long t0, t1;
- 
- #define P(F) \
--	buffer += sprintf(buffer, "%-25s:%20Ld\n", #F, p->F)
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", #F, (long long)p->F)
- 
- 	P(wait_start);
- 	P(wait_start_fair);
-@@ -248,22 +248,22 @@ char * sched_print_task_state(struct tas
- 
- 	t0 = sched_clock();
- 	t1 = sched_clock();
--	buffer += sprintf(buffer, "%-25s:%20Ld\n", "clock-delta", t1-t0);
--	buffer += sprintf(buffer, "%-25s:%20Ld\n",
--			  "rq-wait_runtime", this_rq->wait_runtime);
--	buffer += sprintf(buffer, "%-25s:%20Ld\n",
--			  "rq-fair_clock", this_rq->fair_clock);
--	buffer += sprintf(buffer, "%-25s:%20Ld\n",
--			  "rq-clock", this_rq->clock);
--	buffer += sprintf(buffer, "%-25s:%20Ld\n",
--			  "rq-prev_clock_raw", this_rq->prev_clock_raw);
--	buffer += sprintf(buffer, "%-25s:%20Ld\n",
--			  "rq-clock_max_delta", this_rq->clock_max_delta);
--	buffer += sprintf(buffer, "%-25s:%20u\n",
--			  "rq-clock_warps", this_rq->clock_warps);
--	buffer += sprintf(buffer, "%-25s:%20u\n",
--			  "rq-clock_unstable_events",
--				  this_rq->clock_unstable_events);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "clock-delta",
-+				(long long)t1-t0);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-wait_runtime",
-+				(long long)this_rq->wait_runtime);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-fair_clock",
-+				(long long)this_rq->fair_clock);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-clock",
-+				(long long)this_rq->clock);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-prev_clock_raw",
-+				(long long)this_rq->prev_clock_raw);
-+	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-clock_max_delta",
-+				(long long)this_rq->clock_max_delta);
-+	buffer += sprintf(buffer, "%-25s:%20u\n", "rq-clock_warps",
-+				this_rq->clock_warps);
-+	buffer += sprintf(buffer, "%-25s:%20u\n", "rq-clock_unstable_events",
-+				this_rq->clock_unstable_events);
- 	return buffer;
- }
- 
-diff -puN kernel/sched_debug.c~cfs-v7-fix-sched-debug-warnings kernel/sched_debug.c
---- linux-2.6.21/kernel/sched_debug.c~cfs-v7-fix-sched-debug-warnings	2007-05-01 09:55:14.000000000 +0530
-+++ linux-2.6.21-balbir/kernel/sched_debug.c	2007-05-01 09:55:14.000000000 +0530
-@@ -45,13 +45,13 @@ print_task(struct seq_file *m, struct rq
- 	SEQ_printf(m, "%14s %5d %12Ld %11Ld %10Ld %9Ld %5d "
- 		      "%13Ld %13Ld %13Ld\n",
- 		p->comm, p->pid,
--		p->fair_key, p->fair_key - rq->fair_clock,
--		p->wait_runtime,
--		p->nr_switches,
-+		(long long)p->fair_key, (long long)p->fair_key - rq->fair_clock,
-+		(long long)p->wait_runtime,
-+		(long long)p->nr_switches,
- 		p->prio,
--		p->wait_start_fair - rq->fair_clock,
--		p->sum_exec_runtime,
--		p->sum_wait_runtime);
-+		(long long)p->wait_start_fair - rq->fair_clock,
-+		(long long)p->sum_exec_runtime,
-+		(long long)p->sum_wait_runtime);
- }
- 
- static void print_rq(struct seq_file *m, struct rq *rq, u64 now)
-@@ -83,7 +83,7 @@ static void print_cpu(struct seq_file *m
- 
- 	SEQ_printf(m, "\ncpu: %d\n", cpu);
- #define P(x) \
--	SEQ_printf(m, "  .%-22s: %Ld\n", #x, (u64)(rq->x))
-+	SEQ_printf(m, "  .%-22s: %Lu\n", #x, (unsigned long long)(rq->x))
- 
- 	P(nr_running);
- 	P(raw_weighted_load);
-@@ -110,7 +110,7 @@ static int sched_debug_show(struct seq_f
- 	int cpu;
- 
- 	SEQ_printf(m, "Sched Debug Version: v0.02\n");
--	SEQ_printf(m, "now at %Ld nsecs\n", (unsigned long long)now);
-+	SEQ_printf(m, "now at %Lu nsecs\n", (unsigned long long)now);
- 
- 	for_each_online_cpu(cpu)
- 		print_cpu(m, cpu, now);
-_
+Thanks.
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+tejun
