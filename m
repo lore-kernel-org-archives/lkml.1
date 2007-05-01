@@ -1,76 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422740AbXEAVIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423638AbXEAVIy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422740AbXEAVIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423608AbXEAVIS
+	id S1423638AbXEAVIy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:08:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423643AbXEAVIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:08:18 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:49603 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422740AbXEAVIQ (ORCPT
+	Tue, 1 May 2007 17:08:53 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40937 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423638AbXEAVIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:08:16 -0400
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 17:08:16 EDT
-Message-ID: <4637AC3D.6000008@freedesktop.org>
-Date: Tue, 01 May 2007 14:08:13 -0700
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Tue, 1 May 2007 17:08:52 -0400
+Date: Tue, 1 May 2007 14:08:50 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+In-Reply-To: <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+ <20070501125559.9ab42896.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: sparse -Wptr-subtraction-blows: still needed?
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB4918FE0C92B6DA879A8A310"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB4918FE0C92B6DA879A8A310
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Tue, 1 May 2007, Hugh Dickins wrote:
 
+> Yes, to me it does.  If it could be defaulted to on throughout the
+> -rcs, on every architecture, then I'd say that's "finishing work";
+> and we'd be safe knowing we could go back to slab in a hurry if
+> needed.  But it hasn't reached that stage yet, I think.
 
-Sparse has a warning -Wptr-subtraction-blows (off by default) which gener=
-ates
-a warning for any pointer subtractions.  This warning relates to GCC
-shortcomings observed in 2005; the original log message:
+Why would we need to go back to SLAB if we have not switched to SLUB? SLUB 
+is marked experimental and not the default.
 
-> commit 6889bd0f84939675c743229d6fe623513b95e057
-> Author: Linus Torvalds <torvalds@ppc970.osdl.org>
-> Date:   Fri Jan 7 15:06:24 2005 -0700
->
->     Add option "-Wptr-subtraction-blows" to warn about expensive
->     pointer subtractions.
->    =20
->     Not only does it generate bad code (that can often be rewritten
->     to not do that), it also causes gcc to go into horrible contortions=
-,
->     and Al Viro reports that it can make a factor of 2.5 difference in
->     kernel build times to have just a few of these in common header
->     file inline functions.
-
-Does this still apply?  Do current versions of GCC still have this proble=
-m?
-If not, can the option and warning go away?
-
-- Josh Triplett
-
-
---------------enigB4918FE0C92B6DA879A8A310
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGN6w9GJuZRtD+evsRApgfAJwKYQfnnqh8Bfo5nCbHEt8Tkwb2RwCgg+gT
-NqaAwXE0PwVwX8XcSe89rF0=
-=v0VU
------END PGP SIGNATURE-----
-
---------------enigB4918FE0C92B6DA879A8A310--
+The only problems that I am aware of is(or was) the issue with arches 
+modifying page struct fields of slab pages that SLUB needs for its own 
+operations. And I thought it was all fixed since the powerpc guys were 
+quiet and the patch was in for i386.
