@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423598AbXEAO0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbXEAO3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423598AbXEAO0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423625AbXEAO0P
+	id S1752549AbXEAO3H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbXEAO3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:26:15 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:18093 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423598AbXEAO0L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:26:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XVgKwulSvH2sOgqff+ZicgrNMXkeRQGt+NYPfBZ+ouh/HFZdo+tVcd+WNMqyYfAqlZjKW2Nqu5uhaIGQJEBH12yhC3TUr/kVhTsTHamf5l+/doLz3tWG/+Ybb3ZzLiFq5phsn26/6PTc6UESqVxkgDVc1nH1SqygfMiFS4skI+8=
-Message-ID: <6bffcb0e0705010726i3408f697qbbeede719445141d@mail.gmail.com>
-Date: Tue, 1 May 2007 16:26:09 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Mark Lord" <lkml@rtr.ca>
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-Cc: tglx@linutronix.de, "Daniel Walker" <dwalker@mvista.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@osdl.org>
-In-Reply-To: <46374B1D.6050509@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 1 May 2007 10:29:06 -0400
+Received: from pat.uio.no ([129.240.10.15]:52733 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbXEAO3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:29:01 -0400
+Subject: Re: nfsd/md patches Re: 2.6.22 -mm merge plans
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20070501101502.GA27868@infradead.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <17974.34116.479061.912980@notabene.brown>
+	 <20070501090843.GB17949@infradead.org>
+	 <17975.3531.838077.563475@notabene.brown>
+	 <20070501101502.GA27868@infradead.org>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 07:34:14 -0700
+Message-Id: <1178030054.5444.5.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46364EBC.5050804@rtr.ca> <463653A3.5040606@rtr.ca>
-	 <46367D7E.6060502@rtr.ca> <1177976798.12796.286.camel@imap.mvista.com>
-	 <463683A6.4010505@rtr.ca>
-	 <1178026458.5791.305.camel@localhost.localdomain>
-	 <4637419D.8010303@rtr.ca> <463741F1.7050706@rtr.ca>
-	 <1178027285.5791.307.camel@localhost.localdomain>
-	 <46374B1D.6050509@rtr.ca>
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: E4912DDB3C71C57DF63F98D548029E9034C69FAC
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 209 total 1435077 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
-> Thomas Gleixner wrote:
-> > On Tue, 2007-05-01 at 09:34 -0400, Mark Lord wrote:
-> >>> now at 3232363876949 nsecs
-> >> ...
-> >>
-> >> Oh, in case it matters any:
-> >> that /proc/timer_list is from the system with CFS-V7 also patched in.
-> >
-> > It should not. What happens when you disable HPET ?
->
-> Booting with clocksource=tsc still hangs in what appears
-> to be the exact same place.
->
-> Screenshots for that are available here:   http://rtr.ca/hrtimers/
+On Tue, 2007-05-01 at 11:15 +0100, Christoph Hellwig wrote:
+> On Tue, May 01, 2007 at 07:52:11PM +1000, Neil Brown wrote:
+> > On Tuesday May 1, hch@infradead.org wrote:
+> > > apropos nfsd patches, what's the merge plans for my two export ops
+> > > patch series?
+> > 
+> > Still sitting in my tree - I've had my mind on other things
+> > (nfs-utils, portmap....) and let them slip - sorry.
+> > 
+> > I think also there was an unanswered question about the second series
+> > (there first I am completely happy with).
+> 
+> A sorry, this mail got somewhere lost.  I'll reply on the nfs list
+> because we have a little more context there. (and due to the subscribers
+> only policy I can't crosspost unfortunately)
 
-404 Not Found
+I though we lifted the subscribers only policy quite a while back. There
+should be nothing preventing you from cross-posting.
 
-The requested URL /hrtimers/ was not found on this server.
+Cheers
+  Trond
 
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
