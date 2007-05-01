@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbXEAPOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754745AbXEAPRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754674AbXEAPOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXEAPOS
+	id S1754745AbXEAPRR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbXEAPRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:14:18 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:48995 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754674AbXEAPOQ (ORCPT
+	Tue, 1 May 2007 11:17:17 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:60285 "EHLO
+	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754754AbXEAPRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:14:16 -0400
-Subject: Re: VMware, x86_64 and 2.6.21.
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1178031475.3448.0.camel@laptopd505.fenrus.org>
-References: <1177998147.8981.16.camel@nigel.suspend2.net>
-	 <1178031475.3448.0.camel@laptopd505.fenrus.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-L6E1sSQK221t3Au+ANhk"
-Date: Wed, 02 May 2007 01:14:16 +1000
-Message-Id: <1178032456.13953.12.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 1 May 2007 11:17:16 -0400
+Date: Tue, 1 May 2007 17:17:13 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: AF_RXRPC depends on KEYS?
+Message-ID: <Pine.LNX.4.64.0705011709320.3055@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-L6E1sSQK221t3Au+ANhk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+| linux/net/rxrpc/af_rxrpc.c: In function 'rxrpc_kernel_begin_call':
+| linux/net/rxrpc/af_rxrpc.c:303: error: dereferencing pointer to incomplete type
+| linux/net/rxrpc/af_rxrpc.c: In function 'af_rxrpc_init':
+| linux/net/rxrpc/af_rxrpc.c:820: warning: implicit declaration of function 'register_key_type'
+| linux/net/rxrpc/af_rxrpc.c:839: warning: implicit declaration of function 'unregister_key_type'
 
-Hi Arjan.
+Should AF_RXRPC depend on KEYS?
 
-On Tue, 2007-05-01 at 07:57 -0700, Arjan van de Ven wrote:
-> On Tue, 2007-05-01 at 15:42 +1000, Nigel Cunningham wrote:
-> > Hi.
-> >=20
-> > Does anyone have VMware working on x86_64 with 2.6.21? It's working fin=
-e
-> > for me with 2.6.20, but freezes the whole computer with 2.6.21. Before =
-I
-> > start a git-bisect, I thought I might ask if anyone knew of some
-> > compilation option I might have missed.
->=20
->=20
-> if you want to ask questions about proprietary kernel stuff you're
-> better off asking the vendor directly, not lkml
+Hmm, I see a few more related things:
 
-I did, but given that it the failure only appeared with a change of
-vanilla kernel version, I didn't think it was out of place to ask here
-too.
+| linux/net/rxrpc/ar-key.c:36: error: variable 'key_type_rxrpc' has initializer but incomplete type
+| linux/net/rxrpc/ar-key.c:37: error: unknown field 'name' specified in initializer
+| linux/net/rxrpc/ar-key.c:37: warning: excess elements in struct initializer
+| linux/net/rxrpc/ar-key.c:37: warning: (near initialization for 'key_type_rxrpc')
+| linux/net/rxrpc/ar-key.c:38: error: unknown field 'instantiate' specified in initializer
+| ...
 
-Regards,
+and
 
-Nigel
+| linux/net/rxrpc/ar-output.c: In function 'rxrpc_client_sendmsg':
+| linux/net/rxrpc/ar-output.c:158: error: dereferencing pointer to incomplete type
 
---=-L6E1sSQK221t3Au+ANhk
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+and
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+| linux/net/rxrpc/ar-security.c: In function 'rxrpc_init_client_conn_security':
+| linux/net/rxrpc/ar-security.c:138: error: dereferencing pointer to incomplete type/home/geert.nba/linux/linux-m68k-2.6.22-rc1/net/rxrpc/ar-security.c: In function 'rxrpc_init_server_conn_security':
+| linux/net/rxrpc/ar-security.c:163: error: 'key_ref_t' undeclared (first use in this function)
+| ...
 
-iD8DBQBGN1lIN0y+n1M3mo0RAlxPAKDaldmo8jGsdwBfJH4c5zthJUhYeACgyC/s
-tyFUK2AHAqVopTfzDp0YptQ=
-=n6az
------END PGP SIGNATURE-----
+Gr{oetje,eeting}s,
 
---=-L6E1sSQK221t3Au+ANhk--
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
