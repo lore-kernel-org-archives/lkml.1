@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbXEAPLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754674AbXEAPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbXEAPLi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXEAPLh
+	id S1754674AbXEAPOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXEAPOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:11:37 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:53876 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754740AbXEAPLd (ORCPT
+	Tue, 1 May 2007 11:14:18 -0400
+Received: from nigel.suspend2.net ([203.171.70.205]:48995 "EHLO
+	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754674AbXEAPOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:11:33 -0400
-Subject: Re: condingstyle, was Re: utrace comments
-From: David Woodhouse <dwmw2@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0705011706350.27246@anakin>
-References: <20061127165138.GA2991@lst.de>
-	 <20070430040213.BF9901801A4@magilla.sf.frob.com>
-	 <20070430091121.GC31397@infradead.org>
-	 <20070430100917.439ebfc8.akpm@linux-foundation.org>
-	 <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
-	 <Pine.LNX.4.64.0705011058330.27246@anakin>
-	 <1178028973.2875.78.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64.0705011706350.27246@anakin>
-Content-Type: text/plain
-Date: Tue, 01 May 2007 16:11:21 +0100
-Message-Id: <1178032281.2875.83.camel@pmac.infradead.org>
+	Tue, 1 May 2007 11:14:16 -0400
+Subject: Re: VMware, x86_64 and 2.6.21.
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1178031475.3448.0.camel@laptopd505.fenrus.org>
+References: <1177998147.8981.16.camel@nigel.suspend2.net>
+	 <1178031475.3448.0.camel@laptopd505.fenrus.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-L6E1sSQK221t3Au+ANhk"
+Date: Wed, 02 May 2007 01:14:16 +1000
+Message-Id: <1178032456.13953.12.camel@nigel.suspend2.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 17:07 +0200, Geert Uytterhoeven wrote:
-> For clarity, if it fits, I prefer that one, too.
 
-I don't think that was under question, was it?
-My point was that I prefer it even when it _doesn't_ fit.
+--=-L6E1sSQK221t3Au+ANhk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--- 
-dwmw2
+Hi Arjan.
+
+On Tue, 2007-05-01 at 07:57 -0700, Arjan van de Ven wrote:
+> On Tue, 2007-05-01 at 15:42 +1000, Nigel Cunningham wrote:
+> > Hi.
+> >=20
+> > Does anyone have VMware working on x86_64 with 2.6.21? It's working fin=
+e
+> > for me with 2.6.20, but freezes the whole computer with 2.6.21. Before =
+I
+> > start a git-bisect, I thought I might ask if anyone knew of some
+> > compilation option I might have missed.
+>=20
+>=20
+> if you want to ask questions about proprietary kernel stuff you're
+> better off asking the vendor directly, not lkml
+
+I did, but given that it the failure only appeared with a change of
+vanilla kernel version, I didn't think it was out of place to ask here
+too.
+
+Regards,
+
+Nigel
+
+--=-L6E1sSQK221t3Au+ANhk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGN1lIN0y+n1M3mo0RAlxPAKDaldmo8jGsdwBfJH4c5zthJUhYeACgyC/s
+tyFUK2AHAqVopTfzDp0YptQ=
+=n6az
+-----END PGP SIGNATURE-----
+
+--=-L6E1sSQK221t3Au+ANhk--
 
