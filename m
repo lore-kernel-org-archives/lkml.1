@@ -1,64 +1,505 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161773AbXEAUwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161753AbXEAUwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161773AbXEAUwM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:52:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161764AbXEAUwL
+	id S1161753AbXEAUwm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161746AbXEAUlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:52:11 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:43897 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161757AbXEAUll (ORCPT
+	Tue, 1 May 2007 16:41:40 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:45024 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423637AbXEAUfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:41:41 -0400
-Message-ID: <4637A5EA.80206@cosmosbay.com>
-Date: Tue, 01 May 2007 22:41:14 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Bill Irwin <bill.irwin@oracle.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [30/30] x86_64: Add missing !X86_PAE dependincy to the
- 2G/2G split.
-References: <20070501557.815359000@suse.de>	<20070501035829.1C93D13CAF@wotan.suse.de> <4636C16F.204@cosmosbay.com>	<20070501062132.GQ25929@bingen.suse.de>	<20070501130132.GL26598@holomorphy.com>	<46376210.6090200@cosmosbay.com>	<20070501170046.GO26598@holomorphy.com> <m1d51kzcnr.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1d51kzcnr.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 01 May 2007 22:41:20 +0200 (CEST)
+	Tue, 1 May 2007 16:35:04 -0400
+Message-Id: <20070501203332.518150284@mail.of.borg>
+References: <20070501203234.252205858@mail.of.borg>
+User-Agent: quilt/0.45-1
+Date: Tue, 01 May 2007 22:32:45 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [patch 11/33] m68k: early parameter support
+Content-Disposition: inline; filename=early-param.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman a écrit :
-> Bill Irwin <bill.irwin@oracle.com> writes:
-> 
->> Only 1GB-aligned kernel/user splits are now handled for PAE. The
->> 2GB/2GB split attempts to avoid aliasing vmallocspace with the 1:1
->> mapping for physical memory by using an actual split of 1.875/2.125
->> to accommodate 128MB of vmallocspace out of what would otherwise
->> be a full 2GB for userspace. That attempt disturbs the alignment
->> required by PAE for 2GB/2GB splits, and furthermore does not provide
->> a 2GB/2GB split as advertised.
->>
->> This patch resolves the issues here in two manners. The first is
->> by providing a true 2GB/2GB split in addition to the 1.875/2.125
->> split. The second is by renaming the 1.875/2.125 split to
->> CONFIG_VMSPLIT_2G_OPT analogously to CONFIG_VMSPLIT_3G_OPT, which
->> performs a similar manuever to avoid aliasing vmallocspace with
->> the 1:1 mapping for physical memory around the 3GB boundary. With
->> the 1.875/2.125 split properly-named, its config option is then
->> tagged as depending on !HIGHMEM to express the PAE implementation's
->> current inability to deal with such unaligned splits.
->>
->> This patch is essentially a combination of two patches, one written
->> by Eric Biederman and the other by Eric Dumazet. If they could add
->> their Signed-off-by: to this, I'd be much obliged.
->>
->> Signed-off-by: William Irwin <wli@holomorphy.com>
->> Cc: Eric Dumazet <dada1@cosmosbay.com>
->> Cc: Mark Lord <lkml@rtr.ca>
->> Cc: Eric W. Biederman <ebiederm@xmission.com>
->> Cc: Andi Kleen <ak@suse.de>
-> 
-> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+From: Roman Zippel <zippel@linux-m68k.org>
 
-Acked-by: Eric Dumazet <dada1@cosmosbay.com>
+Add early parameter support and convert current users to it.
+
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ arch/m68k/amiga/config.c |   41 ++++++++++++++++++++++-------------------
+ arch/m68k/atari/config.c |   17 +++++++++--------
+ arch/m68k/atari/debug.c  |   24 ++++++++++++++----------
+ arch/m68k/kernel/setup.c |   39 +--------------------------------------
+ arch/m68k/mac/config.c   |    8 --------
+ arch/m68k/mac/debug.c    |   20 ++++++++++----------
+ arch/m68k/q40/config.c   |   23 ++++++++++++++---------
+ arch/m68k/sun3x/prom.c   |   11 +++++++----
+ 8 files changed, 77 insertions(+), 106 deletions(-)
+
+--- linux-m68k-2.6.21.orig/arch/m68k/amiga/config.c
++++ linux-m68k-2.6.21/arch/m68k/amiga/config.c
+@@ -79,8 +79,6 @@ static char *amiga_models[] __initdata =
+ 
+ static char amiga_model_name[13] = "Amiga ";
+ 
+-extern char m68k_debug_device[];
+-
+ static void amiga_sched_init(irq_handler_t handler);
+ /* amiga specific irq functions */
+ extern void amiga_init_IRQ(void);
+@@ -95,12 +93,10 @@ static unsigned int amiga_get_ss(void);
+ extern void amiga_mksound(unsigned int count, unsigned int ticks);
+ static void amiga_reset(void);
+ extern void amiga_init_sound(void);
+-static void amiga_savekmsg_init(void);
+ static void amiga_mem_console_write(struct console *co, const char *b,
+ 				    unsigned int count);
+ void amiga_serial_console_write(struct console *co, const char *s,
+ 				unsigned int count);
+-static void amiga_debug_init(void);
+ #ifdef CONFIG_HEARTBEAT
+ static void amiga_heartbeat(int on);
+ #endif
+@@ -370,7 +366,6 @@ void __init config_amiga(void)
+ {
+ 	int i;
+ 
+-	amiga_debug_init();
+ 	amiga_identify();
+ 
+ 	/* Yuk, we don't have PCI memory */
+@@ -458,17 +453,6 @@ void __init config_amiga(void)
+ 	/* initialize chipram allocator */
+ 	amiga_chip_init();
+ 
+-	/* debugging using chipram */
+-	if (!strcmp(m68k_debug_device, "mem")) {
+-		if (!AMIGAHW_PRESENT(CHIP_RAM))
+-			printk("Warning: no chipram present for debugging\n");
+-		else {
+-			amiga_savekmsg_init();
+-			amiga_console_driver.write = amiga_mem_console_write;
+-			register_console(&amiga_console_driver);
+-		}
+-	}
+-
+ 	/* our beloved beeper */
+ 	if (AMIGAHW_PRESENT(AMI_AUDIO))
+ 		amiga_init_sound();
+@@ -787,17 +771,33 @@ static void amiga_mem_console_write(stru
+ 	}
+ }
+ 
+-static void amiga_savekmsg_init(void)
++static int __init amiga_savekmsg_setup(char *arg)
+ {
+ 	static struct resource debug_res = { .name = "Debug" };
+ 
++	if (!MACH_IS_AMIGA || strcmp(arg, "mem"))
++		goto done;
++
++	if (!AMIGAHW_PRESENT(CHIP_RAM)) {
++		printk("Warning: no chipram present for debugging\n");
++		goto done;
++	}
++
+ 	savekmsg = amiga_chip_alloc_res(SAVEKMSG_MAXMEM, &debug_res);
+ 	savekmsg->magic1 = SAVEKMSG_MAGIC1;
+ 	savekmsg->magic2 = SAVEKMSG_MAGIC2;
+ 	savekmsg->magicptr = ZTWO_PADDR(savekmsg);
+ 	savekmsg->size = 0;
++
++	amiga_console_driver.write = amiga_mem_console_write;
++	register_console(&amiga_console_driver);
++
++done:
++	return 0;
+ }
+ 
++early_param("debug", amiga_savekmsg_setup);
++
+ static void amiga_serial_putc(char c)
+ {
+ 	amiga_custom.serdat = (unsigned char)c | 0x100;
+@@ -872,15 +872,18 @@ void amiga_serial_gets(struct console *c
+ }
+ #endif
+ 
+-static void __init amiga_debug_init(void)
++static int __init amiga_debug_setup(char *arg)
+ {
+-	if (!strcmp(m68k_debug_device, "ser" )) {
++	if (MACH_IS_AMIGA && !strcmp(arg, "ser")) {
+ 		/* no initialization required (?) */
+ 		amiga_console_driver.write = amiga_serial_console_write;
+ 		register_console(&amiga_console_driver);
+ 	}
++	return 0;
+ }
+ 
++early_param("debug", amiga_debug_setup);
++
+ #ifdef CONFIG_HEARTBEAT
+ static void amiga_heartbeat(int on)
+ {
+--- linux-m68k-2.6.21.orig/arch/m68k/atari/config.c
++++ linux-m68k-2.6.21/arch/m68k/atari/config.c
+@@ -69,9 +69,6 @@ extern int atari_tt_hwclk (int, struct r
+ extern int atari_mste_set_clock_mmss (unsigned long);
+ extern int atari_tt_set_clock_mmss (unsigned long);
+ 
+-/* atari specific debug functions (in debug.c) */
+-extern void atari_debug_init(void);
+-
+ 
+ /* ++roman: This is a more elaborate test for an SCC chip, since the plain
+  * Medusa board generates DTACK at the SCC's standard addresses, but a SCC
+@@ -137,15 +134,18 @@ int __init atari_parse_bootinfo(const st
+ 
+ 
+ /* Parse the Atari-specific switches= option. */
+-void __init atari_switches_setup(const char *str, unsigned len)
++static int __init atari_switches_setup(char *str)
+ {
+-	char switches[len+1];
++	char switches[strlen(str) + 1];
+ 	char *p;
+ 	int ovsc_shift;
+ 	char *args = switches;
+ 
++	if (!MACH_IS_ATARI)
++		return 0;
++
+ 	/* copy string to local array, strsep works destructively... */
+-	strlcpy(switches, str, sizeof(switches));
++	strcpy(switches, str);
+ 	atari_switches = 0;
+ 
+ 	/* parse the options */
+@@ -170,8 +170,11 @@ void __init atari_switches_setup(const c
+ 			atari_switches |= ATARI_SWITCH_SND7 << ovsc_shift;
+ 		}
+ 	}
++	return 0;
+ }
+ 
++early_param("switches", atari_switches_setup);
++
+ 
+     /*
+      *  Setup the Atari configuration info
+@@ -183,8 +186,6 @@ void __init config_atari(void)
+ 
+ 	memset(&atari_hw_present, 0, sizeof(atari_hw_present));
+ 
+-	atari_debug_init();
+-
+ 	/* Change size of I/O space from 64KB to 4GB. */
+ 	ioport_resource.end  = 0xFFFFFFFF;
+ 
+--- linux-m68k-2.6.21.orig/arch/m68k/atari/debug.c
++++ linux-m68k-2.6.21/arch/m68k/atari/debug.c
+@@ -19,8 +19,6 @@
+ #include <asm/atarihw.h>
+ #include <asm/atariints.h>
+ 
+-extern char m68k_debug_device[];
+-
+ /* Flag that Modem1 port is already initialized and used */
+ int atari_MFP_init_done;
+ /* Flag that Modem1 port is already initialized and used */
+@@ -305,26 +303,28 @@ void atari_init_midi_port(int cflag)
+ 		     ACIA_RHTID : ACIA_RLTID);
+ }
+ 
+-void __init atari_debug_init(void)
++static int __init atari_debug_setup(char *arg)
+ {
+-	if (!strcmp(m68k_debug_device, "ser")) {
++	if (!MACH_IS_ATARI)
++		return 0;
++
++	if (!strcmp(arg, "ser"))
+ 		/* defaults to ser2 for a Falcon and ser1 otherwise */
+-		strcpy(m68k_debug_device, MACH_IS_FALCON ? "ser2" : "ser1");
+-	}
++		arg = MACH_IS_FALCON ? "ser2" : "ser1";
+ 
+-	if (!strcmp(m68k_debug_device, "ser1")) {
++	if (!strcmp(arg, "ser1")) {
+ 		/* ST-MFP Modem1 serial port */
+ 		atari_init_mfp_port(B9600|CS8);
+ 		atari_console_driver.write = atari_mfp_console_write;
+-	} else if (!strcmp(m68k_debug_device, "ser2")) {
++	} else if (!strcmp(arg, "ser2")) {
+ 		/* SCC Modem2 serial port */
+ 		atari_init_scc_port(B9600|CS8);
+ 		atari_console_driver.write = atari_scc_console_write;
+-	} else if (!strcmp(m68k_debug_device, "midi")) {
++	} else if (!strcmp(arg, "midi")) {
+ 		/* MIDI port */
+ 		atari_init_midi_port(B9600|CS8);
+ 		atari_console_driver.write = atari_midi_console_write;
+-	} else if (!strcmp(m68k_debug_device, "par")) {
++	} else if (!strcmp(arg, "par")) {
+ 		/* parallel printer */
+ 		atari_turnoff_irq(IRQ_MFP_BUSY); /* avoid ints */
+ 		sound_ym.rd_data_reg_sel = 7;	/* select mixer control */
+@@ -337,4 +337,8 @@ void __init atari_debug_init(void)
+ 	}
+ 	if (atari_console_driver.write)
+ 		register_console(&atari_console_driver);
++
++	return 0;
+ }
++
++early_param("debug", atari_debug_setup);
+--- linux-m68k-2.6.21.orig/arch/m68k/kernel/setup.c
++++ linux-m68k-2.6.21/arch/m68k/kernel/setup.c
+@@ -71,9 +71,6 @@ static struct mem_info m68k_ramdisk;
+ 
+ static char m68k_command_line[CL_SIZE];
+ 
+-char m68k_debug_device[6] = "";
+-EXPORT_SYMBOL(m68k_debug_device);
+-
+ void (*mach_sched_init) (irq_handler_t handler) __initdata = NULL;
+ /* machine dependent irq functions */
+ void (*mach_init_IRQ) (void) __initdata = NULL;
+@@ -215,7 +212,6 @@ void __init setup_arch(char **cmdline_p)
+ 	unsigned long endmem, startmem;
+ #endif
+ 	int i;
+-	char *p, *q;
+ 
+ 	/* The bootinfo is located right after the kernel bss */
+ 	m68k_parse_bootinfo((const struct bi_record *)&_end);
+@@ -258,40 +254,7 @@ void __init setup_arch(char **cmdline_p)
+ 	*cmdline_p = m68k_command_line;
+ 	memcpy(boot_command_line, *cmdline_p, CL_SIZE);
+ 
+-	/* Parse the command line for arch-specific options.
+-	 * For the m68k, this is currently only "debug=xxx" to enable printing
+-	 * certain kernel messages to some machine-specific device.
+-	 */
+-	for (p = *cmdline_p; p && *p;) {
+-		i = 0;
+-		if (!strncmp(p, "debug=", 6)) {
+-			strlcpy(m68k_debug_device, p+6, sizeof(m68k_debug_device));
+-			q = strchr(m68k_debug_device, ' ');
+-			if (q)
+-				*q = 0;
+-			i = 1;
+-		}
+-#ifdef CONFIG_ATARI
+-		/* This option must be parsed very early */
+-		if (!strncmp(p, "switches=", 9)) {
+-			extern void atari_switches_setup(const char *, int);
+-			q = strchr(p + 9, ' ');
+-			atari_switches_setup(p + 9, q ? (q - (p + 9)) : strlen(p + 9));
+-			i = 1;
+-		}
+-#endif
+-
+-		if (i) {
+-			/* option processed, delete it */
+-			if ((q = strchr(p, ' ')))
+-				strcpy(p, q + 1);
+-			else
+-				*p = 0;
+-		} else {
+-			if ((p = strchr(p, ' ')))
+-				++p;
+-		}
+-	}
++	parse_early_param();
+ 
+ #ifdef CONFIG_DUMMY_CONSOLE
+ 	conswitchp = &dummy_con;
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/config.c
++++ linux-m68k-2.6.21/arch/m68k/mac/config.c
+@@ -82,10 +82,6 @@ extern void mac_mksound(unsigned int, un
+ 
+ extern void nubus_sweep_video(void);
+ 
+-/* Mac specific debug functions (in debug.c) */
+-extern void mac_debug_init(void);
+-extern void mac_debugging_long(int, long);
+-
+ static void mac_get_model(char *str);
+ 
+ static void mac_sched_init(irq_handler_t vector)
+@@ -180,9 +176,6 @@ void __init config_mac(void)
+ 	mach_halt = mac_poweroff;
+ 	mach_power_off = mac_poweroff;
+ 	mach_max_dma_address = 0xffffffff;
+-#if 0
+-	mach_debug_init	= mac_debug_init;
+-#endif
+ #if defined(CONFIG_INPUT_M68K_BEEP) || defined(CONFIG_INPUT_M68K_BEEP_MODULE)
+ 	mach_beep = mac_mksound;
+ #endif
+@@ -802,7 +795,6 @@ void mac_identify(void)
+ 	/* the serial ports set to "Faster" mode in MacOS. */
+ 
+ 	iop_preinit();
+-	mac_debug_init();
+ 
+ 	printk(KERN_INFO "Detected Macintosh model: %d \n", model);
+ 
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/debug.c
++++ linux-m68k-2.6.21/arch/m68k/mac/debug.c
+@@ -27,10 +27,6 @@
+ #include <asm/machw.h>
+ #include <asm/macints.h>
+ 
+-extern char m68k_debug_device[];
+-
+-extern struct compat_bootinfo compat_boot_info;
+-
+ extern unsigned long mac_videobase;
+ extern unsigned long mac_videodepth;
+ extern unsigned long mac_rowbytes;
+@@ -360,16 +356,18 @@ void mac_init_sccb_port(int cflag)
+ 	mac_init_scc_port(cflag, 1);
+ }
+ 
+-void __init mac_debug_init(void)
++static int __init mac_debug_setup(char *arg)
+ {
++	if (!MACH_IS_MAC)
++		return 0;
++
+ #ifdef DEBUG_SERIAL
+-	if (!strcmp(m68k_debug_device, "ser") ||
+-            !strcmp(m68k_debug_device, "ser1")) {
++	if (!strcmp(arg, "ser") || !strcmp(arg, "ser1")) {
+ 		/* Mac modem port */
+ 		mac_init_scc_port(B9600|CS8, 0);
+ 		mac_console_driver.write = mac_scca_console_write;
+ 		scc_port = 0;
+-	} else if (!strcmp(m68k_debug_device, "ser2")) {
++	} else if (!strcmp(arg, "ser2")) {
+ 		/* Mac printer port */
+ 		mac_init_scc_port(B9600|CS8, 1);
+ 		mac_console_driver.write = mac_sccb_console_write;
+@@ -377,12 +375,14 @@ void __init mac_debug_init(void)
+ 	}
+ #endif
+ #ifdef DEBUG_HEADS
+-	if (!strcmp(m68k_debug_device, "scn") ||
+-	    !strcmp(m68k_debug_device, "con")) {
++	if (!strcmp(arg, "scn") || !strcmp(arg, "con")) {
+ 		/* display, using head.S console routines */
+ 		mac_console_driver.write = mac_debug_console_write;
+ 	}
+ #endif
+ 	if (mac_console_driver.write)
+ 		register_console(&mac_console_driver);
++	return 0;
+ }
++
++early_param("debug", mac_debug_setup);
+--- linux-m68k-2.6.21.orig/arch/m68k/q40/config.c
++++ linux-m68k-2.6.21/arch/m68k/q40/config.c
+@@ -54,7 +54,6 @@ void q40_set_vectors(void);
+ 
+ extern void q40_mksound(unsigned int /*freq*/, unsigned int /*ticks*/);
+ 
+-extern char m68k_debug_device[];
+ static void q40_mem_console_write(struct console *co, const char *b,
+ 				  unsigned int count);
+ 
+@@ -62,6 +61,7 @@ extern int ql_ticks;
+ 
+ static struct console q40_console_driver = {
+ 	.name	= "debug",
++	.write	= q40_mem_console_write,
+ 	.flags	= CON_PRINTBUFFER,
+ 	.index	= -1,
+ };
+@@ -85,6 +85,19 @@ static void q40_mem_console_write(struct
+ 	}
+ }
+ 
++static int __init q40_debug_setup(char *arg)
++{
++	/* useful for early debugging stages - writes kernel messages into SRAM */
++	if (MACH_IS_Q40 && !strncmp(arg, "mem", 3)) {
++		/*printk("using NVRAM debug, q40_mem_cptr=%p\n",q40_mem_cptr);*/
++		_cpleft = 2000 - ((long)q40_mem_cptr-0xff020000) / 4;
++		register_console(&q40_console_driver);
++	}
++	return 0;
++}
++
++early_param("debug", q40_debug_setup);
++
+ #if 0
+ void printq40(char *str)
+ {
+@@ -194,14 +207,6 @@ void __init config_q40(void)
+ 	 * all physical RAM fits into the boundary - otherwise
+ 	 * allocator may play costly and useless tricks */
+ 	mach_max_dma_address = 1024*1024*1024;
+-
+-	/* useful for early debugging stages - writes kernel messages into SRAM */
+-	if (!strncmp( m68k_debug_device,"mem", 3)) {
+-		/*printk("using NVRAM debug, q40_mem_cptr=%p\n",q40_mem_cptr);*/
+-		_cpleft = 2000 - ((long)q40_mem_cptr-0xff020000) / 4;
+-		q40_console_driver.write = q40_mem_console_write;
+-		register_console(&q40_console_driver);
+-	}
+ }
+ 
+ 
+--- linux-m68k-2.6.21.orig/arch/m68k/sun3x/prom.c
++++ linux-m68k-2.6.21/arch/m68k/sun3x/prom.c
+@@ -73,8 +73,6 @@ void sun3x_reboot(void)
+ 	(*romvec->pv_reboot)("vmlinux");
+ }
+ 
+-extern char m68k_debug_device[];
+-
+ static void sun3x_prom_write(struct console *co, const char *s,
+                              unsigned int count)
+ {
+@@ -119,13 +117,18 @@ void sun3x_prom_init(void)
+ 	 * XXX this is futile since we restore the vbr first - oops
+ 	 */
+ 	vectors[VEC_TRAP14] = sun3x_prom_abort;
++}
+ 
++static int __init sun3x_debug_setup(char *arg)
++{
+ 	/* If debug=prom was specified, start the debug console */
+-
+-	if (!strcmp(m68k_debug_device, "prom"))
++	if (MACH_IS_SUN3X && !strcmp(arg, "prom"))
+ 		register_console(&sun3x_debug);
++	return 0;
+ }
+ 
++early_param("debug", sun3x_debug_setup);
++
+ /* some prom functions to export */
+ int prom_getintdefault(int node, char *property, int deflt)
+ {
+
+--
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
