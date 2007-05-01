@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752043AbXEADcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbXEADdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752043AbXEADcK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 23:32:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbXEADcK
+	id S1754342AbXEADdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 23:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946157AbXEADdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 23:32:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47458 "EHLO mx2.suse.de"
+	Mon, 30 Apr 2007 23:33:18 -0400
+Received: from rtr.ca ([64.26.128.89]:4744 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752043AbXEADcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:32:09 -0400
-Date: Tue, 1 May 2007 06:29:39 +0200
-From: Andi Kleen <ak@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <ak@suse.de>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Dave Jones <davej@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-Message-ID: <20070501042939.GM25929@bingen.suse.de>
-References: <463698D5.20102@zytor.com> <20070501015115.GJ26601@redhat.com> <4636A332.2070101@zytor.com> <m1odl51dci.fsf@ebiederm.dsl.xmission.com> <20070501034612.GK25929@bingen.suse.de> <4636ABE3.5070502@zytor.com>
+	id S1754342AbXEADdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 23:33:17 -0400
+Message-ID: <4636B4F9.6040406@rtr.ca>
+Date: Mon, 30 Apr 2007 23:33:13 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4636ABE3.5070502@zytor.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of	CONFIG_NO_HZ,
+ CONFIG_HIGH_RES_TIMERS
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>	 <6bffcb0e0704301707w7287f1bdk32be8bc8ce7cda80@mail.gmail.com>	 <463685BD.8010604@rtr.ca> <1177978391.12796.301.camel@imap.mvista.com>
+In-Reply-To: <1177978391.12796.301.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 07:54:27PM -0700, H. Peter Anvin wrote:
-> Andi Kleen wrote:
-> >> Not that the x86 BIOS is bad.  It is nearly a marvel in it's simplicity
-> >> and ubiquitousness, 
-> > 
-> > Simplicity? That must be why x86 motherbords are shipping with (compressed) 
-> > 8MB BIOS flash chips now.
+Daniel Walker wrote:
 > 
-> Very little of that is the actual BIOS, though.  Most of it is generally
-> QuickPlay, which tends to be a Linux system...
+> I'm interested in which clocksource is getting used, which is in the
+> boot log.
 
-At least my Asus board with 8Mb flash doesn't have anything called that.
-There is also no special preboot environment
+Well then, send me a patch that dumps that information out just before it locks up.
+We know (first post in this thread) that the lockup occurs just after
+these two messages:
 
-iirc Asus ships dual BIOS though, but even half that compressed is a lot.
+  "switched to high resolution mode on cpu 1"
+  "switched to high resolution mode on cpu 0"
 
--Andi
+So just dump out anything else you need to see at the same time,
+and it'll still be on my screen when the darned thing locks up.
 
+Simple, eh.  We both get to run around a treadmill this way.  ;)
