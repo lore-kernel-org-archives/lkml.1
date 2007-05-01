@@ -1,120 +1,226 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422968AbXEAAJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946133AbXEAAKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422968AbXEAAJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 20:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422992AbXEAAJ1
+	id S1946133AbXEAAKn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 20:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946157AbXEAAKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 20:09:27 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:44033 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422968AbXEAAJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 20:09:25 -0400
-Date: Mon, 30 Apr 2007 17:09:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: to something appropriate (was Re: 2.6.22 -mm merge plans)
-Message-Id: <20070430170919.45e4b42b.akpm@linux-foundation.org>
-In-Reply-To: <46368062.6000100@garzik.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<46368062.6000100@garzik.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Apr 2007 20:10:42 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:3243 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946133AbXEAAKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 20:10:01 -0400
+Date: Tue, 1 May 2007 02:09:57 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] wrap access to thread_info
+Message-ID: <Pine.LNX.4.64.0705010208310.1479@scrub.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Subject: to something appropriate (was Re: 2.6.22 -mm merge plans)
+Recently a few direct accesses to the thread_info in the task structure
+snuck back, so this wraps them with the appropriate wrapper.
 
-smartypants.
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 
-On Mon, 30 Apr 2007 19:48:50 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+---
 
-> Andrew Morton wrote:
-> >  ahci-crash-fix.patch
-> >  libata-acpi-add-infrastructure-for-drivers-to-use.patch
-> >  pata_acpi-restore-driver.patch
-> >  optional-led-trigger-for-libata.patch
-> >  ata_timing-ensure-t-cycle-is-always-correct.patch
-> >  pata_pcmcia-recognize-2gb-compactflash-from-transcend.patch
-> >  drivers-ata-remove-the-wildcard-from-sata_nv-driver.patch
-> >  pata_icside-driver.patch
-> > 
-> > ata stuff
-> 
-> Tejun helpfully posted a bunch of clashing patches for all the ACPI 
-> stuff :)  You might be better off dropping and getting a resend after 
-> the dust settles.
-> 
-> That LED trigger patch seems technically correct, but also filling a 
-> need that few have.  IMO it craps up the hot path for little gain.
+This only leaves blackfin in -mm which I'll fix separately (depending on
+how quickly Andrew is with merging it).
 
-OK, well I'll see what's recoverable after libata-all gets updated, will
-blindly spam you with it as usual ;)
 
-> 
-> >  8139too-force-media-setting-fix.patch
-> >  sundance-change-phy-address-search-from-phy=1-to-phy=0.patch
-> >  forcedeth-improve-napi-logic.patch
-> >  ne-add-platform_driver.patch
-> >  ne-add-platform_driver-fix.patch
-> >  ne-mips-use-platform_driver-for-ne-on-rbtx49xx.patch
-> >  mips-drop-unnecessary-config_isa-from-rbtx49xx.patch
-> >  ibmtr_cs-fix-hang-on-eject.patch
-> > 
-> > For netdev tree
-> 
-> 8139too: needs review w/ attention paid to historical usage, and I 
-> haven't had time for months.  Not sure its right.
-> 
-> sundance: I really think this is phy-dependent, and should not be 
-> universally applied.  In the standard MII PHY, phy 0 is a ghost of 
-> another id.
-> 
-> forcedeth: TX NAPI wants more than that minimum effort
+ arch/avr32/kernel/process.c      |    6 +++---
+ arch/avr32/kernel/ptrace.c       |    2 +-
+ arch/i386/kernel/traps.c         |    2 +-
+ arch/mips/kernel/smtc.c          |    2 +-
+ arch/x86_64/kernel/irq.c         |    2 +-
+ include/asm-i386/thread_info.h   |    2 +-
+ include/asm-ia64/thread_info.h   |    2 +-
+ include/asm-mips/system.h        |    2 +-
+ include/asm-parisc/compat.h      |    2 +-
+ include/asm-x86_64/thread_info.h |    2 +-
+ kernel/mutex.c                   |    8 ++++----
+ 11 files changed, 16 insertions(+), 16 deletions(-)
 
-Ditto.
-
-> >  ppp_generic-fix-lockdep-warning.patch
-> > 
-> > Jeff, I guess.  It's not clear that this is correct.
-> 
-> Usually PPP is paulus -> jgarzik -> linus, but you can bounce it 
-> straight to me if Paulus doesn't respond
-> 
-
-OK, i'll move it to the netdev queue and will keep sending until something
-happens.
-
-> 
-> >  pcmcia-pccard-deadlock-fix.patch
-> >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
-> >  at91_cf-minor-fix.patch
-> >  add-new_id-to-pcmcia-drivers.patch
-> >  ide-cs-recognize-2gb-compactflash-from-transcend.patch
-> > 
-> > Dominik is busy.  Will probably re-review and send these direct to Linus.
-> 
-> I really wish "add ID" patches would not get buried in this tree.
-> 
-> Certainly they are trivial enough to go straight to Linus, but it would 
-> be nice to go through subsystem maintainers, some of whom have also 
-> picked up these new-id patches.
-> 
-> We don't send new-id patches for PCI drivers to GregKH, and we should 
-> similarly /not/ direct PCMCIA id patches to the PCMCIA bus tree.  It's 
-> far more scalable to send new-id patches to the maintainers dealing with 
-> the subsystem under which each driver falls (net, scsi, IDE, ...)
-> 
-
-Yeah, a new-id patch is a pretty critical bugfix if you happen to have that
-hardware.  I'll get all these into 2.6.22 by whatever means and will adopt
-your advice in future.
-
-Probably these should go into -stable too, but I don't know what
-Greg&Chris's position is on new device IDs.
-
+Index: linux-2.6/arch/avr32/kernel/process.c
+===================================================================
+--- linux-2.6.orig/arch/avr32/kernel/process.c
++++ linux-2.6/arch/avr32/kernel/process.c
+@@ -330,13 +330,13 @@ int copy_thread(int nr, unsigned long cl
+ {
+ 	struct pt_regs *childregs;
+ 
+-	childregs = ((struct pt_regs *)(THREAD_SIZE + (unsigned long)p->thread_info)) - 1;
++	childregs = ((struct pt_regs *)(THREAD_SIZE + (unsigned long)task_stack_page(p))) - 1;
+ 	*childregs = *regs;
+ 
+ 	if (user_mode(regs))
+ 		childregs->sp = usp;
+ 	else
+-		childregs->sp = (unsigned long)p->thread_info + THREAD_SIZE;
++		childregs->sp = (unsigned long)task_stack_page(p) + THREAD_SIZE;
+ 
+ 	childregs->r12 = 0; /* Set return value for child */
+ 
+@@ -403,7 +403,7 @@ unsigned long get_wchan(struct task_stru
+ 	if (!p || p == current || p->state == TASK_RUNNING)
+ 		return 0;
+ 
+-	stack_page = (unsigned long)p->thread_info;
++	stack_page = (unsigned long)task_stack_page(p);
+ 	BUG_ON(!stack_page);
+ 
+ 	/*
+Index: linux-2.6/arch/avr32/kernel/ptrace.c
+===================================================================
+--- linux-2.6.orig/arch/avr32/kernel/ptrace.c
++++ linux-2.6/arch/avr32/kernel/ptrace.c
+@@ -25,7 +25,7 @@
+ 
+ static struct pt_regs *get_user_regs(struct task_struct *tsk)
+ {
+-	return (struct pt_regs *)((unsigned long) tsk->thread_info +
++	return (struct pt_regs *)((unsigned long)task_stack_page(tsk) +
+ 				  THREAD_SIZE - sizeof(struct pt_regs));
+ }
+ 
+Index: linux-2.6/arch/i386/kernel/traps.c
+===================================================================
+--- linux-2.6.orig/arch/i386/kernel/traps.c
++++ linux-2.6/arch/i386/kernel/traps.c
+@@ -319,7 +319,7 @@ void show_registers(struct pt_regs *regs
+ 	       regs->xds & 0xffff, regs->xes & 0xffff, regs->xfs & 0xffff, gs, ss);
+ 	printk(KERN_EMERG "Process %.*s (pid: %d, ti=%p task=%p task.ti=%p)",
+ 		TASK_COMM_LEN, current->comm, current->pid,
+-		current_thread_info(), current, current->thread_info);
++		current_thread_info(), current, task_thread_info(current));
+ 	/*
+ 	 * When in-kernel, we also print out the stack and code at the
+ 	 * time of the fault..
+Index: linux-2.6/arch/mips/kernel/smtc.c
+===================================================================
+--- linux-2.6.orig/arch/mips/kernel/smtc.c
++++ linux-2.6/arch/mips/kernel/smtc.c
+@@ -560,7 +560,7 @@ void smtc_boot_secondary(int cpu, struct
+ 	write_tc_gpr_sp(__KSTK_TOS(idle));
+ 
+ 	/* global pointer */
+-	write_tc_gpr_gp((unsigned long)idle->thread_info);
++	write_tc_gpr_gp((unsigned long)task_thread_info(idle));
+ 
+ 	smtc_status |= SMTC_MTC_ACTIVE;
+ 	write_tc_c0_tchalt(0);
+Index: linux-2.6/arch/x86_64/kernel/irq.c
+===================================================================
+--- linux-2.6.orig/arch/x86_64/kernel/irq.c
++++ linux-2.6/arch/x86_64/kernel/irq.c
+@@ -32,7 +32,7 @@ atomic_t irq_err_count;
+  */
+ static inline void stack_overflow_check(struct pt_regs *regs)
+ {
+-	u64 curbase = (u64) current->thread_info;
++	u64 curbase = (u64)task_stack_page(current);
+ 	static unsigned long warned = -60*HZ;
+ 
+ 	if (regs->rsp >= curbase && regs->rsp <= curbase + THREAD_SIZE &&
+Index: linux-2.6/include/asm-i386/thread_info.h
+===================================================================
+--- linux-2.6.orig/include/asm-i386/thread_info.h
++++ linux-2.6/include/asm-i386/thread_info.h
+@@ -170,7 +170,7 @@ static inline struct thread_info *curren
+ #define TS_USEDFPU		0x0001	/* FPU was used by this task this quantum (SMP) */
+ #define TS_POLLING		0x0002	/* True if in idle loop and not sleeping */
+ 
+-#define tsk_is_polling(t) ((t)->thread_info->status & TS_POLLING)
++#define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: linux-2.6/include/asm-ia64/thread_info.h
+===================================================================
+--- linux-2.6.orig/include/asm-ia64/thread_info.h
++++ linux-2.6/include/asm-ia64/thread_info.h
+@@ -110,6 +110,6 @@ struct thread_info {
+ 
+ #define TS_POLLING		1 	/* true if in idle loop and not sleeping */
+ 
+-#define tsk_is_polling(t) ((t)->thread_info->status & TS_POLLING)
++#define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
+ 
+ #endif /* _ASM_IA64_THREAD_INFO_H */
+Index: linux-2.6/include/asm-mips/system.h
+===================================================================
+--- linux-2.6.orig/include/asm-mips/system.h
++++ linux-2.6/include/asm-mips/system.h
+@@ -55,7 +55,7 @@ do {									\
+ 	if (cpu_has_dsp)						\
+ 		__save_dsp(prev);					\
+ 	next->thread.emulated_fp = 0;					\
+-	(last) = resume(prev, next, next->thread_info);			\
++	(last) = resume(prev, next, task_thread_info(next));		\
+ 	if (cpu_has_dsp)						\
+ 		__restore_dsp(current);					\
+ } while(0)
+Index: linux-2.6/include/asm-parisc/compat.h
+===================================================================
+--- linux-2.6.orig/include/asm-parisc/compat.h
++++ linux-2.6/include/asm-parisc/compat.h
+@@ -152,7 +152,7 @@ static __inline__ void __user *compat_al
+ 
+ static inline int __is_compat_task(struct task_struct *t)
+ {
+-	return test_ti_thread_flag(t->thread_info, TIF_32BIT);
++	return test_ti_thread_flag(task_thread_info(t), TIF_32BIT);
+ }
+ 
+ static inline int is_compat_task(void)
+Index: linux-2.6/include/asm-x86_64/thread_info.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86_64/thread_info.h
++++ linux-2.6/include/asm-x86_64/thread_info.h
+@@ -162,7 +162,7 @@ static inline struct thread_info *stack_
+ #define TS_COMPAT		0x0002	/* 32bit syscall active */
+ #define TS_POLLING		0x0004	/* true if in idle loop and not sleeping */
+ 
+-#define tsk_is_polling(t) ((t)->thread_info->status & TS_POLLING)
++#define tsk_is_polling(t) (task_thread_info(t)->status & TS_POLLING)
+ 
+ #endif /* __KERNEL__ */
+ 
+Index: linux-2.6/kernel/mutex.c
+===================================================================
+--- linux-2.6.orig/kernel/mutex.c
++++ linux-2.6/kernel/mutex.c
+@@ -133,7 +133,7 @@ __mutex_lock_common(struct mutex *lock, 
+ 
+ 	debug_mutex_lock_common(lock, &waiter);
+ 	mutex_acquire(&lock->dep_map, subclass, 0, _RET_IP_);
+-	debug_mutex_add_waiter(lock, &waiter, task->thread_info);
++	debug_mutex_add_waiter(lock, &waiter, task_thread_info(task));
+ 
+ 	/* add waiting tasks to the end of the waitqueue (FIFO): */
+ 	list_add_tail(&waiter.list, &lock->wait_list);
+@@ -159,7 +159,7 @@ __mutex_lock_common(struct mutex *lock, 
+ 		 */
+ 		if (unlikely(state == TASK_INTERRUPTIBLE &&
+ 						signal_pending(task))) {
+-			mutex_remove_waiter(lock, &waiter, task->thread_info);
++			mutex_remove_waiter(lock, &waiter, task_thread_info(task));
+ 			mutex_release(&lock->dep_map, 1, _RET_IP_);
+ 			spin_unlock_mutex(&lock->wait_lock, flags);
+ 
+@@ -175,8 +175,8 @@ __mutex_lock_common(struct mutex *lock, 
+ 	}
+ 
+ 	/* got the lock - rejoice! */
+-	mutex_remove_waiter(lock, &waiter, task->thread_info);
+-	debug_mutex_set_owner(lock, task->thread_info);
++	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
++	debug_mutex_set_owner(lock, task_thread_info(task));
+ 
+ 	/* set it to 0 if there are no waiters left: */
+ 	if (likely(list_empty(&lock->wait_list)))
