@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946456AbXEAEHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423742AbXEAEIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946456AbXEAEHq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946599AbXEAEAr
+	id S1423742AbXEAEIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946311AbXEAEHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:00:47 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60951 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933454AbXEAD6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:58:20 -0400
-From: Andi Kleen <ak@suse.de>
-References: <20070501557.815359000@suse.de>
-In-Reply-To: <20070501557.815359000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [21/30] x86_64: Print type and size correctly for unknown compat ioctls
-Message-Id: <20070501035819.80FFC13CAF@wotan.suse.de>
-Date: Tue,  1 May 2007 05:58:19 +0200 (CEST)
+	Tue, 1 May 2007 00:07:47 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49615 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946601AbXEAEA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 00:00:59 -0400
+Message-ID: <4636BB6B.9070300@zytor.com>
+Date: Mon, 30 Apr 2007 21:00:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Jeff Garzik <jeff@garzik.org>,
+       Andi Kleen <ak@suse.de>, patches@x86-64.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	 <20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	 <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>	 <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>	 <1177902195.30071.203.camel@localhost.localdomain>	 <463572B7.90202@zytor.com>	 <1177909434.30071.216.camel@localhost.localdomain>	 <m1ejm16flv.fsf@ebiederm.dsl.xmission.com> <1177990722.28659.39.camel@localhost.localdomain> <4636B7DE.5050005@zytor.com>
+In-Reply-To: <4636B7DE.5050005@zytor.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+H. Peter Anvin wrote:
+> Rusty Russell wrote:
+>> It'd be nicer if there were a "struct boot_params" declaration, but we
+>> can't have everything.
+> 
+> It's in my patchset-under-development.
+> 
+> (Preview snapshot:
+> http://userweb.kernel.org/~hpa/setup-snapshot-2007.04.30.patch)
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+Just pushed out a git tree:
 
----
- fs/compat.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=summary
 
-Index: linux/fs/compat.c
-===================================================================
---- linux.orig/fs/compat.c
-+++ linux/fs/compat.c
-@@ -371,13 +371,14 @@ static void compat_ioctl_error(struct fi
- 			fn = "?";
- 	}
- 
--	sprintf(buf,"'%c'", (cmd>>24) & 0x3f);
-+	sprintf(buf,"'%c'", (cmd>>_IOC_TYPESHIFT) & _IOC_TYPEMASK);
- 	if (!isprint(buf[1]))
- 		sprintf(buf, "%02x", buf[1]);
- 	compat_printk("ioctl32(%s:%d): Unknown cmd fd(%d) "
--			"cmd(%08x){%s} arg(%08x) on %s\n",
-+			"cmd(%08x){t:%s;sz:%u} arg(%08x) on %s\n",
- 			current->comm, current->pid,
- 			(int)fd, (unsigned int)cmd, buf,
-+			(cmd >> _IOC_SIZESHIFT) & _IOC_SIZEMASK,
- 			(unsigned int)arg, fn);
- 
- 	if (path)
+	-hpa
