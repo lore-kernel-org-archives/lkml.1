@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXEAPVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965701AbXEAPWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965693AbXEAPVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXEAPVi
+	id S965701AbXEAPWI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXEAPWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:21:38 -0400
-Received: from mga02.intel.com ([134.134.136.20]:36619 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965686AbXEAPVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:21:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,475,1170662400"; 
-   d="scan'208";a="237276078"
-Message-ID: <46375AFD.7000609@intel.com>
-Date: Tue, 01 May 2007 08:21:33 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-CC: Scott Feldman <sfeldma@pobox.com>, Jeff Garzik <jeff@garzik.org>,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [PATCH] e100 rx: or s and el bits
-References: <200705011124.l41BOEG4007662@sullivan.realtime.net>
-In-Reply-To: <200705011124.l41BOEG4007662@sullivan.realtime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 1 May 2007 11:22:08 -0400
+Received: from www.osadl.org ([213.239.205.134]:36819 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965695AbXEAPWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 11:22:05 -0400
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of
+	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Mark Lord <lkml@rtr.ca>
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <46374B1D.6050509@rtr.ca>
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
+	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>
+	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca>
+	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
+		 <463741F1.7050706@rtr.ca>
+	 <1178027285.5791.307.camel@localhost.localdomain> <46374B1D.6050509@rtr.ca>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 17:24:21 +0200
+Message-Id: <1178033061.5791.314.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2007 15:21:34.0499 (UTC) FILETIME=[6758F730:01C78C04]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milton Miller wrote:
-> In commit d52df4a35af569071fda3f4eb08e47cc7023f094, the description
-> talks about emulating another driver by setting addtional bits and
-> the being unable to test when submitted.  Seeing the & operator to
-> set more bits made me suspicious, and indeed the bits are defined
-> in positive logic:
+On Tue, 2007-05-01 at 10:13 -0400, Mark Lord wrote:
+> Thomas Gleixner wrote:
+> > On Tue, 2007-05-01 at 09:34 -0400, Mark Lord wrote:
+> >>> now at 3232363876949 nsecs
+> >> ...
+> >>
+> >> Oh, in case it matters any:
+> >> that /proc/timer_list is from the system with CFS-V7 also patched in.
+> > 
+> > It should not. What happens when you disable HPET ?
 > 
-> 	cb_s      = 0x4000,
-> 	cb_el     = 0x8000,
-> 
-> So anding those together would be 0.   I'm guessing they should
-> be or'd, but don't have hardware here to test, much like the
-> committed patch.  In fact, I'll let someone else do the compile
-> test too.  I'll update the comment.
-> 
-> (It looks like the end of list and s bits would not be set
-> in the template nor cleared when linking in recieve skbs, so
-> as long as the kernel can keep up with the 100Mb card we 
-> wouldn't see the adapter go off the linked list, possibly
-> explaining any successful use of this patch written against
-> 2.6.14).
+> Booting with clocksource=tsc still hangs in what appears
+> to be the exact same place.
 
-yes, that definately doesn't seem right. I'll try to run this and watch out for 
-David Ackers report as well.
+I meant disable HPET via: hpet=disable on the commandline 
 
-Thanks,
-
-Auke
-
-
+> Screenshots for that are available here:   http://rtr.ca/hrtimers/
 > 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
+> Of possible interest is that the bottom of the 25line screen capture
+> differs somewhat from the 50line capture.. see for yourself.
+> This is 100% consistent from boot to boot.
 > 
-> 
-> --- linux-2.6/drivers/net/e100.c.orig	2007-05-01 05:19:17.000000000 -0500
-> +++ linux-2.6/drivers/net/e100.c	2007-05-01 05:22:14.000000000 -0500
-> @@ -947,7 +947,7 @@ static void e100_get_defaults(struct nic
->  		((nic->mac >= mac_82558_D101_A4) ? cb_cid : cb_i));
->  
->  	/* Template for a freshly allocated RFD */
-> -	nic->blank_rfd.command = cpu_to_le16(cb_el & cb_s);
-> +	nic->blank_rfd.command = cpu_to_le16(cb_el | cb_s);
->  	nic->blank_rfd.rbd = 0xFFFFFFFF;
->  	nic->blank_rfd.size = cpu_to_le16(VLAN_ETH_FRAME_LEN);
->  
-> @@ -1769,13 +1769,13 @@ static int e100_rx_alloc_skb(struct nic 
->  	}
->  
->  	/* Link the RFD to end of RFA by linking previous RFD to
-> -	 * this one, and clearing EL bit of previous.  */
-> +	 * this one, and clearing EL and S bit of previous.  */
->  	if(rx->prev->skb) {
->  		struct rfd *prev_rfd = (struct rfd *)rx->prev->skb->data;
->  		put_unaligned(cpu_to_le32(rx->dma_addr),
->  			(u32 *)&prev_rfd->link);
->  		wmb();
-> -		prev_rfd->command &= ~cpu_to_le16(cb_el & cb_s);
-> +		prev_rfd->command &= ~cpu_to_le16(cb_el | cb_s);
->  		pci_dma_sync_single_for_device(nic->pdev, rx->prev->dma_addr,
->  			sizeof(struct rfd), PCI_DMA_TODEVICE);
->  	}
+> Using CONFIG_DETECT_SOFTLOCKUP=y eliminates the problem,
+> so that's really got to be a huge clue, somehow ?
+
+Unfortunately not. Other than it runs the watchdog task once a second it
+does not affect the time/clockevent... mechanisms at all
+
+	tglx
+
+
