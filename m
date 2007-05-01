@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946078AbXEAXxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946085AbXEAX7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946078AbXEAXxH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 19:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946083AbXEAXxG
+	id S1946085AbXEAX7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 19:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946090AbXEAX7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 19:53:06 -0400
-Received: from mill-adnc_internal-206-71-178-18.adnc.com ([206.71.178.18]:39098
-	"EHLO storix.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1946078AbXEAXxF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 19:53:05 -0400
-X-Greylist: delayed 1490 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 19:53:05 EDT
-From: Rich Turner <rich@storix.com>
-Organization: Storix, Inc.
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: generic modules
-Date: Tue, 1 May 2007 16:31:30 -0700
-User-Agent: KMail/1.9.5
+	Tue, 1 May 2007 19:59:24 -0400
+Received: from rtr.ca ([64.26.128.89]:3291 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946085AbXEAX7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 19:59:24 -0400
+Message-ID: <4637D459.2040502@rtr.ca>
+Date: Tue, 01 May 2007 19:59:21 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove unnecessary irq disabling
+References: <20070501213050.GD6119@redhat.com>
+In-Reply-To: <20070501213050.GD6119@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705011631.30740.rich@storix.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-heres hoping that someone will be able to answer my question, as i have 
-searched many places and have been unable to find the type of answer i am 
-looking for. i did find the short description of the module in the .c file 
-for each, but nothing more detailed.
+Glauber de Oliveira Costa wrote:
+> RR asks us if it is really necessary to disable interrupts in
+> setup_secondary_APIC_clock(). The answer is no, since setup_APIC_timer()
+> starts by saving irq flags, which also disables them.
+> 
+> Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+> 
+> --- a/arch/x86_64/kernel/apic.c
+> +++ b/arch/x86_64/kernel/apic.c
+> @@ -875,9 +875,7 @@ void __init setup_boot_APIC_clock (void)
+>  
+>  void __cpuinit setup_secondary_APIC_clock(void)
+>  {
+> -	local_irq_disable(); /* FIXME: Do we need this? --RR */
+>  	setup_APIC_timer(calibration_result);
+> -	local_irq_enable();
+>  }
+>  
+>  void disable_APIC_timer(void)
 
-using 2.6.20 kernel
-with or without the following modules loaded i am able to utilize the disks on 
-my system, therefore what functionality do the following modules provide?
+Okay, I'll bite:  before the patch, this code would exit
+with interrupts *enabled*, always.   Now it does not.
 
-kernel/drivers/ide/ide-generic.ko
-kernel/drivers/ide/pci/generic.ko
-kernel/drivers/ata/ata_generic.ko
+What does that break, or was it already broken and this fixes it?
+
+Cheers
