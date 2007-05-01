@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbXEAF1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754368AbXEAF10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754390AbXEAF1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 01:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXEAF1Q
+	id S1754368AbXEAF10 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 01:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbXEAF10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 01:27:16 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53063 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754368AbXEAF1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 01:27:16 -0400
-Date: Tue, 1 May 2007 08:24:56 +0200
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-rc7-mm2 hangs in boot (netconsole)
-Message-ID: <20070501062456.GS25929@bingen.suse.de>
-References: <20070429220132.951cdf7f.randy.dunlap@oracle.com> <20070429222354.63265e3f.akpm@linux-foundation.org> <20070430081653.60fab0a5.randy.dunlap@oracle.com> <20070430165101.6463fee1.randy.dunlap@oracle.com> <20070430171229.d514ba19.akpm@linux-foundation.org> <46368DC3.5070503@oracle.com> <20070430180821.eb269fe3.akpm@linux-foundation.org> <20070501034330.GJ25929@bingen.suse.de> <20070430221624.dcc7346b.randy.dunlap@oracle.com> <20070430222348.de258c98.akpm@linux-foundation.org>
+	Tue, 1 May 2007 01:27:26 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:57738 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754368AbXEAF1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 01:27:25 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: vgoyal@in.ibm.com
+Cc: Andi Kleen <ak@suse.de>, Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Jurriaan <thunder7@xs4all.nl>,
+       Helge Hafting <helgehaf@aitel.hist.no>, Horms <horms@verge.net.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/2] x86_64: Reflect the relocatability of the kernel in the ELF header.
+References: <m1slah6gm0.fsf@ebiederm.dsl.xmission.com>
+	<200704301717.08230.ak@suse.de> <20070501035539.GA15472@in.ibm.com>
+	<m14pmx18ey.fsf@ebiederm.dsl.xmission.com>
+	<20070501050657.GA23111@in.ibm.com>
+Date: Mon, 30 Apr 2007 23:26:50 -0600
+In-Reply-To: <20070501050657.GA23111@in.ibm.com> (Vivek Goyal's message of
+	"Tue, 1 May 2007 10:36:57 +0530")
+Message-ID: <m1zm4pyuzp.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430222348.de258c98.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The bug is in firstfloor only, and the fix (if present) will be there too.
-> 
-> <checks>
-> 
-> Nope,
-> 
-> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
-> 
-> is identical to
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/x86_64-mm-sched-clock-share.patch
+Vivek Goyal <vgoyal@in.ibm.com> writes:
 
-Or perhaps the deadlock is in the cpufrequency handler. Does it happen without CONFIG_CPUFREQ
-too?
 
-[cpufreq handler calls ktime_get which might take xtime lock for reading] 
+>> At least without a core file it is working on with gdb 6.4.
+>>
+>
+> This seems to be a problem with gdb 6.5. I transferred the dump to a
+> different machine having GNU gdb 6.4, and it works fine there.
 
--Andi
+Ok.  The difference between those two symbols didn't seem to make
+any sense, so a gdb bug makes sense.
+
+Cool.  Then the patch is good. :)
+
+Eric
