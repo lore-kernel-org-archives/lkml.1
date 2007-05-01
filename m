@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423602AbXEAUth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423625AbXEAUti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423602AbXEAUth (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423634AbXEAUl5
+	id S1423625AbXEAUti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423653AbXEAUlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:41:57 -0400
-Received: from europa.telenet-ops.be ([195.130.137.75]:44977 "EHLO
-	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423630AbXEAUe5 (ORCPT
+	Tue, 1 May 2007 16:41:55 -0400
+Received: from asia.telenet-ops.be ([195.130.137.74]:36913 "EHLO
+	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423634AbXEAUe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:34:57 -0400
-Message-Id: <20070501203333.988031488@mail.of.borg>
+	Tue, 1 May 2007 16:34:58 -0400
+Message-Id: <20070501203334.549493764@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:50 +0200
+Date: Tue, 01 May 2007 22:32:52 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
-Subject: [patch 16/33] m68k: Amiga A2065 and Ariadne TX statistics
-Content-Disposition: inline; filename=amiga-a2065-ariadne-stats.diff
+       Finn Thain <fthain@telegraphics.com.au>
+Subject: [patch 18/33] m68k: Mac interrupt priorities
+Content-Disposition: inline; filename=mac68k-patch_d-via-alt-mapping.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add missing code to the Amiga A2065 and Ariadne drivers to update
-net_device_stats.tx_bytes.
+From: Finn Thain <fthain@telegraphics.com.au>
 
+Add some more machines that support A/UX interrupt priorities. There are
+probably others as well, but I've only tested these ones so far.
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/net/a2065.c   |    4 +---
- drivers/net/ariadne.c |    1 +
- 2 files changed, 2 insertions(+), 3 deletions(-)
+ arch/m68k/mac/via.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- linux-m68k-2.6.21.orig/drivers/net/a2065.c
-+++ linux-m68k-2.6.21/drivers/net/a2065.c
-@@ -562,7 +562,6 @@ static int lance_start_xmit (struct sk_b
- 	volatile struct lance_init_block *ib = lp->init_block;
- 	int entry, skblen, len;
- 	int status = 0;
--	static int outs;
- 	unsigned long flags;
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/via.c
++++ linux-m68k-2.6.21/arch/m68k/mac/via.c
+@@ -193,8 +193,14 @@ void __init via_init(void)
+ 	/* that the IIfx emulates this alternate mapping using the OSS. */
  
- 	skblen = skb->len;
-@@ -607,8 +606,7 @@ static int lance_start_xmit (struct sk_b
- 	/* Now, give the packet to the lance */
- 	ib->btx_ring [entry].tmd1_bits = (LE_T1_POK|LE_T1_OWN);
- 	lp->tx_new = (lp->tx_new+1) & lp->tx_ring_mod_mask;
--
--	outs++;
-+	lp->stats.tx_bytes += skblen;
- 
- 	if (TX_BUFFS_AVAIL <= 0)
- 		netif_stop_queue(dev);
---- linux-m68k-2.6.21.orig/drivers/net/ariadne.c
-+++ linux-m68k-2.6.21/drivers/net/ariadne.c
-@@ -677,6 +677,7 @@ static int ariadne_start_xmit(struct sk_
- 	priv->cur_tx -= TX_RING_SIZE;
- 	priv->dirty_tx -= TX_RING_SIZE;
-     }
-+    priv->stats.tx_bytes += len;
- 
-     /* Trigger an immediate send poll. */
-     lance->RAP = CSR0;		/* PCnet-ISA Controller Status */
+ 	switch(macintosh_config->ident) {
++		case MAC_MODEL_P475:
++		case MAC_MODEL_P475F:
++		case MAC_MODEL_P575:
++		case MAC_MODEL_Q605:
++		case MAC_MODEL_Q605_ACC:
+ 		case MAC_MODEL_C610:
+ 		case MAC_MODEL_Q610:
++		case MAC_MODEL_Q630:
+ 		case MAC_MODEL_C650:
+ 		case MAC_MODEL_Q650:
+ 		case MAC_MODEL_Q700:
 
 --
 Gr{oetje,eeting}s,
