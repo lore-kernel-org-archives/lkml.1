@@ -1,86 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbXEAOQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbXEAORA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbXEAOQm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXEAOQl
+	id S1754645AbXEAORA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXEAOQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:16:41 -0400
-Received: from fmmailgate01.web.de ([217.72.192.221]:43370 "EHLO
-	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbXEAOQd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:16:33 -0400
-Message-ID: <46374BB6.9080703@web.de>
-Date: Tue, 01 May 2007 16:16:22 +0200
-From: Jan Kiszka <jan.kiszka@web.de>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 1 May 2007 10:16:42 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:58046 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754442AbXEAOQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:16:26 -0400
+Message-ID: <46374B5B.5000008@drzeus.cx>
+Date: Tue, 01 May 2007 16:14:51 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070414)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Rafal Bilski <rafalbilski@interia.pl>, Dave Jones <davej@redhat.com>
-Subject: 2.6.21: longhaul freq-scaling broken
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7766E10D61CA91A4E69C36A6"
-X-Provags-ID: V01U2FsdGVkX18WRffQQpdGjW0IAkG99rZ6ZtRrIzati7cKGMJx
-	sXvbJHXSLhKr1qVjD3NDGJfl2rGJ/gltfePB8xlPsabf1dkx3Z
-	xJG+LcRww=
+To: Adrian Bunk <bunk@stusta.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] MMC: make tifm_sd_set_dma_data() static
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070428191941.GP3468@stusta.de>
+In-Reply-To: <20070428191941.GP3468@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7766E10D61CA91A4E69C36A6
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+> 
+> This patch makes the needlessly global tifm_sd_set_dma_data() static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
 
-Hi,
+Thanks, applied.
 
-the new longhaul driver of 2.6.21 is broken on my Via Eden board.
-Frequencies can no longer be switched by whatever governor.
+Rgds
+-- 
+     -- Pierre Ossman
 
-# cat /proc/cpuinfo
-processor       : 0
-vendor_id       : CentaurHauls
-cpu family      : 6
-model           : 7
-model name      : VIA Samuel 2
-stepping        : 3
-cpu MHz         : 598.000
-cache size      : 64 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu de tsc msr cx8 mtrr pge mmx 3dnow
-bogomips        : 1200.75
-clflush size    : 32
-
-I ported the longhaul driver from 2.6.20.7 to 2.6.21, it works fine.
-
-Yeah, I know there are only a few patches between both, but I would like
-to reduce the test cycles to a minimum. Any suggestion where to look
-first is welcome therefore, ready-to-apply patches even more...
-
-Thanks,
-Jan
-
-
---------------enig7766E10D61CA91A4E69C36A6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGN0u2niDOoMHTA+kRAmMGAJ9fJc3p0/pZb0EE+IRkbTnUqIUhkQCfQJaC
-JnfmURkmA+B84BodR9uU1Nk=
-=4Kpr
------END PGP SIGNATURE-----
-
---------------enig7766E10D61CA91A4E69C36A6--
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
