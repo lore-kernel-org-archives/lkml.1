@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXEALt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932184AbXEALti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030599AbXEALt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 07:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXEALt1
+	id S932184AbXEALti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 07:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932247AbXEALti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 07:49:27 -0400
-Received: from assei2bl6.telenet-ops.be ([195.130.133.69]:44283 "EHLO
-	assei2bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932247AbXEALt0 (ORCPT
+	Tue, 1 May 2007 07:49:38 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43137 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932184AbXEALtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 07:49:26 -0400
-X-Greylist: delayed 10152 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 07:49:26 EDT
-Date: Tue, 1 May 2007 13:49:21 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Albert Cahalan <acahalan@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl, hpa@zytor.com
-Subject: Re: console font limits
-In-Reply-To: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705011347300.27246@anakin>
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 1 May 2007 07:49:36 -0400
+Date: Tue, 1 May 2007 12:53:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <htejun@gmail.com>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] libata-sff: Undo bug introduced with pci_iomap changes
+Message-ID: <20070501125327.52dd92e4@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Albert Cahalan wrote:
-> I'm having problems with a font I just created. It's a rather big one,
-> intended for a framebuffer console in UTF-8 mode. The strace program
-> reports that /bin/setfont fails on a KDFONTOP ioctl with EINVAL.
-> In reading the kernel code, I find this:
-> 
-> vt.c:static int con_font_set(struct vc_data *vc, struct console_font_op *op)
-> vt.c-{
-> vt.c-   struct console_font font;
-> vt.c-   int rc = -EINVAL;
-> vt.c-   int size;
-> vt.c-
-> vt.c-   if (vc->vc_mode != KD_TEXT)
-> vt.c-           return -EINVAL;
-> vt.c-   if (!op->data)
-> vt.c-           return -EINVAL;
-> vt.c-   if (op->charcount > 512)
-> vt.c-           return -EINVAL;
-> 
-> Ouch. Why is the old VGA limit being applied to the framebuffer console?
-> Could this just get removed? I dearly hope we aren't still storing the
-> framebuffer data as two bytes per character+attribute pair.
+If you have a controller with one channel disabled and unmapped the new
+iomap code blindly tries to iomap unconfigured BARs. Later on the code
+does the right thing and checks for unmapped bars but it is done in the
+wrong order
 
-The shadow screen (accessed using scr_*()) still uses the old VGA
-format.
+Reorder the checks and make the iomap conditional
 
-Gr{oetje,eeting}s,
+Tejun: I think the code below is now correct but would appreciate you
+giving it a review.
 
-						Geert
+Signed-off-by: Alan Cox <alan@redhat.com>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--- drivers/ata/libata-sff.c~	2007-05-01 12:03:39.634876384 +0100
++++ drivers/ata/libata-sff.c	2007-05-01 12:03:39.634876384 +0100
+@@ -557,12 +557,30 @@
+ 	int i, p = 0;
+ 	void __iomem * const *iomap;
+ 
++	/* Discard disabled ports. Some controllers show their
++	   unused channels this way */
++	if (ata_resources_present(pdev, 0) == 0)
++		ports &= ~ATA_PORT_PRIMARY;
++	if (ata_resources_present(pdev, 1) == 0)
++		ports &= ~ATA_PORT_SECONDARY;
++
+ 	/* iomap BARs */
+-	for (i = 0; i < 4; i++) {
+-		if (pcim_iomap(pdev, i, 0) == NULL) {
+-			dev_printk(KERN_ERR, &pdev->dev,
+-				   "failed to iomap PCI BAR %d\n", i);
+-			return NULL;
++	if (ports & ATA_PORT_PRIMARY) {
++		for (i = 0; i <= 1; i++) {
++			if (pcim_iomap(pdev, i, 0) == NULL) {
++				dev_printk(KERN_ERR, &pdev->dev,
++					   "failed to iomap PCI BAR %d\n", i);
++				return NULL;
++			}
++		}
++	}
++	if (ports & ATA_PORT_SECONDARY) {
++		for (i = 2; i <= 3; i++) {
++			if (pcim_iomap(pdev, i, 0) == NULL) {
++				dev_printk(KERN_ERR, &pdev->dev,
++					   "failed to iomap PCI BAR %d\n", i);
++				return NULL;
++			}
+ 		}
+ 	}
+ 
+@@ -577,13 +595,6 @@
+ 	probe_ent->irq = pdev->irq;
+ 	probe_ent->irq_flags = IRQF_SHARED;
+ 
+-	/* Discard disabled ports. Some controllers show their
+-	   unused channels this way */
+-	if (ata_resources_present(pdev, 0) == 0)
+-		ports &= ~ATA_PORT_PRIMARY;
+-	if (ata_resources_present(pdev, 1) == 0)
+-		ports &= ~ATA_PORT_SECONDARY;
+-
+ 	if (ports & ATA_PORT_PRIMARY) {
+ 		probe_ent->port[p].cmd_addr = iomap[0];
+ 		probe_ent->port[p].altstatus_addr =
