@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945951AbXEAVur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945997AbXEAVwO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945951AbXEAVur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945992AbXEAVur
+	id S1945997AbXEAVwO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:52:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946004AbXEAVwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:50:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:8516 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945976AbXEAVup (ORCPT
+	Tue, 1 May 2007 17:52:14 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34962 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1945997AbXEAVwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:50:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bf+GaJ2RUZYsryEn0n7tQ8mzUyzbyVqaVrMlsnivzUQv02IbyS2y5GYrVZX0OHPwUca3tJpQ6YvmSCCvXKFhXza28Tk4ElAq114rZNU1GTCdmYUuFAaLRlGK2tsGgKdIACULiDJRX2wi2iqDX+NQ37IEvCnPcGGpv+bx6420GTw=
-Subject: Re: [patch 05/33] m68k: Atari fb revival
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20070501203330.469191361@mail.of.borg>
-References: <20070501203234.252205858@mail.of.borg>
-	 <20070501203330.469191361@mail.of.borg>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 05:50:37 +0800
-Message-Id: <1178056237.4606.19.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 17:52:13 -0400
+Date: Tue, 1 May 2007 23:52:12 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.50-rc1
+Message-ID: <20070501215212.GD3531@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 22:32 +0200, Geert Uytterhoeven wrote:
-> plain text document attachment (636-atafb.diff)
-> From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-> 
-> Update the atari fb to 2.6 by Michael Schmitz,
+Security fixes since 2.6.16.49:
+- CVE-2007-1861: [NETLINK]: Infinite recursion in netlink
+- CVE-2007-2242: [IPV6]: Disallow RH0 by default
 
-Finally :-). That leaves only pm3fb that needs porting.
 
-It still contains remnants of 2.4 code though, ie, FBCON_HAS_*, but
-that's minor.
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-> Reformatting and rewrite of bit plane functions by Roman Zippel,
-> A few more fixes by Geert Uytterhoeven.
-> 
-> Signed-off-by: Michael Schmitz <schmitz@debian.org>
-> Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Antonino Daplas <adaplas@gmail.com>
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-Tony
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
 
+
+Changes since 2.6.16.49:
+
+Adrian Bunk (1):
+      Linux 2.6.16.50-rc1
+
+Al Viro (1):
+      mca_nmi_hook() can be called at any point
+
+Alexey Kuznetsov (1):
+      [NETLINK]: Infinite recursion in netlink (CVE-2007-1861)
+
+Guennadi Liakhovetski (1):
+      IrDA: irttp_dup spin_lock initialisation
+
+Jeet Chaudhuri (1):
+      IrDA: Incorrect TTP header reservation
+
+Jiri Slaby (1):
+      Char: icom, mark __init as __devinit
+
+Shaohua Li (1):
+      x86 microcode: don't check the size
+
+YOSHIFUJI Hideaki (1):
+      [IPV6]: Disallow RH0 by default (CVE-2007-2242)
+
+Zach Brown (1):
+      aio: remove bare user-triggerable error printk
+
+
+ Documentation/networking/ip-sysctl.txt |    9 ++++++
+ Makefile                               |    2 -
+ arch/i386/kernel/microcode.c           |    9 +-----
+ arch/i386/mach-default/setup.c         |    2 -
+ drivers/serial/icom.c                  |    4 +-
+ fs/aio.c                               |    1 
+ include/linux/ipv6.h                   |    9 ++++++
+ include/linux/sysctl.h                 |    1 
+ net/ipv4/fib_frontend.c                |   12 +++++++-
+ net/ipv6/addrconf.c                    |   11 +++++++
+ net/ipv6/exthdrs.c                     |   37 ++++++++++++++++++++-----
+ net/irda/irttp.c                       |    5 ++-
+ 12 files changed, 80 insertions(+), 22 deletions(-)
 
