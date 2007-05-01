@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423567AbXEATk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423562AbXEATnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423567AbXEATk5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:40:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423577AbXEATk5
+	id S1423562AbXEATnm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423591AbXEATnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:40:57 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:38706 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1423567AbXEATk4 (ORCPT
+	Tue, 1 May 2007 15:43:42 -0400
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:33751 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423562AbXEATnl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:40:56 -0400
-Date: Tue, 1 May 2007 15:36:46 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH] UML - forgot asm-um/cmpxchg.h
-Message-ID: <20070501193646.GA9482@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Tue, 1 May 2007 15:43:41 -0400
+Message-ID: <4637986B.4030004@zachcarter.com>
+Date: Tue, 01 May 2007 12:43:39 -0700
+From: Zach Carter <linux@zachcarter.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: bart@samwel.tk
+CC: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch] trivial: laptop-mode URL update
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The i386 and x86_64 cmpxchg patches require an asm-um/cmpxchg.h for
-the UML build.
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
---
- include/asm-um/cmpxchg.h |    6 ++++++
- 1 file changed, 6 insertions(+)
+trivial laptop-mode URL update.
 
-Index: linux-2.6.21-mm/include/asm-um/cmpxchg.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.21-mm/include/asm-um/cmpxchg.h	2007-05-01 15:31:09.000000000 -0400
-@@ -0,0 +1,6 @@
-+#ifndef __UM_CMPXCHG_H
-+#define __UM_CMPXCHG_H
-+
-+#include "asm/arch/cmpxchg.h"
-+
-+#endif
+Signed-off-by: Zach Carter <linux@zachcarter.com>
+---
+
+diff --git a/Documentation/laptop-mode.txt b/Documentation/laptop-mode.txt
+index 6f639e3..8b15502 100644
+--- a/Documentation/laptop-mode.txt
++++ b/Documentation/laptop-mode.txt
+@@ -33,7 +33,7 @@ or anything. Simply install all the files included in this document, and
+laptop mode will automatically be started when you're on battery. For
+your convenience, a tarball containing an installer can be downloaded at:
+
+-http://www.xs4all.nl/~bsamwel/laptop_mode/tools/
++http://www.samwel.tk/laptop_mode/laptop_mode/
+
+To configure laptop mode, you need to edit the configuration file, which is
+located in /etc/default/laptop-mode on Debian-based systems, or in
+
+
+
