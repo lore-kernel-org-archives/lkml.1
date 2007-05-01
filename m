@@ -1,124 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXEAHOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031578AbXEAHRO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXEAHOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932975AbXEAHOf
+	id S1031578AbXEAHRO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:17:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031580AbXEAHRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:14:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47349 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932903AbXEAHOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:14:33 -0400
-Date: Tue, 1 May 2007 03:13:57 -0400
-From: Jakub Jelinek <jakub@redhat.com>
+	Tue, 1 May 2007 03:17:13 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:33331 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031578AbXEAHRM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:17:12 -0400
+Message-ID: <4636E970.3010602@interia.pl>
+Date: Tue, 01 May 2007 09:17:04 +0200
+From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: MADV_FREE functionality
-Message-ID: <20070501071357.GV355@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <46368FAA.3080104@redhat.com> <20070430181839.c548c4da.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430181839.c548c4da.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Natsemi DP83815 driver spaming
+References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org>
+In-Reply-To: <20070430205522.abad2481.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-EMID: 2208acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 06:18:39PM -0700, Andrew Morton wrote:
-> > In short:
-> > - both MADV_FREE and MADV_DONTNEED only unmap file pages
-> > - after MADV_DONTNEED the application will always get back
-> >    fresh zero filled anonymous pages when accessing the
-> >    memory
-> > - after MADV_FREE the application can either get back the
-> >    original data (without a page fault) or zero filled
-> >    anonymous memory
-> > 
-> > The Linux MADV_DONTNEED behavior is not POSIX compliant.
-> > POSIX says that with MADV_DONTNEED the application's data
-> > will be preserved.
-> > 
-> > Currently glibc simply ignores POSIX_MADV_DONTNEED requests
-> > from applications on Linux.  Changing the behaviour which
-> > some Linux applications may rely on might not be the best
-> > idea.
+Hello,
+>> [...]
 > 
-> OK, thanks.  I stuck that in the changelog.
+> It seems to be repeatedly setting the same duplex setting.  The closest
+> thing I can see in there in recent times is
+> 68c90166e4aaa15ddcdd4778ad30bfb8b32534be, "Add support for using MII port
+> with no PHY".
 
-FYI, Solaris man page on MADV_FREE says:
+I have this terminal only one week, so it doesn't have to be recent regresion.
+ 
+> Does applying the below backout patch fix things?
 
-      MADV_FREE
-            Tells  the  kernel  that  contents  in  the  specified
-            address  range  are  no longer important and the range
-            will be overwritten. When there is demand for  memory,
-            the  system will free pages associated with the speci-
-            fied address range. In this instance, the next time  a
-            page  in the address range is referenced, it will con-
-            tail all zeroes.  Otherwise, it will contain the  data
-            that was there prior to the MADV_FREE call. References
-            made to the address range will  not  make  the  system
-            read from backing store (swap space) until the page is
-            modified again.
+Unfortunatly no. But messages are a bit different sometimes.
 
-            This value cannot be used on mappings that have under-
-            lying file objects.
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 120k freed
+eth0: DSPCFG accepted after 0 usec.
+eth0: link up.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 40 usec.
+[...]
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x200000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 40 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x200000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 80 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 80 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: increased tx threshold, txcfg 0xd0f01004.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+[...]
 
-The last paragraph seems to be just about the operation being
-undefined, madvise MADV_FREE on MAP_SHARED file mapping returns 0
-rather than flagging an error.
+Please CC me.
 
-FreeBSD man page:
+Thank You
+Rafał
 
-        MADV_FREE        Gives the VM system the freedom to free pages, and tells
-                         the system that information in the specified page range
-                         is no longer important.  This is an efficient way of
-                         allowing malloc(3) to free pages anywhere in the address
-                         space, while keeping the address space valid.  The next
-                         time that the page is referenced, the page might be
-                         demand zeroed, or might contain the data that was there
-                         before the MADV_FREE call.  References made to that
-                         address space range will not make the VM system page the
-                         information back in from backing store until the page is
-                         modified again.
 
-> Also, where did we end up with the Solaris compatibility?
-> 
-> The patch I have at present retains MADV_FREE=0x05 for sparc and sparc64
-> which should be good.
-> 
-> Did we decide that the Solaris and Linux implementations of MADV_FREE are
-> compatible?
 
-SPARC Solaris binary compatibility in Linux is in really bad shape, madvise
-in Solaris is implemented using memcntl syscall (at least according to truss(1))
-and that syscall is
-systbl.S:       .word solaris_unimplemented     /* memcntl              131     */
-When/if anyone decides to put more effort into the Solaris binary compatibility
-(I'm quite doubtful anyone will), codes which don't match can be simply translated into
-other codes, ignored etc., we can't use sys_madvise to implement memcntl
-syscall anyway.  While Solaris MADV_FREE is the same as Linux MADV_FREE proposed
-by Rik (except perhaps the documented undefined behavior with file mappings,
-on
-#include <sys/mman.h>
-#include <unistd.h>
-#include <fcntl.h>
+----------------------------------------------------------------------
+NIE KUPUJ!!!
+...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
 
-int
-main (void)
-{
-  getpid ();
-  int fd = open ("test", O_RDWR);
-  void *p = mmap (0, 8192, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  memset (p, ' ', 8192);
-  madvise (p, 8192, MADV_FREE);
-  return 0;
-}
-on Solaris the spaces actually made it into the file), MADV_DONTNEED is not,
-but that doesn't really matter except for arch/sparc*/solaris/ layer if anyone
-cares.  We certainly can't change current MADV_DONTNEED behavior, all we
-can do is implement a new MADV_* code with a different behavior and let glibc
-translate POSIX_MADV_* codes on posix_madvise to the Linux specific MADV_*.
 
-	Jakub
+
