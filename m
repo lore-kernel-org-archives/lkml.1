@@ -1,202 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423651AbXEAUgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423662AbXEAUgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423651AbXEAUgQ (ORCPT <rfc822;w@1wt.eu>);
+	id S1423662AbXEAUgQ (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 1 May 2007 16:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423650AbXEAUf4
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423651AbXEAUfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:35:56 -0400
-Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:33469 "EHLO
-	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423644AbXEAUfE (ORCPT
+	Tue, 1 May 2007 16:35:53 -0400
+Received: from asia.telenet-ops.be ([195.130.137.74]:37011 "EHLO
+	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423650AbXEAUfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:35:04 -0400
-Message-Id: <20070501203336.867086673@mail.of.borg>
+	Tue, 1 May 2007 16:35:05 -0400
+Message-Id: <20070501203335.709786991@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:33:00 +0200
+Date: Tue, 01 May 2007 22:32:56 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 26/33] CUDA ADB fixes
-Content-Disposition: inline; filename=mac68k-cuda-adb-fixes.diff
+Subject: [patch 22/33] m68k: Mac IRQ prep
+Content-Disposition: inline; filename=mac68k-irq-prep.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Finn Thain <fthain@telegraphics.com.au>
 
-Fix the flakiness in the CUDA ADB driver on m68k macs (keypresses getting
-wedged down or ADB just going AWOL altogether).
+Make sure that there are no slot IRQs asserted before leaving the nubus
+handler. If there are and we don't then the nubus gets wedged because this
+prevents a CA1 transition, which means no more nubus IRQs.
 
-The only IRQ used by this driver is the VIA shift register IRQ. The PowerMac
-conditional code disables the other VIA IRQ sources, so don't mess with the
-other IRQ flags in the common code -- m68k macs need them.
+Make the interrupt dispatch loops terminate sooner.
 
-When polling, don't disable local interrupts when we only need to disable the
-CUDA interrupt.
+Explicitly initialise the VIA latches to make the code more easily understood.
 
-Unless polling, don't clear the shift register IRQ flag. On m68k macs this
-creates a race that often breaks CUDA ADB.
-
-Tested on Quadra 840av and LC630 (both m68k); also Beige G3 (powerpc).
+Also some cleanups.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/macintosh/via-cuda.c |   58 +++++++++++++++++++++++--------------------
- 1 file changed, 32 insertions(+), 26 deletions(-)
+ arch/m68k/mac/baboon.c |   12 ++--
+ arch/m68k/mac/oss.c    |    8 ++
+ arch/m68k/mac/psc.c    |   19 +++---
+ arch/m68k/mac/via.c    |  139 ++++++++++++++++++++++++++++++-------------------
+ 4 files changed, 110 insertions(+), 68 deletions(-)
 
---- linux-m68k-2.6.21.orig/drivers/macintosh/via-cuda.c
-+++ linux-m68k-2.6.21/drivers/macintosh/via-cuda.c
-@@ -82,6 +82,7 @@ static unsigned char cuda_rbuf[16];
- static unsigned char *reply_ptr;
- static int reading_reply;
- static int data_index;
-+static int cuda_irq;
- #ifdef CONFIG_PPC
- static struct device_node *vias;
- #endif
-@@ -160,10 +161,8 @@ int __init find_via_cuda(void)
-     /* Clear and enable interrupts, but only on PPC. On 68K it's done  */
-     /* for us by the main VIA driver in arch/m68k/mac/via.c        */
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/baboon.c
++++ linux-m68k-2.6.21/arch/m68k/mac/baboon.c
+@@ -66,7 +66,7 @@ void __init baboon_register_interrupts(v
  
--#ifndef CONFIG_MAC
-     out_8(&via[IFR], 0x7f);	/* clear interrupts by writing 1s */
-     out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from SR */
--#endif
- 
-     /* enable autopoll */
-     cuda_request(&req, NULL, 3, CUDA_PACKET, CUDA_AUTOPOLL, 1);
-@@ -181,24 +180,22 @@ int __init find_via_cuda(void)
- 
- static int __init via_cuda_start(void)
+ irqreturn_t baboon_irq(int irq, void *dev_id)
  {
--    unsigned int irq;
--
-     if (via == NULL)
- 	return -ENODEV;
+-	int irq_bit,i;
++	int irq_bit, irq_num;
+ 	unsigned char events;
  
- #ifdef CONFIG_MAC
--    irq = IRQ_MAC_ADB;
-+    cuda_irq = IRQ_MAC_ADB;
- #else /* CONFIG_MAC */
--    irq = irq_of_parse_and_map(vias, 0);
--    if (irq == NO_IRQ) {
-+    cuda_irq = irq_of_parse_and_map(vias, 0);
-+    if (cuda_irq == NO_IRQ) {
- 	printk(KERN_ERR "via-cuda: can't map interrupts for %s\n",
- 	       vias->full_name);
- 	return -ENODEV;
-     }
--#endif /* CONFIG_MAP */
-+#endif /* CONFIG_MAC */
+ #ifdef DEBUG_IRQS
+@@ -78,14 +78,18 @@ irqreturn_t baboon_irq(int irq, void *de
+ 	if (!(events = baboon->mb_ifr & 0x07))
+ 		return IRQ_NONE;
  
--    if (request_irq(irq, cuda_interrupt, 0, "ADB", cuda_interrupt)) {
--	printk(KERN_ERR "via-cuda: can't request irq %d\n", irq);
-+    if (request_irq(cuda_irq, cuda_interrupt, 0, "ADB", cuda_interrupt)) {
-+	printk(KERN_ERR "via-cuda: can't request irq %d\n", cuda_irq);
- 	return -EAGAIN;
-     }
- 
-@@ -238,6 +235,7 @@ cuda_init(void)
- 	printk(KERN_ERR "cuda_init_via() failed\n");
- 	return -ENODEV;
-     }
-+    out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from SR */
- 
-     return via_cuda_start();
+-	for (i = 0, irq_bit = 1 ; i < 3 ; i++, irq_bit <<= 1) {
++	irq_num = IRQ_BABOON_0;
++	irq_bit = 1;
++	do {
+ 	        if (events & irq_bit/* & baboon_active*/) {
+ 			baboon_active &= ~irq_bit;
+ 			baboon->mb_ifr &= ~irq_bit;
+-			m68k_handle_int(IRQ_BABOON_0 + i);
++			m68k_handle_int(irq_num);
+ 			baboon_active |= irq_bit;
+ 		}
+-	}
++		irq_bit <<= 1;
++		irq_num++;
++	} while(events >= irq_bit);
+ #if 0
+ 	if (baboon->mb_ifr & 0x02) macide_ack_intr(NULL);
+ 	/* for now we need to smash all interrupts */
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/oss.c
++++ linux-m68k-2.6.21/arch/m68k/mac/oss.c
+@@ -143,14 +143,18 @@ irqreturn_t oss_nubus_irq(int irq, void 
  #endif
-@@ -263,15 +261,17 @@ cuda_init_via(void)
-     out_8(&via[B], in_8(&via[B]) | TACK | TIP);			/* negate them */
-     out_8(&via[ACR] ,(in_8(&via[ACR]) & ~SR_CTRL) | SR_EXT);	/* SR data in */
-     (void)in_8(&via[SR]);						/* clear any left-over data */
--#ifndef CONFIG_MAC
-+#ifdef CONFIG_PPC
-     out_8(&via[IER], 0x7f);					/* disable interrupts from VIA */
-     (void)in_8(&via[IER]);
-+#else
-+    out_8(&via[IER], SR_INT);					/* disable SR interrupt from VIA */
- #endif
+ 	/* There are only six slots on the OSS, not seven */
  
-     /* delay 4ms and then clear any pending interrupt */
-     mdelay(4);
-     (void)in_8(&via[SR]);
--    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
-+    out_8(&via[IFR], SR_INT);
- 
-     /* sync with the CUDA - assert TACK without TIP */
-     out_8(&via[B], in_8(&via[B]) & ~TACK);
-@@ -282,7 +282,7 @@ cuda_init_via(void)
-     /* wait for the interrupt and then clear it */
-     WAIT_FOR(in_8(&via[IFR]) & SR_INT, "CUDA response to sync (2)");
-     (void)in_8(&via[SR]);
--    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
-+    out_8(&via[IFR], SR_INT);
- 
-     /* finish the sync by negating TACK */
-     out_8(&via[B], in_8(&via[B]) | TACK);
-@@ -291,7 +291,7 @@ cuda_init_via(void)
-     WAIT_FOR(in_8(&via[B]) & TREQ, "CUDA response to sync (3)");
-     WAIT_FOR(in_8(&via[IFR]) & SR_INT, "CUDA response to sync (4)");
-     (void)in_8(&via[SR]);
--    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
-+    out_8(&via[IFR], SR_INT);
-     out_8(&via[B], in_8(&via[B]) | TIP);	/* should be unnecessary */
- 
-     return 0;
-@@ -428,16 +428,12 @@ cuda_start(void)
- void
- cuda_poll(void)
- {
--    unsigned long flags;
--
-     /* cuda_interrupt only takes a normal lock, we disable
-      * interrupts here to avoid re-entering and thus deadlocking.
--     * An option would be to disable only the IRQ source with
--     * disable_irq(), would that work on m68k ? --BenH
-      */
--    local_irq_save(flags);
-+    disable_irq(cuda_irq);
-     cuda_interrupt(0, NULL);
--    local_irq_restore(flags);
-+    enable_irq(cuda_irq);
+-	for (i = 0, irq_bit = 1 ; i < 6 ; i++, irq_bit <<= 1) {
++	i = 6;
++	irq_bit = 0x40;
++	do {
++		--i;
++		irq_bit >>= 1;
+ 		if (events & irq_bit) {
+ 			oss->irq_level[i] = OSS_IRQLEV_DISABLED;
+ 			oss->irq_pending &= ~irq_bit;
+ 			m68k_handle_int(NUBUS_SOURCE_BASE + i);
+ 			oss->irq_level[i] = OSS_IRQLEV_NUBUS;
+ 		}
+-	}
++	} while(events & (irq_bit - 1));
+ 	return IRQ_HANDLED;
  }
  
- static irqreturn_t
-@@ -448,15 +444,25 @@ cuda_interrupt(int irq, void *arg)
-     unsigned char ibuf[16];
-     int ibuf_len = 0;
-     int complete = 0;
--    unsigned char virq;
-     
-     spin_lock(&cuda_lock);
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/psc.c
++++ linux-m68k-2.6.21/arch/m68k/mac/psc.c
+@@ -131,11 +131,8 @@ irqreturn_t psc_irq(int irq, void *dev_i
+ {
+ 	int pIFR	= pIFRbase + ((int) dev_id);
+ 	int pIER	= pIERbase + ((int) dev_id);
+-	int base_irq;
+-	int irq_bit,i;
+-	unsigned char events;
+-
+-	base_irq = irq << 3;
++	int irq_num;
++	unsigned char irq_bit, events;
  
--    virq = in_8(&via[IFR]) & 0x7f;
--    out_8(&via[IFR], virq);   
--    if ((virq & SR_INT) == 0) {
--        spin_unlock(&cuda_lock);
--	return IRQ_NONE;
-+    /* On powermacs, this handler is registered for the VIA IRQ. But it uses
-+     * just the shift register IRQ -- other VIA interrupt sources are disabled.
-+     * On m68k macs, the VIA IRQ sources are dispatched individually. Unless
-+     * we are polling, the shift register IRQ flag has already been cleared.
-+     */
+ #ifdef DEBUG_IRQS
+ 	printk("psc_irq: irq %d pIFR = 0x%02X pIER = 0x%02X\n",
+@@ -146,14 +143,18 @@ irqreturn_t psc_irq(int irq, void *dev_i
+ 	if (!events)
+ 		return IRQ_NONE;
+ 
+-	for (i = 0, irq_bit = 1 ; i < 4 ; i++, irq_bit <<= 1) {
+-	        if (events & irq_bit) {
++	irq_num = irq << 3;
++	irq_bit = 1;
++	do {
++		if (events & irq_bit) {
+ 			psc_write_byte(pIER, irq_bit);
+ 			psc_write_byte(pIFR, irq_bit);
+-			m68k_handle_int(base_irq + i);
++			m68k_handle_int(irq_num);
+ 			psc_write_byte(pIER, irq_bit | 0x80);
+ 		}
+-	}
++		irq_num++;
++		irq_bit <<= 1;
++	} while (events >= irq_bit);
+ 	return IRQ_HANDLED;
+ }
+ 
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/via.c
++++ linux-m68k-2.6.21/arch/m68k/mac/via.c
+@@ -13,6 +13,10 @@
+  * for info.  A full-text web search on 6522 AND VIA will probably also
+  * net some usefulness. <cananian@alumni.princeton.edu> 20apr1999
+  *
++ * Additional data is here (the SY6522 was used in the Mac II etc):
++ *     http://www.6502.org/documents/datasheets/synertek/synertek_sy6522.pdf
++ *     http://www.6502.org/documents/datasheets/synertek/synertek_sy6522_programming_reference.pdf
++ *
+  * PRAM/RTC access algorithms are from the NetBSD RTC toolkit version 1.08b
+  * by Erik Vogan and adapted to Linux by Joshua M. Thompson (funaho@jurai.org)
+  *
+@@ -37,7 +41,7 @@ volatile __u8 *via1, *via2;
+ /* See note in mac_via.h about how this is possibly not useful */
+ volatile long *via_memory_bogon=(long *)&via_memory_bogon;
+ #endif
+-int  rbv_present,via_alt_mapping;
++int rbv_present, via_alt_mapping;
+ __u8 rbv_clear;
+ 
+ /*
+@@ -138,11 +142,11 @@ void __init via_init(void)
+ 
+ 	printk(KERN_INFO "VIA2 at %p is ", via2);
+ 	if (rbv_present) {
+-		printk(KERN_INFO "an RBV\n");
++		printk("an RBV\n");
+ 	} else if (oss_present) {
+-		printk(KERN_INFO "an OSS\n");
++		printk("an OSS\n");
+ 	} else {
+-		printk(KERN_INFO "a 6522 or clone\n");
++		printk("a 6522 or clone\n");
+ 	}
+ 
+ #ifdef DEBUG_VIA
+@@ -163,6 +167,7 @@ void __init via_init(void)
+ 	via1[vT2CL] = 0;
+ 	via1[vT2CH] = 0;
+ 	via1[vACR] &= 0x3F;
++	via1[vACR] &= ~0x03; /* disable port A & B latches */
+ 
+ 	/*
+ 	 * SE/30: disable video IRQ
+@@ -234,6 +239,22 @@ void __init via_init(void)
+ 		via2[vT2CL] = 0;
+ 		via2[vT2CH] = 0;
+ 		via2[vACR] &= 0x3F;
++		via2[vACR] &= ~0x03; /* disable port A & B latches */
++	}
 +
-+#ifdef CONFIG_MAC
-+    if (!arg)
-+#endif
-+    {
-+        if ((in_8(&via[IFR]) & SR_INT) == 0) {
-+            spin_unlock(&cuda_lock);
-+            return IRQ_NONE;
-+        } else {
-+            out_8(&via[IFR], SR_INT);
-+        }
-     }
-     
-     status = (~in_8(&via[B]) & (TIP|TREQ)) | (in_8(&via[ACR]) & SR_OUT);
++	/*
++	 * Set vPCR for SCSI interrupts (but not on RBV)
++	 */
++	if (!rbv_present) {
++		if (macintosh_config->scsi_type == MAC_SCSI_OLD) {
++			/* CB2 (IRQ) indep. input, positive edge */
++			/* CA2 (DRQ) indep. input, positive edge */
++			via2[vPCR] = 0x66;
++		} else {
++			/* CB2 (IRQ) indep. input, negative edge */
++			/* CA2 (DRQ) indep. input, negative edge */
++			via2[vPCR] = 0x22;
++		}
+ 	}
+ }
+ 
+@@ -367,19 +388,14 @@ void __init via_nubus_init(void)
+ 
+ 	/* unlock nubus transactions */
+ 
+-	if (!rbv_present) {
++	if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
++	    (macintosh_config->adb_type != MAC_ADB_PB2)) {
+ 		/* set the line to be an output on non-RBV machines */
+-		if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+-		   (macintosh_config->adb_type != MAC_ADB_PB2)) {
++		if (!rbv_present)
+ 			via2[vDirB] |= 0x02;
+-		}
+-	}
+-
+-	/* this seems to be an ADB bit on PMU machines */
+-	/* according to MkLinux.  -- jmt               */
+ 
+-	if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+-	    (macintosh_config->adb_type != MAC_ADB_PB2)) {
++		/* this seems to be an ADB bit on PMU machines */
++		/* according to MkLinux.  -- jmt               */
+ 		via2[gBufB] |= 0x02;
+ 	}
+ 
+@@ -420,20 +436,25 @@ void __init via_nubus_init(void)
+ 
+ irqreturn_t via1_irq(int irq, void *dev_id)
+ {
+-	int irq_bit, i;
+-	unsigned char events, mask;
++	int irq_num;
++	unsigned char irq_bit, events;
+ 
+-	mask = via1[vIER] & 0x7F;
+-	if (!(events = via1[vIFR] & mask))
++	events = via1[vIFR] & via1[vIER] & 0x7F;
++	if (!events)
+ 		return IRQ_NONE;
+ 
+-	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1)
++	irq_num = VIA1_SOURCE_BASE;
++	irq_bit = 1;
++	do {
+ 		if (events & irq_bit) {
+ 			via1[vIER] = irq_bit;
+ 			via1[vIFR] = irq_bit;
+-			m68k_handle_int(VIA1_SOURCE_BASE + i);
++			m68k_handle_int(irq_num);
+ 			via1[vIER] = irq_bit | 0x80;
+ 		}
++		++irq_num;
++		irq_bit <<= 1;
++	} while (events >= irq_bit);
+ 
+ #if 0 /* freakin' pmu is doing weird stuff */
+ 	if (!oss_present) {
+@@ -454,20 +475,25 @@ irqreturn_t via1_irq(int irq, void *dev_
+ 
+ irqreturn_t via2_irq(int irq, void *dev_id)
+ {
+-	int irq_bit, i;
+-	unsigned char events, mask;
++	int irq_num;
++	unsigned char irq_bit, events;
+ 
+-	mask = via2[gIER] & 0x7F;
+-	if (!(events = via2[gIFR] & mask))
++	events = via2[gIFR] & via2[gIER] & 0x7F;
++	if (!events)
+ 		return IRQ_NONE;
+ 
+-	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1)
++	irq_num = VIA2_SOURCE_BASE;
++	irq_bit = 1;
++	do {
+ 		if (events & irq_bit) {
+ 			via2[gIER] = irq_bit;
+ 			via2[gIFR] = irq_bit | rbv_clear;
+-			m68k_handle_int(VIA2_SOURCE_BASE + i);
++			m68k_handle_int(irq_num);
+ 			via2[gIER] = irq_bit | 0x80;
+ 		}
++		++irq_num;
++		irq_bit <<= 1;
++	} while (events >= irq_bit);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -478,19 +504,37 @@ irqreturn_t via2_irq(int irq, void *dev_
+ 
+ irqreturn_t via_nubus_irq(int irq, void *dev_id)
+ {
+-	int irq_bit, i;
+-	unsigned char events;
++	int slot_irq;
++	unsigned char slot_bit, events;
+ 
+-	if (!(events = ~via2[gBufA] & nubus_active))
++	events = ~via2[gBufA] & 0x7F;
++	if (rbv_present)
++		events &= via2[rSIER];
++	else
++		events &= nubus_active;
++	if (!events)
+ 		return IRQ_NONE;
+ 
+-	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1) {
+-		if (events & irq_bit) {
+-			via_irq_disable(NUBUS_SOURCE_BASE + i);
+-			m68k_handle_int(NUBUS_SOURCE_BASE + i);
+-			via_irq_enable(NUBUS_SOURCE_BASE + i);
+-		}
+-	}
++	do {
++		slot_irq = IRQ_NUBUS_F;
++		slot_bit = 0x40;
++		do {
++			if (events & slot_bit) {
++				events &= ~slot_bit;
++				m68k_handle_int(slot_irq);
++			}
++			--slot_irq;
++			slot_bit >>= 1;
++		} while (events);
++
++ 		/* clear the CA1 interrupt and make certain there's no more. */
++		via2[gIFR] = 0x02 | rbv_clear;
++		events = ~via2[gBufA] & 0x7F;
++		if (rbv_present)
++			events &= via2[rSIER];
++		else
++			events &= nubus_active;
++	} while (events);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -506,20 +550,6 @@ void via_irq_enable(int irq) {
+ 	if (irq_src == 1) {
+ 		via1[vIER] = irq_bit | 0x80;
+ 	} else if (irq_src == 2) {
+-		/*
+-		 * Set vPCR for SCSI interrupts (but not on RBV)
+-		 */
+-		if ((irq_idx == 0) && !rbv_present) {
+-			if (macintosh_config->scsi_type == MAC_SCSI_OLD) {
+-				/* CB2 (IRQ) indep. input, positive edge */
+-				/* CA2 (DRQ) indep. input, positive edge */
+-				via2[vPCR] = 0x66;
+-			} else {
+-				/* CB2 (IRQ) indep. input, negative edge */
+-				/* CA2 (DRQ) indep. input, negative edge */
+-				via2[vPCR] = 0x22;
+-			}
+-		}
+ 		via2[gIER] = irq_bit | 0x80;
+ 	} else if (irq_src == 7) {
+ 		nubus_active |= irq_bit;
+@@ -557,9 +587,9 @@ void via_irq_disable(int irq) {
+ #endif
+ 
+ 	if (irq_src == 1) {
+-		via1[vIER] = irq_bit;
++		via1[vIER] = irq_bit & 0x7F;
+ 	} else if (irq_src == 2) {
+-		via2[gIER] = irq_bit;
++		via2[gIER] = irq_bit & 0x7F;
+ 	} else if (irq_src == 7) {
+ 		if (rbv_present) {
+ 			/* disable the slot interrupt.  SIER works like IER. */
+@@ -586,7 +616,9 @@ void via_irq_clear(int irq) {
+ 	} else if (irq_src == 2) {
+ 		via2[gIFR] = irq_bit | rbv_clear;
+ 	} else if (irq_src == 7) {
+-		/* FIXME: hmm.. */
++		/* FIXME: There is no way to clear an individual nubus slot
++		 * IRQ flag, other than getting the device to do it.
++		 */
+ 	}
+ }
+ 
+@@ -606,6 +638,7 @@ int via_irq_pending(int irq)
+ 	} else if (irq_src == 2) {
+ 		return via2[gIFR] & irq_bit;
+ 	} else if (irq_src == 7) {
++		/* FIXME: this can't work while a slot irq is disabled! */
+ 		return ~via2[gBufA] & irq_bit;
+ 	}
+ 	return 0;
 
 --
 Gr{oetje,eeting}s,
