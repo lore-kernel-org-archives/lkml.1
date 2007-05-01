@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754211AbXEAQQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbXEAQRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754211AbXEAQQP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbXEAQQO
+	id S1754214AbXEAQRM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 12:17:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbXEAQRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:16:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54165 "EHLO mx1.redhat.com"
+	Tue, 1 May 2007 12:17:12 -0400
+Received: from thunk.org ([69.25.196.29]:49918 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754211AbXEAQQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:16:14 -0400
-Message-ID: <46376748.6020408@redhat.com>
-Date: Tue, 01 May 2007 12:14:00 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1754233AbXEAQRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 12:17:10 -0400
+Date: Tue, 1 May 2007 12:17:07 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Xu CanHao <xucanhao@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Why ask Sun for ZFS while we have ReiserFS4 !?
+Message-ID: <20070501161707.GD26093@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Xu CanHao <xucanhao@gmail.com>, linux-kernel@vger.kernel.org
+References: <6ec7a4340705010617h4314045cj7f0aee42eb22292b@mail.gmail.com>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Jeff Garzik <jeff@garzik.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] to something appropriate (was Re: 2.6.22 -mm merge	plans)
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <46368062.6000100@garzik.org> <20070430170919.45e4b42b.akpm@linux-foundation.org> <463688AD.1050903@garzik.org> <20070501004036.GS2819@sequoia.sous-sol.org> <46368DA5.7070003@garzik.org> <20070501045806.GA3697@kroah.com>
-In-Reply-To: <20070501045806.GA3697@kroah.com>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <6ec7a4340705010617h4314045cj7f0aee42eb22292b@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Apr 30, 2007 at 08:45:25PM -0400, Jeff Garzik wrote:
->> Chris Wright wrote:
->>> 2) you can add them
->>> runtime in userspace (and for pcmcia too after patch in question is
->>> applied), so we've historically avoided that kind of patch for -stable.
->>
->> Due to distro installer environments, and very poor support for making 
->> dynamic PCI IDs persistent once added, what you describe is more of a 
->> goal than reality.
-> 
-> But distros can easily add the device id to their kernel if needed, it
-> isn't something that the -stable tree shoud be accepting.  Otherwise, we
-> will be swamped with those types of patches...
-> 
+On Tue, May 01, 2007 at 09:17:14PM +0800, Xu CanHao wrote:
+> Reiser4 may lack some core function, but ZFS on Solaris is as
+> functional as ext3 on Linux(or even more). So compare Reiser4 with
+> ZFS may be inappropriate.
 
-Oh sure, leave the distros swamped with them instead. :)
+Functional, but it's a new filesystem with not as much time-tested
+experience in the field.  Many Solaris system administrators are
+electing to wait rather than immediately press it into service for
+critical servers, electing to use Solaris's UFS instead.  I've heard a
+few problems with ZFS recovering from data corruption, but not enough
+to know whether it is a general trend (not that I track that kind of
+stuff).  As a rule, enterprise system administrators that run PO
+servers for thousands of users as a time are extremely conservative,
+and for good reason.   
 
-And they all have to do it separately, meaning they don't stay in sync
-and they duplicate each other's work...
+Of course, there's a big difference between those folks and people
+using ZFS for their own personal development.
 
+						- Ted
