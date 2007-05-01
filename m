@@ -1,89 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXEAO64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753927AbXEAO6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbXEAO64 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXEAO64
+	id S1753927AbXEAO6z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXEAO6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:58:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60619 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753954AbXEAO6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:58:54 -0400
-Date: Tue, 1 May 2007 10:58:36 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Jeff Layton <jlayton@redhat.com>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, ffilz@us.ibm.com
-Subject: Re: [NFS] [PATCH] NFS: supress warnings about NFS4ERR_OLD_STATEID
-	in nfs4_handle_exception
-Message-ID: <20070501145835.GB24354@dantu.rdu.redhat.com>
-References: <20070426191336.GB31081@dantu.rdu.redhat.com> <1178030549.5444.11.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178030549.5444.11.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Tue, 1 May 2007 10:58:55 -0400
+Received: from vms048pub.verizon.net ([206.46.252.48]:46616 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbXEAO6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:58:53 -0400
+Date: Tue, 01 May 2007 10:58:36 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+In-reply-to: <20070501135951.GA17072@janus>
+To: Frank van Maarseveen <frankvm@frankvm.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <200705011058.36418.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20070501135951.GA17072@janus>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 07:42:29AM -0700, Trond Myklebust wrote:
-> On Thu, 2007-04-26 at 15:13 -0400, Jeff Layton wrote:
-> > I recently posted this patch to the nfs mailing list, but got no comment.
-> > Reposting with an actual "[PATCH]" subject...
-> > 
-> > In certain situations, a NFSv4 client can end up with a set of racing calls
-> > that cause the server to return a NFS4ERR_OLD_STATEID error. When this occurs,
-> > the only real recourse that the client has is to retry the call. In the
-> > current code, when this occurs, it triggers a useless printk (in
-> > nfs4_map_errors):
-> > 
-> >     nfs4_map_errors could not handle NFSv4 error 10024
-> > 
-> > Trond recently mentioned that we really don't need to worry users with that
-> > info. The following patch is based on a suggestion by Frank Filz and supresses
-> > this error. Changing the return code here to 0 should be safe since all callers
-> > of nfs4_handle_exception are expected to retry the call in this situation
-> > anyway.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > Signed-off-by: Frank Filz <ffilz@us.ibm.com>
-> > 
-> > diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-> > index f52cf5c..b456783 100644
-> > --- a/fs/nfs/nfs4proc.c
-> > +++ b/fs/nfs/nfs4proc.c
-> > @@ -2774,6 +2774,7 @@ int nfs4_handle_exception(const struct nfs_server *server, int errorcode, struct
-> >  				break;
-> >  		case -NFS4ERR_OLD_STATEID:
-> >  			exception->retry = 1;
-> > +			ret = 0;
-> >  	}
-> >  	/* We failed to handle the error */
-> >  	return nfs4_map_errors(ret);
-> 
-> Surely "return 0;" is more efficient.
-> 
-> ...and a minor nit about the comment: it doesn't trigger a printk(). It
-> rather triggers a dprintk(), (which should be turned off by default
-> unless you happen to be debugging the code).
-> 
-> The other nit is that I'm not sure the dprintk() is totally useless. It
-> is always nice to know _why_ the thing looped when you are debugging.
-> That said, we should perhaps rather put the dprintk() for that in
-> nfs4_handle_exception instead...
-> 
-> Trond
-> 
-> 
+On Tuesday 01 May 2007, Frank van Maarseveen wrote:
+>Tested on 2.6.20.6 and 2.6.21.1
+>
+>I decided to swich from the old IDE drivers to libata and now there
+>seems to be a little but annoying problem: cannot mount an ISO image
+>after burning it.
+>
+>May  1 14:32:55 kernel: attempt to access beyond end of device
+>May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+>May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0,
+> iso_blknum=16, block=16
+>
+>an "eject" command seems to fix the state of the PATA DVD writer
+>or driver. The problem occurs for burning a CD and for DVD too with
+>identical error messages.
+>
+I'm not sure if that's "proper" or not, but such has always been the case 
+here.  Even k3b has been ejecting and remounting the cd/dvd since forever 
+when it is asked to do a verify pass.
 
-Argh. My mistake, that's what I get for looking at old code and new code at
-the same time. Since this is a dprintk, I agree that we should probably
-just toss this patch. If you're debugging, then there's good reason to want to
-see this.
+>relevant kernel boot messages:
+>| ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001ffa0 irq
+>| 14 ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001ffa8
+>| irq 15 scsi0 : ata_piix
+>| ata1.00: ATA-7: ST3120814A, 3.AAJ, max UDMA/100
+>| ata1.00: 234441648 sectors, multi 8: LBA48
+>| ata1.00: configured for UDMA/100
+>| scsi1 : ata_piix
+>| ata2.00: ATAPI, max UDMA/33
+>| ata2.01: ATAPI, max UDMA/33
+>| ata2.00: configured for UDMA/33
+>| ata2.01: configured for UDMA/33
+>| scsi 0:0:0:0: Direct-Access     ATA      ST3120814A       3.AA PQ: 0 ANSI:
+>| 5 SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+>| sda: Write Protect is off
+>| SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+>| support DPO or FUA SCSI device sda: 234441648 512-byte hdwr sectors
+>| (120034 MB)
+>| sda: Write Protect is off
+>| SCSI device sda: write cache: enabled, read cache: enabled, doesn't
+>| support DPO or FUA sda: sda1 sda2 sda4
+>| sd 0:0:0:0: Attached scsi disk sda
+>| sd 0:0:0:0: Attached scsi generic sg0 type 0
+>| scsi 1:0:0:0: CD-ROM            HP       DVD Writer 640c  CS30 PQ: 0 ANSI:
+>| 5 sr0: scsi3-mmc drive: 40x/40x writer cd/rw xa/form2 cdda tray
+>| Uniform CD-ROM driver Revision: 3.20
+>| sr 1:0:0:0: Attached scsi generic sg1 type 5
+>| scsi 1:0:1:0: CD-ROM            SAMSUNG  CD-ROM SC-148C   B105 PQ: 0 ANSI:
+>| 5 sr1: scsi3-mmc drive: 1x/48x cd/rw xa/form2 cdda tray
+>| sr 1:0:1:0: Attached scsi generic sg2 type 5
+>
+>stripped config (well, as far of I'm sure it shouldn't matter):
+>| CONFIG_PM=y
+>| CONFIG_PM_LEGACY=y
+>|
+>| CONFIG_ACPI=y
+>| CONFIG_ACPI_PROCFS=y
+>| CONFIG_ACPI_FAN=y
+>| CONFIG_ACPI_PROCESSOR=y
+>| CONFIG_ACPI_THERMAL=y
+>| CONFIG_ACPI_BLACKLIST_YEAR=0
+>| CONFIG_ACPI_EC=y
+>| CONFIG_ACPI_POWER=y
+>| CONFIG_ACPI_SYSTEM=y
+>| CONFIG_X86_PM_TIMER=y
+>|
+>| CONFIG_PCI=y
+>| CONFIG_PCI_GOANY=y
+>| CONFIG_PCI_BIOS=y
+>| CONFIG_PCI_DIRECT=y
+>| CONFIG_PCI_MMCONFIG=y
+>| CONFIG_PCIEPORTBUS=y
+>| CONFIG_PCIEAER=y
+>| CONFIG_HT_IRQ=y
+>| CONFIG_ISA_DMA_API=y
+>|
+>| CONFIG_PNP=y
+>|
+>| CONFIG_PNPACPI=y
+>|
+>| CONFIG_CDROM_PKTCDVD=y
+>| CONFIG_CDROM_PKTCDVD_BUFFERS=8
+>|
+>| CONFIG_IDE=y
+>|
+>| CONFIG_RAID_ATTRS=y
+>| CONFIG_SCSI=y
+>| CONFIG_SCSI_PROC_FS=y
+>|
+>| CONFIG_BLK_DEV_SD=y
+>| CONFIG_BLK_DEV_SR=y
+>| CONFIG_CHR_DEV_SG=y
+>|
+>| CONFIG_SCSI_MULTI_LUN=y
+>| CONFIG_SCSI_CONSTANTS=y
+>| CONFIG_SCSI_LOGGING=y
+>|
+>| CONFIG_SCSI_SPI_ATTRS=y
+>|
+>| CONFIG_ATA=y
+>| CONFIG_SATA_AHCI=y
+>| CONFIG_ATA_PIIX=y
+>| CONFIG_SATA_INTEL_COMBINED=y
+>| CONFIG_SATA_ACPI=y
+>| CONFIG_PATA_SERVERWORKS=y
+>
+>lspci:
+>00:00.0 Host bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE DRAM
+> Controller/Host-Hub Interface (rev 01) 00:01.0 PCI bridge: Intel
+> Corporation 82845G/GL[Brookdale-G]/GE/PE Host-to-AGP Bridge (rev 01)
+> 00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM
+> (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01) 00:1d.1 USB
+> Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI
+> Controller #2 (rev 01) 00:1d.2 USB Controller: Intel Corporation
+> 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
+> 00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2
+> EHCI Controller (rev 01) 00:1e.0 PCI bridge: Intel Corporation 82801 PCI
+> Bridge (rev 81)
+>00:1f.0 ISA bridge: Intel Corporation 82801DB/DBL (ICH4/ICH4-L) LPC
+> Interface Bridge (rev 01) 00:1f.1 IDE interface: Intel Corporation 82801DB
+> (ICH4) IDE Controller (rev 01) 00:1f.3 SMBus: Intel Corporation
+> 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) SMBus Controller (rev 01) 00:1f.5
+> Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM
+> (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01) 01:00.0 VGA compatible
+> controller: nVidia Corporation NV18 [GeForce4 MX 440 AGP 8x] (rev a2)
+> 02:0c.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet
+> Controller (rev 05)
+>
+>lspci -v -v -v for IDE
+>00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev
+> 01) (prog-if 8a [Master SecP PriP]) Subsystem: Dell Unknown device 0142
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr-
+> Stepping- SERR- FastB2B- Status: Cap- 66MHz- UDF- FastB2B+ ParErr-
+> DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- Latency: 0
+>        Interrupt: pin A routed to IRQ 17
+>        Region 0: I/O ports at 01f0 [size=8]
+>        Region 1: I/O ports at 03f4 [size=1]
+>        Region 2: I/O ports at 0170 [size=8]
+>        Region 3: I/O ports at 0374 [size=1]
+>        Region 4: I/O ports at ffa0 [size=16]
+>        Region 5: Memory at 50100000 (32-bit, non-prefetchable) [size=1K]
 
-As for moving the dprintk, I'm not so sure that's a great idea either.
-nfs4_map_error is called from a couple of different places and I'd think
-leaving the dprintk the a more "general" location would be good.
 
--- Jeff
 
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Remembering is for those who have forgotten.
+		-- Chinese proverb
