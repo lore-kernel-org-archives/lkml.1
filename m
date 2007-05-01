@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423461AbXEANd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423495AbXEANfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423461AbXEANd7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423466AbXEANd6
+	id S1423495AbXEANfO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423505AbXEANfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:33:58 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:28427 "EHLO kernel.dk"
+	Tue, 1 May 2007 09:35:13 -0400
+Received: from rtr.ca ([64.26.128.89]:2129 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423459AbXEANdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:33:50 -0400
-Date: Tue, 1 May 2007 15:33:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Bob Tracy <rct@gherkin.frus.com>
-Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: BAD_SG_DMA panic in aha1542
-Message-ID: <20070501133312.GD4653@kernel.dk>
-References: <20070501021032.61120DBA1@gherkin.frus.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070501021032.61120DBA1@gherkin.frus.com>
+	id S1423495AbXEANeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:34:44 -0400
+Message-ID: <463741F1.7050706@rtr.ca>
+Date: Tue, 01 May 2007 09:34:41 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: tglx@linutronix.de
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both	of	CONFIG_NO_HZ,
+ CONFIG_HIGH_RES_TIMERS
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca> <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
+In-Reply-To: <4637419D.8010303@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30 2007, Bob Tracy wrote:
-> rct wrote:
-> > Apologies to all concerned for an unfortunate delay in resolving this.
-> > (...)
-> > I'll go retrieve a more conservatively-configured source tree (closer to
-> > what DSL-N uses) and start over...
+Mark Lord wrote:
+> Thomas Gleixner wrote:
+>> Mark,
+>>
+>> On Mon, 2007-04-30 at 20:02 -0400, Mark Lord wrote:
+>>> When it does boot with the modified .config file,
+>>> the log looks like the one attached to this email.
+>>
+>> Can you please send me the output of /proc/timer_list ?
 > 
-> Success with the Debian 2.6.18-4-486 build, which is known to work
-> almost as well on the test platform as the 2.6.12 kernel that DSL-N
-> comes with.  I used an older compiler than Debian used for their
-> production build, so I binary-patched the aha1542.ko and sr_mod.ko
-> files so insmod wouldn't complain about different vermagic strings.
-> 
-> That's as close as it gets without redoing everything from scratch.
-> I'll give Alan's and James' patches a go within the next 13 hours.
-> 
-> (Alan: what *else* would you name a variable associated with a bounce
-> buffer besides Zebedee?  Thanks for the occasion to smile...)
+> Timer List Version: v0.3
+> HRTIMER_MAX_CLOCK_BASES: 2
+> now at 3232363876949 nsecs
+...
 
-Try Alan's patch, it should fix it. As mentioned earlier in this thread,
-the real fix is to get rid of the cgc stuff and inject into the block
-layer from cdrom.c. But Alan's patch should work-around the issue for
-now.
+Oh, in case it matters any:
+that /proc/timer_list is from the system with CFS-V7 also patched in.
 
--- 
-Jens Axboe
-
+-ml
