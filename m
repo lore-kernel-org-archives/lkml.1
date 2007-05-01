@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbXEABk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXEABkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbXEABk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 21:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933372AbXEABk0
+	id S1754397AbXEABkg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 21:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXEABkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 21:40:26 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45137 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932280AbXEABkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 21:40:10 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46369A48.4020506@s5r6.in-berlin.de>
-Date: Tue, 01 May 2007 03:39:20 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Mon, 30 Apr 2007 21:40:35 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44517 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754397AbXEABke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 21:40:34 -0400
+Message-ID: <46369A8F.1050809@garzik.org>
+Date: Mon, 30 Apr 2007 21:40:31 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+References: <463698D5.20102@zytor.com>
+In-Reply-To: <463698D5.20102@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->  sbp2-include-fixes.patch
->  ieee1394-iso-needs-schedh.patch
+H. Peter Anvin wrote:
+> Hi all,
 > 
-> For Stephan
+> I'm rewriting the i386 setup code in C, instead of assembly, and before
+> I spend a very large amount of time translating all the various
+> card-specific probes, I want to ask the following question...
+> 
+> Does *anyone* care about these anymore?
+> 
+> All of these are specific to cards from a very long time ago.  I am
+> currently planning to retain the VESA-related code, and the standard
+> video modes, but I'd like to avoid the card-specific stuff, especially
+> since I have absolutely zero ability to test any of testing them (with
+> the possible sole exception of the cirrus5 code, which is emulated by qemu.)
 
-They were merged some hours ago.
--- 
-Stefan Richter
--=====-=-=== -=-= ----=
-http://arcgraph.de/sr/
+Do you mean the SVGA chip-specific code, or additionally you are ripping 
+out CGA and EGA support?
+
+Out of curiosity what C compiler will you use?
+
+	Jeff
+
+
