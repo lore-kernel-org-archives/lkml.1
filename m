@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030956AbXEAS0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031009AbXEAS0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030956AbXEAS0L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030972AbXEAS0L
+	id S1031009AbXEAS0i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030981AbXEAS0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:26:11 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:38462 "EHLO
+	Tue, 1 May 2007 14:26:15 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:38466 "EHLO
 	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030956AbXEAS0J (ORCPT
+	with ESMTP id S1030963AbXEAS0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:26:09 -0400
-Date: Tue, 1 May 2007 14:21:56 -0400
+	Tue, 1 May 2007 14:26:11 -0400
+Date: Tue, 1 May 2007 14:21:59 -0400
 From: Jeff Dike <jdike@addtoit.com>
-To: akpm@osdl.org, linux-arch@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/6] Remove tas()
-Message-ID: <20070501182156.GA8342@c2.user-mode-linux.org>
+To: akpm@osdl.org
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Blaisorblade <blaisorblade@yahoo.it>
+Subject: [PATCH 5/6] UML - Network and pcap cleanup
+Message-ID: <20070501182159.GA8363@c2.user-mode-linux.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,278 +25,217 @@ User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tas() has no users, so get rid of it.
+[ Paolo - could you eyeball the globally valid MAC piece of this and
+see if you think it's OK? ]
 
-The blackfin piece of this clashes with mainline, so this should maybe
-be merged with the blackfin port.
+Some network device cleanup.
+
+When setup_etheraddr found a globally valid MAC being assigned to an
+interface, it went ahead and used it rather than assigning a random
+MAC like the other cases do.  This isn't really an error like the
+others, but it seems consistent to make it behave the same.
+
+We were getting some duplicate kfree() in the error case in
+eth_configure because platform_device_unregister frees buffers that
+the error cases following tried to free again.
+
+The pcap initialization routine wasn't doing the proper printk of its
+information, causing a printk of the first part of that line to be
+unterminated by a newline.
+
+The pcap code had a bunch of style violations, which are now fixed.
+
+pcap_setup wasn't returning false when it detected an unrecognized
+option.
+
+The printks in pcap_user all got UM_KERN_BLAH prepended to their
+format strings.
+
+pcap_remove now checks for a non-NULL pcap structure before it calls
+pcap_close.
 
 Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
- include/asm-alpha/system.h     |    3 ---
- include/asm-arm/system.h       |    2 --
- include/asm-arm26/system.h     |    2 --
- include/asm-blackfin/system.h  |    1 -
- include/asm-h8300/system.h     |    1 -
- include/asm-i386/system.h      |    2 --
- include/asm-m32r/system.h      |    2 --
- include/asm-m68k/system.h      |    1 -
- include/asm-m68knommu/system.h |    1 -
- include/asm-mips/system.h      |    1 -
- include/asm-powerpc/system.h   |    2 --
- include/asm-ppc/system.h       |    1 -
- include/asm-sh/system.h        |   10 ----------
- include/asm-sh64/system.h      |    2 --
- include/asm-sparc/system.h     |    1 -
- include/asm-sparc64/system.h   |    1 -
- include/asm-v850/system.h      |    1 -
- include/asm-x86_64/system.h    |    2 --
- include/asm-xtensa/system.h    |    2 --
- 19 files changed, 38 deletions(-)
+ arch/um/drivers/net_kern.c  |   15 +++++++++------
+ arch/um/drivers/pcap_kern.c |   25 ++++++++++++++++---------
+ arch/um/drivers/pcap_user.c |   23 +++++++++++++----------
+ 3 files changed, 38 insertions(+), 25 deletions(-)
 
-Index: linux-2.6.21-mm/include/asm-alpha/system.h
+Index: linux-2.6.21-mm/arch/um/drivers/net_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/include/asm-alpha/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-alpha/system.h	2007-04-30 17:54:32.000000000 -0400
-@@ -548,9 +548,6 @@ __xchg_u64_local(volatile long *m, unsig
-      		sizeof(*(ptr))); \
-   })
+--- linux-2.6.21-mm.orig/arch/um/drivers/net_kern.c	2007-04-27 16:23:31.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/net_kern.c	2007-04-27 16:24:12.000000000 -0400
+@@ -316,12 +316,14 @@ static void setup_etheraddr(char *str, u
+ 	}
+ 	if (!is_local_ether_addr(addr)) {
+ 		printk(KERN_WARNING
+-		       "Warning: attempt to assign a globally valid ethernet address to a "
+-		       "device\n");
+-		printk(KERN_WARNING "You should better enable the 2nd rightmost bit "
+-		      "in the first byte of the MAC, i.e. "
+-		      "%02x:%02x:%02x:%02x:%02x:%02x\n",
+-		      addr[0] | 0x02, addr[1], addr[2], addr[3], addr[4], addr[5]);
++		       "Warning: attempt to assign a globally valid ethernet "
++		       "address to a device\n");
++		printk(KERN_WARNING "You should better enable the 2nd "
++		       "rightmost bit in the first byte of the MAC,\n");
++		printk(KERN_WARNING "i.e. %02x:%02x:%02x:%02x:%02x:%02x\n",
++		       addr[0] | 0x02, addr[1], addr[2], addr[3], addr[4],
++		       addr[5]);
++		goto random;
+ 	}
+ 	return;
  
--#define tas(ptr) (xchg((ptr),1))
--
--
- /* 
-  * Atomic compare and exchange.  Compare OLD with MEM, if identical,
-  * store NEW in MEM.  Return the initial value in MEM.  Success is
-Index: linux-2.6.21-mm/include/asm-arm/system.h
+@@ -478,6 +480,7 @@ out_undo_user_init:
+ 		(*transport->user->remove)(&lp->user);
+ out_unregister:
+ 	platform_device_unregister(&device->pdev);
++	return; /* platform_device_unregister frees dev and device */
+ out_free_netdev:
+ 	free_netdev(dev);
+ out_free_device:
+Index: linux-2.6.21-mm/arch/um/drivers/pcap_kern.c
 ===================================================================
---- linux-2.6.21-mm.orig/include/asm-arm/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-arm/system.h	2007-04-30 17:54:33.000000000 -0400
-@@ -103,8 +103,6 @@ void hook_fault_code(int nr, int (*fn)(u
- #define xchg(ptr,x) \
- 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr) (xchg((ptr),1))
--
- extern asmlinkage void __backtrace(void);
- extern asmlinkage void c_backtrace(unsigned long fp, int pmode);
- 
-Index: linux-2.6.21-mm/include/asm-arm26/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-arm26/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-arm26/system.h	2007-04-30 17:54:33.000000000 -0400
-@@ -52,8 +52,6 @@ void hook_fault_code(int nr, int (*fn)(u
- #define xchg(ptr,x) \
- 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr) (xchg((ptr),1))
--
- extern asmlinkage void __backtrace(void);
- 
- #define set_cr(x)					\
-Index: linux-2.6.21-mm/include/asm-blackfin/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-blackfin/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-blackfin/system.h	2007-04-30 17:54:33.000000000 -0400
-@@ -138,7 +138,6 @@ extern unsigned long irq_flags;
- #endif
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) ((void)xchg((ptr),1))
- 
- struct __xchg_dummy {
- 	unsigned long a[100];
-Index: linux-2.6.21-mm/include/asm-h8300/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-h8300/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-h8300/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -98,7 +98,6 @@ asmlinkage void resume(void);
- #endif
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- struct __xchg_dummy { unsigned long a[100]; };
- #define __xg(x) ((volatile struct __xchg_dummy *)(x))
-Index: linux-2.6.21-mm/include/asm-i386/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-i386/system.h	2007-04-30 12:38:17.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-i386/system.h	2007-04-30 18:04:43.000000000 -0400
-@@ -197,8 +197,6 @@ static inline unsigned long get_limit(un
- 
- #define xchg(ptr,v) ((__typeof__(*(ptr)))__xchg((unsigned long)(v),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr) (xchg((ptr),1))
--
- struct __xchg_dummy { unsigned long a[100]; };
- #define __xg(x) ((struct __xchg_dummy *)(x))
- 
-Index: linux-2.6.21-mm/include/asm-m32r/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-m32r/system.h	2007-04-26 17:31:51.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-m32r/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -122,8 +122,6 @@ static inline void local_irq_disable(voi
- #define xchg(ptr,x) \
- 	((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr)	(xchg((ptr),1))
--
- #ifdef CONFIG_SMP
- extern void  __xchg_called_with_bad_pointer(void);
- #endif
-Index: linux-2.6.21-mm/include/asm-m68k/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-m68k/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-m68k/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -88,7 +88,6 @@ static inline int irqs_disabled(void)
- 
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- struct __xchg_dummy { unsigned long a[100]; };
- #define __xg(x) ((volatile struct __xchg_dummy *)(x))
-Index: linux-2.6.21-mm/include/asm-m68knommu/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-m68knommu/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-m68knommu/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -120,7 +120,6 @@ asmlinkage void resume(void);
- #endif
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- struct __xchg_dummy { unsigned long a[100]; };
- #define __xg(x) ((volatile struct __xchg_dummy *)(x))
-Index: linux-2.6.21-mm/include/asm-mips/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-mips/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-mips/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -201,7 +201,6 @@ static inline unsigned long __xchg(unsig
+--- linux-2.6.21-mm.orig/arch/um/drivers/pcap_kern.c	2007-04-27 16:24:05.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/pcap_kern.c	2007-04-27 16:24:22.000000000 -0400
+@@ -29,21 +29,25 @@ void pcap_init(struct net_device *dev, v
+ 	ppri->promisc = init->promisc;
+ 	ppri->optimize = init->optimize;
+ 	ppri->filter = init->filter;
++
++	printk("pcap backend, host interface %s\n", ppri->host_if);
  }
  
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- #define __HAVE_ARCH_CMPXCHG 1
- 
-Index: linux-2.6.21-mm/include/asm-powerpc/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-powerpc/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-powerpc/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -334,8 +334,6 @@ __xchg_local(volatile void *ptr, unsigne
-      		(unsigned long)_x_, sizeof(*(ptr))); 			     \
-   })
- 
--#define tas(ptr) (xchg((ptr),1))
--
- /*
-  * Compare and exchange - if *p == old, set it to new,
-  * and return the old value of *p.
-Index: linux-2.6.21-mm/include/asm-ppc/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-ppc/system.h	2007-04-26 17:33:06.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-ppc/system.h	2007-04-30 17:54:34.000000000 -0400
-@@ -169,7 +169,6 @@ xchg_u32(volatile void *p, unsigned long
- extern void __xchg_called_with_bad_pointer(void);
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- static inline unsigned long __xchg(unsigned long x, volatile void *ptr, int size)
+-static int pcap_read(int fd, struct sk_buff **skb, 
++static int pcap_read(int fd, struct sk_buff **skb,
+ 		       struct uml_net_private *lp)
  {
-Index: linux-2.6.21-mm/include/asm-sh/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-sh/system.h	2007-04-26 17:31:51.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-sh/system.h	2007-04-30 17:54:35.000000000 -0400
-@@ -81,16 +81,6 @@ static inline void sched_cacheflush(void
- }
- #endif
- 
--static inline unsigned long tas(volatile int *m)
--{
--	unsigned long retval;
--
--	__asm__ __volatile__ ("tas.b	@%1\n\t"
--			      "movt	%0"
--			      : "=r" (retval): "r" (m): "t", "memory");
--	return retval;
--}
--
- /*
-  * A brief note on ctrl_barrier(), the control register write barrier.
-  *
-Index: linux-2.6.21-mm/include/asm-sh64/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-sh64/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-sh64/system.h	2007-04-30 17:54:35.000000000 -0400
-@@ -43,8 +43,6 @@ extern struct task_struct *sh64_switch_t
- 
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr) (xchg((ptr), 1))
--
- extern void __xchg_called_with_bad_pointer(void);
- 
- #define mb()	__asm__ __volatile__ ("synco": : :"memory")
-Index: linux-2.6.21-mm/include/asm-sparc/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-sparc/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-sparc/system.h	2007-04-30 17:54:35.000000000 -0400
-@@ -241,7 +241,6 @@ static inline unsigned long xchg_u32(__v
+ 	*skb = ether_adjust_skb(*skb, ETH_HEADER_OTHER);
+-	if(*skb == NULL) return(-ENOMEM);
+-	return(pcap_user_read(fd, skb_mac_header(*skb),
++	if(*skb == NULL)
++		return -ENOMEM;
++
++	return pcap_user_read(fd, skb_mac_header(*skb),
+ 			      (*skb)->dev->mtu + ETH_HEADER_OTHER,
+-			      (struct pcap_data *) &lp->user));
++			      (struct pcap_data *) &lp->user);
  }
  
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
- 
- extern void __xchg_called_with_bad_pointer(void);
- 
-Index: linux-2.6.21-mm/include/asm-sparc64/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-sparc64/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-sparc64/system.h	2007-04-30 17:54:36.000000000 -0400
-@@ -253,7 +253,6 @@ static inline unsigned long xchg64(__vol
+ static int pcap_write(int fd, struct sk_buff **skb, struct uml_net_private *lp)
+ {
+-	return(-EPERM);
++	return -EPERM;
  }
  
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
--#define tas(ptr) (xchg((ptr),1))
+ static const struct net_kern_info pcap_kern_info = {
+@@ -65,12 +69,12 @@ int pcap_setup(char *str, char **mac_out
+ 		  .optimize 	= 0,
+ 		  .filter 	= NULL });
  
- extern void __xchg_called_with_bad_pointer(void);
+-	remain = split_if_spec(str, &host_if, &init->filter, 
++	remain = split_if_spec(str, &host_if, &init->filter,
+ 			       &options[0], &options[1], NULL);
+ 	if(remain != NULL){
+ 		printk(KERN_ERR "pcap_setup - Extra garbage on "
+ 		       "specification : '%s'\n", remain);
+-		return(0);
++		return 0;
+ 	}
  
-Index: linux-2.6.21-mm/include/asm-v850/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-v850/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-v850/system.h	2007-04-30 17:54:36.000000000 -0400
-@@ -76,7 +76,6 @@ static inline int irqs_disabled (void)
+ 	if(host_if != NULL)
+@@ -87,10 +91,13 @@ int pcap_setup(char *str, char **mac_out
+ 			init->optimize = 1;
+ 		else if(!strcmp(options[i], "nooptimize"))
+ 			init->optimize = 0;
+-		else printk("pcap_setup : bad option - '%s'\n", options[i]);
++		else {
++			printk("pcap_setup : bad option - '%s'\n", options[i]);
++			return 0;
++		}
+ 	}
  
- #define xchg(ptr, with) \
-   ((__typeof__ (*(ptr)))__xchg ((unsigned long)(with), (ptr), sizeof (*(ptr))))
--#define tas(ptr) (xchg ((ptr), 1))
- 
- static inline unsigned long __xchg (unsigned long with,
- 				    __volatile__ void *ptr, int size)
-Index: linux-2.6.21-mm/include/asm-x86_64/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-x86_64/system.h	2007-04-30 12:38:17.000000000 -0400
-+++ linux-2.6.21-mm/include/asm-x86_64/system.h	2007-04-30 18:04:43.000000000 -0400
-@@ -126,8 +126,6 @@ static inline void sched_cacheflush(void
- 
- #define xchg(ptr,v) ((__typeof__(*(ptr)))__xchg((unsigned long)(v),(ptr),sizeof(*(ptr))))
- 
--#define tas(ptr) (xchg((ptr),1))
--
- #define __xg(x) ((volatile long *)(x))
- 
- static inline void set_64bit(volatile unsigned long *ptr, unsigned long val)
-Index: linux-2.6.21-mm/include/asm-xtensa/system.h
-===================================================================
---- linux-2.6.21-mm.orig/include/asm-xtensa/system.h	2007-02-04 13:44:54.000000000 -0500
-+++ linux-2.6.21-mm/include/asm-xtensa/system.h	2007-04-30 17:54:36.000000000 -0400
-@@ -183,8 +183,6 @@ static inline unsigned long xchg_u32(vol
-   return tmp;
+-	return(1);
++	return 1;
  }
  
--#define tas(ptr) (xchg((ptr),1))
--
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
+ static struct transport pcap_transport = {
+Index: linux-2.6.21-mm/arch/um/drivers/pcap_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/pcap_user.c	2007-04-27 16:24:05.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/pcap_user.c	2007-04-27 16:24:12.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include "pcap_user.h"
+ #include "user.h"
+ #include "um_malloc.h"
++#include "kern_constants.h"
  
- /*
+ #define MAX_PACKET (ETH_MAX_PACKET + ETH_HEADER_OTHER)
+ 
+@@ -26,8 +27,8 @@ static int pcap_user_init(void *data, vo
+ 
+ 	p = pcap_open_live(pri->host_if, MAX_PACKET, pri->promisc, 0, errors);
+ 	if(p == NULL){
+-		printk("pcap_user_init : pcap_open_live failed - '%s'\n", 
+-		       errors);
++		printk(UM_KERN_ERR "pcap_user_init : pcap_open_live failed - "
++		       "'%s'\n", errors);
+ 		return -EINVAL;
+ 	}
+ 
+@@ -48,13 +49,13 @@ static int pcap_open(void *data)
+ 	if(pri->filter != NULL){
+ 		err = dev_netmask(pri->dev, &netmask);
+ 		if(err < 0){
+-			printk("pcap_open : dev_netmask failed\n");
++			printk(UM_KERN_ERR "pcap_open : dev_netmask failed\n");
+ 			return -EIO;
+ 		}
+ 
+ 		pri->compiled = um_kmalloc(sizeof(struct bpf_program));
+ 		if(pri->compiled == NULL){
+-			printk("pcap_open : kmalloc failed\n");
++			printk(UM_KERN_ERR "pcap_open : kmalloc failed\n");
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -62,15 +63,15 @@ static int pcap_open(void *data)
+ 				   (struct bpf_program *) pri->compiled, 
+ 				   pri->filter, pri->optimize, netmask);
+ 		if(err < 0){
+-			printk("pcap_open : pcap_compile failed - '%s'\n", 
+-			       pcap_geterr(pri->pcap));
++			printk(UM_KERN_ERR "pcap_open : pcap_compile failed - "
++			       "'%s'\n", pcap_geterr(pri->pcap));
+ 			return -EIO;
+ 		}
+ 
+ 		err = pcap_setfilter(pri->pcap, pri->compiled);
+ 		if(err < 0){
+-			printk("pcap_open : pcap_setfilter failed - '%s'\n", 
+-			       pcap_geterr(pri->pcap));
++			printk(UM_KERN_ERR "pcap_open : pcap_setfilter "
++			       "failed - '%s'\n", pcap_geterr(pri->pcap));
+ 			return -EIO;
+ 		}
+ 	}
+@@ -85,7 +86,8 @@ static void pcap_remove(void *data)
+ 	if(pri->compiled != NULL)
+ 		pcap_freecode(pri->compiled);
+ 
+-	pcap_close(pri->pcap);
++	if(pri->pcap != NULL)
++		pcap_close(pri->pcap);
+ }
+ 
+ struct pcap_handler_data {
+@@ -114,7 +116,8 @@ int pcap_user_read(int fd, void *buffer,
+ 
+ 	n = pcap_dispatch(pri->pcap, 1, handler, (u_char *) &hdata);
+ 	if(n < 0){
+-		printk("pcap_dispatch failed - %s\n", pcap_geterr(pri->pcap));
++		printk(UM_KERN_ERR "pcap_dispatch failed - %s\n",
++		       pcap_geterr(pri->pcap));
+ 		return -EIO;
+ 	}
+ 	else if(n == 0) 
