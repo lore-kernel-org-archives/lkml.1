@@ -1,376 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945973AbXEAUny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945975AbXEAUot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945973AbXEAUny (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945971AbXEAUnI
+	id S1945975AbXEAUot (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945966AbXEAUok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:43:08 -0400
-Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:38131 "EHLO
-	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423596AbXEAUeq (ORCPT
+	Tue, 1 May 2007 16:44:40 -0400
+Received: from hu-out-0506.google.com ([72.14.214.238]:31965 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945992AbXEAUoC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:34:46 -0400
-Message-Id: <20070501203329.565844275@mail.of.borg>
-References: <20070501203234.252205858@mail.of.borg>
-User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:37 +0200
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 03/33] m68k: Atari SCSI driver compile fixes
-Content-Disposition: inline; filename=atari-scsi-compile-fixes.diff
+	Tue, 1 May 2007 16:44:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pmQJDV/tFDB9mvsC44LP6a40z/gtZyqfXUnqs5qil9QHmhhsdxIUCGjBf4HyLs+ruqZrVDMUWWs/jsL7nNYoEHL+vQKK82cpPMj28N906tQBBKSyOZmMVjR8MuHP0KUm9HjZ11ctHo06ZfY64Z2/yornqxGFV/qcYXGA6gJh/I0=
+Message-ID: <a781481a0705011344q7fccb586r8a31d2754e76d396@mail.gmail.com>
+Date: Wed, 2 May 2007 02:14:00 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "David Woodhouse" <dwmw2@infradead.org>
+Subject: Re: condingstyle, was Re: utrace comments
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roland McGrath" <roland@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <1178032014.2875.80.camel@pmac.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20061127165138.GA2991@lst.de>
+	 <20070430040213.BF9901801A4@magilla.sf.frob.com>
+	 <20070430091121.GC31397@infradead.org>
+	 <20070430100917.439ebfc8.akpm@linux-foundation.org>
+	 <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
+	 <Pine.LNX.4.64.0705011058330.27246@anakin>
+	 <1178028973.2875.78.camel@pmac.infradead.org>
+	 <20070501080544.459a6ec9.randy.dunlap@oracle.com>
+	 <1178032014.2875.80.camel@pmac.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roman Zippel <zippel@linux-m68k.org>
+On 5/1/07, David Woodhouse <dwmw2@infradead.org> wrote:
+> On Tue, 2007-05-01 at 08:05 -0700, Randy Dunlap wrote:
+> > I prefer this format also, but I'm not sure that we can get it
+> > into CodingStyle.  CodingStyle is about (either) concensus or
+> > dictum, but I don't see us close to concensus...
 
-Atari SCSI driver compile fixes
+Yes, some of these styles are too personal and subjective to even try
+and standardize. And then often even the same person doesn't follow a
+single convention across his own code. More likely you'd succeed
+standardizing *religion* than this ...
 
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/scsi/atari_NCR5380.c |   33 +++++----
- drivers/scsi/atari_scsi.c    |    6 -
- drivers/scsi/atari_scsi.h    |  144 ++++++++-----------------------------------
- 3 files changed, 49 insertions(+), 134 deletions(-)
+> CodingStyle is mostly about consensus. We don't have a consensus, which
+> is why this particular stuff isn't specified in CodingStyle. :)
 
---- linux-m68k-2.6.21.orig/drivers/scsi/atari_NCR5380.c
-+++ linux-m68k-2.6.21/drivers/scsi/atari_NCR5380.c
-@@ -272,8 +272,9 @@ static struct scsi_host_template *the_te
- 	(struct NCR5380_hostdata *)(in)->hostdata
- #define	HOSTDATA(in) ((struct NCR5380_hostdata *)(in)->hostdata)
- 
--#define	NEXT(cmd)	((cmd)->host_scribble)
--#define	NEXTADDR(cmd)	((Scsi_Cmnd **)&((cmd)->host_scribble))
-+#define	NEXT(cmd)		((Scsi_Cmnd *)(cmd)->host_scribble)
-+#define	SET_NEXT(cmd,next)	((cmd)->host_scribble = (void *)(next))
-+#define	NEXTADDR(cmd)		((Scsi_Cmnd **)&(cmd)->host_scribble)
- 
- #define	HOSTNO		instance->host_no
- #define	H_NO(cmd)	(cmd)->device->host->host_no
-@@ -479,7 +480,7 @@ static void merge_contiguous_buffers(Scs
- 	     virt_to_phys(page_address(cmd->SCp.buffer[1].page) +
- 			  cmd->SCp.buffer[1].offset) == endaddr;) {
- 		MER_PRINTK("VTOP(%p) == %08lx -> merging\n",
--			   cmd->SCp.buffer[1].address, endaddr);
-+			   page_address(cmd->SCp.buffer[1].page), endaddr);
- #if (NDEBUG & NDEBUG_MERGING)
- 		++cnt;
- #endif
-@@ -1002,7 +1003,7 @@ static int NCR5380_queue_command(Scsi_Cm
- 	 * in a queue
- 	 */
- 
--	NEXT(cmd) = NULL;
-+	SET_NEXT(cmd, NULL);
- 	cmd->scsi_done = done;
- 
- 	cmd->result = 0;
-@@ -1034,14 +1035,14 @@ static int NCR5380_queue_command(Scsi_Cm
- 	}
- 	if (!(hostdata->issue_queue) || (cmd->cmnd[0] == REQUEST_SENSE)) {
- 		LIST(cmd, hostdata->issue_queue);
--		NEXT(cmd) = hostdata->issue_queue;
-+		SET_NEXT(cmd, hostdata->issue_queue);
- 		hostdata->issue_queue = cmd;
- 	} else {
- 		for (tmp = (Scsi_Cmnd *)hostdata->issue_queue;
- 		     NEXT(tmp); tmp = NEXT(tmp))
- 			;
- 		LIST(cmd, tmp);
--		NEXT(tmp) = cmd;
-+		SET_NEXT(tmp, cmd);
- 	}
- 	local_irq_restore(flags);
- 
-@@ -1149,12 +1150,12 @@ static void NCR5380_main(void *bl)
- 					local_irq_disable();
- 					if (prev) {
- 						REMOVE(prev, NEXT(prev), tmp, NEXT(tmp));
--						NEXT(prev) = NEXT(tmp);
-+						SET_NEXT(prev, NEXT(tmp));
- 					} else {
- 						REMOVE(-1, hostdata->issue_queue, tmp, NEXT(tmp));
- 						hostdata->issue_queue = NEXT(tmp);
- 					}
--					NEXT(tmp) = NULL;
-+					SET_NEXT(tmp, NULL);
- 					falcon_dont_release++;
- 
- 					/* reenable interrupts after finding one */
-@@ -1192,7 +1193,7 @@ static void NCR5380_main(void *bl)
- 					} else {
- 						local_irq_disable();
- 						LIST(tmp, hostdata->issue_queue);
--						NEXT(tmp) = hostdata->issue_queue;
-+						SET_NEXT(tmp, hostdata->issue_queue);
- 						hostdata->issue_queue = tmp;
- #ifdef SUPPORT_TAGS
- 						cmd_free_tag(tmp);
-@@ -2295,7 +2296,7 @@ static void NCR5380_information_transfer
- 
- 						local_irq_save(flags);
- 						LIST(cmd,hostdata->issue_queue);
--						NEXT(cmd) = hostdata->issue_queue;
-+						SET_NEXT(cmd, hostdata->issue_queue);
- 						hostdata->issue_queue = (Scsi_Cmnd *) cmd;
- 						local_irq_restore(flags);
- 						QU_PRINTK("scsi%d: REQUEST SENSE added to head of "
-@@ -2357,7 +2358,7 @@ static void NCR5380_information_transfer
- 					local_irq_save(flags);
- 					cmd->device->disconnect = 1;
- 					LIST(cmd,hostdata->disconnected_queue);
--					NEXT(cmd) = hostdata->disconnected_queue;
-+					SET_NEXT(cmd, hostdata->disconnected_queue);
- 					hostdata->connected = NULL;
- 					hostdata->disconnected_queue = cmd;
- 					local_irq_restore(flags);
-@@ -2632,12 +2633,12 @@ static void NCR5380_reselect(struct Scsi
- 			falcon_dont_release++;
- 			if (prev) {
- 				REMOVE(prev, NEXT(prev), tmp, NEXT(tmp));
--				NEXT(prev) = NEXT(tmp);
-+				SET_NEXT(prev, NEXT(tmp));
- 			} else {
- 				REMOVE(-1, hostdata->disconnected_queue, tmp, NEXT(tmp));
- 				hostdata->disconnected_queue = NEXT(tmp);
- 			}
--			NEXT(tmp) = NULL;
-+			SET_NEXT(tmp, NULL);
- 			break;
- 		}
- 	}
-@@ -2769,7 +2770,7 @@ int NCR5380_abort(Scsi_Cmnd *cmd)
- 		if (cmd == tmp) {
- 			REMOVE(5, *prev, tmp, NEXT(tmp));
- 			(*prev) = NEXT(tmp);
--			NEXT(tmp) = NULL;
-+			SET_NEXT(tmp, NULL);
- 			tmp->result = DID_ABORT << 16;
- 			local_irq_restore(flags);
- 			ABRT_PRINTK("scsi%d: abort removed command from issue queue.\n",
-@@ -2844,7 +2845,7 @@ int NCR5380_abort(Scsi_Cmnd *cmd)
- 				if (cmd == tmp) {
- 					REMOVE(5, *prev, tmp, NEXT(tmp));
- 					*prev = NEXT(tmp);
--					NEXT(tmp) = NULL;
-+					SET_NEXT(tmp, NULL);
- 					tmp->result = DID_ABORT << 16;
- 					/* We must unlock the tag/LUN immediately here, since the
- 					 * target goes to BUS FREE and doesn't send us another
-@@ -2965,7 +2966,7 @@ static int NCR5380_bus_reset(Scsi_Cmnd *
- 
- 	for (i = 0; (cmd = disconnected_queue); ++i) {
- 		disconnected_queue = NEXT(cmd);
--		NEXT(cmd) = NULL;
-+		SET_NEXT(cmd, NULL);
- 		cmd->result = (cmd->result & 0xffff) | (DID_RESET << 16);
- 		cmd->scsi_done(cmd);
- 	}
---- linux-m68k-2.6.21.orig/drivers/scsi/atari_scsi.c
-+++ linux-m68k-2.6.21/drivers/scsi/atari_scsi.c
-@@ -69,9 +69,9 @@
- 
- #define NDEBUG (0)
- 
--#define NDEBUG_ABORT	0x800000
--#define NDEBUG_TAGS	0x1000000
--#define NDEBUG_MERGING	0x2000000
-+#define NDEBUG_ABORT		0x00100000
-+#define NDEBUG_TAGS		0x00200000
-+#define NDEBUG_MERGING		0x00400000
- 
- #define AUTOSENSE
- /* For the Atari version, use only polled IO or REAL_DMA */
---- linux-m68k-2.6.21.orig/drivers/scsi/atari_scsi.h
-+++ linux-m68k-2.6.21/drivers/scsi/atari_scsi.h
-@@ -113,144 +113,58 @@ int atari_scsi_release (struct Scsi_Host
-  *
-  */
- 
--#if NDEBUG & NDEBUG_ARBITRATION
-+#define dprint(flg, format...)			\
-+({						\
-+	if (NDEBUG & (flg))			\
-+		printk(KERN_DEBUG format);	\
-+})
-+
- #define ARB_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define ARB_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_AUTOSENSE
-+	dprint(NDEBUG_ARBITRATION, format , ## args)
- #define ASEN_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define ASEN_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_DMA
-+	dprint(NDEBUG_AUTOSENSE, format , ## args)
- #define DMA_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define DMA_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_HANDSHAKE
-+	dprint(NDEBUG_DMA, format , ## args)
- #define HSH_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define HSH_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_INFORMATION
-+	dprint(NDEBUG_HANDSHAKE, format , ## args)
- #define INF_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define INF_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_INIT
-+	dprint(NDEBUG_INFORMATION, format , ## args)
- #define INI_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define INI_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_INTR
-+	dprint(NDEBUG_INIT, format , ## args)
- #define INT_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define INT_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_LINKED
-+	dprint(NDEBUG_INTR, format , ## args)
- #define LNK_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define LNK_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_MAIN
-+	dprint(NDEBUG_LINKED, format , ## args)
- #define MAIN_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define MAIN_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_NO_DATAOUT
-+	dprint(NDEBUG_MAIN, format , ## args)
- #define NDAT_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define NDAT_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_NO_WRITE
-+	dprint(NDEBUG_NO_DATAOUT, format , ## args)
- #define NWR_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define NWR_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_PIO
-+	dprint(NDEBUG_NO_WRITE, format , ## args)
- #define PIO_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define PIO_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_PSEUDO_DMA
-+	dprint(NDEBUG_PIO, format , ## args)
- #define PDMA_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define PDMA_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_QUEUES
-+	dprint(NDEBUG_PSEUDO_DMA, format , ## args)
- #define QU_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define QU_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_RESELECTION
-+	dprint(NDEBUG_QUEUES, format , ## args)
- #define RSL_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define RSL_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_SELECTION
-+	dprint(NDEBUG_RESELECTION, format , ## args)
- #define SEL_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define SEL_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_USLEEP
-+	dprint(NDEBUG_SELECTION, format , ## args)
- #define USL_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define USL_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_LAST_BYTE_SENT
-+	dprint(NDEBUG_USLEEP, format , ## args)
- #define LBS_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define LBS_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_RESTART_SELECT
-+	dprint(NDEBUG_LAST_BYTE_SENT, format , ## args)
- #define RSS_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define RSS_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_EXTENDED
-+	dprint(NDEBUG_RESTART_SELECT, format , ## args)
- #define EXT_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define EXT_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_ABORT
-+	dprint(NDEBUG_EXTENDED, format , ## args)
- #define ABRT_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define ABRT_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_TAGS
-+	dprint(NDEBUG_ABORT, format , ## args)
- #define TAG_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define TAG_PRINTK(format, args...)
--#endif
--#if NDEBUG & NDEBUG_MERGING
-+	dprint(NDEBUG_TAGS, format , ## args)
- #define MER_PRINTK(format, args...) \
--	printk(KERN_DEBUG format , ## args)
--#else
--#define MER_PRINTK(format, args...)
--#endif
-+	dprint(NDEBUG_MERGING, format , ## args)
- 
- /* conditional macros for NCR5380_print_{,phase,status} */
- 
-
---
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Actually, I'm not sure if we really gain much by finding consensus for
+this particular stuff. Most compound conditions only contain upto 3-4
+operators/expressions, so most of the styles discussed here would be
+almost equally readable. And any code that goes beyond 3-4
+operators/expressions is probably ugly in many other ways and needs to
+fix its logic.
