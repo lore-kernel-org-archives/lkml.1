@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423668AbXEAVXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423661AbXEAVXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423668AbXEAVXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423661AbXEAVXG
+	id S1423661AbXEAVXh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423667AbXEAVXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:23:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49616 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423668AbXEAVXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:23:04 -0400
-Date: Tue, 1 May 2007 23:22:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>, Balbir Singh <balbir@in.ibm.com>
-Subject: [patch] CFS scheduler, -v8
-Message-ID: <20070501212223.GA29867@elte.hu>
+	Tue, 1 May 2007 17:23:37 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35069 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423661AbXEAVXg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 17:23:36 -0400
+Date: Tue, 1 May 2007 14:23:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Cabot, Mason B" <mason.b.cabot@intel.com>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Ext3 vs NTFS performance
+Message-Id: <20070501142325.09c294bd.akpm@linux-foundation.org>
+In-Reply-To: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 1 May 2007 13:43:18 -0700
+"Cabot, Mason B" <mason.b.cabot@intel.com> wrote:
 
-i'm pleased to announce release -v8 of the CFS scheduler patchset. (The 
-main goal of CFS is to implement "desktop scheduling" with as high 
-quality as technically possible.)
+> Hello all,
+> 
+> I've been testing the NAS performance of ext3/Openfiler 2.2 against
+> NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+> video workloads. The Windows CIFS client will attempt a poor-man's
+> pre-allocation of the file on the server by sending 1-byte writes at
+> 128K-byte strides, breaking block allocation on ext3 and leading to
+> fragmentation and poor performance. This will happen for many
+> applications (including iTunes) as the CIFS client issues these
+> pre-allocates under the application layer.
 
-The CFS patch against v2.6.21.1 (or against v2.6.20.10) can be 
-downloaded from the usual place:
+Oh my gawd, what a stupid hack.  Now we know what the MS interoperability
+lab has been working on.
 
-    http://people.redhat.com/mingo/cfs-scheduler/
+> I've posted a brief paper on Intel's OSS website
+> (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
+> it a read and let me know what you think. In particular, I'd like to
+> arrive at the right place to fix this problem: is it in the filesystem,
+> VFS, or Samba?
 
--v7 resolved a couple of important regresisons while not introducing new 
-regressions, so i felt it was time to step forward: -v8 tries to address 
-one of the last (known) frontiers: 3D/OpenGL games^H^H^H applications 
-'smoothness'.
+Conceivably we could address this in the filesystem without mucking other
+things up.  But I'd have thought the simplest damage-control would be to
+detect this pattern in samba and to then use glibc's fallocate().
 
-To achieve more scheduling smoothness, -v8 introduces a new 'precise 
-load calculation and smoothing' feature. (A variant of this was 
-suggested by Peter Williams in earlier CFS discussions - thanks Peter!)
+At present glibc will emulate fallocate() by writing zeroes.  There are
+patches floating about to implement fallocate in-kernel and if/when that
+turns up and is supported in glibc, the modified samba will automatically
+start to use it.
 
-i was able to reuse the rq->cpu_load[] load average calculation from 
-Peter Williams's smpnice code, and it's thus now utilized on UP too. As 
-a nice side-effect of CFS using a smoothed load metric, apps should also 
-start up faster under load. CFS now utilizes the full range of smpnice 
-metrics.
-
-No other fundamental portion of CFS was touched, so the rate of change 
-is moderate:
-
-   7 files changed, 140 insertions(+), 79 deletions(-)
-
-Changes since -v7:
-
- - powerpc debug output and build warning fixes (Balbir Singh)
-
- - documentation fixes (Zach Carter)
-
- - interactivity: precise load calculation and load smoothing
-
-As usual, any sort of feedback, bugreport, fix and suggestion is more 
-than welcome,
-
-	Ingo
+Are you sure there isn't some registry setting to prevent the CIFS client
+from doing the client-side preallocation?
