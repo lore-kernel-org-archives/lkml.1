@@ -1,87 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030805AbXEANAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031220AbXEANCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030805AbXEANAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031209AbXEANAo
+	id S1031220AbXEANCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031689AbXEANCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:00:44 -0400
-Received: from holomorphy.com ([66.93.40.71]:52951 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030805AbXEANAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:00:42 -0400
-Date: Tue, 1 May 2007 06:00:03 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Kasper Sandberg <lkml@metanurb.dk>,
-       Willy Tarreau <w@1wt.eu>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070501130003.GS31925@holomorphy.com>
-References: <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <1177842654.5791.85.camel@localhost.localdomain> <20070429111159.GH23638@1wt.eu> <1177848054.9756.30.camel@localhost> <1177848810.5791.104.camel@localhost.localdomain> <20070429125522.GB31925@holomorphy.com> <1177853867.5791.120.camel@localhost.localdomain> <20070501075515.GD10590@wotan.suse.de>
+	Tue, 1 May 2007 09:02:51 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2295 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031220AbXEANCt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:02:49 -0400
+Message-ID: <46373A71.4030200@shadowen.org>
+Date: Tue, 01 May 2007 14:02:41 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070501075515.GD10590@wotan.suse.de>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Mel Gorman <mel@skynet.ie>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, clameter@sgi.com, y-goto@jp.fujitsu.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.22 -mm merge plans -- lumpy reclaim
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501101651.GA29957@skynet.ie>
+In-Reply-To: <20070501101651.GA29957@skynet.ie>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 09:55:15AM +0200, Nick Piggin wrote:
-> People seem to be confusing scheduler policy with a modular framework.
-> First of all, I don't know that any of the schedulers can "just go in"
-> and replace the mainline one, because they are still under development
-> and have not been sufficiently tested and contrasted IMO.
+Mel Gorman wrote:
 
-I've already made noise about separate modular framework patches, so
-recast whatever confusion seems apparent to you in those terms.
+<snip>
 
+>>  lumpy-reclaim-v4.patch
+> 
+> And I guess this patch also moves here
+> 
+> lumpy-move-to-using-pfn_valid_within.patch
+> 
+>> This is in a similar situation to the moveable-zone work.  Sounds great on
+>> paper, but it needs considerable third-party testing and review.  It is a
+>> major change to core MM and, we hope, a significant advance.  On paper.
+> 
+> Andy will probably comment more here. Like the fragmentation stuff, we have
+> beaten this heavily in tests.
 
-On Tue, May 01, 2007 at 09:55:15AM +0200, Nick Piggin wrote:
-> Secondly, if we want to have a modular framework, it should:
-> - be a seperate patchset to any new scheduler policy
-> - obviously retain the existing policy for testing / comparison purposes
-> - be able to be compiled out. I don't know whether it's CFS policy or
->   the framework (maybe both), but CFS is quite a bit slower at context
->   switching when I last measured with lmbench (several releases ago).
+With this stack the basic functionality for Lumpy reclaim is complete.
+Better integration with kswapd is desirable, but IMO that should be a
+separate change.
 
-Compiling such things out is interesting at best, as they typically
-require significant code restructuring. You can make the indirect calls
-conditional by calling some particular driver directly inside wrapper
-macros for the indirect calls via case analysis on ->policy, I suppose.
+In testing it has produced significant improvements the likelyhood of
+reclaiming a page (reclaim effectiveness) at very high orders (where the
+likelyhood of success is least), and effectiveness at lower orders
+should be better again.  In general -mm testing lumpy is triggered for
+any stalled allocation above order-0; it is common to see stack
+allocations triggering lumpy under higher load.  kswapd also now
+utilises lumpy when required.
 
-There are issues with using cfs' notion of a modular framework to
-verify performance non-regression, in particular the fact it's
-incapable of representing mainline. There is also the problem of doing
-very little in the way of hiding data, so that in the event of using it
-to compare different implementations of the same policy, e.g. competing
-SCHED_OTHER implementations, each is stuck maintaining the others'
-state variables, save for the case where one or both happens to have
-all its state variable updates fit entirely inside the driver operations,
-in which case they still take the hit for bloating the task_struct, and
-worse yet, some asymmetry in terms of which is exempt from maintaining
-the others' state variables occurs which furthermore penalizes the
-competitor maintaining the least state or doing the least state updates.
-Such a state of affairs must not be allowed to stand.
+As Mel has indicated a lot of automated testing has been done on these
+patches.  As reclaim is only entered when low on memory, our testing
+focuses on triggering pushing the system to a heavily fragmented state
+where reclaim is used heavily.  This testing has not shown any
+regressions and shows improved effectiveness particularly under load.
 
+Effectiveness for regular reclaim is based on random distributions, as
+such it is only likely to successfully reclaim pages at lower orders.
+Lumpy reclaim improves on this by actively targeting reclaim on areas at
+the orders required and so succeeds at significantly higher order.  Very
+high order allocations require better layout, from the mobility patches.
 
-On Tue, May 01, 2007 at 09:55:15AM +0200, Nick Piggin wrote:
-> I still would rather not have a modular framework unless we decide
-> that is the only wake to make upstream progress. But if we did have
-> the modular framework, we still need to decide on the process of
-> avoiding profileration, selecting a default scheduler, and a plan for
-> future phasing out of non-default GP schedulers once a new one gets
-> selected.
+I have some primitive stats patches which we have used performance
+testing.  Perhaps those could be brought up to date to provide better
+visibility into lumpy's operation.  Again this would be a separate patch.
 
-It certainly cuts down on the eye bleed but I suppose that takes a
-back seat to performance considerations.
+> I'm not sure of it's review situation.
 
+As lumpy reclaim and grouping-by-mobility are complementary patch sets
+(in that they both assist at the highest order) we work pretty closely
+and I generally pass all my patches past Mel before general release.
+Early versions were based on patches from Peter Zijlstra who also
+reviewed earlier versions if memory serves.  The changes since then have
+been reviewed by Mel and Andrew Morton only to my knowledge.
 
--- wli
+Perhaps Peter would have some time to take a look over the latest stack
+as it appears in -mm when that releases; ping me for a patch kit if you
+want it before then :).
+
+<snip>
+
+-apw
