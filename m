@@ -1,95 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423718AbXEAE0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423673AbXEAEaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423718AbXEAE0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423647AbXEAE0c
+	id S1423673AbXEAEaK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030524AbXEAEaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:26:32 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:47900 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423673AbXEAE0b (ORCPT
+	Tue, 1 May 2007 00:30:10 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33324 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030515AbXEAEaG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 00:26:31 -0400
-Message-ID: <4636C16F.204@cosmosbay.com>
-Date: Tue, 01 May 2007 06:26:23 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: ebiederm@xmission.com, patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [30/30] x86_64: Add missing !X86_PAE dependincy to the
- 2G/2G split.
-References: <20070501557.815359000@suse.de> <20070501035829.1C93D13CAF@wotan.suse.de>
-In-Reply-To: <20070501035829.1C93D13CAF@wotan.suse.de>
-Content-Type: multipart/mixed;
- boundary="------------040005090102030506060801"
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 01 May 2007 06:26:29 +0200 (CEST)
+	Tue, 1 May 2007 00:30:06 -0400
+From: Balbir Singh <balbir@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Balbir Singh <balbir@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>
+Date: Tue, 01 May 2007 10:00:00 +0530
+Message-Id: <20070501043000.14787.54833.sendpatchset@balbir-laptop>
+Subject: [PATCH CFS V7] Fix warnings in sched and sched_debug
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040005090102030506060801
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+The first patch I sent out did not have a sign-off; I had trouble with my patch 
+tools.
 
-Andi Kleen a écrit :
-> From: ebiederm@xmission.com
-> 
-> When in PAE mode we require that the user kernel divide to be
-> on a 1G boundary.  The 2G/2G split does not have that property
-> so require !X86_PAE
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  arch/i386/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-> index 1a94a73..80003de 100644
-> --- a/arch/i386/Kconfig
-> +++ b/arch/i386/Kconfig
-> @@ -570,6 +570,7 @@ choice
->  		depends on !HIGHMEM
->  		bool "3G/1G user/kernel split (for full 1G low memory)"
->  	config VMSPLIT_2G
-> +		depends on !X86_PAE
->  		bool "2G/2G user/kernel split"
->  	config VMSPLIT_1G
->  		bool "1G/3G user/kernel split"
+This patch fixes all warnings seen on powerpc during compilation of the
+CFS patch. It also fixes errors (side-effect of the warnings), where
+some of the data is printed as negative values.
 
-Hum... We lose a usefull 2G/2G split. Should'nt we use a patch to change 
-PAGE_OFFSET to 0x8000000 instead of 0x78000000 and keep 2G/2G split ?
+Applies on top of cfs v7
 
-Maybe the following patch is better ?
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-[PATCH] i386 : Adjust CONFIG_PAGE_OFFSET in case of 2G/2G split and X86_PAE
+ kernel/sched.c       |   34 +++++++++++++++++-----------------
+ kernel/sched_debug.c |   16 ++++++++--------
+ 2 files changed, 25 insertions(+), 25 deletions(-)
 
-When in PAE mode we require that the user kernel divide to be
-on a 1G boundary.  We must therefore make sure PAGE_OFFSET is correctlty 
-defined in the 2G/2G split and PAE mode.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-
---------------040005090102030506060801
-Content-Type: text/plain;
- name="i386_CONFIG_PAGE_OFFSET.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="i386_CONFIG_PAGE_OFFSET.patch"
-
-diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-index 53d6237..32356f2 100644
---- a/arch/i386/Kconfig
-+++ b/arch/i386/Kconfig
-@@ -578,7 +578,8 @@ endchoice
- config PAGE_OFFSET
- 	hex
- 	default 0xB0000000 if VMSPLIT_3G_OPT
--	default 0x78000000 if VMSPLIT_2G
-+	default 0x78000000 if (VMSPLIT_2G && !X86_PAE)
-+	default 0x80000000 if (VMSPLIT_2G && X86_PAE)
- 	default 0x40000000 if VMSPLIT_1G
- 	default 0xC0000000
+diff -puN kernel/sched.c~cfs-v7-fix-sched-debug-warnings kernel/sched.c
+--- linux-2.6.21/kernel/sched.c~cfs-v7-fix-sched-debug-warnings	2007-05-01 09:55:14.000000000 +0530
++++ linux-2.6.21-balbir/kernel/sched.c	2007-05-01 09:55:14.000000000 +0530
+@@ -229,7 +229,7 @@ char * sched_print_task_state(struct tas
+ 	unsigned long long t0, t1;
  
+ #define P(F) \
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n", #F, p->F)
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", #F, (long long)p->F)
+ 
+ 	P(wait_start);
+ 	P(wait_start_fair);
+@@ -248,22 +248,22 @@ char * sched_print_task_state(struct tas
+ 
+ 	t0 = sched_clock();
+ 	t1 = sched_clock();
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n", "clock-delta", t1-t0);
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n",
+-			  "rq-wait_runtime", this_rq->wait_runtime);
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n",
+-			  "rq-fair_clock", this_rq->fair_clock);
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n",
+-			  "rq-clock", this_rq->clock);
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n",
+-			  "rq-prev_clock_raw", this_rq->prev_clock_raw);
+-	buffer += sprintf(buffer, "%-25s:%20Ld\n",
+-			  "rq-clock_max_delta", this_rq->clock_max_delta);
+-	buffer += sprintf(buffer, "%-25s:%20u\n",
+-			  "rq-clock_warps", this_rq->clock_warps);
+-	buffer += sprintf(buffer, "%-25s:%20u\n",
+-			  "rq-clock_unstable_events",
+-				  this_rq->clock_unstable_events);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "clock-delta",
++				(long long)t1-t0);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-wait_runtime",
++				(long long)this_rq->wait_runtime);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-fair_clock",
++				(long long)this_rq->fair_clock);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-clock",
++				(long long)this_rq->clock);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-prev_clock_raw",
++				(long long)this_rq->prev_clock_raw);
++	buffer += sprintf(buffer, "%-25s:%20Ld\n", "rq-clock_max_delta",
++				(long long)this_rq->clock_max_delta);
++	buffer += sprintf(buffer, "%-25s:%20u\n", "rq-clock_warps",
++				this_rq->clock_warps);
++	buffer += sprintf(buffer, "%-25s:%20u\n", "rq-clock_unstable_events",
++				this_rq->clock_unstable_events);
+ 	return buffer;
+ }
+ 
+diff -puN kernel/sched_debug.c~cfs-v7-fix-sched-debug-warnings kernel/sched_debug.c
+--- linux-2.6.21/kernel/sched_debug.c~cfs-v7-fix-sched-debug-warnings	2007-05-01 09:55:14.000000000 +0530
++++ linux-2.6.21-balbir/kernel/sched_debug.c	2007-05-01 09:55:14.000000000 +0530
+@@ -45,13 +45,13 @@ print_task(struct seq_file *m, struct rq
+ 	SEQ_printf(m, "%14s %5d %12Ld %11Ld %10Ld %9Ld %5d "
+ 		      "%13Ld %13Ld %13Ld\n",
+ 		p->comm, p->pid,
+-		p->fair_key, p->fair_key - rq->fair_clock,
+-		p->wait_runtime,
+-		p->nr_switches,
++		(long long)p->fair_key, (long long)p->fair_key - rq->fair_clock,
++		(long long)p->wait_runtime,
++		(long long)p->nr_switches,
+ 		p->prio,
+-		p->wait_start_fair - rq->fair_clock,
+-		p->sum_exec_runtime,
+-		p->sum_wait_runtime);
++		(long long)p->wait_start_fair - rq->fair_clock,
++		(long long)p->sum_exec_runtime,
++		(long long)p->sum_wait_runtime);
+ }
+ 
+ static void print_rq(struct seq_file *m, struct rq *rq, u64 now)
+@@ -83,7 +83,7 @@ static void print_cpu(struct seq_file *m
+ 
+ 	SEQ_printf(m, "\ncpu: %d\n", cpu);
+ #define P(x) \
+-	SEQ_printf(m, "  .%-22s: %Ld\n", #x, (u64)(rq->x))
++	SEQ_printf(m, "  .%-22s: %Lu\n", #x, (unsigned long long)(rq->x))
+ 
+ 	P(nr_running);
+ 	P(raw_weighted_load);
+@@ -110,7 +110,7 @@ static int sched_debug_show(struct seq_f
+ 	int cpu;
+ 
+ 	SEQ_printf(m, "Sched Debug Version: v0.02\n");
+-	SEQ_printf(m, "now at %Ld nsecs\n", (unsigned long long)now);
++	SEQ_printf(m, "now at %Lu nsecs\n", (unsigned long long)now);
+ 
+ 	for_each_online_cpu(cpu)
+ 		print_cpu(m, cpu, now);
+_
 
---------------040005090102030506060801--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
