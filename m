@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030339AbXEAKag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030323AbXEAKb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030339AbXEAKag (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:30:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423569AbXEAKaf
+	id S1030323AbXEAKb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031144AbXEAKb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:30:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53819 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423461AbXEAKaR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:30:17 -0400
-Subject: [GFS2] Uncomment sprintf_symbol calling code [34/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, Robert Peterson <rpeterso@redhat.com>
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:25:43 +0100
-Message-Id: <1178015143.5462.198.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 06:31:29 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45459 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1030323AbXEAKb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:31:26 -0400
+X-Authenticated: #24128601
+X-Provags-ID: V01U2FsdGVkX19mdXR5VrtmeWZUp83HThkgzpkN4EMKtAe3e2tagm
+	jNcC7thOpKhV+B
+Date: Tue, 1 May 2007 12:32:01 +0200
+From: Sebastian Kemper <sebastian_ml@gmx.net>
+To: linux-kernel@vger.kernel.org
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: 2.6.21: ACPI related kernel panic
+Message-ID: <20070501103201.GA4661@anna.darkstar.lan>
+Mail-Followup-To: Sebastian Kemper <sebastian_ml@gmx.net>,
+	linux-kernel@vger.kernel.org,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Alexey Starikovskiy <aystarik@gmail.com>
+References: <20070430122940.GA25848@anna.darkstar.lan> <6bffcb0e0704300546w1eff1a92gff047117e9e756e@mail.gmail.com> <8f8ff01d0704300551yb0413c7m3834cc75c2d0fcdd@mail.gmail.com> <6bffcb0e0704300634y610aee9en1e5bd8366d30a0e0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0704300634y610aee9en1e5bd8366d30a0e0@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 37fde8ca6c60ea61f5e9d7cb877c25ac60e74167 Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Tue, 1 May 2007 09:51:39 +0100
-Subject: [PATCH] [GFS2] Uncomment sprintf_symbol calling code
+On Mon, Apr 30, 2007 at 03:34:29PM +0200, Michal Piotrowski wrote:
+> Sebastian, please test both patches.
+> http://bugzilla.kernel.org/attachment.cgi?id=11331&action=view
+> http://bugzilla.kernel.org/attachment.cgi?id=11332&action=view
 
-Now that the patch from -mm has gone upstream, we can uncomment the code
-in GFS2 which uses sprintf_symbol.
+Hello,
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Cc: Robert Peterson <rpeterso@redhat.com>
+I applied both patches and the kernel panic doesn't happen anymore. I
+booted many times and put the box under stress.
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index 7988715..1815429 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -1763,22 +1763,10 @@ void gfs2_gl_hash_clear(struct gfs2_sbd *sdp, int wait)
- static void gfs2_print_symbol(struct glock_iter *gi, const char *fmt,
-                               unsigned long address)
- {
--/* when sprint_symbol becomes available in the new kernel, replace this */
--/* function with:
- 	char buffer[KSYM_SYMBOL_LEN];
- 
- 	sprint_symbol(buffer, address);
- 	print_dbg(gi, fmt, buffer);
--*/
--	char buffer[256];
--
--	if (gi) {
--		memset(buffer, 0, sizeof(buffer));
--		sprintf(buffer, "0x%08lx", address);
--		print_dbg(gi, fmt, buffer);
--	}
--	else
--		print_symbol(fmt, address);
- }
- 
- /**
--- 
-1.5.1.2
-
-
-
+Thanks
+Sebastian
