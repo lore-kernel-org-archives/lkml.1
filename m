@@ -1,34 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423544AbXEANvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423543AbXEANxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423544AbXEANvm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:51:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423543AbXEANvm
+	id S1423543AbXEANxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423539AbXEANxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:51:42 -0400
-Received: from rtr.ca ([64.26.128.89]:4784 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423533AbXEANvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:51:41 -0400
-Message-ID: <463745E9.2040902@rtr.ca>
-Date: Tue, 01 May 2007 09:51:37 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 1 May 2007 09:53:12 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:3144 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423543AbXEANxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:53:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=n390qHBI5iHYTfoPj/MuOJnirJMFiwVnNmOzRa1yfLmYd/u9FwM/kZEbXEWlRE6R4I8jqTe3d1QaFW1Fo+/MBNjlSPa51mZXwumxiKgeLlUIprXoo2oJCLXspuoJYB7KZcsD345HO2fGcJbi+zpysVJUsiqbwDpva8JeX5uN2O0=
+Message-ID: <46374645.2030900@gmail.com>
+Date: Tue, 01 May 2007 17:53:09 +0400
+From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: William Thompson <wt@electro-mechanical.com>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: 2.6.20 libata cdrom
-References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com> <4636C2C7.8090206@gmail.com> <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com>
-In-Reply-To: <46374354.7040307@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paul Sokolovsky <pmiscml@gmail.com>
+CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel-discuss@handhelds.org
+Subject: Re: [RFC, PATCH 0/4] SoC base drivers
+References: <1354376306.20070501080806@gmail.com>
+In-Reply-To: <1354376306.20070501080806@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Gee... Two crazy screwed up devices today.  What's going on?
+Hi Paul,
 
-libata is finally seeing use by non-kernel developers.
+Paul Sokolovsky wrote:
+> In contemporary systems, lots of functionality oftentimes handled by various
+> kinds of SoCs (system-on-chip), representing a number of deversified
+> controllers packaged in one chip. 
 
-Cheers
+I think your referring to the term "SoC (system-on-chip)" is confusing
+(at least for me). You rather consider companion chips than SoCs.
+
+Yes, any chip integrating a number of controllers could be considered
+as a system-on-chip but if the chip doesn't make sense without
+some master chip (processor) I'd consider the chip as a companion
+(to the processor) chip.
+
+
+Regards,
+Dmitry
