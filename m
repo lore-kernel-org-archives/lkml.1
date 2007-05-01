@@ -1,158 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423663AbXEAVbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423672AbXEAVdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423663AbXEAVbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423682AbXEAVbO
+	id S1423672AbXEAVdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423682AbXEAVdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:31:14 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4018 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423663AbXEAVbN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:31:13 -0400
-Date: Tue, 1 May 2007 22:31:03 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Paul Sokolovsky <pmiscml@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 3/4] SoC base drivers: ASIC3 driver
-Message-ID: <20070501213102.GF19872@flint.arm.linux.org.uk>
-Mail-Followup-To: Paul Sokolovsky <pmiscml@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <06028862.20070501080948@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <06028862.20070501080948@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 May 2007 17:33:09 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:43002 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423672AbXEAVdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 17:33:08 -0400
+Message-ID: <4637B210.5040302@simon.arlott.org.uk>
+Date: Tue, 01 May 2007 22:33:04 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux DVB <linux-dvb@linuxtv.org>
+CC: Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [linux-dvb] [PATCH] dvb-core: Handle failures to create devices
+References: <463774FE.9030104@simon.arlott.org.uk> <Pine.LNX.4.58.0705011418130.309@shell2.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0705011418130.309@shell2.speakeasy.net>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 08:09:48AM +0300, Paul Sokolovsky wrote:
-> +static void asic3_release(struct device *dev)
-> +{
-> +	struct platform_device *sdev = to_platform_device(dev);
-> +
-> +	kfree(sdev->resource);
-> +	kfree(sdev);
-> +}
-> +
-> +int asic3_register_mmc(struct device *dev)
-> +{
-> +	struct platform_device *sdev = kzalloc(sizeof(*sdev), GFP_KERNEL);
-> +	struct tmio_mmc_hwconfig *mmc_config = kmalloc(sizeof(*mmc_config),
-> +						       GFP_KERNEL);
-> +	struct platform_device *pdev = to_platform_device(dev);
-> +	struct asic3_data *asic = dev->driver_data;
-> +	struct asic3_platform_data *asic3_pdata = dev->platform_data;
-> +	struct resource *res;
-> +	int rc;
-> +
-> +	if (sdev == NULL || mmc_config == NULL)
-> +		return -ENOMEM;
-> +
-> +	if (asic3_pdata->tmio_mmc_hwconfig) {
-> +		memcpy(mmc_config, asic3_pdata->tmio_mmc_hwconfig,
-> +		       sizeof(*mmc_config));
-> +	} else {
-> +		memset(mmc_config, 0, sizeof(*mmc_config));
-> +	}
-> +	mmc_config->address_shift = asic->bus_shift;
-> +
-> +	sdev->id = -1;
-> +	sdev->name = "asic3_mmc";
-> +	sdev->dev.parent = dev;
-> +	sdev->num_resources = 2;
-> +	sdev->dev.platform_data = mmc_config;
-> +	sdev->dev.release = asic3_release;
-> +
-> +	res = kzalloc(sdev->num_resources * sizeof(struct resource),
-> +		      GFP_KERNEL);
-> +	if (res == NULL) {
-> +		kfree(sdev);
-> +		kfree(mmc_config);
-> +		return -ENOMEM;
-> +	}
-> +	sdev->resource = res;
-> +
-> +	res[0].start = pdev->resource[2].start;
-> +	res[0].end   = pdev->resource[2].end;
-> +	res[0].flags = IORESOURCE_MEM;
-> +	res[1].start = res[1].end = pdev->resource[3].start;
-> +	res[1].flags = IORESOURCE_IRQ;
-> +
-> +	rc = platform_device_register(sdev);
-> +	if (rc) {
-> +		printk(KERN_ERR "asic3_base: "
-> +		       "Could not register asic3_mmc device\n");
-> +		kfree(res);
-> +		kfree(sdev);
-> +		return rc;
-> +	}
-> +
-> +	asic->mmc_dev = sdev;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(asic3_register_mmc);
-> +
-> +int asic3_unregister_mmc(struct device *dev)
-> +{
-> +	struct asic3_data *asic = dev->driver_data;
-> +	platform_device_unregister(asic->mmc_dev);
-> +	asic->mmc_dev = 0;
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(asic3_unregister_mmc);
-...
-> +static int asic3_probe(struct platform_device *pdev)
-> +{
-...
-> +	if (pdev->num_resources > 2) {
-> +		int rc;
-> +		rc = asic3_register_mmc(dev);
-...
-> +	return 0;
-> +}
-> +
-> +static int asic3_remove(struct platform_device *pdev)
-> +{
-> +	struct asic3_platform_data *pdata = pdev->dev.platform_data;
-> +	struct asic3_data *asic = platform_get_drvdata(pdev);
-> +	int i;
-...
-> +	if (asic->mmc_dev)
-> +		asic3_unregister_mmc(&pdev->dev);
-...
-> +	return 0;
-> +}
-...
-> +static struct platform_driver asic3_device_driver = {
-> +	.driver		= {
-> +		.name	= "asic3",
-> +	},
-> +	.probe		= asic3_probe,
-> +	.remove		= asic3_remove,
-> +	.suspend	= asic3_suspend,
-> +	.resume		= asic3_resume,
-> +	.shutdown	= asic3_shutdown,
-> +};
-...
-> +static void __exit asic3_base_exit(void)
-> +{
-> +	platform_driver_unregister(&asic3_device_driver);
-> +}
-...
-> +module_exit(asic3_base_exit);
+dvb-core is not started early enough when device drivers that use dvb are 
+compiled in so device_register_device fails (silently) since dvb_class is 
+NULL, this runs dvb_init using subsys_initcall instead of module_init.
 
-What stops the remove function from being called after the module
-has been removed from the system?
+dvb_register_device will now check the return value of class_device_create.
+All the printks had missing level prefixes so I've fixed these too.
 
-Again, with platform devices you _really_ want to use the already
-provided dynamic allocation methods precisely because they don't
-suffer from these problems.
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+On 01/05/07 22:21, Trent Piepho wrote:
+> On Tue, 1 May 2007, Simon Arlott wrote:
+>> dvb-core is not started early enough when device drivers that use dvb are
+>> compiled in so device_register_device fails (silently) since dvb_class is
+>> NULL, this runs dvb_init using subsys_initclass instead of module_init.
+>>
+>> dvb_register_device will now check the return value of class_device_create.
+> 
+> Good catch.
+
+Thanks, it's only been 11 months since I first pointed it out.
+
+>> +		printk("%s: failed to create device dvb%d.%s%d (%ld)\n", __FUNCTION__,
+>> +			adap->num, dnames[type], id, PTR_ERR(clsdev));
+>> +		return PTR_ERR(clsdev);
+> 
+> printk(KERN_ERR "...."
+
+I copied another printk from that file without thinking.
+
+ drivers/media/dvb/dvb-core/dvbdev.c |   21 ++++++++++++++-------
+ 1 files changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/media/dvb/dvb-core/dvbdev.c b/drivers/media/dvb/dvb-core/dvbdev.c
+index 7683983..297da62 100644
+--- a/drivers/media/dvb/dvb-core/dvbdev.c
++++ b/drivers/media/dvb/dvb-core/dvbdev.c
+@@ -201,6 +201,7 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
+ 	struct dvb_device *dvbdev;
+ 	struct file_operations *dvbdevfops;
+ 
++	struct class_device *clsdev;
+ 	int id;
+ 
+ 	mutex_lock(&dvbdev_register_lock);
+@@ -208,7 +209,7 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
+ 	if ((id = dvbdev_get_free_id (adap, type)) < 0){
+ 		mutex_unlock(&dvbdev_register_lock);
+ 		*pdvbdev = NULL;
+-		printk ("%s: could get find free device id...\n", __FUNCTION__);
++		printk(KERN_ERR "%s: could get find free device id...\n", __FUNCTION__);
+ 		return -ENFILE;
+ 	}
+ 
+@@ -242,10 +243,16 @@ int dvb_register_device(struct dvb_adapter *adap, struct dvb_device **pdvbdev,
+ 
+ 	mutex_unlock(&dvbdev_register_lock);
+ 
+-	class_device_create(dvb_class, NULL, MKDEV(DVB_MAJOR, nums2minor(adap->num, type, id)),
++	clsdev = class_device_create(dvb_class, NULL, MKDEV(DVB_MAJOR, nums2minor(adap->num, type, id)),
+ 			    adap->device, "dvb%d.%s%d", adap->num, dnames[type], id);
+ 
+-	dprintk("DVB: register adapter%d/%s%d @ minor: %i (0x%02x)\n",
++	if (IS_ERR(clsdev)) {
++		printk(KERN_ERR "%s: failed to create device dvb%d.%s%d (%ld)\n", __FUNCTION__,
++			adap->num, dnames[type], id, PTR_ERR(clsdev));
++		return PTR_ERR(clsdev);
++	}
++
++	dprintk(KERN_DEBUG "DVB: register adapter%d/%s%d @ minor: %i (0x%02x)\n",
+ 		adap->num, dnames[type], id, nums2minor(adap->num, type, id),
+ 		nums2minor(adap->num, type, id));
+ 
+@@ -304,7 +311,7 @@ int dvb_register_adapter(struct dvb_adapter *adap, const char *name, struct modu
+ 	memset (adap, 0, sizeof(struct dvb_adapter));
+ 	INIT_LIST_HEAD (&adap->device_list);
+ 
+-	printk ("DVB: registering new adapter (%s).\n", name);
++	printk(KERN_INFO "DVB: registering new adapter (%s).\n", name);
+ 
+ 	adap->num = num;
+ 	adap->name = name;
+@@ -400,13 +407,13 @@ static int __init init_dvbdev(void)
+ 	dev_t dev = MKDEV(DVB_MAJOR, 0);
+ 
+ 	if ((retval = register_chrdev_region(dev, MAX_DVB_MINORS, "DVB")) != 0) {
+-		printk("dvb-core: unable to get major %d\n", DVB_MAJOR);
++		printk(KERN_ERR "dvb-core: unable to get major %d\n", DVB_MAJOR);
+ 		return retval;
+ 	}
+ 
+ 	cdev_init(&dvb_device_cdev, &dvb_device_fops);
+ 	if ((retval = cdev_add(&dvb_device_cdev, dev, MAX_DVB_MINORS)) != 0) {
+-		printk("dvb-core: unable to get major %d\n", DVB_MAJOR);
++		printk(KERN_ERR "dvb-core: unable to get major %d\n", DVB_MAJOR);
+ 		goto error;
+ 	}
+ 
+@@ -431,7 +438,7 @@ static void __exit exit_dvbdev(void)
+ 	unregister_chrdev_region(MKDEV(DVB_MAJOR, 0), MAX_DVB_MINORS);
+ }
+ 
+-module_init(init_dvbdev);
++subsys_initcall(init_dvbdev);
+ module_exit(exit_dvbdev);
+ 
+ MODULE_DESCRIPTION("DVB Core Driver");
+-- 
+1.5.0.1
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Simon Arlott
+09F911029D74E35BD84156C5635688C0
