@@ -1,162 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946605AbXEAECv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946408AbXEAECw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946605AbXEAECv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946408AbXEAEBp
+	id S1946408AbXEAECw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946421AbXEAEBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:01:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48959 "EHLO mx2.suse.de"
+	Tue, 1 May 2007 00:01:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48958 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946440AbXEAD6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:58:09 -0400
+	id S1946438AbXEAD6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 23:58:08 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070501557.815359000@suse.de>
 In-Reply-To: <20070501557.815359000@suse.de>
-To: suresh.b.siddha@intel.com, andi@firstfloor.org, dada1@cosmosbay.com,
-       rientjes@google.com, clameter@engr.sgi.com, patches@x86-64.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/30] x86_64: set node_possible_map at runtime - try 2
-Message-Id: <20070501035759.13B4B13CAF@wotan.suse.de>
-Date: Tue,  1 May 2007 05:57:59 +0200 (CEST)
+To: patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [10/30] x86_64: Drop -traditional for arch/x86_64/boot
+Message-Id: <20070501035807.C40B613CAF@wotan.suse.de>
+Date: Tue,  1 May 2007 05:58:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Suresh Siddha <suresh.b.siddha@intel.com>
+Follows i386 and useful cleanup.
 
-Set the node_possible_map at runtime on x86_64.  On a non NUMA system,
-num_possible_nodes() will now say '1'.
-
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
 Signed-off-by: Andi Kleen <ak@suse.de>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <clameter@engr.sgi.com>
----
 
 ---
- arch/x86_64/mm/k8topology.c |    7 ++-----
- arch/x86_64/mm/numa.c       |   10 ++++++++--
- arch/x86_64/mm/srat.c       |    8 +++++---
- 3 files changed, 15 insertions(+), 10 deletions(-)
+ arch/x86_64/boot/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/arch/x86_64/mm/k8topology.c
+Index: linux/arch/x86_64/boot/Makefile
 ===================================================================
---- linux.orig/arch/x86_64/mm/k8topology.c
-+++ linux/arch/x86_64/mm/k8topology.c
-@@ -49,11 +49,8 @@ int __init k8_scan_nodes(unsigned long s
- 	int found = 0;
- 	u32 reg;
- 	unsigned numnodes;
--	nodemask_t nodes_parsed;
- 	unsigned dualcore = 0;
+--- linux.orig/arch/x86_64/boot/Makefile
++++ linux/arch/x86_64/boot/Makefile
+@@ -36,7 +36,7 @@ subdir-		:= compressed/	#Let make clean 
+ # ---------------------------------------------------------------------------
  
--	nodes_clear(nodes_parsed);
--
- 	if (!early_pci_allowed())
- 		return -1;
+ $(obj)/bzImage: IMAGE_OFFSET := 0x100000
+-$(obj)/bzImage: EXTRA_AFLAGS := -traditional $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
++$(obj)/bzImage: EXTRA_AFLAGS := $(SVGA_MODE) $(RAMDISK) -D__BIG_KERNEL__
+ $(obj)/bzImage: BUILDFLAGS   := -b
  
-@@ -102,7 +99,7 @@ int __init k8_scan_nodes(unsigned long s
- 			       nodeid, (base>>8)&3, (limit>>8) & 3); 
- 			return -1; 
- 		}	
--		if (node_isset(nodeid, nodes_parsed)) { 
-+		if (node_isset(nodeid, node_possible_map)) {
- 			printk(KERN_INFO "Node %d already present. Skipping\n", 
- 			       nodeid);
- 			continue;
-@@ -155,7 +152,7 @@ int __init k8_scan_nodes(unsigned long s
- 
- 		prevbase = base;
- 
--		node_set(nodeid, nodes_parsed);
-+		node_set(nodeid, node_possible_map);
- 	} 
- 
- 	if (!found)
-Index: linux/arch/x86_64/mm/numa.c
-===================================================================
---- linux.orig/arch/x86_64/mm/numa.c
-+++ linux/arch/x86_64/mm/numa.c
-@@ -295,7 +295,7 @@ static int __init setup_node_range(int n
- 		ret = -1;
- 	}
- 	nodes[nid].end = *addr;
--	node_set_online(nid);
-+	node_set(nid, node_possible_map);
- 	printk(KERN_INFO "Faking node %d at %016Lx-%016Lx (%LuMB)\n", nid,
- 	       nodes[nid].start, nodes[nid].end,
- 	       (nodes[nid].end - nodes[nid].start) >> 20);
-@@ -479,7 +479,7 @@ out:
- 	 * SRAT.
- 	 */
- 	remove_all_active_ranges();
--	for_each_online_node(i) {
-+	for_each_node_mask(i, node_possible_map) {
- 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
- 						nodes[i].end >> PAGE_SHIFT);
-  		setup_node_bootmem(i, nodes[i].start, nodes[i].end);
-@@ -494,20 +494,25 @@ void __init numa_initmem_init(unsigned l
- { 
- 	int i;
- 
-+	nodes_clear(node_possible_map);
-+
- #ifdef CONFIG_NUMA_EMU
- 	if (cmdline && !numa_emulation(start_pfn, end_pfn))
-  		return;
-+	nodes_clear(node_possible_map);
- #endif
- 
- #ifdef CONFIG_ACPI_NUMA
- 	if (!numa_off && !acpi_scan_nodes(start_pfn << PAGE_SHIFT,
- 					  end_pfn << PAGE_SHIFT))
-  		return;
-+	nodes_clear(node_possible_map);
- #endif
- 
- #ifdef CONFIG_K8_NUMA
- 	if (!numa_off && !k8_scan_nodes(start_pfn<<PAGE_SHIFT, end_pfn<<PAGE_SHIFT))
- 		return;
-+	nodes_clear(node_possible_map);
- #endif
- 	printk(KERN_INFO "%s\n",
- 	       numa_off ? "NUMA turned off" : "No NUMA configuration found");
-@@ -521,6 +526,7 @@ void __init numa_initmem_init(unsigned l
- 	memnodemap[0] = 0;
- 	nodes_clear(node_online_map);
- 	node_set_online(0);
-+	node_set(0, node_possible_map);
- 	for (i = 0; i < NR_CPUS; i++)
- 		numa_set_node(i, 0);
- 	node_to_cpumask[0] = cpumask_of_cpu(0);
-Index: linux/arch/x86_64/mm/srat.c
-===================================================================
---- linux.orig/arch/x86_64/mm/srat.c
-+++ linux/arch/x86_64/mm/srat.c
-@@ -419,19 +419,21 @@ int __init acpi_scan_nodes(unsigned long
- 		return -1;
- 	}
- 
-+	node_possible_map = nodes_parsed;
-+
- 	/* Finally register nodes */
--	for_each_node_mask(i, nodes_parsed)
-+	for_each_node_mask(i, node_possible_map)
- 		setup_node_bootmem(i, nodes[i].start, nodes[i].end);
- 	/* Try again in case setup_node_bootmem missed one due
- 	   to missing bootmem */
--	for_each_node_mask(i, nodes_parsed)
-+	for_each_node_mask(i, node_possible_map)
- 		if (!node_online(i))
- 			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
- 
- 	for (i = 0; i < NR_CPUS; i++) {
- 		if (cpu_to_node[i] == NUMA_NO_NODE)
- 			continue;
--		if (!node_isset(cpu_to_node[i], nodes_parsed))
-+		if (!node_isset(cpu_to_node[i], node_possible_map))
- 			numa_set_node(i, NUMA_NO_NODE);
- 	}
- 	numa_init_array();
+ quiet_cmd_image = BUILD   $@
