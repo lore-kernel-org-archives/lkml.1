@@ -1,105 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965211AbXEAU2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423577AbXEAUep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965211AbXEAU2i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965104AbXEAU2i
+	id S1423577AbXEAUep (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423595AbXEAUep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:28:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48301 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965211AbXEAU2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:28:37 -0400
-Message-ID: <4637A29F.6070302@redhat.com>
-Date: Tue, 01 May 2007 16:27:11 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: [git pull] New firewire stack
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 16:34:45 -0400
+Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:40724 "EHLO
+	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423577AbXEAUem (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 16:34:42 -0400
+Message-Id: <20070501203328.845749634@mail.of.borg>
+References: <20070501203234.252205858@mail.of.borg>
+User-Agent: quilt/0.45-1
+Date: Tue, 01 May 2007 22:32:35 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [patch 01/33] m68k: Atari SCSI revival
+Content-Disposition: inline; filename=634-atari_scsi.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
 
-As you may know, we've been working on a new FireWire stack over on
-linux1394-devel.  The main driver behind this work is to get a small,
-maintainable and supportable FireWire stack, with an acceptable
-backwards compatibility story.
+SCSI should be working on a TT (but someone should really try!) but causes
+trouble on a Falcon (as in: it ate a filesystem of mine) at least when
+used concurrently with IDE. I have the notion it's because locking of the
+ST-DMA interrupt by IDE is broken in 2.6 (the IDE driver always complains
+about trying to release an already-released ST-DMA). Needs more work, but
+that's on the IDE or m68k interrupt side rather than SCSI.
 
-I've been talking to Stefan Richter about it and we feel that the new
-stack is ready for inclusion into mainline.  What I'd like to propose
-is that we carry both the new and the old stack in mainline for a few
-releases.  Once we've reached a satisfactory level of stability and
-worked through what regressions there may be, we can consider
-deprecating the old stack.  Carrying two FireWire stacks in the kernel
-at the same time is not ideal, but it allows for wider testing of the
-new stack, while keeping the old stack as a fallback for cases where
-regressions make the new stack not usable.
+Signed-off-by: Michael Schmitz <schmitz@debian.org>
+Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/scsi/Kconfig         |    2 -
+ drivers/scsi/atari_NCR5380.c |   52 ++++++++++++++++++++++++++++++++++++++-----
+ drivers/scsi/atari_scsi.c    |   10 +++-----
+ drivers/scsi/atari_scsi.h    |   30 +++++++++++++++++++++---
+ 4 files changed, 77 insertions(+), 17 deletions(-)
 
-There's a lot of good reasons to switch to the new stack and a lot of
-reasons to switch away from the old one.  Highlights:
+--- linux-m68k-2.6.21.orig/drivers/scsi/Kconfig
++++ linux-m68k-2.6.21/drivers/scsi/Kconfig
+@@ -1649,7 +1649,7 @@ config OKTAGON_SCSI
+ 
+ config ATARI_SCSI
+ 	tristate "Atari native SCSI support"
+-	depends on ATARI && SCSI && BROKEN
++	depends on ATARI && SCSI
+ 	select SCSI_SPI_ATTRS
+ 	---help---
+ 	  If you have an Atari with built-in NCR5380 SCSI controller (TT,
+--- linux-m68k-2.6.21.orig/drivers/scsi/atari_NCR5380.c
++++ linux-m68k-2.6.21/drivers/scsi/atari_NCR5380.c
+@@ -264,7 +264,7 @@ static struct scsi_host_template *the_te
+ 	(struct NCR5380_hostdata *)(in)->hostdata
+ #define	HOSTDATA(in) ((struct NCR5380_hostdata *)(in)->hostdata)
+ 
+-#define	NEXT(cmd)	((Scsi_Cmnd *)((cmd)->host_scribble))
++#define	NEXT(cmd)	((cmd)->host_scribble)
+ #define	NEXTADDR(cmd)	((Scsi_Cmnd **)&((cmd)->host_scribble))
+ 
+ #define	HOSTNO		instance->host_no
+@@ -716,7 +716,7 @@ static void NCR5380_print_status (struct
+ 	printk("NCR5380_print_status: no memory for print buffer\n");
+ 	return;
+     }
+-    len = NCR5380_proc_info(pr_bfr, &start, 0, PAGE_SIZE, HOSTNO, 0);
++    len = NCR5380_proc_info(instance, pr_bfr, &start, 0, PAGE_SIZE, 0);
+     pr_bfr[len] = 0;
+     printk("\n%s\n", pr_bfr);
+     free_page((unsigned long) pr_bfr);
+@@ -878,6 +878,46 @@ static int NCR5380_init (struct Scsi_Hos
+ }
+ 
+ /* 
++ * our own old-style timeout update
++ */
++/*
++ * The strategy is to cause the timer code to call scsi_times_out()
++ * when the soonest timeout is pending.
++ * The arguments are used when we are queueing a new command, because
++ * we do not want to subtract the time used from this time, but when we
++ * set the timer, we want to take this value into account.
++ */
++
++int atari_scsi_update_timeout(Scsi_Cmnd * SCset, int timeout)
++{
++    int rtn;
++
++    /*
++     * We are using the new error handling code to actually register/deregister
++     * timers for timeout.
++     */
++
++    if (!timer_pending(&SCset->eh_timeout)) {
++	rtn = 0;
++    } else {
++	rtn = SCset->eh_timeout.expires - jiffies;
++    }
++
++    if (timeout == 0) {
++        del_timer(&SCset->eh_timeout);
++        SCset->eh_timeout.data = (unsigned long) NULL;
++        SCset->eh_timeout.expires = 0;
++    } else {
++        if (SCset->eh_timeout.data != (unsigned long) NULL) 
++            del_timer(&SCset->eh_timeout);
++        SCset->eh_timeout.data = (unsigned long) SCset;
++        SCset->eh_timeout.expires = jiffies + timeout;
++        add_timer(&SCset->eh_timeout);
++    }
++	return rtn;
++}
++
++/* 
+  * Function : int NCR5380_queue_command (Scsi_Cmnd *cmd, 
+  *	void (*done)(Scsi_Cmnd *)) 
+  *
+@@ -902,7 +942,7 @@ int NCR5380_queue_command (Scsi_Cmnd *cm
+     Scsi_Cmnd *tmp;
+     int oldto;
+     unsigned long flags;
+-    extern int update_timeout(Scsi_Cmnd * SCset, int timeout);
++    // extern int update_timeout(Scsi_Cmnd * SCset, int timeout);
+ 
+ #if (NDEBUG & NDEBUG_NO_WRITE)
+     switch (cmd->cmnd[0]) {
+@@ -978,9 +1018,9 @@ int NCR5380_queue_command (Scsi_Cmnd *cm
+      * alter queues and touch the lock.
+      */
+     if (!IS_A_TT()) {
+-	oldto = update_timeout(cmd, 0);
++	oldto = atari_scsi_update_timeout(cmd, 0);
+ 	falcon_get_lock();
+-	update_timeout(cmd, oldto);
++	atari_scsi_update_timeout(cmd, oldto);
+     }
+     if (!(hostdata->issue_queue) || (cmd->cmnd[0] == REQUEST_SENSE)) {
+ 	LIST(cmd, hostdata->issue_queue);
+@@ -1435,7 +1475,7 @@ static int NCR5380_select (struct Scsi_H
+     local_irq_restore(flags);
+ 
+     /* Wait for arbitration logic to complete */
+-#if NCR_TIMEOUT
++#if defined(NCR_TIMEOUT)
+     {
+       unsigned long timeout = jiffies + 2*NCR_TIMEOUT;
+ 
+--- linux-m68k-2.6.21.orig/drivers/scsi/atari_scsi.c
++++ linux-m68k-2.6.21/drivers/scsi/atari_scsi.c
+@@ -395,7 +395,7 @@ static irqreturn_t scsi_tt_intr (int irq
+ 
+ #endif /* REAL_DMA */
+ 	
+-	NCR5380_intr (0, 0, 0);
++	NCR5380_intr(0, 0);
+ 
+ #if 0
+ 	/* To be sure the int is not masked */
+@@ -461,7 +461,7 @@ static irqreturn_t scsi_falcon_intr (int
+ 
+ #endif /* REAL_DMA */
+ 
+-	NCR5380_intr (0, 0, 0);
++	NCR5380_intr(0, 0);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -557,11 +557,11 @@ static void falcon_get_lock( void )
+ 
+ 	local_irq_save(flags);
+ 
+-	while( !in_interrupt() && falcon_got_lock && stdma_others_waiting() )
++	while (!in_irq() && falcon_got_lock && stdma_others_waiting())
+ 		sleep_on( &falcon_fairness_wait );
+ 
+ 	while (!falcon_got_lock) {
+-		if (in_interrupt())
++		if (in_irq())
+ 			panic( "Falcon SCSI hasn't ST-DMA lock in interrupt" );
+ 		if (!falcon_trying_lock) {
+ 			falcon_trying_lock = 1;
+@@ -763,7 +763,6 @@ int atari_scsi_detect (struct scsi_host_
+ 	return( 1 );
+ }
+ 
+-#ifdef MODULE
+ int atari_scsi_release (struct Scsi_Host *sh)
+ {
+ 	if (IS_A_TT())
+@@ -772,7 +771,6 @@ int atari_scsi_release (struct Scsi_Host
+ 		atari_stram_free (atari_dma_buffer);
+ 	return 1;
+ }
+-#endif
+ 
+ void __init atari_scsi_setup(char *str, int *ints)
+ {
+--- linux-m68k-2.6.21.orig/drivers/scsi/atari_scsi.h
++++ linux-m68k-2.6.21/drivers/scsi/atari_scsi.h
+@@ -21,11 +21,7 @@
+ int atari_scsi_detect (struct scsi_host_template *);
+ const char *atari_scsi_info (struct Scsi_Host *);
+ int atari_scsi_reset (Scsi_Cmnd *, unsigned int);
+-#ifdef MODULE
+ int atari_scsi_release (struct Scsi_Host *);
+-#else
+-#define atari_scsi_release NULL
+-#endif
+ 
+ /* The values for CMD_PER_LUN and CAN_QUEUE are somehow arbitrary. Higher
+  * values should work, too; try it! (but cmd_per_lun costs memory!) */
+@@ -63,6 +59,32 @@ int atari_scsi_release (struct Scsi_Host
+ #define	NCR5380_dma_xfer_len(i,cmd,phase) \
+ 	atari_dma_xfer_len(cmd->SCp.this_residual,cmd,((phase) & SR_IO) ? 0 : 1)
+ 
++/* former generic SCSI error handling stuff */
++
++#define SCSI_ABORT_SNOOZE 0
++#define SCSI_ABORT_SUCCESS 1
++#define SCSI_ABORT_PENDING 2
++#define SCSI_ABORT_BUSY 3
++#define SCSI_ABORT_NOT_RUNNING 4
++#define SCSI_ABORT_ERROR 5
++
++#define SCSI_RESET_SNOOZE 0
++#define SCSI_RESET_PUNT 1
++#define SCSI_RESET_SUCCESS 2
++#define SCSI_RESET_PENDING 3
++#define SCSI_RESET_WAKEUP 4
++#define SCSI_RESET_NOT_RUNNING 5
++#define SCSI_RESET_ERROR 6
++
++#define SCSI_RESET_SYNCHRONOUS		0x01
++#define SCSI_RESET_ASYNCHRONOUS		0x02
++#define SCSI_RESET_SUGGEST_BUS_RESET	0x04
++#define SCSI_RESET_SUGGEST_HOST_RESET	0x08
++
++#define SCSI_RESET_BUS_RESET 0x100
++#define SCSI_RESET_HOST_RESET 0x200
++#define SCSI_RESET_ACTION   0xff
++
+ /* Debugging printk definitions:
+  *
+  *  ARB  -> arbitration
 
-  - Has been in Fedora rawhide (development branch) and -mm for 3
-    months, will be shipping in Fedora 7.
+--
+Gr{oetje,eeting}s,
 
-  - Backwards compatible at the library level; existing user space
-    libraries have been ported to use the new user space interface.
+						Geert
 
-  - Less than 8k lines of code compared to 30k lines of code in the old
-    stack, and a similar size reduction in the sizes of the .ko's.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-  - No kernel threads, compared to one subsystem thread and one thread
-    per FireWire controller in the old stack.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-  - One user space interface to support zero-copy scatter-gather
-    streaming, as opposed to the old stacks 4 (was 5) different
-    streaming interfaces.
-
-  - Per-device device files, letting userspace set up more finegrained
-    access control, such as preventing direct access to FireWire
-    storage devices.
-
-Regressions:
-
-  - eth1394 not ported over.  There is nothing preventing this from
-    being done, though, but there's a couple of infrastructure bits
-    that aren't done yet.
-
-  - No support for the PCILynx chipset.  Nobody has this chipset
-    anymore, and the pcilynx driver in the old stack is bit-rotting anyway.
-
-  - Some SBP-2 (storage) devices fail after significant amounts of IO.
-    Not clear what the problem is, but I can reproduce it here and am
-    working on fixing it.
-
-Please pull from the juju branch in Stefans repo:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git juju
-
-thanks,
-Kristian
-
-  drivers/Makefile                  |    1 +
-  drivers/firewire/Kconfig          |   60 ++
-  drivers/firewire/Makefile         |   10 +
-  drivers/firewire/fw-card.c        |  544 +++++++++++
-  drivers/firewire/fw-cdev.c        |  954 +++++++++++++++++++
-  drivers/firewire/fw-device.c      |  781 +++++++++++++++
-  drivers/firewire/fw-device.h      |  149 +++
-  drivers/firewire/fw-iso.c         |  163 ++++
-  drivers/firewire/fw-ohci.c        | 1896 +++++++++++++++++++++++++++++++++++++
-  drivers/firewire/fw-ohci.h        |  153 +++
-  drivers/firewire/fw-sbp2.c        | 1165 +++++++++++++++++++++++
-  drivers/firewire/fw-topology.c    |  519 ++++++++++
-  drivers/firewire/fw-topology.h    |   94 ++
-  drivers/firewire/fw-transaction.c |  889 +++++++++++++++++
-  drivers/firewire/fw-transaction.h |  505 ++++++++++
-  drivers/ieee1394/Kconfig          |    2 +
-  include/linux/firewire-cdev.h     |  268 ++++++
-  17 files changed, 8153 insertions(+), 0 deletions(-)
