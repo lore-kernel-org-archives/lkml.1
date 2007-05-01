@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946585AbXEAFIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946587AbXEAFKj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946585AbXEAFIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 01:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946593AbXEAFIr
+	id S1946587AbXEAFKj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 01:10:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946509AbXEAFKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 01:08:47 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:42600 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946585AbXEAFIm (ORCPT
+	Tue, 1 May 2007 01:10:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:63300 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946587AbXEAFJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 01:08:42 -0400
+	Tue, 1 May 2007 01:09:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:date:from:x-priority:message-id:to:subject:mime-version:content-type:content-transfer-encoding;
-        b=FH5EJYykiWKgWeLCqfwhhoaEFLML+7MiRfnyJPzoETEpZcpA5lXHn7B0Qt8BOTI4zo7IxEF57IncvdJ4yv0G+JzD5avZpCBD9MmgpuU+RJaELU3/gPoi6oocSlcQN7MHOHAn7epVyUKpV38vyuYVexbBuh18xRWukL4hbEkxFFc=
-Date: Tue, 1 May 2007 08:08:39 +0300
+        b=SfSnOHuomhRfndb7oYMsLDOhkU/hr2eq+ByofRf+v5YE6S4alGySzIo1Ucz+7PvDQ9LdYHcpc59RRCzaxaDjHudyJeBTF1gJ6OOiToMAb5iKipGhlhPSwfSHCtiIaGhBtbtjoBNiKeQ3AemQnnNZv3cfqSJw/q4JljuCcuEICDw=
+Date: Tue, 1 May 2007 08:09:48 +0300
 From: Paul Sokolovsky <pmiscml@gmail.com>
 X-Priority: 3 (Normal)
-Message-ID: <516386418.20070501080839@gmail.com>
+Message-ID: <06028862.20070501080948@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC, PATCH 2/4] SoC base drivers: ASIC3 SoC hardware definitions
+Subject: [RFC, PATCH 3/4] SoC base drivers: ASIC3 driver
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -28,31 +28,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello linux-kernel,
 
-Intro: This is a header with hardware definitions for ASIC3 chip,
-contributed by HP/Compaq. It is provided as-is, as a vendor-originated
-header.
----------
+Note: This driver depends on ds1wm.h header, recently submitted, and which by now should be in -mm tree.
+-----
 
-ipaq-asic3.h: Hardware definitions for ASIC3 chip, found in ~12
-handheld devices from HP/Compaq and HTC.
+asic3_base: SoC base driver for ASIC3 chip.
 
 Signed-off-by: Paul Sokolovsky <pmiscml@gmail.com>
 
 
- include/asm-arm/hardware/ipaq-asic3.h |  609 +++++++++++++++++++++++++++++++++
- 1 files changed, 609 insertions(+), 0 deletions(-)
+ drivers/soc/Kconfig            |   22 +
+ drivers/soc/Makefile           |    5 +
+ drivers/soc/asic3_base.c       | 1177 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/soc/asic3_base.h |  100 ++++
+ include/linux/soc/tmio_mmc.h   |   17 +
+ 5 files changed, 1321 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-arm/hardware/ipaq-asic3.h b/include/asm-arm/hardware/ipaq-asic3.h
+diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
 new file mode 100644
-index 0000000..789bb16
+index 0000000..2c9d846
 --- /dev/null
-+++ b/include/asm-arm/hardware/ipaq-asic3.h
-@@ -0,0 +1,609 @@
++++ b/drivers/soc/Kconfig
+@@ -0,0 +1,22 @@
++#
++# SoC drivers
++#
++# System-on-Chip are chips that implement a number of virtually unrelated
++# functions but sharing some common circuitry, for example power management
++# or an auxiliary interrupt controller.
++#
++
++menu "SoC drivers"
++
++config SOC_ASIC3
++	tristate "HTC ASIC3 SoC support (iPAQ & HTC PDAs)"
++
++config SOC_ASIC3_DS1WM
++	bool "Support HTC ASIC3 builtin DS1WM block"
++	depends on SOC_ASIC3
++	help
++          Choose Y here if you want to include support for ASIC3's builtin
++          W1 controller. Some devices do not use it, and yet other have
++          separate DS1WM controller. For them, choose N.
++
++endmenu
+diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
+new file mode 100644
+index 0000000..13031b1
+--- /dev/null
++++ b/drivers/soc/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for SoC drivers.
++#
++
++obj-$(CONFIG_SOC_ASIC3)		+= asic3_base.o soc-core.o
+diff --git a/drivers/soc/asic3_base.c b/drivers/soc/asic3_base.c
+new file mode 100644
+index 0000000..ca0f862
+--- /dev/null
++++ b/drivers/soc/asic3_base.c
+@@ -0,0 +1,1177 @@
 +/*
-+ *
-+ * Definitions for the HTC ASIC3 chip found in several handheld devices 
++ * Driver interface to HTC "ASIC3"
 + *
 + * Copyright 2001 Compaq Computer Corporation.
++ * Copyright 2004-2005 Phil Blundell
 + *
 + * Use consistent with the GNU GPL is permitted,
 + * provided that this copyright notice is
@@ -62,601 +102,1298 @@ index 0000000..789bb16
 + * AS TO THE USEFULNESS OR CORRECTNESS OF THIS CODE OR ITS
 + * FITNESS FOR ANY PARTICULAR PURPOSE.
 + *
-+ * Author: Andrew Christian
-+ *
++ * Author:  Andrew Christian
++ *          <Andrew.Christian@compaq.com>
++ *          October 2001
 + */
 +
-+#ifndef IPAQ_ASIC3_H
-+#define IPAQ_ASIC3_H
-+
-+/****************************************************/
-+/* IPAQ, ASIC #3, replaces ASIC #1 */
-+
-+#define IPAQ_ASIC3(_b,s,x,y)					\
-+     (*((volatile s *) (_b + _IPAQ_ASIC3_ ## x ## _Base + (_IPAQ_ASIC3_ ## x ## _ ## y))))
-+#define IPAQ_ASIC3_N(_b,s,x,y,z)					\
-+     (*((volatile s *) (_b + _IPAQ_ASIC3_ ## x ## _ ## y ## _Base + (_IPAQ_ASIC3_ ## x ## _ ## z))))
-+
-+#define IPAQ_ASIC3_GPIO(_b,s,x,y)				\
-+     (*((volatile s *) (_b + _IPAQ_ASIC3_GPIO_ ## x ## _Base + (_IPAQ_ASIC3_GPIO_ ## y))))
-+     
-+#define IPAQ_ASIC3_OFFSET(x,y) (_IPAQ_ASIC3_ ## x ## _Base + _IPAQ_ASIC3_ ## x ## _ ## y)
-+#define IPAQ_ASIC3_GPIO_OFFSET(x,y) (_IPAQ_ASIC3_GPIO_ ## x ## _Base + _IPAQ_ASIC3_GPIO_ ## y)
-+
-+
-+/* All offsets below are specified with this address bus shift */
-+#define ASIC3_DEFAULT_ADDR_SHIFT 2
-+
-+#define _IPAQ_ASIC3_GPIO_A_Base      0x0000
-+#define _IPAQ_ASIC3_GPIO_B_Base      0x0100
-+#define _IPAQ_ASIC3_GPIO_C_Base      0x0200
-+#define _IPAQ_ASIC3_GPIO_D_Base      0x0300
-+
-+#define _IPAQ_ASIC3_GPIO_Mask          0x00    /* R/W 0:don't mask, 1:mask interrupt */
-+#define _IPAQ_ASIC3_GPIO_Direction     0x04    /* R/W 0:input, 1:output              */
-+#define _IPAQ_ASIC3_GPIO_Out           0x08    /* R/W 0:output low, 1:output high    */
-+#define _IPAQ_ASIC3_GPIO_TriggerType   0x0c    /* R/W 0:level, 1:edge                */
-+#define _IPAQ_ASIC3_GPIO_EdgeTrigger   0x10    /* R/W 0:falling, 1:rising            */
-+#define _IPAQ_ASIC3_GPIO_LevelTrigger  0x14    /* R/W 0:low, 1:high level detect     */
-+#define _IPAQ_ASIC3_GPIO_SleepMask     0x18    /* R/W 0:don't mask, 1:mask trigger in sleep mode  */
-+#define _IPAQ_ASIC3_GPIO_SleepOut      0x1c    /* R/W level 0:low, 1:high in sleep mode           */
-+#define _IPAQ_ASIC3_GPIO_BattFaultOut  0x20    /* R/W level 0:low, 1:high in batt_fault           */
-+#define _IPAQ_ASIC3_GPIO_IntStatus     0x24    /* R/W 0:none, 1:detect               */
-+#define _IPAQ_ASIC3_GPIO_AltFunction   0x28	/* R/W 0:normal control 1:LED register control */
-+#define _IPAQ_ASIC3_GPIO_SleepConf     0x2c    /* R/W bit 1: autosleep 0: disable gposlpout in normal mode, enable gposlpout in sleep mode */
-+#define _IPAQ_ASIC3_GPIO_Status        0x30    /* R   Pin status                                  */
-+
-+#define IPAQ_ASIC3_GPIO_A_MASK(_b)            IPAQ_ASIC3_GPIO( _b, u16, A, Mask )
-+#define IPAQ_ASIC3_GPIO_A_DIR(_b)             IPAQ_ASIC3_GPIO( _b, u16, A, Direction )       
-+#define IPAQ_ASIC3_GPIO_A_OUT(_b)             IPAQ_ASIC3_GPIO( _b, u16, A, Out )    
-+#define IPAQ_ASIC3_GPIO_A_LEVELTRI(_b)        IPAQ_ASIC3_GPIO( _b, u16, A, TriggerType )
-+#define IPAQ_ASIC3_GPIO_A_RISING(_b)          IPAQ_ASIC3_GPIO( _b, u16, A, EdgeTrigger )
-+#define IPAQ_ASIC3_GPIO_A_LEVEL(_b)           IPAQ_ASIC3_GPIO( _b, u16, A, LevelTrigger )
-+#define IPAQ_ASIC3_GPIO_A_SLEEP_MASK(_b)      IPAQ_ASIC3_GPIO( _b, u16, A, SleepMask )
-+#define IPAQ_ASIC3_GPIO_A_SLEEP_OUT(_b)       IPAQ_ASIC3_GPIO( _b, u16, A, SleepOut )
-+#define IPAQ_ASIC3_GPIO_A_BATT_FAULT_OUT(_b)  IPAQ_ASIC3_GPIO( _b, u16, A, BattFaultOut )
-+#define IPAQ_ASIC3_GPIO_A_INT_STATUS(_b)      IPAQ_ASIC3_GPIO( _b, u16, A, IntStatus )
-+#define IPAQ_ASIC3_GPIO_A_ALT_FUNCTION(_b)    IPAQ_ASIC3_GPIO( _b, u16, A, AltFunction )
-+#define IPAQ_ASIC3_GPIO_A_SLEEP_CONF(_b)      IPAQ_ASIC3_GPIO( _b, u16, A, SleepConf )
-+#define IPAQ_ASIC3_GPIO_A_STATUS(_b)          IPAQ_ASIC3_GPIO( _b, u16, A, Status )
-+
-+#define IPAQ_ASIC3_GPIO_B_MASK(_b)            IPAQ_ASIC3_GPIO( _b, u16, B, Mask )
-+#define IPAQ_ASIC3_GPIO_B_DIR(_b)             IPAQ_ASIC3_GPIO( _b, u16, B, Direction )       
-+#define IPAQ_ASIC3_GPIO_B_OUT(_b)             IPAQ_ASIC3_GPIO( _b, u16, B, Out )    
-+#define IPAQ_ASIC3_GPIO_B_LEVELTRI(_b)        IPAQ_ASIC3_GPIO( _b, u16, B, TriggerType )
-+#define IPAQ_ASIC3_GPIO_B_RISING(_b)          IPAQ_ASIC3_GPIO( _b, u16, B, EdgeTrigger )
-+#define IPAQ_ASIC3_GPIO_B_LEVEL(_b)           IPAQ_ASIC3_GPIO( _b, u16, B, LevelTrigger )
-+#define IPAQ_ASIC3_GPIO_B_SLEEP_MASK(_b)      IPAQ_ASIC3_GPIO( _b, u16, B, SleepMask )
-+#define IPAQ_ASIC3_GPIO_B_SLEEP_OUT(_b)       IPAQ_ASIC3_GPIO( _b, u16, B, SleepOut )
-+#define IPAQ_ASIC3_GPIO_B_BATT_FAULT_OUT(_b)  IPAQ_ASIC3_GPIO( _b, u16, B, BattFaultOut )
-+#define IPAQ_ASIC3_GPIO_B_INT_STATUS(_b)      IPAQ_ASIC3_GPIO( _b, u16, B, IntStatus )
-+#define IPAQ_ASIC3_GPIO_B_ALT_FUNCTION(_b)    IPAQ_ASIC3_GPIO( _b, u16, B, AltFunction )
-+#define IPAQ_ASIC3_GPIO_B_SLEEP_CONF(_b)      IPAQ_ASIC3_GPIO( _b, u16, B, SleepConf )
-+#define IPAQ_ASIC3_GPIO_B_STATUS(_b)          IPAQ_ASIC3_GPIO( _b, u16, B, Status )
-+
-+#define IPAQ_ASIC3_GPIO_C_MASK(_b)            IPAQ_ASIC3_GPIO( _b, u16, C, Mask )
-+#define IPAQ_ASIC3_GPIO_C_DIR(_b)             IPAQ_ASIC3_GPIO( _b, u16, C, Direction )       
-+#define IPAQ_ASIC3_GPIO_C_OUT(_b)             IPAQ_ASIC3_GPIO( _b, u16, C, Out )    
-+#define IPAQ_ASIC3_GPIO_C_LEVELTRI(_b)        IPAQ_ASIC3_GPIO( _b, u16, C, TriggerType )
-+#define IPAQ_ASIC3_GPIO_C_RISING(_b)          IPAQ_ASIC3_GPIO( _b, u16, C, EdgeTrigger )
-+#define IPAQ_ASIC3_GPIO_C_LEVEL(_b)           IPAQ_ASIC3_GPIO( _b, u16, C, LevelTrigger )
-+#define IPAQ_ASIC3_GPIO_C_SLEEP_MASK(_b)      IPAQ_ASIC3_GPIO( _b, u16, C, SleepMask )
-+#define IPAQ_ASIC3_GPIO_C_SLEEP_OUT(_b)       IPAQ_ASIC3_GPIO( _b, u16, C, SleepOut )
-+#define IPAQ_ASIC3_GPIO_C_BATT_FAULT_OUT(_b)  IPAQ_ASIC3_GPIO( _b, u16, C, BattFaultOut )
-+#define IPAQ_ASIC3_GPIO_C_INT_STATUS(_b)      IPAQ_ASIC3_GPIO( _b, u16, C, IntStatus )
-+#define IPAQ_ASIC3_GPIO_C_ALT_FUNCTION(_b)    IPAQ_ASIC3_GPIO( _b, u16, C, AltFunction )
-+#define IPAQ_ASIC3_GPIO_C_SLEEP_CONF(_b)      IPAQ_ASIC3_GPIO( _b, u16, C, SleepConf )
-+#define IPAQ_ASIC3_GPIO_C_STATUS(_b)          IPAQ_ASIC3_GPIO( _b, u16, C, Status )
-+
-+#define IPAQ_ASIC3_GPIO_D_MASK(_b)            IPAQ_ASIC3_GPIO( _b, u16, D, Mask )
-+#define IPAQ_ASIC3_GPIO_D_DIR(_b)             IPAQ_ASIC3_GPIO( _b, u16, D, Direction )       
-+#define IPAQ_ASIC3_GPIO_D_OUT(_b)             IPAQ_ASIC3_GPIO( _b, u16, D, Out )    
-+#define IPAQ_ASIC3_GPIO_D_LEVELTRI(_b)        IPAQ_ASIC3_GPIO( _b, u16, D, TriggerType )
-+#define IPAQ_ASIC3_GPIO_D_RISING(_b)          IPAQ_ASIC3_GPIO( _b, u16, D, EdgeTrigger )
-+#define IPAQ_ASIC3_GPIO_D_LEVEL(_b)           IPAQ_ASIC3_GPIO( _b, u16, D, LevelTrigger )
-+#define IPAQ_ASIC3_GPIO_D_SLEEP_MASK(_b)      IPAQ_ASIC3_GPIO( _b, u16, D, SleepMask )
-+#define IPAQ_ASIC3_GPIO_D_SLEEP_OUT(_b)       IPAQ_ASIC3_GPIO( _b, u16, D, SleepOut )
-+#define IPAQ_ASIC3_GPIO_D_BATT_FAULT_OUT(_b)  IPAQ_ASIC3_GPIO( _b, u16, D, BattFaultOut )
-+#define IPAQ_ASIC3_GPIO_D_INT_STATUS(_b)      IPAQ_ASIC3_GPIO( _b, u16, D, IntStatus )
-+#define IPAQ_ASIC3_GPIO_D_ALT_FUNCTION(_b)    IPAQ_ASIC3_GPIO( _b, u16, D, AltFunction )
-+#define IPAQ_ASIC3_GPIO_D_SLEEP_CONF(_b)      IPAQ_ASIC3_GPIO( _b, u16, D, SleepConf )
-+#define IPAQ_ASIC3_GPIO_D_STATUS(_b)          IPAQ_ASIC3_GPIO( _b, u16, D, Status )
-+
-+#define _IPAQ_ASIC3_SPI_Base		      0x0400
-+#define _IPAQ_ASIC3_SPI_Control               0x0000
-+#define _IPAQ_ASIC3_SPI_TxData                0x0004
-+#define _IPAQ_ASIC3_SPI_RxData                0x0008
-+#define _IPAQ_ASIC3_SPI_Int                   0x000c
-+#define _IPAQ_ASIC3_SPI_Status                0x0010
-+
-+#define IPAQ_ASIC3_SPI_Control(_b)            IPAQ_ASIC3( _b, u16, SPI, Control )
-+#define IPAQ_ASIC3_SPI_TxData(_b)             IPAQ_ASIC3( _b, u16, SPI, TxData )
-+#define IPAQ_ASIC3_SPI_RxData(_b)             IPAQ_ASIC3( _b, u16, SPI, RxData )
-+#define IPAQ_ASIC3_SPI_Int(_b)                IPAQ_ASIC3( _b, u16, SPI, Int )
-+#define IPAQ_ASIC3_SPI_Status(_b)             IPAQ_ASIC3( _b, u16, SPI, Status )
-+
-+#define SPI_CONTROL_SPR(clk)      ((clk) & 0x0f)  /* Clock rate */
-+
-+#define _IPAQ_ASIC3_PWM_0_Base                0x0500
-+#define _IPAQ_ASIC3_PWM_1_Base                0x0600
-+#define _IPAQ_ASIC3_PWM_TimeBase              0x0000
-+#define _IPAQ_ASIC3_PWM_PeriodTime            0x0004
-+#define _IPAQ_ASIC3_PWM_DutyTime              0x0008
-+
-+#define IPAQ_ASIC3_PWM_TimeBase(_b, x)        IPAQ_ASIC3_N( _b, u16, PWM, x, TimeBase )
-+#define IPAQ_ASIC3_PWM_PeriodTime(_b, x)      IPAQ_ASIC3_N( _b, u16, PWM, x, PeriodTime )
-+#define IPAQ_ASIC3_PWM_DutyTime(_b, x)        IPAQ_ASIC3_N( _b, u16, PWM, x, DutyTime )
-+
-+#define PWM_TIMEBASE_VALUE(x)    ((x)&0xf)   /* Low 4 bits sets time base */
-+#define PWM_TIMEBASE_ENABLE     (1 << 4)   /* Enable clock */
-+
-+#define _IPAQ_ASIC3_LED_0_Base                0x0700
-+#define _IPAQ_ASIC3_LED_1_Base                0x0800
-+#define _IPAQ_ASIC3_LED_2_Base 		      0x0900
-+#define _IPAQ_ASIC3_LED_TimeBase              0x0000    /* R/W  7 bits */
-+#define _IPAQ_ASIC3_LED_PeriodTime            0x0004    /* R/W 12 bits */
-+#define _IPAQ_ASIC3_LED_DutyTime              0x0008    /* R/W 12 bits */
-+#define _IPAQ_ASIC3_LED_AutoStopCount         0x000c    /* R/W 16 bits */
-+
-+#define IPAQ_ASIC3_LED_TimeBase(_b, x)         IPAQ_ASIC3_N( _b,  u8, LED, x, TimeBase )
-+#define IPAQ_ASIC3_LED_PeriodTime(_b, x)       IPAQ_ASIC3_N( _b, u16, LED, x, PeriodTime )
-+#define IPAQ_ASIC3_LED_DutyTime(_b, x)         IPAQ_ASIC3_N( _b, u16, LED, x, DutyTime )
-+#define IPAQ_ASIC3_LED_AutoStopCount(_b, x)    IPAQ_ASIC3_N( _b, u16, LED, x, AutoStopCount )
-+
-+/* LED TimeBase bits - match ASIC2 */
-+#define LED_TBS		0x0f		/* Low 4 bits sets time base, max = 13		*/
-+					/* Note: max = 5 on hx4700			*/
-+					/* 0: maximum time base				*/
-+					/* 1: maximum time base / 2			*/
-+					/* n: maximum time base / 2^n			*/
-+
-+#define LED_EN		(1 << 4)	/* LED ON/OFF 0:off, 1:on			*/
-+#define LED_AUTOSTOP	(1 << 5)	/* LED ON/OFF auto stop set 0:disable, 1:enable */ 
-+#define LED_ALWAYS	(1 << 6)	/* LED Interrupt Mask 0:No mask, 1:mask		*/
-+
-+#define _IPAQ_ASIC3_CLOCK_Base		0x0A00
-+#define _IPAQ_ASIC3_CLOCK_CDEX           0x00
-+#define _IPAQ_ASIC3_CLOCK_SEL            0x04
-+
-+#define IPAQ_ASIC3_CLOCK_CDEX(_b)         IPAQ_ASIC3( _b, u16, CLOCK, CDEX )
-+#define IPAQ_ASIC3_CLOCK_SEL(_b)          IPAQ_ASIC3( _b, u16, CLOCK, SEL )
-+
-+#define CLOCK_CDEX_SOURCE       (1 << 0)  /* 2 bits */
-+#define CLOCK_CDEX_SOURCE0      (1 << 0)
-+#define CLOCK_CDEX_SOURCE1      (1 << 1)
-+#define CLOCK_CDEX_SPI          (1 << 2)
-+#define CLOCK_CDEX_OWM          (1 << 3)
-+#define CLOCK_CDEX_PWM0         (1 << 4)
-+#define CLOCK_CDEX_PWM1         (1 << 5)
-+#define CLOCK_CDEX_LED0         (1 << 6)
-+#define CLOCK_CDEX_LED1         (1 << 7)
-+#define CLOCK_CDEX_LED2         (1 << 8)
-+
-+#define CLOCK_CDEX_SD_HOST      (1 << 9)   /* R/W: SD host clock source 24.576M/12.288M */
-+#define CLOCK_CDEX_SD_BUS       (1 << 10)  /* R/W: SD bus clock source control 24.576M/12.288M */
-+#define CLOCK_CDEX_SMBUS        (1 << 11)
-+#define CLOCK_CDEX_CONTROL_CX   (1 << 12)
-+
-+#define CLOCK_CDEX_EX0          (1 << 13)  /* R/W: 32.768 kHz crystal */
-+#define CLOCK_CDEX_EX1          (1 << 14)  /* R/W: 24.576 MHz crystal */
-+
-+#define CLOCK_SEL_SD_HCLK_SEL   (1 << 0)   /* R/W: SDIO host clock select  -  1: 24.576 Mhz, 0: 12.288 MHz */
-+#define CLOCK_SEL_SD_BCLK_SEL   (1 << 1)   /* R/W: SDIO bus clock select -  1: 24.576 MHz, 0: 12.288 MHz */
-+#define CLOCK_SEL_CX            (1 << 2)   /* R/W: INT clock source control (32.768 kHz) */
-+
-+
-+#define _IPAQ_ASIC3_INTR_Base		0x0B00
-+
-+#define _IPAQ_ASIC3_INTR_IntMask       0x00  /* Interrupt mask control */
-+#define _IPAQ_ASIC3_INTR_PIntStat      0x04  /* Peripheral interrupt status */
-+#define _IPAQ_ASIC3_INTR_IntCPS        0x08  /* Interrupt timer clock pre-scale */
-+#define _IPAQ_ASIC3_INTR_IntTBS        0x0c  /* Interrupt timer set */
-+
-+#define IPAQ_ASIC3_INTR_IntMask(_b)       IPAQ_ASIC3( _b, u8, INTR, IntMask )
-+#define IPAQ_ASIC3_INTR_PIntStat(_b)      IPAQ_ASIC3( _b, u8, INTR, PIntStat )
-+#define IPAQ_ASIC3_INTR_IntCPS(_b)        IPAQ_ASIC3( _b, u8, INTR, IntCPS )
-+#define IPAQ_ASIC3_INTR_IntTBS(_b)        IPAQ_ASIC3( _b, u16, INTR, IntTBS )
-+
-+#define ASIC3_INTMASK_GINTMASK    (1 << 0)  /* Global interrupt mask 1:enable */
-+#define ASIC3_INTMASK_GINTEL      (1 << 1)  /* 1: rising edge, 0: hi level */
-+#define ASIC3_INTMASK_MASK0       (1 << 2)
-+#define ASIC3_INTMASK_MASK1       (1 << 3)
-+#define ASIC3_INTMASK_MASK2       (1 << 4)
-+#define ASIC3_INTMASK_MASK3       (1 << 5)
-+#define ASIC3_INTMASK_MASK4       (1 << 6)
-+#define ASIC3_INTMASK_MASK5       (1 << 7)
-+
-+#define ASIC3_INTR_PERIPHERAL_A   (1 << 0)
-+#define ASIC3_INTR_PERIPHERAL_B   (1 << 1)
-+#define ASIC3_INTR_PERIPHERAL_C   (1 << 2)
-+#define ASIC3_INTR_PERIPHERAL_D   (1 << 3)
-+#define ASIC3_INTR_LED0           (1 << 4)
-+#define ASIC3_INTR_LED1           (1 << 5)
-+#define ASIC3_INTR_LED2           (1 << 6)
-+#define ASIC3_INTR_SPI            (1 << 7)
-+#define ASIC3_INTR_SMBUS          (1 << 8)
-+#define ASIC3_INTR_OWM            (1 << 9)
-+
-+#define ASIC3_INTR_CPS(x)         ((x)&0x0f)    /* 4 bits, max 14 */
-+#define ASIC3_INTR_CPS_SET        ( 1 << 4 )    /* Time base enable */
-+
-+
-+/* Basic control of the SD ASIC */
-+#define _IPAQ_ASIC3_SDHWCTRL_Base	0x0E00
-+
-+#define _IPAQ_ASIC3_SDHWCTRL_SDConf    0x00
-+#define IPAQ_ASIC3_SDHWCTRL_SDConf(_b)    IPAQ_ASIC3( _b, u8, SDHWCTRL, SDConf )
-+
-+#define ASIC3_SDHWCTRL_SUSPEND    (1 << 0)  /* 1=suspend all SD operations */
-+#define ASIC3_SDHWCTRL_CLKSEL     (1 << 1)  /* 1=SDICK, 0=HCLK */
-+#define ASIC3_SDHWCTRL_PCLR       (1 << 2)  /* All registers of SDIO cleared */
-+#define ASIC3_SDHWCTRL_LEVCD      (1 << 3)  /* Level of SD card detection: 1:high, 0:low */
-+#define ASIC3_SDHWCTRL_LEVWP      (1 << 4)  /* Level of SD card write protection: 1=low, 0=high */
-+#define ASIC3_SDHWCTRL_SDLED      (1 << 5)  /* SD card LED signal 1=enable, 0=disable */
-+#define ASIC3_SDHWCTRL_SDPWR      (1 << 6)  /* SD card power supply control 1=enable */
-+
-+
-+/* This is a pointer to an array of 12 u32 values - but only the lower 2 bytes matter */
-+/* Use it as "IPAQ_ASIC3_HWPROTECT_ARRAY[x]" */
-+
-+#define _IPAQ_ASIC3_HWPROTECT_Base	0x1000
-+#define IPAQ_ASIC3_HWPROTECT_ARRAY  ((volatile u32*)(_IPAQ_ASIC3_Base + _IPAQ_ASIC3_HWPROTECT_Base))
-+#define HWPROTECT_ARRAY_LEN 12
-+#define HWPROTECT_ARRAY_VALUES {0x4854,0x432d,0x5344,0x494f,0x2050,0x2f4e,0x3a33,0x3048,0x3830,0x3032,0x382d,0x3030}
-+
-+
-+#define _IPAQ_ASIC3_EXTCF_Base		0x1100
-+
-+#define _IPAQ_ASIC3_EXTCF_Select         0x00
-+#define _IPAQ_ASIC3_EXTCF_Reset          0x04
-+
-+#define IPAQ_ASIC3_EXTCF_Select(_b)    IPAQ_ASIC3( _b, u16, EXTCF, Select )
-+#define IPAQ_ASIC3_EXTCF_Reset(_b)     IPAQ_ASIC3( _b, u16, EXTCF, Reset )
-+
-+#define ASIC3_EXTCF_SMOD0	         (1 << 0)  /* slot number of mode 0 */
-+#define ASIC3_EXTCF_SMOD1	         (1 << 1)  /* slot number of mode 1 */
-+#define ASIC3_EXTCF_SMOD2	         (1 << 2)  /* slot number of mode 2 */
-+#define ASIC3_EXTCF_OWM_EN	         (1 << 4)  /* enable onewire module */
-+#define ASIC3_EXTCF_OWM_SMB	         (1 << 5)  /* OWM bus selection */
-+#define ASIC3_EXTCF_OWM_RESET            (1 << 6)  /* undocumented, used by OWM and CF */
-+#define ASIC3_EXTCF_CF0_SLEEP_MODE       (1 << 7)  /* CF0 sleep state control */
-+#define ASIC3_EXTCF_CF1_SLEEP_MODE       (1 << 8)  /* CF1 sleep state control */
-+#define ASIC3_EXTCF_CF0_PWAIT_EN         (1 << 10)  /* CF0 PWAIT_n control */
-+#define ASIC3_EXTCF_CF1_PWAIT_EN         (1 << 11)  /* CF1 PWAIT_n control */
-+#define ASIC3_EXTCF_CF0_BUF_EN           (1 << 12)  /* CF0 buffer control */
-+#define ASIC3_EXTCF_CF1_BUF_EN           (1 << 13)  /* CF1 buffer control */
-+#define ASIC3_EXTCF_SD_MEM_ENABLE        (1 << 14)
-+#define ASIC3_EXTCF_CF_SLEEP             (1 << 15)  /* CF sleep mode control */
-+
-+/*****************************************************************************
-+ *  The Onewire interface registers
-+ *
-+ *  OWM_CMD
-+ *  OWM_DAT
-+ *  OWM_INTR
-+ *  OWM_INTEN
-+ *  OWM_CLKDIV
-+ *
-+ *****************************************************************************/
-+
-+#define _IPAQ_ASIC3_OWM_Base		0xC00
-+
-+#define _IPAQ_ASIC3_OWM_CMD         0x00
-+#define _IPAQ_ASIC3_OWM_DAT         0x04
-+#define _IPAQ_ASIC3_OWM_INTR        0x08
-+#define _IPAQ_ASIC3_OWM_INTEN       0x0C
-+#define _IPAQ_ASIC3_OWM_CLKDIV      0x10
-+
-+#define ASIC3_OWM_CMD_ONEWR         (1 << 0)
-+#define ASIC3_OWM_CMD_SRA           (1 << 1)
-+#define ASIC3_OWM_CMD_DQO           (1 << 2)
-+#define ASIC3_OWM_CMD_DQI           (1 << 3)
-+
-+#define ASIC3_OWM_INTR_PD          (1 << 0)
-+#define ASIC3_OWM_INTR_PDR         (1 << 1)
-+#define ASIC3_OWM_INTR_TBE         (1 << 2)
-+#define ASIC3_OWM_INTR_TEMP        (1 << 3)
-+#define ASIC3_OWM_INTR_RBF         (1 << 4)
-+
-+#define ASIC3_OWM_INTEN_EPD        (1 << 0)
-+#define ASIC3_OWM_INTEN_IAS        (1 << 1)
-+#define ASIC3_OWM_INTEN_ETBE       (1 << 2)
-+#define ASIC3_OWM_INTEN_ETMT       (1 << 3)
-+#define ASIC3_OWM_INTEN_ERBF       (1 << 4)
-+
-+#define ASIC3_OWM_CLKDIV_PRE       (3 << 0) /* two bits wide at bit position 0 */
-+#define ASIC3_OWM_CLKDIV_DIV       (7 << 2) /* 3 bits wide at bit position 2 */
-+
-+
-+/*****************************************************************************
-+ *  The SD configuration registers are at a completely different location
-+ *  in memory.  They are divided into three sets of registers:
-+ *
-+ *  SD_CONFIG         Core configuration register
-+ *  SD_CTRL           Control registers for SD operations
-+ *  SDIO_CTRL         Control registers for SDIO operations
-+ *
-+ *****************************************************************************/
-+
-+#define IPAQ_ASIC3_SD_CONFIG(_b, s,x)   \
-+     (*((volatile s *) ((_b) + _IPAQ_ASIC3_SD_CONFIG_Base + (_IPAQ_ASIC3_SD_CONFIG_ ## x))))
-+
-+#define _IPAQ_ASIC3_SD_CONFIG_Base            0x0400    // Assumes 32 bit addressing
-+
-+#define _IPAQ_ASIC3_SD_CONFIG_Command           0x08   /* R/W: Command */
-+#define _IPAQ_ASIC3_SD_CONFIG_Addr0             0x20   /* [9:31] SD Control Register Base Address */
-+#define _IPAQ_ASIC3_SD_CONFIG_Addr1             0x24   /* [9:31] SD Control Register Base Address */
-+#define _IPAQ_ASIC3_SD_CONFIG_IntPin            0x78   /* R/O: interrupt assigned to pin */
-+#define _IPAQ_ASIC3_SD_CONFIG_ClkStop           0x80   /* Set to 0x1f to clock SD controller, 0 otherwise. */
-+							/* at 0x82 - Gated Clock Control */
-+#define _IPAQ_ASIC3_SD_CONFIG_ClockMode         0x84   /* Control clock of SD controller */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_PinStatus    0x88   /* R/0: read status of SD pins */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_Power1       0x90   /* Power1 - manual power control */
-+							/* Power2 is at 0x92 - auto power up after card inserted */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_Power3       0x94   /* auto power down when card removed */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_CardDetect   0x98   /* */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_Slot         0xA0   /* R/O: define support slot number */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_ExtGateClk1  0x1E0  /* Could be used for gated clock (don't use) */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_ExtGateClk2  0x1E2  /* Could be used for gated clock (don't use) */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_GPIO_OutAndEnable  0x1E8  /* GPIO Output Reg. , at 0x1EA - GPIO Output Enable Reg. */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_GPIO_Status  0x1EC  /* GPIO Status Reg. */
-+#define _IPAQ_ASIC3_SD_CONFIG_SDHC_ExtGateClk3  0x1F0  /* Bit 1: double buffer/single buffer */
-+ 
-+#define IPAQ_ASIC3_SD_CONFIG_Command(_b)           IPAQ_ASIC3_SD_CONFIG(_b, u16, Command )
-+#define IPAQ_ASIC3_SD_CONFIG_Addr0(_b)             IPAQ_ASIC3_SD_CONFIG(_b, u16, Addr0 )
-+#define IPAQ_ASIC3_SD_CONFIG_Addr1(_b)             IPAQ_ASIC3_SD_CONFIG(_b, u16, Addr1 )
-+#define IPAQ_ASIC3_SD_CONFIG_IntPin(_b)            IPAQ_ASIC3_SD_CONFIG(_b, u8, IntPin )
-+#define IPAQ_ASIC3_SD_CONFIG_ClkStop(_b)           IPAQ_ASIC3_SD_CONFIG(_b, u8, ClkStop )
-+#define IPAQ_ASIC3_SD_CONFIG_ClockMode(_b)         IPAQ_ASIC3_SD_CONFIG(_b, u8, ClockMode )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_PinStatus(_b)    IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_PinStatus )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_Power1(_b)       IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_Power1 )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_Power3(_b)       IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_Power3 )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_CardDetect(_b)   IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_CardDetect )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_Slot(_b)         IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_Slot )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_ExtGateClk1(_b)  IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_ExtGateClk1 )
-+#define IPAQ_ASIC3_SD_CONFIG_SDHC_ExtGateClk3(_b)  IPAQ_ASIC3_SD_CONFIG(_b, u16, SDHC_ExtGateClk3 )
-+
-+#define SD_CONFIG_
-+
-+#define SD_CONFIG_COMMAND_MAE                (1<<1)    /* Memory access enable (set to 1 to access SD Controller) */
-+
-+#define SD_CONFIG_CLK_ENABLE_ALL             0x1f
-+
-+#define SD_CONFIG_POWER1_PC_33V              0x0200    /* Set for 3.3 volts */
-+#define SD_CONFIG_POWER1_PC_OFF              0x0000    /* Turn off power */
-+
-+#define SD_CONFIG_CARDDETECTMODE_CLK           ((x)&0x3) /* two bits - number of cycles for card detection */
-+
-+
-+#define _IPAQ_ASIC3_SD_CTRL_Base            0x1000
-+
-+#define IPAQ_ASIC3_SD(_b, s,x)   \
-+     (*((volatile s *) ((_b) + _IPAQ_ASIC3_SD_CTRL_Base + (_IPAQ_ASIC3_SD_CTRL_ ## x))))
-+
-+#define _IPAQ_ASIC3_SD_CTRL_Cmd                  0x00
-+#define _IPAQ_ASIC3_SD_CTRL_Arg0                 0x08
-+#define _IPAQ_ASIC3_SD_CTRL_Arg1                 0x0C
-+#define _IPAQ_ASIC3_SD_CTRL_StopInternal         0x10
-+#define _IPAQ_ASIC3_SD_CTRL_TransferSectorCount  0x14
-+#define _IPAQ_ASIC3_SD_CTRL_Response0            0x18
-+#define _IPAQ_ASIC3_SD_CTRL_Response1            0x1C
-+#define _IPAQ_ASIC3_SD_CTRL_Response2            0x20
-+#define _IPAQ_ASIC3_SD_CTRL_Response3            0x24
-+#define _IPAQ_ASIC3_SD_CTRL_Response4            0x28
-+#define _IPAQ_ASIC3_SD_CTRL_Response5            0x2C
-+#define _IPAQ_ASIC3_SD_CTRL_Response6            0x30
-+#define _IPAQ_ASIC3_SD_CTRL_Response7            0x34
-+#define _IPAQ_ASIC3_SD_CTRL_CardStatus           0x38
-+#define _IPAQ_ASIC3_SD_CTRL_BufferCtrl           0x3C
-+#define _IPAQ_ASIC3_SD_CTRL_IntMaskCard          0x40
-+#define _IPAQ_ASIC3_SD_CTRL_IntMaskBuffer        0x44
-+#define _IPAQ_ASIC3_SD_CTRL_CardClockCtrl        0x48
-+#define _IPAQ_ASIC3_SD_CTRL_MemCardXferDataLen   0x4C
-+#define _IPAQ_ASIC3_SD_CTRL_MemCardOptionSetup   0x50
-+#define _IPAQ_ASIC3_SD_CTRL_ErrorStatus0         0x58
-+#define _IPAQ_ASIC3_SD_CTRL_ErrorStatus1         0x5C
-+#define _IPAQ_ASIC3_SD_CTRL_DataPort             0x60
-+#define _IPAQ_ASIC3_SD_CTRL_TransactionCtrl      0x68
-+#define _IPAQ_ASIC3_SD_CTRL_SoftwareReset        0x1C0
-+
-+#define IPAQ_ASIC3_SD_CTRL_Cmd(_b)                  IPAQ_ASIC3_SD( _b, u16, Cmd )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Arg0(_b)                 IPAQ_ASIC3_SD( _b, u16, Arg0 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Arg1(_b)                 IPAQ_ASIC3_SD( _b, u16, Arg1 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_StopInternal(_b)         IPAQ_ASIC3_SD( _b, u16, StopInternal )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_TransferSectorCount(_b)  IPAQ_ASIC3_SD( _b, u16, TransferSectorCount )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response0(_b)            IPAQ_ASIC3_SD( _b, u16, Response0 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response1(_b)            IPAQ_ASIC3_SD( _b, u16, Response1 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response2(_b)            IPAQ_ASIC3_SD( _b, u16, Response2 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response3(_b)            IPAQ_ASIC3_SD( _b, u16, Response3 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response4(_b)            IPAQ_ASIC3_SD( _b, u16, Response4 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response5(_b)            IPAQ_ASIC3_SD( _b, u16, Response5 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response6(_b)            IPAQ_ASIC3_SD( _b, u16, Response6 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_Response7(_b)            IPAQ_ASIC3_SD( _b, u16, Response7 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_CardStatus(_b)           IPAQ_ASIC3_SD( _b, u16, CardStatus )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_BufferCtrl(_b)           IPAQ_ASIC3_SD( _b, u16, BufferCtrl )   /* and error status*/
-+#define IPAQ_ASIC3_SD_CTRL_IntMaskCard(_b)          IPAQ_ASIC3_SD( _b, u16, IntMaskCard )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_IntMaskBuffer(_b)        IPAQ_ASIC3_SD( _b, u16, IntMaskBuffer )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_CardClockCtrl(_b)        IPAQ_ASIC3_SD( _b, u16, CardClockCtrl )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_MemCardXferDataLen(_b)   IPAQ_ASIC3_SD( _b, u16, MemCardXferDataLen )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_MemCardOptionSetup(_b)   IPAQ_ASIC3_SD( _b, u16, MemCardOptionSetup )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_ErrorStatus0(_b)         IPAQ_ASIC3_SD( _b, u16, ErrorStatus0 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_ErrorStatus1(_b)         IPAQ_ASIC3_SD( _b, u16, ErrorStatus1 )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_DataPort(_b)             IPAQ_ASIC3_SD( _b, u16, DataPort )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_TransactionCtrl(_b)      IPAQ_ASIC3_SD( _b, u16, TransactionCtrl )   /* */
-+#define IPAQ_ASIC3_SD_CTRL_SoftwareReset(_b)        IPAQ_ASIC3_SD( _b, u16, SoftwareReset )   /* */
-+
-+#define SD_CTRL_SOFTWARE_RESET_CLEAR            (1<<0)
-+
-+#define SD_CTRL_TRANSACTIONCONTROL_SET          (1<<8) // 0x0100
-+
-+#define SD_CTRL_CARDCLOCKCONTROL_FOR_SD_CARD    (1<<15)// 0x8000
-+#define SD_CTRL_CARDCLOCKCONTROL_ENABLE_CLOCK   (1<<8) // 0x0100
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_512    (1<<7) // 0x0080
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_256    (1<<6) // 0x0040
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_128    (1<<5) // 0x0020
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_64     (1<<4) // 0x0010
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_32     (1<<3) // 0x0008
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_16     (1<<2) // 0x0004
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_8      (1<<1) // 0x0002
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_4      (1<<0) // 0x0001
-+#define SD_CTRL_CARDCLOCKCONTROL_CLK_DIV_2      (0<<0) // 0x0000
-+
-+#define MEM_CARD_OPTION_REQUIRED                   0x000e
-+#define MEM_CARD_OPTION_DATA_RESPONSE_TIMEOUT(x)   (((x)&0x0f)<<4)      /* Four bits */
-+#define MEM_CARD_OPTION_C2_MODULE_NOT_PRESENT      (1<<14) // 0x4000
-+#define MEM_CARD_OPTION_DATA_XFR_WIDTH_1           (1<<15) // 0x8000
-+#define MEM_CARD_OPTION_DATA_XFR_WIDTH_4           (0<<15) //~0x8000
-+
-+#define SD_CTRL_COMMAND_INDEX(x)                   ((x)&0x3f)           /* 0=CMD0, 1=CMD1, ..., 63=CMD63 */
-+#define SD_CTRL_COMMAND_TYPE_CMD                   (0 << 6)
-+#define SD_CTRL_COMMAND_TYPE_ACMD                  (1 << 6)
-+#define SD_CTRL_COMMAND_TYPE_AUTHENTICATION        (2 << 6)
-+#define SD_CTRL_COMMAND_RESPONSE_TYPE_NORMAL       (0 << 8)
-+#define SD_CTRL_COMMAND_RESPONSE_TYPE_EXT_R1       (4 << 8)
-+#define SD_CTRL_COMMAND_RESPONSE_TYPE_EXT_R1B      (5 << 8)
-+#define SD_CTRL_COMMAND_RESPONSE_TYPE_EXT_R2       (6 << 8)
-+#define SD_CTRL_COMMAND_RESPONSE_TYPE_EXT_R3       (7 << 8)
-+#define SD_CTRL_COMMAND_DATA_PRESENT               (1 << 11)
-+#define SD_CTRL_COMMAND_TRANSFER_READ              (1 << 12)
-+#define SD_CTRL_COMMAND_TRANSFER_WRITE             (0 << 12)
-+#define SD_CTRL_COMMAND_MULTI_BLOCK                (1 << 13)
-+#define SD_CTRL_COMMAND_SECURITY_CMD               (1 << 14)
-+
-+#define SD_CTRL_STOP_INTERNAL_ISSSUE_CMD12         (1 << 0)
-+#define SD_CTRL_STOP_INTERNAL_AUTO_ISSUE_CMD12     (1 << 8)
-+
-+#define SD_CTRL_CARDSTATUS_RESPONSE_END            (1 << 0)
-+#define SD_CTRL_CARDSTATUS_RW_END                  (1 << 2)
-+#define SD_CTRL_CARDSTATUS_CARD_REMOVED_0          (1 << 3)
-+#define SD_CTRL_CARDSTATUS_CARD_INSERTED_0         (1 << 4)
-+#define SD_CTRL_CARDSTATUS_SIGNAL_STATE_PRESENT_0  (1 << 5)
-+#define SD_CTRL_CARDSTATUS_WRITE_PROTECT           (1 << 7)
-+#define SD_CTRL_CARDSTATUS_CARD_REMOVED_3          (1 << 8)
-+#define SD_CTRL_CARDSTATUS_CARD_INSERTED_3         (1 << 9)
-+#define SD_CTRL_CARDSTATUS_SIGNAL_STATE_PRESENT_3  (1 << 10)
-+
-+#define SD_CTRL_BUFFERSTATUS_CMD_INDEX_ERROR       (1 << 0) // 0x0001
-+#define SD_CTRL_BUFFERSTATUS_CRC_ERROR             (1 << 1) // 0x0002
-+#define SD_CTRL_BUFFERSTATUS_STOP_BIT_END_ERROR    (1 << 2) // 0x0004
-+#define SD_CTRL_BUFFERSTATUS_DATA_TIMEOUT          (1 << 3) // 0x0008
-+#define SD_CTRL_BUFFERSTATUS_BUFFER_OVERFLOW       (1 << 4) // 0x0010
-+#define SD_CTRL_BUFFERSTATUS_BUFFER_UNDERFLOW      (1 << 5) // 0x0020
-+#define SD_CTRL_BUFFERSTATUS_CMD_TIMEOUT           (1 << 6) // 0x0040
-+#define SD_CTRL_BUFFERSTATUS_UNK7                  (1 << 7) // 0x0080
-+#define SD_CTRL_BUFFERSTATUS_BUFFER_READ_ENABLE    (1 << 8) // 0x0100
-+#define SD_CTRL_BUFFERSTATUS_BUFFER_WRITE_ENABLE   (1 << 9) // 0x0200
-+#define SD_CTRL_BUFFERSTATUS_ILLEGAL_FUNCTION      (1 << 13)// 0x2000
-+#define SD_CTRL_BUFFERSTATUS_CMD_BUSY              (1 << 14)// 0x4000
-+#define SD_CTRL_BUFFERSTATUS_ILLEGAL_ACCESS        (1 << 15)// 0x8000
-+
-+#define SD_CTRL_INTMASKCARD_RESPONSE_END           (1 << 0) // 0x0001
-+#define SD_CTRL_INTMASKCARD_RW_END                 (1 << 2) // 0x0004
-+#define SD_CTRL_INTMASKCARD_CARD_REMOVED_0         (1 << 3) // 0x0008
-+#define SD_CTRL_INTMASKCARD_CARD_INSERTED_0        (1 << 4) // 0x0010
-+#define SD_CTRL_INTMASKCARD_SIGNAL_STATE_PRESENT_0 (1 << 5) // 0x0020
-+#define SD_CTRL_INTMASKCARD_UNK6                   (1 << 6) // 0x0040
-+#define SD_CTRL_INTMASKCARD_WRITE_PROTECT          (1 << 7) // 0x0080
-+#define SD_CTRL_INTMASKCARD_CARD_REMOVED_3         (1 << 8) // 0x0100
-+#define SD_CTRL_INTMASKCARD_CARD_INSERTED_3        (1 << 9) // 0x0200
-+#define SD_CTRL_INTMASKCARD_SIGNAL_STATE_PRESENT_3 (1 << 10)// 0x0400
-+
-+#define SD_CTRL_INTMASKBUFFER_CMD_INDEX_ERROR      (1 << 0) // 0x0001
-+#define SD_CTRL_INTMASKBUFFER_CRC_ERROR            (1 << 1) // 0x0002
-+#define SD_CTRL_INTMASKBUFFER_STOP_BIT_END_ERROR   (1 << 2) // 0x0004
-+#define SD_CTRL_INTMASKBUFFER_DATA_TIMEOUT         (1 << 3) // 0x0008
-+#define SD_CTRL_INTMASKBUFFER_BUFFER_OVERFLOW      (1 << 4) // 0x0010
-+#define SD_CTRL_INTMASKBUFFER_BUFFER_UNDERFLOW     (1 << 5) // 0x0020
-+#define SD_CTRL_INTMASKBUFFER_CMD_TIMEOUT          (1 << 6) // 0x0040
-+#define SD_CTRL_INTMASKBUFFER_UNK7                 (1 << 7) // 0x0080
-+#define SD_CTRL_INTMASKBUFFER_BUFFER_READ_ENABLE   (1 << 8) // 0x0100
-+#define SD_CTRL_INTMASKBUFFER_BUFFER_WRITE_ENABLE  (1 << 9) // 0x0200
-+#define SD_CTRL_INTMASKBUFFER_ILLEGAL_FUNCTION     (1 << 13)// 0x2000
-+#define SD_CTRL_INTMASKBUFFER_CMD_BUSY             (1 << 14)// 0x4000
-+#define SD_CTRL_INTMASKBUFFER_ILLEGAL_ACCESS       (1 << 15)// 0x8000
-+
-+#define SD_CTRL_DETAIL0_RESPONSE_CMD_ERROR                   (1 << 0) // 0x0001
-+#define SD_CTRL_DETAIL0_END_BIT_ERROR_FOR_RESPONSE_NON_CMD12 (1 << 2) // 0x0004
-+#define SD_CTRL_DETAIL0_END_BIT_ERROR_FOR_RESPONSE_CMD12     (1 << 3) // 0x0008
-+#define SD_CTRL_DETAIL0_END_BIT_ERROR_FOR_READ_DATA          (1 << 4) // 0x0010
-+#define SD_CTRL_DETAIL0_END_BIT_ERROR_FOR_WRITE_CRC_STATUS   (1 << 5) // 0x0020
-+#define SD_CTRL_DETAIL0_CRC_ERROR_FOR_RESPONSE_NON_CMD12     (1 << 8) // 0x0100
-+#define SD_CTRL_DETAIL0_CRC_ERROR_FOR_RESPONSE_CMD12         (1 << 9) // 0x0200
-+#define SD_CTRL_DETAIL0_CRC_ERROR_FOR_READ_DATA              (1 << 10)// 0x0400
-+#define SD_CTRL_DETAIL0_CRC_ERROR_FOR_WRITE_CMD              (1 << 11)// 0x0800
-+
-+#define SD_CTRL_DETAIL1_NO_CMD_RESPONSE                      (1 << 0) // 0x0001
-+#define SD_CTRL_DETAIL1_TIMEOUT_READ_DATA                    (1 << 4) // 0x0010
-+#define SD_CTRL_DETAIL1_TIMEOUT_CRS_STATUS                   (1 << 5) // 0x0020
-+#define SD_CTRL_DETAIL1_TIMEOUT_CRC_BUSY                     (1 << 6) // 0x0040
-+
-+#define _IPAQ_ASIC3_SDIO_CTRL_Base          0x1200
-+
-+#define IPAQ_ASIC3_SDIO(_b, s,x)   \
-+     (*((volatile s *) ((_b) + _IPAQ_ASIC3_SDIO_CTRL_Base + (_IPAQ_ASIC3_SDIO_CTRL_ ## x))))
-+
-+#define _IPAQ_ASIC3_SDIO_CTRL_Cmd                  0x00
-+#define _IPAQ_ASIC3_SDIO_CTRL_CardPortSel          0x04
-+#define _IPAQ_ASIC3_SDIO_CTRL_Arg0                 0x08
-+#define _IPAQ_ASIC3_SDIO_CTRL_Arg1                 0x0C
-+#define _IPAQ_ASIC3_SDIO_CTRL_TransferBlockCount   0x14
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response0            0x18
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response1            0x1C
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response2            0x20
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response3            0x24
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response4            0x28
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response5            0x2C
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response6            0x30
-+#define _IPAQ_ASIC3_SDIO_CTRL_Response7            0x34
-+#define _IPAQ_ASIC3_SDIO_CTRL_CardStatus           0x38
-+#define _IPAQ_ASIC3_SDIO_CTRL_BufferCtrl           0x3C
-+#define _IPAQ_ASIC3_SDIO_CTRL_IntMaskCard          0x40
-+#define _IPAQ_ASIC3_SDIO_CTRL_IntMaskBuffer        0x44
-+#define _IPAQ_ASIC3_SDIO_CTRL_CardXferDataLen      0x4C
-+#define _IPAQ_ASIC3_SDIO_CTRL_CardOptionSetup      0x50
-+#define _IPAQ_ASIC3_SDIO_CTRL_ErrorStatus0         0x54
-+#define _IPAQ_ASIC3_SDIO_CTRL_ErrorStatus1         0x58
-+#define _IPAQ_ASIC3_SDIO_CTRL_DataPort             0x60
-+#define _IPAQ_ASIC3_SDIO_CTRL_TransactionCtrl      0x68
-+#define _IPAQ_ASIC3_SDIO_CTRL_CardIntCtrl          0x6C
-+#define _IPAQ_ASIC3_SDIO_CTRL_ClocknWaitCtrl       0x70
-+#define _IPAQ_ASIC3_SDIO_CTRL_HostInformation      0x74
-+#define _IPAQ_ASIC3_SDIO_CTRL_ErrorCtrl            0x78
-+#define _IPAQ_ASIC3_SDIO_CTRL_LEDCtrl              0x7C
-+#define _IPAQ_ASIC3_SDIO_CTRL_SoftwareReset        0x1C0
-+
-+#define IPAQ_ASIC3_SDIO_CTRL_Cmd(_b)                  IPAQ_ASIC3_SDIO( _b, u16, Cmd )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_CardPortSel(_b)          IPAQ_ASIC3_SDIO( _b, u16, CardPortSel )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Arg0(_b)                 IPAQ_ASIC3_SDIO( _b, u16, Arg0 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Arg1(_b)                 IPAQ_ASIC3_SDIO( _b, u16, Arg1 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_TransferBlockCount(_b)   IPAQ_ASIC3_SDIO( _b, u16, TransferBlockCount )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response0(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response0 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response1(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response1 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response2(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response2 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response3(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response3 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response4(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response4 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response5(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response5 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response6(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response6 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_Response7(_b)            IPAQ_ASIC3_SDIO( _b, u16, Response7 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_CardStatus(_b)           IPAQ_ASIC3_SDIO( _b, u16, CardStatus )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_BufferCtrl(_b)           IPAQ_ASIC3_SDIO( _b, u16, BufferCtrl )   /* and error status*/
-+#define IPAQ_ASIC3_SDIO_CTRL_IntMaskCard(_b)          IPAQ_ASIC3_SDIO( _b, u16, IntMaskCard )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_IntMaskBuffer(_b)        IPAQ_ASIC3_SDIO( _b, u16, IntMaskBuffer )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_CardXferDataLen(_b)      IPAQ_ASIC3_SDIO( _b, u16, CardXferDataLen )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_CardOptionSetup(_b)      IPAQ_ASIC3_SDIO( _b, u16, CardOptionSetup )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_ErrorStatus0(_b)         IPAQ_ASIC3_SDIO( _b, u16, ErrorStatus0 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_ErrorStatus1(_b)         IPAQ_ASIC3_SDIO( _b, u16, ErrorStatus1 )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_DataPort(_b)             IPAQ_ASIC3_SDIO( _b, u16, DataPort )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_TransactionCtrl(_b)      IPAQ_ASIC3_SDIO( _b, u16, TransactionCtrl )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_CardIntCtrl(_b)          IPAQ_ASIC3_SDIO( _b, u16, CardIntCtrl )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_ClocknWaitCtrl(_b)       IPAQ_ASIC3_SDIO( _b, u16, ClocknWaitCtrl )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_HostInformation(_b)      IPAQ_ASIC3_SDIO( _b, u16, HostInformation )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_ErrorCtrl(_b)            IPAQ_ASIC3_SDIO( _b, u16, ErrorCtrl )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_LEDCtrl(_b)              IPAQ_ASIC3_SDIO( _b, u16, LEDCtrl )   /* */
-+#define IPAQ_ASIC3_SDIO_CTRL_SoftwareReset(_b)        IPAQ_ASIC3_SDIO( _b, u16, SoftwareReset )   /* */
-+
-+#define IPAQ_ASIC3_MAP_SIZE	     0x2000
-+
++#include <linux/module.h>
++#include <linux/version.h>
++#include <linux/platform_device.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/clk.h>
++#include <linux/ds1wm.h>
++#ifdef CONFIG_PLAT_S3C24XX
++#include <asm/plat-s3c24xx/clock.h>
++#define clk_register(clk)	s3c24xx_register_clock(clk)
++#define clk_unregister(clk)
++#else
++#include <asm/arch/clock.h>
 +#endif
++
++#include <asm/hardware.h>
++#include <asm/irq.h>
++#include <asm/io.h>
++
++#include <asm/hardware/ipaq-asic3.h>
++#include <linux/soc/asic3_base.h>
++#include <linux/soc/tmio_mmc.h>
++#include "soc-core.h"
++
++
++struct asic3_data
++{
++	void *mapping;
++	unsigned int bus_shift;
++	int irq_base;
++	int irq_nr;
++
++	u16 irq_bothedge[4];
++	struct device *dev;
++
++	struct platform_device *mmc_dev;
++};
++
++static spinlock_t asic3_gpio_lock;
++
++static int asic3_remove(struct platform_device *dev);
++
++static inline unsigned long asic3_address(struct device *dev,
++					  unsigned int reg)
++{
++	struct asic3_data *adata;
++
++	adata = (struct asic3_data *)dev->driver_data;
++
++	return (unsigned long)adata->mapping + (reg >> (2 - adata->bus_shift));
++}
++
++void asic3_write_register(struct device *dev, unsigned int reg, u32 value)
++{
++	__raw_writew(value, asic3_address(dev, reg));
++}
++EXPORT_SYMBOL(asic3_write_register);
++
++u32 asic3_read_register(struct device *dev, unsigned int reg)
++{
++	return __raw_readw(asic3_address(dev, reg));
++}
++EXPORT_SYMBOL(asic3_read_register);
++
++static inline void __asic3_write_register(struct asic3_data *asic,
++					  unsigned int reg, u32 value)
++{
++	__raw_writew(value, (unsigned long)asic->mapping
++			    + (reg >> (2 - asic->bus_shift)));
++}
++
++static inline u32 __asic3_read_register(struct asic3_data *asic,
++					unsigned int reg)
++{
++	return __raw_readw((unsigned long)asic->mapping
++			   + (reg >> (2 - asic->bus_shift)));
++}
++
++#define ASIC3_GPIO_FN(get_fn_name, set_fn_name, REG)			\
++u32 get_fn_name(struct device *dev)					\
++{                                                                       \
++	return asic3_read_register(dev, REG);				\
++}                                                                       \
++EXPORT_SYMBOL(get_fn_name);						\
++									\
++void set_fn_name(struct device *dev, u32 bits, u32 val)			\
++{                                                                       \
++	unsigned long flags;						\
++									\
++	spin_lock_irqsave(&asic3_gpio_lock, flags);			\
++	val |= (asic3_read_register(dev, REG) & ~bits);			\
++	asic3_write_register(dev, REG, val);				\
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);		\
++}                                                                       \
++EXPORT_SYMBOL(set_fn_name);
++
++#define ASIC3_GPIO_REGISTER(ACTION, action, fn, FN)			\
++	ASIC3_GPIO_FN (asic3_get_gpio_ ## action ## _ ## fn ,		\
++		       asic3_set_gpio_ ## action ## _ ## fn ,		\
++		       _IPAQ_ASIC3_GPIO_ ## FN ## _Base 		\
++		       + _IPAQ_ASIC3_GPIO_ ## ACTION )
++
++#define ASIC3_GPIO_FUNCTIONS(fn, FN)					\
++	ASIC3_GPIO_REGISTER (Direction, dir, fn, FN)			\
++	ASIC3_GPIO_REGISTER (Out, out, fn, FN)				\
++	ASIC3_GPIO_REGISTER (SleepMask, sleepmask, fn, FN)		\
++	ASIC3_GPIO_REGISTER (SleepOut, sleepout, fn, FN)		\
++	ASIC3_GPIO_REGISTER (BattFaultOut, battfaultout, fn, FN)	\
++	ASIC3_GPIO_REGISTER (AltFunction, alt_fn, fn, FN)		\
++	ASIC3_GPIO_REGISTER (SleepConf, sleepconf, fn, FN)		\
++	ASIC3_GPIO_REGISTER (Status, status, fn, FN)
++
++ASIC3_GPIO_FUNCTIONS(a, A)
++ASIC3_GPIO_FUNCTIONS(b, B)
++ASIC3_GPIO_FUNCTIONS(c, C)
++ASIC3_GPIO_FUNCTIONS(d, D)
++
++int asic3_gpio_get_value(struct device *dev, unsigned gpio)
++{
++	u32 mask = ASIC3_GPIO_bit(gpio);
++	printk("%s(%d)\n", __FUNCTION__, gpio);
++	switch (gpio >> 4) {
++	case _IPAQ_ASIC3_GPIO_BANK_A:
++		return asic3_get_gpio_status_a(dev) & mask;
++	case _IPAQ_ASIC3_GPIO_BANK_B:
++		return asic3_get_gpio_status_b(dev) & mask;
++	case _IPAQ_ASIC3_GPIO_BANK_C:
++		return asic3_get_gpio_status_c(dev) & mask;
++	case _IPAQ_ASIC3_GPIO_BANK_D:
++		return asic3_get_gpio_status_d(dev) & mask;
++	}
++
++	printk(KERN_ERR "%s: invalid GPIO value 0x%x", __FUNCTION__, gpio);
++	return 0;
++}
++EXPORT_SYMBOL(asic3_gpio_get_value);
++
++void asic3_gpio_set_value(struct device *dev, unsigned gpio, int val)
++{
++	u32 mask = ASIC3_GPIO_bit(gpio);
++	u32 bitval = 0;
++	if (val)  bitval = mask;
++	printk("%s(%d, %d)\n", __FUNCTION__, gpio, val);
++
++	switch (gpio >> 4) {
++	case _IPAQ_ASIC3_GPIO_BANK_A:
++		asic3_set_gpio_out_a(dev, mask, bitval);
++		return;
++	case _IPAQ_ASIC3_GPIO_BANK_B:
++		asic3_set_gpio_out_b(dev, mask, bitval);
++		return;
++	case _IPAQ_ASIC3_GPIO_BANK_C:
++		asic3_set_gpio_out_c(dev, mask, bitval);
++		return;
++	case _IPAQ_ASIC3_GPIO_BANK_D:
++		asic3_set_gpio_out_d(dev, mask, bitval);
++		return;
++	}
++
++	printk(KERN_ERR "%s: invalid GPIO value 0x%x", __FUNCTION__, gpio);
++}
++EXPORT_SYMBOL(asic3_gpio_set_value);
++
++int asic3_irq_base(struct device *dev)
++{
++	struct asic3_data *asic = dev->driver_data;
++
++	return asic->irq_base;
++}
++EXPORT_SYMBOL(asic3_irq_base);
++
++void asic3_set_led(struct device *dev, int led_num, int duty_time,
++		   int cycle_time, int timebase)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned int led_base;
++
++	/* it's a macro thing: see #define _IPAQ_ASIC_LED_0_Base for why you
++	 * can't substitute led_num in the macros below...
++	 */
++
++	switch (led_num) {
++	case 0:
++		led_base = _IPAQ_ASIC3_LED_0_Base;
++		break;
++	case 1:
++		led_base = _IPAQ_ASIC3_LED_1_Base;
++		break;
++	case 2:
++		led_base = _IPAQ_ASIC3_LED_2_Base;
++		break;
++	default:
++		printk(KERN_ERR "%s: invalid led number %d", __FUNCTION__,
++		       led_num);
++		return;
++	}
++
++	__asic3_write_register(asic, led_base + _IPAQ_ASIC3_LED_TimeBase,
++			       timebase | LED_EN);
++	__asic3_write_register(asic, led_base + _IPAQ_ASIC3_LED_PeriodTime,
++			       cycle_time);
++	__asic3_write_register(asic, led_base + _IPAQ_ASIC3_LED_DutyTime,
++			       0);
++	udelay(20);     /* asic voodoo - possibly need a whole duty cycle? */
++	__asic3_write_register(asic, led_base + _IPAQ_ASIC3_LED_DutyTime,
++			       duty_time);
++}
++
++EXPORT_SYMBOL(asic3_set_led);
++
++void asic3_set_clock_sel(struct device *dev, u32 bits, u32 val)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned long flags;
++	u32 v;
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	v = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, SEL));
++	v = (v & ~bits) | val;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, SEL), v);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++EXPORT_SYMBOL(asic3_set_clock_sel);
++
++void asic3_set_clock_cdex(struct device *dev, u32 bits, u32 val)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned long flags;
++	u32 v;
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	v = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, CDEX));
++	v = (v & ~bits) | val;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, CDEX), v);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++EXPORT_SYMBOL(asic3_set_clock_cdex);
++
++static int asic3_clock_cdex_enable(struct clk *clk, int enable)
++{
++	struct asic3_data *asic = (struct asic3_data *)clk->parent->ctrlbit;
++	unsigned long flags, val;
++
++	local_irq_save(flags);
++
++	val = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, CDEX));
++	if (enable)
++		val |= clk->ctrlbit;
++	else
++		val &= ~clk->ctrlbit;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, CDEX), val);
++
++	local_irq_restore(flags);
++	
++	return 0;
++}
++
++/* base clocks */
++
++static struct clk clk_g = {
++	.name		= "gclk",
++	.rate		= 0,
++	.parent		= NULL,
++};
++
++/* clock definitions */
++
++static struct clk asic3_clocks[] = {
++	{
++		.name    = "spi",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_SPI,
++	},
++#ifdef CONFIG_HTC_ASIC3_DS1WM
++	{
++		.name    = "ds1wm",
++		.id      = -1,
++		.rate	 = 5000000,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_OWM,
++	},
++#endif
++	{
++		.name    = "pwm0",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_PWM0,
++	},
++	{
++		.name    = "pwm1",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_PWM1,
++	},
++	{
++		.name    = "led0",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_LED0,
++	},
++	{
++		.name    = "led1",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_LED1,
++	},
++	{
++		.name    = "led2",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_LED2,
++	},
++	{
++		.name    = "smbus",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_SMBUS,
++	},
++	{
++		.name    = "ex0",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_EX0,
++	},
++	{
++		.name    = "ex1",
++		.id      = -1,
++		.parent  = &clk_g,
++		.enable  = asic3_clock_cdex_enable,
++		.ctrlbit = CLOCK_CDEX_EX1,
++	},
++};
++
++void asic3_set_extcf_select(struct device *dev, u32 bits, u32 val)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned long flags;
++	u32 v;
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	v = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(EXTCF, Select));
++	v = (v & ~bits) | val;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(EXTCF, Select), v);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++EXPORT_SYMBOL(asic3_set_extcf_select);
++
++void asic3_set_extcf_reset(struct device *dev, u32 bits, u32 val)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned long flags;
++	u32 v;
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	v = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(EXTCF, Reset));
++	v = (v & ~bits) | val;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(EXTCF, Reset), v);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++EXPORT_SYMBOL(asic3_set_extcf_reset);
++
++void asic3_set_sdhwctrl(struct device *dev, u32 bits, u32 val)
++{
++	struct asic3_data *asic = dev->driver_data;
++	unsigned long flags;
++	u32 v;
++
++	spin_lock_irqsave (&asic3_gpio_lock, flags);
++	v = __asic3_read_register(asic, IPAQ_ASIC3_OFFSET(SDHWCTRL, SDConf));
++	v = (v & ~bits) | val;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(SDHWCTRL, SDConf), v);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++EXPORT_SYMBOL(asic3_set_sdhwctrl);
++
++
++#define MAX_ASIC_ISR_LOOPS    20
++#define _IPAQ_ASIC3_GPIO_Base_INCR \
++	(_IPAQ_ASIC3_GPIO_B_Base - _IPAQ_ASIC3_GPIO_A_Base)
++
++static inline void asic3_irq_flip_edge(struct asic3_data *asic,
++				       u32 base, int bit)
++{
++	u16 edge = __asic3_read_register(asic,
++		base + _IPAQ_ASIC3_GPIO_EdgeTrigger);
++	edge ^= bit;
++	__asic3_write_register(asic,
++		base + _IPAQ_ASIC3_GPIO_EdgeTrigger, edge);
++}
++
++static void asic3_irq_demux(unsigned int irq, struct irq_desc *desc)
++{
++	int iter;
++	struct asic3_data *asic;
++
++	/* Acknowledge the parrent (i.e. CPU's) IRQ */
++	desc->chip->ack(irq);
++
++	asic = desc->handler_data;
++
++	/* printk( KERN_NOTICE "asic3_irq_demux: irq=%d\n", irq ); */
++	for (iter = 0 ; iter < MAX_ASIC_ISR_LOOPS; iter++) {
++		u32 status;
++		int bank;
++
++		status = __asic3_read_register(asic,
++			IPAQ_ASIC3_OFFSET(INTR, PIntStat));
++		/* Check all ten register bits */
++		if ((status & 0x3ff) == 0)
++			break;
++
++		/* Handle GPIO IRQs */
++		for (bank = 0; bank < 4; bank++) {
++			if (status & (1 << bank)) {
++				unsigned long base, i, istat;
++
++				base = _IPAQ_ASIC3_GPIO_A_Base
++				       + bank * _IPAQ_ASIC3_GPIO_Base_INCR;
++				istat = __asic3_read_register(asic,
++					base + _IPAQ_ASIC3_GPIO_IntStatus);
++				/* IntStatus is write 0 to clear */
++				/* XXX could miss interrupts! */
++				__asic3_write_register(asic,
++					base + _IPAQ_ASIC3_GPIO_IntStatus, 0);
++
++				for (i = 0; i < 16; i++) {
++					int bit = (1 << i);
++					unsigned int irqnr;
++					if (!(istat & bit))
++						continue;
++
++					irqnr = asic->irq_base 
++						+ (16 * bank) + i;
++					desc = irq_desc + irqnr;
++					desc->handle_irq(irqnr, desc);
++					if (asic->irq_bothedge[bank] & bit) {
++						asic3_irq_flip_edge(asic, base,
++								    bit);
++					}
++				}
++			}
++		}
++
++		/* Handle remaining IRQs in the status register */
++		{
++			int i;
++
++			for (i = ASIC3_LED0_IRQ; i <= ASIC3_OWM_IRQ; i++) {
++				/* They start at bit 4 and go up */
++				if (status & (1 << (i - ASIC3_LED0_IRQ + 4))) {
++					desc = irq_desc + asic->irq_base + i;
++					desc->handle_irq(asic->irq_base + i,
++							 desc);
++				}
++			}
++		}
++
++	}
++
++	if (iter >= MAX_ASIC_ISR_LOOPS)
++		printk(KERN_ERR "%s: interrupt processing overrun\n",
++		       __FUNCTION__);
++}
++
++static inline int asic3_irq_to_bank(struct asic3_data *asic, int irq)
++{
++	int n;
++
++	n = (irq - asic->irq_base) >> 4;
++
++	return (n * (_IPAQ_ASIC3_GPIO_B_Base - _IPAQ_ASIC3_GPIO_A_Base));
++}
++
++static inline int asic3_irq_to_index(struct asic3_data *asic, int irq)
++{
++	return (irq - asic->irq_base) & 15;
++}
++
++static void asic3_mask_gpio_irq(unsigned int irq)
++{
++	struct asic3_data *asic = get_irq_chip_data(irq);
++	u32 val, bank, index;
++	unsigned long flags;
++
++	bank = asic3_irq_to_bank(asic, irq);
++	index = asic3_irq_to_index(asic, irq);
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	val = __asic3_read_register(asic, bank + _IPAQ_ASIC3_GPIO_Mask);
++	val |= 1 << index;
++	__asic3_write_register(asic, bank + _IPAQ_ASIC3_GPIO_Mask, val);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++
++static void asic3_mask_irq(unsigned int irq)
++{
++	struct asic3_data *asic = get_irq_chip_data(irq);
++	int regval;
++
++	if (irq < ASIC3_NR_GPIO_IRQS) {
++		printk(KERN_ERR "asic3_base: gpio mask attempt, irq %d\n",
++		       irq);
++		return;
++	}
++
++	regval = __asic3_read_register(asic,
++		_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask);
++
++	switch (irq - asic->irq_base) {
++	case ASIC3_LED0_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK0);
++		break;
++	case ASIC3_LED1_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK1);
++		break;
++	case ASIC3_LED2_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK2);
++		break;
++	case ASIC3_SPI_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK3);
++		break;
++	case ASIC3_SMBUS_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK4);
++		break;
++	case ASIC3_OWM_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval & ~ASIC3_INTMASK_MASK5);
++		break;
++	default:
++		printk(KERN_ERR "asic3_base: bad non-gpio irq %d\n", irq);
++		break;
++	}
++}
++
++static void  asic3_unmask_gpio_irq(unsigned int irq)
++{
++	struct asic3_data *asic = get_irq_chip_data(irq);
++	u32 val, bank, index;
++	unsigned long flags;
++
++	bank = asic3_irq_to_bank(asic, irq);
++	index = asic3_irq_to_index(asic, irq);
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	val = __asic3_read_register(asic, bank + _IPAQ_ASIC3_GPIO_Mask);
++	val &= ~(1 << index);
++	__asic3_write_register(asic, bank + _IPAQ_ASIC3_GPIO_Mask, val);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++}
++
++static void asic3_unmask_irq(unsigned int irq)
++{
++	struct asic3_data *asic = get_irq_chip_data(irq);
++	int regval;
++
++	if (irq < ASIC3_NR_GPIO_IRQS) {
++		printk(KERN_ERR "asic3_base: gpio unmask attempt, irq %d\n",
++		       irq);
++		return;
++	}
++
++	regval = __asic3_read_register(asic,
++		_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask);
++
++	switch (irq - asic->irq_base) {
++	case ASIC3_LED0_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK0);
++		break;
++	case ASIC3_LED1_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK1);
++		break;
++	case ASIC3_LED2_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK2);
++		break;
++	case ASIC3_SPI_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK3);
++		break;
++	case ASIC3_SMBUS_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK4);
++		break;
++	case ASIC3_OWM_IRQ:
++		__asic3_write_register(asic,
++			_IPAQ_ASIC3_INTR_Base + _IPAQ_ASIC3_INTR_IntMask,
++			regval | ASIC3_INTMASK_MASK5);
++		break;
++	default:
++		printk(KERN_ERR "asic3_base: bad non-gpio irq %d\n", irq);
++		break;
++	}
++}
++
++static int asic3_gpio_irq_type(unsigned int irq, unsigned int type)
++{
++	struct asic3_data *asic = get_irq_chip_data(irq);
++	u32 bank, index;
++	unsigned long flags;
++	u16 trigger, level, edge, bit;
++
++	bank = asic3_irq_to_bank(asic, irq);
++	index = asic3_irq_to_index(asic, irq);
++	bit = 1<<index;
++
++	spin_lock_irqsave(&asic3_gpio_lock, flags);
++	level = __asic3_read_register(asic,
++		bank + _IPAQ_ASIC3_GPIO_LevelTrigger);
++	edge = __asic3_read_register(asic,
++		bank + _IPAQ_ASIC3_GPIO_EdgeTrigger);
++	trigger = __asic3_read_register(asic,
++		bank + _IPAQ_ASIC3_GPIO_TriggerType);
++	asic->irq_bothedge[(irq - asic->irq_base) >> 4] &= ~bit;
++
++	if (type == IRQT_RISING) {
++		trigger |= bit;
++		edge |= bit;
++	} else if (type == IRQT_FALLING) {
++		trigger |= bit;
++		edge &= ~bit;
++	} else if (type == IRQT_BOTHEDGE) {
++		trigger |= bit;
++		if (asic3_gpio_get_value(asic->dev, irq - asic->irq_base))
++			edge &= ~bit;
++		else
++			edge |= bit;
++		asic->irq_bothedge[(irq - asic->irq_base) >> 4] |= bit;
++	} else if (type == IRQT_LOW) {
++		trigger &= ~bit;
++		level &= ~bit;
++	} else if (type == IRQT_HIGH) {
++		trigger &= ~bit;
++		level |= bit;
++	} else {
++		/*
++		 * if type == IRQT_NOEDGE, we should mask interrupts, but
++		 * be careful to not unmask them if mask was also called.
++		 * Probably need internal state for mask.
++		 */
++		printk(KERN_NOTICE "asic3: irq type not changed.\n");
++	}
++	__asic3_write_register(asic, bank + _IPAQ_ASIC3_GPIO_LevelTrigger,
++			       level);
++	__asic3_write_register(asic, bank + _IPAQ_ASIC3_GPIO_EdgeTrigger,
++			       edge);
++	__asic3_write_register(asic, bank + _IPAQ_ASIC3_GPIO_TriggerType,
++			       trigger);
++	spin_unlock_irqrestore(&asic3_gpio_lock, flags);
++	return 0;
++}
++
++static struct irq_chip asic3_gpio_irq_chip = {
++	.name		= "ASIC3-GPIO",
++	.ack		= asic3_mask_gpio_irq,
++	.mask		= asic3_mask_gpio_irq,
++	.unmask		= asic3_unmask_gpio_irq,
++	.set_type	= asic3_gpio_irq_type,
++};
++
++static struct irq_chip asic3_irq_chip = {
++	.name		= "ASIC3",
++	.ack		= asic3_mask_irq,
++	.mask		= asic3_mask_irq,
++	.unmask		= asic3_unmask_irq,
++};
++
++static void asic3_release(struct device *dev)
++{
++	struct platform_device *sdev = to_platform_device(dev);
++
++	kfree(sdev->resource);
++	kfree(sdev);
++}
++
++int asic3_register_mmc(struct device *dev)
++{
++	struct platform_device *sdev = kzalloc(sizeof(*sdev), GFP_KERNEL);
++	struct tmio_mmc_hwconfig *mmc_config = kmalloc(sizeof(*mmc_config),
++						       GFP_KERNEL);
++	struct platform_device *pdev = to_platform_device(dev);
++	struct asic3_data *asic = dev->driver_data;
++	struct asic3_platform_data *asic3_pdata = dev->platform_data;
++	struct resource *res;
++	int rc;
++
++	if (sdev == NULL || mmc_config == NULL)
++		return -ENOMEM;
++
++	if (asic3_pdata->tmio_mmc_hwconfig) {
++		memcpy(mmc_config, asic3_pdata->tmio_mmc_hwconfig,
++		       sizeof(*mmc_config));
++	} else {
++		memset(mmc_config, 0, sizeof(*mmc_config));
++	}
++	mmc_config->address_shift = asic->bus_shift;
++
++	sdev->id = -1;
++	sdev->name = "asic3_mmc";
++	sdev->dev.parent = dev;
++	sdev->num_resources = 2;
++	sdev->dev.platform_data = mmc_config;
++	sdev->dev.release = asic3_release;
++
++	res = kzalloc(sdev->num_resources * sizeof(struct resource),
++		      GFP_KERNEL);
++	if (res == NULL) {
++		kfree(sdev);
++		kfree(mmc_config);
++		return -ENOMEM;
++	}
++	sdev->resource = res;
++
++	res[0].start = pdev->resource[2].start;
++	res[0].end   = pdev->resource[2].end;
++	res[0].flags = IORESOURCE_MEM;
++	res[1].start = res[1].end = pdev->resource[3].start;
++	res[1].flags = IORESOURCE_IRQ;
++
++	rc = platform_device_register(sdev);
++	if (rc) {
++		printk(KERN_ERR "asic3_base: "
++		       "Could not register asic3_mmc device\n");
++		kfree(res);
++		kfree(sdev);
++		return rc;
++	}
++
++	asic->mmc_dev = sdev;
++
++	return 0;
++}
++EXPORT_SYMBOL(asic3_register_mmc);
++
++int asic3_unregister_mmc(struct device *dev)
++{
++	struct asic3_data *asic = dev->driver_data;
++	platform_device_unregister(asic->mmc_dev);
++	asic->mmc_dev = 0;
++
++	return 0;
++}
++EXPORT_SYMBOL(asic3_unregister_mmc);
++
++#ifdef CONFIG_HTC_ASIC3_DS1WM
++/*
++ * 	DS1WM subdevice
++ */
++
++static void asic3_ds1wm_enable(struct platform_device *ds1wm_dev)
++{
++	struct device *dev = ds1wm_dev->dev.parent;
++
++	/* Turn on external clocks and the OWM clock */
++	asic3_set_clock_cdex(dev,
++		CLOCK_CDEX_EX0 | CLOCK_CDEX_EX1 | CLOCK_CDEX_OWM,
++		CLOCK_CDEX_EX0 | CLOCK_CDEX_EX1 | CLOCK_CDEX_OWM);
++
++	mdelay(1);
++
++	asic3_set_extcf_reset(dev, ASIC3_EXTCF_OWM_RESET,
++			      ASIC3_EXTCF_OWM_RESET);
++	mdelay(1);
++	asic3_set_extcf_reset(dev, ASIC3_EXTCF_OWM_RESET, 0);
++	mdelay(1);
++
++	/* Clear OWM_SMB, set OWM_EN */
++	asic3_set_extcf_select(dev,
++		ASIC3_EXTCF_OWM_SMB | ASIC3_EXTCF_OWM_EN,
++		0                   | ASIC3_EXTCF_OWM_EN);
++
++	mdelay(1);
++}
++
++static void asic3_ds1wm_disable(struct platform_device *ds1wm_dev)
++{
++	struct device *dev = ds1wm_dev->dev.parent;
++
++	asic3_set_extcf_select(dev,
++		ASIC3_EXTCF_OWM_SMB | ASIC3_EXTCF_OWM_EN,
++		0                   | 0);
++
++	asic3_set_clock_cdex(dev,
++		CLOCK_CDEX_EX0 | CLOCK_CDEX_EX1 | CLOCK_CDEX_OWM,
++		CLOCK_CDEX_EX0 | CLOCK_CDEX_EX1 | 0);
++}
++
++
++static struct resource asic3_ds1wm_resources[] = {
++	{
++		.start = _IPAQ_ASIC3_OWM_Base,
++		.end   = _IPAQ_ASIC3_OWM_Base + 0x14 - 1,
++		.flags = IORESOURCE_MEM,
++	},
++	{
++		.start = ASIC3_OWM_IRQ,
++		.end   = ASIC3_OWM_IRQ,
++		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_SOC_SUBDEVICE,
++	},
++};
++
++static struct ds1wm_platform_data ds1wm_pd = {
++	.active_high = 1,
++	.enable = asic3_ds1wm_enable,
++	.disable = asic3_ds1wm_disable,
++};
++#endif
++
++static struct soc_device_data asic3_blocks[] = {
++#ifdef CONFIG_HTC_ASIC3_DS1WM
++	{
++		.name = "ds1wm",
++		.res = asic3_ds1wm_resources,
++		.num_resources = ARRAY_SIZE(asic3_ds1wm_resources),
++		.hwconfig = &ds1wm_pd,
++	},
++#endif
++};
++
++static int asic3_probe(struct platform_device *pdev)
++{
++	struct asic3_platform_data *pdata = pdev->dev.platform_data;
++	struct asic3_data *asic;
++	struct device *dev = &pdev->dev;
++	unsigned long clksel;
++	int i, rc;
++
++	asic = kzalloc(sizeof(struct asic3_data), GFP_KERNEL);
++	if (!asic)
++		return -ENOMEM;
++
++	spin_lock_init (&asic3_gpio_lock);
++	platform_set_drvdata(pdev, asic);
++	asic->dev = &pdev->dev;
++
++	asic->mapping = ioremap(pdev->resource[0].start, IPAQ_ASIC3_MAP_SIZE);
++	if (!asic->mapping) {
++		printk(KERN_ERR "asic3: couldn't ioremap ASIC3\n");
++		kfree (asic);
++		return -ENOMEM;
++	}
++
++	if (pdata && pdata->bus_shift)
++		asic->bus_shift = pdata->bus_shift;
++	else
++		asic->bus_shift = 2;
++
++	/* XXX: should get correct SD clock values from pdata struct  */
++	clksel = 0;
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, SEL), clksel);
++
++	/* Register ASIC3's clocks. */
++	clk_g.ctrlbit = (int)asic;
++
++	if (clk_register(&clk_g) < 0)
++		printk(KERN_ERR "asic3: failed to register ASIC3 gclk\n");
++
++	for (i = 0; i < ARRAY_SIZE(asic3_clocks); i++) {
++		rc = clk_register(&asic3_clocks[i]);
++		if (rc < 0)
++			printk(KERN_ERR "asic3: "
++			       "failed to register clock %s (%d)\n",
++			       asic3_clocks[i].name, rc);
++	}
++
++	__asic3_write_register(asic, IPAQ_ASIC3_GPIO_OFFSET(A, Mask), 0xffff);
++	__asic3_write_register(asic, IPAQ_ASIC3_GPIO_OFFSET(B, Mask), 0xffff);
++	__asic3_write_register(asic, IPAQ_ASIC3_GPIO_OFFSET(C, Mask), 0xffff);
++	__asic3_write_register(asic, IPAQ_ASIC3_GPIO_OFFSET(D, Mask), 0xffff);
++
++	asic3_set_gpio_sleepmask_a(dev, 0xffff, 0xffff);
++	asic3_set_gpio_sleepmask_b(dev, 0xffff, 0xffff);
++	asic3_set_gpio_sleepmask_c(dev, 0xffff, 0xffff);
++	asic3_set_gpio_sleepmask_d(dev, 0xffff, 0xffff);
++
++	if (pdata) {
++		asic3_set_gpio_out_a(dev, 0xffff, pdata->gpio_a.init);
++		asic3_set_gpio_out_b(dev, 0xffff, pdata->gpio_b.init);
++		asic3_set_gpio_out_c(dev, 0xffff, pdata->gpio_c.init);
++		asic3_set_gpio_out_d(dev, 0xffff, pdata->gpio_d.init);
++
++		asic3_set_gpio_dir_a(dev, 0xffff, pdata->gpio_a.dir);
++		asic3_set_gpio_dir_b(dev, 0xffff, pdata->gpio_b.dir);
++		asic3_set_gpio_dir_c(dev, 0xffff, pdata->gpio_c.dir);
++		asic3_set_gpio_dir_d(dev, 0xffff, pdata->gpio_d.dir);
++
++		asic3_set_gpio_sleepmask_a(dev, 0xffff,
++					   pdata->gpio_a.sleep_mask);
++		asic3_set_gpio_sleepmask_b(dev, 0xffff,
++					   pdata->gpio_b.sleep_mask);
++		asic3_set_gpio_sleepmask_c(dev, 0xffff,
++					   pdata->gpio_c.sleep_mask);
++		asic3_set_gpio_sleepmask_d(dev, 0xffff,
++					   pdata->gpio_d.sleep_mask);
++
++		asic3_set_gpio_sleepout_a(dev, 0xffff,
++					  pdata->gpio_a.sleep_out);
++		asic3_set_gpio_sleepout_b(dev, 0xffff,
++					  pdata->gpio_b.sleep_out);
++		asic3_set_gpio_sleepout_c(dev, 0xffff,
++					  pdata->gpio_c.sleep_out);
++		asic3_set_gpio_sleepout_d(dev, 0xffff,
++					  pdata->gpio_d.sleep_out);
++
++		asic3_set_gpio_battfaultout_a(dev, 0xffff,
++					      pdata->gpio_a.batt_fault_out);
++		asic3_set_gpio_battfaultout_b(dev, 0xffff,
++					      pdata->gpio_b.batt_fault_out);
++		asic3_set_gpio_battfaultout_c(dev, 0xffff,
++					      pdata->gpio_c.batt_fault_out);
++		asic3_set_gpio_battfaultout_d(dev, 0xffff,
++					      pdata->gpio_d.batt_fault_out);
++
++		asic3_set_gpio_sleepconf_a(dev, 0xffff,
++					   pdata->gpio_a.sleep_conf);
++		asic3_set_gpio_sleepconf_b(dev, 0xffff,
++					   pdata->gpio_b.sleep_conf);
++		asic3_set_gpio_sleepconf_c(dev, 0xffff,
++					   pdata->gpio_c.sleep_conf);
++		asic3_set_gpio_sleepconf_d(dev, 0xffff,
++					   pdata->gpio_d.sleep_conf);
++
++		asic3_set_gpio_alt_fn_a(dev, 0xffff,
++					pdata->gpio_a.alt_function);
++		asic3_set_gpio_alt_fn_b(dev, 0xffff,
++					pdata->gpio_b.alt_function);
++		asic3_set_gpio_alt_fn_c(dev, 0xffff,
++					pdata->gpio_c.alt_function);
++		asic3_set_gpio_alt_fn_d(dev, 0xffff,
++					pdata->gpio_d.alt_function);
++	}
++
++	asic->irq_nr = -1;
++	asic->irq_base = -1;
++
++	if (pdev->num_resources > 1)
++		asic->irq_nr = pdev->resource[1].start;
++
++	if (asic->irq_nr != -1) {
++		unsigned int i;
++
++		if (!pdata->irq_base) {
++			printk(KERN_ERR "asic3: IRQ base not specified\n");
++			asic3_remove(pdev);
++			return -EINVAL;
++		}
++
++		asic->irq_base = pdata->irq_base;
++
++		/* turn on clock to IRQ controller */
++		clksel |= CLOCK_SEL_CX;
++		__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, SEL),
++				       clksel);
++
++		printk(KERN_INFO "asic3: using irq %d-%d on irq %d\n",
++		       asic->irq_base, asic->irq_base + ASIC3_NR_IRQS - 1,
++		       asic->irq_nr);
++
++		for (i = 0 ; i < ASIC3_NR_IRQS ; i++) {
++			int irq = i + asic->irq_base;
++			if (i < ASIC3_NR_GPIO_IRQS) {
++				set_irq_chip(irq, &asic3_gpio_irq_chip);
++				set_irq_chip_data(irq, asic);
++				set_irq_handler(irq, handle_level_irq);
++				set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
++			} else {
++				/* The remaining IRQs are not GPIO */
++				set_irq_chip(irq, &asic3_irq_chip);
++				set_irq_chip_data(irq, asic);
++				set_irq_handler(irq, handle_level_irq);
++				set_irq_flags(irq, IRQF_VALID | IRQF_PROBE);
++			}
++		}
++
++		__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(INTR, IntMask),
++					ASIC3_INTMASK_GINTMASK);
++
++		set_irq_chained_handler(asic->irq_nr, asic3_irq_demux);
++		set_irq_type(asic->irq_nr, IRQT_RISING);
++		set_irq_data(asic->irq_nr, asic);
++	}
++
++#ifdef CONFIG_HTC_ASIC3_DS1WM
++	ds1wm_pd.bus_shift = asic->bus_shift;
++#endif
++
++	soc_add_devices(pdev, asic3_blocks, ARRAY_SIZE(asic3_blocks),
++			&pdev->resource[0],
++			asic->bus_shift - ASIC3_DEFAULT_ADDR_SHIFT,
++			asic->irq_base);
++
++	if (pdev->num_resources > 2) {
++		int rc;
++		rc = asic3_register_mmc(dev);
++		if (rc) {
++			asic3_remove(pdev);
++			return rc;
++		}
++	}
++
++	if (pdata && pdata->num_child_platform_devs != 0)
++		platform_add_devices(pdata->child_platform_devs,
++				     pdata->num_child_platform_devs);
++
++	return 0;
++}
++
++static int asic3_remove(struct platform_device *pdev)
++{
++	struct asic3_platform_data *pdata = pdev->dev.platform_data;
++	struct asic3_data *asic = platform_get_drvdata(pdev);
++	int i;
++
++	if (pdata && pdata->num_child_platform_devs != 0) {
++		for (i = 0; i < pdata->num_child_platform_devs; i++) {
++			platform_device_unregister(
++				pdata->child_platform_devs[i]);
++		}
++	}
++
++	if (asic->irq_nr != -1) {
++		unsigned int i;
++
++		for (i = 0 ; i < ASIC3_NR_IRQS ; i++) {
++			int irq = i + asic->irq_base;
++			set_irq_flags(irq, 0);
++			set_irq_handler (irq, NULL);
++			set_irq_chip (irq, NULL);
++			set_irq_chip_data(irq, NULL);
++		}
++
++		set_irq_chained_handler(asic->irq_nr, NULL);
++	}
++
++	if (asic->mmc_dev)
++		asic3_unregister_mmc(&pdev->dev);
++
++	for (i = 0; i < ARRAY_SIZE(asic3_clocks); i++)
++		clk_unregister(&asic3_clocks[i]);
++	clk_unregister(&clk_g);
++
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, SEL), 0);
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(INTR, IntMask), 0);
++
++	iounmap(asic->mapping);
++
++	kfree(asic);
++
++	return 0;
++}
++
++static void asic3_shutdown(struct platform_device *pdev)
++{
++}
++
++#define ASIC3_SUSPEND_CDEX_MASK \
++	(CLOCK_CDEX_LED0 | CLOCK_CDEX_LED1 | CLOCK_CDEX_LED2)
++static unsigned short suspend_cdex;
++
++static int asic3_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct asic3_data *asic = platform_get_drvdata(pdev);
++	suspend_cdex = __asic3_read_register(asic,
++		_IPAQ_ASIC3_CLOCK_Base + _IPAQ_ASIC3_CLOCK_CDEX);
++	/* The LEDs are still active during suspend */
++	__asic3_write_register(asic,
++		_IPAQ_ASIC3_CLOCK_Base + _IPAQ_ASIC3_CLOCK_CDEX,
++		suspend_cdex & ASIC3_SUSPEND_CDEX_MASK);
++	return 0;
++}
++
++static int asic3_resume(struct platform_device *pdev)
++{
++	struct asic3_data *asic = platform_get_drvdata(pdev);
++	unsigned short intmask;
++
++	__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(CLOCK, CDEX),
++			       suspend_cdex);
++
++	if (asic->irq_nr != -1) {
++		/* Toggle the interrupt mask to try to get ASIC3 to show
++		 * the CPU an interrupt edge. For more details see the
++		 * kernel-discuss thread around 13 June 2005 with the
++		 * subject "asic3 suspend / resume". */
++		intmask = __asic3_read_register(asic,
++				IPAQ_ASIC3_OFFSET(INTR, IntMask));
++		__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(INTR, IntMask),
++				       intmask & ~ASIC3_INTMASK_GINTMASK);
++		mdelay(1);
++		__asic3_write_register(asic, IPAQ_ASIC3_OFFSET(INTR, IntMask),
++				       intmask | ASIC3_INTMASK_GINTMASK);
++	}
++
++	return 0;
++}
++
++static struct platform_driver asic3_device_driver = {
++	.driver		= {
++		.name	= "asic3",
++	},
++	.probe		= asic3_probe,
++	.remove		= asic3_remove,
++	.suspend	= asic3_suspend,
++	.resume		= asic3_resume,
++	.shutdown	= asic3_shutdown,
++};
++
++static int __init asic3_base_init(void)
++{
++	int retval = 0;
++	retval = platform_driver_register(&asic3_device_driver);
++	return retval;
++}
++
++static void __exit asic3_base_exit(void)
++{
++	platform_driver_unregister(&asic3_device_driver);
++}
++
++#ifdef MODULE
++module_init(asic3_base_init);
++#else	/* start early for dependencies */
++subsys_initcall(asic3_base_init);
++#endif
++module_exit(asic3_base_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Phil Blundell <pb@handhelds.org>");
++MODULE_DESCRIPTION("Core driver for HTC ASIC3");
++MODULE_SUPPORTED_DEVICE("asic3");
+diff --git a/include/linux/soc/asic3_base.h b/include/linux/soc/asic3_base.h
+new file mode 100644
+index 0000000..f17acda
+--- /dev/null
++++ b/include/linux/soc/asic3_base.h
+@@ -0,0 +1,100 @@
++#include <asm/types.h>
++
++/* Private API - for ASIC3 devices internal use only */
++#define HDR_IPAQ_ASIC3_ACTION(ACTION,action,fn,FN)                  \
++u32  asic3_get_gpio_ ## action ## _ ## fn (struct device *dev);      \
++void asic3_set_gpio_ ## action ## _ ## fn (struct device *dev, u32 bits, u32 val);
++
++#define HDR_IPAQ_ASIC3_FN(fn,FN)					\
++	HDR_IPAQ_ASIC3_ACTION ( MASK,mask,fn,FN)			\
++	HDR_IPAQ_ASIC3_ACTION ( DIR, dir, fn, FN)			\
++	HDR_IPAQ_ASIC3_ACTION ( OUT, out, fn, FN)			\
++	HDR_IPAQ_ASIC3_ACTION ( LEVELTRI, trigtype, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( RISING, rising, fn, FN)			\
++	HDR_IPAQ_ASIC3_ACTION ( LEVEL, triglevel, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( SLEEP_MASK, sleepmask, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( SLEEP_OUT, sleepout, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( BATT_FAULT_OUT, battfaultout, fn, FN)	\
++	HDR_IPAQ_ASIC3_ACTION ( INT_STATUS, intstatus, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( ALT_FUNCTION, alt_fn, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( SLEEP_CONF, sleepconf, fn, FN)		\
++	HDR_IPAQ_ASIC3_ACTION ( STATUS, status, fn, FN) 
++
++/* Public API */
++
++#define ASIC3_GPIOA_IRQ_BASE	0
++#define ASIC3_GPIOB_IRQ_BASE	16
++#define ASIC3_GPIOC_IRQ_BASE	32
++#define ASIC3_GPIOD_IRQ_BASE	48
++#define ASIC3_LED0_IRQ		64
++#define ASIC3_LED1_IRQ		65
++#define ASIC3_LED2_IRQ		66
++#define ASIC3_SPI_IRQ		67
++#define ASIC3_SMBUS_IRQ		68
++#define ASIC3_OWM_IRQ		69
++
++#define ASIC3_NR_GPIO_IRQS	64	/* 16 bits each GPIO A...D banks */
++#define ASIC3_NR_IRQS		(ASIC3_OWM_IRQ + 1)
++
++extern int asic3_irq_base(struct device *dev);
++
++extern void asic3_write_register(struct device *dev, unsigned int reg, 
++                                 u32 value);
++extern u32  asic3_read_register(struct device *dev, unsigned int reg);
++
++/* old clock api */
++extern void asic3_set_clock_sel(struct device *dev, u32 bits, u32 val);
++extern u32  asic3_get_clock_cdex(struct device *dev);
++extern void asic3_set_clock_cdex(struct device *dev, u32 bits, u32 val);
++
++extern void asic3_set_extcf_select(struct device *dev, u32 bits, u32 val);
++extern void asic3_set_extcf_reset(struct device *dev, u32 bits, u32 val);
++extern void asic3_set_sdhwctrl(struct device *dev, u32 bits, u32 val);
++
++extern void asic3_set_led(struct device *dev, int led_num, int duty_time, 
++                          int cycle_time, int timebase);
++
++extern int asic3_register_mmc(struct device *dev);
++extern int asic3_unregister_mmc(struct device *dev);
++
++/* Accessors for GPIO banks */
++HDR_IPAQ_ASIC3_FN(a, A)
++HDR_IPAQ_ASIC3_FN(b, B)
++HDR_IPAQ_ASIC3_FN(c, C)
++HDR_IPAQ_ASIC3_FN(d, D)
++
++#define _IPAQ_ASIC3_GPIO_BANK_A      0
++#define _IPAQ_ASIC3_GPIO_BANK_B      1
++#define _IPAQ_ASIC3_GPIO_BANK_C      2
++#define _IPAQ_ASIC3_GPIO_BANK_D      3
++
++#define ASIC3_GPIO_bit(gpio) (1 << (gpio & 0xf))
++
++extern int asic3_get_gpio_bit(struct device *dev, int gpio);
++extern void asic3_set_gpio_bit(struct device *dev, int gpio, int val);
++extern int asic3_gpio_get_value(struct device *dev, unsigned gpio);
++extern void asic3_gpio_set_value(struct device *dev, unsigned gpio, int val);
++
++
++struct tmio_mmc_hwconfig;
++
++struct asic3_platform_data
++{
++	struct {
++		u32 dir;
++		u32 init;
++		u32 sleep_mask;
++		u32 sleep_out;
++		u32 batt_fault_out;
++		u32 sleep_conf;
++		u32 alt_function;
++	} gpio_a, gpio_b, gpio_c, gpio_d;
++
++	int irq_base;
++	unsigned int bus_shift;
++
++	struct platform_device **child_platform_devs;
++	int num_child_platform_devs;
++
++	struct tmio_mmc_hwconfig *tmio_mmc_hwconfig;
++};
+diff --git a/include/linux/soc/tmio_mmc.h b/include/linux/soc/tmio_mmc.h
+new file mode 100644
+index 0000000..b8c407c
+--- /dev/null
++++ b/include/linux/soc/tmio_mmc.h
+@@ -0,0 +1,17 @@
++#include <linux/platform_device.h>
++
++#define MMC_CLOCK_DISABLED 0
++#define MMC_CLOCK_ENABLED  1
++
++#define TMIO_WP_ALWAYS_RW ((void*)-1)
++
++struct tmio_mmc_hwconfig {
++	void (*hwinit)(struct platform_device *sdev);
++	void (*set_mmc_clock)(struct platform_device *sdev, int state);
++
++	/* NULL - use ASIC3 signal, 
++	   TMIO_WP_ALWAYS_RW - assume always R/W (e.g. miniSD) 
++	   otherwise - machine-specific handler */
++	int (*mmc_get_ro)(struct platform_device *pdev);
++	short address_shift;
++};
 
 
 -- 
