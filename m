@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbXEAH4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965638AbXEAH6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965589AbXEAH4G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965626AbXEAH4G
+	id S965638AbXEAH6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965641AbXEAH6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:56:06 -0400
-Received: from mx2.suse.de ([195.135.220.15]:59525 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965589AbXEAH4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:56:02 -0400
-Date: Tue, 1 May 2007 09:55:15 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Kasper Sandberg <lkml@metanurb.dk>, Willy Tarreau <w@1wt.eu>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
-       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v6
-Message-ID: <20070501075515.GD10590@wotan.suse.de>
-References: <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <1177842654.5791.85.camel@localhost.localdomain> <20070429111159.GH23638@1wt.eu> <1177848054.9756.30.camel@localhost> <1177848810.5791.104.camel@localhost.localdomain> <20070429125522.GB31925@holomorphy.com> <1177853867.5791.120.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177853867.5791.120.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Tue, 1 May 2007 03:58:54 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:22116 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965638AbXEAH6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:58:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EFCFLUHKlFgpXOpyIfac+TN9n3PHzQhaYJ/CpxF6klRHyStfc9j5JOYBIXstmxo73B0hdDCC8nwzBgBRPU3hgD0sQrP79HqvALMdKFfWxtBebnDNDLAvEjF8wwJCoxVAG8lLON8zWOIaBAjoxCP0nfNMcAh5frqhncaws8ui8Wg=
+Message-ID: <4636F337.3060702@gmail.com>
+Date: Tue, 01 May 2007 09:58:47 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: dann frazier <dannf@hp.com>, linux-kernel@vger.kernel.org,
+       support@moxa.com.tw, dilinger@debian.org
+Subject: Re: old buffer overflow in moxa driver
+References: <20070430224829.GI31283@krebs.dannf> <20070501000455.2173b1e2@the-village.bc.nu>
+In-Reply-To: <20070501000455.2173b1e2@the-village.bc.nu>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 03:37:47PM +0200, Thomas Gleixner wrote:
-> On Sun, 2007-04-29 at 05:55 -0700, William Lee Irwin III wrote:
-> > You'll also hit the same holes should you attempt to write such a
-> > modularity patch for mainline as opposed to porting current mainline to
-> > the driver API as-given. It takes a bit more work to get something that
-> > actually works for all this, and it borders on disingenuity to
-> > suggest that the scheduler class/driver API as it now stands is
-> > capable of any such thing as porting current mainline, nicksched, or SD
-> > to it without significant code impact to the core scheduler code.
+Alan Cox napsal(a):
+>>   I noticed that the moxa input checking security bug described by
+>> CVE-2005-0504 appears to remain unfixed upstream.
+>>  
+>> The issue is described here:
+>>   http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2005-0504
+>>
+>> Debian has been shipping the following patch from Andres Salomon. I
+>> tried contacting the listed maintainer a few months ago but received
+>> no response.
 > 
-> I never said, that the current implementation of CFS fits the criteria
-> of modularity, but it is a step in that direction. I'm well aware that
-> there is a bunch of things missing and it has hard coded leftovers,
-> which are related to the current two hard coded policy classes.
+> 
+>        case MOXA_LOAD_BIOS:
+>         case MOXA_FIND_BOARD:
+>         case MOXA_LOAD_C320B:
+>         case MOXA_LOAD_CODE:
+>                 if (!capable(CAP_SYS_RAWIO))
+>                         return -EPERM;
+>                 break;
+> 
+> At the point you abuse these calls you can already just load arbitary
+> data from userspace anyway.
 
-[ I've tuned out of most of the scheduler discussion lately, sorry ;) ]
+The problem is that we BUG_ON, when len < 0 in copy_from_user which is unlikely
+something we want to cause?
 
-
-People seem to be confusing scheduler policy with a modular framework.
-
-First of all, I don't know that any of the schedulers can "just go in"
-and replace the mainline one, because they are still under development
-and have not been sufficiently tested and contrasted IMO.
-
-Secondly, if we want to have a modular framework, it should:
-- be a seperate patchset to any new scheduler policy
-- obviously retain the existing policy for testing / comparison purposes
-- be able to be compiled out. I don't know whether it's CFS policy or
-  the framework (maybe both), but CFS is quite a bit slower at context
-  switching when I last measured with lmbench (several releases ago).
-
-I still would rather not have a modular framework unless we decide
-that is the only wake to make upstream progress. But if we did have
-the modular framework, we still need to decide on the process of
-avoiding profileration, selecting a default scheduler, and a plan for
-future phasing out of non-default GP schedulers once a new one gets
-selected.
-
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
