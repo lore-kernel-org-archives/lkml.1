@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031697AbXEANKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031698AbXEANLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031697AbXEANKN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031698AbXEANKN
+	id S1031698AbXEANLX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031700AbXEANLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:10:13 -0400
-Received: from h80ad26a9.async.vt.edu ([128.173.38.169]:55228 "EHLO
-	h80ad26a9.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031697AbXEANJo (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:09:44 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-Cc: Daniel Hazelton <dhazelton@enter.net>,
-       Marat Buharov <marat.buharov@gmail.com>,
-       Parav K Pandit <Parav_Pandit@mindtree.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: assembly code in the loadable kernel module
-In-Reply-To: Your message of "Fri, 27 Apr 2007 17:06:48 EDT."
-             <Pine.LNX.4.61.0704271658240.5071@chaos.analogic.com>
-From: Valdis.Kletnieks@vt.edu
-References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com> <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com> <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com> <200704271212.07579.dhazelton@enter.net>
-            <Pine.LNX.4.61.0704271658240.5071@chaos.analogic.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1178024914_28512P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 1 May 2007 09:11:23 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:14779 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031698AbXEANLV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:11:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EgE8h2sVpXW2dyxBI13r2j//vflm9ydzwRBfc1jjOIqVj3mpQt2bPjdin0N00/cOi6UF9/rst/Mvr4drCmHjsQkycc8epIfWaUoKhyAKLh+ky6c6bYjLwAFnK3NW83y3O4w3woRuA0KxO3PmhDnsFt5uldxqP6CnA78WuSglfo0=
+Message-ID: <7b69d1470705010611y8f635a9pdc2f1dd6ec03700b@mail.gmail.com>
+Date: Tue, 1 May 2007 08:11:20 -0500
+From: "Scott Preece" <sepreece@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>
+Subject: Re: condingstyle, was Re: utrace comments
+Cc: "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Christoph Hellwig" <hch@infradead.org>,
+       "Roland McGrath" <roland@redhat.com>, "Christoph Hellwig" <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705011058330.27246@anakin>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Tue, 01 May 2007 09:08:34 -0400
-Message-ID: <17221.1178024914@turing-police.cc.vt.edu>
+Content-Disposition: inline
+References: <20061127165138.GA2991@lst.de>
+	 <20070430040213.BF9901801A4@magilla.sf.frob.com>
+	 <20070430091121.GC31397@infradead.org>
+	 <20070430100917.439ebfc8.akpm@linux-foundation.org>
+	 <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
+	 <Pine.LNX.4.64.0705011058330.27246@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1178024914_28512P
-Content-Type: text/plain; charset=us-ascii
+On 5/1/07, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Tue, 1 May 2007, Satyam Sharma wrote:
+> > Actually, the latter style (one condition per line and the && or ||
+> > operators appearing _before_ the conditions in subsequent lines)
+> > is quite popular for multi-line compound conditions (well, I've seen this
+> > in kernel/workqueue.c, kernel/stop_machine.c, etc at least, and also in
+> > Linus' code, if I'm not mistaken). We also align subsequent lines to the
+> > column of the condition belonging to the same "logical level" on the
+> > previous line using _spaces_ (note that this is alignment, not indentation,
+> > using spaces). The rationale is to make the operator prominent and thus make
+> > the structure of a complex multi-line compound conditional expression more
+> > readable and obvious at first glance itself. For example, consider:
+> >
+> >       if (veryverylengthycondition1 &&
+> >               smallcond2 &&
+> >               (conditionnumber3a ||
+> >               condition3b)) {
+> >               ...
+> >       }
+> >
+> > versus
+> >
+> >       if (veryverylengthycondition1
+> >           && smallcond2
+> >           && (conditionnumber3a
+> >               || condition3b)) {
+> >               ...
+> >       }
+> >
+> > ?
+> >
+> > Latter wins, doesn't it?
+>
+> ... because you forgot to align subsequent lines to the column of the
+> condition belonging to the same "logical level" on the previous line.
+>
+> Consider this:
+>
+>         if (veryverylengthycondition1 &&
+>             smallcond2 &&
+>             (conditionnumber3a ||
+>              condition3b)) {
+>                 ...
+>         }
+>
+> Gr{oetje,eeting}s,
+>
+>                                                 Geert
 
-On Fri, 27 Apr 2007 17:06:48 EDT, "linux-os (Dick Johnson)" said:
 
->         if(strchr(buf, 'Z'-64) || strchr(buf, 'D'-64))
+I still find the leading-operator style much more readable. The most
+important thing in reading a long, complex conditional is
+understanding the structure of the operators, not the operands.
+Putting the operators at the front of the line emphasizes that
+structure, especially since you can line the operators up to match the
+logical indenting, whereas the trailing-operator style leaves the
+operators scattered and hard to assemble into a logical structure.
 
-This probably isn't UTF-8 safe... :)
+However, there's a lot of difference of opinion on this (perhaps
+rooted in differences in cognition and reading behavior). For me it's
+not even close - expressions broken so the operators are at the head
+of the line snap into focus and those with operators at the ends of
+the lines look like undifferentiated goo. Since some of the style
+guides I've seen do it the other way, I assume some people have the
+opposite perception. I guess that's why indent offers options for
+doing it either way...
 
-> Anything after ^D or ^Z doesn't get copied to the list. Something like
-> this needs to be done because it's gonna get a whole lot worse because
-> all the 'IT' people read the same rags -- so they think that "naked"
-> email fails the "due diligence" test. Honest, I'm not making that up!
-
-And here I thought blindly slapping that disclaimer on *everything*, whether
-or not it actually called for it, failed "due diligence".  Ain't much diligence,
-due or otherwise, in evidence when a "This contains confidential" sticker
-gets posted to a worldwide public mailing list...
-
---==_Exmh_1178024914_28512P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGNzvScC3lWbTT17ARAvNDAJ4+B1KvsjPhV7NzCiP2ittzcsb/SwCfTQuz
-u8IZUOGzpATh7hP3wUz6FMc=
-=krbe
------END PGP SIGNATURE-----
-
---==_Exmh_1178024914_28512P--
+scott
