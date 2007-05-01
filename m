@@ -1,233 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXEASDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXEASEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbXEASDs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXEASDs
+	id S1755240AbXEASEb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:04:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755245AbXEASEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:03:48 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:36110 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755225AbXEASDq (ORCPT
+	Tue, 1 May 2007 14:04:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50600 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755242AbXEASE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:03:46 -0400
-Date: Tue, 1 May 2007 20:03:42 +0200 (MEST)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: ballabio_dario@emc.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] drivers/scsi/pci2000.h: Remove unused file
+	Tue, 1 May 2007 14:04:29 -0400
+Date: Tue, 01 May 2007 14:40:52 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB updates
+Message-Id: <1178042628.11109.11.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the unused header drivers/scsi/pci2000.h
+Linus,
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+
+This series contains a few fixes and cleanups, including a compilation fix for alpha
+architecture:
+
+   - Cx88: fix compilation on alpha
+   - MEDIA: Spinlock initializer cleanup
+   - Cx88-mpeg.c: make 2 functions static
+   - VIDIOCGMBUF handling in video_ioctl2()
+   - Fix: v4l1_compat should be called only if V4L1_COMPAT
+   - V4l1-compat: misc fixes for pixelformat function
+   - V4l1-compat:  Make VIDIOCSPICT return errors in a useful way
+   - Pvrusb2: use mutex instead of semaphore
+   - Pvrusb2: kill unnecessary attribute->owner
+   - Pvrusb2: Improve handling of PAL-60 video standard
+   - Pvrusb2: Implement ability to disable IR receiver
+   - Improve / fix support for PAL-60 in cx25840
+   - Workaround for bad hardare/firmware on some pluto2 devices
+
+Cheers,
+Mauro.
+
 ---
-'grep -nr "pci2000"' on the whole tree results only in a reference to pci2000.h
-Diffed against Linus' git-tree.
 
+ drivers/media/dvb/pluto2/pluto2.c              |    8 +++
+ drivers/media/video/cx25840/cx25840-core.c     |    4 +-
+ drivers/media/video/cx88/cx88-alsa.c           |    1 +
+ drivers/media/video/cx88/cx88-mpeg.c           |    5 +-
+ drivers/media/video/cx88/cx88-video.c          |    1 +
+ drivers/media/video/ivtv/ivtv-driver.c         |    2 +-
+ drivers/media/video/pvrusb2/pvrusb2-encoder.c  |   13 ++++-
+ drivers/media/video/pvrusb2/pvrusb2-hdw.c      |   10 ++--
+ drivers/media/video/pvrusb2/pvrusb2-i2c-core.c |   23 ++++++++-
+ drivers/media/video/pvrusb2/pvrusb2-sysfs.c    |   14 -----
+ drivers/media/video/v4l1-compat.c              |   64 +++++++++++++++++------
+ drivers/media/video/videodev.c                 |   48 +++++++++++-------
+ 12 files changed, 130 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/scsi/pci2000.h b/drivers/scsi/pci2000.h
-deleted file mode 100644
-index 0ebd8ce..0000000
---- a/drivers/scsi/pci2000.h
-+++ /dev/null
-@@ -1,197 +0,0 @@
--/****************************************************************************
-- * Perceptive Solutions, Inc. PCI-2000 device driver for Linux.
-- *
-- * pci2000.h - Linux Host Driver for PCI-2000 IntelliCache SCSI Adapters
-- *
-- * Copyright (c) 1997-1999 Perceptive Solutions, Inc.
-- * All Rights Reserved.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that redistributions of source
-- * code retain the above copyright notice and this comment without
-- * modification.
-- *
-- * Technical updates and product information at:
-- *  http://www.psidisk.com
-- *
-- * Please send questions, comments, bug reports to:
-- *  tech@psidisk.com Technical Support
-- *
-- ****************************************************************************/
--#ifndef _PCI2000_H
--#define _PCI2000_H
--
--#include <linux/types.h>
--
--#ifndef	PSI_EIDE_SCSIOP
--#define	PSI_EIDE_SCSIOP	1
--
--#define	LINUXVERSION(v,p,s)    (((v)<<16) + ((p)<<8) + (s))
--
--/************************************************/
--/*		definition of standard data types		*/
--/************************************************/
--#define	CHAR	char
--#define	UCHAR	unsigned char
--#define	SHORT	short
--#define	USHORT	unsigned short
--#define	BOOL	long
--#define	LONG	long
--#define	ULONG	unsigned long
--#define	VOID	void
--
--typedef	CHAR	*PCHAR;
--typedef	UCHAR	*PUCHAR;
--typedef	SHORT	*PSHORT;
--typedef	USHORT	*PUSHORT;
--typedef	BOOL	*PBOOL;
--typedef	LONG	*PLONG;
--typedef	ULONG	*PULONG;
--typedef	VOID	*PVOID;
--
--
--/************************************************/
--/*		Misc. macros			 				*/
--/************************************************/
--#define ANY2SCSI(up, p)					\
--((UCHAR *)up)[0] = (((ULONG)(p)) >> 8);	\
--((UCHAR *)up)[1] = ((ULONG)(p));
--
--#define SCSI2LONG(up)					\
--( (((long)*(((UCHAR *)up))) << 16)		\
--+ (((long)(((UCHAR *)up)[1])) << 8)		\
--+ ((long)(((UCHAR *)up)[2])) )
--
--#define XANY2SCSI(up, p)				\
--((UCHAR *)up)[0] = ((long)(p)) >> 24;	\
--((UCHAR *)up)[1] = ((long)(p)) >> 16;	\
--((UCHAR *)up)[2] = ((long)(p)) >> 8;	\
--((UCHAR *)up)[3] = ((long)(p));
--
--#define XSCSI2LONG(up)					\
--( (((long)(((UCHAR *)up)[0])) << 24)	\
--+ (((long)(((UCHAR *)up)[1])) << 16)	\
--+ (((long)(((UCHAR *)up)[2])) <<  8)	\
--+ ((long)(((UCHAR *)up)[3])) )
--
--/************************************************/
--/*		SCSI CDB operation codes 				*/
--/************************************************/
--#define SCSIOP_TEST_UNIT_READY		0x00
--#define SCSIOP_REZERO_UNIT			0x01
--#define SCSIOP_REWIND				0x01
--#define SCSIOP_REQUEST_BLOCK_ADDR	0x02
--#define SCSIOP_REQUEST_SENSE		0x03
--#define SCSIOP_FORMAT_UNIT			0x04
--#define SCSIOP_READ_BLOCK_LIMITS	0x05
--#define SCSIOP_REASSIGN_BLOCKS		0x07
--#define SCSIOP_READ6				0x08
--#define SCSIOP_RECEIVE				0x08
--#define SCSIOP_WRITE6				0x0A
--#define SCSIOP_PRINT				0x0A
--#define SCSIOP_SEND					0x0A
--#define SCSIOP_SEEK6				0x0B
--#define SCSIOP_TRACK_SELECT			0x0B
--#define SCSIOP_SLEW_PRINT			0x0B
--#define SCSIOP_SEEK_BLOCK			0x0C
--#define SCSIOP_PARTITION			0x0D
--#define SCSIOP_READ_REVERSE			0x0F
--#define SCSIOP_WRITE_FILEMARKS		0x10
--#define SCSIOP_FLUSH_BUFFER			0x10
--#define SCSIOP_SPACE				0x11
--#define SCSIOP_INQUIRY				0x12
--#define SCSIOP_VERIFY6				0x13
--#define SCSIOP_RECOVER_BUF_DATA		0x14
--#define SCSIOP_MODE_SELECT			0x15
--#define SCSIOP_RESERVE_UNIT			0x16
--#define SCSIOP_RELEASE_UNIT			0x17
--#define SCSIOP_COPY					0x18
--#define SCSIOP_ERASE				0x19
--#define SCSIOP_MODE_SENSE			0x1A
--#define SCSIOP_START_STOP_UNIT		0x1B
--#define SCSIOP_STOP_PRINT			0x1B
--#define SCSIOP_LOAD_UNLOAD			0x1B
--#define SCSIOP_RECEIVE_DIAGNOSTIC	0x1C
--#define SCSIOP_SEND_DIAGNOSTIC		0x1D
--#define SCSIOP_MEDIUM_REMOVAL		0x1E
--#define SCSIOP_READ_CAPACITY		0x25
--#define SCSIOP_READ					0x28
--#define SCSIOP_WRITE				0x2A
--#define SCSIOP_SEEK					0x2B
--#define SCSIOP_LOCATE				0x2B
--#define SCSIOP_WRITE_VERIFY			0x2E
--#define SCSIOP_VERIFY				0x2F
--#define SCSIOP_SEARCH_DATA_HIGH		0x30
--#define SCSIOP_SEARCH_DATA_EQUAL	0x31
--#define SCSIOP_SEARCH_DATA_LOW		0x32
--#define SCSIOP_SET_LIMITS			0x33
--#define SCSIOP_READ_POSITION		0x34
--#define SCSIOP_SYNCHRONIZE_CACHE	0x35
--#define SCSIOP_COMPARE				0x39
--#define SCSIOP_COPY_COMPARE			0x3A
--#define SCSIOP_WRITE_DATA_BUFF		0x3B
--#define SCSIOP_READ_DATA_BUFF		0x3C
--#define SCSIOP_CHANGE_DEFINITION	0x40
--#define SCSIOP_READ_SUB_CHANNEL		0x42
--#define SCSIOP_READ_TOC				0x43
--#define SCSIOP_READ_HEADER			0x44
--#define SCSIOP_PLAY_AUDIO			0x45
--#define SCSIOP_PLAY_AUDIO_MSF		0x47
--#define SCSIOP_PLAY_TRACK_INDEX		0x48
--#define SCSIOP_PLAY_TRACK_RELATIVE	0x49
--#define SCSIOP_PAUSE_RESUME			0x4B
--#define SCSIOP_LOG_SELECT			0x4C
--#define SCSIOP_LOG_SENSE			0x4D
--#define SCSIOP_MODE_SELECT10		0x55
--#define SCSIOP_MODE_SENSE10			0x5A
--#define SCSIOP_LOAD_UNLOAD_SLOT		0xA6
--#define SCSIOP_MECHANISM_STATUS		0xBD
--#define SCSIOP_READ_CD				0xBE
--
--// SCSI read capacity structure
--typedef	struct _READ_CAPACITY_DATA
--	{
--	ULONG blks;				/* total blocks (converted to little endian) */
--	ULONG blksiz;			/* size of each (converted to little endian) */
--	}	READ_CAPACITY_DATA, *PREAD_CAPACITY_DATA;
--
--// SCSI inquiry data
--typedef struct _INQUIRYDATA
--	{
--	UCHAR DeviceType			:5;
--	UCHAR DeviceTypeQualifier	:3;
--	UCHAR DeviceTypeModifier	:7;
--	UCHAR RemovableMedia		:1;
--    UCHAR Versions;
--    UCHAR ResponseDataFormat;
--    UCHAR AdditionalLength;
--    UCHAR Reserved[2];
--	UCHAR SoftReset				:1;
--	UCHAR CommandQueue			:1;
--	UCHAR Reserved2				:1;
--	UCHAR LinkedCommands		:1;
--	UCHAR Synchronous			:1;
--	UCHAR Wide16Bit				:1;
--	UCHAR Wide32Bit				:1;
--	UCHAR RelativeAddressing	:1;
--    UCHAR VendorId[8];
--    UCHAR ProductId[16];
--    UCHAR ProductRevisionLevel[4];
--    UCHAR VendorSpecific[20];
--    UCHAR Reserved3[40];
--	}	INQUIRYDATA, *PINQUIRYDATA;
--
--#endif
--
--// function prototypes
--int Pci2000_Detect			(struct scsi_host_template *tpnt);
--int Pci2000_Command			(Scsi_Cmnd *SCpnt);
--int Pci2000_QueueCommand	(Scsi_Cmnd *SCpnt, void (*done)(Scsi_Cmnd *));
--int Pci2000_Abort			(Scsi_Cmnd *SCpnt);
--int Pci2000_Reset			(Scsi_Cmnd *SCpnt, unsigned int flags);
--int Pci2000_Release			(struct Scsi_Host *pshost);
--int Pci2000_BiosParam		(struct scsi_device *sdev,
--					struct block_device *bdev,
--					sector_t capacity, int geom[]);
--
--#endif
+Adrian Bunk (1):
+      V4L/DVB (5567): Cx88-mpeg.c: make 2 functions static
+
+Alexey Dobriyan (1):
+      V4L/DVB (5565): Cx88: fix compilation on alpha
+
+Matthias Kaehlcke (1):
+      V4L/DVB (5572): Pvrusb2: use mutex instead of semaphore
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (5569): Fix: v4l1_compat should be called only if V4L1_COMPAT
+
+Mike Isely (2):
+      V4L/DVB (5574): Pvrusb2: Improve handling of PAL-60 video standard
+      V4L/DVB (5575): Pvrusb2: Implement ability to disable IR receiver
+
+Sam Revitch (1):
+      V4L/DVB (5568): VIDIOCGMBUF handling in video_ioctl2()
+
+Servaas Vandenberghe (1):
+      V4L/DVB (5576): Improve / fix support for PAL-60 in cx25840
+
+Tejun Heo (1):
+      V4L/DVB (5573): Pvrusb2: kill unnecessary attribute->owner
+
+Thomas Gleixner (1):
+      V4L/DVB (5566): MEDIA: Spinlock initializer cleanup
+
+Trent Piepho (2):
+      V4L/DVB (5570): V4l1-compat: misc fixes for pixelformat function
+      V4L/DVB (5571): V4l1-compat:  Make VIDIOCSPICT return errors in a useful way
+
+holger@muscate-magnussen.de (1):
+      V4L/DVB (5578): Workaround for bad hardare/firmware on some pluto2 devices
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
+
