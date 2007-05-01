@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161818AbXEATUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbXEATZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161818AbXEATUj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161819AbXEATUj
+	id S1752864AbXEATZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXEATZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:20:39 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41800 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161818AbXEATUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:20:37 -0400
-Date: Tue, 1 May 2007 21:20:36 +0200
-From: Bernhard Walle <bwalle@suse.de>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-rc7-mm2 "irqpoll" seems to be broken
-Message-ID: <20070501192036.GA2117@suse.de>
-Mail-Followup-To: Vivek Goyal <vgoyal@in.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <20070426093620.GB2626@in.ibm.com> <20070426082405.67a0fdd2.akpm@linux-foundation.org> <20070430084833.GA16173@in.ibm.com>
+	Tue, 1 May 2007 15:25:56 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35760 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752864AbXEATZz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 15:25:55 -0400
+Date: Tue, 1 May 2007 12:25:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+In-Reply-To: <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705011215180.25494@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070430084833.GA16173@in.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Vivek,
+On Tue, 1 May 2007, Hugh Dickins wrote:
 
-* Vivek Goyal <vgoyal@in.ibm.com> [2007-04-30 10:48]:
-> > 
-> handle_edge_irq() already makes sure that desc->action is not null, still
-> note_interrupt() is receiving desc->action as null, that's strange. On my 
-> system this is happening for irq 4 and /proc/interrupt shows that it is
-> coming from "serial".
+> > Most of the rest of slub.  Will merge it all.
+> 
+> Merging slub already?  I'm surprised.  That's a very key piece of
+> infrastructure, and I doubt it's had the exposure it needs yet.
 
-from reading the code I also cannot this. However, I'm trying to
-reproduce the problem here. I hope I find a machine where this also 
-happens.
+Its not the default. Its just an alternative like SLOB. It will take some 
+time to test with various loads in order to see if it can really replace
+SLAB in all scenarios.
+ 
+> Just what has it been widely tested on so far?  x86_64.  Not many
+> of us have ia64, but I guess SGI people will have been trying it
+> on that.  Not i386, that's excluded.
 
+There is an i386 patch pending and I have used it on i386 for a while.
+ 
+> Not powerpc - hmm, I thought that was known, but looking I see no
+> ARCH_USES_SLAB_PAGE_STRUCT there: just built and tried to run it up,
+> crashes in slab_free from pgtable_free_tlb frpm free_pte_range from
+> free_pgd_range from free_pgtables from unmap_region form do_munmap.
+> That's 2.6.21-rc7-mm2.
 
-Thanks,
-   Bernhard
--- 
-SUSE LINUX Products GmbH          Tel. +49 (911) 74053-0
-Maxfeldstr. 5                     GF: Markus Rex
-90409 Nürnberg, Germany           HRB 16746 (AG Nürnberg)
-OpenPGP DDAF6454: F61F 34CC 09CA FB82 C9F6  BA4B 8865 3696 DDAF 6454
+Hmmm... True I have not spend any time with that platform. We can set 
+ARCH_USES_SLAB_PAGE_STRUCT there to switch it off. SLUB is the default for 
+mm so I am a bit surprised that this did not surface earlier.
+
+> I've nothing against slub in itself, though I'm wary of its
+> cache merging (more scope for one corrupting another) (and
+
+Yes but then SLUB has more diagnostics etc etc than SLAB to prevent any 
+issues. In debug mode all slabs are separate. The merge feature is very 
+stable these days and significantly reduces cache overhead problems 
+that plague SLAB and require it to have a complex object expiration 
+technique. As a result I was able to rip out all timers. SLUB has no cache 
+reaper nor any timer. Its silent if not in use.
+
+> sometimes I think Christoph spent one life uglifying slab for
+> NUMA, then another life ripping that all out to make slub ;)
+
+SLAB has a certain paradigm of doing things (queues) and I had to work 
+within that framework. It was a group effort. SLUB is an answer to those 
+complaints and a result of the lessons learned through years of some 
+painful slab debugging. SLUB makes debugging extremely easy (and also the 
+design is very simple and comprehensible). No rebuilding of the kernel. 
+Just pop in a debug option on the command line which can even be targeted 
+to a slab cache if we know that things break there.
