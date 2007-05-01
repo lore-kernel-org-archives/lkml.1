@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbXEAOya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbXEAO64@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbXEAOya (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXEAOy3
+	id S1753954AbXEAO64 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:58:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbXEAO64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:54:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35120 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753256AbXEAOy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:54:28 -0400
-Date: Tue, 1 May 2007 07:54:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, apw@shadowen.org, y-goto@jp.fujitsu.com
-Subject: Re: fragmentation avoidance Re: 2.6.22 -mm merge plans
-In-Reply-To: <20070501101651.GA29957@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705010724010.22931@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <20070501101651.GA29957@skynet.ie>
+	Tue, 1 May 2007 10:58:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60619 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753954AbXEAO6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:58:54 -0400
+Date: Tue, 1 May 2007 10:58:36 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Jeff Layton <jlayton@redhat.com>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, ffilz@us.ibm.com
+Subject: Re: [NFS] [PATCH] NFS: supress warnings about NFS4ERR_OLD_STATEID
+	in nfs4_handle_exception
+Message-ID: <20070501145835.GB24354@dantu.rdu.redhat.com>
+References: <20070426191336.GB31081@dantu.rdu.redhat.com> <1178030549.5444.11.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178030549.5444.11.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Mel Gorman wrote:
-
->    anti-fragmentation-switch-over-to-pfn_valid_within.patch
+On Tue, May 01, 2007 at 07:42:29AM -0700, Trond Myklebust wrote:
+> On Thu, 2007-04-26 at 15:13 -0400, Jeff Layton wrote:
+> > I recently posted this patch to the nfs mailing list, but got no comment.
+> > Reposting with an actual "[PATCH]" subject...
+> > 
+> > In certain situations, a NFSv4 client can end up with a set of racing calls
+> > that cause the server to return a NFS4ERR_OLD_STATEID error. When this occurs,
+> > the only real recourse that the client has is to retry the call. In the
+> > current code, when this occurs, it triggers a useless printk (in
+> > nfs4_map_errors):
+> > 
+> >     nfs4_map_errors could not handle NFSv4 error 10024
+> > 
+> > Trond recently mentioned that we really don't need to worry users with that
+> > info. The following patch is based on a suggestion by Frank Filz and supresses
+> > this error. Changing the return code here to 0 should be safe since all callers
+> > of nfs4_handle_exception are expected to retry the call in this situation
+> > anyway.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > Signed-off-by: Frank Filz <ffilz@us.ibm.com>
+> > 
+> > diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> > index f52cf5c..b456783 100644
+> > --- a/fs/nfs/nfs4proc.c
+> > +++ b/fs/nfs/nfs4proc.c
+> > @@ -2774,6 +2774,7 @@ int nfs4_handle_exception(const struct nfs_server *server, int errorcode, struct
+> >  				break;
+> >  		case -NFS4ERR_OLD_STATEID:
+> >  			exception->retry = 1;
+> > +			ret = 0;
+> >  	}
+> >  	/* We failed to handle the error */
+> >  	return nfs4_map_errors(ret);
 > 
-> These patches are the grouping pages by mobility patches. They get tested
-> every time someone boots the machine from the perspective that they affect
-> the page allocator. It is working to keep fragmentation problems to a
-> minimum and being exercised.  We have beaten it heavily here on tests
-> with a variety of machines using the system that drives test.kernel.org
-> for both functionality and performance testing. That covers x86, x86_64,
-> ppc64 and occasionally IA64. Granted, there are corner-case machines out
-> there or we'd never receive bug reports at all.
+> Surely "return 0;" is more efficient.
 > 
-> They are currently being reviewed by Christoph Lameter. His feedback in
-> the linux-mm thread "Antifrag patchset comments" has given me a TODO list
-> which I'm currently working through. So far, there has been no fundamental
-> mistake in my opinion and the additional work is logical extensions.
+> ...and a minor nit about the comment: it doesn't trigger a printk(). It
+> rather triggers a dprintk(), (which should be turned off by default
+> unless you happen to be debugging the code).
+> 
+> The other nit is that I'm not sure the dprintk() is totally useless. It
+> is always nice to know _why_ the thing looped when you are debugging.
+> That said, we should perhaps rather put the dprintk() for that in
+> nfs4_handle_exception instead...
+> 
+> Trond
+> 
+> 
 
-I think we really urgently need a defragmentation solution in Linux in 
-order to support higher page allocations for various purposes. SLUB f.e. 
-would benefit from it and the large blocksize patches are not reasonable 
-without such a method.
+Argh. My mistake, that's what I get for looking at old code and new code at
+the same time. Since this is a dprintk, I agree that we should probably
+just toss this patch. If you're debugging, then there's good reason to want to
+see this.
 
-However, the current code is not up to the task. I did not see a clean 
-categorization of allocations nor a consistent handling of those. The 
-cleanup work that would have to be done throughout the kernel is not 
-there. It is spotty. There seems to be a series of heuristic driving this 
-thing (I have to agree with Nick there). The temporary allocations that 
-were missed are just a few that I found. The review of the rest of the 
-kernel was not done. Mel said that he fixed up locations that showed up to 
-be a problem in testing. That is another issue: Too much focus on testing 
-instead of conceptual cleanness and clean code in the kernel. It looks 
-like this is geared for a specific series of tests on specific platforms 
-and also to a particular allocation size (max order sized huge pages).
+As for moving the dprintk, I'm not so sure that's a great idea either.
+nfs4_map_error is called from a couple of different places and I'd think
+leaving the dprintk the a more "general" location would be good.
 
-There are major technical problems with
-
-1. Large Scale allocs. Multiple MAX_ORDER blocks as required by the 
-   antifrag patches may not exist on all platforms. Thus the antifrag 
-   patches will not be able to generate their MAX_ORDER sections. We
-   could reduce MAX_ORDER on some platforms but that would have other
-   implications like limiting the highest order allocation.
-
-2. Small huge page size support. F.e. IA64 can support down to page size
-   huge pages. The antifrag patches handle huge page in a special way. 
-   They are categorized as movable. Small huge pages may 
-   therefore contaminate the movable area.
-
-3. Defining the size of ZONE_MOVABLE. This was done to guarantee
-   availability of movable memory but the practical effect is to
-   guarantee that we panic when too many unreclaimable allocations have
-   been done.
-
-I have already said during the review that IMHO the patches are not ready 
-for merging. They are currently more like a prototype that explores ideas. 
-The generalization steps are not done.
-
-How we could make progress:
-
-1. Develop a useful categorization of allocations in the kernel whose
-   utility goes beyond the antifrag patches. I.e. length of 
-   the objects existence and the method of reclaim could be useful in 
-   various contexts.
-
-2. Have statistics of these various allocations.
-
-3. Page allocator should gather statistics on how memory was allocated in
-   the various categories.
-
-4. The available data can then be used to driver more intelligent reclaim 
-   and develop methods of antifrag or defragmentation.
-
+-- Jeff
 
