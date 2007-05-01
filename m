@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161137AbXEAKKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031658AbXEAKLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161137AbXEAKKv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161661AbXEAKKv
+	id S1031658AbXEAKLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031659AbXEAKLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:10:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49500 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161137AbXEAKKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:10:48 -0400
-Subject: [GFS2] flush the log if a transaction can't allocate space [10/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, Benjamin Marzinski <bmarzins@redhat.com>
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:06:15 +0100
-Message-Id: <1178013975.5462.146.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 1 May 2007 06:11:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:16781 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031662AbXEAKLN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:11:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=hrzE9jfVjkC5nzqLMwpBuMJsUDFbegXcAQZtPRW9wzsVETuNj5irqp8Lp4Dfpn1qjiQ++ey+E39+S2MA/+XQa9chUcyR0S6R1Tmrrui2DvqhIXPOC8IyrbpcEYMR/lEj1FbtWZnVUqEhpn4nhc63ktv9wL93pRc/N09E4k4Q5w0=
+Date: Tue, 1 May 2007 13:11:08 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <609081207.20070501131108@gmail.com>
+To: Ben Dooks <ben-linux-arm@fluff.org>
+CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       <kernel-discuss@handhelds.org>
+Subject: Re: [RFC, PATCH 0/4] SoC base drivers
+In-Reply-To: <20070501083900.GL5875@trinity.fluff.org>
+References: <1354376306.20070501080806@gmail.com> <20070501083900.GL5875@trinity.fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 172e045a7fcc3ee647fa70dbd585a3c247b49cb2 Mon Sep 17 00:00:00 2001
-From: Benjamin Marzinski <bmarzins@redhat.com>
-Date: Fri, 23 Mar 2007 14:51:56 -0600
-Subject: [PATCH] [GFS2] flush the log if a transaction can't allocate space
+Hello Ben,
 
-This is a fix for bz #208514. When GFS2 frees up space, the freed blocks
-aren't available for reuse until the resource group is successfully written
-to the ondisk journal. So in rare cases, GFS2 operations will fail, saying
-that the filesystem is out of space, when in reality, you are just waiting for
-a log flush. For instance, on a 1Gig filesystem, if I continually write 10 Mb
-to a file, and then truncate it, after a hundred interations, the write will
-fail with -ENOSPC, even though the filesystem is just 1% full.
+Tuesday, May 1, 2007, 11:39:00 AM, you wrote:
 
-The attached patch calls a log flush in these cases.  I tested this patch
-fairly heavily to check if there were any locking issues that I missed, and
-it seems to work just fine. Also, this patch only does the log flush if
-get_local_rgrp makes a complete loop of resource groups without skipping
-any do to locking issues. The code would be slightly simpler if it just always
-did the log flush after the first failed pass, and you could only ever have
-to go through the loop twice, instead of up to three times. However, I guessed
-that failing to find a rg simply do to locking issues would be common enough
-to skip the log flush in that case, but I'm not certain that this is the right
-way to go. Either way, I don't suppose this code will be hit all that often.
+> On Tue, May 01, 2007 at 08:08:06AM +0300, Paul Sokolovsky wrote:
 
-Signed-off-by: Benjamin E. Marzinski <bmarzins@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+[]
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 8d9c08b..2ce48d4 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -27,6 +27,7 @@
- #include "trans.h"
- #include "ops_file.h"
- #include "util.h"
-+#include "log.h"
- 
- #define BFITNOENT ((u32)~0)
- 
-@@ -941,9 +942,13 @@ static int get_local_rgrp(struct gfs2_inode *ip)
- 			rgd = gfs2_rgrpd_get_first(sdp);
- 
- 		if (rgd == begin) {
--			if (++loops >= 2 || !skipped)
-+			if (++loops >= 3)
- 				return -ENOSPC;
-+			if (!skipped)
-+				loops++;
- 			flags = 0;
-+			if (loops == 2)
-+				gfs2_log_flush(sdp, NULL);
- 		}
- 	}
- 
+>> Initial implementation from few years ago registered per-SoC bus
+>> for the purpose of attaching subdevices, but during LKML reviews it
+>> was pointed out that there're no good reasons for that, as such bus
+>> does not have any special functionality attached, so now platform_bus
+>> is used instead, for good.
+>> 
+>> For the most part, subdevices are allocated dynamically, and SoC
+>> base driver calculates/fixes up resources and parameters for them,
+>> to be suitable for specific configuration (for example, different
+>> base address of SoC).
+>> 
+>> What exact functionality and API a SoC base driver provides depends
+>> largely on specific chip, there's no specific API a SoC driver should
+>> implement. Here is a list of common tasks the driver usually would do:
+>> 
+>> 1. Access handling to the chip (serialization, locking, etc.)
+>> 2. Managing common chip resources:
+>> 2.1. Interrupts control, demultiplexing, etc. (using Generic IRQ subsystem)
+>> 2.2. GPIO handling (adhoc, while eagerly waiting for an extensible GPIO API, 
+>> we posted our implementation at http://lkml.org/lkml/2007/4/10/299 ).
+>> 2.3. Clocks (Using Platform Clock API)
+>> 2.4. Other kinds of "enable" and "power" switches (in adhoc manner or 
+>> (ab)using the Clocks API, and waiting for generalization of it).
+>> 3. Calculating properties and registerting subdevices.
+
+> Wow, platform devices with a new name. I don't see how any of this is
+> not handled by platfrom device.
+
+> GPIO devices could be handled by a new resource type of GPIO
+> 
+> The only other item in the list which we do not yet have is a
+> form of the clock API which can be extended past the base CPU
+> clock implementation.
+> 
+> Anything registering new IRQs could create sub platform devices
+> with the correct resources. 
+
+        Where did you see a new name? I specially mentioned that era of
+new names are gone. We talk about device drivers and platform devices,
+plain and straight. It's just a driver which does convenience
+operations for a group of platform_devices, and sure, all these
+convenience operations are well familiar to anyone in topic.
+
+        How such drivers (SoC base ones) are still useful is also
+pretty obvious: first of all, they are there, like mentioned sa1111.c
+and locomo.c. This RFC just calls for recognition of them as a special
+class of drivers, instead of keeping them hoard arch dirs.
+
+        As for registering subdevices by SoC driver, it should be also
+clear why that's useful: as was mentioned, we have 12 devices using
+ASIC3 now. Instead of polluting machine definitions with duplicate
+subdevices declarations, we declare a SoC chip devices in them, and
+let chip driver declare subdevices, handling other boring tasks, as
+resource munging, at the same time (like that bus_shift thing - some
+ASIC3 devices has 2 byte register spacing, some 4 (essentially
+attached to off-by-one address lines)).
+
+
+[]
+
+
 -- 
-1.5.1.2
-
-
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
 
