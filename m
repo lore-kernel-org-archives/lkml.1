@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031598AbXEAIkI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031143AbXEAIms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031598AbXEAIkI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 04:40:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031597AbXEAIkH
+	id S1031143AbXEAIms (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 04:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031597AbXEAIms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 04:40:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:53061 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031600AbXEAIkF (ORCPT
+	Tue, 1 May 2007 04:42:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38150 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031143AbXEAImr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 04:40:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GquzkKR0QHXFCzoSHtDs9r24od3X/WN3yvSgYaWiRhczfqcNlbQhQOVTyYm0zOivIux/bcIwwhob7CPtNevRas3ecmFci4Wv6KjnOWOhUOFHZy26NRhMgF9lgvAKPOUnXXTus8GIsslQVb7SJc2gfkQNzBLAIpJOYxXFKJPcyhg=
-Message-ID: <4636FCE3.6000405@gmail.com>
-Date: Tue, 01 May 2007 10:40:03 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
+	Tue, 1 May 2007 04:42:47 -0400
+Date: Tue, 1 May 2007 09:42:45 +0100
+From: Christoph Hellwig <hch@infradead.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1: many processes end up in D state
-References: <46360DA7.6040003@gmail.com>	<20070430110510.1f559d34.akpm@linux-foundation.org>	<4af2d03a0704301114sc84b358td8781c91b8564c38@mail.gmail.com> <20070430114449.1dad1ab2.akpm@linux-foundation.org>
-In-Reply-To: <20070430114449.1dad1ab2.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, ebiederm@xmission.com
+Subject: "partical" kthread conversion
+Message-ID: <20070501084245.GA14364@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ebiederm@xmission.com
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
-> I would check the anticipatory scheduler as well, please.  I don't know
-> what no-op would do with a workload like that, but it probably isn't very
-> good.
+On Mon, Apr 30, 2007 at 04:20:07PM -0700, Andrew Morton wrote:
+>  macintosh-mediabay-convert-to-kthread-api.patch
+>  macintosh-adb-convert-to-the-kthread-api.patch
+>  macintosh-therm_pm72c-partially-convert-to-kthread-api.patch
+>  powerpc-pseries-rtasd-convert-to-kthread-api.patch
+>  powerpc-pseries-eeh-convert-to-kthread-api.patch
 > 
-> You appear to believe that it's related to the CPU scheduler?  
+> Will send to paulus (I already did - does Paul not handle the macintosh
+> driver?)
 
-Oh, no. I have really no idea, what may cause this :).
+Please don't send out the partial kthread conversions, as they're not
+that helpful.  Depending on the way we'll let the API evolve a
+kthread_create/run not paired by a kthread_stop might be actually harmful.
 
-> That's a bit
-> unexpected - it sounds more like a VFS/IO thing?  But stranger things have
-> happened.
+Please only send along patches that are paired or always built in so that
+they don't require stopping at all.
 
-I think so.
+Btw, many of the drivers above should probably go to benh.
 
-> I guess it's time to end the staircase experiment in -mm. 
-> http://userweb.kernel.org/~akpm/js.bz2 is my current rollup (against
-> 2.6.21) minus staircase and related things.  Pretty please.
-
-Anticipatory + -js is no change. Going to try vanilla and in both cases whether
-it works or not, I'll bisect either -mm or vanilla.
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+There's probably a few more patches falling into this category, these
+were just the first one the stick into my eye.
