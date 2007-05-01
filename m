@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXEAFZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbXEAF1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXEAFZf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 01:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031594AbXEAFZe
+	id S1754390AbXEAF1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 01:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXEAF1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 01:25:34 -0400
-Received: from ns.suse.de ([195.135.220.2]:37885 "EHLO mx1.suse.de"
+	Tue, 1 May 2007 01:27:16 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53063 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030954AbXEAFZS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 01:25:18 -0400
-Date: Tue, 1 May 2007 08:22:58 +0200
+	id S1754368AbXEAF1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 01:27:16 -0400
+Date: Tue, 1 May 2007 08:24:56 +0200
 From: Andi Kleen <ak@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andi Kleen <ak@suse.de>,
        linux-kernel@vger.kernel.org
 Subject: Re: 2.6.21-rc7-mm2 hangs in boot (netconsole)
-Message-ID: <20070501062258.GR25929@bingen.suse.de>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <20070429220132.951cdf7f.randy.dunlap@oracle.com> <20070429222354.63265e3f.akpm@linux-foundation.org> <20070430081653.60fab0a5.randy.dunlap@oracle.com> <20070430165101.6463fee1.randy.dunlap@oracle.com> <20070430171229.d514ba19.akpm@linux-foundation.org> <46368DC3.5070503@oracle.com> <20070430180821.eb269fe3.akpm@linux-foundation.org> <20070501034330.GJ25929@bingen.suse.de> <20070430221624.dcc7346b.randy.dunlap@oracle.com>
+Message-ID: <20070501062456.GS25929@bingen.suse.de>
+References: <20070429220132.951cdf7f.randy.dunlap@oracle.com> <20070429222354.63265e3f.akpm@linux-foundation.org> <20070430081653.60fab0a5.randy.dunlap@oracle.com> <20070430165101.6463fee1.randy.dunlap@oracle.com> <20070430171229.d514ba19.akpm@linux-foundation.org> <46368DC3.5070503@oracle.com> <20070430180821.eb269fe3.akpm@linux-foundation.org> <20070501034330.GJ25929@bingen.suse.de> <20070430221624.dcc7346b.randy.dunlap@oracle.com> <20070430222348.de258c98.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070430221624.dcc7346b.randy.dunlap@oracle.com>
+In-Reply-To: <20070430222348.de258c98.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:16:24PM -0700, Randy Dunlap wrote:
-> On Tue, 1 May 2007 05:43:30 +0200 Andi Kleen wrote:
+> The bug is in firstfloor only, and the fix (if present) will be there too.
 > 
-> > > Andi: unprocessor x86_64 running rc7-mm2 is hanging early in boot at
-> > > randomish times (presumably in the timer irq handler) when netconsole and
-> > > printk-time are enabled.
-> > 
-> > A backtrace would be good. Does nmi_watchdog=2 show anything
-> > interesting or if not sysrq-t?
+> <checks>
 > 
-> I can't get anything from sysrq or nmi_watchdog.
-
-Hmm, ok when the console locks up those likely don't work.
-
+> Nope,
 > 
-> > > I was hitting the same thing on i386 uniprocessor, but I thought it got
-> > > fixed.
-> > 
-> > Yes.
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/sched-clock-share
 > 
-> Fixed where?  Merged into mainline or in your firstfloor patches?
+> is identical to
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21-rc7/2.6.21-rc7-mm2/broken-out/x86_64-mm-sched-clock-share.patch
 
-None of the sched-clock changes are in mainline yet.
+Or perhaps the deadlock is in the cpufrequency handler. Does it happen without CONFIG_CPUFREQ
+too?
 
-Can you perhaps test latest firstfloor alone (without rest of -mm)?
+[cpufreq handler calls ktime_get which might take xtime lock for reading] 
 
 -Andi
