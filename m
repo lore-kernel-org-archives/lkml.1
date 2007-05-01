@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946046AbXEAW4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946050AbXEAW45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946046AbXEAW4K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 18:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXEAW4K
+	id S1946050AbXEAW45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXEAW45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 18:56:10 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59904 "EHLO smtp4.pp.htv.fi"
+	Tue, 1 May 2007 18:56:57 -0400
+Received: from mail.screens.ru ([213.234.233.54]:60948 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946046AbXEAW4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 18:56:09 -0400
-Date: Wed, 2 May 2007 01:56:05 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/33] m68k: CROSS_COMPILE = m68k-linux-gnu-
-Message-ID: <20070501225605.GA5533@sci.fi>
-References: <20070501203234.252205858@mail.of.borg> <20070501203330.778353898@mail.of.borg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1946050AbXEAW44 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 18:56:56 -0400
+Date: Wed, 2 May 2007 02:56:54 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: libata-core.c: unsafe cancel_delayed_work() usage?
+Message-ID: <20070501225654.GA190@tv-sign.ru>
+References: <200704260110.22224.rjw@sisk.pl> <20070425165410.b73443b4.akpm@linux-foundation.org> <20070426100922.GB12892@in.ibm.com> <20070426101547.GA97@tv-sign.ru> <20070426125838.GC12892@in.ibm.com> <20070427184258.62794053.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070501203330.778353898@mail.of.borg>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070427184258.62794053.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 10:32:40PM +0200, Geert Uytterhoeven wrote:
-> Recent cross-compilers are called m68k-linux-gnu-gcc instead of m68k-linux-gcc
-> 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  arch/m68k/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- linux-m68k-2.6.21.orig/arch/m68k/Makefile
-> +++ linux-m68k-2.6.21/arch/m68k/Makefile
-> @@ -21,7 +21,7 @@ AS += -m68020
->  LDFLAGS := -m m68kelf
->  ifneq ($(COMPILE_ARCH),$(ARCH))
->  	# prefix for cross-compiling binaries
-> -	CROSS_COMPILE = m68k-linux-
-> +	CROSS_COMPILE = m68k-linux-gnu-
->  endif
->  
->  ifdef CONFIG_SUN3
+On 04/27, Andrew Morton wrote:
+>
+> It'd be good if people could take some time to sit down and re-review the
+> code which we presently have.  I plan on sending it all off for 2.6.22 and
+> there might be some glitches but it seems to have a good track record so
+> far.
 
-What about using ?= so the user can override it. I sent a patch doing
-just that but never got any response.
+Alan, the usage of cancel_delayed_work() in drivers/ata/libata-core.c looks
+suspicious to me, both ->hotplug_task and ->port_task can re-arm themselves,
+so cancel_delayed_work + flush_workqueue (or cancel_work_sync) is not enough.
 
--- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Could you confirm/nack my understanding?
+
+Oleg.
+
