@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbXEARVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbXEARXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbXEARVW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 13:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbXEARVW
+	id S1754985AbXEARXD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbXEARXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 13:21:22 -0400
-Received: from mail.electro-mechanical.com ([216.184.71.30]:53092 "EHLO
-	mail.electro-mechanical.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754955AbXEARVU (ORCPT
+	Tue, 1 May 2007 13:23:03 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57534 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754985AbXEARXB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 13:21:20 -0400
-Date: Tue, 1 May 2007 13:21:17 -0400
-From: William Thompson <wt@electro-mechanical.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Mark Lord <liml@rtr.ca>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com, Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: 2.6.20 libata cdrom
-Message-ID: <20070501172117.GA20328@electro-mechanical.com>
-References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com> <4636C2C7.8090206@gmail.com> <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com>
+	Tue, 1 May 2007 13:23:01 -0400
+Date: Tue, 1 May 2007 18:06:20 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: akuster@mvista.com, Ken Chen <kenchen@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: mm-detach_vmas_to_be_unmapped-fix
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705011715070.1619@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46374354.7040307@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 01 May 2007 17:22:59.0661 (UTC) FILETIME=[5DA477D0:01C78C15]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBha3VzdGVyQG12aXN0YS5jb20AbGludXgtbW1Aa3ZhY2sub3JnAGtlbmNoZW5AZ29vZ2xlLmNvbQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 03:40:36PM +0200, Tejun Heo wrote:
-> >> Tejun, don't we have a fallback for when IDENTIFY fails?
-> >> If the drive rejects it (err=0x04), then this can mean only one thing:
-> >> unsupported command, so we next must try PACKET_IDENTIFY.
+On Mon, 30 Apr 2007, Andrew Morton wrote:
+> ...
+>  mm-detach_vmas_to_be_unmapped-fix.patch
+> ...
+> Misc MM things.  Will merge.
+
+No, I think that one is just drifting like flotsam towards mainline,
+because nobody at all has yet found time to look at it.  And Mr Akuster
+appears not to have signed off on it yet.  I've given it a quick look
+now, and it seems to be based on misdescription and misconception.
+
+> From: <akuster@mvista.com>
 > 
-> Up until now, we've been depending on the device giving us the correct
-> signature on reset.  This is the first reported case which screws that
-> up.  Gee... Two crazy screwed up devices today.  What's going on?
+> Wolfgang Wander submitted a fix to address a mmap fragmentation issue.  The
+> git patch ( 1363c3cd8603a913a27e2995dccbd70d5312d8e6 ) is somewhat different
+> and yields different results when running Wolfgang's test case leakme.c.
 
-libata-pata is getting it's field testing now!
+Ken did a lot of the work on that I believe: I certainly wouldn't
+want to see this patch go in without his Ack.  (I've never done
+any work on unmapped area heuristics, but detach_vmas_to_be_unmapped
+always catches my eye.)
 
-> > Is it doing that just for this drive?  I use libata on another machine (Dell
-> > Dimension 2400) and it finds the cdrom just fine.
 > 
-> That specific cdrom is crazy.  It's telling libata that it's a disk when
-> it apparently isn't.
+> IMHO, the vm start and end address are swapped in arch_unmap_area and
+> arch_unmap_area_topdown functions.
 
-Wasn't sure, I thought it was something with the chipset.  Every Dell
-Dimension L series machine has done this to me (The DMA thing, that is).
-Some gateways have as well.
+I disagree.
 
-> > The one thing I do know, the machine with the non-working libata cdrom also
-> > does not work with the ide driver *ONLY IF* DMA is turned on.
 > 
-> This is probably as Mark explained in the other thread.
-> 
-> Anyways, oh well, it looks like we need fallback mechanism to the other
-> IDENTIFY command after all.  Jeff, any ideas or objections?
+> Prior to this patch arch_unmap_area() used area->vm_start and
+> arch_unmap_area_topdown used area->vm_end
 
-Got a patch or anything I can do to test?
+Yes (where area is the vma being unmapped).
+
+> in the git patch the following change showed up.
+> 
+> if (mm->unmap_area == arch_unmap_area)
+>      addr = prev ? prev->vm_start : mm->mmap_base;
+> else
+>      addr = vma ?  vma->vm_end : mm->mmap_base;
+
+No, that's not what showed up in the git patch: that's what the
+patch below is trying to change it to.  The git patch said
+	addr = prev ? prev->vm_end : mm->mmap_base
+for the bottomup case i.e. setting the unmapped area to the
+end of the vma below; and
+	addr = vma ? vma->vm_start: mm->mmap_base;
+for the topdown case i.e. setting the unmapped area to the
+beginning of the vma above.
+
+That seems to me consistent with what was done before, but pushing
+the bounds out across any hole, for presumably better behaviour.
+
+> 
+> Using Wolfgang Wander's leakme.c test, I get the same results seen with his
+> original "Avoiding mmap fragmentation" patch as I do after swapping the start
+> & end address in the above code segment.  The patch I submitted addresses this
+> typo issue.
+
+I'm pretty sure it is not a typo.  I did a very hasty test with two
+aLLocator .c progs Wolfgang posted (one unnamed, one named leakme4.c),
+on x86_64, and got apparently the same successful result with and
+without the patch below.  In my case, it's probably just slightly
+slowing down the algorithm, by demanding an additional find_vma()
+because it mispositions mm->free_area_cache to an occupied area.
+I don't see how it could ever be an improvement, but I've not
+spent long enough checking out that code.
+
+I bet there's improvements that could be made there, but
+this patch looks wrong - please don't rush it into 2.6.22
+(personally I'd say drop it, but I'd rather Ken takes a look).
+
+Hugh
+
+> 
+> 
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+>  mm/mmap.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff -puN mm/mmap.c~mm-detach_vmas_to_be_unmapped-fix mm/mmap.c
+> --- a/mm/mmap.c~mm-detach_vmas_to_be_unmapped-fix
+> +++ a/mm/mmap.c
+> @@ -1723,9 +1723,9 @@ detach_vmas_to_be_unmapped(struct mm_str
+>  	*insertion_point = vma;
+>  	tail_vma->vm_next = NULL;
+>  	if (mm->unmap_area == arch_unmap_area)
+> -		addr = prev ? prev->vm_end : mm->mmap_base;
+> +		addr = prev ? prev->vm_start : mm->mmap_base;
+>  	else
+> -		addr = vma ?  vma->vm_start : mm->mmap_base;
+> +		addr = vma ?  vma->vm_end : mm->mmap_base;
+>  	mm->unmap_area(mm, addr);
+>  	mm->mmap_cache = NULL;		/* Kill the cache. */
+>  }
