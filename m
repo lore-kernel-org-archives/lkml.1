@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423596AbXEAUsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423602AbXEAUth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423596AbXEAUsw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423664AbXEAUmE
+	id S1423602AbXEAUth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423634AbXEAUl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:42:04 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:40177 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423633AbXEAUe5 (ORCPT
+	Tue, 1 May 2007 16:41:57 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:44977 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423630AbXEAUe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 May 2007 16:34:57 -0400
-Message-Id: <20070501203333.698826280@mail.of.borg>
+Message-Id: <20070501203333.988031488@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:49 +0200
+Date: Tue, 01 May 2007 22:32:50 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Finn Thain <fthain@telegraphics.com.au>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [patch 15/33] m68k: pmu_queue_request() declaration conflict
-Content-Disposition: inline; filename=pmu_queue_request-conflict.diff
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Subject: [patch 16/33] m68k: Amiga A2065 and Ariadne TX statistics
+Content-Disposition: inline; filename=amiga-a2065-ariadne-stats.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Finn Thain <fthain@telegraphics.com.au>
+Add missing code to the Amiga A2065 and Ariadne drivers to update
+net_device_stats.tx_bytes.
 
-Fixes a "static qualifier follows non-static qualifier" error from gcc 4.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/macintosh/via-pmu68k.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/net/a2065.c   |    4 +---
+ drivers/net/ariadne.c |    1 +
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
---- linux-m68k-2.6.21.orig/drivers/macintosh/via-pmu68k.c
-+++ linux-m68k-2.6.21/drivers/macintosh/via-pmu68k.c
-@@ -111,7 +111,6 @@ static int pmu_send_request(struct adb_r
- static int pmu_autopoll(int devs);
- void pmu_poll(void);
- static int pmu_reset_bus(void);
--static int pmu_queue_request(struct adb_request *req);
- 
- static void pmu_start(void);
- static void send_byte(int x);
-@@ -475,7 +474,7 @@ pmu_request(struct adb_request *req, voi
- 	return pmu_queue_request(req);
- }
- 
--static int 
-+int
- pmu_queue_request(struct adb_request *req)
- {
+--- linux-m68k-2.6.21.orig/drivers/net/a2065.c
++++ linux-m68k-2.6.21/drivers/net/a2065.c
+@@ -562,7 +562,6 @@ static int lance_start_xmit (struct sk_b
+ 	volatile struct lance_init_block *ib = lp->init_block;
+ 	int entry, skblen, len;
+ 	int status = 0;
+-	static int outs;
  	unsigned long flags;
+ 
+ 	skblen = skb->len;
+@@ -607,8 +606,7 @@ static int lance_start_xmit (struct sk_b
+ 	/* Now, give the packet to the lance */
+ 	ib->btx_ring [entry].tmd1_bits = (LE_T1_POK|LE_T1_OWN);
+ 	lp->tx_new = (lp->tx_new+1) & lp->tx_ring_mod_mask;
+-
+-	outs++;
++	lp->stats.tx_bytes += skblen;
+ 
+ 	if (TX_BUFFS_AVAIL <= 0)
+ 		netif_stop_queue(dev);
+--- linux-m68k-2.6.21.orig/drivers/net/ariadne.c
++++ linux-m68k-2.6.21/drivers/net/ariadne.c
+@@ -677,6 +677,7 @@ static int ariadne_start_xmit(struct sk_
+ 	priv->cur_tx -= TX_RING_SIZE;
+ 	priv->dirty_tx -= TX_RING_SIZE;
+     }
++    priv->stats.tx_bytes += len;
+ 
+     /* Trigger an immediate send poll. */
+     lance->RAP = CSR0;		/* PCnet-ISA Controller Status */
 
 --
 Gr{oetje,eeting}s,
