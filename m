@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbXEAThw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbXEATiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbXEAThw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964780AbXEAThw
+	id S964932AbXEATiy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXEATiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:37:52 -0400
-Received: from hu-out-0506.google.com ([72.14.214.236]:55795 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755311AbXEAThv (ORCPT
+	Tue, 1 May 2007 15:38:54 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:39014 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755322AbXEATix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:37:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BH7EQTQrN9I1rlchcE6KK8eUr6Bzx5S/SIj1kHYcs7b1QSE+I7lNjdsxX3jAqDBI6iKrYZmN1EuuQHjcT6+shEM5cUo9IcXGiSmzq7dGhj0pda0hzWeykMjncgNI4LjllPtIQXat3HmVLx0z/fDOq7G3/i/kFii87up3SPquLEw=
-Message-ID: <a781481a0705011237n791f7cafn54509c1a41cf3de6@mail.gmail.com>
-Date: Wed, 2 May 2007 01:07:48 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH 16/21] sysfs: implement bin_buffer
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <463753DB.2060101@gmail.com>
+	Tue, 1 May 2007 15:38:53 -0400
+Message-ID: <463796B1.9060706@student.ltu.se>
+Date: Tue, 01 May 2007 21:36:17 +0200
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>, ballabio_dario@emc.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/pci2000.h: Remove unused file
+References: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>	 <Pine.LNX.4.64.0705011415070.13459@localhost.localdomain> <1178044924.4320.29.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1178044924.4320.29.camel@mulgrave.il.steeleye.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11777675753460-git-send-email-htejun@gmail.com>
-	 <1177767582628-git-send-email-htejun@gmail.com>
-	 <a781481a0705010725t310ecb31yde475412f620d6d6@mail.gmail.com>
-	 <463753DB.2060101@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(We went off-list just now. Adding lkml again.)
-
-On 5/1/07, Tejun Heo <htejun@gmail.com> wrote:
-> Satyam Sharma wrote:
-> > On 4/28/07, Tejun Heo <htejun@gmail.com> wrote:
-> >> Implement bin_buffer which contains a mutex and pointer to PAGE_SIZE
-> >> buffer to properly synchronize accesses to per-openfile buffer and
-> >> prepare for immediate-kobj-disconnect.
-> >>
-> >> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> >> ---
-> >> [...]
-> >> @@ -135,14 +160,22 @@ static int open(struct inode * inode, struct
-> >> file * file)
-> >>                 goto Error;
-> >>
-> >>         error = -ENOMEM;
-> >> -       file->private_data = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> >> -       if (!file->private_data)
-> >> +       bb = kzalloc(sizeof(*bb), GFP_KERNEL);
-> >> +       if (!bb)
-> >>                 goto Error;
-> >>
-> >> +       bb->buffer = kmalloc(PAGE_SIZE, GFP_KERNEL);
-> >
-> > You could simply do a __get_free_page() here instead of a
-> > kmalloc(PAGE_SIZE).
+James Bottomley wrote:
+> On Tue, 2007-05-01 at 14:16 -0400, Robert P. J. Day wrote:
+>   
+>> On Tue, 1 May 2007, Richard Knutsson wrote:
+>>
+>>     
+>>> Remove the unused header drivers/scsi/pci2000.h
+>>>       
+>> i have the same patch in my pending patch directory, dated march 10,
+>> so i know i submitted it, but i have no idea whatever happened to it.
+>>     
 >
-> Yes, I could but 1. the original code was done using kmalloc
+> It's in -mm via this, pending merge with linus:
+>
+> http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=38891cb6b0de3f5986e6a7688c5ae17c18b000a9
+>   
+Ok, thanks.
 
-Yes, I saw that, but you could change it just as well. In any case,
-this will only make fs/sysfs/bin.c similar to what is being done in
-fs/sysfs/file.c. We allocate the buffer page backing the attribute's
-data in fill_read_buffer() and fill_write_buffer() using
-get_zeroed_page() and not kzalloc().
+Richard Knutsson
 
-> 2. I'm not sure __get_free_page() is better than kmalloc(PAGE_SIZE, ), is it?
-
-If you know for sure that you require *exactly* PAGE_SIZE bytes, then
-yes, it is.
