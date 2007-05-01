@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161794AbXEATIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161792AbXEATKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161794AbXEATIs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161790AbXEATIs
+	id S1161792AbXEATKp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161795AbXEATKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:08:48 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:38037 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161794AbXEATIr (ORCPT
+	Tue, 1 May 2007 15:10:45 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:32894 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161792AbXEATKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:08:47 -0400
-Date: Tue, 1 May 2007 21:08:36 +0200 (MEST)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: axboe@kernel.dk
-Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070501190607.32350.4822.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] block: Convert to generic boolean
+	Tue, 1 May 2007 15:10:44 -0400
+Message-ID: <463790A6.50003@interia.pl>
+Date: Tue, 01 May 2007 21:10:30 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Natsemi DP83815 driver spaming
+References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org> <20070501084639.GA528@sirena.org.uk> <46371590.4090004@interia.pl> <20070501180830.GA31630@sirena.org.uk>
+In-Reply-To: <20070501180830.GA31630@sirena.org.uk>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-EMID: 2c4baacc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert to generic boolean
+>> eth0: Media selection timer tick.
+>> eth0: possible phy reset: re-initializing
+> 
+> This is why the reset is being triggered - it's a workaround for a hardware
+> bug which checks to make sure the hardware is in the state that the
+> kernel thinks it is is going off.  The code has this explanatory comment:
+> 
+>  * 2) check for sudden death of the NIC:
+>  *    It seems that a reference set for this chip went out with incorrect info,
+>  *    and there exist boards that aren't quite right.  An unexpected voltage
+>  *    drop can cause the PHY to get itself in a weird state (basically reset).
+>  *    NOTE: this only seems to affect revC chips.
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested but most arch/conf tested failed for other reasons then this
-Diffed against Linus' git-tree.
+Yes. I have revision C chip.
+ 
+> I'd suggest checking your power supply as a first step.
 
- ps2esdi.c |    8 ++++----
- z2ram.c   |    3 ---
- 2 files changed, 4 insertions(+), 7 deletions(-)
+5,25V when not connected. 5,04V when connected to Wyse. I don't have access to 
+osciloscope.
+I will check if this code is nedded. If it is then I will try to get new power 
+supply.
+ 
+> [BTW, as Andrew said please don't drop people from the CC.]
+OK. Will not happen again.
+
+Rafa³
 
 
-diff --git a/drivers/block/ps2esdi.c b/drivers/block/ps2esdi.c
-index 688a4fb..96b40bc 100644
---- a/drivers/block/ps2esdi.c
-+++ b/drivers/block/ps2esdi.c
-@@ -94,7 +94,7 @@ static u_int dma_arb_level;		/* DMA arbitration level */
- 
- static DECLARE_WAIT_QUEUE_HEAD(ps2esdi_int);
- 
--static int no_int_yet;
-+static bool no_int_yet;
- static int ps2esdi_drives;
- static u_short io_base;
- static DEFINE_TIMER(esdi_timer, ps2esdi_reset_timer, 0, 0);
-@@ -455,7 +455,7 @@ static void __init ps2esdi_get_device_cfg(void)
- 	current_int_handler = ps2esdi_geometry_int_handler;
- 	cmd_blk[0] = CMD_GET_DEV_CONFIG | 0x600;
- 	cmd_blk[1] = 0;
--	no_int_yet = TRUE;
-+	no_int_yet = true;
- 	ps2esdi_out_cmd_blk(cmd_blk);
- 	if (no_int_yet)
- 		sleep_on(&ps2esdi_int);
-@@ -464,7 +464,7 @@ static void __init ps2esdi_get_device_cfg(void)
- 		printk("%s: Drive 1\n", DEVICE_NAME);	/*BA */
- 		cmd_blk[0] = CMD_GET_DEV_CONFIG | (1 << 5) | 0x600;
- 		cmd_blk[1] = 0;
--		no_int_yet = TRUE;
-+		no_int_yet = true;
- 		ps2esdi_out_cmd_blk(cmd_blk);
- 		if (no_int_yet)
- 			sleep_on(&ps2esdi_int);
-@@ -843,7 +843,7 @@ static void ps2esdi_geometry_int_handler(u_int int_ret_code)
- 	}
- 
- 	wake_up(&ps2esdi_int);
--	no_int_yet = FALSE;
-+	no_int_yet = false;
- 	outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
- 
- }
-diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-index 7cc2685..2abf94c 100644
---- a/drivers/block/z2ram.c
-+++ b/drivers/block/z2ram.c
-@@ -44,9 +44,6 @@
- extern int m68k_realnum_memory;
- extern struct mem_info m68k_memory[NUM_MEMINFO];
- 
--#define TRUE                  (1)
--#define FALSE                 (0)
--
- #define Z2MINOR_COMBINED      (0)
- #define Z2MINOR_Z2ONLY        (1)
- #define Z2MINOR_CHIPONLY      (2)
+
+----------------------------------------------------------------------
+Kasia Cichopek eksponuje biust  
+>>> http://link.interia.pl/f1a6f
+
