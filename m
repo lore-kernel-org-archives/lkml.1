@@ -1,935 +1,1700 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992475AbXEAEDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946244AbXEAEE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992475AbXEAEDm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946492AbXEAEBh
+	id S1946244AbXEAEE7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933465AbXEAEBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:01:37 -0400
-Received: from mx2.suse.de ([195.135.220.15]:48955 "EHLO mx2.suse.de"
+	Tue, 1 May 2007 00:01:17 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48936 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946421AbXEAD6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:58:07 -0400
+	id S1946244AbXEAD6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 23:58:02 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070501557.815359000@suse.de>
 In-Reply-To: <20070501557.815359000@suse.de>
 To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [8/30] x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu
-Message-Id: <20070501035805.9FA9513CAF@wotan.suse.de>
-Date: Tue,  1 May 2007 05:58:05 +0200 (CEST)
+Subject: [PATCH] [3/30] i386: Clean up NMI watchdog code
+Message-Id: <20070501035800.25D5D15146@wotan.suse.de>
+Date: Tue,  1 May 2007 05:58:00 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This implements new vDSO for x86-64.  The concept is similar
-to the existing vDSOs on i386 and PPC.  x86-64 has had static
-vsyscalls before,  but these are not flexible enough anymore.
-
-A vDSO is a ELF shared library supplied by the kernel that is mapped into 
-user address space.  The vDSO mapping is randomized for each process
-for security reasons.
-
-Doing this was needed for clock_gettime, because clock_gettime
-always needs a syscall fallback and having one at a fixed
-address would have made buffer overflow exploits too easy to write.
-
-The vdso can be disabled with vdso=0
-
-It currently includes a new gettimeofday implemention and optimized
-clock_gettime(). The gettimeofday implementation is slightly faster
-than the one in the old vsyscall.  clock_gettime is significantly faster 
-than the syscall for CLOCK_MONOTONIC and CLOCK_REALTIME.
-
-The new calls are generally faster than the old vsyscall. 
-
-TBD: add new benchmarks
-
-Advantages over the old x86-64 vsyscalls:
-- Extensible
-- Randomized
-- Cleaner
-- Easier to virtualize (the old static address range previously causes
-overhead e.g. for Xen because it has to create special page tables for it) 
-
-Weak points: 
-- glibc support still to be written
-
-The VM interface is partly based on Ingo Molnar's i386 version.
+- Introduce a wd_ops structure
+- Convert the various nmi watchdogs over to it
+- This allows to split the perfctr reservation from the watchdog
+setup cleanly.
+- Do perfctr reservation globally as it should have always been
+- Remove dead code referenced only by unused EXPORT_SYMBOLs
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- Documentation/kernel-parameters.txt |    2 
- arch/x86_64/Makefile                |    3 
- arch/x86_64/ia32/ia32_binfmt.c      |    1 
- arch/x86_64/kernel/time.c           |    1 
- arch/x86_64/kernel/vmlinux.lds.S    |   12 +++
- arch/x86_64/kernel/vsyscall.c       |   22 +----
- arch/x86_64/mm/init.c               |   17 ++++
- arch/x86_64/vdso/Makefile           |   49 ++++++++++++
- arch/x86_64/vdso/vclock_gettime.c   |  120 +++++++++++++++++++++++++++++++
- arch/x86_64/vdso/vdso-note.S        |   25 ++++++
- arch/x86_64/vdso/vdso-start.S       |    2 
- arch/x86_64/vdso/vdso.S             |    2 
- arch/x86_64/vdso/vdso.lds.S         |   77 ++++++++++++++++++++
- arch/x86_64/vdso/vextern.h          |   16 ++++
- arch/x86_64/vdso/vgetcpu.c          |   50 +++++++++++++
- arch/x86_64/vdso/vma.c              |  137 ++++++++++++++++++++++++++++++++++++
- arch/x86_64/vdso/voffset.h          |    1 
- arch/x86_64/vdso/vvar.c             |   12 +++
- include/asm-x86_64/auxvec.h         |    2 
- include/asm-x86_64/elf.h            |   13 +++
- include/asm-x86_64/mmu.h            |    1 
- include/asm-x86_64/pgtable.h        |    8 +-
- include/asm-x86_64/vgtod.h          |   29 +++++++
- include/asm-x86_64/vsyscall.h       |    3 
- 24 files changed, 583 insertions(+), 22 deletions(-)
+ arch/i386/kernel/cpu/Makefile           |    2 
+ arch/i386/kernel/cpu/perfctr-watchdog.c |  658 +++++++++++++++++++++++++
+ arch/i386/kernel/nmi.c                  |  829 ++------------------------------
+ include/asm-i386/nmi.h                  |    8 
+ 4 files changed, 721 insertions(+), 776 deletions(-)
 
-Index: linux/arch/x86_64/ia32/ia32_binfmt.c
+Index: linux/arch/i386/kernel/nmi.c
 ===================================================================
---- linux.orig/arch/x86_64/ia32/ia32_binfmt.c
-+++ linux/arch/x86_64/ia32/ia32_binfmt.c
-@@ -38,6 +38,7 @@
- 
- int sysctl_vsyscall32 = 1;
- 
-+#undef ARCH_DLINFO
- #define ARCH_DLINFO do {  \
- 	if (sysctl_vsyscall32) { \
- 	NEW_AUX_ENT(AT_SYSINFO, (u32)(u64)VSYSCALL32_VSYSCALL); \
-Index: linux/arch/x86_64/kernel/vmlinux.lds.S
-===================================================================
---- linux.orig/arch/x86_64/kernel/vmlinux.lds.S
-+++ linux/arch/x86_64/kernel/vmlinux.lds.S
-@@ -94,6 +94,9 @@ SECTIONS
-   .vsyscall_gtod_data : AT(VLOAD(.vsyscall_gtod_data))
- 		{ *(.vsyscall_gtod_data) }
-   vsyscall_gtod_data = VVIRT(.vsyscall_gtod_data);
-+  .vsyscall_clock : AT(VLOAD(.vsyscall_clock))
-+		{ *(.vsyscall_clock) }
-+  vsyscall_clock = VVIRT(.vsyscall_clock);
- 
- 
-   .vsyscall_1 ADDR(.vsyscall_0) + 1024: AT(VLOAD(.vsyscall_1))
-@@ -153,6 +156,8 @@ SECTIONS
- 
-   . = ALIGN(4096);		/* Init code and data */
-   __init_begin = .;
-+
-+
-   .init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
- 	_sinittext = .;
- 	*(.init.text)
-@@ -190,6 +195,12 @@ SECTIONS
-   .exit.text : AT(ADDR(.exit.text) - LOAD_OFFSET) { *(.exit.text) }
-   .exit.data : AT(ADDR(.exit.data) - LOAD_OFFSET) { *(.exit.data) }
- 
-+/* vdso blob that is mapped into user space */
-+  vdso_start = . ;
-+  .vdso  : AT(ADDR(.vdso) - LOAD_OFFSET) { *(.vdso) }
-+  . = ALIGN(4096);
-+  vdso_end = .;
-+
- #ifdef CONFIG_BLK_DEV_INITRD
-   . = ALIGN(4096);
-   __initramfs_start = .;
-@@ -202,6 +213,7 @@ SECTIONS
-   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
-   __per_cpu_end = .;
-   . = ALIGN(4096);
-+
-   __init_end = .;
- 
-   . = ALIGN(4096);
-Index: linux/arch/x86_64/mm/init.c
-===================================================================
---- linux.orig/arch/x86_64/mm/init.c
-+++ linux/arch/x86_64/mm/init.c
-@@ -159,6 +159,14 @@ static __init void set_pte_phys(unsigned
- 	__flush_tlb_one(vaddr);
- }
- 
-+void __init
-+set_kernel_map(void *vaddr,unsigned long len,unsigned long phys,pgprot_t prot)
-+{
-+	void *end = vaddr + ALIGN(len, PAGE_SIZE);
-+	for (; vaddr < end; vaddr += PAGE_SIZE, phys += PAGE_SIZE)
-+		set_pte_phys((unsigned long)vaddr, phys, prot);
-+}
-+
- /* NOTE: this is meant to be run only at boot */
- void __init 
- __set_fixmap (enum fixed_addresses idx, unsigned long phys, pgprot_t prot)
-@@ -756,3 +764,12 @@ int in_gate_area_no_task(unsigned long a
- {
- 	return (addr >= VSYSCALL_START) && (addr < VSYSCALL_END);
- }
-+
-+const char *arch_vma_name(struct vm_area_struct *vma)
-+{
-+	if (vma->vm_mm && vma->vm_start == (long)vma->vm_mm->context.vdso)
-+		return "[vdso]";
-+	if (vma == &gate_vma)
-+		return "[vsyscall]";
-+	return NULL;
-+}
-Index: linux/arch/x86_64/vdso/vdso-note.S
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vdso-note.S
-@@ -0,0 +1,25 @@
-+/*
-+ * This supplies .note.* sections to go into the PT_NOTE inside the vDSO text.
-+ * Here we can supply some information useful to userland.
-+ */
-+
-+#include <linux/uts.h>
-+#include <linux/version.h>
-+
-+#define ASM_ELF_NOTE_BEGIN(name, flags, vendor, type)			      \
-+	.section name, flags;						      \
-+	.balign 4;							      \
-+	.long 1f - 0f;		/* name length */			      \
-+	.long 3f - 2f;		/* data length */			      \
-+	.long type;		/* note type */				      \
-+0:	.asciz vendor;		/* vendor name */			      \
-+1:	.balign 4;							      \
-+2:
-+
-+#define ASM_ELF_NOTE_END						      \
-+3:	.balign 4;		/* pad out section */			      \
-+	.previous
-+
-+	ASM_ELF_NOTE_BEGIN(".note.kernel-version", "a", UTS_SYSNAME, 0)
-+	.long LINUX_VERSION_CODE
-+	ASM_ELF_NOTE_END
-Index: linux/arch/x86_64/vdso/vdso.lds.S
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vdso.lds.S
-@@ -0,0 +1,77 @@
-+/*
-+ * Linker script for vsyscall DSO.  The vsyscall page is an ELF shared
-+ * object prelinked to its virtual address, and with only one read-only
-+ * segment (that fits in one page).  This script controls its layout.
-+ */
-+#include <asm/asm-offsets.h>
-+#include "voffset.h"
-+
-+#define VDSO_PRELINK 0xffffffffff700000
-+
-+SECTIONS
-+{
-+  . = VDSO_PRELINK + SIZEOF_HEADERS;
-+
-+  .hash           : { *(.hash) }		:text
-+  .gnu.hash       : { *(.gnu.hash) }
-+  .dynsym         : { *(.dynsym) }
-+  .dynstr         : { *(.dynstr) }
-+  .gnu.version    : { *(.gnu.version) }
-+  .gnu.version_d  : { *(.gnu.version_d) }
-+  .gnu.version_r  : { *(.gnu.version_r) }
-+
-+  /* This linker script is used both with -r and with -shared.
-+     For the layouts to match, we need to skip more than enough
-+     space for the dynamic symbol table et al.  If this amount
-+     is insufficient, ld -shared will barf.  Just increase it here.  */
-+  . = VDSO_PRELINK + VDSO_TEXT_OFFSET;
-+
-+  .text           : { *(.text) }		:text
-+  .text.ptr       : { *(.text.ptr) }		:text
-+  . = VDSO_PRELINK + 0x900;
-+  .data           : { *(.data) }		:text
-+  .bss            : { *(.bss) }			:text
-+
-+  .altinstructions : { *(.altinstructions) }			:text
-+  .altinstr_replacement  : { *(.altinstr_replacement) }	:text
-+
-+  .note		  : { *(.note.*) }		:text :note
-+  .eh_frame_hdr   : { *(.eh_frame_hdr) }	:text :eh_frame_hdr
-+  .eh_frame       : { KEEP (*(.eh_frame)) }	:text
-+  .dynamic        : { *(.dynamic) }		:text :dynamic
-+  .useless        : {
-+  	*(.got.plt) *(.got)
-+	*(.gnu.linkonce.d.*)
-+	*(.dynbss)
-+	*(.gnu.linkonce.b.*)
-+  }						:text
-+}
-+
-+/*
-+ * We must supply the ELF program headers explicitly to get just one
-+ * PT_LOAD segment, and set the flags explicitly to make segments read-only.
-+ */
-+PHDRS
-+{
-+  text PT_LOAD FILEHDR PHDRS FLAGS(5); /* PF_R|PF_X */
-+  dynamic PT_DYNAMIC FLAGS(4); /* PF_R */
-+  note PT_NOTE FLAGS(4); /* PF_R */
-+  eh_frame_hdr 0x6474e550; /* PT_GNU_EH_FRAME, but ld doesn't match the name */
-+}
-+
-+/*
-+ * This controls what symbols we export from the DSO.
-+ */
-+VERSION
-+{
-+  LINUX_2.6 {
-+    global:
-+	clock_gettime;
-+	__vdso_clock_gettime;
-+	gettimeofday;
-+	__vdso_gettimeofday;
-+	getcpu;
-+	__vdso_getcpu;
-+    local: *;
-+  };
-+}
-Index: linux/arch/x86_64/vdso/Makefile
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/Makefile
-@@ -0,0 +1,49 @@
-+#
-+# x86-64 vDSO.
-+#
-+
-+# files to link into the vdso
-+# vdso-start.o has to be first
-+vobjs-y := vdso-start.o vdso-note.o vclock_gettime.o vgetcpu.o vvar.o
-+
-+# files to link into kernel
-+obj-y := vma.o vdso.o vdso-syms.o
-+
-+vobjs := $(foreach F,$(vobjs-y),$(obj)/$F)
-+
-+$(obj)/vdso.o: $(obj)/vdso.so
-+
-+targets += vdso.so vdso.lds $(vobjs-y) vdso-syms.o
-+
-+# The DSO images are built using a special linker script.
-+quiet_cmd_syscall = SYSCALL $@
-+      cmd_syscall = $(CC) -m elf_x86_64 -nostdlib $(SYSCFLAGS_$(@F)) \
-+		          -Wl,-T,$(filter-out FORCE,$^) -o $@
-+
-+export CPPFLAGS_vdso.lds += -P -C -U$(ARCH)
-+
-+vdso-flags = -fPIC -shared -Wl,-soname=linux-vdso.so.1 \
-+		 $(call ld-option, -Wl$(comma)--hash-style=sysv) \
-+		-Wl,-z,max-page-size=4096 -Wl,-z,common-page-size=4096
-+SYSCFLAGS_vdso.so = $(vdso-flags)
-+
-+$(obj)/vdso.o: $(src)/vdso.S $(obj)/vdso.so
-+
-+$(obj)/vdso.so: $(src)/vdso.lds $(vobjs) FORCE
-+	$(call if_changed,syscall)
-+
-+CF := $(PROFILING) -mcmodel=small -fPIC -g0 -O2 -fasynchronous-unwind-tables -m64
-+
-+$(obj)/vclock_gettime.o: CFLAGS = $(CF)
-+$(obj)/vgetcpu.o: CFLAGS = $(CF)
-+
-+# We also create a special relocatable object that should mirror the symbol
-+# table and layout of the linked DSO.  With ld -R we can then refer to
-+# these symbols in the kernel code rather than hand-coded addresses.
-+extra-y += vdso-syms.o
-+$(obj)/built-in.o: $(obj)/vdso-syms.o
-+$(obj)/built-in.o: ld_flags += -R $(obj)/vdso-syms.o
-+
-+SYSCFLAGS_vdso-syms.o = -r -d
-+$(obj)/vdso-syms.o: $(src)/vdso.lds $(vobjs) FORCE
-+	$(call if_changed,syscall)
-Index: linux/arch/x86_64/vdso/vclock_gettime.c
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vclock_gettime.c
-@@ -0,0 +1,120 @@
-+/*
-+ * Copyright 2006 Andi Kleen, SUSE Labs.
-+ * Subject to the GNU Public License, v.2
-+ *
-+ * Fast user context implementation of clock_gettime and gettimeofday.
-+ *
-+ * The code should have no internal unresolved relocations.
-+ * Check with readelf after changing.
-+ * Also alternative() doesn't work.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/posix-timers.h>
-+#include <linux/time.h>
-+#include <linux/string.h>
-+#include <asm/vsyscall.h>
-+#include <asm/vgtod.h>
-+#include <asm/timex.h>
-+#include <asm/hpet.h>
-+#include <asm/unistd.h>
-+#include <asm/io.h>
-+#include <asm/vgtod.h>
-+#include "vextern.h"
-+
-+#define gtod vdso_vsyscall_gtod_data
-+
-+static long vdso_fallback_gettime(long clock, struct timespec *ts)
-+{
-+	long ret;
-+	asm("syscall" : "=a" (ret) :
-+	    "0" (__NR_clock_gettime),"D" (clock), "S" (ts) : "memory");
-+	return ret;
-+}
-+
-+static inline long vgetns(void)
-+{
-+	cycles_t (*vread)(void);
-+	vread = gtod->clock.vread;
-+	return ((vread() - gtod->clock.cycle_last) * gtod->clock.mult) >>
-+		gtod->clock.shift;
-+}
-+
-+static noinline int do_realtime(struct timespec *ts)
-+{
-+	unsigned long seq, ns;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		ts->tv_sec = gtod->wall_time_sec;
-+		ts->tv_nsec = gtod->wall_time_nsec;
-+		ns = vgetns();
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	timespec_add_ns(ts, ns);
-+	return 0;
-+}
-+
-+/* Copy of the version in kernel/time.c which we cannot directly access */
-+static void vset_normalized_timespec(struct timespec *ts, long sec, long nsec)
-+{
-+	while (nsec >= NSEC_PER_SEC) {
-+		nsec -= NSEC_PER_SEC;
-+		++sec;
-+	}
-+	while (nsec < 0) {
-+		nsec += NSEC_PER_SEC;
-+		--sec;
-+	}
-+	ts->tv_sec = sec;
-+	ts->tv_nsec = nsec;
-+}
-+
-+static noinline int do_monotonic(struct timespec *ts)
-+{
-+	unsigned long seq, ns, secs;
-+	do {
-+		seq = read_seqbegin(&gtod->lock);
-+		secs = gtod->wall_time_sec;
-+		ns = gtod->wall_time_nsec + vgetns();
-+		secs += gtod->wall_to_monotonic.tv_sec;
-+		ns += gtod->wall_to_monotonic.tv_nsec;
-+	} while (unlikely(read_seqretry(&gtod->lock, seq)));
-+	vset_normalized_timespec(ts, secs, ns);
-+	return 0;
-+}
-+
-+int __vdso_clock_gettime(clockid_t clock, struct timespec *ts)
-+{
-+	if (likely(gtod->sysctl_enabled && gtod->clock.vread))
-+		switch (clock) {
-+		case CLOCK_REALTIME:
-+			return do_realtime(ts);
-+		case CLOCK_MONOTONIC:
-+			return do_monotonic(ts);
-+		}
-+	return vdso_fallback_gettime(clock, ts);
-+}
-+int clock_gettime(clockid_t, struct timespec *)
-+	__attribute__((weak, alias("__vdso_clock_gettime")));
-+
-+int __vdso_gettimeofday(struct timeval *tv, struct timezone *tz)
-+{
-+	long ret;
-+	if (likely(gtod->sysctl_enabled && gtod->clock.vread)) {
-+		BUILD_BUG_ON(offsetof(struct timeval, tv_usec) !=
-+			     offsetof(struct timespec, tv_nsec) ||
-+			     sizeof(*tv) != sizeof(struct timespec));
-+		do_realtime((struct timespec *)tv);
-+		tv->tv_usec /= 1000;
-+		if (unlikely(tz != NULL)) {
-+			/* This relies on gcc inlining the memcpy. We'll notice
-+			   if it ever fails to do so. */
-+			memcpy(tz, &gtod->sys_tz, sizeof(struct timezone));
-+		}
-+		return 0;
-+	}
-+	asm("syscall" : "=a" (ret) :
-+	    "0" (__NR_gettimeofday), "D" (tv), "S" (tz) : "memory");
-+	return ret;
-+}
-+int gettimeofday(struct timeval *, struct timezone *)
-+	__attribute__((weak, alias("__vdso_gettimeofday")));
-Index: linux/arch/x86_64/vdso/vma.c
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vma.c
-@@ -0,0 +1,137 @@
-+/*
-+ * Set up the VMAs to tell the VM about the vDSO.
-+ * Copyright 2007 Andi Kleen, SUSE Labs.
-+ * Subject to the GPL, v.2
-+ */
-+#include <linux/mm.h>
-+#include <linux/init.h>
-+#include <linux/random.h>
-+#include <asm/vsyscall.h>
-+#include <asm/vgtod.h>
-+#include <asm/proto.h>
-+#include "voffset.h"
-+
-+int vdso_enabled = 1;
-+
-+#define VEXTERN(x) extern typeof(__ ## x) *vdso_ ## x;
-+#include "vextern.h"
-+#undef VEXTERN
-+
-+extern char vdso_kernel_start[], vdso_start[], vdso_end[];
-+extern unsigned short vdso_sync_cpuid;
-+
-+struct page **vdso_pages;
-+
-+static inline void *var_ref(void *vbase, char *var, char *name)
-+{
-+	unsigned offset = var - &vdso_kernel_start[0] + VDSO_TEXT_OFFSET;
-+	void *p = vbase + offset;
-+	if (*(void **)p != (void *)VMAGIC) {
-+		printk("VDSO: variable %s broken\n", name);
-+		vdso_enabled = 0;
-+	}
-+	return p;
-+}
-+
-+static int __init init_vdso_vars(void)
-+{
-+	int npages = (vdso_end - vdso_start + PAGE_SIZE - 1) / PAGE_SIZE;
-+	int i;
-+	char *vbase;
-+
-+	vdso_pages = kmalloc(sizeof(struct page *) * npages, GFP_KERNEL);
-+	if (!vdso_pages)
-+		goto oom;
-+	for (i = 0; i < npages; i++) {
-+		struct page *p;
-+		p = alloc_page(GFP_KERNEL);
-+		if (!p)
-+			goto oom;
-+		vdso_pages[i] = p;
-+		copy_page(page_address(p), vdso_start + i*PAGE_SIZE);
-+	}
-+
-+	vbase = vmap(vdso_pages, npages, 0, PAGE_KERNEL);
-+	if (!vbase)
-+		goto oom;
-+
-+	if (memcmp(vbase, "\177ELF", 4)) {
-+		printk("VDSO: I'm broken; not ELF\n");
-+		vdso_enabled = 0;
-+	}
-+
-+#define V(x) *(typeof(x) *) var_ref(vbase, (char *)RELOC_HIDE(&x, 0), #x)
-+#define VEXTERN(x) \
-+	V(vdso_ ## x) = &__ ## x;
-+#include "vextern.h"
-+#undef VEXTERN
-+	return 0;
-+
-+ oom:
-+	printk("Cannot allocate vdso\n");
-+	vdso_enabled = 0;
-+	return -ENOMEM;
-+}
-+__initcall(init_vdso_vars);
-+
-+struct linux_binprm;
-+
-+/* Put the vdso above the (randomized) stack with another randomized offset.
-+   This way there is no hole in the middle of address space.
-+   To save memory make sure it is still in the same PTE as the stack top.
-+   This doesn't give that many random bits */
-+static unsigned long vdso_addr(unsigned long start, unsigned len)
-+{
-+	unsigned long addr, end;
-+	unsigned offset;
-+	end = (start + PMD_SIZE - 1) & PMD_MASK;
-+	if (end >= TASK_SIZE64)
-+		end = TASK_SIZE64;
-+	end -= len;
-+	/* This loses some more bits than a modulo, but is cheaper */
-+	offset = get_random_int() & (PTRS_PER_PTE - 1);
-+	addr = start + (offset << PAGE_SHIFT);
-+	if (addr >= end)
-+		addr = end;
-+	return addr;
-+}
-+
-+/* Setup a VMA at program startup for the vsyscall page.
-+   Not called for compat tasks */
-+int arch_setup_additional_pages(struct linux_binprm *bprm, int exstack)
-+{
-+	struct mm_struct *mm = current->mm;
-+	unsigned long addr;
-+	int ret;
-+	unsigned len = round_up(vdso_end - vdso_start, PAGE_SIZE);
-+
-+	if (!vdso_enabled)
-+		return 0;
-+
-+	down_write(&mm->mmap_sem);
-+	addr = get_unmapped_area(NULL, vdso_addr(mm->start_stack, len), len, 0, 0);
-+	if (IS_ERR_VALUE(addr)) {
-+		ret = addr;
-+		goto up_fail;
-+	}
-+
-+	ret = install_special_mapping(mm, addr, len,
-+				      VM_READ|VM_EXEC|
-+				      VM_MAYREAD|VM_MAYWRITE|VM_MAYEXEC|
-+				      VM_ALWAYSDUMP,
-+				      vdso_pages);
-+	if (ret)
-+		goto up_fail;
-+
-+	current->mm->context.vdso = (void *)addr;
-+up_fail:
-+	up_write(&mm->mmap_sem);
-+	return ret;
-+}
-+
-+static __init int vdso_setup(char *s)
-+{
-+	vdso_enabled = simple_strtoul(s, NULL, 0);
-+	return 0;
-+}
-+__setup("vdso=", vdso_setup);
-Index: linux/arch/x86_64/vdso/vdso.S
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vdso.S
-@@ -0,0 +1,2 @@
-+	.section ".vdso","a"
-+	.incbin "arch/x86_64/vdso/vdso.so"
-Index: linux/arch/x86_64/vdso/vdso-start.S
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vdso-start.S
-@@ -0,0 +1,2 @@
-+	.globl vdso_kernel_start
-+vdso_kernel_start:
-Index: linux/arch/x86_64/Makefile
-===================================================================
---- linux.orig/arch/x86_64/Makefile
-+++ linux/arch/x86_64/Makefile
-@@ -77,7 +77,8 @@ head-y := arch/x86_64/kernel/head.o arch
- libs-y 					+= arch/x86_64/lib/
- core-y					+= arch/x86_64/kernel/ \
- 					   arch/x86_64/mm/ \
--					   arch/x86_64/crypto/
-+					   arch/x86_64/crypto/ \
-+					   arch/x86_64/vdso/
- core-$(CONFIG_IA32_EMULATION)		+= arch/x86_64/ia32/
- drivers-$(CONFIG_PCI)			+= arch/x86_64/pci/
- drivers-$(CONFIG_OPROFILE)		+= arch/x86_64/oprofile/
-Index: linux/include/asm-x86_64/pgtable.h
-===================================================================
---- linux.orig/include/asm-x86_64/pgtable.h
-+++ linux/include/asm-x86_64/pgtable.h
-@@ -415,6 +415,9 @@ void vmalloc_sync_all(void);
- 
- extern int kern_addr_valid(unsigned long addr); 
- 
-+extern void set_kernel_map(void *vaddr, unsigned long len,
-+			   unsigned long phys, pgprot_t prot);
-+
- #define io_remap_pfn_range(vma, vaddr, pfn, size, prot)		\
- 		remap_pfn_range(vma, vaddr, pfn, size, prot)
- 
-@@ -442,6 +445,9 @@ extern int kern_addr_valid(unsigned long
- #define __HAVE_ARCH_PTEP_SET_WRPROTECT
- #define __HAVE_ARCH_PTE_SAME
- #include <asm-generic/pgtable.h>
--#endif /* !__ASSEMBLY__ */
- 
-+extern void
-+fix_set_pte_phys(unsigned long vaddr, unsigned long phys, pgprot_t prot);
-+
-+#endif /* !__ASSEMBLY__ */
- #endif /* _X86_64_PGTABLE_H */
-Index: linux/include/asm-x86_64/mmu.h
-===================================================================
---- linux.orig/include/asm-x86_64/mmu.h
-+++ linux/include/asm-x86_64/mmu.h
-@@ -15,6 +15,7 @@ typedef struct { 
- 	rwlock_t ldtlock; 
- 	int size;
- 	struct semaphore sem; 
-+	void *vdso;
- } mm_context_t;
- 
- #endif
-Index: linux/include/asm-x86_64/vsyscall.h
-===================================================================
---- linux.orig/include/asm-x86_64/vsyscall.h
-+++ linux/include/asm-x86_64/vsyscall.h
-@@ -22,6 +22,8 @@ enum vsyscall_num {
- /* Definitions for CONFIG_GENERIC_TIME definitions */
- #define __section_vsyscall_gtod_data __attribute__ \
- 	((unused, __section__ (".vsyscall_gtod_data"),aligned(16)))
-+#define __section_vsyscall_clock __attribute__ \
-+	((unused, __section__ (".vsyscall_clock"),aligned(16)))
- #define __vsyscall_fn __attribute__ ((unused,__section__(".vsyscall_fn")))
- 
- #define VGETCPU_RDTSCP	1
-@@ -36,7 +38,6 @@ extern volatile unsigned long __jiffies;
- /* kernel space (writeable) */
- extern int vgetcpu_mode;
- extern struct timezone sys_tz;
--extern struct vsyscall_gtod_data_t vsyscall_gtod_data;
- 
- #endif /* __KERNEL__ */
- 
-Index: linux/include/asm-x86_64/auxvec.h
-===================================================================
---- linux.orig/include/asm-x86_64/auxvec.h
-+++ linux/include/asm-x86_64/auxvec.h
-@@ -1,4 +1,6 @@
- #ifndef __ASM_X86_64_AUXVEC_H
- #define __ASM_X86_64_AUXVEC_H
- 
-+#define AT_SYSINFO_EHDR		33
-+
- #endif
-Index: linux/include/asm-x86_64/elf.h
-===================================================================
---- linux.orig/include/asm-x86_64/elf.h
-+++ linux/include/asm-x86_64/elf.h
-@@ -162,6 +162,19 @@ extern int dump_task_fpu (struct task_st
- /* 1GB for 64bit, 8MB for 32bit */
- #define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
- 
-+
-+#define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
-+struct linux_binprm;
-+extern int arch_setup_additional_pages(struct linux_binprm *bprm,
-+                                       int executable_stack);
-+
-+extern int vdso_enabled;
-+
-+#define ARCH_DLINFO						\
-+do if (vdso_enabled) {						\
-+	NEW_AUX_ENT(AT_SYSINFO_EHDR,(unsigned long)current->mm->context.vdso);\
-+} while (0)
-+
- #endif
- 
- #endif
-Index: linux/arch/x86_64/vdso/vextern.h
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vextern.h
-@@ -0,0 +1,16 @@
-+#ifndef VEXTERN
-+#include <asm/vsyscall.h>
-+#define VEXTERN(x) \
-+	extern typeof(x) *vdso_ ## x __attribute__((visibility("hidden")));
-+#endif
-+
-+#define VMAGIC 0xfeedbabeabcdefabUL
-+
-+/* Any kernel variables used in the vDSO must be exported in the main
-+   kernel's vmlinux.lds.S/vsyscall.h/proper __section and
-+   put into vextern.h and be referenced as a pointer with vdso prefix.
-+   The main kernel later fills in the values.   */
-+
-+VEXTERN(jiffies)
-+VEXTERN(vgetcpu_mode)
-+VEXTERN(vsyscall_gtod_data)
-Index: linux/arch/x86_64/vdso/vgetcpu.c
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vgetcpu.c
-@@ -0,0 +1,50 @@
-+/*
-+ * Copyright 2006 Andi Kleen, SUSE Labs.
-+ * Subject to the GNU Public License, v.2
-+ *
-+ * Fast user context implementation of getcpu()
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/getcpu.h>
-+#include <linux/jiffies.h>
-+#include <linux/time.h>
-+#include <asm/vsyscall.h>
-+#include <asm/vgtod.h>
-+#include "vextern.h"
-+
-+long __vdso_getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
-+{
-+	unsigned int dummy, p;
-+	unsigned long j = 0;
-+
-+	/* Fast cache - only recompute value once per jiffies and avoid
-+	   relatively costly rdtscp/cpuid otherwise.
-+	   This works because the scheduler usually keeps the process
-+	   on the same CPU and this syscall doesn't guarantee its
-+	   results anyways.
-+	   We do this here because otherwise user space would do it on
-+	   its own in a likely inferior way (no access to jiffies).
-+	   If you don't like it pass NULL. */
-+	if (tcache && tcache->blob[0] == (j = *vdso_jiffies)) {
-+		p = tcache->blob[1];
-+	} else if (*vdso_vgetcpu_mode == VGETCPU_RDTSCP) {
-+		/* Load per CPU data from RDTSCP */
-+		rdtscp(dummy, dummy, p);
-+	} else {
-+		/* Load per CPU data from GDT */
-+		asm("lsl %1,%0" : "=r" (p) : "r" (__PER_CPU_SEG));
-+	}
-+	if (tcache) {
-+		tcache->blob[0] = j;
-+		tcache->blob[1] = p;
-+	}
-+	if (cpu)
-+		*cpu = p & 0xfff;
-+	if (node)
-+		*node = p >> 12;
-+	return 0;
-+}
-+
-+long getcpu(unsigned *cpu, unsigned *node, struct getcpu_cache *tcache)
-+	__attribute__((weak, alias("__vdso_getcpu")));
-Index: linux/arch/x86_64/vdso/vvar.c
-===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/vvar.c
-@@ -0,0 +1,12 @@
-+/* Define pointer to external vDSO variables.
-+   These are part of the vDSO. The kernel fills in the real addresses
-+   at boot time. This is done because when the vdso is linked the
-+   kernel isn't yet and we don't know the final addresses. */
-+#include <linux/kernel.h>
-+#include <linux/time.h>
-+#include <asm/vsyscall.h>
-+#include <asm/timex.h>
-+#include <asm/vgtod.h>
-+
-+#define VEXTERN(x) typeof (__ ## x) *vdso_ ## x = (void *)VMAGIC;
-+#include "vextern.h"
-Index: linux/Documentation/kernel-parameters.txt
-===================================================================
---- linux.orig/Documentation/kernel-parameters.txt
-+++ linux/Documentation/kernel-parameters.txt
-@@ -1813,7 +1813,7 @@ and is between 256 and 4096 characters. 
- 	usbhid.mousepoll=
- 			[USBHID] The interval which mice are to be polled at.
- 
--	vdso=		[IA-32,SH]
-+	vdso=		[IA-32,SH,x86-64]
- 			vdso=2: enable compat VDSO (default with COMPAT_VDSO)
- 			vdso=1: enable VDSO (default)
- 			vdso=0: disable VDSO mapping
-Index: linux/arch/x86_64/kernel/vsyscall.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/vsyscall.c
-+++ linux/arch/x86_64/kernel/vsyscall.c
-@@ -42,6 +42,7 @@
- #include <asm/segment.h>
- #include <asm/desc.h>
- #include <asm/topology.h>
-+#include <asm/vgtod.h>
- 
- #define __vsyscall(nr) __attribute__ ((unused,__section__(".vsyscall_" #nr)))
- #define __syscall_clobber "r11","rcx","memory"
-@@ -57,26 +58,9 @@
-  * - writen by timer interrupt or systcl (/proc/sys/kernel/vsyscall64)
-  * Try to keep this structure as small as possible to avoid cache line ping pongs
-  */
--struct vsyscall_gtod_data_t {
--	seqlock_t	lock;
--
--	/* open coded 'struct timespec' */
--	time_t		wall_time_sec;
--	u32		wall_time_nsec;
--
--	int		sysctl_enabled;
--	struct timezone sys_tz;
--	struct { /* extract of a clocksource struct */
--		cycle_t (*vread)(void);
--		cycle_t	cycle_last;
--		cycle_t	mask;
--		u32	mult;
--		u32	shift;
--	} clock;
--};
- int __vgetcpu_mode __section_vgetcpu_mode;
- 
--struct vsyscall_gtod_data_t __vsyscall_gtod_data __section_vsyscall_gtod_data =
-+struct vsyscall_gtod_data __vsyscall_gtod_data __section_vsyscall_gtod_data =
- {
- 	.lock = SEQLOCK_UNLOCKED,
- 	.sysctl_enabled = 1,
-@@ -96,6 +80,8 @@ void update_vsyscall(struct timespec *wa
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
- 	vsyscall_gtod_data.sys_tz = sys_tz;
-+	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
-+	vsyscall_gtod_data.wall_to_monotonic = wall_to_monotonic;
- 	write_sequnlock_irqrestore(&vsyscall_gtod_data.lock, flags);
- }
- 
-Index: linux/arch/x86_64/kernel/time.c
-===================================================================
---- linux.orig/arch/x86_64/kernel/time.c
-+++ linux/arch/x86_64/kernel/time.c
-@@ -44,6 +44,7 @@
- #include <asm/hpet.h>
- #include <asm/mpspec.h>
+--- linux.orig/arch/i386/kernel/nmi.c
++++ linux/arch/i386/kernel/nmi.c
+@@ -20,7 +20,6 @@
+ #include <linux/sysdev.h>
+ #include <linux/sysctl.h>
+ #include <linux/percpu.h>
+-#include <linux/dmi.h>
+ #include <linux/kprobes.h>
+ #include <linux/cpumask.h>
+ #include <linux/kernel_stat.h>
+@@ -28,30 +27,14 @@
+ #include <asm/smp.h>
  #include <asm/nmi.h>
-+#include <asm/vgtod.h>
+ #include <asm/kdebug.h>
+-#include <asm/intel_arch_perfmon.h>
  
- static char *timename = NULL;
+ #include "mach_traps.h"
  
-Index: linux/include/asm-x86_64/vgtod.h
+ int unknown_nmi_panic;
+ int nmi_watchdog_enabled;
+ 
+-/* perfctr_nmi_owner tracks the ownership of the perfctr registers:
+- * evtsel_nmi_owner tracks the ownership of the event selection
+- * - different performance counters/ event selection may be reserved for
+- *   different subsystems this reservation system just tries to coordinate
+- *   things a little
+- */
+-
+-/* this number is calculated from Intel's MSR_P4_CRU_ESCR5 register and it's
+- * offset from MSR_P4_BSU_ESCR0.  It will be the max for all platforms (for now)
+- */
+-#define NMI_MAX_COUNTER_BITS 66
+-#define NMI_MAX_COUNTER_LONGS BITS_TO_LONGS(NMI_MAX_COUNTER_BITS)
+-
+-static DEFINE_PER_CPU(unsigned long, perfctr_nmi_owner[NMI_MAX_COUNTER_LONGS]);
+-static DEFINE_PER_CPU(unsigned long, evntsel_nmi_owner[NMI_MAX_COUNTER_LONGS]);
+-
+ static cpumask_t backtrace_mask = CPU_MASK_NONE;
++
+ /* nmi_active:
+  * >0: the lapic NMI watchdog is active, but can be disabled
+  * <0: the lapic NMI watchdog has not been set up, and cannot
+@@ -63,203 +46,11 @@ atomic_t nmi_active = ATOMIC_INIT(0);		/
+ unsigned int nmi_watchdog = NMI_DEFAULT;
+ static unsigned int nmi_hz = HZ;
+ 
+-struct nmi_watchdog_ctlblk {
+-	int enabled;
+-	u64 check_bit;
+-	unsigned int cccr_msr;
+-	unsigned int perfctr_msr;  /* the MSR to reset in NMI handler */
+-	unsigned int evntsel_msr;  /* the MSR to select the events to handle */
+-};
+-static DEFINE_PER_CPU(struct nmi_watchdog_ctlblk, nmi_watchdog_ctlblk);
++static DEFINE_PER_CPU(short, wd_enabled);
+ 
+ /* local prototypes */
+ static int unknown_nmi_panic_callback(struct pt_regs *regs, int cpu);
+ 
+-/* converts an msr to an appropriate reservation bit */
+-static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
+-{
+-	/* returns the bit offset of the performance counter register */
+-	switch (boot_cpu_data.x86_vendor) {
+-	case X86_VENDOR_AMD:
+-		return (msr - MSR_K7_PERFCTR0);
+-	case X86_VENDOR_INTEL:
+-		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
+-			return (msr - MSR_ARCH_PERFMON_PERFCTR0);
+-
+-		switch (boot_cpu_data.x86) {
+-		case 6:
+-			return (msr - MSR_P6_PERFCTR0);
+-		case 15:
+-			return (msr - MSR_P4_BPU_PERFCTR0);
+-		}
+-	}
+-	return 0;
+-}
+-
+-/* converts an msr to an appropriate reservation bit */
+-static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
+-{
+-	/* returns the bit offset of the event selection register */
+-	switch (boot_cpu_data.x86_vendor) {
+-	case X86_VENDOR_AMD:
+-		return (msr - MSR_K7_EVNTSEL0);
+-	case X86_VENDOR_INTEL:
+-		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
+-			return (msr - MSR_ARCH_PERFMON_EVENTSEL0);
+-
+-		switch (boot_cpu_data.x86) {
+-		case 6:
+-			return (msr - MSR_P6_EVNTSEL0);
+-		case 15:
+-			return (msr - MSR_P4_BSU_ESCR0);
+-		}
+-	}
+-	return 0;
+-}
+-
+-/* checks for a bit availability (hack for oprofile) */
+-int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
+-{
+-	int cpu;
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-	for_each_possible_cpu (cpu) {
+-		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)[0]))
+-			return 0;
+-	}
+-	return 1;
+-}
+-
+-/* checks the an msr for availability */
+-int avail_to_resrv_perfctr_nmi(unsigned int msr)
+-{
+-	unsigned int counter;
+-	int cpu;
+-
+-	counter = nmi_perfctr_msr_to_bit(msr);
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-
+-	for_each_possible_cpu (cpu) {
+-		if (test_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)[0]))
+-			return 0;
+-	}
+-	return 1;
+-}
+-
+-static int __reserve_perfctr_nmi(int cpu, unsigned int msr)
+-{
+-	unsigned int counter;
+-	if (cpu < 0)
+-		cpu = smp_processor_id();
+-
+-	counter = nmi_perfctr_msr_to_bit(msr);
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-
+-	if (!test_and_set_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)[0]))
+-		return 1;
+-	return 0;
+-}
+-
+-static void __release_perfctr_nmi(int cpu, unsigned int msr)
+-{
+-	unsigned int counter;
+-	if (cpu < 0)
+-		cpu = smp_processor_id();
+-
+-	counter = nmi_perfctr_msr_to_bit(msr);
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-
+-	clear_bit(counter, &per_cpu(perfctr_nmi_owner, cpu)[0]);
+-}
+-
+-int reserve_perfctr_nmi(unsigned int msr)
+-{
+-	int cpu, i;
+-	for_each_possible_cpu (cpu) {
+-		if (!__reserve_perfctr_nmi(cpu, msr)) {
+-			for_each_possible_cpu (i) {
+-				if (i >= cpu)
+-					break;
+-				__release_perfctr_nmi(i, msr);
+-			}
+-			return 0;
+-		}
+-	}
+-	return 1;
+-}
+-
+-void release_perfctr_nmi(unsigned int msr)
+-{
+-	int cpu;
+-	for_each_possible_cpu (cpu) {
+-		__release_perfctr_nmi(cpu, msr);
+-	}
+-}
+-
+-int __reserve_evntsel_nmi(int cpu, unsigned int msr)
+-{
+-	unsigned int counter;
+-	if (cpu < 0)
+-		cpu = smp_processor_id();
+-
+-	counter = nmi_evntsel_msr_to_bit(msr);
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-
+-	if (!test_and_set_bit(counter, &per_cpu(evntsel_nmi_owner, cpu)[0]))
+-		return 1;
+-	return 0;
+-}
+-
+-static void __release_evntsel_nmi(int cpu, unsigned int msr)
+-{
+-	unsigned int counter;
+-	if (cpu < 0)
+-		cpu = smp_processor_id();
+-
+-	counter = nmi_evntsel_msr_to_bit(msr);
+-	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
+-
+-	clear_bit(counter, &per_cpu(evntsel_nmi_owner, cpu)[0]);
+-}
+-
+-int reserve_evntsel_nmi(unsigned int msr)
+-{
+-	int cpu, i;
+-	for_each_possible_cpu (cpu) {
+-		if (!__reserve_evntsel_nmi(cpu, msr)) {
+-			for_each_possible_cpu (i) {
+-				if (i >= cpu)
+-					break;
+-				__release_evntsel_nmi(i, msr);
+-			}
+-			return 0;
+-		}
+-	}
+-	return 1;
+-}
+-
+-void release_evntsel_nmi(unsigned int msr)
+-{
+-	int cpu;
+-	for_each_possible_cpu (cpu) {
+-		__release_evntsel_nmi(cpu, msr);
+-	}
+-}
+-
+-static __cpuinit inline int nmi_known_cpu(void)
+-{
+-	switch (boot_cpu_data.x86_vendor) {
+-	case X86_VENDOR_AMD:
+-		return ((boot_cpu_data.x86 == 15) || (boot_cpu_data.x86 == 6)
+-			|| (boot_cpu_data.x86 == 16));
+-	case X86_VENDOR_INTEL:
+-		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
+-			return 1;
+-		else
+-			return ((boot_cpu_data.x86 == 15) || (boot_cpu_data.x86 == 6));
+-	}
+-	return 0;
+-}
+-
+ static int endflag __initdata = 0;
+ 
+ #ifdef CONFIG_SMP
+@@ -281,28 +72,6 @@ static __init void nmi_cpu_busy(void *da
+ }
+ #endif
+ 
+-static unsigned int adjust_for_32bit_ctr(unsigned int hz)
+-{
+-	u64 counter_val;
+-	unsigned int retval = hz;
+-
+-	/*
+-	 * On Intel CPUs with P6/ARCH_PERFMON only 32 bits in the counter
+-	 * are writable, with higher bits sign extending from bit 31.
+-	 * So, we can only program the counter with 31 bit values and
+-	 * 32nd bit should be 1, for 33.. to be 1.
+-	 * Find the appropriate nmi_hz
+-	 */
+-	counter_val = (u64)cpu_khz * 1000;
+-	do_div(counter_val, retval);
+- 	if (counter_val > 0x7fffffffULL) {
+-		u64 count = (u64)cpu_khz * 1000;
+-		do_div(count, 0x7fffffffUL);
+-		retval = count + 1;
+-	}
+-	return retval;
+-}
+-
+ static int __init check_nmi_watchdog(void)
+ {
+ 	unsigned int *prev_nmi_count;
+@@ -335,14 +104,14 @@ static int __init check_nmi_watchdog(voi
+ 		if (!cpu_isset(cpu, cpu_callin_map))
+ 			continue;
+ #endif
+-		if (!per_cpu(nmi_watchdog_ctlblk, cpu).enabled)
++		if (!per_cpu(wd_enabled, cpu))
+ 			continue;
+ 		if (nmi_count(cpu) - prev_nmi_count[cpu] <= 5) {
+ 			printk("CPU#%d: NMI appears to be stuck (%d->%d)!\n",
+ 				cpu,
+ 				prev_nmi_count[cpu],
+ 				nmi_count(cpu));
+-			per_cpu(nmi_watchdog_ctlblk, cpu).enabled = 0;
++			per_cpu(wd_enabled, cpu) = 0;
+ 			atomic_dec(&nmi_active);
+ 		}
+ 	}
+@@ -356,16 +125,8 @@ static int __init check_nmi_watchdog(voi
+ 
+ 	/* now that we know it works we can reduce NMI frequency to
+ 	   something more reasonable; makes a difference in some configs */
+-	if (nmi_watchdog == NMI_LOCAL_APIC) {
+-		struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-		nmi_hz = 1;
+-
+-		if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
+-		    wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
+-			nmi_hz = adjust_for_32bit_ctr(nmi_hz);
+-		}
+-	}
++	if (nmi_watchdog == NMI_LOCAL_APIC)
++		nmi_hz = lapic_adjust_nmi_hz(1);
+ 
+ 	kfree(prev_nmi_count);
+ 	return 0;
+@@ -388,85 +149,8 @@ static int __init setup_nmi_watchdog(cha
+ 
+ __setup("nmi_watchdog=", setup_nmi_watchdog);
+ 
+-static void disable_lapic_nmi_watchdog(void)
+-{
+-	BUG_ON(nmi_watchdog != NMI_LOCAL_APIC);
+-
+-	if (atomic_read(&nmi_active) <= 0)
+-		return;
+-
+-	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
+-
+-	BUG_ON(atomic_read(&nmi_active) != 0);
+-}
+-
+-static void enable_lapic_nmi_watchdog(void)
+-{
+-	BUG_ON(nmi_watchdog != NMI_LOCAL_APIC);
+-
+-	/* are we already enabled */
+-	if (atomic_read(&nmi_active) != 0)
+-		return;
+-
+-	/* are we lapic aware */
+-	if (nmi_known_cpu() <= 0)
+-		return;
+-
+-	on_each_cpu(setup_apic_nmi_watchdog, NULL, 0, 1);
+-	touch_nmi_watchdog();
+-}
+ 
+-void disable_timer_nmi_watchdog(void)
+-{
+-	BUG_ON(nmi_watchdog != NMI_IO_APIC);
+-
+-	if (atomic_read(&nmi_active) <= 0)
+-		return;
+-
+-	disable_irq(0);
+-	on_each_cpu(stop_apic_nmi_watchdog, NULL, 0, 1);
+-
+-	BUG_ON(atomic_read(&nmi_active) != 0);
+-}
+-
+-void enable_timer_nmi_watchdog(void)
+-{
+-	BUG_ON(nmi_watchdog != NMI_IO_APIC);
+-
+-	if (atomic_read(&nmi_active) == 0) {
+-		touch_nmi_watchdog();
+-		on_each_cpu(setup_apic_nmi_watchdog, NULL, 0, 1);
+-		enable_irq(0);
+-	}
+-}
+-
+-static void __acpi_nmi_disable(void *__unused)
+-{
+-	apic_write_around(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
+-}
+-
+-/*
+- * Disable timer based NMIs on all CPUs:
+- */
+-void acpi_nmi_disable(void)
+-{
+-	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
+-		on_each_cpu(__acpi_nmi_disable, NULL, 0, 1);
+-}
+-
+-static void __acpi_nmi_enable(void *__unused)
+-{
+-	apic_write_around(APIC_LVT0, APIC_DM_NMI);
+-}
+-
+-/*
+- * Enable timer based NMIs on all CPUs:
+- */
+-void acpi_nmi_enable(void)
+-{
+-	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
+-		on_each_cpu(__acpi_nmi_enable, NULL, 0, 1);
+-}
++/* Suspend/resume support */
+ 
+ #ifdef CONFIG_PM
+ 
+@@ -513,7 +197,7 @@ static int __init init_lapic_nmi_sysfs(v
+ 	if (nmi_watchdog != NMI_LOCAL_APIC)
+ 		return 0;
+ 
+-	if ( atomic_read(&nmi_active) < 0 )
++	if (atomic_read(&nmi_active) < 0)
+ 		return 0;
+ 
+ 	error = sysdev_class_register(&nmi_sysclass);
+@@ -526,433 +210,69 @@ late_initcall(init_lapic_nmi_sysfs);
+ 
+ #endif	/* CONFIG_PM */
+ 
+-/*
+- * Activate the NMI watchdog via the local APIC.
+- * Original code written by Keith Owens.
+- */
+-
+-static void write_watchdog_counter(unsigned int perfctr_msr, const char *descr)
+-{
+-	u64 count = (u64)cpu_khz * 1000;
+-
+-	do_div(count, nmi_hz);
+-	if(descr)
+-		Dprintk("setting %s to -0x%08Lx\n", descr, count);
+-	wrmsrl(perfctr_msr, 0 - count);
+-}
+-
+-static void write_watchdog_counter32(unsigned int perfctr_msr,
+-		const char *descr)
+-{
+-	u64 count = (u64)cpu_khz * 1000;
+-
+-	do_div(count, nmi_hz);
+-	if(descr)
+-		Dprintk("setting %s to -0x%08Lx\n", descr, count);
+-	wrmsr(perfctr_msr, (u32)(-count), 0);
+-}
+-
+-/* Note that these events don't tick when the CPU idles. This means
+-   the frequency varies with CPU load. */
+-
+-#define K7_EVNTSEL_ENABLE	(1 << 22)
+-#define K7_EVNTSEL_INT		(1 << 20)
+-#define K7_EVNTSEL_OS		(1 << 17)
+-#define K7_EVNTSEL_USR		(1 << 16)
+-#define K7_EVENT_CYCLES_PROCESSOR_IS_RUNNING	0x76
+-#define K7_NMI_EVENT		K7_EVENT_CYCLES_PROCESSOR_IS_RUNNING
+-
+-static int setup_k7_watchdog(void)
+-{
+-	unsigned int perfctr_msr, evntsel_msr;
+-	unsigned int evntsel;
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	perfctr_msr = MSR_K7_PERFCTR0;
+-	evntsel_msr = MSR_K7_EVNTSEL0;
+-	if (!__reserve_perfctr_nmi(-1, perfctr_msr))
+-		goto fail;
+-
+-	if (!__reserve_evntsel_nmi(-1, evntsel_msr))
+-		goto fail1;
+-
+-	wrmsrl(perfctr_msr, 0UL);
+-
+-	evntsel = K7_EVNTSEL_INT
+-		| K7_EVNTSEL_OS
+-		| K7_EVNTSEL_USR
+-		| K7_NMI_EVENT;
+-
+-	/* setup the timer */
+-	wrmsr(evntsel_msr, evntsel, 0);
+-	write_watchdog_counter(perfctr_msr, "K7_PERFCTR0");
+-	apic_write(APIC_LVTPC, APIC_DM_NMI);
+-	evntsel |= K7_EVNTSEL_ENABLE;
+-	wrmsr(evntsel_msr, evntsel, 0);
+-
+-	wd->perfctr_msr = perfctr_msr;
+-	wd->evntsel_msr = evntsel_msr;
+-	wd->cccr_msr = 0;  //unused
+-	wd->check_bit = 1ULL<<63;
+-	return 1;
+-fail1:
+-	__release_perfctr_nmi(-1, perfctr_msr);
+-fail:
+-	return 0;
+-}
+-
+-static void stop_k7_watchdog(void)
+-{
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	wrmsr(wd->evntsel_msr, 0, 0);
+-
+-	__release_evntsel_nmi(-1, wd->evntsel_msr);
+-	__release_perfctr_nmi(-1, wd->perfctr_msr);
+-}
+-
+-#define P6_EVNTSEL0_ENABLE	(1 << 22)
+-#define P6_EVNTSEL_INT		(1 << 20)
+-#define P6_EVNTSEL_OS		(1 << 17)
+-#define P6_EVNTSEL_USR		(1 << 16)
+-#define P6_EVENT_CPU_CLOCKS_NOT_HALTED	0x79
+-#define P6_NMI_EVENT		P6_EVENT_CPU_CLOCKS_NOT_HALTED
+-
+-static int setup_p6_watchdog(void)
+-{
+-	unsigned int perfctr_msr, evntsel_msr;
+-	unsigned int evntsel;
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	perfctr_msr = MSR_P6_PERFCTR0;
+-	evntsel_msr = MSR_P6_EVNTSEL0;
+-	if (!__reserve_perfctr_nmi(-1, perfctr_msr))
+-		goto fail;
+-
+-	if (!__reserve_evntsel_nmi(-1, evntsel_msr))
+-		goto fail1;
+-
+-	wrmsrl(perfctr_msr, 0UL);
+-
+-	evntsel = P6_EVNTSEL_INT
+-		| P6_EVNTSEL_OS
+-		| P6_EVNTSEL_USR
+-		| P6_NMI_EVENT;
+-
+-	/* setup the timer */
+-	wrmsr(evntsel_msr, evntsel, 0);
+-	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
+-	write_watchdog_counter32(perfctr_msr, "P6_PERFCTR0");
+-	apic_write(APIC_LVTPC, APIC_DM_NMI);
+-	evntsel |= P6_EVNTSEL0_ENABLE;
+-	wrmsr(evntsel_msr, evntsel, 0);
+-
+-	wd->perfctr_msr = perfctr_msr;
+-	wd->evntsel_msr = evntsel_msr;
+-	wd->cccr_msr = 0;  //unused
+-	wd->check_bit = 1ULL<<39;
+-	return 1;
+-fail1:
+-	__release_perfctr_nmi(-1, perfctr_msr);
+-fail:
+-	return 0;
+-}
+-
+-static void stop_p6_watchdog(void)
+-{
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	wrmsr(wd->evntsel_msr, 0, 0);
+-
+-	__release_evntsel_nmi(-1, wd->evntsel_msr);
+-	__release_perfctr_nmi(-1, wd->perfctr_msr);
+-}
+-
+-/* Note that these events don't tick when the CPU idles. This means
+-   the frequency varies with CPU load. */
+-
+-#define MSR_P4_MISC_ENABLE_PERF_AVAIL	(1<<7)
+-#define P4_ESCR_EVENT_SELECT(N)	((N)<<25)
+-#define P4_ESCR_OS		(1<<3)
+-#define P4_ESCR_USR		(1<<2)
+-#define P4_CCCR_OVF_PMI0	(1<<26)
+-#define P4_CCCR_OVF_PMI1	(1<<27)
+-#define P4_CCCR_THRESHOLD(N)	((N)<<20)
+-#define P4_CCCR_COMPLEMENT	(1<<19)
+-#define P4_CCCR_COMPARE		(1<<18)
+-#define P4_CCCR_REQUIRED	(3<<16)
+-#define P4_CCCR_ESCR_SELECT(N)	((N)<<13)
+-#define P4_CCCR_ENABLE		(1<<12)
+-#define P4_CCCR_OVF 		(1<<31)
+-/* Set up IQ_COUNTER0 to behave like a clock, by having IQ_CCCR0 filter
+-   CRU_ESCR0 (with any non-null event selector) through a complemented
+-   max threshold. [IA32-Vol3, Section 14.9.9] */
+-
+-static int setup_p4_watchdog(void)
++static void __acpi_nmi_enable(void *__unused)
+ {
+-	unsigned int perfctr_msr, evntsel_msr, cccr_msr;
+-	unsigned int evntsel, cccr_val;
+-	unsigned int misc_enable, dummy;
+-	unsigned int ht_num;
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	rdmsr(MSR_IA32_MISC_ENABLE, misc_enable, dummy);
+-	if (!(misc_enable & MSR_P4_MISC_ENABLE_PERF_AVAIL))
+-		return 0;
+-
+-#ifdef CONFIG_SMP
+-	/* detect which hyperthread we are on */
+-	if (smp_num_siblings == 2) {
+-		unsigned int ebx, apicid;
+-
+-        	ebx = cpuid_ebx(1);
+-	        apicid = (ebx >> 24) & 0xff;
+-        	ht_num = apicid & 1;
+-	} else
+-#endif
+-		ht_num = 0;
+-
+-	/* performance counters are shared resources
+-	 * assign each hyperthread its own set
+-	 * (re-use the ESCR0 register, seems safe
+-	 * and keeps the cccr_val the same)
+-	 */
+-	if (!ht_num) {
+-		/* logical cpu 0 */
+-		perfctr_msr = MSR_P4_IQ_PERFCTR0;
+-		evntsel_msr = MSR_P4_CRU_ESCR0;
+-		cccr_msr = MSR_P4_IQ_CCCR0;
+-		cccr_val = P4_CCCR_OVF_PMI0 | P4_CCCR_ESCR_SELECT(4);
+-	} else {
+-		/* logical cpu 1 */
+-		perfctr_msr = MSR_P4_IQ_PERFCTR1;
+-		evntsel_msr = MSR_P4_CRU_ESCR0;
+-		cccr_msr = MSR_P4_IQ_CCCR1;
+-		cccr_val = P4_CCCR_OVF_PMI1 | P4_CCCR_ESCR_SELECT(4);
+-	}
+-
+-	if (!__reserve_perfctr_nmi(-1, perfctr_msr))
+-		goto fail;
+-
+-	if (!__reserve_evntsel_nmi(-1, evntsel_msr))
+-		goto fail1;
+-
+-	evntsel = P4_ESCR_EVENT_SELECT(0x3F)
+-	 	| P4_ESCR_OS
+-		| P4_ESCR_USR;
+-
+-	cccr_val |= P4_CCCR_THRESHOLD(15)
+-		 | P4_CCCR_COMPLEMENT
+-		 | P4_CCCR_COMPARE
+-		 | P4_CCCR_REQUIRED;
+-
+-	wrmsr(evntsel_msr, evntsel, 0);
+-	wrmsr(cccr_msr, cccr_val, 0);
+-	write_watchdog_counter(perfctr_msr, "P4_IQ_COUNTER0");
+-	apic_write(APIC_LVTPC, APIC_DM_NMI);
+-	cccr_val |= P4_CCCR_ENABLE;
+-	wrmsr(cccr_msr, cccr_val, 0);
+-	wd->perfctr_msr = perfctr_msr;
+-	wd->evntsel_msr = evntsel_msr;
+-	wd->cccr_msr = cccr_msr;
+-	wd->check_bit = 1ULL<<39;
+-	return 1;
+-fail1:
+-	__release_perfctr_nmi(-1, perfctr_msr);
+-fail:
+-	return 0;
++	apic_write_around(APIC_LVT0, APIC_DM_NMI);
+ }
+ 
+-static void stop_p4_watchdog(void)
++/*
++ * Enable timer based NMIs on all CPUs:
++ */
++void acpi_nmi_enable(void)
+ {
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	wrmsr(wd->cccr_msr, 0, 0);
+-	wrmsr(wd->evntsel_msr, 0, 0);
+-
+-	__release_evntsel_nmi(-1, wd->evntsel_msr);
+-	__release_perfctr_nmi(-1, wd->perfctr_msr);
++	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
++		on_each_cpu(__acpi_nmi_enable, NULL, 0, 1);
+ }
+ 
+-#define ARCH_PERFMON_NMI_EVENT_SEL	ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL
+-#define ARCH_PERFMON_NMI_EVENT_UMASK	ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK
+-
+-static int setup_intel_arch_watchdog(void)
++static void __acpi_nmi_disable(void *__unused)
+ {
+-	unsigned int ebx;
+-	union cpuid10_eax eax;
+-	unsigned int unused;
+-	unsigned int perfctr_msr, evntsel_msr;
+-	unsigned int evntsel;
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	/*
+-	 * Check whether the Architectural PerfMon supports
+-	 * Unhalted Core Cycles Event or not.
+-	 * NOTE: Corresponding bit = 0 in ebx indicates event present.
+-	 */
+-	cpuid(10, &(eax.full), &ebx, &unused, &unused);
+-	if ((eax.split.mask_length < (ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX+1)) ||
+-	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
+-		goto fail;
+-
+-	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
+-	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
+-
+-	if (!__reserve_perfctr_nmi(-1, perfctr_msr))
+-		goto fail;
+-
+-	if (!__reserve_evntsel_nmi(-1, evntsel_msr))
+-		goto fail1;
+-
+-	wrmsrl(perfctr_msr, 0UL);
+-
+-	evntsel = ARCH_PERFMON_EVENTSEL_INT
+-		| ARCH_PERFMON_EVENTSEL_OS
+-		| ARCH_PERFMON_EVENTSEL_USR
+-		| ARCH_PERFMON_NMI_EVENT_SEL
+-		| ARCH_PERFMON_NMI_EVENT_UMASK;
+-
+-	/* setup the timer */
+-	wrmsr(evntsel_msr, evntsel, 0);
+-	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
+-	write_watchdog_counter32(perfctr_msr, "INTEL_ARCH_PERFCTR0");
+-	apic_write(APIC_LVTPC, APIC_DM_NMI);
+-	evntsel |= ARCH_PERFMON_EVENTSEL0_ENABLE;
+-	wrmsr(evntsel_msr, evntsel, 0);
+-
+-	wd->perfctr_msr = perfctr_msr;
+-	wd->evntsel_msr = evntsel_msr;
+-	wd->cccr_msr = 0;  //unused
+-	wd->check_bit = 1ULL << (eax.split.bit_width - 1);
+-	return 1;
+-fail1:
+-	__release_perfctr_nmi(-1, perfctr_msr);
+-fail:
+-	return 0;
++	apic_write(APIC_LVT0, APIC_DM_NMI | APIC_LVT_MASKED);
+ }
+ 
+-static void stop_intel_arch_watchdog(void)
++/*
++ * Disable timer based NMIs on all CPUs:
++ */
++void acpi_nmi_disable(void)
+ {
+-	unsigned int ebx;
+-	union cpuid10_eax eax;
+-	unsigned int unused;
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	/*
+-	 * Check whether the Architectural PerfMon supports
+-	 * Unhalted Core Cycles Event or not.
+-	 * NOTE: Corresponding bit = 0 in ebx indicates event present.
+-	 */
+-	cpuid(10, &(eax.full), &ebx, &unused, &unused);
+-	if ((eax.split.mask_length < (ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX+1)) ||
+-	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
+-		return;
+-
+-	wrmsr(wd->evntsel_msr, 0, 0);
+-	__release_evntsel_nmi(-1, wd->evntsel_msr);
+-	__release_perfctr_nmi(-1, wd->perfctr_msr);
++	if (atomic_read(&nmi_active) && nmi_watchdog == NMI_IO_APIC)
++		on_each_cpu(__acpi_nmi_disable, NULL, 0, 1);
+ }
+ 
+ void setup_apic_nmi_watchdog (void *unused)
+ {
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+-	/* only support LOCAL and IO APICs for now */
+-	if ((nmi_watchdog != NMI_LOCAL_APIC) &&
+-	    (nmi_watchdog != NMI_IO_APIC))
+-	    	return;
+-
+-	if (wd->enabled == 1)
+-		return;
++	if (__get_cpu_var(wd_enabled))
++ 		return;
+ 
+ 	/* cheap hack to support suspend/resume */
+ 	/* if cpu0 is not active neither should the other cpus */
+ 	if ((smp_processor_id() != 0) && (atomic_read(&nmi_active) <= 0))
+ 		return;
+ 
+-	if (nmi_watchdog == NMI_LOCAL_APIC) {
+-		switch (boot_cpu_data.x86_vendor) {
+-		case X86_VENDOR_AMD:
+-			if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
+-				boot_cpu_data.x86 != 16)
+-				return;
+-			if (!setup_k7_watchdog())
+-				return;
+-			break;
+-		case X86_VENDOR_INTEL:
+-			if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+-				if (!setup_intel_arch_watchdog())
+-					return;
+-				break;
+-			}
+-			switch (boot_cpu_data.x86) {
+-			case 6:
+-				if (boot_cpu_data.x86_model > 0xd)
+-					return;
+-
+-				if (!setup_p6_watchdog())
+-					return;
+-				break;
+-			case 15:
+-				if (boot_cpu_data.x86_model > 0x4)
+-					return;
+-
+-				if (!setup_p4_watchdog())
+-					return;
+-				break;
+-			default:
+-				return;
+-			}
+-			break;
+-		default:
++	switch (nmi_watchdog) {
++	case NMI_LOCAL_APIC:
++		__get_cpu_var(wd_enabled) = 1; /* enable it before to avoid race with handler */
++		if (lapic_watchdog_init(nmi_hz) < 0) {
++			__get_cpu_var(wd_enabled) = 0;
+ 			return;
+ 		}
++		/* FALL THROUGH */
++	case NMI_IO_APIC:
++		__get_cpu_var(wd_enabled) = 1;
++		atomic_inc(&nmi_active);
+ 	}
+-	wd->enabled = 1;
+-	atomic_inc(&nmi_active);
+ }
+ 
+ void stop_apic_nmi_watchdog(void *unused)
+ {
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-
+ 	/* only support LOCAL and IO APICs for now */
+ 	if ((nmi_watchdog != NMI_LOCAL_APIC) &&
+ 	    (nmi_watchdog != NMI_IO_APIC))
+ 	    	return;
+-
+-	if (wd->enabled == 0)
++	if (__get_cpu_var(wd_enabled) == 0)
+ 		return;
+-
+-	if (nmi_watchdog == NMI_LOCAL_APIC) {
+-		switch (boot_cpu_data.x86_vendor) {
+-		case X86_VENDOR_AMD:
+-			stop_k7_watchdog();
+-			break;
+-		case X86_VENDOR_INTEL:
+-			if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
+-				stop_intel_arch_watchdog();
+-				break;
+-			}
+-			switch (boot_cpu_data.x86) {
+-			case 6:
+-				if (boot_cpu_data.x86_model > 0xd)
+-					break;
+-				stop_p6_watchdog();
+-				break;
+-			case 15:
+-				if (boot_cpu_data.x86_model > 0x4)
+-					break;
+-				stop_p4_watchdog();
+-				break;
+-			}
+-			break;
+-		default:
+-			return;
+-		}
+-	}
+-	wd->enabled = 0;
++	if (nmi_watchdog == NMI_LOCAL_APIC)
++		lapic_watchdog_stop();
++	__get_cpu_var(wd_enabled) = 0;
+ 	atomic_dec(&nmi_active);
+ }
+ 
+@@ -1008,8 +328,6 @@ __kprobes int nmi_watchdog_tick(struct p
+ 	unsigned int sum;
+ 	int touched = 0;
+ 	int cpu = smp_processor_id();
+-	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
+-	u64 dummy;
+ 	int rc=0;
+ 
+ 	/* check for other users first */
+@@ -1052,53 +370,20 @@ __kprobes int nmi_watchdog_tick(struct p
+ 		alert_counter[cpu] = 0;
+ 	}
+ 	/* see if the nmi watchdog went off */
+-	if (wd->enabled) {
+-		if (nmi_watchdog == NMI_LOCAL_APIC) {
+-			rdmsrl(wd->perfctr_msr, dummy);
+-			if (dummy & wd->check_bit){
+-				/* this wasn't a watchdog timer interrupt */
+-				goto done;
+-			}
+-
+-			/* only Intel P4 uses the cccr msr */
+-	 		if (wd->cccr_msr != 0) {
+-	 			/*
+-	 			 * P4 quirks:
+-	 			 * - An overflown perfctr will assert its interrupt
+-	 			 *   until the OVF flag in its CCCR is cleared.
+-	 			 * - LVTPC is masked on interrupt and must be
+-	 			 *   unmasked by the LVTPC handler.
+-	 			 */
+-				rdmsrl(wd->cccr_msr, dummy);
+-				dummy &= ~P4_CCCR_OVF;
+-	 			wrmsrl(wd->cccr_msr, dummy);
+-	 			apic_write(APIC_LVTPC, APIC_DM_NMI);
+-				/* start the cycle over again */
+-				write_watchdog_counter(wd->perfctr_msr, NULL);
+-	 		}
+-			else if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
+-				 wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1) {
+-				/* P6 based Pentium M need to re-unmask
+-				 * the apic vector but it doesn't hurt
+-				 * other P6 variant.
+-				 * ArchPerfom/Core Duo also needs this */
+-				apic_write(APIC_LVTPC, APIC_DM_NMI);
+-				/* P6/ARCH_PERFMON has 32 bit counter write */
+-				write_watchdog_counter32(wd->perfctr_msr, NULL);
+-			} else {
+-				/* start the cycle over again */
+-				write_watchdog_counter(wd->perfctr_msr, NULL);
+-			}
+-			rc = 1;
+-		} else if (nmi_watchdog == NMI_IO_APIC) {
+-			/* don't know how to accurately check for this.
+-			 * just assume it was a watchdog timer interrupt
+-			 * This matches the old behaviour.
+-			 */
+-			rc = 1;
+-		}
++	if (!__get_cpu_var(wd_enabled))
++		return rc;
++	switch (nmi_watchdog) {
++	case NMI_LOCAL_APIC:
++		rc |= lapic_wd_event(nmi_hz);
++		break;
++	case NMI_IO_APIC:
++		/* don't know how to accurately check for this.
++		 * just assume it was a watchdog timer interrupt
++		 * This matches the old behaviour.
++		 */
++		rc = 1;
++		break;
+ 	}
+-done:
+ 	return rc;
+ }
+ 
+@@ -1143,7 +428,7 @@ int proc_nmi_enabled(struct ctl_table *t
+ 	}
+ 
+ 	if (nmi_watchdog == NMI_DEFAULT) {
+-		if (nmi_known_cpu() > 0)
++		if (lapic_watchdog_ok())
+ 			nmi_watchdog = NMI_LOCAL_APIC;
+ 		else
+ 			nmi_watchdog = NMI_IO_APIC;
+@@ -1179,11 +464,3 @@ void __trigger_all_cpu_backtrace(void)
+ 
+ EXPORT_SYMBOL(nmi_active);
+ EXPORT_SYMBOL(nmi_watchdog);
+-EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi);
+-EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
+-EXPORT_SYMBOL(reserve_perfctr_nmi);
+-EXPORT_SYMBOL(release_perfctr_nmi);
+-EXPORT_SYMBOL(reserve_evntsel_nmi);
+-EXPORT_SYMBOL(release_evntsel_nmi);
+-EXPORT_SYMBOL(disable_timer_nmi_watchdog);
+-EXPORT_SYMBOL(enable_timer_nmi_watchdog);
+Index: linux/arch/i386/kernel/cpu/Makefile
+===================================================================
+--- linux.orig/arch/i386/kernel/cpu/Makefile
++++ linux/arch/i386/kernel/cpu/Makefile
+@@ -17,3 +17,5 @@ obj-$(CONFIG_X86_MCE)	+=	mcheck/
+ 
+ obj-$(CONFIG_MTRR)	+= 	mtrr/
+ obj-$(CONFIG_CPU_FREQ)	+=	cpufreq/
++
++obj-$(CONFIG_X86_LOCAL_APIC) += perfctr-watchdog.o
+Index: linux/arch/i386/kernel/cpu/perfctr-watchdog.c
 ===================================================================
 --- /dev/null
-+++ linux/include/asm-x86_64/vgtod.h
-@@ -0,0 +1,29 @@
-+#ifndef _ASM_VGTOD_H
-+#define _ASM_VGTOD_H 1
++++ linux/arch/i386/kernel/cpu/perfctr-watchdog.c
+@@ -0,0 +1,658 @@
++/* local apic based NMI watchdog for various CPUs.
++   This file also handles reservation of performance counters for coordination
++   with other users (like oprofile).
 +
-+#include <asm/vsyscall.h>
-+#include <linux/clocksource.h>
++   Note that these events normally don't tick when the CPU idles. This means
++   the frequency varies with CPU load.
 +
-+struct vsyscall_gtod_data {
-+	seqlock_t	lock;
++   Original code for K7/P6 written by Keith Owens */
 +
-+	/* open coded 'struct timespec' */
-+	time_t		wall_time_sec;
-+	u32		wall_time_nsec;
++#include <linux/percpu.h>
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/bitops.h>
++#include <linux/smp.h>
++#include <linux/nmi.h>
++#include <asm/apic.h>
++#include <asm/intel_arch_perfmon.h>
 +
-+	int		sysctl_enabled;
-+	struct timezone sys_tz;
-+	struct { /* extract of a clocksource struct */
-+		cycle_t (*vread)(void);
-+		cycle_t	cycle_last;
-+		cycle_t	mask;
-+		u32	mult;
-+		u32	shift;
-+	} clock;
-+	struct timespec wall_to_monotonic;
++struct nmi_watchdog_ctlblk {
++	unsigned int cccr_msr;
++	unsigned int perfctr_msr;  /* the MSR to reset in NMI handler */
++	unsigned int evntsel_msr;  /* the MSR to select the events to handle */
 +};
-+extern struct vsyscall_gtod_data __vsyscall_gtod_data
-+__section_vsyscall_gtod_data;
-+extern struct vsyscall_gtod_data vsyscall_gtod_data;
 +
++/* Interface defining a CPU specific perfctr watchdog */
++struct wd_ops {
++	int (*reserve)(void);
++	void (*unreserve)(void);
++	int (*setup)(unsigned nmi_hz);
++	void (*rearm)(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz);
++	void (*stop)(void *);
++	unsigned perfctr;
++	unsigned evntsel;
++	u64 checkbit;
++};
++
++static struct wd_ops *wd_ops;
++
++/* this number is calculated from Intel's MSR_P4_CRU_ESCR5 register and it's
++ * offset from MSR_P4_BSU_ESCR0.  It will be the max for all platforms (for now)
++ */
++#define NMI_MAX_COUNTER_BITS 66
++
++/* perfctr_nmi_owner tracks the ownership of the perfctr registers:
++ * evtsel_nmi_owner tracks the ownership of the event selection
++ * - different performance counters/ event selection may be reserved for
++ *   different subsystems this reservation system just tries to coordinate
++ *   things a little
++ */
++static DECLARE_BITMAP(perfctr_nmi_owner, NMI_MAX_COUNTER_BITS);
++static DECLARE_BITMAP(evntsel_nmi_owner, NMI_MAX_COUNTER_BITS);
++
++static DEFINE_PER_CPU(struct nmi_watchdog_ctlblk, nmi_watchdog_ctlblk);
++
++/* converts an msr to an appropriate reservation bit */
++static inline unsigned int nmi_perfctr_msr_to_bit(unsigned int msr)
++{
++	return wd_ops ? msr - wd_ops->perfctr : 0;
++}
++
++/* converts an msr to an appropriate reservation bit */
++/* returns the bit offset of the event selection register */
++static inline unsigned int nmi_evntsel_msr_to_bit(unsigned int msr)
++{
++	return wd_ops ? msr - wd_ops->evntsel : 0;
++}
++
++/* checks for a bit availability (hack for oprofile) */
++int avail_to_resrv_perfctr_nmi_bit(unsigned int counter)
++{
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	return (!test_bit(counter, perfctr_nmi_owner));
++}
++
++/* checks the an msr for availability */
++int avail_to_resrv_perfctr_nmi(unsigned int msr)
++{
++	unsigned int counter;
++
++	counter = nmi_perfctr_msr_to_bit(msr);
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	return (!test_bit(counter, perfctr_nmi_owner));
++}
++
++int reserve_perfctr_nmi(unsigned int msr)
++{
++	unsigned int counter;
++
++	counter = nmi_perfctr_msr_to_bit(msr);
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	if (!test_and_set_bit(counter, perfctr_nmi_owner))
++		return 1;
++	return 0;
++}
++
++void release_perfctr_nmi(unsigned int msr)
++{
++	unsigned int counter;
++
++	counter = nmi_perfctr_msr_to_bit(msr);
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	clear_bit(counter, perfctr_nmi_owner);
++}
++
++int reserve_evntsel_nmi(unsigned int msr)
++{
++	unsigned int counter;
++
++	counter = nmi_evntsel_msr_to_bit(msr);
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	if (!test_and_set_bit(counter, evntsel_nmi_owner))
++		return 1;
++	return 0;
++}
++
++void release_evntsel_nmi(unsigned int msr)
++{
++	unsigned int counter;
++
++	counter = nmi_evntsel_msr_to_bit(msr);
++	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
++
++	clear_bit(counter, evntsel_nmi_owner);
++}
++
++EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi);
++EXPORT_SYMBOL(avail_to_resrv_perfctr_nmi_bit);
++EXPORT_SYMBOL(reserve_perfctr_nmi);
++EXPORT_SYMBOL(release_perfctr_nmi);
++EXPORT_SYMBOL(reserve_evntsel_nmi);
++EXPORT_SYMBOL(release_evntsel_nmi);
++
++void disable_lapic_nmi_watchdog(void)
++{
++	BUG_ON(nmi_watchdog != NMI_LOCAL_APIC);
++
++	if (atomic_read(&nmi_active) <= 0)
++		return;
++
++	on_each_cpu(wd_ops->stop, NULL, 0, 1);
++	wd_ops->unreserve();
++
++	BUG_ON(atomic_read(&nmi_active) != 0);
++}
++
++void enable_lapic_nmi_watchdog(void)
++{
++	BUG_ON(nmi_watchdog != NMI_LOCAL_APIC);
++
++	/* are we already enabled */
++	if (atomic_read(&nmi_active) != 0)
++		return;
++
++	/* are we lapic aware */
++	if (!wd_ops)
++		return;
++	if (!wd_ops->reserve()) {
++		printk(KERN_ERR "NMI watchdog: cannot reserve perfctrs\n");
++		return;
++	}
++
++	on_each_cpu(setup_apic_nmi_watchdog, NULL, 0, 1);
++	touch_nmi_watchdog();
++}
++
++/*
++ * Activate the NMI watchdog via the local APIC.
++ */
++
++static unsigned int adjust_for_32bit_ctr(unsigned int hz)
++{
++	u64 counter_val;
++	unsigned int retval = hz;
++
++	/*
++	 * On Intel CPUs with P6/ARCH_PERFMON only 32 bits in the counter
++	 * are writable, with higher bits sign extending from bit 31.
++	 * So, we can only program the counter with 31 bit values and
++	 * 32nd bit should be 1, for 33.. to be 1.
++	 * Find the appropriate nmi_hz
++	 */
++	counter_val = (u64)cpu_khz * 1000;
++	do_div(counter_val, retval);
++ 	if (counter_val > 0x7fffffffULL) {
++		u64 count = (u64)cpu_khz * 1000;
++		do_div(count, 0x7fffffffUL);
++		retval = count + 1;
++	}
++	return retval;
++}
++
++static void
++write_watchdog_counter(unsigned int perfctr_msr, const char *descr, unsigned nmi_hz)
++{
++	u64 count = (u64)cpu_khz * 1000;
++
++	do_div(count, nmi_hz);
++	if(descr)
++		Dprintk("setting %s to -0x%08Lx\n", descr, count);
++	wrmsrl(perfctr_msr, 0 - count);
++}
++
++static void write_watchdog_counter32(unsigned int perfctr_msr,
++		const char *descr, unsigned nmi_hz)
++{
++	u64 count = (u64)cpu_khz * 1000;
++
++	do_div(count, nmi_hz);
++	if(descr)
++		Dprintk("setting %s to -0x%08Lx\n", descr, count);
++	wrmsr(perfctr_msr, (u32)(-count), 0);
++}
++
++/* AMD K7/K8/Family10h/Family11h support. AMD keeps this interface
++   nicely stable so there is not much variety */
++
++#define K7_EVNTSEL_ENABLE	(1 << 22)
++#define K7_EVNTSEL_INT		(1 << 20)
++#define K7_EVNTSEL_OS		(1 << 17)
++#define K7_EVNTSEL_USR		(1 << 16)
++#define K7_EVENT_CYCLES_PROCESSOR_IS_RUNNING	0x76
++#define K7_NMI_EVENT		K7_EVENT_CYCLES_PROCESSOR_IS_RUNNING
++
++static int setup_k7_watchdog(unsigned nmi_hz)
++{
++	unsigned int perfctr_msr, evntsel_msr;
++	unsigned int evntsel;
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++
++	perfctr_msr = MSR_K7_PERFCTR0;
++	evntsel_msr = MSR_K7_EVNTSEL0;
++
++	wrmsrl(perfctr_msr, 0UL);
++
++	evntsel = K7_EVNTSEL_INT
++		| K7_EVNTSEL_OS
++		| K7_EVNTSEL_USR
++		| K7_NMI_EVENT;
++
++	/* setup the timer */
++	wrmsr(evntsel_msr, evntsel, 0);
++	write_watchdog_counter(perfctr_msr, "K7_PERFCTR0",nmi_hz);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	evntsel |= K7_EVNTSEL_ENABLE;
++	wrmsr(evntsel_msr, evntsel, 0);
++
++	wd->perfctr_msr = perfctr_msr;
++	wd->evntsel_msr = evntsel_msr;
++	wd->cccr_msr = 0;  //unused
++	return 1;
++}
++
++static void single_msr_stop_watchdog(void *arg)
++{
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++
++	wrmsr(wd->evntsel_msr, 0, 0);
++}
++
++static int single_msr_reserve(void)
++{
++	if (!reserve_perfctr_nmi(wd_ops->perfctr))
++		return 0;
++
++	if (!reserve_evntsel_nmi(wd_ops->evntsel)) {
++		release_perfctr_nmi(wd_ops->perfctr);
++		return 0;
++	}
++	return 1;
++}
++
++static void single_msr_unreserve(void)
++{
++	release_evntsel_nmi(wd_ops->perfctr);
++	release_perfctr_nmi(wd_ops->evntsel);
++}
++
++static void single_msr_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
++{
++	/* start the cycle over again */
++	write_watchdog_counter(wd->perfctr_msr, NULL, nmi_hz);
++}
++
++static struct wd_ops k7_wd_ops = {
++	.reserve = single_msr_reserve,
++	.unreserve = single_msr_unreserve,
++	.setup = setup_k7_watchdog,
++	.rearm = single_msr_rearm,
++	.stop = single_msr_stop_watchdog,
++	.perfctr = MSR_K7_PERFCTR0,
++	.evntsel = MSR_K7_EVNTSEL0,
++	.checkbit = 1ULL<<63,
++};
++
++/* Intel Model 6 (PPro+,P2,P3,P-M,Core1) */
++
++#define P6_EVNTSEL0_ENABLE	(1 << 22)
++#define P6_EVNTSEL_INT		(1 << 20)
++#define P6_EVNTSEL_OS		(1 << 17)
++#define P6_EVNTSEL_USR		(1 << 16)
++#define P6_EVENT_CPU_CLOCKS_NOT_HALTED	0x79
++#define P6_NMI_EVENT		P6_EVENT_CPU_CLOCKS_NOT_HALTED
++
++static int setup_p6_watchdog(unsigned nmi_hz)
++{
++	unsigned int perfctr_msr, evntsel_msr;
++	unsigned int evntsel;
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++
++	perfctr_msr = MSR_P6_PERFCTR0;
++	evntsel_msr = MSR_P6_EVNTSEL0;
++
++	wrmsrl(perfctr_msr, 0UL);
++
++	evntsel = P6_EVNTSEL_INT
++		| P6_EVNTSEL_OS
++		| P6_EVNTSEL_USR
++		| P6_NMI_EVENT;
++
++	/* setup the timer */
++	wrmsr(evntsel_msr, evntsel, 0);
++	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
++	write_watchdog_counter32(perfctr_msr, "P6_PERFCTR0",nmi_hz);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	evntsel |= P6_EVNTSEL0_ENABLE;
++	wrmsr(evntsel_msr, evntsel, 0);
++
++	wd->perfctr_msr = perfctr_msr;
++	wd->evntsel_msr = evntsel_msr;
++	wd->cccr_msr = 0;  //unused
++	return 1;
++}
++
++static void p6_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
++{
++	/* P6 based Pentium M need to re-unmask
++	 * the apic vector but it doesn't hurt
++	 * other P6 variant.
++	 * ArchPerfom/Core Duo also needs this */
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	/* P6/ARCH_PERFMON has 32 bit counter write */
++	write_watchdog_counter32(wd->perfctr_msr, NULL,nmi_hz);
++}
++
++static struct wd_ops p6_wd_ops = {
++	.reserve = single_msr_reserve,
++	.unreserve = single_msr_unreserve,
++	.setup = setup_p6_watchdog,
++	.rearm = p6_rearm,
++	.stop = single_msr_stop_watchdog,
++	.perfctr = MSR_P6_PERFCTR0,
++	.evntsel = MSR_P6_EVNTSEL0,
++	.checkbit = 1ULL<<39,
++};
++
++/* Intel P4 performance counters. By far the most complicated of all. */
++
++#define MSR_P4_MISC_ENABLE_PERF_AVAIL	(1<<7)
++#define P4_ESCR_EVENT_SELECT(N)	((N)<<25)
++#define P4_ESCR_OS		(1<<3)
++#define P4_ESCR_USR		(1<<2)
++#define P4_CCCR_OVF_PMI0	(1<<26)
++#define P4_CCCR_OVF_PMI1	(1<<27)
++#define P4_CCCR_THRESHOLD(N)	((N)<<20)
++#define P4_CCCR_COMPLEMENT	(1<<19)
++#define P4_CCCR_COMPARE		(1<<18)
++#define P4_CCCR_REQUIRED	(3<<16)
++#define P4_CCCR_ESCR_SELECT(N)	((N)<<13)
++#define P4_CCCR_ENABLE		(1<<12)
++#define P4_CCCR_OVF 		(1<<31)
++
++/* Set up IQ_COUNTER0 to behave like a clock, by having IQ_CCCR0 filter
++   CRU_ESCR0 (with any non-null event selector) through a complemented
++   max threshold. [IA32-Vol3, Section 14.9.9] */
++
++static int setup_p4_watchdog(unsigned nmi_hz)
++{
++	unsigned int perfctr_msr, evntsel_msr, cccr_msr;
++	unsigned int evntsel, cccr_val;
++	unsigned int misc_enable, dummy;
++	unsigned int ht_num;
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++
++	rdmsr(MSR_IA32_MISC_ENABLE, misc_enable, dummy);
++	if (!(misc_enable & MSR_P4_MISC_ENABLE_PERF_AVAIL))
++		return 0;
++
++#ifdef CONFIG_SMP
++	/* detect which hyperthread we are on */
++	if (smp_num_siblings == 2) {
++		unsigned int ebx, apicid;
++
++        	ebx = cpuid_ebx(1);
++	        apicid = (ebx >> 24) & 0xff;
++        	ht_num = apicid & 1;
++	} else
 +#endif
-Index: linux/arch/x86_64/vdso/voffset.h
++		ht_num = 0;
++
++	/* performance counters are shared resources
++	 * assign each hyperthread its own set
++	 * (re-use the ESCR0 register, seems safe
++	 * and keeps the cccr_val the same)
++	 */
++	if (!ht_num) {
++		/* logical cpu 0 */
++		perfctr_msr = MSR_P4_IQ_PERFCTR0;
++		evntsel_msr = MSR_P4_CRU_ESCR0;
++		cccr_msr = MSR_P4_IQ_CCCR0;
++		cccr_val = P4_CCCR_OVF_PMI0 | P4_CCCR_ESCR_SELECT(4);
++	} else {
++		/* logical cpu 1 */
++		perfctr_msr = MSR_P4_IQ_PERFCTR1;
++		evntsel_msr = MSR_P4_CRU_ESCR0;
++		cccr_msr = MSR_P4_IQ_CCCR1;
++		cccr_val = P4_CCCR_OVF_PMI1 | P4_CCCR_ESCR_SELECT(4);
++	}
++
++	evntsel = P4_ESCR_EVENT_SELECT(0x3F)
++	 	| P4_ESCR_OS
++		| P4_ESCR_USR;
++
++	cccr_val |= P4_CCCR_THRESHOLD(15)
++		 | P4_CCCR_COMPLEMENT
++		 | P4_CCCR_COMPARE
++		 | P4_CCCR_REQUIRED;
++
++	wrmsr(evntsel_msr, evntsel, 0);
++	wrmsr(cccr_msr, cccr_val, 0);
++	write_watchdog_counter(perfctr_msr, "P4_IQ_COUNTER0", nmi_hz);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	cccr_val |= P4_CCCR_ENABLE;
++	wrmsr(cccr_msr, cccr_val, 0);
++	wd->perfctr_msr = perfctr_msr;
++	wd->evntsel_msr = evntsel_msr;
++	wd->cccr_msr = cccr_msr;
++	return 1;
++}
++
++static void stop_p4_watchdog(void *arg)
++{
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++	wrmsr(wd->cccr_msr, 0, 0);
++	wrmsr(wd->evntsel_msr, 0, 0);
++}
++
++static int p4_reserve(void)
++{
++	if (!reserve_perfctr_nmi(MSR_P4_IQ_PERFCTR0))
++		return 0;
++#ifdef CONFIG_SMP
++	if (smp_num_siblings > 1 && !reserve_perfctr_nmi(MSR_P4_IQ_PERFCTR1))
++		goto fail1;
++#endif
++	if (!reserve_evntsel_nmi(MSR_P4_CRU_ESCR0))
++		goto fail2;
++	/* RED-PEN why is ESCR1 not reserved here? */
++	return 1;
++ fail2:
++#ifdef CONFIG_SMP
++	if (smp_num_siblings > 1)
++		release_perfctr_nmi(MSR_P4_IQ_PERFCTR1);
++ fail1:
++#endif
++	release_perfctr_nmi(MSR_P4_IQ_PERFCTR0);
++	return 0;
++}
++
++static void p4_unreserve(void)
++{
++#ifdef CONFIG_SMP
++	if (smp_num_siblings > 1)
++		release_evntsel_nmi(MSR_P4_IQ_PERFCTR1);
++#endif
++	release_evntsel_nmi(MSR_P4_IQ_PERFCTR0);
++	release_perfctr_nmi(MSR_P4_CRU_ESCR0);
++}
++
++static void p4_rearm(struct nmi_watchdog_ctlblk *wd, unsigned nmi_hz)
++{
++	unsigned dummy;
++	/*
++ 	 * P4 quirks:
++	 * - An overflown perfctr will assert its interrupt
++	 *   until the OVF flag in its CCCR is cleared.
++	 * - LVTPC is masked on interrupt and must be
++	 *   unmasked by the LVTPC handler.
++	 */
++	rdmsrl(wd->cccr_msr, dummy);
++	dummy &= ~P4_CCCR_OVF;
++	wrmsrl(wd->cccr_msr, dummy);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	/* start the cycle over again */
++	write_watchdog_counter(wd->perfctr_msr, NULL, nmi_hz);
++}
++
++static struct wd_ops p4_wd_ops = {
++	.reserve = p4_reserve,
++	.unreserve = p4_unreserve,
++	.setup = setup_p4_watchdog,
++	.rearm = p4_rearm,
++	.stop = stop_p4_watchdog,
++	/* RED-PEN this is wrong for the other sibling */
++	.perfctr = MSR_P4_BPU_PERFCTR0,
++	.evntsel = MSR_P4_BSU_ESCR0,
++	.checkbit = 1ULL<<39,
++};
++
++/* Watchdog using the Intel architected PerfMon. Used for Core2 and hopefully
++   all future Intel CPUs. */
++
++#define ARCH_PERFMON_NMI_EVENT_SEL	ARCH_PERFMON_UNHALTED_CORE_CYCLES_SEL
++#define ARCH_PERFMON_NMI_EVENT_UMASK	ARCH_PERFMON_UNHALTED_CORE_CYCLES_UMASK
++
++static int setup_intel_arch_watchdog(unsigned nmi_hz)
++{
++	unsigned int ebx;
++	union cpuid10_eax eax;
++	unsigned int unused;
++	unsigned int perfctr_msr, evntsel_msr;
++	unsigned int evntsel;
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++
++	/*
++	 * Check whether the Architectural PerfMon supports
++	 * Unhalted Core Cycles Event or not.
++	 * NOTE: Corresponding bit = 0 in ebx indicates event present.
++	 */
++	cpuid(10, &(eax.full), &ebx, &unused, &unused);
++	if ((eax.split.mask_length < (ARCH_PERFMON_UNHALTED_CORE_CYCLES_INDEX+1)) ||
++	    (ebx & ARCH_PERFMON_UNHALTED_CORE_CYCLES_PRESENT))
++		return 0;
++
++	perfctr_msr = MSR_ARCH_PERFMON_PERFCTR1;
++	evntsel_msr = MSR_ARCH_PERFMON_EVENTSEL1;
++
++	wrmsrl(perfctr_msr, 0UL);
++
++	evntsel = ARCH_PERFMON_EVENTSEL_INT
++		| ARCH_PERFMON_EVENTSEL_OS
++		| ARCH_PERFMON_EVENTSEL_USR
++		| ARCH_PERFMON_NMI_EVENT_SEL
++		| ARCH_PERFMON_NMI_EVENT_UMASK;
++
++	/* setup the timer */
++	wrmsr(evntsel_msr, evntsel, 0);
++	nmi_hz = adjust_for_32bit_ctr(nmi_hz);
++	write_watchdog_counter32(perfctr_msr, "INTEL_ARCH_PERFCTR0", nmi_hz);
++	apic_write(APIC_LVTPC, APIC_DM_NMI);
++	evntsel |= ARCH_PERFMON_EVENTSEL0_ENABLE;
++	wrmsr(evntsel_msr, evntsel, 0);
++
++	wd->perfctr_msr = perfctr_msr;
++	wd->evntsel_msr = evntsel_msr;
++	wd->cccr_msr = 0;  //unused
++	wd_ops->checkbit = 1ULL << (eax.split.bit_width - 1);
++	return 1;
++}
++
++static struct wd_ops intel_arch_wd_ops = {
++	.reserve = single_msr_reserve,
++	.unreserve = single_msr_unreserve,
++	.setup = setup_intel_arch_watchdog,
++	.rearm = p6_rearm,
++	.stop = single_msr_stop_watchdog,
++	.perfctr = MSR_ARCH_PERFMON_PERFCTR0,
++	.evntsel = MSR_ARCH_PERFMON_EVENTSEL0,
++};
++
++static void probe_nmi_watchdog(void)
++{
++	switch (boot_cpu_data.x86_vendor) {
++	case X86_VENDOR_AMD:
++		if (boot_cpu_data.x86 != 6 && boot_cpu_data.x86 != 15 &&
++		    boot_cpu_data.x86 != 16)
++			return;
++		wd_ops = &k7_wd_ops;
++		break;
++	case X86_VENDOR_INTEL:
++		if (cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON)) {
++			wd_ops = &intel_arch_wd_ops;
++			break;
++		}
++		switch (boot_cpu_data.x86) {
++		case 6:
++			if (boot_cpu_data.x86_model > 0xd)
++				return;
++
++			wd_ops = &p6_wd_ops;
++			break;
++		case 15:
++			if (boot_cpu_data.x86_model > 0x4)
++				return;
++
++			wd_ops = &p4_wd_ops;
++			break;
++		default:
++			return;
++		}
++		break;
++	}
++}
++
++/* Interface to nmi.c */
++
++int lapic_watchdog_init(unsigned nmi_hz)
++{
++	if (!wd_ops) {
++		probe_nmi_watchdog();
++		if (!wd_ops)
++			return -1;
++	}
++
++	if (!(wd_ops->setup(nmi_hz))) {
++		printk(KERN_ERR "Cannot setup NMI watchdog on CPU %d\n",
++		       raw_smp_processor_id());
++		return -1;
++	}
++
++	return 0;
++}
++
++void lapic_watchdog_stop(void)
++{
++	if (wd_ops)
++		wd_ops->stop(NULL);
++}
++
++unsigned lapic_adjust_nmi_hz(unsigned hz)
++{
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++	if (wd->perfctr_msr == MSR_P6_PERFCTR0 ||
++	    wd->perfctr_msr == MSR_ARCH_PERFMON_PERFCTR1)
++		hz = adjust_for_32bit_ctr(hz);
++	return hz;
++}
++
++int lapic_wd_event(unsigned nmi_hz)
++{
++	struct nmi_watchdog_ctlblk *wd = &__get_cpu_var(nmi_watchdog_ctlblk);
++	u64 ctr;
++	rdmsrl(wd->perfctr_msr, ctr);
++	if (ctr & wd_ops->checkbit) { /* perfctr still running? */
++		return 0;
++	}
++	wd_ops->rearm(wd, nmi_hz);
++	return 1;
++}
++
++int lapic_watchdog_ok(void)
++{
++	return wd_ops != NULL;
++}
+Index: linux/include/asm-i386/nmi.h
 ===================================================================
---- /dev/null
-+++ linux/arch/x86_64/vdso/voffset.h
-@@ -0,0 +1 @@
-+#define VDSO_TEXT_OFFSET 0x500
+--- linux.orig/include/asm-i386/nmi.h
++++ linux/include/asm-i386/nmi.h
+@@ -50,4 +50,12 @@ void __trigger_all_cpu_backtrace(void);
+ 
+ #endif
+ 
++void lapic_watchdog_stop(void);
++int lapic_watchdog_init(unsigned nmi_hz);
++int lapic_wd_event(unsigned nmi_hz);
++unsigned lapic_adjust_nmi_hz(unsigned hz);
++int lapic_watchdog_ok(void);
++void disable_lapic_nmi_watchdog(void);
++void enable_lapic_nmi_watchdog(void);
++
+ #endif /* ASM_NMI_H */
