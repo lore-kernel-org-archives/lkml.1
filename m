@@ -1,79 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946004AbXEAVzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945992AbXEAWBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946004AbXEAVzc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946005AbXEAVzc
+	id S1945992AbXEAWBJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946012AbXEAWBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:55:32 -0400
-Received: from mx1.suse.de ([195.135.220.2]:44696 "EHLO mx1.suse.de"
+	Tue, 1 May 2007 18:01:08 -0400
+Received: from dns1.vpop.net ([216.193.240.2]:60733 "EHLO mail.vpop.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946004AbXEAVza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:55:30 -0400
-From: Neil Brown <neilb@suse.de>
-To: Jeff Layton <jlayton@redhat.com>
-Date: Wed, 2 May 2007 07:54:57 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17975.46897.298001.690089@notabene.brown>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [NFS] [PATCH] RPC: add wrapper for svc_reserve to account for
-	checksum
-In-Reply-To: message from Jeff Layton on Tuesday May 1
-References: <20070421131523.GA18100@dantu.rdu.redhat.com>
-	<17974.41587.666167.650575@notabene.brown>
-	<20070501170123.GB15222@salusa.poochiereds.net>
-	<20070501171121.GC15222@salusa.poochiereds.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+	id S1945992AbXEAWBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 18:01:07 -0400
+From: Matt Reimer <mreimer@vpop.net>
+To: linux-kernel@vger.kernel.org
+Cc: Matt Reimer <mreimer@vpop.net>
+Subject: [PATCH 1/2] ds1wm: simplify platform_data
+Date: Tue,  1 May 2007 15:00:55 -0700
+Message-Id: <1178056856620-git-send-email-mreimer@vpop.net>
+X-Mailer: git-send-email 1.5.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 1, jlayton@redhat.com wrote:
-> 
-> Resending patch with a proper signed-off-by line. Also cc'ing Andrew:
+Simplify ds1wm's platform_data by using IORESOURCE_IRQ_* flags rather
+than the platform_data field active_high.
 
-Thanks, but it isn't much good to Andrew without a changelog entry,
-though probably it should just go in as
-  rpc--add-wrapper-for-svc_reserve-to-account-for-checksum-fix
+Signed-off-by: Matt Reimer <mreimer@vpop.net>
+---
+ drivers/w1/masters/ds1wm.c |   11 +++++++----
+ include/linux/ds1wm.h      |    1 -
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
-Acked-by: NeilBrown <neilb@suse.de>
+diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
+index c3ea34d..8b08609 100644
+--- a/drivers/w1/masters/ds1wm.c
++++ b/drivers/w1/masters/ds1wm.c
+@@ -90,6 +90,7 @@ struct ds1wm_data {
+ 	struct platform_device *pdev;
+ 	struct ds1wm_platform_data *pdata;
+ 	int		irq;
++	int		active_high;
+ 	struct clk	*clk;
+ 	int		slave_present;
+ 	void		*reset_complete;
+@@ -141,7 +142,7 @@ static int ds1wm_reset(struct ds1wm_data *ds1wm_data)
+ 	ds1wm_data->reset_complete = &reset_done;
+ 
+ 	ds1wm_write_register(ds1wm_data, DS1WM_INT_EN, DS1WM_INTEN_EPD |
+-		(ds1wm_data->pdata->active_high ? DS1WM_INTEN_IAS : 0));
++		(ds1wm_data->active_high ? DS1WM_INTEN_IAS : 0));
+ 
+ 	ds1wm_write_register(ds1wm_data, DS1WM_CMD, DS1WM_CMD_1W_RESET);
+ 
+@@ -163,7 +164,7 @@ static int ds1wm_reset(struct ds1wm_data *ds1wm_data)
+ 
+ 	ds1wm_write_register(ds1wm_data, DS1WM_INT_EN,
+ 		DS1WM_INTEN_ERBF | DS1WM_INTEN_ETMT | DS1WM_INTEN_EPD |
+-		(ds1wm_data->pdata->active_high ? DS1WM_INTEN_IAS : 0));
++		(ds1wm_data->active_high ? DS1WM_INTEN_IAS : 0));
+ 
+ 	if (!ds1wm_data->slave_present) {
+                 dev_dbg(&ds1wm_data->pdev->dev, "reset: no devices found\n");
+@@ -356,9 +357,11 @@ static int ds1wm_probe(struct platform_device *pdev)
+ 		goto err1;
+ 	}
+ 	ds1wm_data->irq = res->start;
++	ds1wm_data->active_high = (res->flags & IORESOURCE_IRQ_HIGHEDGE) ?
++		1 : 0;
+ 
+-	set_irq_type(ds1wm_data->irq, res->flags & IORESOURCE_IRQ_LOWEDGE ?
+-			IRQ_TYPE_EDGE_FALLING : IRQ_TYPE_EDGE_RISING);
++	set_irq_type(ds1wm_data->irq, ds1wm_data->active_high ?
++			IRQ_TYPE_EDGE_RISING : IRQ_TYPE_EDGE_FALLING);
+ 
+ 	ret = request_irq(ds1wm_data->irq, ds1wm_isr, IRQF_DISABLED,
+ 			  "ds1wm", ds1wm_data);
+diff --git a/include/linux/ds1wm.h b/include/linux/ds1wm.h
+index feeb64d..31f6e3c 100644
+--- a/include/linux/ds1wm.h
++++ b/include/linux/ds1wm.h
+@@ -6,7 +6,6 @@ struct ds1wm_platform_data {
+ 			     * e.g. on h5xxx and h2200 this is 2
+ 			     * (registers aligned to 4-byte boundaries),
+ 			     * while on hx4700 this is 1 */
+-	int active_high;    /* interrupt polarity, passed to DS1WM as IAS bit */
+ 	void (*enable)(struct platform_device *pdev);
+ 	void (*disable)(struct platform_device *pdev);
+ };
+-- 
+1.5.1.1
 
-(If it doesn't appear in the next -mm, I'll send it all nicely
-formated and changeloged).
-
-NeilBrown
-
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> 
-> diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
-> index 9114f11..ed7cbf1 100644
-> --- a/include/linux/sunrpc/svc.h
-> +++ b/include/linux/sunrpc/svc.h
-> @@ -399,10 +399,9 @@ char *		   svc_print_addr(struct svc_rqst *, char *, size_t);
->  /*
->   * When we want to reduce the size of the reserved space in the response
->   * buffer, we need to take into account the size of any checksum data that
-> - * may be at the end of the packet. For now, just use a hardcoded value
-> - * for each possible authflavor. This will need to be updated when new
-> - * encryption types or algorithms are added, or we'll have to come up with
-> - * a way to reasonably calculate this on the fly (maybe via a new auth_op).
-> + * may be at the end of the packet. This is difficult to determine exactly
-> + * for all cases without actually generating the checksum, so we just use a
-> + * static value.
->   */
->  static inline void 
->  svc_reserve_auth(struct svc_rqst *rqstp, int space)
-> @@ -411,7 +410,7 @@ svc_reserve_auth(struct svc_rqst *rqstp, int space)
->  
->  	switch(rqstp->rq_authop->flavour) {
->  		case RPC_AUTH_GSS:
-> -			added_space = 56; /* determined empirically */
-> +			added_space = RPC_MAX_AUTH_SIZE;
->  	}
->  	return svc_reserve(rqstp, space + added_space);
->  }
