@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbXEAQna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbXEAQoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbXEAQna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbXEAQn3
+	id S1754762AbXEAQoM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 12:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbXEAQoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:43:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34168 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754764AbXEAQn3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:43:29 -0400
-Message-ID: <46376D97.3040603@redhat.com>
-Date: Tue, 01 May 2007 12:40:55 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Bill Irwin <bill.irwin@oracle.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, bunk@stusta.de, akpm@osdl.org,
-       gcoady@gmail.com, zlynx@acm.org, dgc@sgi.com, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, hch@infradead.org, jengelh@linux01.gwdg.de,
-       zwane@infradead.org, neilb@suse.de, jens.axboe@oracle.com,
-       eric@provenscaling.com
-Subject: Re: [3/3] use vmalloc() to arrange guard pages for stacks
-References: <20070430232351.GG26598@holomorphy.com> <20070430233309.GH26598@holomorphy.com> <20070430233712.GI26598@holomorphy.com> <20070430234030.GJ26598@holomorphy.com> <463757A3.7010808@redhat.com> <20070501163140.GM26598@holomorphy.com>
-In-Reply-To: <20070501163140.GM26598@holomorphy.com>
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 May 2007 12:44:12 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:26661 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762AbXEAQoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 12:44:10 -0400
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both
+	of	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+From: Daniel Walker <dwalker@mvista.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: tglx@linutronix.de, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <46376B63.9080808@rtr.ca>
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
+	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>
+	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca>
+	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
+			 <463741F1.7050706@rtr.ca>
+	 <1178027285.5791.307.camel@localhost.localdomain> <46374B1D.6050509@rtr.ca>
+	 <1178033061.5791.314.camel@localhost.localdomain> <46376B63.9080808@rtr.ca>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 09:42:30 -0700
+Message-Id: <1178037750.12796.321.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Irwin wrote:
+On Tue, 2007-05-01 at 12:31 -0400, Mark Lord wrote:
+> Thomas Gleixner wrote:
+> > 
+> > I meant disable HPET via: hpet=disable on the commandline 
+> > 
+> >> Screenshots for that are available here:   http://rtr.ca/hrtimers/
 > 
-> It's a shame that the resource scalability implications of vmallocspace
-> allocations prevent this from being useful in production. One could, in
-> principle, establish guard pages within ZONE_NORMAL, but for 4KB stacks
-> it's somewhat awkward to dredge up 3 contigous pages, and 4 defeats the
-> purpose. Alignment with 8KB stacks wants 2 contiguous order 1 pages that
-> span an order 2 page boundary. I guess I could rewrite the page allocator
-> (again), but people seem to feel safest with the buddy allocator affairs.
+> hpet=disable fails, without the "switched to high resolution timer" message(s).
+> New snapshot of it now at the link above.
 > 
-> BTW, did the original patches for this prove to be of any use to you?
+> I also applied Tejun's early libata/SCSI race fix,
+> and that made no difference either.
 > 
+> Cheers
 
-No, I never tried them. Seems like I never get to anything these days but
-answering bug reports and merging fixes... Putting the feature in-kernel
-means I might get to use it though. :)
+Have you tried !SMP or adding the boot arg "maxcpus=1" .. Hadn't seen
+that in prior emails.
+
+Daniel
+
