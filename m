@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161675AbXEAKSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161678AbXEAKTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161675AbXEAKSx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:18:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161680AbXEAKSx
+	id S1161678AbXEAKTj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161684AbXEAKTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:18:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51390 "EHLO mx1.redhat.com"
+	Tue, 1 May 2007 06:19:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51549 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161681AbXEAKSv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:18:51 -0400
-Subject: [DLM] change lkid format [19/34]
+	id S1161678AbXEAKTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:19:36 -0400
+Subject: GFS2] Fix bz 234168 (ignoring rgrp flags) [20/34]
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
 In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
 References: <1178013376.5462.127.camel@quoit.chygwyn.com>
 Content-Type: text/plain
 Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
 	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
 	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:14:17 +0100
-Message-Id: <1178014457.5462.167.camel@quoit.chygwyn.com>
+Date: Tue, 01 May 2007 11:14:56 +0100
+Message-Id: <1178014497.5462.169.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ce03f12b37c0bd81ad707d3642241cc55c944711 Mon Sep 17 00:00:00 2001
-From: David Teigland <teigland@redhat.com>
-Date: Mon, 2 Apr 2007 12:12:55 -0500
-Subject: [PATCH] [DLM] change lkid format
+>From a43a49066d36612f3bb46653cdb265a89c235eff Mon Sep 17 00:00:00 2001
+From: Steven Whitehouse <swhiteho@redhat.com>
+Date: Mon, 2 Apr 2007 10:48:17 +0100
+Subject: [PATCH] [GFS2] Fix bz 234168 (ignoring rgrp flags)
 
-A lock id is a uint32 and is used as an opaque reference to the lock.  For
-userland apps, the lkid is passed up, through libdlm, as the return value
-from a write() on the dlm device.  This created a problem when the high
-bit was 1, making the lkid look like an error.  This is fixed by changing
-how the lkid is composed.  The low 16 bits identified the hash bucket for
-the lock and the high 16 bits were a per-bucket counter (which eventually
-hit 0x8000 causing the problem).  These are simply swapped around; the
-number of hash table buckets is far below 0x8000, making all lkid's
-positive when viewed as signed.
+Ths following patch makes GFS2 use the rgrp flags properly. Although
+there are also separate flags for both data and metadata as well, I've
+not implemented these as there seems little use for them. On the
+otherhand, the "noalloc" flag is generally useful for future changes we
+might which to make, so this ensures that we interpret it correctly.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
+In addition I fixed the comment above the function which was incorrect.
+
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 9d26b3a..eac54d2 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -580,7 +580,7 @@ static int create_lkb(struct dlm_ls *ls, struct dlm_lkb **lkb_ret)
- 	/* counter can roll over so we must verify lkid is not in use */
+diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
+index 2ce48d4..1727f50 100644
+--- a/fs/gfs2/rgrp.c
++++ b/fs/gfs2/rgrp.c
+@@ -698,8 +698,6 @@ struct gfs2_alloc *gfs2_alloc_get(struct gfs2_inode *ip)
+  * @al: the struct gfs2_alloc structure describing the reservation
+  *
+  * If there's room for the requested blocks to be allocated from the RG:
+- *   Sets the $al_reserved_data field in @al.
+- *   Sets the $al_reserved_meta field in @al.
+  *   Sets the $al_rgd field in @al.
+  *
+  * Returns: 1 on success (it fits), 0 on failure (it doesn't fit)
+@@ -710,6 +708,9 @@ static int try_rgrp_fit(struct gfs2_rgrpd *rgd, struct gfs2_alloc *al)
+ 	struct gfs2_sbd *sdp = rgd->rd_sbd;
+ 	int ret = 0;
  
- 	while (lkid == 0) {
--		lkid = bucket | (ls->ls_lkbtbl[bucket].counter++ << 16);
-+		lkid = (bucket << 16) | ls->ls_lkbtbl[bucket].counter++;
- 
- 		list_for_each_entry(tmp, &ls->ls_lkbtbl[bucket].list,
- 				    lkb_idtbl_list) {
-@@ -601,8 +601,8 @@ static int create_lkb(struct dlm_ls *ls, struct dlm_lkb **lkb_ret)
- 
- static struct dlm_lkb *__find_lkb(struct dlm_ls *ls, uint32_t lkid)
- {
--	uint16_t bucket = lkid & 0xFFFF;
- 	struct dlm_lkb *lkb;
-+	uint16_t bucket = (lkid >> 16);
- 
- 	list_for_each_entry(lkb, &ls->ls_lkbtbl[bucket].list, lkb_idtbl_list) {
- 		if (lkb->lkb_id == lkid)
-@@ -614,7 +614,7 @@ static struct dlm_lkb *__find_lkb(struct dlm_ls *ls, uint32_t lkid)
- static int find_lkb(struct dlm_ls *ls, uint32_t lkid, struct dlm_lkb **lkb_ret)
- {
- 	struct dlm_lkb *lkb;
--	uint16_t bucket = lkid & 0xFFFF;
-+	uint16_t bucket = (lkid >> 16);
- 
- 	if (bucket >= ls->ls_lkbtbl_size)
- 		return -EBADSLT;
-@@ -644,7 +644,7 @@ static void kill_lkb(struct kref *kref)
- 
- static int __put_lkb(struct dlm_ls *ls, struct dlm_lkb *lkb)
- {
--	uint16_t bucket = lkb->lkb_id & 0xFFFF;
-+	uint16_t bucket = (lkb->lkb_id >> 16);
- 
- 	write_lock(&ls->ls_lkbtbl[bucket].lock);
- 	if (kref_put(&lkb->lkb_ref, kill_lkb)) {
++	if (rgd->rd_rg.rg_flags & GFS2_RGF_NOALLOC)
++		return 0;
++
+ 	spin_lock(&sdp->sd_rindex_spin);
+ 	if (rgd->rd_free_clone >= al->al_requested) {
+ 		al->al_rgd = rgd;
 -- 
 1.5.1.2
 
