@@ -1,61 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161787AbXEATIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161794AbXEATIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161787AbXEATIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161789AbXEATIR
+	id S1161794AbXEATIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161790AbXEATIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:08:17 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:16593 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161787AbXEATIP (ORCPT
+	Tue, 1 May 2007 15:08:48 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:38037 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161794AbXEATIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:08:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mCXvUFx8TAFMrqtwbkAVrLKp9A9C+U3lx4XJNERBQT18rgH/NxHLF0YHA6mT6/olDnvfn6Bpg05Sw535PgJtgKr4Ar2Gnx8yxxPB5V46BET0FKkAFPPkQug6/iufzuXh3T6ItjmB7wK95RZZGjD36doGS0utjYW1m9YdPU6KEDk=
-Message-ID: <46379027.7050202@gmail.com>
-Date: Tue, 01 May 2007 23:08:23 +0400
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: ian <spyro@f2s.com>
-CC: Paul Sokolovsky <pmiscml@gmail.com>, kernel-discuss@handhelds.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
-References: <1354376306.20070501080806@gmail.com>	 <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com>	 <46376AD9.3020701@gmail.com> <1178042924.15769.5.camel@wirenth>
-In-Reply-To: <1178042924.15769.5.camel@wirenth>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 15:08:47 -0400
+Date: Tue, 1 May 2007 21:08:36 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070501190607.32350.4822.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] block: Convert to generic boolean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ian wrote:
-> On Tue, 2007-05-01 at 20:29 +0400, Dmitry Krivoschekov wrote:
->> If you used ASIC acronym it would be more appropriate and not so
->> ambiguous. 
->
-> Actually, thats not bad. I'd be ok with that is SoC isnt used.
->
-I'm ok with that too, i.e. very rough definition is:
-SoC (system-on-chip) is  a platform level chip which incorporates processor
-devices (CPU, cache, coprocessors, memory controller etc.), system devices
-(timers, interrupt controllers etc.) and peripheral devices
-(UARTs, LCD controllers, USB controllers etc),
-while ASIC (Application-specific integrated circuit) is also a platform
-level
-chip which incorporates peripheral and system devices but does not include
-processor devices.  ASICs are designed to expand processor functionality,
-it could supplement a normal processor (non-SoC) and also could supplement
-a SoC processor.
+Convert to generic boolean
+
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested but most arch/conf tested failed for other reasons then this
+Diffed against Linus' git-tree.
+
+ ps2esdi.c |    8 ++++----
+ z2ram.c   |    3 ---
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
 
-ASIC-related code (I mean core) forms additional platform layer, so I
-suggest
-adding ASIC helpers to generic platform code i.e. drivers/platform.c, but
-ASIC drivers to drivers/asic/ directory.
-
-
-
-Regards,
-Dmitry
+diff --git a/drivers/block/ps2esdi.c b/drivers/block/ps2esdi.c
+index 688a4fb..96b40bc 100644
+--- a/drivers/block/ps2esdi.c
++++ b/drivers/block/ps2esdi.c
+@@ -94,7 +94,7 @@ static u_int dma_arb_level;		/* DMA arbitration level */
+ 
+ static DECLARE_WAIT_QUEUE_HEAD(ps2esdi_int);
+ 
+-static int no_int_yet;
++static bool no_int_yet;
+ static int ps2esdi_drives;
+ static u_short io_base;
+ static DEFINE_TIMER(esdi_timer, ps2esdi_reset_timer, 0, 0);
+@@ -455,7 +455,7 @@ static void __init ps2esdi_get_device_cfg(void)
+ 	current_int_handler = ps2esdi_geometry_int_handler;
+ 	cmd_blk[0] = CMD_GET_DEV_CONFIG | 0x600;
+ 	cmd_blk[1] = 0;
+-	no_int_yet = TRUE;
++	no_int_yet = true;
+ 	ps2esdi_out_cmd_blk(cmd_blk);
+ 	if (no_int_yet)
+ 		sleep_on(&ps2esdi_int);
+@@ -464,7 +464,7 @@ static void __init ps2esdi_get_device_cfg(void)
+ 		printk("%s: Drive 1\n", DEVICE_NAME);	/*BA */
+ 		cmd_blk[0] = CMD_GET_DEV_CONFIG | (1 << 5) | 0x600;
+ 		cmd_blk[1] = 0;
+-		no_int_yet = TRUE;
++		no_int_yet = true;
+ 		ps2esdi_out_cmd_blk(cmd_blk);
+ 		if (no_int_yet)
+ 			sleep_on(&ps2esdi_int);
+@@ -843,7 +843,7 @@ static void ps2esdi_geometry_int_handler(u_int int_ret_code)
+ 	}
+ 
+ 	wake_up(&ps2esdi_int);
+-	no_int_yet = FALSE;
++	no_int_yet = false;
+ 	outb(CTRL_ENABLE_INTR, ESDI_CONTROL);
+ 
+ }
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index 7cc2685..2abf94c 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -44,9 +44,6 @@
+ extern int m68k_realnum_memory;
+ extern struct mem_info m68k_memory[NUM_MEMINFO];
+ 
+-#define TRUE                  (1)
+-#define FALSE                 (0)
+-
+ #define Z2MINOR_COMBINED      (0)
+ #define Z2MINOR_Z2ONLY        (1)
+ #define Z2MINOR_CHIPONLY      (2)
