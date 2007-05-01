@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbXEAURT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030181AbXEAUTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbXEAURT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXEAURT
+	id S1030181AbXEAUTZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964974AbXEAUTZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:17:19 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:3960 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294AbXEAURS (ORCPT
+	Tue, 1 May 2007 16:19:25 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:14571 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964780AbXEAUTY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:17:18 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org, linux-kernel@vger.kernel.org
-Subject: Re: [ck] 2.6.21-ck1-rc1
-Date: Tue, 1 May 2007 22:17:14 +0200
-User-Agent: KMail/1.9.6
-References: <200705011618.57640.kernel@kolivas.org> <200705012143.38677.Martin@lichtvoll.de> (sfid-20070501_215854_476326_4EDBE198)
-In-Reply-To: <200705012143.38677.Martin@lichtvoll.de>
+	Tue, 1 May 2007 16:19:24 -0400
+Date: Tue, 1 May 2007 21:19:09 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+In-Reply-To: <20070501125559.9ab42896.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+ <20070501125559.9ab42896.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705012217.14395.Martin@lichtvoll.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 01 May 2007 20:19:23.0466 (UTC) FILETIME=[0214F2A0:01C78C2E]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBjbGFtZXRlckBzZ2kuY29tAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag 01 Mai 2007 schrieb Martin Steigerwald:
-> Am Dienstag 01 Mai 2007 schrieb Con Kolivas:
-> > Let's call this a release candidate for 2.6.21-ck1. I've managed to
-> > be well enough for enough time to bang this out.
-> >
-> > http://ck.kolivas.org/patches/pre-releases/2.6.21/2.6.21-ck1-rc1/
+On Tue, 1 May 2007, Andrew Morton wrote:
+> On Tue, 1 May 2007 19:10:29 +0100 (BST)
+> Hugh Dickins <hugh@veritas.com> wrote:
+> 
+> > > Most of the rest of slub.  Will merge it all.
+> > 
+> > Merging slub already?  I'm surprised.
+> 
+> My thinking here is "does slub have a future".
+> I think the answer is "yes",
 
-[...]
+I think I agree with that,
+though it's a judgement I'd leave to you and others.
 
-> Hello Con!
->
-> Works nicely here. Did my usual stress testing... music playback is
-> absolutely smooth.
->
-> I will test it during the next 1-2 days at least.
->
-> Got ridicolous long releasenames now ;-):
-> 2.6.21.1-tp23-sws2-2.2.9.13-ck1-rc1-hotfix-sched-idleprio
-> 2.6.21.1-tp42-sws2-2.2.9.13-ck1-rc1-hotfix-sched-idleprio
->
-> Feels really very responsive. Those other patches seem to add to the
-> responsiveness to sd-0.46 quite well. Can't really tell whether cfs-v7
-> or cfs-v8-rc3 is really a slight bit smoother or not. Subjectively
+> so we're reasonably safe getting it into mainline for the finishing
+> work.  The kernel.org kernel will still default to slab.
+> 
+> Does that sound wrong?
 
-[as I initially thought when comparind sd-0.46 without other ck patches 
-with cfs]
+Yes, to me it does.  If it could be defaulted to on throughout the
+-rcs, on every architecture, then I'd say that's "finishing work";
+and we'd be safe knowing we could go back to slab in a hurry if
+needed.  But it hasn't reached that stage yet, I think.
 
-> seems to be pretty much the same now.
-
-Hmmm, maybe thats the desktop tune patch which sets rr_interval for SD to 
-6 (from the default of 8) making the difference here.
-
-Anyway its very difficult to tell a difference between ck1-rc1 and 
-CFS-v8-rc3 from subjective perception. I am really satisfied with both of 
-them.
-
--- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+Hugh
