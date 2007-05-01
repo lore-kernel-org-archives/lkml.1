@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161678AbXEAKTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161687AbXEAKUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161678AbXEAKTj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161684AbXEAKTi
+	id S1161687AbXEAKUN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161686AbXEAKUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:19:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51549 "EHLO mx1.redhat.com"
+	Tue, 1 May 2007 06:20:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51643 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161678AbXEAKTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:19:36 -0400
-Subject: GFS2] Fix bz 234168 (ignoring rgrp flags) [20/34]
+	id S1161680AbXEAKUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:20:09 -0400
+Subject: [DLM] Remove redundant assignment [21/34]
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Patrick Caulfield <pcaulfie@redhat.com>
 In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
 References: <1178013376.5462.127.camel@quoit.chygwyn.com>
 Content-Type: text/plain
 Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
 	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
 	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:14:56 +0100
-Message-Id: <1178014497.5462.169.camel@quoit.chygwyn.com>
+Date: Tue, 01 May 2007 11:15:35 +0100
+Message-Id: <1178014535.5462.171.camel@quoit.chygwyn.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a43a49066d36612f3bb46653cdb265a89c235eff Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Mon, 2 Apr 2007 10:48:17 +0100
-Subject: [PATCH] [GFS2] Fix bz 234168 (ignoring rgrp flags)
+>From fc7c44f03d95f20b5446d06f5bb9605cddd53203 Mon Sep 17 00:00:00 2001
+From: Patrick Caulfield <pcaulfie@redhat.com>
+Date: Tue, 10 Apr 2007 09:40:19 +0100
+Subject: [PATCH] [DLM] Remove redundant assignment
 
-Ths following patch makes GFS2 use the rgrp flags properly. Although
-there are also separate flags for both data and metadata as well, I've
-not implemented these as there seems little use for them. On the
-otherhand, the "noalloc" flag is generally useful for future changes we
-might which to make, so this ensures that we interpret it correctly.
+This patch removes a redundant (and incorrect) assignment from compat_output
 
-In addition I fixed the comment above the function which was incorrect.
-
+Signed-Off-By: Patrick Caulfield <pcaulfie@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 
-diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
-index 2ce48d4..1727f50 100644
---- a/fs/gfs2/rgrp.c
-+++ b/fs/gfs2/rgrp.c
-@@ -698,8 +698,6 @@ struct gfs2_alloc *gfs2_alloc_get(struct gfs2_inode *ip)
-  * @al: the struct gfs2_alloc structure describing the reservation
-  *
-  * If there's room for the requested blocks to be allocated from the RG:
-- *   Sets the $al_reserved_data field in @al.
-- *   Sets the $al_reserved_meta field in @al.
-  *   Sets the $al_rgd field in @al.
-  *
-  * Returns: 1 on success (it fits), 0 on failure (it doesn't fit)
-@@ -710,6 +708,9 @@ static int try_rgrp_fit(struct gfs2_rgrpd *rgd, struct gfs2_alloc *al)
- 	struct gfs2_sbd *sdp = rgd->rd_sbd;
- 	int ret = 0;
- 
-+	if (rgd->rd_rg.rg_flags & GFS2_RGF_NOALLOC)
-+		return 0;
-+
- 	spin_lock(&sdp->sd_rindex_spin);
- 	if (rgd->rd_free_clone >= al->al_requested) {
- 		al->al_rgd = rgd;
+diff --git a/fs/dlm/user.c b/fs/dlm/user.c
+index 3e746a6..b0201ec 100644
+--- a/fs/dlm/user.c
++++ b/fs/dlm/user.c
+@@ -115,8 +115,6 @@ static void compat_input(struct dlm_write_request *kb,
+ static void compat_output(struct dlm_lock_result *res,
+ 			  struct dlm_lock_result32 *res32)
+ {
+-	res32->length = res->length - (sizeof(struct dlm_lock_result) -
+-				       sizeof(struct dlm_lock_result32));
+ 	res32->user_astaddr = (__u32)(long)res->user_astaddr;
+ 	res32->user_astparam = (__u32)(long)res->user_astparam;
+ 	res32->user_lksb = (__u32)(long)res->user_lksb;
 -- 
 1.5.1.2
 
