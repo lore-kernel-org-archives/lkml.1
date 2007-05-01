@@ -1,78 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754663AbXEALrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXEALss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754663AbXEALrO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 07:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbXEALrO
+	id S1754717AbXEALss (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 07:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXEALsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 07:47:14 -0400
-Received: from sullivan.realtime.net ([205.238.132.226]:4707 "EHLO
-	sullivan.realtime.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXEALrM (ORCPT
+	Tue, 1 May 2007 07:48:47 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:20356 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754718AbXEALsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 07:47:12 -0400
-X-Greylist: delayed 1372 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 07:47:12 EDT
-Date: Tue, 1 May 2007 06:24:14 -0500 (CDT)
-Message-Id: <200705011124.l41BOEG4007662@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Subject: [PATCH] e100 rx: or s and el bits
-To: Scott Feldman <sfeldma@pobox.com>, Jeff Garzik <jeff@garzik.org>
-Cc: <e1000-devel@lists.sourceforge.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Auke Kok <auke-jan.h.kok@intel.com>
+	Tue, 1 May 2007 07:48:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=P+QXG5cFQXnl7k6RkadHrFiy0wRnshlTQiKaeHsjGcjFrCzDWQrA8b+RZ6A/yOv1Pvqi1vhqDCDiUr2Y5dYvPXIZK9H9Bzhyw1yVrBiJ8mIRTHWYzeDZCAdEqBcO7fGlEI7UH06K0WGGBcjGRf8+BOiKamjJEWIjEqbmxXfCDxs=  ;
+X-YMail-OSG: bupgmVYVM1l1PXPvo_br6n4tSp.VTMy_xCsc1cV.EB1YtS3_2a9tKuzQeQ3ZeP6ReZopRUWO.A--
+Message-ID: <463728EB.8030308@yahoo.com.au>
+Date: Tue, 01 May 2007 21:47:55 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Rohit Seth <rohitseth@google.com>
+CC: "'Hugh Dickins'" <hugh@veritas.com>,
+       "'Mike Stroyan'" <mike.stroyan@hp.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+References: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
+In-Reply-To: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit d52df4a35af569071fda3f4eb08e47cc7023f094, the description
-talks about emulating another driver by setting addtional bits and
-the being unable to test when submitted.  Seeing the & operator to
-set more bits made me suspicious, and indeed the bits are defined
-in positive logic:
+Rohit Seth wrote:
+> Hi Nick, 
+> 
+> -----Original Message-----
+> From: Nick Piggin [mailto:nickpiggin@yahoo.com.au] 
+> Sent: Friday, April 27, 2007 11:03 PM
+> To: Hugh Dickins
+> Cc: rohitseth@google.com; Mike Stroyan; Andrew Morton; Luck, Tony;
+> linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+> 
+> Hugh Dickins wrote:
+> 
+>>On Sat, 28 Apr 2007, Nick Piggin wrote:
+>>
+>>
+>>>OIC, you need a virtual address to evict the icache, so you can't 
+>>>flush at flush_dcache time? Or does ia64 have an instruction to flush 
+>>>the whole icache? (it would be worth testing, to see how much 
+>>>performance suffers).
+>>
+>>
+>>I'm puzzled by that remark: the ia64 flush_icache_range always has a 
+>>virtual address, it uses the kernel virtual address; it takes no 
+>>interest in whether there's a user virtual address.
+> 
+> 
+>>I _think_ what it is doing is actually flushing dcache lines dirtied 
+>>via the kernel virtual address (yes, I think flush_icache
+>>in lazy_mmu_prot_update is actually just flushing the dcache, but 
+>>I could be wrong? [*]).
+> 
+> 
+> It is invalidating any entries (containing same physical address) in both I
+> and D caches.  Any dirty lines in D cache are written back to memory before
+> getting invalidated (ofcourse).
 
-	cb_s      = 0x4000,
-	cb_el     = 0x8000,
-
-So anding those together would be 0.   I'm guessing they should
-be or'd, but don't have hardware here to test, much like the
-committed patch.  In fact, I'll let someone else do the compile
-test too.  I'll update the comment.
-
-(It looks like the end of list and s bits would not be set
-in the template nor cleared when linking in recieve skbs, so
-as long as the kernel can keep up with the 100Mb card we 
-wouldn't see the adapter go off the linked list, possibly
-explaining any successful use of this patch written against
-2.6.14).
-
-Signed-off-by: Milton Miller <miltonm@bga.com>
+OK. (should it be issuing both fc and fc.i to be robust in case a
+new implementation doesn't flush the dcache with fc.i?)
 
 
---- linux-2.6/drivers/net/e100.c.orig	2007-05-01 05:19:17.000000000 -0500
-+++ linux-2.6/drivers/net/e100.c	2007-05-01 05:22:14.000000000 -0500
-@@ -947,7 +947,7 @@ static void e100_get_defaults(struct nic
- 		((nic->mac >= mac_82558_D101_A4) ? cb_cid : cb_i));
- 
- 	/* Template for a freshly allocated RFD */
--	nic->blank_rfd.command = cpu_to_le16(cb_el & cb_s);
-+	nic->blank_rfd.command = cpu_to_le16(cb_el | cb_s);
- 	nic->blank_rfd.rbd = 0xFFFFFFFF;
- 	nic->blank_rfd.size = cpu_to_le16(VLAN_ETH_FRAME_LEN);
- 
-@@ -1769,13 +1769,13 @@ static int e100_rx_alloc_skb(struct nic 
- 	}
- 
- 	/* Link the RFD to end of RFA by linking previous RFD to
--	 * this one, and clearing EL bit of previous.  */
-+	 * this one, and clearing EL and S bit of previous.  */
- 	if(rx->prev->skb) {
- 		struct rfd *prev_rfd = (struct rfd *)rx->prev->skb->data;
- 		put_unaligned(cpu_to_le32(rx->dma_addr),
- 			(u32 *)&prev_rfd->link);
- 		wmb();
--		prev_rfd->command &= ~cpu_to_le16(cb_el & cb_s);
-+		prev_rfd->command &= ~cpu_to_le16(cb_el | cb_s);
- 		pci_dma_sync_single_for_device(nic->pdev, rx->prev->dma_addr,
- 			sizeof(struct rfd), PCI_DMA_TODEVICE);
- 	}
+>>There are supposedly no icache lines at that point[**]:
+> 
+> 
+> For this bug to trigger there has to be a (stale) entry in icache containing
+> the old contents of a page that just got updated by kernel as explicit
+> copying of data (DMAs are coherent on ia64, meaning if a device were to
+> write to memory then architecture guarnatees that both I and D caches are
+> invalidated).
+
+So if we have a dirty dcache line for a given physical address,
+it will _always_ be the case that a subsequent icache load will
+find that dirty data?
+
+... thanks for bearing with me ;)
+
+-- 
+SUSE Labs, Novell Inc.
