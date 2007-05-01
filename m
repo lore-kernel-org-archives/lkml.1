@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbXEAQii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754235AbXEAQj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbXEAQii (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbXEAQii
+	id S1754235AbXEAQj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 12:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbXEAQj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:38:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:54912 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754755AbXEAQih (ORCPT
+	Tue, 1 May 2007 12:39:29 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39465 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754235AbXEAQj2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:38:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Ghwt+Mcai3JCKRO3xXscHLlY3kasv6FDcxv7T0MqTil6oXAwROwQLYocXYXw3WeyeyVGqeXFbZ4LCRqWHIhc8v2Ew/wcBg7szRURY9QSXYz72bKcCKl55x52fL0Bpzje4iklez4Ux8A9w0inNAsP5Kl5wUvf8aUs6Gy2miWRtEw=
-Message-ID: <46376D14.9060803@gmail.com>
-Date: Tue, 01 May 2007 20:38:44 +0400
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
-MIME-Version: 1.0
-To: ian <spyro@f2s.com>
-CC: Paul Sokolovsky <pmiscml@gmail.com>, kernel-discuss@handhelds.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
-References: <1354376306.20070501080806@gmail.com>	 <46374645.2030900@gmail.com> <1178034935.15769.3.camel@wirenth>
-In-Reply-To: <1178034935.15769.3.camel@wirenth>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 May 2007 12:39:28 -0400
+Date: Tue, 1 May 2007 17:40:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] to something appropriate (was Re: 2.6.22 -mm merge
+ plans)
+Message-ID: <20070501174033.2046f289@the-village.bc.nu>
+In-Reply-To: <46376748.6020408@redhat.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<46368062.6000100@garzik.org>
+	<20070430170919.45e4b42b.akpm@linux-foundation.org>
+	<463688AD.1050903@garzik.org>
+	<20070501004036.GS2819@sequoia.sous-sol.org>
+	<46368DA5.7070003@garzik.org>
+	<20070501045806.GA3697@kroah.com>
+	<46376748.6020408@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ian wrote:
-> On Tue, 2007-05-01 at 17:53 +0400, Dmitry Krivoschekov wrote:
->> Hi Paul,
->
->> I think your referring to the term "SoC (system-on-chip)" is confusing
->> (at least for me). You rather consider companion chips than SoCs.
->
-> A 'System' does not imply a CPU. A 'Computer System' would but the word
-> system itself doesnt even imply electronic.
->
->
-A "system" means something complete. Yes I agree it doesn't imply a CPU,
-but acronym SoC traditionally imply something different than you propose.
-Adding another meaning for SoC will confuse people because they will have
-to distinguish if it is a processor or just a slave IC.
+> > But distros can easily add the device id to their kernel if needed, it
+> > isn't something that the -stable tree shoud be accepting.  Otherwise, we
+> > will be swamped with those types of patches...
+> > 
+> 
+> Oh sure, leave the distros swamped with them instead. :)
+> 
+> And they all have to do it separately, meaning they don't stay in sync
+> and they duplicate each other's work...
 
-
-Thanks,
-Dmitry
-
-
-Thanks,
-Dmitry
+Well they *don't* have to work that separately. They could set up some
+shared tree which would look suspiciously like what Greg is doing but
+with the ID updates.... ;)
