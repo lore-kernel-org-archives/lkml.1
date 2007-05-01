@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbXEAR1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbXEARap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbXEAR1G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 13:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754996AbXEAR1G
+	id S1755032AbXEARap (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbXEARap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 13:27:06 -0400
-Received: from mga06.intel.com ([134.134.136.21]:4103 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754951AbXEAR1E (ORCPT
+	Tue, 1 May 2007 13:30:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:16059 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755032AbXEARao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 13:27:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,475,1170662400"; 
-   d="scan'208";a="237366965"
-Date: Tue, 1 May 2007 10:26:46 -0700
-From: Valerie Henson <val_henson@linux.intel.com>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: Amit Gud <gud@ksu.edu>, Nikita Danilov <nikita@clusterfs.com>,
-       David Lang <david.lang@digitalinsight.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       riel@surriel.com, zab@zabbo.net, arjan@infradead.org,
-       suparna@in.ibm.com, brandon@ifup.org, karunasagark@gmail.com
-Subject: Re: [RFC][PATCH] ChunkFS: fs fission for faster fsck
-Message-ID: <20070501172643.GB29848@nifty>
-References: <Pine.LNX.4.63.0704241123200.7701@qynat.qvtvafvgr.pbz> <17966.23512.363955.141489@gargle.gargle.HOWL> <Pine.LNX.4.63.0704241222110.7701@qynat.qvtvafvgr.pbz> <17967.15531.450627.972572@gargle.gargle.HOWL> <20070425224710.GB16129@nifty> <20070426141455.GA6155@c2.user-mode-linux.org> <4630CAEC.2050909@ksu.edu> <20070426160504.GA7970@c2.user-mode-linux.org> <20070427045824.GB20286@nifty> <20070427150647.GA6019@c2.user-mode-linux.org>
+	Tue, 1 May 2007 13:30:44 -0400
+Date: Tue, 1 May 2007 10:29:37 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+Message-ID: <20070501172937.GQ26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+References: <20070404172931.GM2986@holomorphy.com> <20070404194829.1a93d8fd.dada1@cosmosbay.com> <20070404181050.GN2986@holomorphy.com> <20070409165315.4704021f.akpm@linux-foundation.org> <20070410004201.GA2986@holomorphy.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070427150647.GA6019@c2.user-mode-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070410004201.GA2986@holomorphy.com>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Apr 27, 2007 at 11:06:47AM -0400, Jeff Dike wrote:
-> On Thu, Apr 26, 2007 at 09:58:25PM -0700, Valerie Henson wrote:
-> > Here's an example, spelled out:
-> > 
-> > Allocate file 1 in chunk A.
-> > Grow file 1.
-> > Chunk A fills up.
-> > Allocate continuation inode for file 1 in chunk B.
-> > Chunk A gets some free space.
-> > Chunk B fills up.
-> > Pick chunk A for allocating next block of file 1.
-> > Try to look up a continuation inode for file 1 in chunk A.
-> > Continuation inode for file 1 found in chunk A!
-> > Attach newly allocated block to existing inode for file 1 in chunk A.
-> 
-> So far, so good (and the slides are helpful, tx!).  What happens when
-> file 1 keeps growing and chunk A fills up (and chunk B is still full)?
-> Can the same continuation inode also point at chunk C, where the file
-> is going to grow to?
+On Mon, Apr 09, 2007 at 04:53:15PM -0700, Andrew Morton wrote:
+>> Seems sane.  Could we please get it tested and get a full description in
+>> place?  Something which provides enough detail for the manpage maintainers.
+>> Also, a quick comparison between Linux's RUSAGE_THREAD and $other-os's
+>> implementations would reduce the possibility of silly, cast-in-stone
+>> incompatabilities.
 
-You allocate a new continuation inode in chunk C.  The rule is that
-only inodes inside a chunk can point to blocks inside the chunk, so
-you need an inode in C if you want to allocate blocks from C.
+On Mon, Apr 09, 2007 at 05:42:01PM -0700, William Lee Irwin III wrote:
+> The latter is the more serious of the two. I'll go about investigating
+> that as the primary task here. Testing and a more verbose patch
+> description are clearly very little work.
+> General maintenance-relevant commentary: This patch arose from an
+> observation of a lacuna in the API. There are no bugs or apps broken
+> awaiting this as a fix, so it's not needed by 2.6.22 or otherwise
+> urgently. My use for it is report generation in VM (and possibly other)
+> testcases. The ack-in-concept is good enough for me to go about
+> sweeping up the OS/standards compatibility, testing, and documentation
+> issues in the near future prior to resubmission.
 
--VAL
+A sort of note for me to refer back to when I get the rest of the way
+here. AIX does this with getrusage(RUSAGE_THREAD,...), Solaris with
+getrusage(RUSAGE_LWP,...), Tru64 and HP-UX seem to lack any obvious
+way to do this at all, likewise for MacOS X and the opensource BSD's.
+
+
+-- wli
