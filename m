@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031142AbXEAI5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031600AbXEAJAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031142AbXEAI5z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 04:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031601AbXEAI5z
+	id S1031600AbXEAJAi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 05:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031602AbXEAJAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 04:57:55 -0400
-Received: from 1wt.eu ([62.212.114.60]:2439 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031142AbXEAI5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 04:57:54 -0400
-Date: Tue, 1 May 2007 10:57:10 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
-Subject: Re: pcmcia ioctl removal
-Message-ID: <20070501085710.GA13488@1wt.eu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070501084623.GB14364@infradead.org>
-User-Agent: Mutt/1.5.11
+	Tue, 1 May 2007 05:00:38 -0400
+Received: from hoefnix.telenet-ops.be ([195.130.132.54]:33460 "EHLO
+	hoefnix.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031600AbXEAJAg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 05:00:36 -0400
+Date: Tue, 1 May 2007 11:00:10 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: condingstyle, was Re: utrace comments
+In-Reply-To: <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705011058330.27246@anakin>
+References: <20061127165138.GA2991@lst.de> <20070430040213.BF9901801A4@magilla.sf.frob.com>
+ <20070430091121.GC31397@infradead.org> <20070430100917.439ebfc8.akpm@linux-foundation.org>
+ <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
-
-On Tue, May 01, 2007 at 09:46:23AM +0100, Christoph Hellwig wrote:
-> >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
+On Tue, 1 May 2007, Satyam Sharma wrote:
+> Actually, the latter style (one condition per line and the && or ||
+> operators appearing _before_ the conditions in subsequent lines)
+> is quite popular for multi-line compound conditions (well, I've seen this
+> in kernel/workqueue.c, kernel/stop_machine.c, etc at least, and also in
+> Linus' code, if I'm not mistaken). We also align subsequent lines to the
+> column of the condition belonging to the same "logical level" on the
+> previous line using _spaces_ (note that this is alignment, not indentation,
+> using spaces). The rationale is to make the operator prominent and thus make
+> the structure of a complex multi-line compound conditional expression more
+> readable and obvious at first glance itself. For example, consider:
 > 
-> ...
+> 	if (veryverylengthycondition1 &&
+> 		smallcond2 &&
+> 		(conditionnumber3a ||
+> 		condition3b)) {
+> 		...
+> 	}
 > 
-> > Dominik is busy.  Will probably re-review and send these direct to Linus.
+> versus
 > 
-> The patch above is the removal of cardmgr support.  While I'd love to
-> see this cruft gone it definitively needs maintainer judgement on whether
-> they time has come that no one relies on cardmgr anymore.
+> 	if (veryverylengthycondition1
+> 	    && smallcond2
+> 	    && (conditionnumber3a
+> 	        || condition3b)) {
+> 		...
+> 	}
+> 
+> ?
+> 
+> Latter wins, doesn't it?
 
-Well, I've not followed evolutions in this area for a long time. Here's
-what I get on my notebook :
+... because you forgot to align subsequent lines to the column of the
+condition belonging to the same "logical level" on the previous line.
 
-willy@wtap:~$ uname -r
-2.6.20-wt3-wtap
-willy@wtap:~$ ps auxw|grep card   
-root      1216  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-root      1221  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-root      1244  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-root      1251  0.0  0.0     0    0 ?        Ss   Apr28   0:00 /sbin/cardmgr
+Consider this:
 
-What's the new recommended way of using PCMCIA cards when cardmgr is gone ?
+	if (veryverylengthycondition1 &&
+	    smallcond2 &&
+	    (conditionnumber3a ||
+	     condition3b)) {
+		...
+	}
 
-Thanks,
-Willy
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
