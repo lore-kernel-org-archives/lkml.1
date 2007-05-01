@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161792AbXEATKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161801AbXEATLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161792AbXEATKp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161795AbXEATKp
+	id S1161801AbXEATLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161800AbXEATLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:10:45 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:32894 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161792AbXEATKo (ORCPT
+	Tue, 1 May 2007 15:11:17 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4395 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161802AbXEATLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:10:44 -0400
-Message-ID: <463790A6.50003@interia.pl>
-Date: Tue, 01 May 2007 21:10:30 +0200
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Natsemi DP83815 driver spaming
-References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org> <20070501084639.GA528@sirena.org.uk> <46371590.4090004@interia.pl> <20070501180830.GA31630@sirena.org.uk>
-In-Reply-To: <20070501180830.GA31630@sirena.org.uk>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-EMID: 2c4baacc
+	Tue, 1 May 2007 15:11:16 -0400
+Date: Tue, 1 May 2007 20:10:56 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
+Subject: Re: pcmcia ioctl removal
+Message-ID: <20070501191056.GC19872@flint.arm.linux.org.uk>
+Mail-Followup-To: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-pcmcia@lists.infradead.org
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org> <Pine.LNX.4.64.0705010514300.9162@localhost.localdomain> <Pine.LNX.4.61.0705011202510.18504@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705011202510.18504@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> eth0: Media selection timer tick.
->> eth0: possible phy reset: re-initializing
+On Tue, May 01, 2007 at 12:12:36PM +0200, Jan Engelhardt wrote:
+> init/obsolete.c:
+> static __init int obsolete_init(void)
+> {
+> 	printk("\e[1;31m""
 > 
-> This is why the reset is being triggered - it's a workaround for a hardware
-> bug which checks to make sure the hardware is in the state that the
-> kernel thinks it is is going off.  The code has this explanatory comment:
+> The following stuff is gonna get removed \e[5;37m SOON: \e[0m
+> 	- cardmgr
+> 	- foobar
+> 	- bweebol
 > 
->  * 2) check for sudden death of the NIC:
->  *    It seems that a reference set for this chip went out with incorrect info,
->  *    and there exist boards that aren't quite right.  An unexpected voltage
->  *    drop can cause the PHY to get itself in a weird state (basically reset).
->  *    NOTE: this only seems to affect revC chips.
+> ");
+> 	schedule_timeout(3 * HZ);
+> 	return;
+> }
 
-Yes. I have revision C chip.
- 
-> I'd suggest checking your power supply as a first step.
+The kernel console isn't VT102 compatible.  It doesn't understand any
+escape codes, at all.  Neither does sysklogd.  So the above will just
+end up as rubbish on your console.
 
-5,25V when not connected. 5,04V when connected to Wyse. I don't have access to 
-osciloscope.
-I will check if this code is nedded. If it is then I will try to get new power 
-supply.
- 
-> [BTW, as Andrew said please don't drop people from the CC.]
-OK. Will not happen again.
-
-Rafa³
-
-
-
-----------------------------------------------------------------------
-Kasia Cichopek eksponuje biust  
->>> http://link.interia.pl/f1a6f
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
