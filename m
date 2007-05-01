@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbXEAPBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbXEAPBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbXEAPBE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbXEAPBB
+	id S1754098AbXEAPBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754149AbXEAPBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:01:01 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:40306
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753968AbXEAPBA (ORCPT
+	Tue, 1 May 2007 11:01:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41608 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754098AbXEAPBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:01:00 -0400
-Message-ID: <46375664.8030701@roinet.com>
-Date: Tue, 01 May 2007 11:01:56 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-CC: Scott Feldman <sfeldma@pobox.com>, Jeff Garzik <jeff@garzik.org>,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH] e100 rx: or s and el bits
-References: <200705011124.l41BOEG4007662@sullivan.realtime.net>
-In-Reply-To: <200705011124.l41BOEG4007662@sullivan.realtime.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 11:01:15 -0400
+Subject: Re: DST/BT878 module customization (.. was: Critical points about
+	...)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org,
+       Manu Abraham <abraham.manu@gmail.com>
+In-Reply-To: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 01 May 2007 11:55:33 -0300
+Message-Id: <1178031333.3958.63.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Milton Miller wrote:
-> In commit d52df4a35af569071fda3f4eb08e47cc7023f094, the description
-> talks about emulating another driver by setting addtional bits and
-> the being unable to test when submitted.  Seeing the & operator to
-> set more bits made me suspicious, and indeed the bits are defined
-> in positive logic:
+Hi Markus,
+
+Em Seg, 2007-04-30 às 23:17 +0200, Markus Rechberger escreveu:
+> Hi,
 > 
-> 	cb_s      = 0x4000,
-> 	cb_el     = 0x8000,
+> Trent Piepho wrote another patch for it, it just completes Uwe's patch
+> in the end.
 > 
-> So anding those together would be 0.   I'm guessing they should
-> be or'd, but don't have hardware here to test, much like the
-> committed patch.  In fact, I'll let someone else do the compile
-> test too.  I'll update the comment.
-> 
+> http://linuxtv.org/hg/~tap/dst-new?cmd=changeset;node=bbdd2b53cd5c;style=gitweb
 
-I wonder if this worked for me because the hardware also spun on the 
-link field being NULL?  Since the RU base is also set to 0, the 
-calculated physical address would be 0 as well.  I would imagine if the 
-hardware tried to read/write to very low addresses across PCI, there 
-would be issues.  I will retest with a small receive pool to try to hit 
-the problem.
+The above patch plus the other on
+http://linuxtv.org/hg/~tap/dst-new?cmd=changeset;node=32fb55ac9501;style=gitweb
 
-It seems to apply to a pretty recent git pull from linus's tree.  I 
-manually merged this into the 2.6.18.4 kernel we are using.  With the 
-original in kernel driver (just EL bit, no S bit), I had two tests that 
-would always end in horrible memory corruption on a PXA255 based system. 
-  One is a 12 hour bidirectional TCP test using iperf with the ethernet 
-port sending packets to a wireless card and vice versa.  The other is a 
-similar configuration running a 12 hour UDP test sending 20 
-megabits/second in each direction.  Even through the original S-bit 
-patch seems broken, we have had days of continuous traffic through it 
-without issue where previously we could never go more than 6 hours.
+Implements properly the Uwe's ide. 
 
-I will let folks know how it goes.  In the UDP test, the ethernet side 
-often gets ahead of the available buffers due to CPU and PCI usage by 
-the wireless card and its driver.
+However, I did a test here applying both patches, and de-selecting dst
+drivers.
 
-I will also run these tests with the new patch and with a smaller 
-receive pool (default is 256) to make the pool run out more often.
+With this configuration, dvb-bt8xx hangs during initialization,
+generating an OOPS, if you have a board with DST (modprobe dvb-bt8xx
+never returns).
 
+$ ps ax|grep modprobe
+ 2769 pts/0    S      0:00 modprobe dvb_bt8xx
+ 2779 pts/0    S+     0:00 grep --color modprobe
 
--Ack
+$ dmesg
+DVB: registering new adapter (bttv0).
+DVB: Unable to find symbol dst_attach()
+Unable to handle kernel NULL pointer dereference at 00000000000002f0 RIP:
+<ffffffff8825f11b>{:dvb_bt8xx:dvb_bt8xx_probe+3195}
+PGD 7cfba067 PUD 7cfc5067 PMD 0
+Oops: 0000 [1] SMP
+CPU 0
+Modules linked in: dvb_bt8xx dvb_core cx8800 cx88xx bt878 usbhid dvb_pll tuner bttv video_buf firmware_class ir_common i2c_algo_bit btcx_risc tveeprom i2c_core pcspkr sn9c102 compat_ioctl32 videodev v4l1_compat v4l2_common forcedeth kqemu joydev analog gameport ohci1394 ieee1394 ehci_hcd ohci_hcd usbcore reiserfs sd_mod sata_nv libata scsi_mod
+Pid: 1286, comm: modprobe Tainted: P      2.6.17.4 #1
+RIP: 0010:[<ffffffff8825f11b>] <ffffffff8825f11b>{:dvb_bt8xx:dvb_bt8xx_probe+3195}
+RSP: 0018:ffff81007c239e38  EFLAGS: 00010296
+RAX: 000000000000002b RBX: ffff81007c05a800 RCX: 0000000000000003
+RDX: 0000000000000000 RSI: 0000000000000292 RDI: ffffffff803905bc
+RBP: 0000000000000000 R08: 0000000000004c72 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff81007c190000
+R13: ffff81007c05a8d0 R14: ffff81007c05ac98 R15: ffff81007c05abc8
+FS:  00002b8b39ddf6f0(0000) GS:ffffffff80476000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00000000000002f0 CR3: 000000007cfc2000 CR4: 00000000000006e0
+Process modprobe (pid: 1286, threadinfo ffff81007c238000, task ffff81007dfd4960)
+Stack: ffff81007c05acb0 ffff81007c05a870 000000717c1e31c0 ffff81007c190198
+       ffff81007c190000 ffffffff88261940 ffffffff88261940 0000000000000000
+       0000000000518130 ffffffff8026ce95
+Call Trace: <ffffffff8026ce95>{driver_probe_device+101}
+       <ffffffff8026d00a>{__driver_attach+122} <ffffffff8026cf90>{__driver_attach+0}
+       <ffffffff8026c6f9>{bus_for_each_dev+73} <ffffffff8026c2e8>{bus_add_driver+136}
+       <ffffffff80152977>{sys_init_module+199} <ffffffff80109d2a>{system_call+126}
+
+Code: f6 04 25 f0 02 00 00 20 0f 84 01 ff ff ff e9 7d fd ff ff 66
+RIP <ffffffff8825f11b>{:dvb_bt8xx:dvb_bt8xx_probe+3195} RSP <ffff81007c239e38>
+CR2: 00000000000002f0
+
+So, those patches aren't enough to fix the issue.
+
+Cheers,
+Mauro
+
