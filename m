@@ -1,561 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031651AbXEAKGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031646AbXEAKGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031651AbXEAKGl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031648AbXEAKGl
+	id S1031646AbXEAKGj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031651AbXEAKGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:06:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48644 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031650AbXEAKGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:06:38 -0400
-Subject: [GFS2] Fix bz 224480 and cleanup glock demotion code [5/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:02:04 +0100
-Message-Id: <1178013724.5462.136.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 1 May 2007 06:06:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:45788 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031648AbXEAKGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:06:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DLjkzFb2za6Y1BJLkZFm+99YJdylP1zPjVbtw8T2qAVTAMK8mqNJUiebYVC1j41Xlzhoqoy3G3B92vqaDlpNjCF3jJVq+Lf/NzdmLb4LWfVWGQ17GQkITlGfkyk+9kB493O964BwVVzrZiuJN1BDvyYfIebZIVE0KY4KJpRq7YI=
+Message-ID: <46371128.4060101@gmail.com>
+Date: Tue, 01 May 2007 12:06:32 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: stable@kernel.org
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-mm1: many processes end up in D state
+References: <46360DA7.6040003@gmail.com>
+In-Reply-To: <46360DA7.6040003@gmail.com>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3b8249f6178cb2b68b9d683587797270125cc06a Mon Sep 17 00:00:00 2001
-From: Steven Whitehouse <swhiteho@redhat.com>
-Date: Fri, 16 Mar 2007 09:40:31 +0000
-Subject: [PATCH] [GFS2] Fix bz 224480 and cleanup glock demotion code
+Cc: stable@kernel.org
 
-This patch prevents the printing of a warning message in cases where
-the fs is functioning normally by handing off responsibility for
-unlinked, but still open inodes, to another node for eventual deallocation.
-Also, there is now an improved system for ensuring that such requests
-to other nodes do not get lost. The callback on the iopen lock is
-only ever called when i_nlink == 0 and when a node is unable to deallocate
-it due to it still being in use on another node. When a node receives
-the callback therefore, it knows that i_nlink must be zero, so we mark
-it as such (in gfs2_drop_inode) in order that it will then attempt
-deallocation of the inode itself.
+Jiri Slaby napsal(a):
+> Hi,
+> 
+> I have a problem with higher disk loads (e.g. running git-log or yum update).
+> Many processes end up in D state and system is unusable -- I'm not able to run
+> anything but smooth mouse moving when this happens.
+> 
+> If I wait for a 20-30sec it becomes usable. This happens in 2.6.21-rc7-mm2 and
+> also in 2007-04-28-05-06 broken-out snapshot. I think 2.6.21-rc6-mm1 worked
+> fine, but I'm uncertain. If it is important, let me know to re-test.
+> 
+> sysrq-t:
+> 
+> yum           D 0000004C     0  2976   2955 (NOTLB)
+>        c455bd00 00200082 8c68ea9e 0000004c 00000000 00000000 c455bcdc c455bc9c
+>        c455bc9c c2d6a580 8c68ea9e 0000004c c455bcc0 c2d6a694 c1809980 00000000
+>        c455bcd0 c4640c80 000036a0 00000001 c455bcf0 c02a7132 c3682164 00001cde
+> Call Trace:
+>  [<c037834c>] io_schedule+0x21/0x2e
+>  [<c014d505>] sync_page+0x38/0x43
+>  [<c0378581>] __wait_on_bit_lock+0x40/0x63
+>  [<c014d4b6>] __lock_page+0x54/0x5c
+>  [<c014da81>] do_generic_mapping_read+0x1dc/0x57e
+>  [<c014fc84>] generic_file_aio_read+0xc9/0x1b5
+>  [<c016c31c>] do_sync_read+0xd0/0x106
+>  [<c016cada>] vfs_read+0x89/0x11d
+>  [<c016d02c>] sys_pread64+0x64/0x68
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<47176012>] 0x47176012
+>  =======================
+> xterm         S 00000051     0  2980      1 (NOTLB)
+>        c4678ae0 00000082 b2fbf0ce 00000051 00000000 00000000 00000000 00000000
+>        c4678b30 c469d540 b2fbf0ce 00000051 c4678ab0 c469d654 c1813980 00000001
+>        c4678ad0 c47f0e40 c4678b00 00000286 c4678ae0 c012c077 00000001 00003286
+> Call Trace:
+>  [<c03784ad>] schedule_timeout+0x44/0xa4
+>  [<c0177ee3>] do_select+0x46d/0x55b
+>  [<c017816f>] core_sys_select+0x19e/0x2c0
+>  [<c01786f3>] sys_select+0xd3/0x18d
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<47180f98>] 0x47180f98
+>  =======================
+> bash          S 0000004A     0  2982   2980 (NOTLB)
+>        c50b3e80 00000086 ccf4cc7e 0000004a 00000000 c021bed9 00000000 c45c0030
+>        c50b3e30 c45c0030 ccf4cc7e 0000004a c50b3e50 c45c0144 c1809980 00000000
+>        c1809e44 c4517900 00000000 000000b3 c50b3e90 c014f841 c477cb40 c2d79000
+> Call Trace:
+>  [<c03784d3>] schedule_timeout+0x6a/0xa4
+>  [<c0221960>] read_chan+0x1b9/0x5b9
+>  [<c021e48f>] tty_read+0x75/0xaa
+>  [<c016cada>] vfs_read+0x89/0x11d
+>  [<c016cf3d>] sys_read+0x3d/0x64
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<4717883e>] 0x4717883e
+>  =======================
+> metacity      S 00000050     0  3005   2429 (NOTLB)
+>        c2fd5bb0 00000086 5205656d 00000050 00000000 00000000 00000000 c441c51c
+>        00000246 c45c0540 5205656d 00000050 c2fd5b80 c45c0654 c1809980 00000000
+>        c1813e44 c27f4900 00002cb8 00000246 c2fd5ba0 c0135a80 c2fd5ba8 00002cb2
+> Call Trace:
+>  [<c03784d3>] schedule_timeout+0x6a/0xa4
+>  [<c0177905>] do_sys_poll+0x33f/0x46d
+>  [<c0177a74>] sys_poll+0x41/0x43
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<4717e3a6>] 0x4717e3a6
+>  =======================
+> ccpd          D 0000004C     0  3009   2010 (NOTLB)
+>        c50abbb0 00000082 f08ef585 0000004c 00000000 00000000 c180abc0 c22fc788
+>        c50abba0 c505d070 f08ef585 0000004c 00000000 c505d184 c1809980 00000000
+>        c21167f0 c2fc6740 c5794e3c c31eff74 c5794310 c22fc788 00000002 00001e64
+> Call Trace:
+>  [<c01b64d9>] do_get_write_access+0x310/0x4f5
+>  [<c01b66d9>] journal_get_write_access+0x1b/0x2a
+>  [<c01b59ce>] __ext3_journal_get_write_access+0x19/0x3f
+>  [<c01aa5f6>] ext3_reserve_inode_write+0x53/0x6c
+>  [<c01aa62f>] ext3_mark_inode_dirty+0x20/0x37
+>  [<c01ad350>] ext3_dirty_inode+0x6b/0x6d
+>  [<c01868fb>] __mark_inode_dirty+0x2a/0x16d
+>  [<c017eacc>] touch_atime+0x84/0xd8
+>  [<c014dd08>] do_generic_mapping_read+0x463/0x57e
+>  [<c014fc84>] generic_file_aio_read+0xc9/0x1b5
+>  [<c016c31c>] do_sync_read+0xd0/0x106
+>  [<c016cada>] vfs_read+0x89/0x11d
+>  [<c016fc6e>] kernel_read+0x36/0x48
+>  [<c016fd32>] prepare_binprm+0xb2/0xdf
+>  [<c0171322>] do_execve+0xe6/0x1e1
+>  [<c0102715>] sys_execve+0x2e/0x7f
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<471474da>] 0x471474da
+>  =======================
+> bash          D 0000004D     0  3011   2859 (NOTLB)
+>        c471dc90 00000082 08f8373c 0000004d 00000000 00000000 c471dc30 c471dc2c
+>        c471dc2c c4670540 08f8373c 0000004d c471dc50 c4670654 c1809980 00000000
+>        c471dc60 c2f3f040 00000005 00000001 c471dc80 c02a7132 c591af64 00001eea
+> Call Trace:
+>  [<c037834c>] io_schedule+0x21/0x2e
+>  [<c014d505>] sync_page+0x38/0x43
+>  [<c0378581>] __wait_on_bit_lock+0x40/0x63
+>  [<c014d4b6>] __lock_page+0x54/0x5c
+>  [<c014da81>] do_generic_mapping_read+0x1dc/0x57e
+>  [<c014fc84>] generic_file_aio_read+0xc9/0x1b5
+>  [<c016c31c>] do_sync_read+0xd0/0x106
+>  [<c016cada>] vfs_read+0x89/0x11d
+>  [<c016fc6e>] kernel_read+0x36/0x48
+>  [<c016fd32>] prepare_binprm+0xb2/0xdf
+>  [<c0171322>] do_execve+0xe6/0x1e1
+>  [<c0102715>] sys_execve+0x2e/0x7f
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<471474da>] 0x471474da
+>  =======================
+> bash          D 0000004D     0  3012   2884 (NOTLB)
+>        c50d5a80 00000082 a21bfc35 0000004d 00000000 00000000 c180abc0 c2033dd4
+>        c50d5a70 c2f4f070 a21bfc35 0000004d 00000000 c2f4f184 c1809980 00000000
+>        c21167bc c47f0c80 c2033310 c22fc788 c5794e3c c2033dd4 00000002 0000216d
+> Call Trace:
+>  [<c01b64d9>] do_get_write_access+0x310/0x4f5
+>  [<c01b66d9>] journal_get_write_access+0x1b/0x2a
+>  [<c01b59ce>] __ext3_journal_get_write_access+0x19/0x3f
+>  [<c01aa5f6>] ext3_reserve_inode_write+0x53/0x6c
+>  [<c01aa62f>] ext3_mark_inode_dirty+0x20/0x37
+>  [<c01ad350>] ext3_dirty_inode+0x6b/0x6d
+>  [<c01868fb>] __mark_inode_dirty+0x2a/0x16d
+>  [<c017eacc>] touch_atime+0x84/0xd8
+>  [<c017499a>] __link_path_walk+0x893/0xca4
+>  [<c0174df1>] link_path_walk+0x46/0xc3
+>  [<c0175038>] do_path_lookup+0x86/0x1b0
+>  [<c0175ad0>] __path_lookup_intent_open+0x44/0x7f
+>  [<c0175b83>] path_lookup_open+0x21/0x27
+>  [<c016fd86>] open_exec+0x27/0xa2
+>  [<c01993a3>] load_elf_binary+0x1482/0x1acf
+>  [<c016fa1d>] search_binary_handler+0x6e/0x19f
+>  [<c0171386>] do_execve+0x14a/0x1e1
+>  [<c0102715>] sys_execve+0x2e/0x7f
+>  [<c0103ffc>] syscall_call+0x7/0xb
+>  [<471474da>] 0x471474da
+>  =======================
+> 
+> Note that yum works on lvm on raid0 and git too, but on the another md volume.
+> Both ext3s. Drivers are sata_promise and ata_piix (sata disk); CFQ scheduler.
+> Using noop is no change (but seems to be harder to reproduce with it). I figured
+> out that it probably happens when 2+ processes are on both "processors" (HT on
+> P4) and are IO wait (multiload-applet shows red above the half).
+> 
+> Swap usage is 0 all the time.
 
-As an additional benefit, queuing a demote request no longer requires
-a memory allocation. This simplifies the code for dealing with gfs2_holders
-as it removes one special case.
+I'm able to reproduce this in the latest git (dc87c3985e9b442c). Going to bisect.
 
-There are two new fields in struct gfs2_glock. gl_demote_state is the
-state which the remote node has requested and gl_demote_time is the
-time when the request came in. Both fields are only valid when the
-GLF_DEMOTE flag is set in gl_flags.
-
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index a3a24f2..e707594 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -54,7 +54,7 @@ struct glock_iter {
- typedef void (*glock_examiner) (struct gfs2_glock * gl);
- 
- static int gfs2_dump_lockstate(struct gfs2_sbd *sdp);
--static void gfs2_glock_xmote_th(struct gfs2_holder *gh);
-+static void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh);
- static void gfs2_glock_drop_th(struct gfs2_glock *gl);
- static DECLARE_RWSEM(gfs2_umount_flush_sem);
- static struct dentry *gfs2_root;
-@@ -212,7 +212,6 @@ int gfs2_glock_put(struct gfs2_glock *gl)
- 		gfs2_assert(sdp, list_empty(&gl->gl_reclaim));
- 		gfs2_assert(sdp, list_empty(&gl->gl_holders));
- 		gfs2_assert(sdp, list_empty(&gl->gl_waiters1));
--		gfs2_assert(sdp, list_empty(&gl->gl_waiters2));
- 		gfs2_assert(sdp, list_empty(&gl->gl_waiters3));
- 		glock_free(gl);
- 		rv = 1;
-@@ -399,7 +398,7 @@ void gfs2_holder_reinit(unsigned int state, unsigned flags, struct gfs2_holder *
- {
- 	gh->gh_state = state;
- 	gh->gh_flags = flags;
--	gh->gh_iflags &= 1 << HIF_ALLOCED;
-+	gh->gh_iflags = 0;
- 	gh->gh_ip = (unsigned long)__builtin_return_address(0);
- }
- 
-@@ -416,54 +415,8 @@ void gfs2_holder_uninit(struct gfs2_holder *gh)
- 	gh->gh_ip = 0;
- }
- 
--/**
-- * gfs2_holder_get - get a struct gfs2_holder structure
-- * @gl: the glock
-- * @state: the state we're requesting
-- * @flags: the modifier flags
-- * @gfp_flags:
-- *
-- * Figure out how big an impact this function has.  Either:
-- * 1) Replace it with a cache of structures hanging off the struct gfs2_sbd
-- * 2) Leave it like it is
-- *
-- * Returns: the holder structure, NULL on ENOMEM
-- */
--
--static struct gfs2_holder *gfs2_holder_get(struct gfs2_glock *gl,
--					   unsigned int state,
--					   int flags, gfp_t gfp_flags)
--{
--	struct gfs2_holder *gh;
--
--	gh = kmalloc(sizeof(struct gfs2_holder), gfp_flags);
--	if (!gh)
--		return NULL;
--
--	gfs2_holder_init(gl, state, flags, gh);
--	set_bit(HIF_ALLOCED, &gh->gh_iflags);
--	gh->gh_ip = (unsigned long)__builtin_return_address(0);
--	return gh;
--}
--
--/**
-- * gfs2_holder_put - get rid of a struct gfs2_holder structure
-- * @gh: the holder structure
-- *
-- */
--
--static void gfs2_holder_put(struct gfs2_holder *gh)
--{
--	gfs2_holder_uninit(gh);
--	kfree(gh);
--}
--
--static void gfs2_holder_dispose_or_wake(struct gfs2_holder *gh)
-+static void gfs2_holder_wake(struct gfs2_holder *gh)
- {
--	if (test_bit(HIF_DEALLOC, &gh->gh_iflags)) {
--		gfs2_holder_put(gh);
--		return;
--	}
- 	clear_bit(HIF_WAIT, &gh->gh_iflags);
- 	smp_mb();
- 	wake_up_bit(&gh->gh_iflags, HIF_WAIT);
-@@ -529,7 +482,7 @@ static int rq_promote(struct gfs2_holder *gh)
- 				gfs2_reclaim_glock(sdp);
- 			}
- 
--			gfs2_glock_xmote_th(gh);
-+			gfs2_glock_xmote_th(gh->gh_gl, gh);
- 			spin_lock(&gl->gl_spin);
- 		}
- 		return 1;
-@@ -552,7 +505,7 @@ static int rq_promote(struct gfs2_holder *gh)
- 	gh->gh_error = 0;
- 	set_bit(HIF_HOLDER, &gh->gh_iflags);
- 
--	gfs2_holder_dispose_or_wake(gh);
-+	gfs2_holder_wake(gh);
- 
- 	return 0;
- }
-@@ -564,32 +517,24 @@ static int rq_promote(struct gfs2_holder *gh)
-  * Returns: 1 if the queue is blocked
-  */
- 
--static int rq_demote(struct gfs2_holder *gh)
-+static int rq_demote(struct gfs2_glock *gl)
- {
--	struct gfs2_glock *gl = gh->gh_gl;
--
- 	if (!list_empty(&gl->gl_holders))
- 		return 1;
- 
--	if (gl->gl_state == gh->gh_state || gl->gl_state == LM_ST_UNLOCKED) {
--		list_del_init(&gh->gh_list);
--		gh->gh_error = 0;
--		spin_unlock(&gl->gl_spin);
--		gfs2_holder_dispose_or_wake(gh);
--		spin_lock(&gl->gl_spin);
--	} else {
--		gl->gl_req_gh = gh;
--		set_bit(GLF_LOCK, &gl->gl_flags);
--		spin_unlock(&gl->gl_spin);
--
--		if (gh->gh_state == LM_ST_UNLOCKED ||
--		    gl->gl_state != LM_ST_EXCLUSIVE)
--			gfs2_glock_drop_th(gl);
--		else
--			gfs2_glock_xmote_th(gh);
--
--		spin_lock(&gl->gl_spin);
-+	if (gl->gl_state == gl->gl_demote_state ||
-+	    gl->gl_state == LM_ST_UNLOCKED) {
-+		clear_bit(GLF_DEMOTE, &gl->gl_flags);
-+		return 0;
- 	}
-+	set_bit(GLF_LOCK, &gl->gl_flags);
-+	spin_unlock(&gl->gl_spin);
-+	if (gl->gl_demote_state == LM_ST_UNLOCKED ||
-+	    gl->gl_state != LM_ST_EXCLUSIVE)
-+		gfs2_glock_drop_th(gl);
-+	else
-+		gfs2_glock_xmote_th(gl, NULL);
-+	spin_lock(&gl->gl_spin);
- 
- 	return 0;
- }
-@@ -617,16 +562,8 @@ static void run_queue(struct gfs2_glock *gl)
- 			else
- 				gfs2_assert_warn(gl->gl_sbd, 0);
- 
--		} else if (!list_empty(&gl->gl_waiters2) &&
--			   !test_bit(GLF_SKIP_WAITERS2, &gl->gl_flags)) {
--			gh = list_entry(gl->gl_waiters2.next,
--					struct gfs2_holder, gh_list);
--
--			if (test_bit(HIF_DEMOTE, &gh->gh_iflags))
--				blocked = rq_demote(gh);
--			else
--				gfs2_assert_warn(gl->gl_sbd, 0);
--
-+		} else if (test_bit(GLF_DEMOTE, &gl->gl_flags)) {
-+			blocked = rq_demote(gl);
- 		} else if (!list_empty(&gl->gl_waiters3)) {
- 			gh = list_entry(gl->gl_waiters3.next,
- 					struct gfs2_holder, gh_list);
-@@ -717,50 +654,24 @@ static void gfs2_glmutex_unlock(struct gfs2_glock *gl)
- }
- 
- /**
-- * handle_callback - add a demote request to a lock's queue
-+ * handle_callback - process a demote request
-  * @gl: the glock
-  * @state: the state the caller wants us to change to
-  *
-- * Note: This may fail sliently if we are out of memory.
-+ * There are only two requests that we are going to see in actual
-+ * practise: LM_ST_SHARED and LM_ST_UNLOCKED
-  */
- 
- static void handle_callback(struct gfs2_glock *gl, unsigned int state)
- {
--	struct gfs2_holder *gh, *new_gh = NULL;
--
--restart:
- 	spin_lock(&gl->gl_spin);
--
--	list_for_each_entry(gh, &gl->gl_waiters2, gh_list) {
--		if (test_bit(HIF_DEMOTE, &gh->gh_iflags) &&
--		    gl->gl_req_gh != gh) {
--			if (gh->gh_state != state)
--				gh->gh_state = LM_ST_UNLOCKED;
--			goto out;
--		}
--	}
--
--	if (new_gh) {
--		list_add_tail(&new_gh->gh_list, &gl->gl_waiters2);
--		new_gh = NULL;
--	} else {
--		spin_unlock(&gl->gl_spin);
--
--		new_gh = gfs2_holder_get(gl, state, LM_FLAG_TRY, GFP_NOFS);
--		if (!new_gh)
--			return;
--		set_bit(HIF_DEMOTE, &new_gh->gh_iflags);
--		set_bit(HIF_DEALLOC, &new_gh->gh_iflags);
--		set_bit(HIF_WAIT, &new_gh->gh_iflags);
--
--		goto restart;
-+	if (test_and_set_bit(GLF_DEMOTE, &gl->gl_flags) == 0) {
-+		gl->gl_demote_state = state;
-+		gl->gl_demote_time = jiffies;
-+	} else if (gl->gl_demote_state != LM_ST_UNLOCKED) {
-+		gl->gl_demote_state = state;
- 	}
--
--out:
- 	spin_unlock(&gl->gl_spin);
--
--	if (new_gh)
--		gfs2_holder_put(new_gh);
- }
- 
- /**
-@@ -820,56 +731,37 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
- 
- 	/*  Deal with each possible exit condition  */
- 
--	if (!gh)
-+	if (!gh) {
- 		gl->gl_stamp = jiffies;
--	else if (unlikely(test_bit(SDF_SHUTDOWN, &sdp->sd_flags))) {
-+		if (ret & LM_OUT_CANCELED)
-+			op_done = 0;
-+		else
-+			clear_bit(GLF_DEMOTE, &gl->gl_flags);
-+	} else {
- 		spin_lock(&gl->gl_spin);
- 		list_del_init(&gh->gh_list);
- 		gh->gh_error = -EIO;
--		spin_unlock(&gl->gl_spin);
--	} else if (test_bit(HIF_DEMOTE, &gh->gh_iflags)) {
--		spin_lock(&gl->gl_spin);
--		list_del_init(&gh->gh_list);
--		if (gl->gl_state == gh->gh_state ||
--		    gl->gl_state == LM_ST_UNLOCKED) {
-+		if (unlikely(test_bit(SDF_SHUTDOWN, &sdp->sd_flags))) 
-+			goto out;
-+		gh->gh_error = GLR_CANCELED;
-+		if (ret & LM_OUT_CANCELED) 
-+			goto out;
-+		if (relaxed_state_ok(gl->gl_state, gh->gh_state, gh->gh_flags)) {
-+			list_add_tail(&gh->gh_list, &gl->gl_holders);
- 			gh->gh_error = 0;
--		} else {
--			if (gfs2_assert_warn(sdp, gh->gh_flags &
--					(LM_FLAG_TRY | LM_FLAG_TRY_1CB)) == -1)
--				fs_warn(sdp, "ret = 0x%.8X\n", ret);
--			gh->gh_error = GLR_TRYFAILED;
-+			set_bit(HIF_HOLDER, &gh->gh_iflags);
-+			set_bit(HIF_FIRST, &gh->gh_iflags);
-+			op_done = 0;
-+			goto out;
- 		}
--		spin_unlock(&gl->gl_spin);
--
--		if (ret & LM_OUT_CANCELED)
--			handle_callback(gl, LM_ST_UNLOCKED);
--
--	} else if (ret & LM_OUT_CANCELED) {
--		spin_lock(&gl->gl_spin);
--		list_del_init(&gh->gh_list);
--		gh->gh_error = GLR_CANCELED;
--		spin_unlock(&gl->gl_spin);
--
--	} else if (relaxed_state_ok(gl->gl_state, gh->gh_state, gh->gh_flags)) {
--		spin_lock(&gl->gl_spin);
--		list_move_tail(&gh->gh_list, &gl->gl_holders);
--		gh->gh_error = 0;
--		set_bit(HIF_HOLDER, &gh->gh_iflags);
--		spin_unlock(&gl->gl_spin);
--
--		set_bit(HIF_FIRST, &gh->gh_iflags);
--
--		op_done = 0;
--
--	} else if (gh->gh_flags & (LM_FLAG_TRY | LM_FLAG_TRY_1CB)) {
--		spin_lock(&gl->gl_spin);
--		list_del_init(&gh->gh_list);
- 		gh->gh_error = GLR_TRYFAILED;
--		spin_unlock(&gl->gl_spin);
--
--	} else {
-+		if (gh->gh_flags & (LM_FLAG_TRY | LM_FLAG_TRY_1CB))
-+			goto out;
-+		gh->gh_error = -EINVAL;
- 		if (gfs2_assert_withdraw(sdp, 0) == -1)
- 			fs_err(sdp, "ret = 0x%.8X\n", ret);
-+out:
-+		spin_unlock(&gl->gl_spin);
- 	}
- 
- 	if (glops->go_xmote_bh)
-@@ -887,7 +779,7 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
- 	gfs2_glock_put(gl);
- 
- 	if (gh)
--		gfs2_holder_dispose_or_wake(gh);
-+		gfs2_holder_wake(gh);
- }
- 
- /**
-@@ -898,12 +790,11 @@ static void xmote_bh(struct gfs2_glock *gl, unsigned int ret)
-  *
-  */
- 
--void gfs2_glock_xmote_th(struct gfs2_holder *gh)
-+void gfs2_glock_xmote_th(struct gfs2_glock *gl, struct gfs2_holder *gh)
- {
--	struct gfs2_glock *gl = gh->gh_gl;
- 	struct gfs2_sbd *sdp = gl->gl_sbd;
--	int flags = gh->gh_flags;
--	unsigned state = gh->gh_state;
-+	int flags = gh ? gh->gh_flags : 0;
-+	unsigned state = gh ? gh->gh_state : gl->gl_demote_state;
- 	const struct gfs2_glock_operations *glops = gl->gl_ops;
- 	int lck_flags = flags & (LM_FLAG_TRY | LM_FLAG_TRY_1CB |
- 				 LM_FLAG_NOEXP | LM_FLAG_ANY |
-@@ -953,6 +844,7 @@ static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
- 	gfs2_assert_warn(sdp, !ret);
- 
- 	state_change(gl, LM_ST_UNLOCKED);
-+	clear_bit(GLF_DEMOTE, &gl->gl_flags);
- 
- 	if (glops->go_inval)
- 		glops->go_inval(gl, DIO_METADATA);
-@@ -974,7 +866,7 @@ static void drop_bh(struct gfs2_glock *gl, unsigned int ret)
- 	gfs2_glock_put(gl);
- 
- 	if (gh)
--		gfs2_holder_dispose_or_wake(gh);
-+		gfs2_holder_wake(gh);
- }
- 
- /**
-@@ -1291,9 +1183,8 @@ void gfs2_glock_dq(struct gfs2_holder *gh)
- 		if (glops->go_unlock)
- 			glops->go_unlock(gh);
- 
--		gl->gl_stamp = jiffies;
--
- 		spin_lock(&gl->gl_spin);
-+		gl->gl_stamp = jiffies;
- 	}
- 
- 	clear_bit(GLF_LOCK, &gl->gl_flags);
-@@ -1981,16 +1872,16 @@ static int dump_glock(struct glock_iter *gi, struct gfs2_glock *gl)
- 		if (error)
- 			goto out;
- 	}
--	list_for_each_entry(gh, &gl->gl_waiters2, gh_list) {
--		error = dump_holder(gi, "Waiter2", gh);
--		if (error)
--			goto out;
--	}
- 	list_for_each_entry(gh, &gl->gl_waiters3, gh_list) {
- 		error = dump_holder(gi, "Waiter3", gh);
- 		if (error)
- 			goto out;
- 	}
-+	if (test_bit(GLF_DEMOTE, &gl->gl_flags)) {
-+		print_dbg(gi, "  Demotion req to state %u (%llu uS ago)\n",
-+			  gl->gl_demote_state,
-+			  (u64)(jiffies - gl->gl_demote_time)*1000000/HZ);
-+	}
- 	if (gl->gl_ops == &gfs2_inode_glops && gl->gl_object) {
- 		if (!test_bit(GLF_LOCK, &gl->gl_flags) &&
- 			list_empty(&gl->gl_holders)) {
-diff --git a/fs/gfs2/glock.h b/fs/gfs2/glock.h
-index d7cef74..5e662ea 100644
---- a/fs/gfs2/glock.h
-+++ b/fs/gfs2/glock.h
-@@ -67,7 +67,7 @@ static inline int gfs2_glock_is_blocking(struct gfs2_glock *gl)
- {
- 	int ret;
- 	spin_lock(&gl->gl_spin);
--	ret = !list_empty(&gl->gl_waiters2) || !list_empty(&gl->gl_waiters3);
-+	ret = test_bit(GLF_DEMOTE, &gl->gl_flags) || !list_empty(&gl->gl_waiters3);
- 	spin_unlock(&gl->gl_spin);
- 	return ret;
- }
-diff --git a/fs/gfs2/incore.h b/fs/gfs2/incore.h
-index 7555261..9c12582 100644
---- a/fs/gfs2/incore.h
-+++ b/fs/gfs2/incore.h
-@@ -115,11 +115,8 @@ enum {
- 	/* Actions */
- 	HIF_MUTEX		= 0,
- 	HIF_PROMOTE		= 1,
--	HIF_DEMOTE		= 2,
- 
- 	/* States */
--	HIF_ALLOCED		= 4,
--	HIF_DEALLOC		= 5,
- 	HIF_HOLDER		= 6,
- 	HIF_FIRST		= 7,
- 	HIF_ABORTED		= 9,
-@@ -142,8 +139,8 @@ struct gfs2_holder {
- enum {
- 	GLF_LOCK		= 1,
- 	GLF_STICKY		= 2,
-+	GLF_DEMOTE		= 3,
- 	GLF_DIRTY		= 5,
--	GLF_SKIP_WAITERS2	= 6,
- };
- 
- struct gfs2_glock {
-@@ -156,11 +153,12 @@ struct gfs2_glock {
- 
- 	unsigned int gl_state;
- 	unsigned int gl_hash;
-+	unsigned int gl_demote_state; /* state requested by remote node */
-+	unsigned long gl_demote_time; /* time of first demote request */
- 	struct task_struct *gl_owner;
- 	unsigned long gl_ip;
- 	struct list_head gl_holders;
- 	struct list_head gl_waiters1;	/* HIF_MUTEX */
--	struct list_head gl_waiters2;	/* HIF_DEMOTE */
- 	struct list_head gl_waiters3;	/* HIF_PROMOTE */
- 
- 	const struct gfs2_glock_operations *gl_ops;
-diff --git a/fs/gfs2/main.c b/fs/gfs2/main.c
-index 2183953..c4bb374 100644
---- a/fs/gfs2/main.c
-+++ b/fs/gfs2/main.c
-@@ -45,7 +45,6 @@ static void gfs2_init_glock_once(void *foo, struct kmem_cache *cachep, unsigned
- 		spin_lock_init(&gl->gl_spin);
- 		INIT_LIST_HEAD(&gl->gl_holders);
- 		INIT_LIST_HEAD(&gl->gl_waiters1);
--		INIT_LIST_HEAD(&gl->gl_waiters2);
- 		INIT_LIST_HEAD(&gl->gl_waiters3);
- 		gl->gl_lvb = NULL;
- 		atomic_set(&gl->gl_lvb_count, 0);
-diff --git a/fs/gfs2/ops_super.c b/fs/gfs2/ops_super.c
-index b89999d..485ce3d 100644
---- a/fs/gfs2/ops_super.c
-+++ b/fs/gfs2/ops_super.c
-@@ -284,6 +284,31 @@ static int gfs2_remount_fs(struct super_block *sb, int *flags, char *data)
- }
- 
- /**
-+ * gfs2_drop_inode - Drop an inode (test for remote unlink)
-+ * @inode: The inode to drop
-+ *
-+ * If we've received a callback on an iopen lock then its because a
-+ * remote node tried to deallocate the inode but failed due to this node
-+ * still having the inode open. Here we mark the link count zero
-+ * since we know that it must have reached zero if the GLF_DEMOTE flag
-+ * is set on the iopen glock. If we didn't do a disk read since the
-+ * remote node removed the final link then we might otherwise miss
-+ * this event. This check ensures that this node will deallocate the
-+ * inode's blocks, or alternatively pass the baton on to another
-+ * node for later deallocation.
-+ */
-+static void gfs2_drop_inode(struct inode *inode)
-+{
-+	if (inode->i_private && inode->i_nlink) {
-+		struct gfs2_inode *ip = GFS2_I(inode);
-+		struct gfs2_glock *gl = ip->i_iopen_gh.gh_gl;
-+		if (gl && test_bit(GLF_DEMOTE, &gl->gl_flags))
-+			clear_nlink(inode);
-+	}
-+	generic_drop_inode(inode);
-+}
-+
-+/**
-  * gfs2_clear_inode - Deallocate an inode when VFS is done with it
-  * @inode: The VFS inode
-  *
-@@ -441,7 +466,7 @@ out_unlock:
- out_uninit:
- 	gfs2_holder_uninit(&ip->i_iopen_gh);
- 	gfs2_glock_dq_uninit(&gh);
--	if (error)
-+	if (error && error != GLR_TRYFAILED)
- 		fs_warn(sdp, "gfs2_delete_inode: %d\n", error);
- out:
- 	truncate_inode_pages(&inode->i_data, 0);
-@@ -481,6 +506,7 @@ const struct super_operations gfs2_super_ops = {
- 	.statfs			= gfs2_statfs,
- 	.remount_fs		= gfs2_remount_fs,
- 	.clear_inode		= gfs2_clear_inode,
-+	.drop_inode		= gfs2_drop_inode,
- 	.show_options		= gfs2_show_options,
- };
- 
+regards,
 -- 
-1.5.1.2
-
-
-
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
