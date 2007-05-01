@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbXEAPah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXEAPcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751441AbXEAPah (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXEAPah
+	id S1751744AbXEAPcJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbXEAPcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:30:37 -0400
-Received: from mail1.skjellin.no ([80.239.42.67]:46025 "EHLO mx1.skjellin.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750979AbXEAPaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:30:35 -0400
-Message-ID: <46375D1C.4050404@tomt.net>
-Date: Tue, 01 May 2007 17:30:36 +0200
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Tue, 1 May 2007 11:32:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:19807 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751744AbXEAPcF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 11:32:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EvVbVg6zoryM+rZ36X+NgfdFe65l742ZkDf9XexYp4PBho98blN0jMC1gUEUbfpuyIndo1zlbNYVY7Xyf9eVkHD3rTLqsnmeKj0O4B7gVlErFDRuuK7tg+S7IGQh1bpXakofh+IQksP+zMJNecnoj6zHkLHvGD1+c8JRO5tDrbs=
+Message-ID: <46375D27.3060901@gmail.com>
+Date: Tue, 01 May 2007 17:30:47 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: so ... what *are* candidates for removal?
-References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: jeff@garzik.org, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] libata-sff: Undo bug introduced with pci_iomap changes
+References: <20070501125327.52dd92e4@the-village.bc.nu>
+In-Reply-To: <20070501125327.52dd92e4@the-village.bc.nu>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
->   at the risk of spawning yet another thread and another flamefest,
-> what *are* the kernel features that should be considered candidates
-> for removal, either now or at some point in the future.
+Hello, Alan.
+
+Alan Cox wrote:
+> If you have a controller with one channel disabled and unmapped the new
+> iomap code blindly tries to iomap unconfigured BARs. Later on the code
+> does the right thing and checks for unmapped bars but it is done in the
+> wrong order
+> 
+> Reorder the checks and make the iomap conditional
+> 
+> Tejun: I think the code below is now correct but would appreciate you
+> giving it a review.
 >
->   please, no discussions about mechanisms or kernel warnings or the
-> like -- just the features whose value is nearing their end.  i'll even
-> volunteer to collect all that info and summarize it here:
->
-> http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
->
-> because that's just the kind of guy i am, and i have the week off, and
-> i'm bored. :-)
->
-> rday
->   
-Already documented in the kernel tarball, see 
-Documentation/feature-removal-schedule.txt
+> Signed-off-by: Alan Cox <alan@redhat.com>
+
+Acked-by: Tejun Heo <htejun@gmail.com>
+
+Yeap, the patch looks good.  I got tunnel visioned while converting to
+iomap and mechanically mapped IO BAR access to iomap.  Thanks for
+catching this.  This is already fixed in #upstream while converting to
+new-init-model (the code is in ata_pci_init_native_host() and does about
+the same thing as your patch does), so I think this patch is only needed
+for -stable.  Cc'ing stable team.  The original patch can be reached at...
+
+  http://article.gmane.org/gmane.linux.kernel/523335/raw
+
+Thanks.
+
+-- 
+tejun
