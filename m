@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423720AbXEAE6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423777AbXEAFAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423720AbXEAE6k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423781AbXEAE6k
+	id S1423777AbXEAFAh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 01:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423785AbXEAFAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:58:40 -0400
-Received: from lon-del-04.spheriq.net ([195.46.50.101]:54710 "EHLO
-	lon-del-04.spheriq.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423720AbXEAE6j convert rfc822-to-8bit (ORCPT
+	Tue, 1 May 2007 01:00:37 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36376 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423777AbXEAFAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 00:58:39 -0400
-From: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: "'Bhuvan Kumar MITTAL'" <bhuvan.mittal@st.com>
-Subject: Killing a User thread from another User Thread 
-Date: Tue, 1 May 2007 10:28:29 +0530
-Message-ID: <03f701c78bad$5c589220$142ec70a@dlh.st.com>
+	Tue, 1 May 2007 01:00:36 -0400
+Date: Mon, 30 Apr 2007 21:58:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] to something appropriate (was Re: 2.6.22 -mm merge
+	plans)
+Message-ID: <20070501045806.GA3697@kroah.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <46368062.6000100@garzik.org> <20070430170919.45e4b42b.akpm@linux-foundation.org> <463688AD.1050903@garzik.org> <20070501004036.GS2819@sequoia.sous-sol.org> <46368DA5.7070003@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 11
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
-Thread-Index: AceLrVvtlhYL6QmWQL2OGVXFqckWnQ==
-X-O-Spoofed: Not Scanned
-X-O-General-Status: No
-X-O-Spam1-Status: Not Scanned
-X-O-Spam2-Status: Not Scanned
-X-O-URL-Status: Not Scanned
-X-O-Virus1-Status: No
-X-O-Virus2-Status: Not Scanned
-X-O-Virus3-Status: No
-X-O-Virus4-Status: No
-X-O-Virus5-Status: Not Scanned
-X-O-Image-Status: Not Scanned
-X-O-Attach-Status: Not Scanned
-X-SpheriQ-Ver: 4.2.04
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46368DA5.7070003@garzik.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I am working on an audio device driver development on Linux (sh4 architecture). I have a userthread which makes ioctl calls to the kernel and once it reaches inside the kernel it waits on a semaphore. It then does some work inside the kernel and continuously keeps looping between the kernel and user space in an endless while loop. 
+On Mon, Apr 30, 2007 at 08:45:25PM -0400, Jeff Garzik wrote:
+> Chris Wright wrote:
+> > 2) you can add them
+> > runtime in userspace (and for pcmcia too after patch in question is
+> > applied), so we've historically avoided that kind of patch for -stable.
+> 
+> 
+> Due to distro installer environments, and very poor support for making 
+> dynamic PCI IDs persistent once added, what you describe is more of a 
+> goal than reality.
 
-I want to kill that thread from another user thread while the former is waiting on a semaphore in kernel (which it will never get) coz I want a clean exit of my driver. Please suggest me a way. I did try the use of pthread_cancel, but that is possible only if the target thread is executing in user space and making use of a pthread_testcancel call (with cancelability enabled ofcourse). 
+But distros can easily add the device id to their kernel if needed, it
+isn't something that the -stable tree shoud be accepting.  Otherwise, we
+will be swamped with those types of patches...
 
-Kindly suggest something.
+thanks,
 
-Regards,
-
-Bhuvan
-
-
+greg k-h
