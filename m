@@ -1,130 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXEARBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbXEARCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbXEARBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 13:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXEARBo
+	id S1754838AbXEARCK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbXEARCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 13:01:44 -0400
-Received: from ms-smtp-01.southeast.rr.com ([24.25.9.100]:44333 "EHLO
-	ms-smtp-01.southeast.rr.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754833AbXEARBn (ORCPT
+	Tue, 1 May 2007 13:02:10 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:23448 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbXEARCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 13:01:43 -0400
-Date: Tue, 1 May 2007 13:01:27 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Neil Brown <neilb@suse.de>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [NFS] [PATCH] RPC: add wrapper for svc_reserve to account for
-	checksum
-Message-ID: <20070501170123.GB15222@salusa.poochiereds.net>
-References: <20070421131523.GA18100@dantu.rdu.redhat.com> <17974.41587.666167.650575@notabene.brown>
+	Tue, 1 May 2007 13:02:06 -0400
+Date: Tue, 1 May 2007 10:00:46 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Bill Irwin <bill.irwin@oracle.com>, Andi Kleen <ak@suse.de>,
+       ebiederm@xmission.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [30/30] x86_64: Add missing !X86_PAE dependincy to the 2G/2G split.
+Message-ID: <20070501170046.GO26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Eric Dumazet <dada1@cosmosbay.com>, Andi Kleen <ak@suse.de>,
+	ebiederm@xmission.com, patches@x86-64.org,
+	linux-kernel@vger.kernel.org
+References: <20070501557.815359000@suse.de> <20070501035829.1C93D13CAF@wotan.suse.de> <4636C16F.204@cosmosbay.com> <20070501062132.GQ25929@bingen.suse.de> <20070501130132.GL26598@holomorphy.com> <46376210.6090200@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <17974.41587.666167.650575@notabene.brown>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46376210.6090200@cosmosbay.com>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 12:14:11PM +1000, Neil Brown wrote:
-> On Saturday April 21, jlayton@redhat.com wrote:
-> > When the kernel calls svc_reserve to downsize the expected size of an RPC
-> > reply, it fails to account for the possibility of a checksum at the end of
-> > the packet. If a client mounts a NFSv2/3 with sec=krb5i/p, and does I/O then
-> > you'll generally see messages similar to this in the server's ring buffer:
-> > 
-> > RPC request reserved 164 but used 208
-> > 
-> > While I was never able to verify it, I suspect that this problem is also the
-> > root cause of some oopses I've seen under these conditions:
-> > 
-> > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227726
-> 
-> I don't think to two are that closely related.
-> The space reservation mentioned in the "RPC request reserved ..."
-> messages is a fairly soft reservation.  We try to make sure the
-> network stack reserves a certain amount of space, then try never to
-> start processing a request unless we will be able to reply without
-> exceeding that allocation.
-> If we get it wrong and do exceed the allocation, the worst that might
-> happen is that we might block while writing the reply and maybe have
-> to close a connection, or send out an incomplete packet, or something
-> like that.  Certainly not an oops.
-> 
-> The extra space needed at the end of the message of integrity
-> information which we weren't accounting for properly does seemed to be
-> accounted correctly in svcauth_gss_wrap_resp_integ (I'm less sure of
-> _wrp_resp_priv, but it is probably right).
-> 
-> Of the two Oops in that BUG, the first seems to be the
-> 		BUG_ON(resbuf->tail[0].iov_len);
-> in svcauth_gss_wrap_resp_integ (assuming code in 2.6.9-44.ELxenU is at
-> least vaguely similar to current -mm).
-> 
-> I don't think this BUG_ON is correct.  If a readdir finds zero entries,
-> then will be some trailer information in the 'tail', but page_len will
-> be 0.  I think the following patch is correct and could fix that.
-> Bruce:  does it look OK to you?
-> 
-> 
-> The second oops is harder to interpret.
-> I looks like tcp_send_page is getting a NULL page, though it could be
-> getting a length > PAGE_SIZE which might have the same effect.
-> 
-> It reminds me of
->   http://bugzilla.kernel.org/show_bug.cgi?id=7795
-> but I'm not convinced it is the same.
-> 
-> > 
-> > Unfortunately, there doesn't seem to be a good way to reliably determine the
-> > expected checksum length prior to actually calculating it, particularly with
-> > schemes like spkm3.
-> 
-> Yes, that asn1 encoding does seem rather awkward.
-> 
-> Maybe we should just use RPC_MAX_AUTH_SIZE like other bits of GSS code
-> does.  There is no great cost in reserving too much space - it just
-> might slow things down a little when tight on memory.
-> What would you think of submitting an incremental patch which replaces
-> the "56" with "RPC_MAX_AUTH_SIZE" ?
-> 
-> Thanks (and sorry for the delay).
-> NeilBrown
-> 
+Bill Irwin a écrit :
+>> as a stopgap measure, but I'm not all that interested in grabbing patch
+>> credits where others could do it easily enough. Either of the config
+>> alterations is fine by me as they now stand; maybe Eric Dumazet might
+>> care to do something like my suggestion at some point.
 
-Thanks for looking into this, Neil. I wasn't sure how hard a reservation that
-was (still working on wrapping my brain around the RPC code). I'll have a look
-at the patch you posted. Hopefully that is the problem...
+On Tue, May 01, 2007 at 05:51:44PM +0200, Eric Dumazet wrote:
+> Your patch is very fine Bill, please resubmit it with proper Signed-off-by
+> My first patch was a trivial reaction to try to keep alive 2G/2G split, 
+> yours is better for fine tuning.
 
-As far as your suggestion to use RPC_MAX_AUTH_SIZE, that sounds like a good
-idea to me. I'm all for avoiding "magic" numbers. How does this look? I also
-cleaned up the comments as well.
+I was hoping you would submit it as an update, but maybe adding your
+Signed-off-by: to my own will do.
 
-diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
-index 9114f11..ed7cbf1 100644
---- a/include/linux/sunrpc/svc.h
-+++ b/include/linux/sunrpc/svc.h
-@@ -399,10 +399,9 @@ char *		   svc_print_addr(struct svc_rqst *, char *, size_t);
- /*
-  * When we want to reduce the size of the reserved space in the response
-  * buffer, we need to take into account the size of any checksum data that
-- * may be at the end of the packet. For now, just use a hardcoded value
-- * for each possible authflavor. This will need to be updated when new
-- * encryption types or algorithms are added, or we'll have to come up with
-- * a way to reasonably calculate this on the fly (maybe via a new auth_op).
-+ * may be at the end of the packet. This is difficult to determine exactly
-+ * for all cases without actually generating the checksum, so we just use a
-+ * static value.
-  */
- static inline void 
- svc_reserve_auth(struct svc_rqst *rqstp, int space)
-@@ -411,7 +410,7 @@ svc_reserve_auth(struct svc_rqst *rqstp, int space)
+
+-- wli
+
+
+Only 1GB-aligned kernel/user splits are now handled for PAE. The
+2GB/2GB split attempts to avoid aliasing vmallocspace with the 1:1
+mapping for physical memory by using an actual split of 1.875/2.125
+to accommodate 128MB of vmallocspace out of what would otherwise
+be a full 2GB for userspace. That attempt disturbs the alignment
+required by PAE for 2GB/2GB splits, and furthermore does not provide
+a 2GB/2GB split as advertised.
+
+This patch resolves the issues here in two manners. The first is
+by providing a true 2GB/2GB split in addition to the 1.875/2.125
+split. The second is by renaming the 1.875/2.125 split to
+CONFIG_VMSPLIT_2G_OPT analogously to CONFIG_VMSPLIT_3G_OPT, which
+performs a similar manuever to avoid aliasing vmallocspace with
+the 1:1 mapping for physical memory around the 3GB boundary. With
+the 1.875/2.125 split properly-named, its config option is then
+tagged as depending on !HIGHMEM to express the PAE implementation's
+current inability to deal with such unaligned splits.
+
+This patch is essentially a combination of two patches, one written
+by Eric Biederman and the other by Eric Dumazet. If they could add
+their Signed-off-by: to this, I'd be much obliged.
+
+Signed-off-by: William Irwin <wli@holomorphy.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Mark Lord <lkml@rtr.ca>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <ak@suse.de>
+
+
+Index: sched/arch/i386/Kconfig
+===================================================================
+--- sched.orig/arch/i386/Kconfig	2007-05-01 04:35:47.065162310 -0700
++++ sched/arch/i386/Kconfig	2007-05-01 04:36:50.100754504 -0700
+@@ -571,6 +571,9 @@
+ 		bool "3G/1G user/kernel split (for full 1G low memory)"
+ 	config VMSPLIT_2G
+ 		bool "2G/2G user/kernel split"
++	config VMSPLIT_2G_OPT
++		depends on !HIGHMEM
++		bool "2G/2G user/kernel split (for full 2G low memory)"
+ 	config VMSPLIT_1G
+ 		bool "1G/3G user/kernel split"
+ endchoice
+@@ -578,7 +581,8 @@
+ config PAGE_OFFSET
+ 	hex
+ 	default 0xB0000000 if VMSPLIT_3G_OPT
+-	default 0x78000000 if VMSPLIT_2G
++	default 0x80000000 if VMSPLIT_2G
++	default 0x78000000 if VMSPLIT_2G_OPT
+ 	default 0x40000000 if VMSPLIT_1G
+ 	default 0xC0000000
  
- 	switch(rqstp->rq_authop->flavour) {
- 		case RPC_AUTH_GSS:
--			added_space = 56; /* determined empirically */
-+			added_space = RPC_MAX_AUTH_SIZE;
- 	}
- 	return svc_reserve(rqstp, space + added_space);
- }
