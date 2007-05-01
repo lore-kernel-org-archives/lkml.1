@@ -1,44 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031301AbXEASmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161328AbXEAStG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031301AbXEASmO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031300AbXEASmO
+	id S1161328AbXEAStG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161293AbXEAStG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:42:14 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:43830 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031298AbXEASmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:42:13 -0400
-Subject: Re: [PATCH] drivers/scsi/pci2000.h: Remove unused file
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>, ballabio_dario@emc.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0705011415070.13459@localhost.localdomain>
-References: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
-	 <Pine.LNX.4.64.0705011415070.13459@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 01 May 2007 13:42:04 -0500
-Message-Id: <1178044924.4320.29.camel@mulgrave.il.steeleye.com>
+	Tue, 1 May 2007 14:49:06 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56886 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161149AbXEAStE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 14:49:04 -0400
+Date: Tue, 1 May 2007 22:48:10 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: ego@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] add-suspend-related-notifications-for-cpu-hotplug-cleanup
+Message-ID: <20070501184810.GA1585@tv-sign.ru>
+References: <200704260110.22224.rjw@sisk.pl> <20070425165410.b73443b4.akpm@linux-foundation.org> <20070426100922.GB12892@in.ibm.com> <20070426101547.GA97@tv-sign.ru> <20070426125838.GC12892@in.ibm.com> <20070427184258.62794053.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070427184258.62794053.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 14:16 -0400, Robert P. J. Day wrote:
-> On Tue, 1 May 2007, Richard Knutsson wrote:
+On 04/27, Andrew Morton wrote:
+>
+> We have a huge amount of change pending in the kthread/workqueue/freezer
+> area, partly because I decided not to merge most of the workqueue changes
+> into 2.6.21.
 > 
-> > Remove the unused header drivers/scsi/pci2000.h
-> 
-> i have the same patch in my pending patch directory, dated march 10,
-> so i know i submitted it, but i have no idea whatever happened to it.
+> It'd be good if people could take some time to sit down and re-review the
+> code which we presently have.  I plan on sending it all off for 2.6.22 and
+> there might be some glitches but it seems to have a good track record so
+> far.
 
-It's in -mm via this, pending merge with linus:
+Oops. I completely misread the ->cpus_allowed check in try_to_wake_up(), and
+so workqueue_cpu_callback() needs a simple fix: CPU_UP_CANCELED should rebind
+cwq->thread. Or, better, we should not bind the task until CPU_ONLINE.
 
-http://git.kernel.org/?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commit;h=38891cb6b0de3f5986e6a7688c5ae17c18b000a9
+I'll send the patch soon, but it conflicts with Rafael's
 
-James
+	add-suspend-related-notifications-for-cpu-hotplug.patch
 
+, so I am sending this cleanup first to make them independent.
+
+Actually, I believe almost all subsystems could be simplified as well, most
+of them don't care about CPU_TASKS_FROZEN bit.
+
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- OLD/kernel/workqueue.c~1_FROZEN	2007-05-01 22:13:10.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-05-01 22:18:15.000000000 +0400
+@@ -747,6 +747,8 @@ static int __devinit workqueue_cpu_callb
+ 	struct cpu_workqueue_struct *cwq;
+ 	struct workqueue_struct *wq;
+ 
++	action &= ~CPU_TASKS_FROZEN;
++
+ 	switch (action) {
+ 	case CPU_LOCK_ACQUIRE:
+ 		mutex_lock(&workqueue_mutex);
+@@ -757,7 +759,6 @@ static int __devinit workqueue_cpu_callb
+ 		return NOTIFY_OK;
+ 
+ 	case CPU_UP_PREPARE:
+-	case CPU_UP_PREPARE_FROZEN:
+ 		cpu_set(cpu, cpu_populated_map);
+ 	}
+ 
+@@ -766,23 +767,19 @@ static int __devinit workqueue_cpu_callb
+ 
+ 		switch (action) {
+ 		case CPU_UP_PREPARE:
+-		case CPU_UP_PREPARE_FROZEN:
+ 			if (!create_workqueue_thread(cwq, cpu))
+ 				break;
+ 			printk(KERN_ERR "workqueue for %i failed\n", cpu);
+ 			return NOTIFY_BAD;
+ 
+ 		case CPU_ONLINE:
+-		case CPU_ONLINE_FROZEN:
+ 			wake_up_process(cwq->thread);
+ 			break;
+ 
+ 		case CPU_UP_CANCELED:
+-		case CPU_UP_CANCELED_FROZEN:
+ 			if (cwq->thread)
+ 				wake_up_process(cwq->thread);
+ 		case CPU_DEAD:
+-		case CPU_DEAD_FROZEN:
+ 			cleanup_workqueue_thread(cwq, cpu);
+ 			break;
+ 		}
 
