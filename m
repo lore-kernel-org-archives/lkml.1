@@ -1,158 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423561AbXEAOHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423552AbXEAONx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423561AbXEAOHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423565AbXEAOHb
+	id S1423552AbXEAONx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423568AbXEAONx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:07:31 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:51904 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423561AbXEAOH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:07:29 -0400
-X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 10:07:29 EDT
-Date: Tue, 1 May 2007 15:59:51 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: linux-kernel@vger.kernel.org
-Subject: libata /dev/scd0 problem: mount after burn fails without eject
-Message-ID: <20070501135951.GA17072@janus>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-X-BotBait: val@frankvm.com, kuil@frankvm.com
+	Tue, 1 May 2007 10:13:53 -0400
+Received: from rtr.ca ([64.26.128.89]:2404 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423552AbXEAONw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:13:52 -0400
+Message-ID: <46374B1D.6050509@rtr.ca>
+Date: Tue, 01 May 2007 10:13:49 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: tglx@linutronix.de
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of CONFIG_NO_HZ,
+ CONFIG_HIGH_RES_TIMERS
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca>	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>	 <463741F1.7050706@rtr.ca> <1178027285.5791.307.camel@localhost.localdomain>
+In-Reply-To: <1178027285.5791.307.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tested on 2.6.20.6 and 2.6.21.1
+Thomas Gleixner wrote:
+> On Tue, 2007-05-01 at 09:34 -0400, Mark Lord wrote:
+>>> now at 3232363876949 nsecs
+>> ...
+>>
+>> Oh, in case it matters any:
+>> that /proc/timer_list is from the system with CFS-V7 also patched in.
+> 
+> It should not. What happens when you disable HPET ?
 
-I decided to swich from the old IDE drivers to libata and now there
-seems to be a little but annoying problem: cannot mount an ISO image
-after burning it.
+Booting with clocksource=tsc still hangs in what appears
+to be the exact same place.
 
-May  1 14:32:55 kernel: attempt to access beyond end of device
-May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
-May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0, iso_blknum=16, block=16
+Screenshots for that are available here:   http://rtr.ca/hrtimers/
 
-an "eject" command seems to fix the state of the PATA DVD writer
-or driver. The problem occurs for burning a CD and for DVD too with
-identical error messages.
+Of possible interest is that the bottom of the 25line screen capture
+differs somewhat from the 50line capture.. see for yourself.
+This is 100% consistent from boot to boot.
 
+Using CONFIG_DETECT_SOFTLOCKUP=y eliminates the problem,
+so that's really got to be a huge clue, somehow ?
 
-relevant kernel boot messages:
-| ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001ffa0 irq 14
-| ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001ffa8 irq 15
-| scsi0 : ata_piix
-| ata1.00: ATA-7: ST3120814A, 3.AAJ, max UDMA/100
-| ata1.00: 234441648 sectors, multi 8: LBA48 
-| ata1.00: configured for UDMA/100
-| scsi1 : ata_piix
-| ata2.00: ATAPI, max UDMA/33
-| ata2.01: ATAPI, max UDMA/33
-| ata2.00: configured for UDMA/33
-| ata2.01: configured for UDMA/33
-| scsi 0:0:0:0: Direct-Access     ATA      ST3120814A       3.AA PQ: 0 ANSI: 5
-| SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
-| sda: Write Protect is off
-| SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-| SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
-| sda: Write Protect is off
-| SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-|  sda: sda1 sda2 sda4
-| sd 0:0:0:0: Attached scsi disk sda
-| sd 0:0:0:0: Attached scsi generic sg0 type 0
-| scsi 1:0:0:0: CD-ROM            HP       DVD Writer 640c  CS30 PQ: 0 ANSI: 5
-| sr0: scsi3-mmc drive: 40x/40x writer cd/rw xa/form2 cdda tray
-| Uniform CD-ROM driver Revision: 3.20
-| sr 1:0:0:0: Attached scsi generic sg1 type 5
-| scsi 1:0:1:0: CD-ROM            SAMSUNG  CD-ROM SC-148C   B105 PQ: 0 ANSI: 5
-| sr1: scsi3-mmc drive: 1x/48x cd/rw xa/form2 cdda tray
-| sr 1:0:1:0: Attached scsi generic sg2 type 5
-
-stripped config (well, as far of I'm sure it shouldn't matter):
-| CONFIG_PM=y
-| CONFIG_PM_LEGACY=y
-| 
-| CONFIG_ACPI=y
-| CONFIG_ACPI_PROCFS=y
-| CONFIG_ACPI_FAN=y
-| CONFIG_ACPI_PROCESSOR=y
-| CONFIG_ACPI_THERMAL=y
-| CONFIG_ACPI_BLACKLIST_YEAR=0
-| CONFIG_ACPI_EC=y
-| CONFIG_ACPI_POWER=y
-| CONFIG_ACPI_SYSTEM=y
-| CONFIG_X86_PM_TIMER=y
-| 
-| CONFIG_PCI=y
-| CONFIG_PCI_GOANY=y
-| CONFIG_PCI_BIOS=y
-| CONFIG_PCI_DIRECT=y
-| CONFIG_PCI_MMCONFIG=y
-| CONFIG_PCIEPORTBUS=y
-| CONFIG_PCIEAER=y
-| CONFIG_HT_IRQ=y
-| CONFIG_ISA_DMA_API=y
-| 
-| CONFIG_PNP=y
-| 
-| CONFIG_PNPACPI=y
-| 
-| CONFIG_CDROM_PKTCDVD=y
-| CONFIG_CDROM_PKTCDVD_BUFFERS=8
-| 
-| CONFIG_IDE=y
-| 
-| CONFIG_RAID_ATTRS=y
-| CONFIG_SCSI=y
-| CONFIG_SCSI_PROC_FS=y
-| 
-| CONFIG_BLK_DEV_SD=y
-| CONFIG_BLK_DEV_SR=y
-| CONFIG_CHR_DEV_SG=y
-| 
-| CONFIG_SCSI_MULTI_LUN=y
-| CONFIG_SCSI_CONSTANTS=y
-| CONFIG_SCSI_LOGGING=y
-| 
-| CONFIG_SCSI_SPI_ATTRS=y
-| 
-| CONFIG_ATA=y
-| CONFIG_SATA_AHCI=y
-| CONFIG_ATA_PIIX=y
-| CONFIG_SATA_INTEL_COMBINED=y
-| CONFIG_SATA_ACPI=y
-| CONFIG_PATA_SERVERWORKS=y
-
-
-lspci:
-00:00.0 Host bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE DRAM Controller/Host-Hub Interface (rev 01)
-00:01.0 PCI bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE Host-to-AGP Bridge (rev 01)
-00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01)
-00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 01)
-00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
-00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI Controller (rev 01)
-00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 81)
-00:1f.0 ISA bridge: Intel Corporation 82801DB/DBL (ICH4/ICH4-L) LPC Interface Bridge (rev 01)
-00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01)
-00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) SMBus Controller (rev 01)
-00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
-01:00.0 VGA compatible controller: nVidia Corporation NV18 [GeForce4 MX 440 AGP 8x] (rev a2)
-02:0c.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
-
-lspci -v -v -v for IDE
-00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01) (prog-if 8a [Master SecP PriP])
-        Subsystem: Dell Unknown device 0142
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Latency: 0
-        Interrupt: pin A routed to IRQ 17
-        Region 0: I/O ports at 01f0 [size=8]
-        Region 1: I/O ports at 03f4 [size=1]
-        Region 2: I/O ports at 0170 [size=8]
-        Region 3: I/O ports at 0374 [size=1]
-        Region 4: I/O ports at ffa0 [size=16]
-        Region 5: Memory at 50100000 (32-bit, non-prefetchable) [size=1K]
-
--- 
-Frank
+Meanwhile, I'm going to try a libata patch I just saw posted by Tejun.
