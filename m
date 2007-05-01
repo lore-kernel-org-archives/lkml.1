@@ -1,158 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030367AbXEAKRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423088AbXEAKRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030367AbXEAKRa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030346AbXEAKR3
+	id S1423088AbXEAKRo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161677AbXEAKRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:17:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51108 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030323AbXEAKR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:17:26 -0400
-Subject: [DLM] interface for purge (2/2) [18/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:12:51 +0100
-Message-Id: <1178014371.5462.163.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 06:17:44 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:33077 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161676AbXEAKRf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:17:35 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Tue, 1 May 2007 06:16:35 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Willy Tarreau <w@1wt.eu>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
+Subject: Re: pcmcia ioctl removal
+In-Reply-To: <20070501094400.GX943@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0705010600140.9375@localhost.localdomain>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <20070501084623.GB14364@infradead.org> <Pine.LNX.4.64.0705010514300.9162@localhost.localdomain>
+ <20070501094400.GX943@1wt.eu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 72c2be776bd6eec5186e316e6d9dd4aab78d314d Mon Sep 17 00:00:00 2001
-From: David Teigland <teigland@redhat.com>
-Date: Fri, 30 Mar 2007 15:06:16 -0500
-Subject: [PATCH] [DLM] interface for purge (2/2)
+On Tue, 1 May 2007, Willy Tarreau wrote:
 
-Add code to accept purge commands from userland.
+> On Tue, May 01, 2007 at 05:16:13AM -0400, Robert P. J. Day wrote:
+... snip ...
+> > in other words, the PCMCIA ioctl feature *has* been listed as
+> > obsolete for quite some time, and is already a *year and a half*
+> > overdue for removal.
+> >
+> > in short, it's annoying to take the position that stuff can't be
+> > deleted without warning, then turn around and be reluctant to remove
+> > stuff for which *more than ample warning* has already been given.
+> > doing that just makes a joke of the features removal file, and makes
+> > you wonder what its purpose is in the first place.
+> >
+> > a little consistency would be nice here, don't you think?
+>
+> No, it just shows how useless this file is.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+agreed.  it's mildly entertaining to have watched this raging
+discussion over the last few days regarding bugs and emails and
+bugzilla and adrian's regressions, while the one feature that's meant
+to track aging and removable kernel features is essentially valueless,
+and no one seems to care.
 
-diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
-index 0843a30..64fc4ec 100644
---- a/fs/dlm/lock.h
-+++ b/fs/dlm/lock.h
-@@ -41,6 +41,8 @@ int dlm_user_unlock(struct dlm_ls *ls, struct dlm_user_args *ua_tmp,
- 	uint32_t flags, uint32_t lkid, char *lvb_in);
- int dlm_user_cancel(struct dlm_ls *ls,  struct dlm_user_args *ua_tmp,
- 	uint32_t flags, uint32_t lkid);
-+int dlm_user_purge(struct dlm_ls *ls, struct dlm_user_proc *proc,
-+	int nodeid, int pid);
- void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc);
- 
- static inline int is_master(struct dlm_rsb *r)
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index c978c67..3e746a6 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -56,6 +56,7 @@ struct dlm_write_request32 {
- 	union  {
- 		struct dlm_lock_params32 lock;
- 		struct dlm_lspace_params lspace;
-+		struct dlm_purge_params purge;
- 	} i;
- };
- 
-@@ -92,6 +93,9 @@ static void compat_input(struct dlm_write_request *kb,
- 		kb->i.lspace.flags = kb32->i.lspace.flags;
- 		kb->i.lspace.minor = kb32->i.lspace.minor;
- 		strcpy(kb->i.lspace.name, kb32->i.lspace.name);
-+	} else if (kb->cmd == DLM_USER_PURGE) {
-+		kb->i.purge.nodeid = kb32->i.purge.nodeid;
-+		kb->i.purge.pid = kb32->i.purge.pid;
- 	} else {
- 		kb->i.lock.mode = kb32->i.lock.mode;
- 		kb->i.lock.namelen = kb32->i.lock.namelen;
-@@ -320,6 +324,22 @@ fail:
- 	return error;
- }
- 
-+static int device_user_purge(struct dlm_user_proc *proc,
-+			     struct dlm_purge_params *params)
-+{
-+	struct dlm_ls *ls;
-+	int error;
-+
-+	ls = dlm_find_lockspace_local(proc->lockspace);
-+	if (!ls)
-+		return -ENOENT;
-+
-+	error = dlm_user_purge(ls, proc, params->nodeid, params->pid);
-+
-+	dlm_put_lockspace(ls);
-+	return error;
-+}
-+
- static int device_create_lockspace(struct dlm_lspace_params *params)
- {
- 	dlm_lockspace_t *lockspace;
-@@ -522,6 +542,14 @@ static ssize_t device_write(struct file *file, const char __user *buf,
- 		error = device_remove_lockspace(&kbuf->i.lspace);
- 		break;
- 
-+	case DLM_USER_PURGE:
-+		if (!proc) {
-+			log_print("no locking on control device");
-+			goto out_sig;
-+		}
-+		error = device_user_purge(proc, &kbuf->i.purge);
-+		break;
-+
- 	default:
- 		log_print("Unknown command passed to DLM device : %d\n",
- 			  kbuf->cmd);
-diff --git a/include/linux/dlm_device.h b/include/linux/dlm_device.h
-index 2a2dd18..c2735ca 100644
---- a/include/linux/dlm_device.h
-+++ b/include/linux/dlm_device.h
-@@ -19,7 +19,7 @@
- 
- /* Version of the device interface */
- #define DLM_DEVICE_VERSION_MAJOR 5
--#define DLM_DEVICE_VERSION_MINOR 0
-+#define DLM_DEVICE_VERSION_MINOR 1
- #define DLM_DEVICE_VERSION_PATCH 0
- 
- /* struct passed to the lock write */
-@@ -44,6 +44,11 @@ struct dlm_lspace_params {
- 	char name[0];
- };
- 
-+struct dlm_purge_params {
-+	__u32 nodeid;
-+	__u32 pid;
-+};
-+
- struct dlm_write_request {
- 	__u32 version[3];
- 	__u8 cmd;
-@@ -53,6 +58,7 @@ struct dlm_write_request {
- 	union  {
- 		struct dlm_lock_params   lock;
- 		struct dlm_lspace_params lspace;
-+		struct dlm_purge_params  purge;
- 	} i;
- };
- 
-@@ -76,6 +82,7 @@ struct dlm_lock_result {
- #define DLM_USER_QUERY        3
- #define DLM_USER_CREATE_LOCKSPACE  4
- #define DLM_USER_REMOVE_LOCKSPACE  5
-+#define DLM_USER_PURGE        6
- 
- /* Arbitrary length restriction */
- #define MAX_LS_NAME_LEN 64
+> What is needed is a big warning during usage, not a file that nobody
+> reads.
+
+agreed there as well.  but short of that, it would still be nice if
+people took a minute, perused the feature removal file, and at least
+brought it up-to-date.  if it's going to have any value, then:
+
+1) all proposed removal dates should be reviewed to make sure they're
+still meaningful,
+
+2) stuff that's overdue for removal should be either removed, or have
+its expiry date brought forward, and
+
+3) stuff in the kernel tree that is understood to be obsolete or
+nearly so should have an entry added to that file, so that the clock
+can at least *start* ticking for that stuff, and you can at least say
+you *tried* to warn current users.
+
+as a start, i posted last month the results of running the simple
+command:
+
+  $ grep -iw obsolete $(find . -name Kconfig\*)
+
+and some of what was printed is clearly misleading.  (don't worry,
+tilman -- we're not going to reopen that whole isdn4linux thing. :-)
+
+i mean, what of the following is actually obsolete:
+
+  * traffic policing
+  * IP6 Userspace queueing via NETLINK
+  * IP Userspace queueing via NETLINK
+  * ebt: ulog support
+  * Traffic Shaper
+
+and so on (and there's that legacy PM thing as well).
+
+> I'm sorry for your patch which may get delayed a lot.
+
+obviously, leaving stuff like that in the kernel doesn't actually
+*hurt* anything but, yeah, it's a tad annoying to invest a few minutes
+to do some janitor work based on what should be killable, submit the
+patch, then have people freak out about how that is still an essential
+feature.
+
+bottom line:  if you want janitor folks to help out with cleanup, make
+sure they know what can legitimately be cleaned, and stop wasting
+peoples' time.
+
+rday
+
+p.s.  now if there were only a way to, say, tag various kernel
+features as "obsolete" or "deprecated" ...  :-)
+
 -- 
-1.5.1.2
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
