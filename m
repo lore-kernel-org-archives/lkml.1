@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946033AbXEAWIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945976AbXEAWKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946033AbXEAWIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 18:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946032AbXEAWIw
+	id S1945976AbXEAWKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945986AbXEAWKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 18:08:52 -0400
-Received: from mga02.intel.com ([134.134.136.20]:13019 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946033AbXEAWIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 18:08:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,475,1170662400"; 
-   d="scan'208";a="237537598"
-Message-ID: <4637BA70.8000108@intel.com>
-Date: Tue, 01 May 2007 15:08:48 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Tue, 1 May 2007 18:10:42 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:58543 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945976AbXEAWKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 18:10:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oBZ7Us6faAuJ1BcFphjAOpz66hYVmfU5mwNpeeIrp51kpQY3wRIBp1ERAqC9gEOFpJ6Z6/xcnGgXod0alHpjFSXWjEVm2/I4x4joCt6f7cTmW80WXoi5jGRUMd5HemzuBQC1niWcK3snKvVzenXDqpDgW4KB+Iod/coAVuopBaE=
+Message-ID: <a36005b50705011510k4cd7873dr3fb8206c0f107169@mail.gmail.com>
+Date: Tue, 1 May 2007 15:10:40 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Bill Irwin" <bill.irwin@oracle.com>, "Ulrich Drepper" <drepper@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Eric Dumazet" <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+Subject: Re: per-thread rusage
+Cc: wli@holomorphy.com
+In-Reply-To: <20070501202456.GR26598@holomorphy.com>
 MIME-Version: 1.0
-To: Michel Lespinasse <walken@zoy.org>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: 24 lost ticks with 2.6.20.10 kernel
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org>
-In-Reply-To: <20070501214912.GA4048@zoy.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2007 22:08:49.0555 (UTC) FILETIME=[4BC69E30:01C78C3D]
+Content-Disposition: inline
+References: <20070404172931.GM2986@holomorphy.com>
+	 <20070404194829.1a93d8fd.dada1@cosmosbay.com>
+	 <20070404181050.GN2986@holomorphy.com>
+	 <20070409165315.4704021f.akpm@linux-foundation.org>
+	 <20070410004201.GA2986@holomorphy.com>
+	 <20070501172937.GQ26598@holomorphy.com>
+	 <a36005b50705011139p361dbc46ube0da5e42955f8b0@mail.gmail.com>
+	 <20070501202456.GR26598@holomorphy.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse wrote:
-> (I've added the E1000 maintainers to the thread as I found the issue
-> seems to go away after I compile out that driver. For reference, I was
-> trying to figure out why I lose exactly 24 ticks about every two
-> seconds, as shown with report_lost_ticks. This is with a DQ965GF
-> motherboard with onboard E1000).
+On 5/1/07, Bill Irwin <bill.irwin@oracle.com> wrote:
+> The basic
+> idea is to try to do it similarly to how everyone else does so userspace
+> (I suppose this would include glibc) don't have to bend over backward to
+> accommodate it. Or basically to do what everyone expects.
 
-that's perfectly likely. The main issue is that we read the hardware stats every 
-two seconds and that can consume quite some time. It's strange that you are 
-losing that many ticks IMHO, but losing one or two might very well be.
+I think beside RUSAGE_THREAD you'll find no precedence.  It's all new,
+you have to tread the path.  The RUSAGE_THREAD interface is not
+sufficient, actually.  First, if a thread terminates we don't have to
+keep it stick around until a wait call can be issued.  We terminate
+threads right away and the synchronization with waiters is done
+independently.  Seond, the thread ID (aka kernel process ID) is not
+exported nor should it.  This is easy to solve, though: introduce a
+pthread_getrusage interface.
 
-We've been playing with all sorts of solutions to this problem and haven't come 
-up with a way to reduce the load of the system reading HW stats, and it remains 
-the most likely culprit, allthough I don't rule out clean routines just yet. 
-This could very well be exaggerated at 100mbit speeds as well, I never looked at 
-that.
+To solve the first problem the terminating thread should write out the
+data before it is gone.  Automatically.  After registration.  So, you
+could have a syscall to register a structure in the user address space
+which is filled with the data.  If the data structure is the same as
+rusage you're done.  If you use a different data structure yo need to
+introduce a getrusage-equivalent syscall.
 
-I've had good results with 2.6.21.1 (even running tickless :)) on these NICs. 
-Have you tried that yet?
+With this infrastructure in place we could have
 
-Auke
+  int pthread_getrusage(pthread_t, struct ruage *);
+
+and
+
+  int pthread_join4(pthread_t, void ** valueptr, struct rusage *);
+
+pthread_join4 is a joke, we need a better name, but you get the drift.
