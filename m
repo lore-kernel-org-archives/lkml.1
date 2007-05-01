@@ -1,107 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423634AbXEAUuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946003AbXEAUvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423634AbXEAUuh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423650AbXEAUlw
+	id S1946003AbXEAUvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423643AbXEAUlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:41:52 -0400
-Received: from assei2bl6.telenet-ops.be ([195.130.133.69]:45668 "EHLO
+	Tue, 1 May 2007 16:41:50 -0400
+Received: from assei2bl6.telenet-ops.be ([195.130.133.69]:45674 "EHLO
 	assei2bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423636AbXEAUfA (ORCPT
+	with ESMTP id S1423608AbXEAUfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:35:00 -0400
-Message-Id: <20070501203335.420518542@mail.of.borg>
+	Tue, 1 May 2007 16:35:01 -0400
+Message-Id: <20070501203336.010764675@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:55 +0200
+Date: Tue, 01 May 2007 22:32:57 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
        Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 21/33] m68k: reverse Mac IRQ damage
-Content-Disposition: inline; filename=mac68k-revert-remaining-irq-damage.diff
+Subject: [patch 23/33] m68k: Mac nubus IRQ fixes (plan E)
+Content-Disposition: inline; filename=mac68k-irq-plan-e.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Finn Thain <fthain@telegraphics.com.au>
 
-Reverse the last of a monumental brown-paper-bag commit that went into the 2.3
-kernel.
+Some Macs lack a slot interrupt enable register. So the existing code makes
+disabled and unregistered slot IRQ lines outputs set high. This seems to work
+on quadras, but does not work on genuine VIAs (perhaps the card still succeeds
+in pulling the line low, or perhaps because this increases the settle time on
+the port A input, meaning that the CA1 IRQ could fire before the slot line
+reads active).
+
+Because of this, the nubus_active flags were used to mask IRQs, which is
+actually worse than the problem it tries to solve. Any interrupt masked by
+nubus_active will remain asserted and prevent further transitions on CA1. And
+so the nubus gets wedged regardless of hardware (emulated VIA ASIC, real VIA
+chip or RBV).
+
+The best solution to this hardware limitation of genuine VIAs is to disable the
+umbrella SLOTS IRQ when disabling a slot on those machines. Unfortunately, this
+means all slot IRQs get disabled when any slot IRQ is disabled. But it is only
+a problem when there's more than 1 device using nubus interrupts.
+
+Another potential problem for genuine VIAs is an unregistered nubus IRQ.
+Eventually it will be possible to enable the CA1 interrupt by installing its
+handler only _after_ all nubus drivers have loaded but _before_ the kernel
+needs them, at which time this last problem can be fixed. For now it can be
+worked around:
+
+  - disable MacOS extensions
+  - don't boot MacOS (use the Emile bootloader instead)
+  - get the bootloaders to disable ROM drivers (Penguin does this for video
+    cards already, don't know about Emile)
+  - physically remove unsupported cards
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/mac/baboon.c |    2 +-
- arch/m68k/mac/oss.c    |    6 +++---
- arch/m68k/mac/psc.c    |    2 +-
- arch/m68k/mac/via.c    |    2 +-
- 4 files changed, 6 insertions(+), 6 deletions(-)
+ arch/m68k/mac/via.c |  141 +++++++++++++++++++++++++++++-----------------------
+ 1 file changed, 80 insertions(+), 61 deletions(-)
 
---- linux-m68k-2.6.21.orig/arch/m68k/mac/baboon.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/baboon.c
-@@ -81,9 +81,9 @@ irqreturn_t baboon_irq(int irq, void *de
- 	for (i = 0, irq_bit = 1 ; i < 3 ; i++, irq_bit <<= 1) {
- 	        if (events & irq_bit/* & baboon_active*/) {
- 			baboon_active &= ~irq_bit;
-+			baboon->mb_ifr &= ~irq_bit;
- 			m68k_handle_int(IRQ_BABOON_0 + i);
- 			baboon_active |= irq_bit;
--			baboon->mb_ifr &= ~irq_bit;
- 		}
- 	}
- #if 0
---- linux-m68k-2.6.21.orig/arch/m68k/mac/oss.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/oss.c
-@@ -109,12 +109,12 @@ irqreturn_t oss_irq(int irq, void *dev_i
- 	/* FIXME: how do you clear a pending IRQ?    */
- 
- 	if (events & OSS_IP_SOUND) {
--		/* FIXME: call sound handler */
- 		oss->irq_pending &= ~OSS_IP_SOUND;
-+		/* FIXME: call sound handler */
- 	} else if (events & OSS_IP_SCSI) {
- 		oss->irq_level[OSS_SCSI] = OSS_IRQLEV_DISABLED;
--		m68k_handle_int(IRQ_MAC_SCSI);
- 		oss->irq_pending &= ~OSS_IP_SCSI;
-+		m68k_handle_int(IRQ_MAC_SCSI);
- 		oss->irq_level[OSS_SCSI] = OSS_IRQLEV_SCSI;
- 	} else {
- 		/* FIXME: error check here? */
-@@ -146,8 +146,8 @@ irqreturn_t oss_nubus_irq(int irq, void 
- 	for (i = 0, irq_bit = 1 ; i < 6 ; i++, irq_bit <<= 1) {
- 		if (events & irq_bit) {
- 			oss->irq_level[i] = OSS_IRQLEV_DISABLED;
--			m68k_handle_int(NUBUS_SOURCE_BASE + i);
- 			oss->irq_pending &= ~irq_bit;
-+			m68k_handle_int(NUBUS_SOURCE_BASE + i);
- 			oss->irq_level[i] = OSS_IRQLEV_NUBUS;
- 		}
- 	}
---- linux-m68k-2.6.21.orig/arch/m68k/mac/psc.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/psc.c
-@@ -149,8 +149,8 @@ irqreturn_t psc_irq(int irq, void *dev_i
- 	for (i = 0, irq_bit = 1 ; i < 4 ; i++, irq_bit <<= 1) {
- 	        if (events & irq_bit) {
- 			psc_write_byte(pIER, irq_bit);
--			m68k_handle_int(base_irq + i);
- 			psc_write_byte(pIFR, irq_bit);
-+			m68k_handle_int(base_irq + i);
- 			psc_write_byte(pIER, irq_bit | 0x80);
- 		}
- 	}
 --- linux-m68k-2.6.21.orig/arch/m68k/mac/via.c
 +++ linux-m68k-2.6.21/arch/m68k/mac/via.c
-@@ -430,8 +430,8 @@ irqreturn_t via1_irq(int irq, void *dev_
- 	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1)
- 		if (events & irq_bit) {
- 			via1[vIER] = irq_bit;
--			m68k_handle_int(VIA1_SOURCE_BASE + i);
- 			via1[vIFR] = irq_bit;
-+			m68k_handle_int(VIA1_SOURCE_BASE + i);
- 			via1[vIER] = irq_bit | 0x80;
- 		}
+@@ -64,7 +64,19 @@ static int gIER,gIFR,gBufA,gBufB;
+ #define MAC_CLOCK_LOW		(MAC_CLOCK_TICK&0xFF)
+ #define MAC_CLOCK_HIGH		(MAC_CLOCK_TICK>>8)
  
+-static int  nubus_active;
++/* To disable a NuBus slot on Quadras we make the slot IRQ lines outputs, set
++ * high. On RBV we just use the slot interrupt enable register. On Macs with
++ * genuine VIA chips we must use nubus_disabled to keep track of disabled slot
++ * interrupts. When any slot IRQ is disabled we mask the (edge triggered) CA1
++ * or "SLOTS" interrupt. When no slot is disabled, we unmask the CA1 interrupt.
++ * So, on genuine VIAs, having more than one NuBus IRQ can mean trouble,
++ * because closing one of those drivers can mask all of the NuBus interrupts.
++ * Also, since we can't mask the unregistered slot IRQs on genuine VIAs, it's
++ * possible to get interrupts from cards that MacOS or the ROM has configured
++ * but we have not. FWIW, "Designing Cards and Drivers for Macintosh II and
++ * Macintosh SE", page 9-8, says, a slot IRQ with no driver would crash MacOS.
++ */
++static u8 nubus_disabled;
+ 
+ void via_debug_dump(void);
+ irqreturn_t via1_irq(int, void *);
+@@ -383,9 +395,6 @@ int via_get_cache_disable(void)
+ 
+ void __init via_nubus_init(void)
+ {
+-	/* don't set nubus_active = 0 here, it kills the Baboon */
+-	/* interrupt that we've already registered.		*/
+-
+ 	/* unlock nubus transactions */
+ 
+ 	if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+@@ -399,28 +408,35 @@ void __init via_nubus_init(void)
+ 		via2[gBufB] |= 0x02;
+ 	}
+ 
+-	/* disable nubus slot interrupts. */
+-	if (rbv_present) {
++	/* Disable all the slot interrupts (where possible). */
++
++	switch (macintosh_config->via_type) {
++	case MAC_VIA_II:
++		/* Just make the port A lines inputs. */
++		switch(macintosh_config->ident) {
++		case MAC_MODEL_II:
++		case MAC_MODEL_IIX:
++		case MAC_MODEL_IICX:
++		case MAC_MODEL_SE30:
++			/* The top two bits are RAM size outputs. */
++			via2[vDirA] &= 0xC0;
++			break;
++		default:
++			via2[vDirA] &= 0x80;
++		}
++		break;
++	case MAC_VIA_IIci:
++		/* RBV. Disable all the slot interrupts. SIER works like IER. */
+ 		via2[rSIER] = 0x7F;
+-		via2[rSIER] = nubus_active | 0x80;
+-	} else {
+-		/* These are ADB bits on PMU */
++		break;
++	case MAC_VIA_QUADRA:
++		/* Disable the inactive slot interrupts by making those lines outputs. */
+ 		if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+-		   (macintosh_config->adb_type != MAC_ADB_PB2)) {
+-			switch(macintosh_config->ident)
+-			{
+-				case MAC_MODEL_II:
+-				case MAC_MODEL_IIX:
+-				case MAC_MODEL_IICX:
+-				case MAC_MODEL_SE30:
+-					via2[vBufA] |= 0x3F;
+-					via2[vDirA] = ~nubus_active | 0xc0;
+-					break;
+-				default:
+-					via2[vBufA] = 0xFF;
+-					via2[vDirA] = ~nubus_active;
+-			}
++		    (macintosh_config->adb_type != MAC_ADB_PB2)) {
++			via2[vBufA] |= 0x7F;
++			via2[vDirA] |= 0x7F;
+ 		}
++		break;
+ 	}
+ }
+ 
+@@ -489,7 +505,8 @@ irqreturn_t via2_irq(int irq, void *dev_
+ 			via2[gIER] = irq_bit;
+ 			via2[gIFR] = irq_bit | rbv_clear;
+ 			m68k_handle_int(irq_num);
+-			via2[gIER] = irq_bit | 0x80;
++			if (irq_num != IRQ_MAC_NUBUS || nubus_disabled == 0)
++				via2[gIER] = irq_bit | 0x80;
+ 		}
+ 		++irq_num;
+ 		irq_bit <<= 1;
+@@ -511,7 +528,7 @@ irqreturn_t via_nubus_irq(int irq, void 
+ 	if (rbv_present)
+ 		events &= via2[rSIER];
+ 	else
+-		events &= nubus_active;
++		events &= ~via2[vDirA];
+ 	if (!events)
+ 		return IRQ_NONE;
+ 
+@@ -533,7 +550,7 @@ irqreturn_t via_nubus_irq(int irq, void 
+ 		if (rbv_present)
+ 			events &= via2[rSIER];
+ 		else
+-			events &= nubus_active;
++			events &= ~via2[vDirA];
+ 	} while (events);
+ 	return IRQ_HANDLED;
+ }
+@@ -541,38 +558,38 @@ irqreturn_t via_nubus_irq(int irq, void 
+ void via_irq_enable(int irq) {
+ 	int irq_src	= IRQ_SRC(irq);
+ 	int irq_idx	= IRQ_IDX(irq);
+-	int irq_bit	= 1 << irq_idx;
+ 
+ #ifdef DEBUG_IRQUSE
+ 	printk(KERN_DEBUG "via_irq_enable(%d)\n", irq);
+ #endif
+ 
+ 	if (irq_src == 1) {
+-		via1[vIER] = irq_bit | 0x80;
++		via1[vIER] = IER_SET_BIT(irq_idx);
+ 	} else if (irq_src == 2) {
+-		via2[gIER] = irq_bit | 0x80;
++		if (irq != IRQ_MAC_NUBUS || nubus_disabled == 0)
++			via2[gIER] = IER_SET_BIT(irq_idx);
+ 	} else if (irq_src == 7) {
+-		nubus_active |= irq_bit;
+-		if (rbv_present) {
+-			/* enable the slot interrupt. SIER works like IER. */
++		switch (macintosh_config->via_type) {
++		case MAC_VIA_II:
++			nubus_disabled &= ~(1 << irq_idx);
++			/* Enable the CA1 interrupt when no slot is disabled. */
++			if (!nubus_disabled)
++				via2[gIER] = IER_SET_BIT(1);
++			break;
++		case MAC_VIA_IIci:
++			/* On RBV, enable the slot interrupt.
++			 * SIER works like IER.
++			 */
+ 			via2[rSIER] = IER_SET_BIT(irq_idx);
+-		} else {
+-			/* Make sure the bit is an input, to enable the irq */
+-			/* But not on PowerBooks, that's ADB... */
++			break;
++		case MAC_VIA_QUADRA:
++			/* Make the port A line an input to enable the slot irq.
++			 * But not on PowerBooks, that's ADB.
++			 */
+ 			if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+-			   (macintosh_config->adb_type != MAC_ADB_PB2)) {
+-				switch(macintosh_config->ident)
+-				{
+-					case MAC_MODEL_II:
+-					case MAC_MODEL_IIX:
+-					case MAC_MODEL_IICX:
+-					case MAC_MODEL_SE30:
+-						via2[vDirA] &= (~irq_bit | 0xc0);
+-						break;
+-					default:
+-						via2[vDirA] &= ~irq_bit;
+-				}
+-			}
++			    (macintosh_config->adb_type != MAC_ADB_PB2))
++				via2[vDirA] &= ~(1 << irq_idx);
++			break;
+ 		}
+ 	}
+ }
+@@ -580,29 +597,31 @@ void via_irq_enable(int irq) {
+ void via_irq_disable(int irq) {
+ 	int irq_src	= IRQ_SRC(irq);
+ 	int irq_idx	= IRQ_IDX(irq);
+-	int irq_bit	= 1 << irq_idx;
+ 
+ #ifdef DEBUG_IRQUSE
+ 	printk(KERN_DEBUG "via_irq_disable(%d)\n", irq);
+ #endif
+ 
+ 	if (irq_src == 1) {
+-		via1[vIER] = irq_bit & 0x7F;
++		via1[vIER] = IER_CLR_BIT(irq_idx);
+ 	} else if (irq_src == 2) {
+-		via2[gIER] = irq_bit & 0x7F;
++		via2[gIER] = IER_CLR_BIT(irq_idx);
+ 	} else if (irq_src == 7) {
+-		if (rbv_present) {
+-			/* disable the slot interrupt.  SIER works like IER. */
++		switch (macintosh_config->via_type) {
++		case MAC_VIA_II:
++			nubus_disabled |= 1 << irq_idx;
++			if (nubus_disabled)
++				via2[gIER] = IER_CLR_BIT(1);
++			break;
++		case MAC_VIA_IIci:
+ 			via2[rSIER] = IER_CLR_BIT(irq_idx);
+-		} else {
+-			/* disable the nubus irq by changing dir to output */
+-			/* except on PMU */
++			break;
++		case MAC_VIA_QUADRA:
+ 			if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
+-			   (macintosh_config->adb_type != MAC_ADB_PB2)) {
+-				via2[vDirA] |= irq_bit;
+-			}
++			    (macintosh_config->adb_type != MAC_ADB_PB2))
++				via2[vDirA] |= 1 << irq_idx;
++			break;
+ 		}
+-		nubus_active &= ~irq_bit;
+ 	}
+ }
+ 
+@@ -638,7 +657,7 @@ int via_irq_pending(int irq)
+ 	} else if (irq_src == 2) {
+ 		return via2[gIFR] & irq_bit;
+ 	} else if (irq_src == 7) {
+-		/* FIXME: this can't work while a slot irq is disabled! */
++		/* Always 0 for MAC_VIA_QUADRA if the slot irq is disabled. */
+ 		return ~via2[gBufA] & irq_bit;
+ 	}
+ 	return 0;
 
 --
 Gr{oetje,eeting}s,
