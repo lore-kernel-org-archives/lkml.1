@@ -1,114 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbXEARqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXEARr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbXEARqp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 13:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755111AbXEARqp
+	id S1755111AbXEARr5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbXEARr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 13:46:45 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:11147 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755100AbXEARqn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 13:46:43 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=SbvpWgwS6LhvNEwNR5/+mPAEK48SDGQL5h31gdhxzdl8pV88trvTevML7FqIRI32G
-	DLiXQcDaXhsDjwiUBmvRg==
-Message-ID: <6599ad830705011046l6d0a0db7jd28d29f8c1b8cdb9@mail.gmail.com>
-Date: Tue, 1 May 2007 10:46:10 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/9] Containers (V9): Basic container framework
-Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
-       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
-       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com,
-       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       rohitseth@google.com, mbligh@google.com, containers@lists.osdl.org,
-       devel@openvz.org
-In-Reply-To: <46377BA4.6030701@linux.vnet.ibm.com>
+	Tue, 1 May 2007 13:47:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56643 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755110AbXEARrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 13:47:55 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] AFS: Make the match_*() functions take const options
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, geert@linux-m68k.org, dhowells@redhat.com
+Date: Tue, 01 May 2007 18:47:47 +0100
+Message-ID: <20070501174747.19112.1985.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070427104607.252541000@menage.corp.google.com>
-	 <20070427111300.015604000@menage.corp.google.com>
-	 <46377BA4.6030701@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> menage@google.com wrote:
-> > This patch adds the main containers framework - the container
-> > filesystem, and the basic structures for tracking membership and
-> > associating subsystem state objects to tasks.
->
-> [snip]
->
-> > +*** notify_on_release is disabled in the current patch set. It may be
-> > +*** reactivated in a future patch in a less-intrusive manner
-> > +
->
-> Won't this break user space tools for cpusets?
+Make the match_*() functions take a const pointer to the options table and
+make strings pointers in the options table const too.
 
-Yes, so it's a must-fix before this gets anywhere near a real distribution.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
->
-> [snip]
->
-> > +See kernel/container.c for more details.
-> > +
-> > +Subsystems can take/release the container_mutex via the functions
-> > +container_lock()/container_unlock(), and can
-> > +take/release the callback_mutex via the functions
-> > +container_lock()/container_unlock().
-> > +
->
-> Hmm.. looks like a documentation error. Both mutex's are obtained through
-> container_lock/container_unlock ?
+ include/linux/parser.h |    8 ++++----
+ lib/parser.c           |   10 +++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-The second half of that sentence is obsolete and should have been deleted.
+diff --git a/include/linux/parser.h b/include/linux/parser.h
+index fa33328..86676f6 100644
+--- a/include/linux/parser.h
++++ b/include/linux/parser.h
+@@ -11,10 +11,10 @@
+ /* associates an integer enumerator with a pattern string. */
+ struct match_token {
+ 	int token;
+-	char *pattern;
++	const char *pattern;
+ };
+ 
+-typedef struct match_token match_table_t[];
++typedef const struct match_token match_table_t[];
+ 
+ /* Maximum number of arguments that match_token will find in a pattern */
+ enum {MAX_OPT_ARGS = 3};
+@@ -29,5 +29,5 @@ int match_token(char *, match_table_t table, substring_t args[]);
+ int match_int(substring_t *, int *result);
+ int match_octal(substring_t *, int *result);
+ int match_hex(substring_t *, int *result);
+-void match_strcpy(char *, substring_t *);
+-char *match_strdup(substring_t *);
++void match_strcpy(char *, const substring_t *);
++char *match_strdup(const substring_t *);
+diff --git a/lib/parser.c b/lib/parser.c
+index 7ad2a48..703c8c1 100644
+--- a/lib/parser.c
++++ b/lib/parser.c
+@@ -22,7 +22,7 @@
+  * match extremely simple token=arg style patterns. If the pattern is found,
+  * the location(s) of the arguments will be returned in the @args array.
+  */
+-static int match_one(char *s, char *p, substring_t args[])
++static int match_one(char *s, const char *p, substring_t args[])
+ {
+ 	char *meta;
+ 	int argc = 0;
+@@ -43,7 +43,7 @@ static int match_one(char *s, char *p, substring_t args[])
+ 		p = meta + 1;
+ 
+ 		if (isdigit(*p))
+-			len = simple_strtoul(p, &p, 10);
++			len = simple_strtoul(p, (char **) &p, 10);
+ 		else if (*p == '%') {
+ 			if (*s++ != '%')
+ 				return 0;
+@@ -102,7 +102,7 @@ static int match_one(char *s, char *p, substring_t args[])
+  */
+ int match_token(char *s, match_table_t table, substring_t args[])
+ {
+-	struct match_token *p;
++	const struct match_token *p;
+ 
+ 	for (p = table; !match_one(s, p->pattern, args) ; p++)
+ 		;
+@@ -190,7 +190,7 @@ int match_hex(substring_t *s, int *result)
+  * &substring_t @s to the c-style string @to. Caller guarantees that @to is
+  * large enough to hold the characters of @s.
+  */
+-void match_strcpy(char *to, substring_t *s)
++void match_strcpy(char *to, const substring_t *s)
+ {
+ 	memcpy(to, s->from, s->to - s->from);
+ 	to[s->to - s->from] = '\0';
+@@ -204,7 +204,7 @@ void match_strcpy(char *to, substring_t *s)
+  * the &substring_t @s. The caller is responsible for freeing the returned
+  * string with kfree().
+  */
+-char *match_strdup(substring_t *s)
++char *match_strdup(const substring_t *s)
+ {
+ 	char *p = kmalloc(s->to - s->from + 1, GFP_KERNEL);
+ 	if (p)
 
->
-> > +Accessing a task's container pointer may be done in the following ways:
-> > +- while holding container_mutex
-> > +- while holding the task's alloc_lock (via task_lock())
-> > +- inside an rcu_read_lock() section via rcu_dereference()
-> > +
->
-> container_mutex() and task_lock() can be used for changing the pointer?
-
-No, these are all for read operations. (Actually, this is a bit of
-documentation that's bit-rotted - there's no longer a per-task
-"container" pointer). I'll update this.
-
-For write operations, only the container system should be modifying
-those pointers (under the protection of both container_mutex and
-alloc_lock).
-
->
-> We needed the equivalent of container_remove_file() to be called
-> if container_add_file() failed.
->
-
-Yes, this is some incomplete behaviour that I inherited from cpusets.
-Needs tidying up.
-
->
-> Can't we derive the top_container from containerfs_root?
-
-Yes, we could for the cost of an extra dereference. Not sure it's a
-big deal either way.
-
-> > +     ssize_t (*read) (struct container *cont, struct cftype *cft,
-> > +                      struct file *file,
-> > +                      char __user *buf, size_t nbytes, loff_t *ppos);
-> > +     u64 (*read_uint) (struct container *cont, struct cftype *cft);
->
-> Is this a new callback, a specialization of the read() callback?
-
-Yes. It's to simplify the common case of reporting a number in a
-control file. (Not yet well documented :-( )
-
-Paul
