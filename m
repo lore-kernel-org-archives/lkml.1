@@ -1,402 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423662AbXEAUgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423648AbXEAUgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423662AbXEAUgQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423651AbXEAUfx
+	id S1423648AbXEAUgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423676AbXEAUfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:35:53 -0400
-Received: from asia.telenet-ops.be ([195.130.137.74]:37011 "EHLO
-	asia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423650AbXEAUfF (ORCPT
+	Tue, 1 May 2007 16:35:48 -0400
+Received: from astra.telenet-ops.be ([195.130.132.58]:45155 "EHLO
+	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423651AbXEAUfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 May 2007 16:35:05 -0400
-Message-Id: <20070501203335.709786991@mail.of.borg>
+X-Greylist: delayed 2133 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 16:35:05 EDT
+Message-Id: <20070501203338.331311229@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:56 +0200
+Date: Tue, 01 May 2007 22:33:05 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 22/33] m68k: Mac IRQ prep
-Content-Disposition: inline; filename=mac68k-irq-prep.diff
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Subject: [patch 31/33] m68k: kill skb_copy_from_linear_data compiler warnings
+Content-Disposition: inline; filename=m68k-skb_copy_from_linear_data-warnings.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Finn Thain <fthain@telegraphics.com.au>
+The recent conversion from `memcpy' to `skb_copy_from_linear_data' removed a
+few casts, which were needed to silence compiler warnings. Re-add them.
 
-Make sure that there are no slot IRQs asserted before leaving the nubus
-handler. If there are and we don't then the nubus gets wedged because this
-prevents a CA1 transition, which means no more nubus IRQs.
-
-Make the interrupt dispatch loops terminate sooner.
-
-Explicitly initialise the VIA latches to make the code more easily understood.
-
-Also some cleanups.
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- arch/m68k/mac/baboon.c |   12 ++--
- arch/m68k/mac/oss.c    |    8 ++
- arch/m68k/mac/psc.c    |   19 +++---
- arch/m68k/mac/via.c    |  139 ++++++++++++++++++++++++++++++-------------------
- 4 files changed, 110 insertions(+), 68 deletions(-)
+ drivers/net/7990.c       |    6 +++---
+ drivers/net/a2065.c      |    4 ++--
+ drivers/net/sun3_82586.c |    5 +++--
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
---- linux-m68k-2.6.21.orig/arch/m68k/mac/baboon.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/baboon.c
-@@ -66,7 +66,7 @@ void __init baboon_register_interrupts(v
+--- linux-m68k-2.6.21.orig/drivers/net/7990.c
++++ linux-m68k-2.6.21/drivers/net/7990.c
+@@ -565,9 +565,9 @@ int lance_start_xmit (struct sk_buff *sk
+         ib->btx_ring [entry].length = (-len) | 0xf000;
+         ib->btx_ring [entry].misc = 0;
  
- irqreturn_t baboon_irq(int irq, void *dev_id)
- {
--	int irq_bit,i;
-+	int irq_bit, irq_num;
- 	unsigned char events;
+-    	if (skb->len < ETH_ZLEN)
+-    		memset((char *)&ib->tx_buf[entry][0], 0, ETH_ZLEN);
+-        skb_copy_from_linear_data(skb, &ib->tx_buf[entry][0], skblen);
++	if (skb->len < ETH_ZLEN)
++		memset((void *)&ib->tx_buf[entry][0], 0, ETH_ZLEN);
++        skb_copy_from_linear_data(skb, (void *)&ib->tx_buf[entry][0], skblen);
  
- #ifdef DEBUG_IRQS
-@@ -78,14 +78,18 @@ irqreturn_t baboon_irq(int irq, void *de
- 	if (!(events = baboon->mb_ifr & 0x07))
- 		return IRQ_NONE;
+         /* Now, give the packet to the lance */
+         ib->btx_ring [entry].tmd1_bits = (LE_T1_POK|LE_T1_OWN);
+--- linux-m68k-2.6.21.orig/drivers/net/a2065.c
++++ linux-m68k-2.6.21/drivers/net/a2065.c
+@@ -597,11 +597,11 @@ static int lance_start_xmit (struct sk_b
+ 	ib->btx_ring [entry].length = (-len) | 0xf000;
+ 	ib->btx_ring [entry].misc = 0;
  
--	for (i = 0, irq_bit = 1 ; i < 3 ; i++, irq_bit <<= 1) {
-+	irq_num = IRQ_BABOON_0;
-+	irq_bit = 1;
-+	do {
- 	        if (events & irq_bit/* & baboon_active*/) {
- 			baboon_active &= ~irq_bit;
- 			baboon->mb_ifr &= ~irq_bit;
--			m68k_handle_int(IRQ_BABOON_0 + i);
-+			m68k_handle_int(irq_num);
- 			baboon_active |= irq_bit;
+-	skb_copy_from_linear_data(skb, &ib->tx_buf [entry][0], skblen);
++	skb_copy_from_linear_data(skb, (void *)&ib->tx_buf [entry][0], skblen);
+ 
+ 	/* Clear the slack of the packet, do I need this? */
+ 	if (len != skblen)
+-		memset ((char *) &ib->tx_buf [entry][skblen], 0, len - skblen);
++		memset ((void *) &ib->tx_buf [entry][skblen], 0, len - skblen);
+ 
+ 	/* Now, give the packet to the lance */
+ 	ib->btx_ring [entry].tmd1_bits = (LE_T1_POK|LE_T1_OWN);
+--- linux-m68k-2.6.21.orig/drivers/net/sun3_82586.c
++++ linux-m68k-2.6.21/drivers/net/sun3_82586.c
+@@ -1023,10 +1023,11 @@ static int sun3_82586_send_packet(struct
+ 	{
+ 		len = skb->len;
+ 		if (len < ETH_ZLEN) {
+-			memset((char *)p->xmit_cbuffs[p->xmit_count], 0, ETH_ZLEN);
++			memset((void *)p->xmit_cbuffs[p->xmit_count], 0,
++			       ETH_ZLEN);
+ 			len = ETH_ZLEN;
  		}
--	}
-+		irq_bit <<= 1;
-+		irq_num++;
-+	} while(events >= irq_bit);
- #if 0
- 	if (baboon->mb_ifr & 0x02) macide_ack_intr(NULL);
- 	/* for now we need to smash all interrupts */
---- linux-m68k-2.6.21.orig/arch/m68k/mac/oss.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/oss.c
-@@ -143,14 +143,18 @@ irqreturn_t oss_nubus_irq(int irq, void 
- #endif
- 	/* There are only six slots on the OSS, not seven */
+-		skb_copy_from_linear_data(skb, p->xmit_cbuffs[p->xmit_count], skb->len);
++		skb_copy_from_linear_data(skb, (void *)p->xmit_cbuffs[p->xmit_count], skb->len);
  
--	for (i = 0, irq_bit = 1 ; i < 6 ; i++, irq_bit <<= 1) {
-+	i = 6;
-+	irq_bit = 0x40;
-+	do {
-+		--i;
-+		irq_bit >>= 1;
- 		if (events & irq_bit) {
- 			oss->irq_level[i] = OSS_IRQLEV_DISABLED;
- 			oss->irq_pending &= ~irq_bit;
- 			m68k_handle_int(NUBUS_SOURCE_BASE + i);
- 			oss->irq_level[i] = OSS_IRQLEV_NUBUS;
- 		}
--	}
-+	} while(events & (irq_bit - 1));
- 	return IRQ_HANDLED;
- }
- 
---- linux-m68k-2.6.21.orig/arch/m68k/mac/psc.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/psc.c
-@@ -131,11 +131,8 @@ irqreturn_t psc_irq(int irq, void *dev_i
- {
- 	int pIFR	= pIFRbase + ((int) dev_id);
- 	int pIER	= pIERbase + ((int) dev_id);
--	int base_irq;
--	int irq_bit,i;
--	unsigned char events;
--
--	base_irq = irq << 3;
-+	int irq_num;
-+	unsigned char irq_bit, events;
- 
- #ifdef DEBUG_IRQS
- 	printk("psc_irq: irq %d pIFR = 0x%02X pIER = 0x%02X\n",
-@@ -146,14 +143,18 @@ irqreturn_t psc_irq(int irq, void *dev_i
- 	if (!events)
- 		return IRQ_NONE;
- 
--	for (i = 0, irq_bit = 1 ; i < 4 ; i++, irq_bit <<= 1) {
--	        if (events & irq_bit) {
-+	irq_num = irq << 3;
-+	irq_bit = 1;
-+	do {
-+		if (events & irq_bit) {
- 			psc_write_byte(pIER, irq_bit);
- 			psc_write_byte(pIFR, irq_bit);
--			m68k_handle_int(base_irq + i);
-+			m68k_handle_int(irq_num);
- 			psc_write_byte(pIER, irq_bit | 0x80);
- 		}
--	}
-+		irq_num++;
-+		irq_bit <<= 1;
-+	} while (events >= irq_bit);
- 	return IRQ_HANDLED;
- }
- 
---- linux-m68k-2.6.21.orig/arch/m68k/mac/via.c
-+++ linux-m68k-2.6.21/arch/m68k/mac/via.c
-@@ -13,6 +13,10 @@
-  * for info.  A full-text web search on 6522 AND VIA will probably also
-  * net some usefulness. <cananian@alumni.princeton.edu> 20apr1999
-  *
-+ * Additional data is here (the SY6522 was used in the Mac II etc):
-+ *     http://www.6502.org/documents/datasheets/synertek/synertek_sy6522.pdf
-+ *     http://www.6502.org/documents/datasheets/synertek/synertek_sy6522_programming_reference.pdf
-+ *
-  * PRAM/RTC access algorithms are from the NetBSD RTC toolkit version 1.08b
-  * by Erik Vogan and adapted to Linux by Joshua M. Thompson (funaho@jurai.org)
-  *
-@@ -37,7 +41,7 @@ volatile __u8 *via1, *via2;
- /* See note in mac_via.h about how this is possibly not useful */
- volatile long *via_memory_bogon=(long *)&via_memory_bogon;
- #endif
--int  rbv_present,via_alt_mapping;
-+int rbv_present, via_alt_mapping;
- __u8 rbv_clear;
- 
- /*
-@@ -138,11 +142,11 @@ void __init via_init(void)
- 
- 	printk(KERN_INFO "VIA2 at %p is ", via2);
- 	if (rbv_present) {
--		printk(KERN_INFO "an RBV\n");
-+		printk("an RBV\n");
- 	} else if (oss_present) {
--		printk(KERN_INFO "an OSS\n");
-+		printk("an OSS\n");
- 	} else {
--		printk(KERN_INFO "a 6522 or clone\n");
-+		printk("a 6522 or clone\n");
- 	}
- 
- #ifdef DEBUG_VIA
-@@ -163,6 +167,7 @@ void __init via_init(void)
- 	via1[vT2CL] = 0;
- 	via1[vT2CH] = 0;
- 	via1[vACR] &= 0x3F;
-+	via1[vACR] &= ~0x03; /* disable port A & B latches */
- 
- 	/*
- 	 * SE/30: disable video IRQ
-@@ -234,6 +239,22 @@ void __init via_init(void)
- 		via2[vT2CL] = 0;
- 		via2[vT2CH] = 0;
- 		via2[vACR] &= 0x3F;
-+		via2[vACR] &= ~0x03; /* disable port A & B latches */
-+	}
-+
-+	/*
-+	 * Set vPCR for SCSI interrupts (but not on RBV)
-+	 */
-+	if (!rbv_present) {
-+		if (macintosh_config->scsi_type == MAC_SCSI_OLD) {
-+			/* CB2 (IRQ) indep. input, positive edge */
-+			/* CA2 (DRQ) indep. input, positive edge */
-+			via2[vPCR] = 0x66;
-+		} else {
-+			/* CB2 (IRQ) indep. input, negative edge */
-+			/* CA2 (DRQ) indep. input, negative edge */
-+			via2[vPCR] = 0x22;
-+		}
- 	}
- }
- 
-@@ -367,19 +388,14 @@ void __init via_nubus_init(void)
- 
- 	/* unlock nubus transactions */
- 
--	if (!rbv_present) {
-+	if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
-+	    (macintosh_config->adb_type != MAC_ADB_PB2)) {
- 		/* set the line to be an output on non-RBV machines */
--		if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
--		   (macintosh_config->adb_type != MAC_ADB_PB2)) {
-+		if (!rbv_present)
- 			via2[vDirB] |= 0x02;
--		}
--	}
--
--	/* this seems to be an ADB bit on PMU machines */
--	/* according to MkLinux.  -- jmt               */
- 
--	if ((macintosh_config->adb_type != MAC_ADB_PB1) &&
--	    (macintosh_config->adb_type != MAC_ADB_PB2)) {
-+		/* this seems to be an ADB bit on PMU machines */
-+		/* according to MkLinux.  -- jmt               */
- 		via2[gBufB] |= 0x02;
- 	}
- 
-@@ -420,20 +436,25 @@ void __init via_nubus_init(void)
- 
- irqreturn_t via1_irq(int irq, void *dev_id)
- {
--	int irq_bit, i;
--	unsigned char events, mask;
-+	int irq_num;
-+	unsigned char irq_bit, events;
- 
--	mask = via1[vIER] & 0x7F;
--	if (!(events = via1[vIFR] & mask))
-+	events = via1[vIFR] & via1[vIER] & 0x7F;
-+	if (!events)
- 		return IRQ_NONE;
- 
--	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1)
-+	irq_num = VIA1_SOURCE_BASE;
-+	irq_bit = 1;
-+	do {
- 		if (events & irq_bit) {
- 			via1[vIER] = irq_bit;
- 			via1[vIFR] = irq_bit;
--			m68k_handle_int(VIA1_SOURCE_BASE + i);
-+			m68k_handle_int(irq_num);
- 			via1[vIER] = irq_bit | 0x80;
- 		}
-+		++irq_num;
-+		irq_bit <<= 1;
-+	} while (events >= irq_bit);
- 
- #if 0 /* freakin' pmu is doing weird stuff */
- 	if (!oss_present) {
-@@ -454,20 +475,25 @@ irqreturn_t via1_irq(int irq, void *dev_
- 
- irqreturn_t via2_irq(int irq, void *dev_id)
- {
--	int irq_bit, i;
--	unsigned char events, mask;
-+	int irq_num;
-+	unsigned char irq_bit, events;
- 
--	mask = via2[gIER] & 0x7F;
--	if (!(events = via2[gIFR] & mask))
-+	events = via2[gIFR] & via2[gIER] & 0x7F;
-+	if (!events)
- 		return IRQ_NONE;
- 
--	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1)
-+	irq_num = VIA2_SOURCE_BASE;
-+	irq_bit = 1;
-+	do {
- 		if (events & irq_bit) {
- 			via2[gIER] = irq_bit;
- 			via2[gIFR] = irq_bit | rbv_clear;
--			m68k_handle_int(VIA2_SOURCE_BASE + i);
-+			m68k_handle_int(irq_num);
- 			via2[gIER] = irq_bit | 0x80;
- 		}
-+		++irq_num;
-+		irq_bit <<= 1;
-+	} while (events >= irq_bit);
- 	return IRQ_HANDLED;
- }
- 
-@@ -478,19 +504,37 @@ irqreturn_t via2_irq(int irq, void *dev_
- 
- irqreturn_t via_nubus_irq(int irq, void *dev_id)
- {
--	int irq_bit, i;
--	unsigned char events;
-+	int slot_irq;
-+	unsigned char slot_bit, events;
- 
--	if (!(events = ~via2[gBufA] & nubus_active))
-+	events = ~via2[gBufA] & 0x7F;
-+	if (rbv_present)
-+		events &= via2[rSIER];
-+	else
-+		events &= nubus_active;
-+	if (!events)
- 		return IRQ_NONE;
- 
--	for (i = 0, irq_bit = 1 ; i < 7 ; i++, irq_bit <<= 1) {
--		if (events & irq_bit) {
--			via_irq_disable(NUBUS_SOURCE_BASE + i);
--			m68k_handle_int(NUBUS_SOURCE_BASE + i);
--			via_irq_enable(NUBUS_SOURCE_BASE + i);
--		}
--	}
-+	do {
-+		slot_irq = IRQ_NUBUS_F;
-+		slot_bit = 0x40;
-+		do {
-+			if (events & slot_bit) {
-+				events &= ~slot_bit;
-+				m68k_handle_int(slot_irq);
-+			}
-+			--slot_irq;
-+			slot_bit >>= 1;
-+		} while (events);
-+
-+ 		/* clear the CA1 interrupt and make certain there's no more. */
-+		via2[gIFR] = 0x02 | rbv_clear;
-+		events = ~via2[gBufA] & 0x7F;
-+		if (rbv_present)
-+			events &= via2[rSIER];
-+		else
-+			events &= nubus_active;
-+	} while (events);
- 	return IRQ_HANDLED;
- }
- 
-@@ -506,20 +550,6 @@ void via_irq_enable(int irq) {
- 	if (irq_src == 1) {
- 		via1[vIER] = irq_bit | 0x80;
- 	} else if (irq_src == 2) {
--		/*
--		 * Set vPCR for SCSI interrupts (but not on RBV)
--		 */
--		if ((irq_idx == 0) && !rbv_present) {
--			if (macintosh_config->scsi_type == MAC_SCSI_OLD) {
--				/* CB2 (IRQ) indep. input, positive edge */
--				/* CA2 (DRQ) indep. input, positive edge */
--				via2[vPCR] = 0x66;
--			} else {
--				/* CB2 (IRQ) indep. input, negative edge */
--				/* CA2 (DRQ) indep. input, negative edge */
--				via2[vPCR] = 0x22;
--			}
--		}
- 		via2[gIER] = irq_bit | 0x80;
- 	} else if (irq_src == 7) {
- 		nubus_active |= irq_bit;
-@@ -557,9 +587,9 @@ void via_irq_disable(int irq) {
- #endif
- 
- 	if (irq_src == 1) {
--		via1[vIER] = irq_bit;
-+		via1[vIER] = irq_bit & 0x7F;
- 	} else if (irq_src == 2) {
--		via2[gIER] = irq_bit;
-+		via2[gIER] = irq_bit & 0x7F;
- 	} else if (irq_src == 7) {
- 		if (rbv_present) {
- 			/* disable the slot interrupt.  SIER works like IER. */
-@@ -586,7 +616,9 @@ void via_irq_clear(int irq) {
- 	} else if (irq_src == 2) {
- 		via2[gIFR] = irq_bit | rbv_clear;
- 	} else if (irq_src == 7) {
--		/* FIXME: hmm.. */
-+		/* FIXME: There is no way to clear an individual nubus slot
-+		 * IRQ flag, other than getting the device to do it.
-+		 */
- 	}
- }
- 
-@@ -606,6 +638,7 @@ int via_irq_pending(int irq)
- 	} else if (irq_src == 2) {
- 		return via2[gIFR] & irq_bit;
- 	} else if (irq_src == 7) {
-+		/* FIXME: this can't work while a slot irq is disabled! */
- 		return ~via2[gBufA] & irq_bit;
- 	}
- 	return 0;
+ #if (NUM_XMIT_BUFFS == 1)
+ #	ifdef NO_NOPCOMMANDS
 
 --
 Gr{oetje,eeting}s,
