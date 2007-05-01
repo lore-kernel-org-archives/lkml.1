@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbXEABYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbXEAB0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbXEABYN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 21:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXEABYM
+	id S1754335AbXEAB0s (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 21:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXEAB0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 21:24:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53043 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753943AbXEABYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 21:24:11 -0400
-Message-ID: <463696A9.8020909@redhat.com>
-Date: Mon, 30 Apr 2007 21:23:53 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 30 Apr 2007 21:26:48 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:56892 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754335AbXEAB0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 21:26:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BievTQutdXgJ/wqB88pV+3bELgUBEVnuAgW9ItO+0ilGtbE0pjE2Z3AeuIUOz3EsblxOrzsUPw00Bd/0ApWpu1M7djZ4vK0T7+5e7A1SshlaoHlNfmVal6/rK6aodoNIufuuBBpjny+xu9WhEDLTuYmT/vYaCAo4LvEzOzs12dI=
+Message-ID: <8bd0f97a0704301826w2cbd6b33v7361f722c441357d@mail.gmail.com>
+Date: Mon, 30 Apr 2007 21:26:46 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [PATCH 1/2] wrap access to thread_info
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705010208310.1479@scrub.home>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Michael Kerrisk <mtk-manpages@gmx.net>
-Subject: Re: MADV_FREE functionality
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>	<46368FAA.3080104@redhat.com> <20070430181839.c548c4da.akpm@linux-foundation.org>
-In-Reply-To: <20070430181839.c548c4da.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705010208310.1479@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+On 4/30/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> This only leaves blackfin in -mm which I'll fix separately
 
->> If you need any additional information, please let me know.
-> 
-> The patch doesn't update the various comments in madvise.c at all, which is
-> a surprise.  Could you please check that they are all accurate and complete?
+thanks
 
-I'll take a look.
+> (depending on how quickly Andrew is with merging it).
 
-> Also, where did we end up with the Solaris compatibility?
-> 
-> The patch I have at present retains MADV_FREE=0x05 for sparc and sparc64
-> which should be good.
-> 
-> Did we decide that the Solaris and Linux implementations of MADV_FREE are
-> compatible?
-
-Yes, the Linux, Solaris and FreeBSD implementations of MADV_FREE
-appear to have equivalent semantics.
-
-> What about the Solaris and Linux MADV_DONTNEED implementations?
-
-This was never, and is still not, the same.  Linux will throw
-away the data in anonymous pages while POSIX says we should
-simply move the data to swap.  I assume Solaris and FreeBSD
-will move the data to swap instead of throwing it away.
-
-For file backed pages I suspect they all behave the same.
-
-This is the reason that inside glibc, POSIX_MADV_DONTNEED is
-a noop.
-
--- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+seems to be slated for the 2.6.22 merge window :)
+-mike
