@@ -1,190 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161674AbXEAKQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161199AbXEAKRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161674AbXEAKQp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161668AbXEAKQp
+	id S1161199AbXEAKRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030528AbXEAKRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:16:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50922 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161674AbXEAKQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:16:43 -0400
-Subject: [DLM] add orphan purging code (1/2) [17/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:12:09 +0100
-Message-Id: <1178014329.5462.161.camel@quoit.chygwyn.com>
+	Tue, 1 May 2007 06:17:06 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:42190 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030346AbXEAKQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:16:56 -0400
+Date: Tue, 1 May 2007 11:16:51 +0100
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, apw@shadowen.org,
+       clameter@sgi.com, y-goto@jp.fujitsu.com
+Subject: fragmentation avoidance Re: 2.6.22 -mm merge plans
+Message-ID: <20070501101651.GA29957@skynet.ie>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 8499137d4ef1829281e04838113b6b09a0bf1269 Mon Sep 17 00:00:00 2001
-From: David Teigland <teigland@redhat.com>
-Date: Fri, 30 Mar 2007 15:02:40 -0500
-Subject: [PATCH] [DLM] add orphan purging code (1/2)
+On (30/04/07 16:20), Andrew Morton didst pronounce:
+>  add-apply_to_page_range-which-applies-a-function-to-a-pte-range.patch
+>  add-apply_to_page_range-which-applies-a-function-to-a-pte-range-fix.patch
+>  safer-nr_node_ids-and-nr_node_ids-determination-and-initial.patch
+>  use-zvc-counters-to-establish-exact-size-of-dirtyable-pages.patch
+>  proper-prototype-for-hugetlb_get_unmapped_area.patch
+>  mm-remove-gcc-workaround.patch
+>  slab-ensure-cache_alloc_refill-terminates.patch
+>  mm-more-rmap-checking.patch
+>  mm-make-read_cache_page-synchronous.patch
+>  fs-buffer-dont-pageuptodate-without-page-locked.patch
+>  allow-oom_adj-of-saintly-processes.patch
+>  introduce-config_has_dma.patch
+>  mm-slabc-proper-prototypes.patch
+>  mm-detach_vmas_to_be_unmapped-fix.patch
+> 
+> Misc MM things.  Will merge.
 
-Add code for purging orphan locks.  A process can also purge all of its
-own non-orphan locks by passing a pid of zero.  Code already exists for
-processes to create persistent locks that become orphans when the process
-exits, but the complimentary capability for another process to then purge
-these orphans has been missing.
+After Andy's mail, I am guessing that the patch below is also going here
+in the stack as a cleanup.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+add-pfn_valid_within-helper-for-sub-max_order-hole-detection.patch
 
-diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
-index 178931c..30994d6 100644
---- a/fs/dlm/dlm_internal.h
-+++ b/fs/dlm/dlm_internal.h
-@@ -342,6 +342,7 @@ struct dlm_header {
- #define DLM_MSG_LOOKUP		11
- #define DLM_MSG_REMOVE		12
- #define DLM_MSG_LOOKUP_REPLY	13
-+#define DLM_MSG_PURGE		14
- 
- struct dlm_message {
- 	struct dlm_header	m_header;
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 7807958..9d26b3a 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -85,6 +85,7 @@ static int _request_lock(struct dlm_rsb *r, struct dlm_lkb *lkb);
- static void __receive_convert_reply(struct dlm_rsb *r, struct dlm_lkb *lkb,
- 				    struct dlm_message *ms);
- static int receive_extralen(struct dlm_message *ms);
-+static void do_purge(struct dlm_ls *ls, int nodeid, int pid);
- 
- /*
-  * Lock compatibilty matrix - thanks Steve
-@@ -2987,6 +2988,11 @@ static void receive_remove(struct dlm_ls *ls, struct dlm_message *ms)
- 	dlm_dir_remove_entry(ls, from_nodeid, ms->m_extra, len);
- }
- 
-+static void receive_purge(struct dlm_ls *ls, struct dlm_message *ms)
-+{
-+	do_purge(ls, ms->m_nodeid, ms->m_pid);
-+}
-+
- static void receive_request_reply(struct dlm_ls *ls, struct dlm_message *ms)
- {
- 	struct dlm_lkb *lkb;
-@@ -3409,6 +3415,12 @@ int dlm_receive_message(struct dlm_header *hd, int nodeid, int recovery)
- 		receive_lookup_reply(ls, ms);
- 		break;
- 
-+	/* other messages */
-+
-+	case DLM_MSG_PURGE:
-+		receive_purge(ls, ms);
-+		break;
-+
- 	default:
- 		log_error(ls, "unknown message type %d", ms->m_type);
- 	}
-@@ -4260,3 +4272,92 @@ void dlm_clear_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc)
- 	unlock_recovery(ls);
- }
- 
-+static void purge_proc_locks(struct dlm_ls *ls, struct dlm_user_proc *proc)
-+{
-+	struct dlm_lkb *lkb, *safe;
-+
-+	while (1) {
-+		lkb = NULL;
-+		spin_lock(&proc->locks_spin);
-+		if (!list_empty(&proc->locks)) {
-+			lkb = list_entry(proc->locks.next, struct dlm_lkb,
-+					 lkb_ownqueue);
-+			list_del_init(&lkb->lkb_ownqueue);
-+		}
-+		spin_unlock(&proc->locks_spin);
-+
-+		if (!lkb)
-+			break;
-+
-+		lkb->lkb_flags |= DLM_IFL_DEAD;
-+		unlock_proc_lock(ls, lkb);
-+		dlm_put_lkb(lkb); /* ref from proc->locks list */
-+	}
-+
-+	spin_lock(&proc->locks_spin);
-+	list_for_each_entry_safe(lkb, safe, &proc->unlocking, lkb_ownqueue) {
-+		list_del_init(&lkb->lkb_ownqueue);
-+		lkb->lkb_flags |= DLM_IFL_DEAD;
-+		dlm_put_lkb(lkb);
-+	}
-+	spin_unlock(&proc->locks_spin);
-+
-+	spin_lock(&proc->asts_spin);
-+	list_for_each_entry_safe(lkb, safe, &proc->asts, lkb_astqueue) {
-+		list_del(&lkb->lkb_astqueue);
-+		dlm_put_lkb(lkb);
-+	}
-+	spin_unlock(&proc->asts_spin);
-+}
-+
-+/* pid of 0 means purge all orphans */
-+
-+static void do_purge(struct dlm_ls *ls, int nodeid, int pid)
-+{
-+	struct dlm_lkb *lkb, *safe;
-+
-+	mutex_lock(&ls->ls_orphans_mutex);
-+	list_for_each_entry_safe(lkb, safe, &ls->ls_orphans, lkb_ownqueue) {
-+		if (pid && lkb->lkb_ownpid != pid)
-+			continue;
-+		unlock_proc_lock(ls, lkb);
-+		list_del_init(&lkb->lkb_ownqueue);
-+		dlm_put_lkb(lkb);
-+	}
-+	mutex_unlock(&ls->ls_orphans_mutex);
-+}
-+
-+static int send_purge(struct dlm_ls *ls, int nodeid, int pid)
-+{
-+	struct dlm_message *ms;
-+	struct dlm_mhandle *mh;
-+	int error;
-+
-+	error = _create_message(ls, sizeof(struct dlm_message), nodeid,
-+				DLM_MSG_PURGE, &ms, &mh);
-+	if (error)
-+		return error;
-+	ms->m_nodeid = nodeid;
-+	ms->m_pid = pid;
-+
-+	return send_message(mh, ms);
-+}
-+
-+int dlm_user_purge(struct dlm_ls *ls, struct dlm_user_proc *proc,
-+		   int nodeid, int pid)
-+{
-+	int error = 0;
-+
-+	if (nodeid != dlm_our_nodeid()) {
-+		error = send_purge(ls, nodeid, pid);
-+	} else {
-+		lock_recovery(ls);
-+		if (pid == current->pid)
-+			purge_proc_locks(ls, proc);
-+		else
-+			do_purge(ls, nodeid, pid);
-+		unlock_recovery(ls);
-+	}
-+	return error;
-+}
-+
+>  add-a-bitmap-that-is-used-to-track-flags-affecting-a-block-of-pages.patch
+>  add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated.patch
+>  split-the-free-lists-for-movable-and-unmovable-allocations.patch
+>  choose-pages-from-the-per-cpu-list-based-on-migration-type.patch
+>  add-a-configure-option-to-group-pages-by-mobility.patch
+>  drain-per-cpu-lists-when-high-order-allocations-fail.patch
+>  move-free-pages-between-lists-on-steal.patch
+>  group-short-lived-and-reclaimable-kernel-allocations.patch
+>  group-high-order-atomic-allocations.patch
+>  do-not-group-pages-by-mobility-type-on-low-memory-systems.patch
+>  bias-the-placement-of-kernel-pages-at-lower-pfns.patch
+>  be-more-agressive-about-stealing-when-migrate_reclaimable-allocations-fallback.patch
+>  fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
+
+Plus the patch below from Andy's pfn_valid_within() series would be here:
+
+   anti-fragmentation-switch-over-to-pfn_valid_within.patch
+
+These patches are the grouping pages by mobility patches. They get tested
+every time someone boots the machine from the perspective that they affect
+the page allocator. It is working to keep fragmentation problems to a
+minimum and being exercised.  We have beaten it heavily here on tests
+with a variety of machines using the system that drives test.kernel.org
+for both functionality and performance testing. That covers x86, x86_64,
+ppc64 and occasionally IA64. Granted, there are corner-case machines out
+there or we'd never receive bug reports at all.
+
+They are currently being reviewed by Christoph Lameter. His feedback in
+the linux-mm thread "Antifrag patchset comments" has given me a TODO list
+which I'm currently working through. So far, there has been no fundamental
+mistake in my opinion and the additional work is logical extensions.
+
+The closest thing to a fundamental mistake was grouping pages by
+MAX_ORDER_NR_PAGES instead of an arbitrary order. What I did was fine for
+x86_64, i386 and ppc64 but not as useful for IA64 with 1GB worth of memory
+in MAX_ORDER_NR_PAGES. I also missed some temporary allocations as picked
+up in Christophs review.
+
+>  create-the-zone_movable-zone.patch
+>  allow-huge-page-allocations-to-use-gfp_high_movable.patch
+>  x86-specify-amount-of-kernel-memory-at-boot-time.patch
+>  ppc-and-powerpc-specify-amount-of-kernel-memory-at-boot-time.patch
+>  x86_64-specify-amount-of-kernel-memory-at-boot-time.patch
+>  ia64-specify-amount-of-kernel-memory-at-boot-time.patch
+>  add-documentation-for-additional-boot-parameter-and-sysctl.patch
+>  handle-kernelcore=-boot-parameter-in-common-code-to-avoid-boot-problem-on-ia64.patch
+> 
+> Mel's moveable-zone work.
+
+These patches are what creates ZONE_MOVABLE. The last 6 patches should be
+collapsed into a single patch:
+
+	handle-kernelcore=-generic
+
+I believe Yasunori Goto is looking at these from the perspective of memory
+hot-remove and has caught a few bugs in the past. Goto-san may be able to
+comment on whether they have been reviewed recently.
+
+The main complexity is in one function in patch one which determines where
+the PFN is in each node for ZONE_MOVABLE. Getting that right so that the
+requested amount of kernel memory spread as evenly as possible is just
+not straight-forward.
+
+> I don't believe that this has had sufficient review and I'm sure that it
+> hasn't had sufficient third-party testing.  Most of the approbations thus far
+> have consisted of people liking the overall idea, based on the changelogs and
+> multi-year-old discussions.
+> 
+> For such a large and core change I'd have expected more detailed reviewing
+> effort and more third-party testing.  And I STILL haven't made time to review
+> the code in detail myself.
+> 
+> So I'm a bit uncomfortable with moving ahead with these changes.
+> 
+
+Ok. It is getting reviewed by Christoph and I'm going through the TODO items
+it yielded. Andy has also been regularly reviewing them which is probably
+why they have had less public errors than you might expect from something
+like this. Christoph may like to comment more here.
+
+> <snip>
+> 
+>  lumpy-reclaim-v4.patch
+
+And I guess this patch also moves here
+
+lumpy-move-to-using-pfn_valid_within.patch
+
+> 
+> This is in a similar situation to the moveable-zone work.  Sounds great on
+> paper, but it needs considerable third-party testing and review.  It is a
+> major change to core MM and, we hope, a significant advance.  On paper.
+
+Andy will probably comment more here. Like the fragmentation stuff, we have
+beaten this heavily in tests.
+
+I'm not sure of it's review situation.
+
+> More Mel things, and linkage between Mel-things and lumpy reclaim.  It's here
+> where the patch ordering gets into a mess and things won't improve if
+> moveable-zones and lumpy-reclaim get deferred.  Such a deferral would limit my
+> ability to queue more MM changes for 2.6.23.
+> 
+
+This is where the three patches were originally. From the other thread,
+I am assuming these are sorted out.
+
+> <snip>
+> 
+>  bias-the-location-of-pages-freed-for-min_free_kbytes-in-the-same-max_order_nr_pages-blocks.patch
+>  remove-page_group_by_mobility.patch
+>  dont-group-high-order-atomic-allocations.patch
+> 
+> More moveable-zone work.
+> 
+
+This is the MIGRATE_RESERVE patch and two patches that back out parts of the
+grouping pages by mobility stack. If possible, these patches should move to
+the end of that stack. To fix the ordering, would it be helpful to provide
+a fresh stack based on 2.6.21? That would delete 4 patches in all. The two
+that introduce configuration items and highorder atomic groupings and these
+two patches that subsequently remove them.
+
+> <SNIP>
+> 
+>  slub-exploit-page-mobility-to-increase-allocation-order.patch
+> 
+> Slub entanglement with moveable-zones.  Will merge if moveable-zones is merged.
+> 
+
+Well, grouping pages by mobility is what it really depends on. The
+ZONE_MOVABLE is not required for SLUB. However, I get the point and agree
+with it. If the rest of SLUB gets merged, this patch could be moved to the
+end of the grouping by mobility stack.
+
 -- 
-1.5.1.2
-
-
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
