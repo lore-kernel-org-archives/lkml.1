@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423550AbXEAGLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423553AbXEAGNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423550AbXEAGLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 02:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423569AbXEAGLt
+	id S1423553AbXEAGNV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 02:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423561AbXEAGNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 02:11:49 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36395 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423550AbXEAGLr (ORCPT
+	Tue, 1 May 2007 02:13:21 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:50800 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423553AbXEAGNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 02:11:47 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
-       patches@x86-64.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-References: <20070428758.455116000@suse.de>
-	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
-	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
-	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
-	<1177902195.30071.203.camel@localhost.localdomain>
-	<463572B7.90202@zytor.com>
-	<1177909434.30071.216.camel@localhost.localdomain>
-	<m1ejm16flv.fsf@ebiederm.dsl.xmission.com>
-	<1177990722.28659.39.camel@localhost.localdomain>
-	<m18xc919im.fsf@ebiederm.dsl.xmission.com> <4636D200.3010406@goop.org>
-Date: Tue, 01 May 2007 00:11:21 -0600
-In-Reply-To: <4636D200.3010406@goop.org> (Jeremy Fitzhardinge's message of
-	"Mon, 30 Apr 2007 22:37:04 -0700")
-Message-ID: <m1irbdysxi.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 1 May 2007 02:13:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jpkBvMovMAQEXlzp+WpMWM/dnMRC3lLygVHaSaEagdTWb3wwocVHKa6r5CSYKR3ysJ+bwKkj+/fIVKlTkGgcSYoEiLGCtA5v2WxQ8X423nyJbI3TwcskhOOeGbXC1IxDZ+hSIkvYh4npHs2PnrH8wOcUp1mLsvPeTQu+grMAZ3U=
+Message-ID: <b6a2187b0704302313p4cb7924bj506d68a1c1b6fb41@mail.gmail.com>
+Date: Tue, 1 May 2007 14:13:19 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: nigel@nigel.suspend2.net
+Subject: Re: VMware, x86_64 and 2.6.21.
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1177998147.8981.16.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1177998147.8981.16.camel@nigel.suspend2.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
-
-> Eric W. Biederman wrote:
->> I'm not going to worry about going farther until the patches in flight
->> settle down a little bit, but this looks promising.
->>   
+On 5/1/07, Nigel Cunningham <nigel@nigel.suspend2.net> wrote:
+> Hi.
 >
-> Is there any value in adding an "early-putchar" function pointer into
-> the structure somehow?  I could easily arrange for the domain builder to
-> put a bit of code into the domain so that the early boot code can emit
-> something.
-
-I don't think so.  Once we know what subarch it is we can do a specific
-hypervisor call if we need to for early printing.  There are weird
-issues like physical vs virtual that would seem to make anything more
-generic very difficult to get right, because the code pointed at
-would need to be fully pic.
-
-So as a trivial hypervisor call certainly, but I'm pretty doubtful
-about a function pointer.  
-
-Then we can do:
-
-if (xen)
-   blah
-else if (lguest)
-   blah2
+> Does anyone have VMware working on x86_64 with 2.6.21? It's working fine
+> for me with 2.6.20, but freezes the whole computer with 2.6.21. Before I
 
 
-Eric
+I'm on i386 and noticed it makes the "guest" very unresponsive.
+
+Uncheck "disable write-caching" solves the problem.
+
+Jeff.
