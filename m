@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031696AbXEANGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031697AbXEANKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031696AbXEANGk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031694AbXEANGk
+	id S1031697AbXEANKN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031698AbXEANKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:06:40 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:40944 "EHLO jazzdrum.ncsc.mil"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031689AbXEANGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:06:39 -0400
-Subject: file capabilities and security_task_wait failure Re: 2.6.22 -mm
-	merge plans
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       linuxfs <linux-fsdevel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 01 May 2007 09:06:09 -0400
-Message-Id: <1178024769.26421.26.camel@moss-spartans.epoch.ncsc.mil>
+	Tue, 1 May 2007 09:10:13 -0400
+Received: from h80ad26a9.async.vt.edu ([128.173.38.169]:55228 "EHLO
+	h80ad26a9.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031697AbXEANJo (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:09:44 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Daniel Hazelton <dhazelton@enter.net>,
+       Marat Buharov <marat.buharov@gmail.com>,
+       Parav K Pandit <Parav_Pandit@mindtree.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: assembly code in the loadable kernel module
+In-Reply-To: Your message of "Fri, 27 Apr 2007 17:06:48 EDT."
+             <Pine.LNX.4.61.0704271658240.5071@chaos.analogic.com>
+From: Valdis.Kletnieks@vt.edu
+References: <2C15D00D262B7245B1D8D1799F04D88F052A6F42@mtw01ex01.mindtree.com> <Pine.LNX.4.61.0704270726080.3369@chaos.analogic.com> <698310e10704270457p7fce899ao16dee58b5e16869c@mail.gmail.com> <200704271212.07579.dhazelton@enter.net>
+            <Pine.LNX.4.61.0704271658240.5071@chaos.analogic.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: multipart/signed; boundary="==_Exmh_1178024914_28512P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Tue, 01 May 2007 09:08:34 -0400
+Message-ID: <17221.1178024914@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-30 at 16:20 -0700, Andrew Morton wrote:
->  implement-file-posix-capabilities.patch
->  file-capabilities-accomodate-future-64-bit-caps.patch
->  return-eperm-not-echild-on-security_task_wait-failure.patch
-> 
-> I think we're still waiting for the security guys to work out what to do with
-> this work.
+--==_Exmh_1178024914_28512P
+Content-Type: text/plain; charset=us-ascii
 
-return-eperm-not-echild-on-security_task_wait-failure.patch should be
-merged - it is effectively a bug fix.
+On Fri, 27 Apr 2007 17:06:48 EDT, "linux-os (Dick Johnson)" said:
 
-On the file capabilities support, have any of the filesystem folks
-(cc'd) looked at the code yet?
+>         if(strchr(buf, 'Z'-64) || strchr(buf, 'D'-64))
 
--- 
-Stephen Smalley
-National Security Agency
+This probably isn't UTF-8 safe... :)
 
+> Anything after ^D or ^Z doesn't get copied to the list. Something like
+> this needs to be done because it's gonna get a whole lot worse because
+> all the 'IT' people read the same rags -- so they think that "naked"
+> email fails the "due diligence" test. Honest, I'm not making that up!
+
+And here I thought blindly slapping that disclaimer on *everything*, whether
+or not it actually called for it, failed "due diligence".  Ain't much diligence,
+due or otherwise, in evidence when a "This contains confidential" sticker
+gets posted to a worldwide public mailing list...
+
+--==_Exmh_1178024914_28512P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGNzvScC3lWbTT17ARAvNDAJ4+B1KvsjPhV7NzCiP2ittzcsb/SwCfTQuz
+u8IZUOGzpATh7hP3wUz6FMc=
+=krbe
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1178024914_28512P--
