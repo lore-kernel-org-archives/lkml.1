@@ -1,123 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbXEAUGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753669AbXEAUJK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbXEAUGp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXEAUGo
+	id S1753669AbXEAUJK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:09:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbXEAUJJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:06:44 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44224 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753521AbXEAUGn (ORCPT
+	Tue, 1 May 2007 16:09:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:58498 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753669AbXEAUJI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:06:43 -0400
-Date: Tue, 1 May 2007 13:08:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Richard Purdie <rpurdie@openedhand.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       herbert@gondor.apana.org.au, linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-crypto@vger.kernel.org
-Subject: Re: [PATCH 4/5] jffs2: Allow selection of compression mode via a
- sysfs attribute
-Message-Id: <20070501130811.5c9c9f7d.randy.dunlap@oracle.com>
-In-Reply-To: <1178030839.5883.56.camel@localhost.localdomain>
-References: <1178030839.5883.56.camel@localhost.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 May 2007 16:09:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=iOX6duclRX/2HGBNJuH1e75V5XyjPAMuypcByX1/zZ5tZNN5ZG58J4gBnul+WiLGobIUnzKm9oStD9HStKMHrS7dgPsj1/ZQk/q0ywEykUsL7DJZta9fjMjztTl4lfpwbuvnxzj24893Npsoqf+DlPfNTWGZ8UKYwne+CraoDys=
+Date: Tue, 1 May 2007 23:09:02 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <281618366.20070501230902@gmail.com>
+To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
+CC: ian <spyro@f2s.com>, kernel-discuss@handhelds.org,
+       <linux-kernel@vger.kernel.org>,
+       <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
+In-Reply-To: <46379027.7050202@gmail.com>
+References: <1354376306.20070501080806@gmail.com>  <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com>  <46376AD9.3020701@gmail.com> <1178042924.15769.5.camel@wirenth> <46379027.7050202@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 May 2007 15:47:19 +0100 Richard Purdie wrote:
+Hello Dmitry,
 
-> Allow selection of the compression mode for jffs2 via a sysfs
-> attribute. This establishes a sysfs presence for jffs2 through
-> which other compression options could easily be exported too.
-> 
-> Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
-> ---
->  fs/Kconfig       |    9 ++++++++
->  fs/jffs2/compr.c |   41 ++++++++++++++++++++++++++++++++++++
->  fs/jffs2/compr.h |    6 +++++
->  fs/jffs2/super.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 117 insertions(+), 0 deletions(-)
-> 
-> diff --git a/fs/Kconfig b/fs/Kconfig
-> index 328a62f..9da136b 100644
-> diff --git a/fs/jffs2/compr.c b/fs/jffs2/compr.c
-> index fdb0efd..8c57dc7 100644
-> --- a/fs/jffs2/compr.c
-> +++ b/fs/jffs2/compr.c
-> @@ -11,6 +11,7 @@
->   *
->   */
->  
-> +#include <linux/kobject.h>
+Tuesday, May 1, 2007, 10:08:23 PM, you wrote:
 
-is that used/needed in this source file?
-
->  #include "compr.h"
->  
->  static DEFINE_SPINLOCK(jffs2_compressor_list_lock);
-> @@ -296,6 +297,46 @@ int jffs2_unregister_compressor(struct jffs2_compressor *comp)
->          return 0;
->  }
->  
-> +#ifdef CONFIG_JFFS2_SYSFS
-> +
-> +char *jffs2_get_compression_mode_name(void)
-> +{
-> +        switch (jffs2_compression_mode) {
-> +        case JFFS2_COMPR_MODE_NONE:
-> +                return "none";
-> +        case JFFS2_COMPR_MODE_PRIORITY:
-> +                return "priority";
-> +        case JFFS2_COMPR_MODE_SIZE:
-> +                return "size";
-> +	case JFFS2_COMPR_MODE_FAVOURLZO:
-> +		return "favourlzo";
-> +        }
-> +        return "unkown";
-
-Lots of whitespace damage above (needs tabs).
-
-> +}
-> +
-> +int jffs2_set_compression_mode_name(const char *name)
-> +{
-> +        if (!strncmp("none", name, 4)) {
-> +                jffs2_compression_mode = JFFS2_COMPR_MODE_NONE;
-> +                return 0;
-> +        }
-> +        if (!strncmp("priority", name, 8)) {
-> +                jffs2_compression_mode = JFFS2_COMPR_MODE_PRIORITY;
-> +                return 0;
-> +        }
-> +        if (!strncmp("size", name, 4)) {
-> +                jffs2_compression_mode = JFFS2_COMPR_MODE_SIZE;
-> +                return 0;
-> +        }
-> +	if (!strncmp("favourlzo", name, 9)) {
-> +		jffs2_compression_mode = JFFS2_COMPR_MODE_FAVOURLZO;
-> +		return 0;
-> +	}
-> +        return -EINVAL;
-
-Lots of tabs needed above also.
-
-> +}
-> +
-> +#endif
-> +
->  void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig)
->  {
->          if (orig != comprbuf)
+> ian wrote:
+>> On Tue, 2007-05-01 at 20:29 +0400, Dmitry Krivoschekov wrote:
+>>> If you used ASIC acronym it would be more appropriate and not so
+>>> ambiguous. 
+>>
+>> Actually, thats not bad. I'd be ok with that is SoC isnt used.
+>>
+> I'm ok with that too, i.e. very rough definition is:
+> SoC (system-on-chip) is  a platform level chip which incorporates processor
+> devices (CPU, cache, coprocessors, memory controller etc.), system devices
+> (timers, interrupt controllers etc.) and peripheral devices
+> (UARTs, LCD controllers, USB controllers etc),
+> while ASIC (Application-specific integrated circuit) is also a platform
+> level
+> chip which incorporates peripheral and system devices but does not include
+> processor devices.  ASICs are designed to expand processor functionality,
+> it could supplement a normal processor (non-SoC) and also could supplement
+> a SoC processor.
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> ASIC-related code (I mean core) forms additional platform layer, so I
+> suggest
+> adding ASIC helpers to generic platform code i.e. drivers/platform.c, but
+> ASIC drivers to drivers/asic/ directory.
+
+        There problem here is the same - our target chips are not
+just ASICs. It just happens that the one we start with called such,
+but we have different ones too. It's still important that they contain
+blocks with different functionality, and drivers we propose deal with
+basic, common functionality of chips. Now that it was pointed out that
+there's place in the tree for such drivers, it would be not wise to
+try to create another one.
+
+
+
+> Regards,
+> Dmitry
+
+
+-- 
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
+
