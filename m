@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161745AbXEASwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161749AbXEASzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161745AbXEASwe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161746AbXEASwe
+	id S1161749AbXEASzI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161714AbXEASzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:52:34 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:46417 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161745AbXEASwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:52:33 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Tue, 1 May 2007 14:52:14 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] NET: Delete unused header file net/ipv4/tcp_yeah.h.
-Message-ID: <Pine.LNX.4.64.0705011450020.23352@localhost.localdomain>
+	Tue, 1 May 2007 14:55:08 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:47717 "EHLO smtp1-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161749AbXEASzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 14:55:06 -0400
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH] MAINTAINERS: Add cxacru website/mailing list
+Date: Tue, 1 May 2007 20:55:16 +0200
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46378965.5000802@simon.arlott.org.uk>
+In-Reply-To: <46378965.5000802@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705012055.17507.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 1 May 2007 20:39:33 Simon Arlott wrote:
+> I've not made any contact with the developers of the sourceforge project, 
+> but it would be useful for users to able to find the mailing list and the 
+> website for firmware information even if the driver page is very out of 
+> date right now.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+> Cc: Duncan Sands <duncan.sands@math.u-psud.fr>
 
-Delete the apparently unused header file net/ipv4/tcp_yeah.h.
+Acked-by: Duncan Sands <baldrick@free.fr>
 
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> ---
+> I will email Roman Kagan once I think my cxacru-info utility is ready to 
+> be released and to point out that the driver's been in the kernel for a 
+> while and doesn't need to be obtained from cvs.infradead.org (Duncan: are 
+> you able to make changes to that CVS repository?).
 
----
+Yes, I can make changes to the infradead repository.
 
-kind of odd that this header file is unreferenced since there's a
-matching source file net/ipv4/tcp_yeah.c.  oh, well ...
+Ciao,
 
-diff --git a/net/ipv4/tcp_yeah.h b/net/ipv4/tcp_yeah.h
-deleted file mode 100644
-index ed3b719..0000000
---- a/net/ipv4/tcp_yeah.h
-+++ /dev/null
-@@ -1,7 +0,0 @@
--#include <linux/mm.h>
--#include <linux/module.h>
--#include <linux/skbuff.h>
--#include <linux/inet_diag.h>
--#include <asm/div64.h>
--
--#include <net/tcp.h>
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Duncan.
