@@ -1,173 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945908AbXEAVkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423691AbXEAVmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945908AbXEAVkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423704AbXEAVkl
+	id S1423691AbXEAVmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423699AbXEAVmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:40:41 -0400
-Received: from smtp-102-tuesday.noc.nerim.net ([62.4.17.102]:2016 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423691AbXEAVkk (ORCPT
+	Tue, 1 May 2007 17:42:20 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43731 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1423691AbXEAVmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:40:40 -0400
-Date: Tue, 1 May 2007 23:41:28 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux I2C <i2c@lm-sensors.org>
-Subject: [GIT PULL] i2c updates for 2.6.22
-Message-ID: <20070501234128.388825db@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 17:42:18 -0400
+Date: Tue, 1 May 2007 14:41:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Rene Herman <rene.herman@gmail.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+In-Reply-To: <4637A3F6.70508@gmail.com>
+Message-ID: <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org>
+References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
+ <4637A3F6.70508@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull the i2c subsystem updates for Linux 2.6.22 from:
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+On Tue, 1 May 2007, Rene Herman wrote:
+> 
+> The answer will probably be "no", but would this be a good point to ask if
+> this would be a good time to not bother with the mode switching code at all
+> anymore?
 
-We have a new API in i2c-core which finally follows the device driver
-model, 4 new I2C bus drivers, many improvements and fixes to
-i2c-algo-bit, and as usual many cleanups and fixes to individual
-drivers.
+The standard extended modes are actually really useful, if for a very 
+simply reason: they give you bigger more lines on screen when a bug 
+happens.
 
- Documentation/feature-removal-schedule.txt      |   22 +-
- Documentation/i2c/busses/i2c-nforce2            |    2 +
- Documentation/i2c/porting-clients               |   18 +-
- Documentation/i2c/summary                       |   29 +-
- Documentation/i2c/writing-clients               |  415 +++++----------
- MAINTAINERS                                     |   19 +
- arch/powerpc/platforms/powermac/cpufreq_32.c    |    1 -
- drivers/Makefile                                |    2 +-
- drivers/i2c/Kconfig                             |   18 +-
- drivers/i2c/Makefile                            |    1 +
- drivers/i2c/algos/Kconfig                       |    8 +-
- drivers/i2c/algos/i2c-algo-bit.c                |  286 ++++++----
- drivers/i2c/algos/i2c-algo-sgi.c                |    9 +-
- drivers/i2c/busses/Kconfig                      |  151 ++++--
- drivers/i2c/busses/Makefile                     |    4 +
- drivers/i2c/busses/i2c-ali1535.c                |    2 +-
- drivers/i2c/busses/i2c-ali15x3.c                |    2 +-
- drivers/i2c/busses/i2c-amd8111.c                |    2 +-
- drivers/i2c/busses/i2c-bfin-twi.c               |  644 ++++++++++++++++++++++
- drivers/i2c/busses/i2c-elektor.c                |   51 ++-
- drivers/i2c/busses/i2c-gpio.c                   |  215 ++++++++
- drivers/i2c/busses/i2c-i801.c                   |    2 +-
- drivers/i2c/busses/i2c-isa.c                    |   43 +--
- drivers/i2c/busses/i2c-ixp2000.c                |    2 +-
- drivers/i2c/busses/i2c-ixp4xx.c                 |    2 +-
- drivers/i2c/busses/i2c-mv64xxx.c                |    2 +-
- drivers/i2c/busses/i2c-nforce2.c                |    6 +-
- drivers/i2c/busses/i2c-omap.c                   |    3 +-
- drivers/i2c/busses/i2c-parport-light.c          |  144 ++++-
- drivers/i2c/busses/i2c-parport.c                |   25 +-
- drivers/i2c/busses/i2c-pasemi.c                 |    2 +-
- drivers/i2c/busses/i2c-pca-isa.c                |   35 +-
- drivers/i2c/busses/i2c-piix4.c                  |    2 +-
- drivers/i2c/busses/i2c-pxa.c                    |   15 +-
- drivers/i2c/busses/i2c-s3c2410.c                |   96 ++--
- drivers/i2c/busses/i2c-simtec.c                 |  186 +++++++
- drivers/i2c/busses/i2c-sis96x.c                 |    2 +-
- drivers/i2c/busses/i2c-tiny-usb.c               |  277 ++++++++++
- drivers/i2c/busses/i2c-viapro.c                 |    2 +-
- drivers/i2c/busses/scx200_acb.c                 |    3 +-
- drivers/i2c/chips/Kconfig                       |   21 +-
- drivers/i2c/i2c-boardinfo.c                     |   90 +++
- drivers/i2c/i2c-core.c                          |  662 +++++++++++++++++------
- drivers/i2c/i2c-core.h                          |   31 +
- drivers/macintosh/therm_windtunnel.c            |    3 +-
- drivers/media/dvb/b2c2/flexcop-i2c.c            |    3 +-
- drivers/media/dvb/dvb-usb/dvb-usb-i2c.c         |    2 +-
- drivers/media/dvb/frontends/dibx000_common.c    |    4 +-
- drivers/media/video/cx2341x.c                   |    1 -
- drivers/media/video/ovcamchip/ovcamchip_priv.h  |    1 +
- drivers/media/video/usbvision/usbvision-cards.c |    1 -
- drivers/video/intelfb/intelfb_i2c.c             |    3 +-
- drivers/video/matrox/i2c-matroxfb.c             |    2 +-
- include/linux/i2c-algo-bit.h                    |    7 +-
- include/linux/i2c-gpio.h                        |   38 ++
- include/linux/i2c-id.h                          |    3 +-
- include/linux/i2c.h                             |  123 ++++-
- include/linux/pci_ids.h                         |    2 +
- include/media/ovcamchip.h                       |    1 -
- include/media/tuner.h                           |    1 +
- sound/oss/dmasound/tas_ioctl.h                  |    1 -
- 61 files changed, 2880 insertions(+), 870 deletions(-)
- create mode 100644 drivers/i2c/busses/i2c-bfin-twi.c
- create mode 100644 drivers/i2c/busses/i2c-gpio.c
- create mode 100644 drivers/i2c/busses/i2c-simtec.c
- create mode 100644 drivers/i2c/busses/i2c-tiny-usb.c
- create mode 100644 drivers/i2c/i2c-boardinfo.c
- create mode 100644 drivers/i2c/i2c-core.h
- create mode 100644 include/linux/i2c-gpio.h
+So I _still_ occasionally use "vga=extended" just for that reason. The  
+default 80x25 thing scrolls most oops away.
 
----------------
+> I'd consider keeping anything but VESA 1.2 (which that ET4000 and most all
+> other Super VGA cards of the era also do!) nonsensical and as far as I'm
+> concerned this includes all the VGA modes with the strange number of lines; a
+> 43/60-line VGA screen is too horrible to look at anyway...
 
-Ben Dooks (3):
-      i2c: New Simtec I2C bus driver
-      i2c-s3c2410: Fix I2C SDA to SCL setup time
-      i2c-s3c2410: Fix bug in releasing driver
+80x50 is useful for the above reason. Yeah, it's ugly, but it's useful for 
+the "It's too much work to try to do anything but just take a digital 
+photo of the screen". And that 50-line mode will actually be 43 in EGA 
+mode, I think.
 
-Bryan Wu (1):
-      i2c: Blackfin Two Wire Interface driver
+The 132x50 mode is probably a bit prettier, and is fairly common too, and 
+useful for the same reason.
 
-David Brownell (11):
-      i2c: i2c_register_driver() cleanup
-      i2c: Shrink struct i2c_client
-      i2c: Class attribute cleanup
-      i2c: Rename dev_to_i2c_adapter()
-      i2c: i2c stack can probe()
-      i2c: i2c stack can remove()
-      i2c: i2c probe() and remove() documented
-      i2c: Add i2c_board_info and i2c_new_device()
-      i2c: Add i2c_add_numbered_adapter()
-      i2c: i2c EXPORT_SYMBOL cleanup
-      i2c-omap: Switch to static adapter numbering
+And once you support those, you might as well support all the VESA text 
+modes.
 
-Haavard Skinnemoen (1):
-      i2c: Bitbanging I2C bus driver using the GPIO API
+And yes, I'm literally talking about the *text* modes. Not all of us want 
+to have fbcon built in - I prefer my text-mode lean and mean and fast as 
+hell, and if I want a frame buffer, I'll take X11, thank you very much.
 
-Jan Engelhardt (1):
-      Use menuconfig objects - I2C
-
-Jean Delvare (24):
-      i2c: Kill i2c_adapter.class_dev
-      i2c: i2c_adapter devices need no driver
-      i2c-algo-bit: Always send a stop condition before leaving
-      i2c: Emulate SMBus block read over I2C
-      i2c-algo-bit: Emulate SMBus block read
-      i2c-parport: Optimize binary size
-      i2c-nforce2: Add support for the MCP61 and MCP65
-      i2c: Cleanup the includes of <linux/i2c.h>
-      scx200_acb: Fix PCI device reference count
-      i2c-parport: Fix a minor race on driver unload
-      i2c-parport-light: Port to the new device driver model
-      i2c-elektor: Port to the new device driver model
-      i2c-pca-isa: Port to the new device driver model
-      i2c-algo-bit: Add i2c_bit_add_numbered_bus
-      i2c: Add i2c_new_probed_device()
-      i2c: Document i2c_new_device()
-      i2c: Move i2c-isa-only exported symbol declarations
-      i2c: Make i2c_del_driver a void function
-      i2c-algo-bit: Implement a 50/50 SCL duty cycle
-      i2c-algo-bit: Improve debugging
-      i2c-pxa: Clean transaction stop
-      i2c: Restore i2c_smbus_read_block_data
-      i2c: Obsolete i2c-ixp2000, i2c-ixp4xx and scx200_i2c
-      i2c: Documentation update
-
-Ladislav Michl (1):
-      i2c-algo-sgi: Comment and whitespace cleanups
-
-Milind Arun Choudhary (1):
-      i2c: SPIN_LOCK_UNLOCKED cleanup
-
-Till Harbaum (1):
-      i2c: New i2c-tiny-usb bus driver
-
-Thanks,
--- 
-Jean Delvare
+		Linus
