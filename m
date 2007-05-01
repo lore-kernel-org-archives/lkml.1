@@ -1,198 +1,406 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423462AbXEAKZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161699AbXEAKZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423462AbXEAKZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 06:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423552AbXEAKZ3
+	id S1161699AbXEAKZg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161680AbXEAKZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 06:25:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52837 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423462AbXEAKZW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 06:25:22 -0400
-Subject: [DLM] fix mode munging [27/34]
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: cluster-devel@redhat.com
-Cc: linux-kernel@vger.kernel.org, David Teigland <teigland@redhat.com>
-In-Reply-To: <1178013376.5462.127.camel@quoit.chygwyn.com>
-References: <1178013376.5462.127.camel@quoit.chygwyn.com>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
-	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 ITE
-Date: Tue, 01 May 2007 11:20:48 +0100
-Message-Id: <1178014848.5462.184.camel@quoit.chygwyn.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 06:25:35 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:20440 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423555AbXEAKZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:25:31 -0400
+Message-ID: <46371590.4090004@interia.pl>
+Date: Tue, 01 May 2007 12:25:20 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Natsemi DP83815 driver spaming
+References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org> <20070501084639.GA528@sirena.org.uk>
+In-Reply-To: <20070501084639.GA528@sirena.org.uk>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-EMID: 260b4acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 7d3c1feb80913ba4253c3517d48b9b3741c44fc9 Mon Sep 17 00:00:00 2001
-From: David Teigland <teigland@redhat.com>
-Date: Thu, 19 Apr 2007 10:30:41 -0500
-Subject: [PATCH] [DLM] fix mode munging
+> [...] 
+> Could you please run "ethtool -s eth0 msglvl 0xffffffff" to turn logging
+> from the driver right up and send a log?  This will spam the log if
+> there is any traffic but should say why the driver is doing this.
+> 
+OK. Here it is. It is from 2.6.21.1 with Andrew patch applied. I had to 
+disable /var/log/messages because I have root fs on 1GB SD card. It is 
+output from dmesg command.
+Btw. I've tried kexec, but it isn't working. I will have to flash kernel 
+each time.
 
-There are flags to enable two specialized features in the dlm:
-1. CONVDEADLK causes the dlm to resolve conversion deadlocks internally by
-   changing the granted mode of locks to NL.
-2. ALTPR/ALTCW cause the dlm to change the requested mode of locks to PR
-   or CW to grant them if the normal requested mode can't be granted.
+Thank You
+Rafa³
 
-GFS direct i/o exercises both of these features, especially when mixed
-with buffered i/o.  The dlm has problems with them.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 6 status was 0x98800076.
+eth0: Transmit frame #4 queued in slot 3.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 7 status was 0x98800046.
+eth0: tx frame #3 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 8 status was 0x98800076.
+eth0: Transmit frame #5 queued in slot 4.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 9 status was 0x98800046.
+eth0: tx frame #4 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 10 status was 0x98800076.
+eth0: Transmit frame #6 queued in slot 5.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 11 status was 0x98800046.
+eth0: tx frame #5 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 12 status was 0x98800076.
+eth0: Transmit frame #7 queued in slot 6.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 13 status was 0x98800046.
+eth0: tx frame #6 finished, status 0x8000072.
+eth0: Transmit frame #8 queued in slot 7.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 14 status was 0x98800046.
+eth0: tx frame #7 finished, status 0x8000242.
+eth0: Transmit frame #9 queued in slot 8.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 15 status was 0x98800046.
+eth0: tx frame #8 finished, status 0x8000072.
+eth0: Media selection timer tick.
+eth0: possible phy reset: re-initializing
+eth0: Tx/Rx process stopped in 0 usec.
+  Tx ring at c1189200:
+ #0 desc. 0x1189210 0x8000072 0x13c405e.
+ #1 desc. 0x1189220 0x8000072 0x134885e.
+ #2 desc. 0x1189230 0x8000072 0x13d185e.
+ #3 desc. 0x1189240 0x8000072 0x13be05e.
+ #4 desc. 0x1189250 0x8000072 0x3bb05e.
+ #5 desc. 0x1189260 0x8000072 0x139885e.
+ #6 desc. 0x1189270 0x8000072 0x13ac05e.
+ #7 desc. 0x1189280 0x8000242 0x139805e.
+ #8 desc. 0x1189290 0x8000072 0xc6305e.
+ #9 desc. 0x11892a0 0x000000 0x13b305e.
+ #10 desc. 0x11892b0 0x000000 0x107965e.
+ #11 desc. 0x11892c0 0x000000 0x13ed05e.
+ #12 desc. 0x11892d0 0x000000 0x1b0585e.
+ #13 desc. 0x11892e0 0x000000 0x13be05e.
+ #14 desc. 0x11892f0 0x000000 0xc6785e.
+ #15 desc. 0x1189200 0x000000 0x138a05e.
+  Rx ring c1189000:
+ #0 desc. 0x1189010 0x0005f2 0xc67810.
+ #1 desc. 0x1189020 0x0005f2 0x13a0010.
+ #2 desc. 0x1189030 0x0005f2 0x11d0010.
+ #3 desc. 0x1189040 0x0005f2 0x13c4010.
+ #4 desc. 0x1189050 0x0005f2 0x13b3010.
+ #5 desc. 0x1189060 0x0005f2 0x13c4810.
+ #6 desc. 0x1189070 0x0005f2 0x1377010.
+ #7 desc. 0x1189080 0x0005f2 0x13d1810.
+ #8 desc. 0x1189090 0x0005f2 0x1371010.
+ #9 desc. 0x11890a0 0x0005f2 0x13be010.
+ #10 desc. 0x11890b0 0x0005f2 0x1348010.
+ #11 desc. 0x11890c0 0x0005f2 0x3bb010.
+ #12 desc. 0x11890d0 0x0005f2 0x1b05810.
+ #13 desc. 0x11890e0 0x0005f2 0x1398810.
+ #14 desc. 0x11890f0 0x0005f2 0x13ac010.
+ #15 desc. 0x1189100 0x0005f2 0x1398010.
+ #16 desc. 0x1189110 0x0005f2 0x1442810.
+ #17 desc. 0x1189120 0x0005f2 0x1371810.
+ #18 desc. 0x1189130 0x0005f2 0x1351010.
+ #19 desc. 0x1189140 0x0005f2 0x13ed810.
+ #20 desc. 0x1189150 0x0005f2 0x1351810.
+ #21 desc. 0x1189160 0x0005f2 0x1b05010.
+ #22 desc. 0x1189170 0x0005f2 0x11d0810.
+ #23 desc. 0x1189180 0x0005f2 0x1377810.
+ #24 desc. 0x1189190 0x0005f2 0x13d9810.
+ #25 desc. 0x11891a0 0x0005f2 0x13a0810.
+ #26 desc. 0x11891b0 0x0005f2 0x1361810.
+ #27 desc. 0x11891c0 0x0005f2 0x138a810.
+ #28 desc. 0x11891d0 0x0005f2 0x1361010.
+ #29 desc. 0x11891e0 0x0005f2 0x13f8810.
+ #30 desc. 0x11891f0 0x0005f2 0x13f8010.
+ #31 desc. 0x1189000 0x0005f2 0x136b810.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: Interrupt, status 0x002209, mask 0xf1cd65.
+eth0: Poll, status 0x002209, mask 0xf1cd65.
+  netdev_rx() entry 0 status was 0x98800076.
+eth0: Transmit frame #1 queued in slot 0.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 1 status was 0x98800046.
+eth0: tx frame #0 finished, status 0x8000082.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 2 status was 0x98800076.
+eth0: Transmit frame #2 queued in slot 1.
+eth0: Interrupt, status 0x000240, mask 0xf1cd65.
+eth0: Poll, status 0x000240, mask 0xf1cd65.
+eth0: tx frame #1 finished, status 0x8000072.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 3 status was 0x98800046.
+eth0: Transmit frame #3 queued in slot 2.
+eth0: Interrupt, status 0x000248, mask 0xf1cd65.
+eth0: Poll, status 0x000248, mask 0xf1cd65.
+eth0: tx frame #2 finished, status 0x8000242.
+eth0: Poll, status 0x000001, mask 0xf1cd65.
+  netdev_rx() entry 4 status was 0x98800046.
+eth0: Transmit frame #4 queued in slot 3.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 5 status was 0x98800046.
+eth0: tx frame #3 finished, status 0x8000072.
+eth0: Media selection timer tick.
+eth0: possible phy reset: re-initializing
+eth0: Tx/Rx process stopped in 0 usec.
+  Tx ring at c1189200:
+ #0 desc. 0x1189210 0x8000082 0xc6785e.
+ #1 desc. 0x1189220 0x8000072 0x10f905e.
+ #2 desc. 0x1189230 0x8000242 0x134885e.
+ #3 desc. 0x1189240 0x8000072 0xc7205e.
+ #4 desc. 0x1189250 0x000000 0x3bb05e.
+ #5 desc. 0x1189260 0x000000 0x139885e.
+ #6 desc. 0x1189270 0x000000 0x13ac05e.
+ #7 desc. 0x1189280 0x000000 0x139805e.
+ #8 desc. 0x1189290 0x000000 0xc6305e.
+ #9 desc. 0x11892a0 0x000000 0x13b305e.
+ #10 desc. 0x11892b0 0x000000 0x107965e.
+ #11 desc. 0x11892c0 0x000000 0x13ed05e.
+ #12 desc. 0x11892d0 0x000000 0x1b0585e.
+ #13 desc. 0x11892e0 0x000000 0x13be05e.
+ #14 desc. 0x11892f0 0x000000 0xc6785e.
+ #15 desc. 0x1189200 0x000000 0x138a05e.
+  Rx ring c1189000:
+ #0 desc. 0x1189010 0x0005f2 0xc63010.
+ #1 desc. 0x1189020 0x0005f2 0x13ed010.
+ #2 desc. 0x1189030 0x0005f2 0x138a010.
+ #3 desc. 0x1189040 0x0005f2 0xc67810.
+ #4 desc. 0x1189050 0x0005f2 0x10f9010.
+ #5 desc. 0x1189060 0x0005f2 0x1348810.
+ #6 desc. 0x1189070 0x0005f2 0x1377010.
+ #7 desc. 0x1189080 0x0005f2 0x13d1810.
+ #8 desc. 0x1189090 0x0005f2 0x1371010.
+ #9 desc. 0x11890a0 0x0005f2 0x13be010.
+ #10 desc. 0x11890b0 0x0005f2 0x1348010.
+ #11 desc. 0x11890c0 0x0005f2 0x3bb010.
+ #12 desc. 0x11890d0 0x0005f2 0x1b05810.
+ #13 desc. 0x11890e0 0x0005f2 0x1398810.
+ #14 desc. 0x11890f0 0x0005f2 0x13ac010.
+ #15 desc. 0x1189100 0x0005f2 0x1398010.
+ #16 desc. 0x1189110 0x0005f2 0x1442810.
+ #17 desc. 0x1189120 0x0005f2 0x1371810.
+ #18 desc. 0x1189130 0x0005f2 0x1351010.
+ #19 desc. 0x1189140 0x0005f2 0x13ed810.
+ #20 desc. 0x1189150 0x0005f2 0x1351810.
+ #21 desc. 0x1189160 0x0005f2 0x1b05010.
+ #22 desc. 0x1189170 0x0005f2 0x11d0810.
+ #23 desc. 0x1189180 0x0005f2 0x1377810.
+ #24 desc. 0x1189190 0x0005f2 0x13d9810.
+ #25 desc. 0x11891a0 0x0005f2 0x13a0810.
+ #26 desc. 0x11891b0 0x0005f2 0x1361810.
+ #27 desc. 0x11891c0 0x0005f2 0x138a810.
+ #28 desc. 0x11891d0 0x0005f2 0x1361010.
+ #29 desc. 0x11891e0 0x0005f2 0x13f8810.
+ #30 desc. 0x11891f0 0x0005f2 0x13f8010.
+ #31 desc. 0x1189000 0x0005f2 0x136b810.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: Interrupt, status 0x002209, mask 0xf1cd65.
+eth0: Poll, status 0x002209, mask 0xf1cd65.
+  netdev_rx() entry 0 status was 0x98800076.
+eth0: Transmit frame #1 queued in slot 0.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 1 status was 0x98800046.
+eth0: tx frame #0 finished, status 0x8000082.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 2 status was 0x98800076.
+eth0: Transmit frame #2 queued in slot 1.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 3 status was 0x98800046.
+eth0: tx frame #1 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 4 status was 0x98800076.
+eth0: Transmit frame #3 queued in slot 2.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 5 status was 0x98800046.
+eth0: tx frame #2 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 6 status was 0x98800076.
+eth0: Transmit frame #4 queued in slot 3.
+eth0: Interrupt, status 0x000240, mask 0xf1cd65.
+eth0: Poll, status 0x000240, mask 0xf1cd65.
+eth0: tx frame #3 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 7 status was 0x98800076.
+eth0: Transmit frame #5 queued in slot 4.
+eth0: Interrupt, status 0x000240, mask 0xf1cd65.
+eth0: Poll, status 0x000240, mask 0xf1cd65.
+eth0: tx frame #4 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 8 status was 0x98800076.
+eth0: Transmit frame #6 queued in slot 5.
+eth0: Interrupt, status 0x000240, mask 0xf1cd65.
+eth0: Poll, status 0x000240, mask 0xf1cd65.
+eth0: tx frame #5 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 9 status was 0x98800046.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 10 status was 0x98800076.
+eth0: Transmit frame #7 queued in slot 6.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 11 status was 0x98800046.
+eth0: tx frame #6 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 12 status was 0x98800076.
+eth0: Transmit frame #8 queued in slot 7.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 13 status was 0x98800046.
+eth0: tx frame #7 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 14 status was 0x98800076.
+eth0: Transmit frame #9 queued in slot 8.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 15 status was 0x98800046.
+eth0: tx frame #8 finished, status 0x8000072.
+eth0: Media selection timer tick.
+eth0: possible phy reset: re-initializing
+eth0: Tx/Rx process stopped in 0 usec.
+  Tx ring at c1189200:
+ #0 desc. 0x1189210 0x8000082 0xc6305e.
+ #1 desc. 0x1189220 0x8000072 0x138a05e.
+ #2 desc. 0x1189230 0x8000072 0x10f905e.
+ #3 desc. 0x1189240 0x8000072 0x137705e.
+ #4 desc. 0x1189250 0x8000072 0x13ed05e.
+ #5 desc. 0x1189260 0x8000072 0x137105e.
+ #6 desc. 0x1189270 0x8000072 0x134805e.
+ #7 desc. 0x1189280 0x8000072 0x1b0585e.
+ #8 desc. 0x1189290 0x8000072 0x13ac05e.
+ #9 desc. 0x11892a0 0x000000 0x13b305e.
+ #10 desc. 0x11892b0 0x000000 0x107965e.
+ #11 desc. 0x11892c0 0x000000 0x13ed05e.
+ #12 desc. 0x11892d0 0x000000 0x1b0585e.
+ #13 desc. 0x11892e0 0x000000 0x13be05e.
+ #14 desc. 0x11892f0 0x000000 0xc6785e.
+ #15 desc. 0x1189200 0x000000 0x138a05e.
+  Rx ring c1189000:
+ #0 desc. 0x1189010 0x0005f2 0x13a0010.
+ #1 desc. 0x1189020 0x0005f2 0x11d0010.
+ #2 desc. 0x1189030 0x0005f2 0x13c4810.
+ #3 desc. 0x1189040 0x0005f2 0xc72010.
+ #4 desc. 0x1189050 0x0005f2 0x13b3010.
+ #5 desc. 0x1189060 0x0005f2 0x138a010.
+ #6 desc. 0x1189070 0x0005f2 0x13c4010.
+ #7 desc. 0x1189080 0x0005f2 0x1377010.
+ #8 desc. 0x1189090 0x0005f2 0x13ed010.
+ #9 desc. 0x11890a0 0x0005f2 0x13be010.
+ #10 desc. 0x11890b0 0x0005f2 0x10f9010.
+ #11 desc. 0x11890c0 0x0005f2 0x1348810.
+ #12 desc. 0x11890d0 0x0005f2 0x3bb010.
+ #13 desc. 0x11890e0 0x0005f2 0xc67810.
+ #14 desc. 0x11890f0 0x0005f2 0x1398810.
+ #15 desc. 0x1189100 0x0005f2 0xc63010.
+ #16 desc. 0x1189110 0x0005f2 0x1442810.
+ #17 desc. 0x1189120 0x0005f2 0x1371810.
+ #18 desc. 0x1189130 0x0005f2 0x1351010.
+ #19 desc. 0x1189140 0x0005f2 0x13ed810.
+ #20 desc. 0x1189150 0x0005f2 0x1351810.
+ #21 desc. 0x1189160 0x0005f2 0x1b05010.
+ #22 desc. 0x1189170 0x0005f2 0x11d0810.
+ #23 desc. 0x1189180 0x0005f2 0x1377810.
+ #24 desc. 0x1189190 0x0005f2 0x13d9810.
+ #25 desc. 0x11891a0 0x0005f2 0x13a0810.
+ #26 desc. 0x11891b0 0x0005f2 0x1361810.
+ #27 desc. 0x11891c0 0x0005f2 0x138a810.
+ #28 desc. 0x11891d0 0x0005f2 0x1361010.
+ #29 desc. 0x11891e0 0x0005f2 0x13f8810.
+ #30 desc. 0x11891f0 0x0005f2 0x13f8010.
+ #31 desc. 0x1189000 0x0005f2 0x136b810.
+eth0: DSPCFG accepted after 0 usec.
+eth0: Wake-up event 0x80000a
+eth0: Setting full-duplex based on negotiated link capability.
+eth0: Interrupt, status 0x002209, mask 0xf1cd65.
+eth0: Poll, status 0x002209, mask 0xf1cd65.
+  netdev_rx() entry 0 status was 0x98800076.
+eth0: Transmit frame #1 queued in slot 0.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 1 status was 0x98800046.
+eth0: tx frame #0 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 2 status was 0x98800076.
+eth0: Transmit frame #2 queued in slot 1.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 3 status was 0x98800046.
+eth0: tx frame #1 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 4 status was 0x98800076.
+eth0: Transmit frame #3 queued in slot 2.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 5 status was 0x98800046.
+eth0: tx frame #2 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 6 status was 0x98800076.
+eth0: Transmit frame #4 queued in slot 3.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 7 status was 0x98800046.
+eth0: tx frame #3 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 8 status was 0x98800076.
+eth0: Transmit frame #5 queued in slot 4.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 9 status was 0x98800046.
+eth0: tx frame #4 finished, status 0x8000072.
+eth0: Interrupt, status 0x000009, mask 0xf1cd65.
+eth0: Poll, status 0x000009, mask 0xf1cd65.
+  netdev_rx() entry 10 status was 0x98800076.
+eth0: Transmit frame #6 queued in slot 5.
+eth0: Interrupt, status 0x000249, mask 0xf1cd65.
+eth0: Poll, status 0x000249, mask 0xf1cd65.
+  netdev_rx() entry 11 status was 0x98800046.
+eth0: tx frame #5 finished, status 0x8000072.
 
-The first problem is on the master node. If it demotes a lock as a part of
-converting it, the actual step of converting the lock isn't being done
-after the demotion, the lock is just left sitting on the granted queue
-with a granted mode of NL.  I think the mistaken assumption was that the
-call to grant_pending_locks() would grant it, but that function naturally
-doesn't look at locks on the granted queue.
 
-The second problem is on the process node.  If the master either demotes
-or gives an altmode, the munging of the gr/rq modes is never done in the
-process copy of the lock, leaving the master/process copies out of sync.
-
-Signed-off-by: David Teigland <teigland@redhat.com>
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index eac54d2..d8d6e72 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -224,6 +224,16 @@ static inline int is_demoted(struct dlm_lkb *lkb)
- 	return (lkb->lkb_sbflags & DLM_SBF_DEMOTED);
- }
- 
-+static inline int is_altmode(struct dlm_lkb *lkb)
-+{
-+	return (lkb->lkb_sbflags & DLM_SBF_ALTMODE);
-+}
-+
-+static inline int is_granted(struct dlm_lkb *lkb)
-+{
-+	return (lkb->lkb_status == DLM_LKSTS_GRANTED);
-+}
-+
- static inline int is_remote(struct dlm_rsb *r)
- {
- 	DLM_ASSERT(r->res_nodeid >= 0, dlm_print_rsb(r););
-@@ -1191,6 +1201,50 @@ static void grant_lock_pending(struct dlm_rsb *r, struct dlm_lkb *lkb)
- 		queue_cast(r, lkb, 0);
- }
- 
-+/* The special CONVDEADLK, ALTPR and ALTCW flags allow the master to
-+   change the granted/requested modes.  We're munging things accordingly in
-+   the process copy.
-+   CONVDEADLK: our grmode may have been forced down to NL to resolve a
-+   conversion deadlock
-+   ALTPR/ALTCW: our rqmode may have been changed to PR or CW to become
-+   compatible with other granted locks */
-+
-+static void munge_demoted(struct dlm_lkb *lkb, struct dlm_message *ms)
-+{
-+	if (ms->m_type != DLM_MSG_CONVERT_REPLY) {
-+		log_print("munge_demoted %x invalid reply type %d",
-+			  lkb->lkb_id, ms->m_type);
-+		return;
-+	}
-+
-+	if (lkb->lkb_rqmode == DLM_LOCK_IV || lkb->lkb_grmode == DLM_LOCK_IV) {
-+		log_print("munge_demoted %x invalid modes gr %d rq %d",
-+			  lkb->lkb_id, lkb->lkb_grmode, lkb->lkb_rqmode);
-+		return;
-+	}
-+
-+	lkb->lkb_grmode = DLM_LOCK_NL;
-+}
-+
-+static void munge_altmode(struct dlm_lkb *lkb, struct dlm_message *ms)
-+{
-+	if (ms->m_type != DLM_MSG_REQUEST_REPLY &&
-+	    ms->m_type != DLM_MSG_GRANT) {
-+		log_print("munge_altmode %x invalid reply type %d",
-+			  lkb->lkb_id, ms->m_type);
-+		return;
-+	}
-+
-+	if (lkb->lkb_exflags & DLM_LKF_ALTPR)
-+		lkb->lkb_rqmode = DLM_LOCK_PR;
-+	else if (lkb->lkb_exflags & DLM_LKF_ALTCW)
-+		lkb->lkb_rqmode = DLM_LOCK_CW;
-+	else {
-+		log_print("munge_altmode invalid exflags %x", lkb->lkb_exflags);
-+		dlm_print_lkb(lkb);
-+	}
-+}
-+
- static inline int first_in_list(struct dlm_lkb *lkb, struct list_head *head)
- {
- 	struct dlm_lkb *first = list_entry(head->next, struct dlm_lkb,
-@@ -1965,9 +2019,24 @@ static int do_convert(struct dlm_rsb *r, struct dlm_lkb *lkb)
- 		goto out;
- 	}
- 
--	if (can_be_queued(lkb)) {
--		if (is_demoted(lkb))
-+	/* is_demoted() means the can_be_granted() above set the grmode
-+	   to NL, and left us on the granted queue.  This auto-demotion
-+	   (due to CONVDEADLK) might mean other locks, and/or this lock, are
-+	   now grantable.  We have to try to grant other converting locks
-+	   before we try again to grant this one. */
-+
-+	if (is_demoted(lkb)) {
-+		grant_pending_convert(r, DLM_LOCK_IV);
-+		if (_can_be_granted(r, lkb, 1)) {
-+			grant_lock(r, lkb);
-+			queue_cast(r, lkb, 0);
- 			grant_pending_locks(r);
-+			goto out;
-+		}
-+		/* else fall through and move to convert queue */
-+	}
-+
-+	if (can_be_queued(lkb)) {
- 		error = -EINPROGRESS;
- 		del_lkb(r, lkb);
- 		add_lkb(r, lkb, DLM_LKSTS_CONVERT);
-@@ -2908,6 +2977,8 @@ static void receive_grant(struct dlm_ls *ls, struct dlm_message *ms)
- 	lock_rsb(r);
- 
- 	receive_flags_reply(lkb, ms);
-+	if (is_altmode(lkb))
-+		munge_altmode(lkb, ms);
- 	grant_lock_pc(r, lkb, ms);
- 	queue_cast(r, lkb, 0);
- 
-@@ -3038,6 +3109,8 @@ static void receive_request_reply(struct dlm_ls *ls, struct dlm_message *ms)
- 		/* request was queued or granted on remote master */
- 		receive_flags_reply(lkb, ms);
- 		lkb->lkb_remid = ms->m_lkid;
-+		if (is_altmode(lkb))
-+			munge_altmode(lkb, ms);
- 		if (result)
- 			add_lkb(r, lkb, DLM_LKSTS_WAITING);
- 		else {
-@@ -3101,6 +3174,9 @@ static void __receive_convert_reply(struct dlm_rsb *r, struct dlm_lkb *lkb,
- 
- 	case -EINPROGRESS:
- 		/* convert was queued on remote master */
-+		receive_flags_reply(lkb, ms);
-+		if (is_demoted(lkb))
-+			munge_demoted(lkb, ms);
- 		del_lkb(r, lkb);
- 		add_lkb(r, lkb, DLM_LKSTS_CONVERT);
- 		break;
-@@ -3108,6 +3184,8 @@ static void __receive_convert_reply(struct dlm_rsb *r, struct dlm_lkb *lkb,
- 	case 0:
- 		/* convert was granted on remote master */
- 		receive_flags_reply(lkb, ms);
-+		if (is_demoted(lkb))
-+			munge_demoted(lkb, ms);
- 		grant_lock_pc(r, lkb, ms);
- 		queue_cast(r, lkb, 0);
- 		break;
--- 
-1.5.1.2
-
-
+----------------------------------------------------------------------
+Po meczu.....kurde...:)
+>>> http://link.interia.pl/f1a72
 
