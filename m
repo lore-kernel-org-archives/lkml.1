@@ -1,45 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031582AbXEAHXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031590AbXEAHY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031582AbXEAHXu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031590AbXEAHXu
+	id S1031590AbXEAHY5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031594AbXEAHY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:23:50 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57896 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031582AbXEAHXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:23:48 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] [8/30] x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu
-Date: Tue, 1 May 2007 09:23:33 +0200
-User-Agent: KMail/1.9.6
-Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-References: <20070501557.815359000@suse.de> <20070501035805.9FA9513CAF@wotan.suse.de> <4636D6E5.8090006@goop.org>
-In-Reply-To: <4636D6E5.8090006@goop.org>
+	Tue, 1 May 2007 03:24:57 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:56509 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031590AbXEAHYz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:24:55 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: nigel@nigel.suspend2.net
+Subject: Re: VMware, x86_64 and 2.6.21.
+Date: Tue, 1 May 2007 09:24:38 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <1177998147.8981.16.camel@nigel.suspend2.net>
+In-Reply-To: <1177998147.8981.16.camel@nigel.suspend2.net>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200705010923.33771.ak@suse.de>
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: multipart/signed;
+  boundary="nextPart1975639.WxHehKpsUl";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705010924.51590.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1178004295;53d157a4;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1975639.WxHehKpsUl
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Use linux/elfnote.h?
+> Does anyone have VMware working on x86_64 with 2.6.21?
 
-Good point. Will fix. I just copied it from i386, but it probably
-should be there fixed too.
+VMware server 1.0.2 (free edition) is working fine here with 2.6.21.1
+using vmware-any-any-update109.
 
-Actually they are not completely equivalent because the old macro
-generates the section name differently from the name in the payload
-(kernelversion, Linux). But I split that up into two notes now.
+System is Intel Core2 T7600 (x86_64)
 
-If that is done on i386 it might break gdb reading core files though?
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=C3=A4ftsf=C3=BChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
 
-BTW if anybody noticed the patch also contained a few dead hunks (two unused functions/
-prototypes and some white space change). These are already gone now too.
+--nextPart1975639.WxHehKpsUl
+Content-Type: application/pgp-signature
 
--Andi
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGNutDUYYhyuxDQc4RAqE+AKCv+yGx1e54zM1RZmTMg8Wx3HvEzwCgqOCs
+9QT6SDRE7ikBVqJOEj7zhPQ=
+=03y8
+-----END PGP SIGNATURE-----
+
+--nextPart1975639.WxHehKpsUl--
