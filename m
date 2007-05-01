@@ -1,50 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423011AbXEAAvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423464AbXEAAyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423011AbXEAAvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 20:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423409AbXEAAvT
+	id S1423464AbXEAAyZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 20:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423467AbXEAAyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 20:51:19 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36798 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423011AbXEAAvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 20:51:18 -0400
-Date: Mon, 30 Apr 2007 17:55:03 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, gregkh <greg@kroah.com>
-Subject: [PATCH] sysfs: printk format warning
-Message-Id: <20070430175503.51251d45.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Apr 2007 20:54:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48402 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423464AbXEAAyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 20:54:24 -0400
+Message-ID: <46368FAA.3080104@redhat.com>
+Date: Mon, 30 Apr 2007 20:54:02 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: MADV_FREE functionality
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Andrew Morton wrote:
 
-Fix sysfs printk format warning:
-fs/sysfs/bin.c:62: warning: format '%d' expects type 'int', but argument 4 has type 'size_t'
+>  lazy-freeing-of-memory-through-madv_free.patch
+>  lazy-freeing-of-memory-through-madv_free-vs-mm-madvise-avoid-exclusive-mmap_sem.patch
+>  restore-madv_dontneed-to-its-original-linux-behaviour.patch
+> 
+> I think the MADV_FREE changes need more work:
+> 
+> We need crystal-clear statements regarding the present functionality, the new
+> functionality and how these relate to the spec and to implmentations in other
+> OS'es.  Once we have that info we are in a position to work out whether the
+> code can be merged as-is, or if additional changes are needed.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- fs/sysfs/bin.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+There are two MADV variants that free pages, both do the exact
+same thing with mapped file pages, but both do something slightly
+different with anonymous pages.
 
---- linux-2.6.21-git3.orig/fs/sysfs/bin.c
-+++ linux-2.6.21-git3/fs/sysfs/bin.c
-@@ -59,7 +59,7 @@ read(struct file * file, char __user * u
- 	if (copy_to_user(userbuf, buffer, count))
- 		return -EFAULT;
- 
--	pr_debug("offs = %lld, *off = %lld, count = %d\n", offs, *off, count);
-+	pr_debug("offs = %lld, *off = %lld, count = %zd\n", offs, *off, count);
- 
- 	*off = offs + count;
- 
+MADV_DONTNEED will unmap file pages and free anonymous pages.
+When a process accesses anonymous memory at an address that
+was zapped with MADV_DONTNEED, it will return fresh zero filled
+pages.
+
+MADV_FREE will unmap file pages.  MADV_FREE on anonymous pages
+is interpreted as a signal that the application no longer needs
+the data in the pages, and they can be thrown away if the kernel
+needs the memory for something else.  However, if the process
+accesses the memory again before the kernel needs it, the process
+will simply get the original pages back.  If the kernel needed
+the memory first, the process will get a fresh zero filled page
+like with MADV_DONTNEED.
+
+In short:
+- both MADV_FREE and MADV_DONTNEED only unmap file pages
+- after MADV_DONTNEED the application will always get back
+   fresh zero filled anonymous pages when accessing the
+   memory
+- after MADV_FREE the application can either get back the
+   original data (without a page fault) or zero filled
+   anonymous memory
+
+The Linux MADV_DONTNEED behavior is not POSIX compliant.
+POSIX says that with MADV_DONTNEED the application's data
+will be preserved.
+
+Currently glibc simply ignores POSIX_MADV_DONTNEED requests
+from applications on Linux.  Changing the behaviour which
+some Linux applications may rely on might not be the best
+idea.
+
+If you want POSIX_MADV_DONTNEED behaviour added, please let
+me know and I'll whip up a patch.
+
+> Because right now, I don't know where we are with respect to these things and
+> I doubt if many of our users know either.  How can Michael write a manpage for
+> this is we don't tell him what it all does?
+
+If you need any additional information, please let me know.
+
+If you still think the MADV_FREE patches themselves should
+not be merged yet, can we at least merge the #defines, so
+the Fedora kernel can get the MADV_FREE functionality?
+
+Again, I'd be more than willing to whip up a patch for that.
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
