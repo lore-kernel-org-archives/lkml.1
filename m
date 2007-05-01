@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754342AbXEADdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbXEADdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754342AbXEADdS (ORCPT <rfc822;w@1wt.eu>);
+	id S1754270AbXEADdS (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 30 Apr 2007 23:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946157AbXEADdS
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbXEADdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 30 Apr 2007 23:33:18 -0400
-Received: from rtr.ca ([64.26.128.89]:4744 "EHLO mail.rtr.ca"
+Received: from mail.fieldses.org ([66.93.2.214]:35995 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754342AbXEADdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754270AbXEADdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Apr 2007 23:33:17 -0400
-Message-ID: <4636B4F9.6040406@rtr.ca>
-Date: Mon, 30 Apr 2007 23:33:13 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+Date: Mon, 30 Apr 2007 23:33:10 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Jeff Layton <jlayton@redhat.com>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [PATCH] RPC: add wrapper for svc_reserve to account for	checksum
+Message-ID: <20070501033310.GB21774@fieldses.org>
+References: <20070421131523.GA18100@dantu.rdu.redhat.com> <17974.41587.666167.650575@notabene.brown>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, tglx@linutronix.de,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of	CONFIG_NO_HZ,
- CONFIG_HIGH_RES_TIMERS
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>	 <6bffcb0e0704301707w7287f1bdk32be8bc8ce7cda80@mail.gmail.com>	 <463685BD.8010604@rtr.ca> <1177978391.12796.301.camel@imap.mvista.com>
-In-Reply-To: <1177978391.12796.301.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17974.41587.666167.650575@notabene.brown>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> 
-> I'm interested in which clocksource is getting used, which is in the
-> boot log.
+On Tue, May 01, 2007 at 12:14:11PM +1000, Neil Brown wrote:
+> I don't think this BUG_ON is correct.  If a readdir finds zero entries,
+> then will be some trailer information in the 'tail', but page_len will
+> be 0.  I think the following patch is correct and could fix that.
 
-Well then, send me a patch that dumps that information out just before it locks up.
-We know (first post in this thread) that the lockup occurs just after
-these two messages:
+Yep.
 
-  "switched to high resolution mode on cpu 1"
-  "switched to high resolution mode on cpu 0"
+> Bruce:  does it look OK to you?
 
-So just dump out anything else you need to see at the same time,
-and it'll still be on my screen when the darned thing locks up.
+It looks sensible, but it's a little late for me--I'll take another look
+at it and run some tests tommorow.
 
-Simple, eh.  We both get to run around a treadmill this way.  ;)
+--b.
