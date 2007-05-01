@@ -1,46 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422986AbXEAAIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422968AbXEAAJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422986AbXEAAIl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 20:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422894AbXEAAIl
+	id S1422968AbXEAAJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 20:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422992AbXEAAJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 20:08:41 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:7594 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422982AbXEAAIj (ORCPT
+	Mon, 30 Apr 2007 20:09:27 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44033 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422968AbXEAAJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 20:08:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=BMsAMlRPvRXPI8LOzRidYIGccG/eKb1ZQ2bJ9ozKwUo8UE2E3vUlTz9rv0D8SPTphNr7JeSd0q4WvFkgL2t429O0CO89+G5K47cf0WW3XrMb5CWlPn1W/LXSFsy5qtjGAgBuvr25eSXePx0BkHFbFBgLbwbeDlM+LVEPrRk0UiQ=
-Subject: Re: [PATCH 33/36] Use menuconfig objects II - video/logo
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0704301355430.29151@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0704301355430.29151@yvahk01.tjqt.qr>
-Content-Type: text/plain
-Date: Tue, 01 May 2007 08:08:30 +0800
-Message-Id: <1177978110.4372.25.camel@daplas>
+	Mon, 30 Apr 2007 20:09:25 -0400
+Date: Mon, 30 Apr 2007 17:09:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: to something appropriate (was Re: 2.6.22 -mm merge plans)
+Message-Id: <20070430170919.45e4b42b.akpm@linux-foundation.org>
+In-Reply-To: <46368062.6000100@garzik.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<46368062.6000100@garzik.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-30 at 13:56 +0200, Jan Engelhardt wrote:
-> Change Kconfig objects from "menu, config" into "menuconfig" so
-> that the user can disable the whole feature without having to
-> enter the menu first.
+
+> Subject: to something appropriate (was Re: 2.6.22 -mm merge plans)
+
+smartypants.
+
+On Mon, 30 Apr 2007 19:48:50 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> Andrew Morton wrote:
+> >  ahci-crash-fix.patch
+> >  libata-acpi-add-infrastructure-for-drivers-to-use.patch
+> >  pata_acpi-restore-driver.patch
+> >  optional-led-trigger-for-libata.patch
+> >  ata_timing-ensure-t-cycle-is-always-correct.patch
+> >  pata_pcmcia-recognize-2gb-compactflash-from-transcend.patch
+> >  drivers-ata-remove-the-wildcard-from-sata_nv-driver.patch
+> >  pata_icside-driver.patch
+> > 
+> > ata stuff
 > 
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-Acked-by: Antonino Daplas <adaplas@gmail.com>
+> Tejun helpfully posted a bunch of clashing patches for all the ACPI 
+> stuff :)  You might be better off dropping and getting a resend after 
+> the dust settles.
+> 
+> That LED trigger patch seems technically correct, but also filling a 
+> need that few have.  IMO it craps up the hot path for little gain.
 
-But I'll pick this up nevertheless.
+OK, well I'll see what's recoverable after libata-all gets updated, will
+blindly spam you with it as usual ;)
 
-Tony
+> 
+> >  8139too-force-media-setting-fix.patch
+> >  sundance-change-phy-address-search-from-phy=1-to-phy=0.patch
+> >  forcedeth-improve-napi-logic.patch
+> >  ne-add-platform_driver.patch
+> >  ne-add-platform_driver-fix.patch
+> >  ne-mips-use-platform_driver-for-ne-on-rbtx49xx.patch
+> >  mips-drop-unnecessary-config_isa-from-rbtx49xx.patch
+> >  ibmtr_cs-fix-hang-on-eject.patch
+> > 
+> > For netdev tree
+> 
+> 8139too: needs review w/ attention paid to historical usage, and I 
+> haven't had time for months.  Not sure its right.
+> 
+> sundance: I really think this is phy-dependent, and should not be 
+> universally applied.  In the standard MII PHY, phy 0 is a ghost of 
+> another id.
+> 
+> forcedeth: TX NAPI wants more than that minimum effort
 
+Ditto.
+
+> >  ppp_generic-fix-lockdep-warning.patch
+> > 
+> > Jeff, I guess.  It's not clear that this is correct.
+> 
+> Usually PPP is paulus -> jgarzik -> linus, but you can bounce it 
+> straight to me if Paulus doesn't respond
+> 
+
+OK, i'll move it to the netdev queue and will keep sending until something
+happens.
+
+> 
+> >  pcmcia-pccard-deadlock-fix.patch
+> >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
+> >  at91_cf-minor-fix.patch
+> >  add-new_id-to-pcmcia-drivers.patch
+> >  ide-cs-recognize-2gb-compactflash-from-transcend.patch
+> > 
+> > Dominik is busy.  Will probably re-review and send these direct to Linus.
+> 
+> I really wish "add ID" patches would not get buried in this tree.
+> 
+> Certainly they are trivial enough to go straight to Linus, but it would 
+> be nice to go through subsystem maintainers, some of whom have also 
+> picked up these new-id patches.
+> 
+> We don't send new-id patches for PCI drivers to GregKH, and we should 
+> similarly /not/ direct PCMCIA id patches to the PCMCIA bus tree.  It's 
+> far more scalable to send new-id patches to the maintainers dealing with 
+> the subsystem under which each driver falls (net, scsi, IDE, ...)
+> 
+
+Yeah, a new-id patch is a pretty critical bugfix if you happen to have that
+hardware.  I'll get all these into 2.6.22 by whatever means and will adopt
+your advice in future.
+
+Probably these should go into -stable too, but I don't know what
+Greg&Chris's position is on new device IDs.
 
