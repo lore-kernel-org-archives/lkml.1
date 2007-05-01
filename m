@@ -1,71 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXEAObY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXEAOcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581AbXEAObY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXEAObX
+	id S1750893AbXEAOcJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbXEAOcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:31:23 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:46799 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXEAObT (ORCPT
+	Tue, 1 May 2007 10:32:08 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:3461 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbXEAOcC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:31:19 -0400
-Date: Tue, 1 May 2007 15:31:02 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
-In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	Tue, 1 May 2007 10:32:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Q9xtPKWKAvDPO0Zfw4Gs3JSnrWFnqdzxn0H4ywPd/Cfr3mFVkL3nZW/XdaWBN63n9gmSnj97sMKE5NOtZin0v5igdt6AFFD2RKvwsyVJ90yyDZLttql27y6q+M7MQmbyxHoag8KNiIbTHuaaHxAfxErnT8a+SW7Bx4xZ19Robj0=
+Message-ID: <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com>
+Date: Tue, 1 May 2007 16:31:59 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+Cc: "Frank van Maarseveen" <frankvm@frankvm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       "IDE/ATA development list" <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, "Alan Cox" <alan@redhat.com>
+In-Reply-To: <46374C11.1010702@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 01 May 2007 14:31:18.0014 (UTC) FILETIME=[6161E1E0:01C78BFD]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070501135951.GA17072@janus> <46374C11.1010702@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007, Andrew Morton wrote:
->... 
->  mm-more-rmap-checking.patch
->...
-> 
-> Misc MM things.  Will merge.
+On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
+> Forwarding to linux-scsi and linux-ide mailing lists.
+>
+> Frank van Maarseveen wrote:
+> > Tested on 2.6.20.6 and 2.6.21.1
+> >
+> > I decided to swich from the old IDE drivers to libata and now there
+> > seems to be a little but annoying problem: cannot mount an ISO image
+> > after burning it.
+> >
+> > May  1 14:32:55 kernel: attempt to access beyond end of device
+> > May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+> > May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0, iso_blknum=16, block=16
+> >
+> > an "eject" command seems to fix the state of the PATA DVD writer
+> > or driver. The problem occurs for burning a CD and for DVD too with
+> > identical error messages.
+> >
+> >
+> > relevant kernel boot messages:
+> > | ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001ffa0 irq 14
+> > | ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001ffa8 irq 15
+> > | scsi0 : ata_piix
+> > | ata1.00: ATA-7: ST3120814A, 3.AAJ, max UDMA/100
+> > | ata1.00: 234441648 sectors, multi 8: LBA48
+> > | ata1.00: configured for UDMA/100
+> > | scsi1 : ata_piix
+> > | ata2.00: ATAPI, max UDMA/33
+> > | ata2.01: ATAPI, max UDMA/33
+> > | ata2.00: configured for UDMA/33
+> > | ata2.01: configured for UDMA/33
+> > | scsi 0:0:0:0: Direct-Access     ATA      ST3120814A       3.AA PQ: 0 ANSI: 5
+> > | SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+> > | sda: Write Protect is off
+> > | SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > | SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+> > | sda: Write Protect is off
+> > | SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > |  sda: sda1 sda2 sda4
+> > | sd 0:0:0:0: Attached scsi disk sda
+> > | sd 0:0:0:0: Attached scsi generic sg0 type 0
+> > | scsi 1:0:0:0: CD-ROM            HP       DVD Writer 640c  CS30 PQ: 0 ANSI: 5
+> > | sr0: scsi3-mmc drive: 40x/40x writer cd/rw xa/form2 cdda tray
+> > | Uniform CD-ROM driver Revision: 3.20
+> > | sr 1:0:0:0: Attached scsi generic sg1 type 5
+> > | scsi 1:0:1:0: CD-ROM            SAMSUNG  CD-ROM SC-148C   B105 PQ: 0 ANSI: 5
+> > | sr1: scsi3-mmc drive: 1x/48x cd/rw xa/form2 cdda tray
+> > | sr 1:0:1:0: Attached scsi generic sg2 type 5
+> >
+> > stripped config (well, as far of I'm sure it shouldn't matter):
+> > | CONFIG_PM=y
+> > | CONFIG_PM_LEGACY=y
+> > |
+> > | CONFIG_ACPI=y
+> > | CONFIG_ACPI_PROCFS=y
+> > | CONFIG_ACPI_FAN=y
+> > | CONFIG_ACPI_PROCESSOR=y
+> > | CONFIG_ACPI_THERMAL=y
+> > | CONFIG_ACPI_BLACKLIST_YEAR=0
+> > | CONFIG_ACPI_EC=y
+> > | CONFIG_ACPI_POWER=y
+> > | CONFIG_ACPI_SYSTEM=y
+> > | CONFIG_X86_PM_TIMER=y
+> > |
+> > | CONFIG_PCI=y
+> > | CONFIG_PCI_GOANY=y
+> > | CONFIG_PCI_BIOS=y
+> > | CONFIG_PCI_DIRECT=y
+> > | CONFIG_PCI_MMCONFIG=y
+> > | CONFIG_PCIEPORTBUS=y
+> > | CONFIG_PCIEAER=y
+> > | CONFIG_HT_IRQ=y
+> > | CONFIG_ISA_DMA_API=y
+> > |
+> > | CONFIG_PNP=y
+> > |
+> > | CONFIG_PNPACPI=y
+> > |
+> > | CONFIG_CDROM_PKTCDVD=y
+> > | CONFIG_CDROM_PKTCDVD_BUFFERS=8
+> > |
+> > | CONFIG_IDE=y
+> > |
+> > | CONFIG_RAID_ATTRS=y
+> > | CONFIG_SCSI=y
+> > | CONFIG_SCSI_PROC_FS=y
+> > |
+> > | CONFIG_BLK_DEV_SD=y
+> > | CONFIG_BLK_DEV_SR=y
+> > | CONFIG_CHR_DEV_SG=y
+> > |
+> > | CONFIG_SCSI_MULTI_LUN=y
+> > | CONFIG_SCSI_CONSTANTS=y
+> > | CONFIG_SCSI_LOGGING=y
+> > |
+> > | CONFIG_SCSI_SPI_ATTRS=y
+> > |
+> > | CONFIG_ATA=y
+> > | CONFIG_SATA_AHCI=y
+> > | CONFIG_ATA_PIIX=y
+> > | CONFIG_SATA_INTEL_COMBINED=y
+> > | CONFIG_SATA_ACPI=y
+> > | CONFIG_PATA_SERVERWORKS=y
+> >
+> >
+> > lspci:
+> > 00:00.0 Host bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE DRAM Controller/Host-Hub Interface (rev 01)
+> > 00:01.0 PCI bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE Host-to-AGP Bridge (rev 01)
+> > 00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01)
+> > 00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 01)
+> > 00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
+> > 00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI Controller (rev 01)
+> > 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 81)
+> > 00:1f.0 ISA bridge: Intel Corporation 82801DB/DBL (ICH4/ICH4-L) LPC Interface Bridge (rev 01)
+> > 00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01)
+> > 00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) SMBus Controller (rev 01)
+> > 00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
+> > 01:00.0 VGA compatible controller: nVidia Corporation NV18 [GeForce4 MX 440 AGP 8x] (rev a2)
+> > 02:0c.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
+> >
+> > lspci -v -v -v for IDE
+> > 00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01) (prog-if 8a [Master SecP PriP])
+> >         Subsystem: Dell Unknown device 0142
+> >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+> >         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+> >         Latency: 0
+> >         Interrupt: pin A routed to IRQ 17
+> >         Region 0: I/O ports at 01f0 [size=8]
+> >         Region 1: I/O ports at 03f4 [size=1]
+> >         Region 2: I/O ports at 0170 [size=8]
+> >         Region 3: I/O ports at 0374 [size=1]
+> >         Region 4: I/O ports at ffa0 [size=16]
+> >         Region 5: Memory at 50100000 (32-bit, non-prefetchable) [size=1K]
+> >
 
-Would Nick mind very much if I ask you to drop this one?
-You did CC me ages ago, but I've only just run across it.
-It's a small matter, but I'd prefer it dropped for now.
+I added this  to the list of known regressions
+http://kernelnewbies.org/known_regressions
 
->> Re-introduce rmap verification patches that Hugh removed when he removed
->> PG_map_lock. PG_map_lock actually isn't needed to synchronise access to
->> anonymous pages, because PG_locked and PTL together already do.
->> 
->> These checks were important in discovering and fixing a rare rmap corruption
->> in SLES9.
+Alan CC'ed.
 
-It introduces some silly checks which were never in mainline,
-nor so far as I can tell in SLES9: I'm thinking of those
-+	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-There are few callsites for these rmap functions, I don't think
-they need to be checking their arguments in that way.
+Regards,
+Michal
 
-It also changes the inline page_dup_rmap (a single atomic increment)
-into a bugchecking out-of-line function: do we really want to slow
-down fork in that way, for 2.6.22 to fix a rare corruption in SLES9?
-
-What I really like about the patch is Nick's observation that my
-	/* else checking page index and mapping is racy */
-is no longer true: a change we made to the do_swap_page sequence
-some while ago has indeed cured that raciness, and I'm happy to
-reintroduce the check on mapping and index in page_add_anon_rmap,
-and his BUG_ON(!PageLocked(page)) there (despite BUG_ONs falling
-out of fashion very recently).
-
-That becomes more important when I send the patches to free up
-PG_swapcache, using a PAGE_MAPPING_SWAP bit instead: so I was
-planning to include that part of Nick's patch in that series.
-
-Hugh
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
