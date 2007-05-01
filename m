@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030354AbXEASNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXEASQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030354AbXEASNh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030369AbXEASNh
+	id S1030495AbXEASQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXEASQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:13:37 -0400
-Received: from cacti.profiwh.com ([85.93.165.66]:52197 "EHLO smtp.wsc.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1030354AbXEASNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:13:35 -0400
-Message-id: <14586147702477213939@wsc.cz>
-In-reply-to: <88401795395522653@wsc.cz>
-Subject: [PATCH 3/3] Serial: serial_core, use pr_debug
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-kernel@vger.kernel.org>
-Date: Tue,  1 May 2007 20:13:34 +0200 (CEST)
+	Tue, 1 May 2007 14:16:23 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45246 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030405AbXEASQW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 14:16:22 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Tue, 1 May 2007 14:16:01 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+cc: ballabio_dario@emc.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/pci2000.h: Remove unused file
+In-Reply-To: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
+Message-ID: <Pine.LNX.4.64.0705011415070.13459@localhost.localdomain>
+References: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-serial_core, use pr_debug
+On Tue, 1 May 2007, Richard Knutsson wrote:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Remove the unused header drivers/scsi/pci2000.h
 
----
-commit 2261bd870cd3c289ec74db4b2cfddb5c9ed59e95
-tree 05f23ba7ce1add483b1e72c5a02bc0309536b7ea
-parent f4fba1005f8f25f5dc369f6e6e04643f4b6a6822
-author Jiri Slaby <jirislaby@gmail.com> Tue, 01 May 2007 20:10:04 +0200
-committer Jiri Slaby <jirislaby@gmail.com> Tue, 01 May 2007 20:10:04 +0200
+i have the same patch in my pending patch directory, dated march 10,
+so i know i submitted it, but i have no idea whatever happened to it.
 
- drivers/serial/serial_core.c |   17 +++++------------
- 1 files changed, 5 insertions(+), 12 deletions(-)
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index 74e34ba..6dbcd7e 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -37,13 +37,6 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- 
--#undef	DEBUG
--#ifdef DEBUG
--#define DPRINTK(x...)	printk(x)
--#else
--#define DPRINTK(x...)	do { } while (0)
--#endif
--
- /*
-  * This is used to lock changes in serial line configuration.
-  */
-@@ -560,7 +553,7 @@ static void uart_flush_buffer(struct tty_struct *tty)
- 		return;
- 	}
- 
--	DPRINTK("uart_flush_buffer(%d) called\n", tty->index);
-+	pr_debug("uart_flush_buffer(%d) called\n", tty->index);
- 
- 	spin_lock_irqsave(&port->lock, flags);
- 	uart_circ_clear(&state->info->xmit);
-@@ -1234,7 +1227,7 @@ static void uart_close(struct tty_struct *tty, struct file *filp)
- 
- 	port = state->port;
- 
--	DPRINTK("uart_close(%d) called\n", port->line);
-+	pr_debug("uart_close(%d) called\n", port->line);
- 
- 	mutex_lock(&state->mutex);
- 
-@@ -1353,7 +1346,7 @@ static void uart_wait_until_sent(struct tty_struct *tty, int timeout)
- 
- 	expire = jiffies + timeout;
- 
--	DPRINTK("uart_wait_until_sent(%d), jiffies=%lu, expire=%lu...\n",
-+	pr_debug("uart_wait_until_sent(%d), jiffies=%lu, expire=%lu...\n",
- 	        port->line, jiffies, expire);
- 
- 	/*
-@@ -1382,7 +1375,7 @@ static void uart_hangup(struct tty_struct *tty)
- 	struct uart_state *state = tty->driver_data;
- 
- 	BUG_ON(!kernel_locked());
--	DPRINTK("uart_hangup(%d)\n", state->port->line);
-+	pr_debug("uart_hangup(%d)\n", state->port->line);
- 
- 	mutex_lock(&state->mutex);
- 	if (state->info && state->info->flags & UIF_NORMAL_ACTIVE) {
-@@ -1584,7 +1577,7 @@ static int uart_open(struct tty_struct *tty, struct file *filp)
- 	int retval, line = tty->index;
- 
- 	BUG_ON(!kernel_locked());
--	DPRINTK("uart_open(%d) called\n", line);
-+	pr_debug("uart_open(%d) called\n", line);
- 
- 	/*
- 	 * tty->driver->num won't change, so we won't fail here with
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
