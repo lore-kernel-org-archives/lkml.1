@@ -1,44 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbXEAQ6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXEARBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754834AbXEAQ6n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXEAQ6n
+	id S1754833AbXEARBo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 13:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbXEARBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:58:43 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38307 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754834AbXEAQ6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:58:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0705011820180.27246@anakin> 
-References: <Pine.LNX.4.64.0705011820180.27246@anakin>  <Pine.LNX.4.64.0705011734410.27246@anakin> <200704271707.l3RH7H5Z032671@hera.kernel.org> <9374.1178036083@redhat.com> 
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [AF_RXRPC]: Make the in-kernel AFS filesystem use AF_RXRPC. 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 01 May 2007 17:58:35 +0100
-Message-ID: <10918.1178038715@redhat.com>
+	Tue, 1 May 2007 13:01:44 -0400
+Received: from ms-smtp-01.southeast.rr.com ([24.25.9.100]:44333 "EHLO
+	ms-smtp-01.southeast.rr.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754833AbXEARBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 13:01:43 -0400
+Date: Tue, 1 May 2007 13:01:27 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Neil Brown <neilb@suse.de>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] [PATCH] RPC: add wrapper for svc_reserve to account for
+	checksum
+Message-ID: <20070501170123.GB15222@salusa.poochiereds.net>
+References: <20070421131523.GA18100@dantu.rdu.redhat.com> <17974.41587.666167.650575@notabene.brown>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17974.41587.666167.650575@notabene.brown>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Tue, May 01, 2007 at 12:14:11PM +1000, Neil Brown wrote:
+> On Saturday April 21, jlayton@redhat.com wrote:
+> > When the kernel calls svc_reserve to downsize the expected size of an RPC
+> > reply, it fails to account for the possibility of a checksum at the end of
+> > the packet. If a client mounts a NFSv2/3 with sec=krb5i/p, and does I/O then
+> > you'll generally see messages similar to this in the server's ring buffer:
+> > 
+> > RPC request reserved 164 but used 208
+> > 
+> > While I was never able to verify it, I suspect that this problem is also the
+> > root cause of some oopses I've seen under these conditions:
+> > 
+> > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=227726
+> 
+> I don't think to two are that closely related.
+> The space reservation mentioned in the "RPC request reserved ..."
+> messages is a fairly soft reservation.  We try to make sure the
+> network stack reserves a certain amount of space, then try never to
+> start processing a request unless we will be able to reply without
+> exceeding that allocation.
+> If we get it wrong and do exceed the allocation, the worst that might
+> happen is that we might block while writing the reply and maybe have
+> to close a connection, or send out an incomplete packet, or something
+> like that.  Certainly not an oops.
+> 
+> The extra space needed at the end of the message of integrity
+> information which we weren't accounting for properly does seemed to be
+> accounted correctly in svcauth_gss_wrap_resp_integ (I'm less sure of
+> _wrp_resp_priv, but it is probably right).
+> 
+> Of the two Oops in that BUG, the first seems to be the
+> 		BUG_ON(resbuf->tail[0].iov_len);
+> in svcauth_gss_wrap_resp_integ (assuming code in 2.6.9-44.ELxenU is at
+> least vaguely similar to current -mm).
+> 
+> I don't think this BUG_ON is correct.  If a readdir finds zero entries,
+> then will be some trailer information in the 'tail', but page_len will
+> be 0.  I think the following patch is correct and could fix that.
+> Bruce:  does it look OK to you?
+> 
+> 
+> The second oops is harder to interpret.
+> I looks like tcp_send_page is getting a NULL page, though it could be
+> getting a length > PAGE_SIZE which might have the same effect.
+> 
+> It reminds me of
+>   http://bugzilla.kernel.org/show_bug.cgi?id=7795
+> but I'm not convinced it is the same.
+> 
+> > 
+> > Unfortunately, there doesn't seem to be a good way to reliably determine the
+> > expected checksum length prior to actually calculating it, particularly with
+> > schemes like spkm3.
+> 
+> Yes, that asn1 encoding does seem rather awkward.
+> 
+> Maybe we should just use RPC_MAX_AUTH_SIZE like other bits of GSS code
+> does.  There is no great cost in reserving too much space - it just
+> might slow things down a little when tight on memory.
+> What would you think of submitting an incremental patch which replaces
+> the "56" with "RPC_MAX_AUTH_SIZE" ?
+> 
+> Thanks (and sorry for the delay).
+> NeilBrown
+> 
 
-> On architectures that #define WANT_PAGE_VIRTUAL (frv/m68k/mips/extensa),
-> page_address(page) expands to (page)->virtual, which fails if page is a
-> void *.
+Thanks for looking into this, Neil. I wasn't sure how hard a reservation that
+was (still working on wrapping my brain around the RPC code). I'll have a look
+at the patch you posted. Hopefully that is the problem...
 
-On FRV, kmap_atomic() should always be an inline function (I wrote it:-):
+As far as your suggestion to use RPC_MAX_AUTH_SIZE, that sounds like a good
+idea to me. I'm all for avoiding "magic" numbers. How does this look? I also
+cleaned up the comments as well.
 
-	static inline void *kmap_atomic(struct page *page, enum km_type type)
-	{
-	...
-	}
-
-David
+diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
+index 9114f11..ed7cbf1 100644
+--- a/include/linux/sunrpc/svc.h
++++ b/include/linux/sunrpc/svc.h
+@@ -399,10 +399,9 @@ char *		   svc_print_addr(struct svc_rqst *, char *, size_t);
+ /*
+  * When we want to reduce the size of the reserved space in the response
+  * buffer, we need to take into account the size of any checksum data that
+- * may be at the end of the packet. For now, just use a hardcoded value
+- * for each possible authflavor. This will need to be updated when new
+- * encryption types or algorithms are added, or we'll have to come up with
+- * a way to reasonably calculate this on the fly (maybe via a new auth_op).
++ * may be at the end of the packet. This is difficult to determine exactly
++ * for all cases without actually generating the checksum, so we just use a
++ * static value.
+  */
+ static inline void 
+ svc_reserve_auth(struct svc_rqst *rqstp, int space)
+@@ -411,7 +410,7 @@ svc_reserve_auth(struct svc_rqst *rqstp, int space)
+ 
+ 	switch(rqstp->rq_authop->flavour) {
+ 		case RPC_AUTH_GSS:
+-			added_space = 56; /* determined empirically */
++			added_space = RPC_MAX_AUTH_SIZE;
+ 	}
+ 	return svc_reserve(rqstp, space + added_space);
+ }
