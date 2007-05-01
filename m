@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbXEAPFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbXEAPG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbXEAPFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 11:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbXEAPFo
+	id S1754168AbXEAPG3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 11:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbXEAPG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 11:05:44 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50913 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbXEAPFn (ORCPT
+	Tue, 1 May 2007 11:06:28 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:33501 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754168AbXEAPG1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 11:05:43 -0400
-Message-ID: <46375738.1010007@zytor.com>
-Date: Tue, 01 May 2007 08:05:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 1 May 2007 11:06:27 -0400
+Date: Tue, 1 May 2007 11:00:17 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: condingstyle, was Re: utrace comments
+In-Reply-To: <1178028973.2875.78.camel@pmac.infradead.org>
+Message-ID: <alpine.DEB.0.98.0705011054060.12931@sigma.j-a-k-j.com>
+References: <20061127165138.GA2991@lst.de>  <20070430040213.BF9901801A4@magilla.sf.frob.com>
+  <20070430091121.GC31397@infradead.org>  <20070430100917.439ebfc8.akpm@linux-foundation.org>
+  <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com> 
+ <Pine.LNX.4.64.0705011058330.27246@anakin>
+ <1178028973.2875.78.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-Subject: Re: console font limits
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>	 <Pine.LNX.4.64.0705011347300.27246@anakin> <1178021516.4372.62.camel@daplas>
-In-Reply-To: <1178021516.4372.62.camel@daplas>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Antonino A. Daplas wrote:
+> >         if (veryverylengthycondition1 &&
+> >             smallcond2 &&
+> >             (conditionnumber3a ||
+> >              condition3b)) {
+> >                 ...
+> >         }
 > 
-> And this will entail a lot of work to change (Is it worth it to rework
-> the code and remove the limitation?). The linux-console project
-> (http://linuxconsole.sourceforge.net/) might have , but I don't know its
-> current status.
+> It's horrid. I'd much rather see
 > 
+>         if (veryverylengthycondition1 &&
+>             smallcond2 &&
+>             (conditionnumber3a || condition3b)) {
+>                 ...
+>         }
 
-Well, I think the consensus is that anything beyond that should be done
-in userspace; the main such console daemon was Kon2 last I checked.
+	if (veryverylengthycondition1
+		&& smallcond2
+		&& (conditionnumber3a
+			|| condition3b)) {
+		...
+	}
 
-	-hpa
+Clear, crisp, and 80-wide. I also like how the logical operator on the 
+following line is indented slightly into the condition of the previous 
+line. I think this is much more sensical and sensible than using spaces to 
+line them up with the parentheses. Makes clear for each operator the 
+condition to which it applies.
