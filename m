@@ -1,46 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423504AbXEAX1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946056AbXEAX2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423504AbXEAX1J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 19:27:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161717AbXEAX1I
+	id S1946056AbXEAX2l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 19:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946057AbXEAX2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 19:27:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:2618 "EHLO mga03.intel.com"
+	Tue, 1 May 2007 19:28:41 -0400
+Received: from rtr.ca ([64.26.128.89]:1586 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161382AbXEAX1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 19:27:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,475,1170662400"; 
-   d="scan'208";a="222682601"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] support PCI MCFG space on Intel i915 bridges
-Date: Tue, 1 May 2007 16:27:14 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <fa.aWIs6SNmpl2IhGAAoSWJu6oKjPo@ifi.uio.no> <200704301225.22016.jesse.barnes@intel.com> <463679A4.60704@shaw.ca>
-In-Reply-To: <463679A4.60704@shaw.ca>
+	id S1946056AbXEAX2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 19:28:40 -0400
+Message-ID: <4637CD25.5070104@rtr.ca>
+Date: Tue, 01 May 2007 19:28:37 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Linux Kernel <linux-kernel@vger.kernel.org>, marcel@holtmann.org,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>
+Subject: [BUG] usb/core/hub.c loops forever on resume from ram due to bluetooth
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705011627.14948.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, April 30, 2007 4:20 pm Robert Hancock wrote:
-> > Right, but you patch should obsolete this stuff anyway.  I'll test
-> > it out in the next few days.
->
-> We likely still want this chipset-specific support, it will catch the
-> case where the MCFG table lists a location which is reserved in ACPI
-> but the chipset was actually programmed to a different location
-> entirely, which I seem to remember someone mentioning was actually
-> the case on some boards..
+I have just replaced my primary single-core notebook
+with a nearly identical dual-core notebook,
+and moved the usb-bluetooth peripheral from the old
+machine to the new one.
 
-Yeah, I suppose that's true.  So maybe your new checking code should 
-leverage the stuff in mmconfig-shared.c to check against the register 
-values like Olivier mentioned?
+On the single-core machine, suspend/resume (RAM) worked
+fine even with the bluetooth module enabled.
 
-Jesse
+On the new dual-core machine, resuming with bluetooth
+enabled results in an infinite(?) lockup in an unbounded
+loop in hub_tt_kevent().  With PM debug on, I see
+tens of thousands of these messages scrolling on the console:
+
+     kernel: usb 5-1: clear tt 4 (9042) error -71
+     kernel: usb 5-1: clear tt 4 (9042) error -71
+     kernel: usb 5-1: clear tt 4 (9042) error -71
+     (over and over and ...)
+
+By restricting iterations on the unbounded loop
+the machine is able to resume again.
+
+Greg / Marcel: any words of wisdom?
+
+And we should probably put bounds permanently on that loop:
+
+I devised/used this patch to accomplish it.
+Now, I still get close to a thousand or so such
+messages, in groups, showing up in syslog,
+but at least the system can resume after suspend.
+
+Signed-off-by:  Mark Lord <mlord@pobox.com>
+
+--- linux/drivers/usb/core/hub.c.orig	2007-04-26 12:02:47.000000000 -0400
++++ linux/drivers/usb/core/hub.c	2007-05-01 18:48:46.000000000 -0400
+@@ -403,9 +403,10 @@
+ 	struct usb_hub		*hub =
+ 		container_of(work, struct usb_hub, tt.kevent);
+ 	unsigned long		flags;
++	int			limit = 500;
+ 
+ 	spin_lock_irqsave (&hub->tt.lock, flags);
+-	while (!list_empty (&hub->tt.clear_list)) {
++	while (--limit && !list_empty (&hub->tt.clear_list)) {
+ 		struct list_head	*temp;
+ 		struct usb_tt_clear	*clear;
+ 		struct usb_device	*hdev = hub->hdev;
+-----
+
