@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754538AbXEAWeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbXEAWfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754538AbXEAWeA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 18:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXEAWeA
+	id S1754288AbXEAWfY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbXEAWfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 18:34:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49449 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754538AbXEAWd7 (ORCPT
+	Tue, 1 May 2007 18:35:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:63573 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754288AbXEAWfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 18:33:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4637C04E.4070306@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 00:33:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Tue, 1 May 2007 18:35:23 -0400
+Date: Tue, 1 May 2007 15:34:40 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Ulrich Drepper <drepper@gmail.com>, Bill Irwin <bill.irwin@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com
+Subject: Re: per-thread rusage
+Message-ID: <20070501223440.GT26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Theodore Tso <tytso@mit.edu>, Ulrich Drepper <drepper@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org
+References: <20070404172931.GM2986@holomorphy.com> <20070404194829.1a93d8fd.dada1@cosmosbay.com> <20070404181050.GN2986@holomorphy.com> <20070409165315.4704021f.akpm@linux-foundation.org> <20070410004201.GA2986@holomorphy.com> <20070501172937.GQ26598@holomorphy.com> <a36005b50705011139p361dbc46ube0da5e42955f8b0@mail.gmail.com> <20070501202456.GR26598@holomorphy.com> <a36005b50705011510k4cd7873dr3fb8206c0f107169@mail.gmail.com> <20070501222724.GG26093@thunk.org>
 MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Andre Tomt <andre@tomt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: so ... what *are* candidates for removal?
-References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>            <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu>
-In-Reply-To: <10590.1178037443@turing-police.cc.vt.edu>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070501222724.GG26093@thunk.org>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 01 May 2007 17:30:36 +0200, Andre Tomt said:
->> Robert P. J. Day wrote:
-> 
->>> http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
-> 
->> Already documented in the kernel tarball, see 
->> Documentation/feature-removal-schedule.txt
-> 
-> Robert's point is that the file you cited is horrendously out of date, and
-> we need to create a consensus of what *should* be in feature-removal-schedule.txt
-> so we can update it to correspond to some sort of reality, or at the very least
-> some politically correct sanitized view of reality. It currently lists
-> stuff scheduled to be removed 18 months ago, and doesn't list stuff that
-> everybody agrees deserves to be heaved over the side as soon as the users have
-> had "enough warning" (whatever that means)....
+On Tue, May 01, 2007 at 06:27:24PM -0400, Theodore Tso wrote:
+> 	There are two ways of implementing this.  One is to have the
+> JVM periodically poll using a pthread_getrusage() interface.  A better
+> choice might be some kind of per-thread CPU limit, that would result
+> in a thread-specific SIGXCPU signal.  But there are no interfaces
+> today that do anything like this.
+> 	Do you have any thoughts or preferences about how this might
+> be done, if we tried to about doing something like a per-thread
+> SIGXCPU functionality?  If not, pthread_getrusage() might be
+> sufficient, if not the most efficient way of doing things.
 
-It means to get in touch with people who are affected.  Yes, that's the
-tough part.
+I just so happen to think we should implement a variety of CPU resource
+limits beyond what we now do, so this, too, interests me.
 
-Regarding features that are overdue for removal according to
-feature-removal-schedule.txt:
 
-I remember that at least one person used to watch for due dates for
-feature removal, wrote the removing patches, and sent them to the
-appropriate lists and maintainers.  This either got rid of the obsolete
-stuff, or it turned up reasons why some feature could not be removed
-just yet and how to update feature-removal-schedule.txt to correctly
-reflect that.
-
-So, as they say, Patches Are Welcome.
--- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+-- wli
