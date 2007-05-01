@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbXEATZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXEAT0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864AbXEATZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXEATZ4
+	id S1754684AbXEAT0s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbXEAT0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:25:56 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35760 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752864AbXEATZz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:25:55 -0400
-Date: Tue, 1 May 2007 12:25:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0705011215180.25494@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+	Tue, 1 May 2007 15:26:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37582 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754684AbXEAT0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 15:26:46 -0400
+Cc: linux-kernel@vger.kernel.org, abraham.manu@gmail.com, xyzzy@speakeasy.org,
+       linux-dvb@linuxtv.org, mchehab@infradead.org, mrechberger@gmail.com
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 01 May 2007 21:26:45 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <463792E1.6000908@gmail.com>
+Message-ID: <20070501192645.272410@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+	<1178031333.3958.63.camel@localhost> <20070501164054.26090@gmx.net>
+ <20070501183048.268140@gmx.net> <463792E1.6000908@gmail.com>
+Subject: Re: [linux-dvb] Re: DST/BT878 module customization (.. was: Critical
+ points about ...)
+To: e9hack <e9hack@googlemail.com>
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX193AkBGmAp3GiFbiNc++wUr6Jiybp0yPCA18yz8YX
+ EgmYkK5cuB4Ij1xIrFq0D4BjkMQXv8Hj0ubg== 
+Content-Transfer-Encoding: 7bit
+X-GMX-UID: QqwCciIgRkkNRnD0DGRqv+RudWkvKFNL
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Hugh Dickins wrote:
 
-> > Most of the rest of slub.  Will merge it all.
+-------- Original-Nachricht --------
+Datum: Tue, 01 May 2007 21:20:01 +0200
+Von: e9hack <e9hack@googlemail.com>
+An: Uwe Bugla <uwe.bugla@gmx.de>
+CC: mrechberger@gmail.com, mchehab@infradead.org, linux-dvb@linuxtv.org, xyzzy@speakeasy.org, abraham.manu@gmail.com, linux-kernel@vger.kernel.org
+Betreff: Re: [linux-dvb] Re: DST/BT878 module customization (.. was: Critical points about ...)
+
+> Uwe Bugla wrote:
+> > 
+> > The biggest problem that I had with you in the past weeks is and was
+> that you never even once offer full transparency when you are building up
+> theses NOT TO accept patches.
+> > 
+> > And if it is only the other side (me, Trent, others) to be forced to
+> offer transparent information BUT NOT YOU YOURSELF
+> > then this is what I would call a deep anti-democratic behaviour.
+> > 
+> > You can neither help nor can you solve any problem continuing in that
+> manner,
+> > can you?
+> > 
+> > Happy reflection on your very strange methods, with the hope to do
+> better in the future! If there is some hope - well, I doubt!
+> > 
 > 
-> Merging slub already?  I'm surprised.  That's a very key piece of
-> infrastructure, and I doubt it's had the exposure it needs yet.
+> Hi Uwe,
+> 
+> I would like it if you only post technical topics without any comments to
+> some person. In your case, the comments are
+> mostly a personally attacks against someone. If I use google to search for
+> your name: in the last 5 years, on every
+> board, forum, ML,.. you had trouble with many people. It was always
+> because someone wasn't your opinion or someone
+> didn't do what you seems to expect. Afterwards, you did always start your
+> attacks and flame war. As a result nobody did
+> response to you and you was fired from some places. Your problem with some
+> people from this list isn't a problem of this
+> people. It's a problem of your own and of your communicative skills. If
+> you cannot respect sentence #1, please go away
+> and do never post to this list again.
+> 
+> Just my two cents..
+> 
+> - Hartmut
 
-Its not the default. Its just an alternative like SLOB. It will take some 
-time to test with various loads in order to see if it can really replace
-SLAB in all scenarios.
- 
-> Just what has it been widely tested on so far?  x86_64.  Not many
-> of us have ia64, but I guess SGI people will have been trying it
-> on that.  Not i386, that's excluded.
+Hartmut,
+one strategy to establish democratic principles is showing up methods of other people like Abraham and Chehab. If you are not ready to perceive this you're really poor.
+Uwe
 
-There is an i386 patch pending and I have used it on i386 for a while.
- 
-> Not powerpc - hmm, I thought that was known, but looking I see no
-> ARCH_USES_SLAB_PAGE_STRUCT there: just built and tried to run it up,
-> crashes in slab_free from pgtable_free_tlb frpm free_pte_range from
-> free_pgd_range from free_pgtables from unmap_region form do_munmap.
-> That's 2.6.21-rc7-mm2.
 
-Hmmm... True I have not spend any time with that platform. We can set 
-ARCH_USES_SLAB_PAGE_STRUCT there to switch it off. SLUB is the default for 
-mm so I am a bit surprised that this did not surface earlier.
-
-> I've nothing against slub in itself, though I'm wary of its
-> cache merging (more scope for one corrupting another) (and
-
-Yes but then SLUB has more diagnostics etc etc than SLAB to prevent any 
-issues. In debug mode all slabs are separate. The merge feature is very 
-stable these days and significantly reduces cache overhead problems 
-that plague SLAB and require it to have a complex object expiration 
-technique. As a result I was able to rip out all timers. SLUB has no cache 
-reaper nor any timer. Its silent if not in use.
-
-> sometimes I think Christoph spent one life uglifying slab for
-> NUMA, then another life ripping that all out to make slub ;)
-
-SLAB has a certain paradigm of doing things (queues) and I had to work 
-within that framework. It was a group effort. SLUB is an answer to those 
-complaints and a result of the lessons learned through years of some 
-painful slab debugging. SLUB makes debugging extremely easy (and also the 
-design is very simple and comprehensible). No rebuilding of the kernel. 
-Just pop in a debug option on the command line which can even be targeted 
-to a slab cache if we know that things break there.
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
