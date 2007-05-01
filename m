@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031641AbXEAJww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031642AbXEAKAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031641AbXEAJww (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 05:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031640AbXEAJww
+	id S1031642AbXEAKAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 06:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030319AbXEAKAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 05:52:52 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38737 "EHLO mx2.suse.de"
+	Tue, 1 May 2007 06:00:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47306 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031641AbXEAJwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 05:52:51 -0400
-From: Neil Brown <neilb@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Date: Tue, 1 May 2007 19:52:11 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1030316AbXEAKAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 06:00:50 -0400
+Subject: [GFS2] Patches for the current merge window [0/34]
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 01 May 2007 10:56:16 +0100
+Message-Id: <1178013376.5462.127.camel@quoit.chygwyn.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <17975.3531.838077.563475@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: nfsd/md patches Re: 2.6.22 -mm merge plans
-In-Reply-To: message from Christoph Hellwig on Tuesday May 1
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<17974.34116.479061.912980@notabene.brown>
-	<20070501090843.GB17949@infradead.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 1, hch@infradead.org wrote:
-> apropos nfsd patches, what's the merge plans for my two export ops
-> patch series?
+Hi,
 
-Still sitting in my tree - I've had my mind on other things
-(nfs-utils, portmap....) and let them slip - sorry.
+Following this email are the 34 patches for GFS2 for this merge window.
+They are mostly cleanups and bug fixes again, although there are one or
+two new features. The edited highlights are:
 
-I think also there was an unanswered question about the second series
-(there first I am completely happy with).
+ - Merge lowcomms code in DLM so that the protocol is run-time
+selectable rather than compile time
+ - Add support for GFS2 "lockdump" debugging feature
+ - Various bug fixes & cleanups
 
-> Date: Fri, 30 Mar 2007 13:34:53 +1000
-> 
-> My only question involves motivation.
-> 
->   You say "less complex", but to me it just looks "different" - though
->   being very familiar with the original, that might be a biased view.
->   Can you say more about how it is less complex?
->   Maybe the extension to generic 64bit support will make that clear...
-> 
->   But then generic 64bit support should just be an independent set of
->   helper functions that can be plugged in to the export_operations
->   structure.
-> 
+Note that the code thats added commented out, in patch 11, (just a
+couple of lines in all) and changed again in patch 24 is uncommented in
+patch 34 since the patch upon which it depends (sprint_symbol) has just
+been merged into Linus' tree from -mm yesterday,
 
-It think I programmed myself to use a reply to that to be my wake_up
-to forwarded them on, and forgot to register a timeout handler....
+Steve.
 
-NeilBrown
+
+
+
