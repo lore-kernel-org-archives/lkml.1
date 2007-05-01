@@ -1,126 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030565AbXEAObO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbXEAObY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030565AbXEAObO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXEAObO
+	id S1751581AbXEAObY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXEAObX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:31:14 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:2991 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbXEAObJ (ORCPT
+	Tue, 1 May 2007 10:31:23 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:46799 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbXEAObT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:31:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
-        b=TEbuzu2Pv4Bj+21X01qRPnrJsFci8F8w6vmi4/OlDhxz/7Byze+QVpc6atwiehdGCe1P57FvTsFzSB//qe4eLtXpzEH02U79DmCbdKhFfNFfQ7xJjTCc7ym6tvqvnsHwhR9NVVX1zYb/YyyjkfoQkqX4IyOJi7hZGpASc9PjfP8=
-Date: Tue, 1 May 2007 23:25:14 +0900
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] procfs: use simple_read_from_buffer()
-Message-ID: <20070501142514.GA3807@APFDCB5C>
-Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
-	linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Tue, 1 May 2007 10:31:19 -0400
+Date: Tue, 1 May 2007 15:31:02 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 01 May 2007 14:31:18.0014 (UTC) FILETIME=[6161E1E0:01C78BFD]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup using simple_read_from_buffer() in procfs.
+On Mon, 30 Apr 2007, Andrew Morton wrote:
+>... 
+>  mm-more-rmap-checking.patch
+>...
+> 
+> Misc MM things.  Will merge.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+Would Nick mind very much if I ask you to drop this one?
+You did CC me ages ago, but I've only just run across it.
+It's a small matter, but I'd prefer it dropped for now.
 
----
- fs/proc/base.c |   35 +++++++----------------------------
- 1 file changed, 7 insertions(+), 28 deletions(-)
+>> Re-introduce rmap verification patches that Hugh removed when he removed
+>> PG_map_lock. PG_map_lock actually isn't needed to synchronise access to
+>> anonymous pages, because PG_locked and PTL together already do.
+>> 
+>> These checks were important in discovering and fixing a rare rmap corruption
+>> in SLES9.
 
-Index: 2.6-mm/fs/proc/base.c
-===================================================================
---- 2.6-mm.orig/fs/proc/base.c
-+++ 2.6-mm/fs/proc/base.c
-@@ -652,7 +652,6 @@ static ssize_t oom_adjust_read(struct fi
- 	char buffer[PROC_NUMBUF];
- 	size_t len;
- 	int oom_adjust;
--	loff_t __ppos = *ppos;
- 
- 	if (!task)
- 		return -ESRCH;
-@@ -660,14 +659,8 @@ static ssize_t oom_adjust_read(struct fi
- 	put_task_struct(task);
- 
- 	len = snprintf(buffer, sizeof(buffer), "%i\n", oom_adjust);
--	if (__ppos >= len)
--		return 0;
--	if (count > len-__ppos)
--		count = len-__ppos;
--	if (copy_to_user(buf, buffer + __ppos, count))
--		return -EFAULT;
--	*ppos = __ppos + count;
--	return count;
-+
-+	return simple_read_from_buffer(buf, count, ppos, buffer, len);
- }
- 
- static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
-@@ -781,7 +774,6 @@ static ssize_t seccomp_read(struct file 
- {
- 	struct task_struct *tsk = get_proc_task(file->f_dentry->d_inode);
- 	char __buf[20];
--	loff_t __ppos = *ppos;
- 	size_t len;
- 
- 	if (!tsk)
-@@ -789,14 +781,8 @@ static ssize_t seccomp_read(struct file 
- 	/* no need to print the trailing zero, so use only len */
- 	len = sprintf(__buf, "%u\n", tsk->seccomp.mode);
- 	put_task_struct(tsk);
--	if (__ppos >= len)
--		return 0;
--	if (count > len - __ppos)
--		count = len - __ppos;
--	if (copy_to_user(buf, __buf + __ppos, count))
--		return -EFAULT;
--	*ppos = __ppos + count;
--	return count;
-+
-+	return simple_read_from_buffer(buf, count, ppos, __buf, len);
- }
- 
- static ssize_t seccomp_write(struct file *file, const char __user *buf,
-@@ -855,7 +841,6 @@ static ssize_t proc_fault_inject_read(st
- 	char buffer[PROC_NUMBUF];
- 	size_t len;
- 	int make_it_fail;
--	loff_t __ppos = *ppos;
- 
- 	if (!task)
- 		return -ESRCH;
-@@ -863,14 +848,8 @@ static ssize_t proc_fault_inject_read(st
- 	put_task_struct(task);
- 
- 	len = snprintf(buffer, sizeof(buffer), "%i\n", make_it_fail);
--	if (__ppos >= len)
--		return 0;
--	if (count > len-__ppos)
--		count = len-__ppos;
--	if (copy_to_user(buf, buffer + __ppos, count))
--		return -EFAULT;
--	*ppos = __ppos + count;
--	return count;
-+
-+	return simple_read_from_buffer(buf, count, ppos, buffer, len);
- }
- 
- static ssize_t proc_fault_inject_write(struct file * file,
-@@ -934,7 +913,7 @@ static int do_proc_readlink(struct dentr
- 
- 	if (!tmp)
- 		return -ENOMEM;
--		
-+
- 	inode = dentry->d_inode;
- 	path = d_path(dentry, mnt, tmp, PAGE_SIZE);
- 	len = PTR_ERR(path);
+It introduces some silly checks which were never in mainline,
+nor so far as I can tell in SLES9: I'm thinking of those
++	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
+There are few callsites for these rmap functions, I don't think
+they need to be checking their arguments in that way.
+
+It also changes the inline page_dup_rmap (a single atomic increment)
+into a bugchecking out-of-line function: do we really want to slow
+down fork in that way, for 2.6.22 to fix a rare corruption in SLES9?
+
+What I really like about the patch is Nick's observation that my
+	/* else checking page index and mapping is racy */
+is no longer true: a change we made to the do_swap_page sequence
+some while ago has indeed cured that raciness, and I'm happy to
+reintroduce the check on mapping and index in page_add_anon_rmap,
+and his BUG_ON(!PageLocked(page)) there (despite BUG_ONs falling
+out of fashion very recently).
+
+That becomes more important when I send the patches to free up
+PG_swapcache, using a PAGE_MAPPING_SWAP bit instead: so I was
+planning to include that part of Nick's patch in that series.
+
+Hugh
