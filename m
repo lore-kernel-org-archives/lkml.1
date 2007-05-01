@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423719AbXEAE5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423720AbXEAE6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423719AbXEAE5e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 00:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423720AbXEAE5e
+	id S1423720AbXEAE6k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 00:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423781AbXEAE6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:57:34 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:37875 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423719AbXEAE5d (ORCPT
+	Tue, 1 May 2007 00:58:40 -0400
+Received: from lon-del-04.spheriq.net ([195.46.50.101]:54710 "EHLO
+	lon-del-04.spheriq.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423720AbXEAE6j convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 00:57:33 -0400
-Message-ID: <4636C8AF.6080404@cosmosbay.com>
-Date: Tue, 01 May 2007 06:57:19 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 1 May 2007 00:58:39 -0400
+From: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
+To: <linux-kernel@vger.kernel.org>
+Cc: "'Bhuvan Kumar MITTAL'" <bhuvan.mittal@st.com>
+Subject: Killing a User thread from another User Thread 
+Date: Tue, 1 May 2007 10:28:29 +0530
+Message-ID: <03f701c78bad$5c589220$142ec70a@dlh.st.com>
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Andi Kleen <ak@suse.de>, Mark Lord <lkml@rtr.ca>, ebiederm@xmission.com,
-       patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [30/30] x86_64: Add missing !X86_PAE dependincy to the
- 2G/2G split.
-References: <20070501557.815359000@suse.de> <20070501035829.1C93D13CAF@wotan.suse.de> <20070501043735.GR31925@holomorphy.com>
-In-Reply-To: <20070501043735.GR31925@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 01 May 2007 06:57:26 +0200 (CEST)
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
+Thread-Index: AceLrVvtlhYL6QmWQL2OGVXFqckWnQ==
+X-O-Spoofed: Not Scanned
+X-O-General-Status: No
+X-O-Spam1-Status: Not Scanned
+X-O-Spam2-Status: Not Scanned
+X-O-URL-Status: Not Scanned
+X-O-Virus1-Status: No
+X-O-Virus2-Status: Not Scanned
+X-O-Virus3-Status: No
+X-O-Virus4-Status: No
+X-O-Virus5-Status: Not Scanned
+X-O-Image-Status: Not Scanned
+X-O-Attach-Status: Not Scanned
+X-SpheriQ-Ver: 4.2.04
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III a écrit :
-> On Tue, May 01, 2007 at 05:58:29AM +0200, Andi Kleen wrote:
->> From: ebiederm@xmission.com
->> When in PAE mode we require that the user kernel divide to be
->> on a 1G boundary.  The 2G/2G split does not have that property
->> so require !X86_PAE
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->> ---
->>  arch/i386/Kconfig |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> What on earth?
-> 
-> config PAGE_OFFSET
->         hex
->         default 0xB0000000 if VMSPLIT_3G_OPT
->         default 0x78000000 if VMSPLIT_2G
->         default 0x40000000 if VMSPLIT_1G
->         default 0xC0000000
-> 
-> This appears to have been introduced by:
-> commit 975b3d3d5b983eb60706d35f0d24cd19f6badabf
-> Author: Mark Lord <lkml@rtr.ca>
-> Date:   Wed Feb 1 03:06:11 2006 -0800
->     [PATCH] VMSPLIT config options
-> 
-> There's some sort of insanity going on here. Since when is 0x78000000
-> a 2GB/2GB split? Mark, dare I ask what you were thinking? That should
-> be VMSPLIT_2G_OPT for 2GB laptops analogously to VMSPLIT_3G_OPT, if
-> nothing else, as it's certainly not 2GB/2GB.
+Hi.
+I am working on an audio device driver development on Linux (sh4 architecture). I have a userthread which makes ioctl calls to the kernel and once it reaches inside the kernel it waits on a semaphore. It then does some work inside the kernel and continuously keeps looping between the kernel and user space in an endless while loop. 
 
-Please could you stop saying others are insane ?
+I want to kill that thread from another user thread while the former is waiting on a semaphore in kernel (which it will never get) coz I want a clean exit of my driver. Please suggest me a way. I did try the use of pthread_cancel, but that is possible only if the target thread is executing in user space and making use of a pthread_testcancel call (with cancelability enabled ofcourse). 
 
-They are like you and can fail sometime. Apparently when the patch came, 
-nobody (including you) commented.
+Kindly suggest something.
 
-It's not that difficult to think about VMALLOC space (I might be wrong about 
-this, but I feel this explains 78000000 vs 80000000)
+Regards,
 
-> 
-> These VMSPLIT config options vs. PAE are foul as they're now done in
-> any event. If they were done properly, they'd properly set up the pmd
-> within which the division point between user and kernelspace falls.
-> 
-> This patch, I suppose, stops people from shooting themselves in the
-> foot, but (IMHO) the VMSPLIT patches shouldn't have been merged
-> without handling the partial pmd case. 2MB/4MB resolution is enough
-> granularity for any reasonable purpose, so split ptes aren't worth the
-> effort, but this nonsense with PAE vs. VMSPLIT is just preposterous.
-> If you're going to play the VMSPLIT game at all, handle split pmd's.
-> 
-> I'll see what else is pending in the i386 pagetable arena and clear
-> this up if there aren't other objections (this is where Andi gets to
-> complain that things are too complex already and preemptively NAK to
-> save me the effort, if it's not seen to be desirable). Eric, your patch
-> is a reasonable stop-gap measure for the original deficiency.
+Bhuvan
 
 
