@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423542AbXEANmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423042AbXEANpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423542AbXEANmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 09:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423540AbXEANmp
+	id S1423042AbXEANpy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 09:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbXEANpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 09:42:45 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43631 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423503AbXEANmk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 09:42:40 -0400
-Date: Tue, 1 May 2007 14:46:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: rct@gherkin.frus.com (Bob Tracy)
-Cc: James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: BAD_SG_DMA panic in aha1542
-Message-ID: <20070501144623.361d37f0@the-village.bc.nu>
-In-Reply-To: <20070501021032.61120DBA1@gherkin.frus.com>
-References: <20070501021032.61120DBA1@gherkin.frus.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 1 May 2007 09:45:54 -0400
+Received: from www.osadl.org ([213.239.205.134]:44319 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753106AbXEANpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 09:45:53 -0400
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with
+	either/both	of	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Mark Lord <lkml@rtr.ca>
+Cc: Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <463741F1.7050706@rtr.ca>
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
+	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>
+	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca>
+	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
+	 <463741F1.7050706@rtr.ca>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 15:48:05 +0200
+Message-Id: <1178027285.5791.307.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's as close as it gets without redoing everything from scratch.
-> I'll give Alan's and James' patches a go within the next 13 hours.
+On Tue, 2007-05-01 at 09:34 -0400, Mark Lord wrote:
+> > now at 3232363876949 nsecs
+> ...
 > 
-> (Alan: what *else* would you name a variable associated with a bounce
-> buffer besides Zebedee?  Thanks for the occasion to smile...)
+> Oh, in case it matters any:
+> that /proc/timer_list is from the system with CFS-V7 also patched in.
 
-The one I sent has a memory leak but it won't matter for basic testing.
-Or you can change the final bit to
+It should not. What happens when you disable HPET ?
+
+	tglx
 
 
-        scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
-        
-        if (zebedee != cgc->buffer) {
-                if (cgc->data_direction == DMA_FROM_DEVICE)    
-                        memcpy(cgc->buffer, zebedee, cgc->buflen);
-                kfree(zebedee); /* Time for bed */        
-        }
-
-Alan
---
-
-`I can hear you.` ,said Florence. `It s not true. Noddy and I are just
-good friends.`
