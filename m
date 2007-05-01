@@ -1,64 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754597AbXEADGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946210AbXEADJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754597AbXEADGi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 23:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbXEADGi
+	id S1946210AbXEADJE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 23:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755459AbXEADJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 23:06:38 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46350 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754597AbXEADGg (ORCPT
+	Mon, 30 Apr 2007 23:09:04 -0400
+Received: from fed1rmmtao104.cox.net ([68.230.241.42]:42922 "EHLO
+	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbXEADJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:06:36 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Dave Jones <davej@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <20070501015115.GJ26601@redhat.com>
-	<4636A332.2070101@zytor.com>
-	<m1odl51dci.fsf@ebiederm.dsl.xmission.com>
-	<20070501034612.GK25929@bingen.suse.de>
-Date: Mon, 30 Apr 2007 21:06:11 -0600
-In-Reply-To: <20070501034612.GK25929@bingen.suse.de> (Andi Kleen's message of
-	"Tue, 1 May 2007 05:46:12 +0200")
-Message-ID: <m1hcqx1bvg.fsf@ebiederm.dsl.xmission.com>
+	Mon, 30 Apr 2007 23:09:00 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.5.1.3
+cc: linux-kernel@vger.kernel.org
+Date: Mon, 30 Apr 2007 20:08:58 -0700
+Message-ID: <7vfy6h9r5h.fsf@assigned-by-dhcp.cox.net>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+The latest maintenance release GIT 1.5.1.3 is available at the
+usual places:
 
->> Not that the x86 BIOS is bad.  It is nearly a marvel in it's simplicity
->> and ubiquitousness, 
->
-> Simplicity? That must be why x86 motherbords are shipping with (compressed) 
-> 8MB BIOS flash chips now.
+  http://www.kernel.org/pub/software/scm/git/
 
-Those would be 8 megabit chips, and those would be server motherboards
-you are looking.  Most likely the ones that are starting to think ahead
-to EFI support.
+  git-1.5.1.3.tar.{gz,bz2}			(tarball)
+  git-htmldocs-1.5.1.3.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.5.1.3.tar.{gz,bz2}		(preformatted docs)
+  RPMS/$arch/git-*-1.5.1.3-1.$arch.rpm	(RPM)
 
-There are thread jobs the firmware on a PC does.
-- Configure the hardware to look like a PC.
-  What with memory controller setup and the like that is the hard
-  part and the bulk of the work.
+GIT v1.5.1.3 Release Notes
+==========================
 
-  Since this is written quickly and in assembler it has likely descended
-  into spaghetti by now.
+Fixes since v1.5.1.2
+--------------------
 
-- Whatever ACPI does. suspend/resume and etc.
+* Bugfixes
 
-- Provide a subroutine library for boot loaders.
-  That subroutine library is what gets exposed.
+  - git-add tried to optimize by finding common leading
+    directories across its arguments but botched, causing very
+    confused behaviour.
 
-Now if you compare what it takes to implement the PC BIOS interface
-the "subroutine library for bootloaders"  with EFI, or open firmware
-or a real OS you will quickly see how very small and simple it is.  It
-isn't a beautiful interface but it is short and to the point.
+  - unofficial rpm.spec file shipped with git was letting
+    ETC_GITCONFIG set to /usr/etc/gitconfig.  Tweak the official
+    Makefile to make it harder for distro people to make the
+    same mistake, by setting the variable to /etc/gitconfig if
+    prefix is set to /usr.
 
-Eric
+  - git-svn inconsistently stripped away username from the URL
+    only when svnsync_props was in use.
+
+  - git-svn got confused when handling symlinks on Mac OS.
+
+  - git-send-email was not quoting recipient names that have
+    period '.' in them.  Also it did not allow overriding
+    envelope sender, which made it impossible to send patches to
+    certain subscriber-only lists.
+
+  - built-in write_tree() routine had a sequence that renamed a
+    file that is still open, which some systems did not like.
+
+  - when memory is very tight, sliding mmap code to read
+    packfiles incorrectly closed the fd that was still being
+    used to read the pack.
+
+  - import-tars contributed front-end for fastimport was passing
+    wrong directory modes without checking.
+
+  - git-fastimport trusted its input too much and allowed to
+    create corrupt tree objects with entries without a name.
+
+  - git-fetch needlessly barfed when too long reflog action
+    description was given by the caller.
+
+Also contains various documentation updates.
+
+----------------------------------------------------------------
+
+Changes since v1.5.1.2 are as follows:
+
+Adam Roben (5):
+      Remove usernames from all commit messages, not just when using svmprops
+      git-svn: Don't rely on $_ after making a function call
+      git-svn: Ignore usernames in URLs in find_by_url
+      git-svn: Added 'find-rev' command
+      git-svn: Add 'find-rev' command
+
+Alex Riesen (1):
+      Fix handle leak in write_tree
+
+Andrew Ruder (8):
+      Removing -n option from git-diff-files documentation
+      Document additional options for git-fetch
+      Update git-fmt-merge documentation
+      Update git-grep documentation
+      Update -L documentation for git-blame/git-annotate
+      Update git-http-push documentation
+      Update git-local-fetch documentation
+      Update git-http-fetch documentation
+
+Brian Gernhardt (2):
+      Reverse the order of -b and --track in the man page.
+      Ignore all man sections as they are generated files.
+
+Gerrit Pape (1):
+      Documentation/git-reset.txt: suggest git commit --amend in example.
+
+Jari Aalto (3):
+      Clarify SubmittingPatches Checklist
+      git.7: Mention preformatted html doc location
+      send-email documentation: clarify --smtp-server
+
+Johannes Schindelin (2):
+      dir.c(common_prefix): Fix two bugs
+      import-tars: be nice to wrong directory modes
+
+Josh Triplett (3):
+      Fix typo in git-am: s/Was is/Was it/
+      Create a sysconfdir variable, and use it for ETC_GITCONFIG
+      Add missing reference to GIT_COMMITTER_DATE in git-commit-tree documentation
+
+Julian Phillips (1):
+      http.c: Fix problem with repeated calls of http_init
+
+Junio C Hamano (8):
+      Build RPM with ETC_GITCONFIG=/etc/gitconfig
+      applymbox & quiltimport: typofix.
+      Start preparing for 1.5.1.3
+      Do not barf on too long action description
+      Update .mailmap with "Michael"
+      Fix import-tars fix.
+      Fix symlink handling in git-svn, related to PerlIO
+      GIT v1.5.1.3
+
+Michele Ballabio (1):
+      git shortlog documentation: add long options and fix a typo
+
+Robin H. Johnson (10):
+      Document --dry-run parameter to send-email.
+      Prefix Dry- to the message status to denote dry-runs.
+      Debugging cleanup improvements
+      Change the scope of the $cc variable as it is not needed outside of send_message.
+      Perform correct quoting of recipient names.
+      Validate @recipients before using it for sendmail and Net::SMTP.
+      Ensure clean addresses are always used with Net::SMTP
+      Allow users to optionally specify their envelope sender.
+      Document --dry-run and envelope-sender for git-send-email.
+      Sanitize @to recipients.
+
+Shawn O. Pearce (3):
+      Actually handle some-low memory conditions
+      Don't allow empty pathnames in fast-import
+      Catch empty pathnames in trees during fsck
+
+
