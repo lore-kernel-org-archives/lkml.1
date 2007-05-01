@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbXEAT4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXEAT4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbXEAT4B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbXEAT4B
+	id S1753205AbXEAT4X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbXEAT4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:56:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39710 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbXEAT4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:56:00 -0400
-Subject: [PATCH] uml: fixup allocation in the ubd driver
-From: Peter Zijlstra <pzijlstr@redhat.com>
-To: akpm <akpm@linux-foundation.org>, Jeff Dike <jdike@addtoit.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 01 May 2007 21:56:07 +0200
-Message-Id: <1178049367.5182.4.camel@taijtu>
+	Tue, 1 May 2007 15:56:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35676 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753199AbXEAT4W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 15:56:22 -0400
+Date: Tue, 1 May 2007 12:55:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+Message-Id: <20070501125559.9ab42896.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.4 (2.9.4-1.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I needed this for 2.6.21-rc7-mm2, ubd was complaining about sleeping in
-an atomic context.
----
+On Tue, 1 May 2007 19:10:29 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-Sanitise gfp flags; it actually is an atomic context, so drop the
-GFP_KERNEL part.
+> > Most of the rest of slub.  Will merge it all.
+> 
+> Merging slub already?  I'm surprised.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Jeff Dike <jdike@addtoit.com>
----
- arch/um/drivers/ubd_kern.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+My thinking here is "does slub have a future".  I think the answer is
+"yes", so we're reasonably safe getting it into mainline for the finishing
+work.  The kernel.org kernel will still default to slab.
 
-Index: linux-2.6/arch/um/drivers/ubd_kern.c
-===================================================================
---- linux-2.6.orig/arch/um/drivers/ubd_kern.c	2007-05-01 21:41:13.000000000 +0200
-+++ linux-2.6/arch/um/drivers/ubd_kern.c	2007-05-01 21:49:23.000000000 +0200
-@@ -1102,7 +1102,7 @@ static void do_ubd_request(request_queue
- 			struct scatterlist *sg = &dev->sg[dev->start_sg];
- 
- 			io_req = kmalloc(sizeof(struct io_thread_req),
--					 GFP_KERNEL | GFP_ATOMIC);
-+					 GFP_ATOMIC);
- 			if(io_req == NULL){
- 				if(list_empty(&dev->restart))
- 					list_add(&dev->restart, &restart);
-
+Does that sound wrong?
 
