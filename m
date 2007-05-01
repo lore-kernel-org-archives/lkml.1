@@ -1,57 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161721AbXEAUkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1160999AbXEAUkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161721AbXEAUkB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161717AbXEAUj7
+	id S1160999AbXEAUkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945911AbXEAUf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:39:59 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60773 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1945912AbXEAUf1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 May 2007 16:35:27 -0400
-Message-ID: <4637A3F6.70508@gmail.com>
+Received: from adicia.telenet-ops.be ([195.130.132.56]:40302 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423659AbXEAUfI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 16:35:08 -0400
+Message-Id: <20070501203335.132655684@mail.of.borg>
+References: <20070501203234.252205858@mail.of.borg>
+User-Agent: quilt/0.45-1
 Date: Tue, 01 May 2007 22:32:54 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org,
+       Finn Thain <fthain@telegraphics.com.au>
+Subject: [patch 20/33] m68k: Mac DP8390 update
+Content-Disposition: inline; filename=mac68k-patch_B-mac68k_cvs_DP8390_update.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/01/2007 04:43 AM, Linus Torvalds wrote:
+From: Finn Thain <fthain@telegraphics.com.au>
 
-> Doubtful. The Tseng ET4000 cards may have been the gold standard in 1991, 
-> but I don't think most people even _remember_ them. And if they have them 
-> in their machines, they probably tend to run a Linux-1.2 kernel, or at 
-> least not care a lot about graphics (ie they may have an old card in the 
-> machine just because they need VGA to boot, rather than because they care 
-> about Tseng).
+Fix the support for C/NET nubus ethernet cards etc. Sync up the DP8390 driver
+with the latest code in the mac68k repo.
 
-My 386 has an ET4000. An ET4000AX/W32 even. And you bet it's because it's 
-nifty! Okay, I'll admit the thing doesn't currently run a 2.6 kernel...
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/net/mac8390.c |  245 +++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 175 insertions(+), 70 deletions(-)
 
-The answer will probably be "no", but would this be a good point to ask if 
-this would be a good time to not bother with the mode switching code at all 
-anymore? I'm generally rather appreciative of old gunk but I haven't cared 
-for that specific feature for ages now. I personally don't use framebuffer, 
-but I would if I wanted more than the plain VGA my BIOS sets up.
+--- linux-m68k-2.6.21.orig/drivers/net/mac8390.c
++++ linux-m68k-2.6.21/drivers/net/mac8390.c
+@@ -14,6 +14,8 @@
+ /* 2001-05-15: support for Cabletron ported from old daynaport driver
+  * and fixed access to Sonic Sys card which masquerades as a Farallon
+  * by rayk@knightsmanor.org */
++/* 2002-12-30: Try to support more cards, some clues from NetBSD driver */
++/* 2003-12-26: Make sure Asante cards always work. */
+ 
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+@@ -61,25 +63,21 @@ static char version[] =
+ #define DAYNA_8390_BASE		0x80000
+ #define DAYNA_8390_MEM		0x00000
+ 
+-#define KINETICS_8390_BASE	0x80000
+-#define KINETICS_8390_MEM	0x00000
+-
+ #define CABLETRON_8390_BASE	0x90000
+ #define CABLETRON_8390_MEM	0x00000
+ 
++#define INTERLAN_8390_BASE	0xE0000
++#define INTERLAN_8390_MEM	0xD0000
++
+ enum mac8390_type {
+ 	MAC8390_NONE = -1,
+ 	MAC8390_APPLE,
+ 	MAC8390_ASANTE,
+-	MAC8390_FARALLON,  /* Apple, Asante, and Farallon are all compatible */
++	MAC8390_FARALLON,
+ 	MAC8390_CABLETRON,
+ 	MAC8390_DAYNA,
+ 	MAC8390_INTERLAN,
+ 	MAC8390_KINETICS,
+-	MAC8390_FOCUS,
+-	MAC8390_SONICSYS,
+-	MAC8390_DAYNA2,
+-	MAC8390_DAYNA3,
+ };
+ 
+ static const char * cardname[] = {
+@@ -90,10 +88,6 @@ static const char * cardname[] = {
+ 	"dayna",
+ 	"interlan",
+ 	"kinetics",
+-	"focus",
+-	"sonic systems",
+-	"dayna2",
+-	"dayna_lc",
+ };
+ 
+ static int word16[] = {
+@@ -104,10 +98,6 @@ static int word16[] = {
+ 	0, /* dayna */
+ 	1, /* interlan */
+ 	0, /* kinetics */
+-	1, /* focus (??) */
+-	1, /* sonic systems  */
+-	1, /* dayna2 */
+-	1, /* dayna-lc */
+ };
+ 
+ /* on which cards do we use NuBus resources? */
+@@ -119,10 +109,12 @@ static int useresources[] = {
+ 	0, /* dayna */
+ 	0, /* interlan */
+ 	0, /* kinetics */
+-	0, /* focus (??) */
+-	1, /* sonic systems */
+-	1, /* dayna2 */
+-	1, /* dayna-lc */
++};
++
++enum mac8390_access {
++	ACCESS_UNKNOWN = 0,
++	ACCESS_32,
++	ACCESS_16,
+ };
+ 
+ extern enum mac8390_type mac8390_ident(struct nubus_dev * dev);
+@@ -134,8 +126,9 @@ static int mac8390_initdev(struct net_de
+ static int mac8390_open(struct net_device * dev);
+ static int mac8390_close(struct net_device * dev);
+ static void mac8390_no_reset(struct net_device *dev);
++static void interlan_reset(struct net_device *dev);
+ 
+-/* Sane (32-bit chunk memory read/write) - Apple/Asante/Farallon do this*/
++/* Sane (32-bit chunk memory read/write) - Some Farallon and Apple do this*/
+ static void sane_get_8390_hdr(struct net_device *dev,
+ 			      struct e8390_pkt_hdr *hdr, int ring_page);
+ static void sane_block_input(struct net_device * dev, int count,
+@@ -172,23 +165,93 @@ static void word_memcpy_fromcard(void *t
+ 
+ enum mac8390_type __init mac8390_ident(struct nubus_dev * dev)
+ {
+-	if (dev->dr_sw == NUBUS_DRSW_ASANTE)
+-		return MAC8390_ASANTE;
+-	if (dev->dr_sw == NUBUS_DRSW_FARALLON)
+-		return MAC8390_FARALLON;
+-	if (dev->dr_sw == NUBUS_DRSW_KINETICS)
+-		return MAC8390_KINETICS;
+-	if (dev->dr_sw == NUBUS_DRSW_DAYNA)
+-		return MAC8390_DAYNA;
+-	if (dev->dr_sw == NUBUS_DRSW_DAYNA2)
+-		return MAC8390_DAYNA2;
+-	if (dev->dr_sw == NUBUS_DRSW_DAYNA_LC)
+-		return MAC8390_DAYNA3;
+-	if (dev->dr_hw == NUBUS_DRHW_CABLETRON)
+-		return MAC8390_CABLETRON;
++	switch (dev->dr_sw) {
++		case NUBUS_DRSW_3COM:
++			switch (dev->dr_hw) {
++				case NUBUS_DRHW_APPLE_SONIC_NB:
++				case NUBUS_DRHW_APPLE_SONIC_LC:
++				case NUBUS_DRHW_SONNET:
++					return MAC8390_NONE;
++					break;
++				default:
++					return MAC8390_APPLE;
++					break;
++			}
++			break;
++
++		case NUBUS_DRSW_APPLE:
++			switch (dev->dr_hw) {
++				case NUBUS_DRHW_ASANTE_LC:
++					return MAC8390_NONE;
++					break;
++				case NUBUS_DRHW_CABLETRON:
++					return MAC8390_CABLETRON;
++					break;
++				default:
++					return MAC8390_APPLE;
++					break;
++			}
++			break;
++
++		case NUBUS_DRSW_ASANTE:
++			return MAC8390_ASANTE;
++			break;
++
++		case NUBUS_DRSW_TECHWORKS:
++		case NUBUS_DRSW_DAYNA2:
++		case NUBUS_DRSW_DAYNA_LC:
++			if (dev->dr_hw == NUBUS_DRHW_CABLETRON)
++				return MAC8390_CABLETRON;
++			else
++				return MAC8390_APPLE;
++			break;
++
++		case NUBUS_DRSW_FARALLON:
++			return MAC8390_FARALLON;
++			break;
++
++		case NUBUS_DRSW_KINETICS:
++			switch (dev->dr_hw) {
++				case NUBUS_DRHW_INTERLAN:
++					return MAC8390_INTERLAN;
++					break;
++				default:
++					return MAC8390_KINETICS;
++					break;
++			}
++			break;
++
++		case NUBUS_DRSW_DAYNA:
++			// These correspond to Dayna Sonic cards
++			// which use the macsonic driver
++			if (dev->dr_hw == NUBUS_DRHW_SMC9194 ||
++				dev->dr_hw == NUBUS_DRHW_INTERLAN )
++				return MAC8390_NONE;
++			else
++				return MAC8390_DAYNA;
++			break;
++	}
+ 	return MAC8390_NONE;
+ }
+ 
++enum mac8390_access __init mac8390_testio(volatile unsigned long membase)
++{
++	unsigned long outdata = 0xA5A0B5B0;
++	unsigned long indata =  0x00000000;
++	/* Try writing 32 bits */
++	memcpy((char *)membase, (char *)&outdata, 4);
++	/* Now compare them */
++	if (memcmp((char *)&outdata, (char *)membase, 4) == 0)
++		return ACCESS_32;
++	/* Write 16 bit output */
++	word_memcpy_tocard((char *)membase, (char *)&outdata, 4);
++	/* Now read it back */
++	word_memcpy_fromcard((char *)&indata, (char *)membase, 4);
++	if (outdata == indata)
++		return ACCESS_16;
++	return ACCESS_UNKNOWN;
++}
++
+ int __init mac8390_memsize(unsigned long membase)
+ {
+ 	unsigned long flags;
+@@ -287,14 +350,6 @@ struct net_device * __init mac8390_probe
+ 			continue;
+ 		} else {
+ 			nubus_get_rsrc_mem(dev->dev_addr, &ent, 6);
+-			/* Some Sonic Sys cards masquerade as Farallon */
+-			if (cardtype == MAC8390_FARALLON &&
+-					dev->dev_addr[0] == 0x0 &&
+-					dev->dev_addr[1] == 0x40 &&
+-					dev->dev_addr[2] == 0x10) {
+-				/* This is really Sonic Sys card */
+-				cardtype = MAC8390_SONICSYS;
+-			}
+ 		}
+ 
+ 		if (useresources[cardtype] == 1) {
+@@ -334,6 +389,17 @@ struct net_device * __init mac8390_probe
+ 						dev->mem_start +
+ 						mac8390_memsize(dev->mem_start);
+ 					break;
++				case MAC8390_INTERLAN:
++					dev->base_addr =
++						(int)(ndev->board->slot_addr +
++						INTERLAN_8390_BASE);
++					dev->mem_start =
++						(int)(ndev->board->slot_addr +
++						INTERLAN_8390_MEM);
++					dev->mem_end =
++						dev->mem_start +
++						mac8390_memsize(dev->mem_start);
++					break;
+ 				case MAC8390_CABLETRON:
+ 					dev->base_addr =
+ 						(int)(ndev->board->slot_addr +
+@@ -356,8 +422,8 @@ struct net_device * __init mac8390_probe
+ 
+ 				default:
+ 					printk(KERN_ERR "Card type %s is"
+-							" unsupported, sorry\n",
+-					       cardname[cardtype]);
++					       " unsupported, sorry\n",
++					       ndev->board->name);
+ 					continue;
+ 			}
+ 		}
+@@ -438,7 +504,7 @@ static int __init mac8390_initdev(struct
+ 		24,    26,     28,     30
+ 	};
+ 
+-	int access_bitmode;
++	int access_bitmode = 0;
+ 
+ 	/* Now fill in our stuff */
+ 	dev->open = &mac8390_open;
+@@ -468,29 +534,47 @@ static int __init mac8390_initdev(struct
+ 
+ 	/* Fill in model-specific information and functions */
+ 	switch(type) {
+-	case MAC8390_SONICSYS:
+-		/* 16 bit card, register map is reversed */
+-		ei_status.reset_8390 = &mac8390_no_reset;
+-		ei_status.block_input = &slow_sane_block_input;
+-		ei_status.block_output = &slow_sane_block_output;
+-		ei_status.get_8390_hdr = &slow_sane_get_8390_hdr;
+-		ei_status.reg_offset = back4_offsets;
+-		access_bitmode = 0;
+-		break;
+ 	case MAC8390_FARALLON:
+ 	case MAC8390_APPLE:
++		switch(mac8390_testio(dev->mem_start)) {
++			case ACCESS_UNKNOWN:
++				printk("Don't know how to access card memory!\n");
++				return -ENODEV;
++				break;
++
++			case ACCESS_16:
++				/* 16 bit card, register map is reversed */
++				ei_status.reset_8390 = &mac8390_no_reset;
++				ei_status.block_input = &slow_sane_block_input;
++				ei_status.block_output = &slow_sane_block_output;
++				ei_status.get_8390_hdr = &slow_sane_get_8390_hdr;
++				ei_status.reg_offset = back4_offsets;
++				break;
++
++			case ACCESS_32:
++				/* 32 bit card, register map is reversed */
++				ei_status.reset_8390 = &mac8390_no_reset;
++				ei_status.block_input = &sane_block_input;
++				ei_status.block_output = &sane_block_output;
++				ei_status.get_8390_hdr = &sane_get_8390_hdr;
++				ei_status.reg_offset = back4_offsets;
++				access_bitmode = 1;
++				break;
++		}
++		break;
++
+ 	case MAC8390_ASANTE:
+-	case MAC8390_DAYNA2:
+-	case MAC8390_DAYNA3:
+-		/* 32 bit card, register map is reversed */
+-		/* sane */
++		/* Some Asante cards pass the 32 bit test
++		 * but overwrite system memory when run at 32 bit.
++		 * so we run them all at 16 bit.
++		 */
+ 		ei_status.reset_8390 = &mac8390_no_reset;
+-		ei_status.block_input = &sane_block_input;
+-		ei_status.block_output = &sane_block_output;
+-		ei_status.get_8390_hdr = &sane_get_8390_hdr;
++		ei_status.block_input = &slow_sane_block_input;
++		ei_status.block_output = &slow_sane_block_output;
++		ei_status.get_8390_hdr = &slow_sane_get_8390_hdr;
+ 		ei_status.reg_offset = back4_offsets;
+-		access_bitmode = 1;
+ 		break;
++
+ 	case MAC8390_CABLETRON:
+ 		/* 16 bit card, register map is short forward */
+ 		ei_status.reset_8390 = &mac8390_no_reset;
+@@ -498,21 +582,30 @@ static int __init mac8390_initdev(struct
+ 		ei_status.block_output = &slow_sane_block_output;
+ 		ei_status.get_8390_hdr = &slow_sane_get_8390_hdr;
+ 		ei_status.reg_offset = fwrd2_offsets;
+-		access_bitmode = 0;
+ 		break;
++
+ 	case MAC8390_DAYNA:
+ 	case MAC8390_KINETICS:
+-		/* 16 bit memory */
++		/* 16 bit memory, register map is forward */
+ 		/* dayna and similar */
+ 		ei_status.reset_8390 = &mac8390_no_reset;
+ 		ei_status.block_input = &dayna_block_input;
+ 		ei_status.block_output = &dayna_block_output;
+ 		ei_status.get_8390_hdr = &dayna_get_8390_hdr;
+ 		ei_status.reg_offset = fwrd4_offsets;
+-		access_bitmode = 0;
+ 		break;
++
++	case MAC8390_INTERLAN:
++		/* 16 bit memory, register map is forward */
++		ei_status.reset_8390 = &interlan_reset;
++		ei_status.block_input = &slow_sane_block_input;
++		ei_status.block_output = &slow_sane_block_output;
++		ei_status.get_8390_hdr = &slow_sane_get_8390_hdr;
++	        ei_status.reg_offset = fwrd4_offsets;
++	        break;
++
+ 	default:
+-		printk(KERN_ERR "Card type %s is unsupported, sorry\n", cardname[type]);
++		printk(KERN_ERR "Card type %s is unsupported, sorry\n", ndev->board->name);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -530,9 +623,9 @@ static int __init mac8390_initdev(struct
+ 				printk(":");
+ 		}
+ 	}
+-	printk(" IRQ %d, shared memory at %#lx-%#lx,  %d-bit access.\n",
+-		   dev->irq, dev->mem_start, dev->mem_end-1,
+-		   access_bitmode?32:16);
++	printk(" IRQ %d, %d KB shared memory at %#lx,  %d-bit access.\n",
++		   dev->irq, (int)((dev->mem_end - dev->mem_start)/0x1000) * 4,
++		   dev->mem_start, access_bitmode?32:16);
+ 	return 0;
+ }
+ 
+@@ -561,6 +654,18 @@ static void mac8390_no_reset(struct net_
+ 	return;
+ }
+ 
++static void interlan_reset(struct net_device *dev)
++{
++	unsigned char *target=nubus_slot_addr(IRQ2SLOT(dev->irq));
++	if (ei_debug > 1)
++		printk("Need to reset the NS8390 t=%lu...", jiffies);
++	ei_status.txing = 0;
++	target[0xC0000] = 0;
++	if (ei_debug > 1)
++		printk("reset complete\n");
++	return;
++}
++
+ /* dayna_memcpy_fromio/dayna_memcpy_toio */
+ /* directly from daynaport.c by Alan Cox */
+ static void dayna_memcpy_fromcard(struct net_device *dev, void *to, int from, int count)
 
-I'd consider keeping anything but VESA 1.2 (which that ET4000 and most all 
-other Super VGA cards of the era also do!) nonsensical and as far as I'm 
-concerned this includes all the VGA modes with the strange number of lines; 
-a 43/60-line VGA screen is too horrible to look at anyway...
+--
+Gr{oetje,eeting}s,
 
-Rene.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
