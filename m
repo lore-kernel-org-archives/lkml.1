@@ -1,121 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbXEAOqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752319AbXEAOsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbXEAOqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXEAOqy
+	id S1752319AbXEAOsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbXEAOsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:46:54 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:34341 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753026AbXEAOqw (ORCPT
+	Tue, 1 May 2007 10:48:46 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:46747 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752319AbXEAOsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:46:52 -0400
-Date: Tue, 1 May 2007 16:46:51 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Willy Tarreau <w@1wt.eu>, Christoph Hellwig <hch@infradead.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-pcmcia@lists.infradead.org
-Subject: Re: pcmcia ioctl removal
-Message-ID: <20070501144650.GB3531@stusta.de>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org> <20070501085710.GA13488@1wt.eu> <20070501020820.05f0c037.akpm@linux-foundation.org>
+	Tue, 1 May 2007 10:48:45 -0400
+Message-ID: <46375340.2010106@interia.pl>
+Date: Tue, 01 May 2007 16:48:32 +0200
+From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070501020820.05f0c037.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>
+Subject: Re: 2.6.21: longhaul freq-scaling broken
+References: <46374BB6.9080703@web.de>
+In-Reply-To: <46374BB6.9080703@web.de>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-EMID: e3eb8acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 02:08:20AM -0700, Andrew Morton wrote:
-> On Tue, 1 May 2007 10:57:10 +0200 Willy Tarreau <w@1wt.eu> wrote:
+> Hi,
+Hi 
+> the new longhaul driver of 2.6.21 is broken on my Via Eden board.
+> Frequencies can no longer be switched by whatever governor.
 > 
-> > Hi Christoph,
-> > 
-> > On Tue, May 01, 2007 at 09:46:23AM +0100, Christoph Hellwig wrote:
-> > > >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
-> > > 
-> > > ...
-> > > 
-> > > > Dominik is busy.  Will probably re-review and send these direct to Linus.
-> > > 
-> > > The patch above is the removal of cardmgr support.  While I'd love to
-> > > see this cruft gone it definitively needs maintainer judgement on whether
-> > > they time has come that no one relies on cardmgr anymore.
-> > 
-> > Well, I've not followed evolutions in this area for a long time. Here's
-> > what I get on my notebook :
-> > 
-> > willy@wtap:~$ uname -r
-> > 2.6.20-wt3-wtap
-> > willy@wtap:~$ ps auxw|grep card   
-> > root      1216  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-> > root      1221  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-> > root      1244  0.0  0.0     0    0 ?        S<   Apr28   0:00 [pccardd]
-> > root      1251  0.0  0.0     0    0 ?        Ss   Apr28   0:00 /sbin/cardmgr
-> > 
+> # cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : CentaurHauls
+> cpu family      : 6
+> model           : 7
+> model name      : VIA Samuel 2
+> stepping        : 3
+> cpu MHz         : 598.000
+> cache size      : 64 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 1
+> wp              : yes
+> flags           : fpu de tsc msr cx8 mtrr pge mmx 3dnow
+> bogomips        : 1200.75
+> clflush size    : 32
 > 
-> Yes, that seems premature.  feature-removal.txt is pretty useless for
-> getting poeple off old tools.  If we're ever to make this migration we'll
-> need loud and scary printks coming out of the kernel.  Probably it'll take
-> another year or two to get there *once* we've done that.
+> I ported the longhaul driver from 2.6.20.7 to 2.6.21, it works fine.
+Yes. My fault. Bug is known, but it was to late to include patch 
+fixing it in 2.6.21
+> Yeah, I know there are only a few patches between both, but I would like
+> to reduce the test cycles to a minimum. Any suggestion where to look
+> first is welcome therefore, ready-to-apply patches even more...
+Longhaul ver. 2 support is the reason. First machine that was reported 
+not working is exactly like Your's: Samuel 2 600MHz. Patch reverting 
+changes is queued in cpufreq git. You can find it at
+http://git.kernel.org/?p=linux/kernel/git/davej/cpufreq.git;a=commitdiff_plain;h=07844252ffd81ec192a62014bada1016c9703765
+> Thanks,
+> Jan
+Regards
+Rafał
 
 
-You already said the same two years ago, and you forwarded a patch 
-implementing exactly this nearly two years ago:
 
-
-commit c352ec8ab87b065cd2edda171811f49ac7d0d5cd
-Author: Dominik Brodowski <linux@dominikbrodowski.net>
-Date:   Tue Sep 13 01:25:03 2005 -0700
-
-    [PATCH] pcmcia: warn on IOCTL usage
-    
-    More visible user information of scheduled feature removal.
-    
-    Signed-off-by: Dominik Brodowski <linux@dominikbrodowski.net>
-    Signed-off-by: Andrew Morton <akpm@osdl.org>
-    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
-diff --git a/drivers/pcmcia/pcmcia_ioctl.c b/drivers/pcmcia/pcmcia_ioctl.c
-index 39ba640..80969f7 100644
---- a/drivers/pcmcia/pcmcia_ioctl.c
-+++ b/drivers/pcmcia/pcmcia_ioctl.c
-@@ -376,6 +376,7 @@ static int ds_open(struct inode *inode, struct file *file)
-     socket_t i = iminor(inode);
-     struct pcmcia_socket *s;
-     user_info_t *user;
-+    static int warning_printed = 0;
- 
-     ds_dbg(0, "ds_open(socket %d)\n", i);
- 
-@@ -407,6 +408,17 @@ static int ds_open(struct inode *inode, struct file *file)
-     s->user = user;
-     file->private_data = user;
- 
-+    if (!warning_printed) {
-+	    printk(KERN_INFO "pcmcia: Detected deprecated PCMCIA ioctl "
-+			"usage.\n");
-+	    printk(KERN_INFO "pcmcia: This interface will soon be removed from "
-+			"the kernel; please expect breakage unless you upgrade "
-+			"to new tools.\n");
-+	    printk(KERN_INFO "pcmcia: see http://www.kernel.org/pub/linux/"
-+			"utils/kernel/pcmcia/pcmcia.html for details.\n");
-+	    warning_printed = 1;
-+    }
-+
-     if (s->pcmcia_state.present)
- 	queue_event(user, CS_EVENT_CARD_INSERTION);
-     return 0;
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+----------------------------------------------------------------------
+Po meczu.....kurde...:)
+>>> http://link.interia.pl/f1a72
 
