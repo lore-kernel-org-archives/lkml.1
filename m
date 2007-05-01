@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965641AbXEAIUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXEAIXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965641AbXEAIUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 04:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965632AbXEAIUw
+	id S965632AbXEAIXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 04:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031032AbXEAIXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 04:20:52 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:48509 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S965641AbXEAIUY (ORCPT
+	Tue, 1 May 2007 04:23:51 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:47012 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965632AbXEAIXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 04:20:24 -0400
-Date: Tue, 1 May 2007 01:19:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: 2.6.22 -mm merge plans -- pfn_valid_within
-Message-Id: <20070501011935.a2b90633.akpm@linux-foundation.org>
-In-Reply-To: <4636F626.7030609@shadowen.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<4636F626.7030609@shadowen.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 04:23:50 -0400
+Message-ID: <4636F90A.2070303@interia.pl>
+Date: Tue, 01 May 2007 10:23:38 +0200
+From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: Natsemi DP83815 driver spaming
+References: <46365887.3010705@interia.pl> <20070430205522.abad2481.akpm@linux-foundation.org> <4636E970.3010602@interia.pl>
+In-Reply-To: <4636E970.3010602@interia.pl>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-EMID: 43862acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 May 2007 09:11:18 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+Hello again,
 
-> Andrew Morton wrote:
-> 
-> >  add-pfn_valid_within-helper-for-sub-max_order-hole-detection.patch
-> >  anti-fragmentation-switch-over-to-pfn_valid_within.patch
-> >  lumpy-move-to-using-pfn_valid_within.patch
-> > 
-> > More Mel things, and linkage between Mel-things and lumpy reclaim.  It's here
-> > where the patch ordering gets into a mess and things won't improve if
-> > moveable-zones and lumpy-reclaim get deferred.  Such a deferral would limit my
-> > ability to queue more MM changes for 2.6.23.
-> 
-> The first of these is really a cleanup and should slide into the stack
-> before Mobility and Lumpy.  The other two should then join their
-> respective stacks anti-fragmentation-... to Mobility and lumpy-... to
-> Lumpy.  I would not expect them to increase linkage that way.
-> 
+I have downloaded DP83815 datasheet and I see that
+> eth0: Wake-up event 0x200000a
+means "broadcast received" and wakup on broadcast and 
+unicast enabled.
+> eth0: Wake-up event 0x80000a
+Above means "unicast received" and wakup on broadcast 
+and unicast enabled.
+I will try to check if disabling wakeup makes any difference.
 
-yup, that improved things a bit, thanks.
+Rafał
+
+
+----------------------------------------------------------------------
+Zrob numer kumplom >> http://link.interia.pl/f1a5d
 
