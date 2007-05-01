@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423650AbXEAVR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423665AbXEAVVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423650AbXEAVR1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423661AbXEAVR1
+	id S1423665AbXEAVVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423661AbXEAVVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:17:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:16866 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423650AbXEAVR0 (ORCPT
+	Tue, 1 May 2007 17:21:21 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:42098 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423665AbXEAVVU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:17:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=TSp28Ra5kP3+YKOaglaK3p8GUsjSc5E/XuxEWKWZBNN/CkHhZIDiAdhu2n1QQmyPt28zrz/6Evl43lrPs5zsuDBYlh9N5FiRQPKw1MIIKAx1DDxDyOtUlNeX6CMIh/HN8QvDAFHaiK2EWXKxB8FfHOwgdcMmyPn8GGVvO3P9o3k=
-Message-ID: <4637AE6D.4090408@gmail.com>
-Date: Wed, 02 May 2007 01:17:33 +0400
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Tue, 1 May 2007 17:21:20 -0400
+Date: Tue, 1 May 2007 14:21:19 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux DVB <linux-dvb@linuxtv.org>
+Subject: Re: [linux-dvb] [PATCH] dvb-core: Handle failures to create devices
+In-Reply-To: <463774FE.9030104@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.58.0705011418130.309@shell2.speakeasy.net>
+References: <463774FE.9030104@simon.arlott.org.uk>
 MIME-Version: 1.0
-To: Paul Sokolovsky <pmiscml@gmail.com>
-CC: ian <spyro@f2s.com>, kernel-discuss@handhelds.org,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
-References: <1354376306.20070501080806@gmail.com>  <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com>  <46376AD9.3020701@gmail.com> <1178042924.15769.5.camel@wirenth> <46379027.7050202@gmail.com> <281618366.20070501230902@gmail.com>
-In-Reply-To: <281618366.20070501230902@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Paul,
-
-Paul Sokolovsky wrote:
->> ASIC-related code (I mean core) forms additional platform layer, so I
->> suggest
->> adding ASIC helpers to generic platform code i.e. drivers/platform.c, but
->> ASIC drivers to drivers/asic/ directory.
+On Tue, 1 May 2007, Simon Arlott wrote:
+> dvb-core is not started early enough when device drivers that use dvb are
+> compiled in so device_register_device fails (silently) since dvb_class is
+> NULL, this runs dvb_init using subsys_initclass instead of module_init.
 >
->         There problem here is the same - our target chips are not
-> just ASICs. 
+> dvb_register_device will now check the return value of class_device_create.
 
-You say they are chips so they are integrated circuits (ICs), they
-are designed to solve some specific needs, so they are
-application-specific ICs, i.e. ASICs, what's the problem?
+Good catch.
 
+> +		printk("%s: failed to create device dvb%d.%s%d (%ld)\n", __FUNCTION__,
+> +			adap->num, dnames[type], id, PTR_ERR(clsdev));
+> +		return PTR_ERR(clsdev);
 
-> It just happens that the one we start with called such,
-> but we have different ones too. 
-
-Interesting what are they?
-Power management ICs? Power management + audio
-+ touchscreen + ADC + USB transceiver + UART + whatever
-all such chips may be considered as ASICs.
-
-> It's still important that they contain
-> blocks with different functionality, and drivers we propose deal with
-> basic, common functionality of chips. 
-
-That different functionality blocks will be handled by appropriate
-device drivers, and in general the drivers should not depend on
-a particular ASIC but use common ASIC API.
-But "common functionality" drivers are ASIC-specific.
-
-> Now that it was pointed out that
-> there's place in the tree for such drivers, it would be not wise to
-> try to create another one.
->
->
->
-
-Perhaps, so.  Actually, MFD  (multi functional device) doesn't
-imply a platform-level device but ASIC seems does.
-
-
-
-Thanks,
-Dmitry
-
+printk(KERN_ERR "...."
 
