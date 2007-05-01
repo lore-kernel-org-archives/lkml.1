@@ -1,95 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbXEALss@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030599AbXEALt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbXEALss (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 07:48:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXEALsr
+	id S1030599AbXEALt2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 07:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXEALt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 07:48:47 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:20356 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754718AbXEALsq (ORCPT
+	Tue, 1 May 2007 07:49:27 -0400
+Received: from assei2bl6.telenet-ops.be ([195.130.133.69]:44283 "EHLO
+	assei2bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932247AbXEALt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 07:48:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=P+QXG5cFQXnl7k6RkadHrFiy0wRnshlTQiKaeHsjGcjFrCzDWQrA8b+RZ6A/yOv1Pvqi1vhqDCDiUr2Y5dYvPXIZK9H9Bzhyw1yVrBiJ8mIRTHWYzeDZCAdEqBcO7fGlEI7UH06K0WGGBcjGRf8+BOiKamjJEWIjEqbmxXfCDxs=  ;
-X-YMail-OSG: bupgmVYVM1l1PXPvo_br6n4tSp.VTMy_xCsc1cV.EB1YtS3_2a9tKuzQeQ3ZeP6ReZopRUWO.A--
-Message-ID: <463728EB.8030308@yahoo.com.au>
-Date: Tue, 01 May 2007 21:47:55 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 1 May 2007 07:49:26 -0400
+X-Greylist: delayed 10152 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 07:49:26 EDT
+Date: Tue, 1 May 2007 13:49:21 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl, hpa@zytor.com
+Subject: Re: console font limits
+In-Reply-To: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705011347300.27246@anakin>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
 MIME-Version: 1.0
-To: Rohit Seth <rohitseth@google.com>
-CC: "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
-In-Reply-To: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rohit Seth wrote:
-> Hi Nick, 
+On Tue, 1 May 2007, Albert Cahalan wrote:
+> I'm having problems with a font I just created. It's a rather big one,
+> intended for a framebuffer console in UTF-8 mode. The strace program
+> reports that /bin/setfont fails on a KDFONTOP ioctl with EINVAL.
+> In reading the kernel code, I find this:
 > 
-> -----Original Message-----
-> From: Nick Piggin [mailto:nickpiggin@yahoo.com.au] 
-> Sent: Friday, April 27, 2007 11:03 PM
-> To: Hugh Dickins
-> Cc: rohitseth@google.com; Mike Stroyan; Andrew Morton; Luck, Tony;
-> linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+> vt.c:static int con_font_set(struct vc_data *vc, struct console_font_op *op)
+> vt.c-{
+> vt.c-   struct console_font font;
+> vt.c-   int rc = -EINVAL;
+> vt.c-   int size;
+> vt.c-
+> vt.c-   if (vc->vc_mode != KD_TEXT)
+> vt.c-           return -EINVAL;
+> vt.c-   if (!op->data)
+> vt.c-           return -EINVAL;
+> vt.c-   if (op->charcount > 512)
+> vt.c-           return -EINVAL;
 > 
-> Hugh Dickins wrote:
-> 
->>On Sat, 28 Apr 2007, Nick Piggin wrote:
->>
->>
->>>OIC, you need a virtual address to evict the icache, so you can't 
->>>flush at flush_dcache time? Or does ia64 have an instruction to flush 
->>>the whole icache? (it would be worth testing, to see how much 
->>>performance suffers).
->>
->>
->>I'm puzzled by that remark: the ia64 flush_icache_range always has a 
->>virtual address, it uses the kernel virtual address; it takes no 
->>interest in whether there's a user virtual address.
-> 
-> 
->>I _think_ what it is doing is actually flushing dcache lines dirtied 
->>via the kernel virtual address (yes, I think flush_icache
->>in lazy_mmu_prot_update is actually just flushing the dcache, but 
->>I could be wrong? [*]).
-> 
-> 
-> It is invalidating any entries (containing same physical address) in both I
-> and D caches.  Any dirty lines in D cache are written back to memory before
-> getting invalidated (ofcourse).
+> Ouch. Why is the old VGA limit being applied to the framebuffer console?
+> Could this just get removed? I dearly hope we aren't still storing the
+> framebuffer data as two bytes per character+attribute pair.
 
-OK. (should it be issuing both fc and fc.i to be robust in case a
-new implementation doesn't flush the dcache with fc.i?)
+The shadow screen (accessed using scr_*()) still uses the old VGA
+format.
 
+Gr{oetje,eeting}s,
 
->>There are supposedly no icache lines at that point[**]:
-> 
-> 
-> For this bug to trigger there has to be a (stale) entry in icache containing
-> the old contents of a page that just got updated by kernel as explicit
-> copying of data (DMAs are coherent on ia64, meaning if a device were to
-> write to memory then architecture guarnatees that both I and D caches are
-> invalidated).
+						Geert
 
-So if we have a dirty dcache line for a given physical address,
-it will _always_ be the case that a subsequent icache load will
-find that dirty data?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-... thanks for bearing with me ;)
-
--- 
-SUSE Labs, Novell Inc.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
