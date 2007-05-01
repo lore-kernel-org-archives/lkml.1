@@ -1,84 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965573AbXEAHxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965589AbXEAH4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965573AbXEAHxI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965589AbXEAHxI
+	id S965589AbXEAH4G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965626AbXEAH4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:53:08 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58546 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965573AbXEAHxG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:53:06 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Tue, 1 May 2007 03:52:53 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH][RFC] Allow the i386 install.sh script to try the generic
- installkernel.
-Message-ID: <Pine.LNX.4.64.0705010345460.8080@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Tue, 1 May 2007 03:56:06 -0400
+Received: from mx2.suse.de ([195.135.220.15]:59525 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965589AbXEAH4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:56:02 -0400
+Date: Tue, 1 May 2007 09:55:15 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Kasper Sandberg <lkml@metanurb.dk>, Willy Tarreau <w@1wt.eu>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org,
+       Con Kolivas <kernel@kolivas.org>, Mike Galbraith <efault@gmx.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>, caglar@pardus.org.tr,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v6
+Message-ID: <20070501075515.GD10590@wotan.suse.de>
+References: <1177809512.9756.10.camel@localhost> <20070429053022.GB23638@1wt.eu> <20070429065900.GB32281@elte.hu> <20070429071627.GC23638@1wt.eu> <1177842654.5791.85.camel@localhost.localdomain> <20070429111159.GH23638@1wt.eu> <1177848054.9756.30.camel@localhost> <1177848810.5791.104.camel@localhost.localdomain> <20070429125522.GB31925@holomorphy.com> <1177853867.5791.120.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177853867.5791.120.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Apr 29, 2007 at 03:37:47PM +0200, Thomas Gleixner wrote:
+> On Sun, 2007-04-29 at 05:55 -0700, William Lee Irwin III wrote:
+> > You'll also hit the same holes should you attempt to write such a
+> > modularity patch for mainline as opposed to porting current mainline to
+> > the driver API as-given. It takes a bit more work to get something that
+> > actually works for all this, and it borders on disingenuity to
+> > suggest that the scheduler class/driver API as it now stands is
+> > capable of any such thing as porting current mainline, nicksched, or SD
+> > to it without significant code impact to the core scheduler code.
+> 
+> I never said, that the current implementation of CFS fits the criteria
+> of modularity, but it is a step in that direction. I'm well aware that
+> there is a bunch of things missing and it has hard coded leftovers,
+> which are related to the current two hard coded policy classes.
 
-Allow the install script arch/i386/boot/install.sh to fall back to try
-the generic "installkernel" command if a CROSS_COMPILE version isn't
-available.
-
-Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-
----
-
-the rationale here:
-
-  after cross-compiling the kernel for x86_64, i (accidentally) left
-the CROSS_COMPILE variable on the make line when i tried to install
-the kernel:
-
-  # make ARCH=x86_64 CROSS_COMPILE=x86_64- install
-
-as you can see, if you don't have a custom version, the install script
-will eventually try to run lilo.  barf.
-
-  is it reasonable, after you check for the custom version, to drop
-down and try the generic version (which would have worked just
-fine)?
-
-  or is there a cleaner solution?  or is this the correct logic after
-all?
+[ I've tuned out of most of the scheduler discussion lately, sorry ;) ]
 
 
-diff --git a/arch/i386/boot/install.sh b/arch/i386/boot/install.sh
-index 5e44c73..2f7c970 100644
---- a/arch/i386/boot/install.sh
-+++ b/arch/i386/boot/install.sh
-@@ -38,6 +38,11 @@ verify "$3"
- if [ -x ~/bin/${CROSS_COMPILE}installkernel ]; then exec ~/bin/${CROSS_COMPILE}installkernel "$@"; fi
- if [ -x /sbin/${CROSS_COMPILE}installkernel ]; then exec /sbin/${CROSS_COMPILE}installkernel "$@"; fi
+People seem to be confusing scheduler policy with a modular framework.
 
-+# OK, then, let's try the generic installkernel scripts.
-+
-+if [ -x ~/bin/installkernel ]; then exec ~/bin/installkernel "$@"; fi
-+if [ -x /sbin/installkernel ]; then exec /sbin/installkernel "$@"; fi
-+
- # Default install - same as make zlilo
+First of all, I don't know that any of the schedulers can "just go in"
+and replace the mainline one, because they are still under development
+and have not been sufficiently tested and contrasted IMO.
 
- if [ -f $4/vmlinuz ]; then
+Secondly, if we want to have a modular framework, it should:
+- be a seperate patchset to any new scheduler policy
+- obviously retain the existing policy for testing / comparison purposes
+- be able to be compiled out. I don't know whether it's CFS policy or
+  the framework (maybe both), but CFS is quite a bit slower at context
+  switching when I last measured with lmbench (several releases ago).
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+I still would rather not have a modular framework unless we decide
+that is the only wake to make upstream progress. But if we did have
+the modular framework, we still need to decide on the process of
+avoiding profileration, selecting a default scheduler, and a plan for
+future phasing out of non-default GP schedulers once a new one gets
+selected.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
