@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030495AbXEASQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030608AbXEASRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030495AbXEASQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030468AbXEASQX
+	id S1030608AbXEASRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXEASRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:16:23 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:45246 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030405AbXEASQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:16:22 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Tue, 1 May 2007 14:16:01 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-cc: ballabio_dario@emc.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/pci2000.h: Remove unused file
-In-Reply-To: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
-Message-ID: <Pine.LNX.4.64.0705011415070.13459@localhost.localdomain>
-References: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
+	Tue, 1 May 2007 14:17:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37697 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030608AbXEASRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 14:17:17 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] AFS: Fix use of __exit functions from __init path
+To: torvalds@osdl.org, akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, geert@linux-m68k.org, dhowells@redhat.com
+Date: Tue, 01 May 2007 19:17:06 +0100
+Message-ID: <20070501181706.28008.10566.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Richard Knutsson wrote:
+Fix use of __exit functions from __init path.
 
-> Remove the unused header drivers/scsi/pci2000.h
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-i have the same patch in my pending patch directory, dated march 10,
-so i know i submitted it, but i have no idea whatever happened to it.
+ fs/afs/callback.c  |    2 +-
+ fs/afs/internal.h  |    4 ++--
+ fs/afs/vlocation.c |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+diff --git a/fs/afs/callback.c b/fs/afs/callback.c
+index 639399f..9bdbf36 100644
+--- a/fs/afs/callback.c
++++ b/fs/afs/callback.c
+@@ -468,7 +468,7 @@ int __init afs_callback_update_init(void)
+ /*
+  * shut down the callback update process
+  */
+-void __exit afs_callback_update_kill(void)
++void afs_callback_update_kill(void)
+ {
+ 	destroy_workqueue(afs_callback_update_worker);
+ }
+diff --git a/fs/afs/internal.h b/fs/afs/internal.h
+index c0404b4..f1bd47e 100644
+--- a/fs/afs/internal.h
++++ b/fs/afs/internal.h
+@@ -401,7 +401,7 @@ extern void afs_give_up_callback(struct afs_vnode *);
+ extern void afs_dispatch_give_up_callbacks(struct work_struct *);
+ extern void afs_flush_callback_breaks(struct afs_server *);
+ extern int __init afs_callback_update_init(void);
+-extern void __exit afs_callback_update_kill(void);
++extern void afs_callback_update_kill(void);
+ 
+ /*
+  * cell.c
+@@ -605,7 +605,7 @@ extern struct afs_vlocation *afs_vlocation_lookup(struct afs_cell *,
+ 						  struct key *,
+ 						  const char *, size_t);
+ extern void afs_put_vlocation(struct afs_vlocation *);
+-extern void __exit afs_vlocation_purge(void);
++extern void afs_vlocation_purge(void);
+ 
+ /*
+  * vnode.c
+diff --git a/fs/afs/vlocation.c b/fs/afs/vlocation.c
+index 6c8e95a..3370cdb 100644
+--- a/fs/afs/vlocation.c
++++ b/fs/afs/vlocation.c
+@@ -602,7 +602,7 @@ int __init afs_vlocation_update_init(void)
+ /*
+  * discard all the volume location records for rmmod
+  */
+-void __exit afs_vlocation_purge(void)
++void afs_vlocation_purge(void)
+ {
+ 	afs_vlocation_timeout = 0;
+ 
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
