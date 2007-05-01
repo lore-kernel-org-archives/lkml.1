@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbXEAXXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946049AbXEAXYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbXEAXXe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 19:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbXEAXXe
+	id S1946049AbXEAXYb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 19:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423508AbXEAXYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 19:23:34 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:15191 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754836AbXEAXXd (ORCPT
+	Tue, 1 May 2007 19:24:31 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:34425 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423504AbXEAXYa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 19:23:33 -0400
-Date: Tue, 1 May 2007 16:23:01 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Bill Irwin <bill.irwin@oracle.com>, Matt Mackall <mpm@selenic.com>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, wli@holomorphy.com
-Subject: Re: [2/6] add config option to vmalloc stacks (was: Re: [-mm patch] i386: enable 4k stacks by default)
-Message-ID: <20070501232301.GW26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Matt Mackall <mpm@selenic.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <andi@firstfloor.org>, David Chinner <dgc@sgi.com>,
-	Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174310.GE19966@holomorphy.com> <20070430181104.GB14739@infradead.org> <20070430190952.GP31925@holomorphy.com> <20070430191511.GA25318@infradead.org> <20070501223606.GQ11166@waste.org> <20070501225125.GU26598@holomorphy.com> <20070502000745.3a819160@the-village.bc.nu>
+	Tue, 1 May 2007 19:24:30 -0400
+Message-ID: <4637CB9F.9010408@gmail.com>
+Date: Wed, 02 May 2007 01:22:07 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502000745.3a819160@the-village.bc.nu>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Vlad <vladc6@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+References: <741290.4122.qm@web54405.mail.yahoo.com>
+In-Reply-To: <741290.4122.qm@web54405.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At some point in the past, I wrote:
->> These IRQ stacks are per-cpu, not per-IRQ. It may make sense to
->> implement per-IRQ stacks, in which case dynamic allocation at the time
->> of request_irq() will make sense.
+On 05/02/2007 12:41 AM, Vlad wrote:
 
-On Wed, May 02, 2007 at 12:07:45AM +0100, Alan Cox wrote:
-> This depends if active IRQ count exceeds active CPU count worst cases.
-> For the big boxes it might well do but for small ones we seem to be best
-> with per CPU.
+> H. Peter Anvin wrote:
 
-I'll leave IRQ stacks per-CPU, then. The prevailing opinion on large
-i386 does not favor doing much of anything to accommodate it.
+>> I'm rewriting the i386 setup code in C, instead of assembly,
+>> and before I spend a very large amount of time translating
+>> all the various card-specific probes, I want to ask the
+>> following question...
+>>
+>> Does *anyone* care about these anymore?
+> 
+> Yes, booting Linux on old i386/i486 hardware is still very useful for
+> forensic purposes and recovering important data. I've personally had
+> to do this many times, and I'm sure others have as well.
+> 
+> Booting is such a critical process that a user would be completely
+> lost as to why it fails, especially if they can't see any output on
+> the screen. I think it would be a shame to prevent Linux from running
+> on these machines.
 
+He wasn't asking about doing away with all video output on 386/486s, but 
+with special Super VGA adapter specific modes. You'd have normal VGA 
+available as always, and VESA if the videocard supports it (which all cards 
+that _can_ do more than 80x25 do).
 
--- wli
+Rene.
+
