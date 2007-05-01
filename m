@@ -1,356 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXEAORk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbXEAOSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbXEAORk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXEAORk
+	id S1754670AbXEAOSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXEAOSB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:17:40 -0400
-Received: from smtp-vbr2.xs4all.nl ([194.109.24.22]:1533 "EHLO
-	smtp-vbr2.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754149AbXEAORS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:17:18 -0400
-Message-ID: <46374BEB.6080900@xs4all.nl>
-Date: Tue, 01 May 2007 16:17:15 +0200
-From: Udo van den Heuvel <udovdh@xs4all.nl>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 1 May 2007 10:18:01 -0400
+Received: from rtr.ca ([64.26.128.89]:2926 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754665AbXEAOR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:17:56 -0400
+Message-ID: <46374C11.1010702@rtr.ca>
+Date: Tue, 01 May 2007 10:17:53 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: "circular locking dependency detected" while doing cp   was Re: Found
- this in my logs
-References: <462F7637.3080506@xs4all.nl> <462F8DCA.2070404@xs4all.nl>
-In-Reply-To: <462F8DCA.2070404@xs4all.nl>
-X-Enigmail-Version: 0.95.0
-OpenPGP: id=8300CC02
-Content-Type: text/plain; charset=ISO-8859-1
+To: Frank van Maarseveen <frankvm@frankvm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+References: <20070501135951.GA17072@janus>
+In-Reply-To: <20070501135951.GA17072@janus>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Udo van den Heuvel wrote:
-> Udo van den Heuvel wrote:
->> Apr 25 17:28:18 epia kernel: [ INFO: possible circular locking
->> dependency detected ]
->> Apr 25 17:28:18 epia kernel: 2.6.20.1 #8
-> [cut]
-> 
-> I think I was copying a not so large file to my windoze box. The cp took
-> relatively long and afterwards I noticed the logged things.
-> Do I need to post this in bugzilla?
-> 
-> 
-Hello I made a bugzilla entry:
-http://bugzilla.kernel.org/show_bug.cgi?id=8377
-I also changed the title of this thred to reflect the contents a bit better.
+Forwarding to linux-scsi and linux-ide mailing lists.
 
-After I did a cp over to a cifs share on a windoze box which took
-unusually long I found the stuff below in my logs. How to fix?
-What should I add to the bugzilla entry to facilitate?
-
-Apr 25 17:28:18 epia kernel:
-Apr 25 17:28:18 epia kernel:
-=======================================================
-Apr 25 17:28:18 epia kernel: [ INFO: possible circular locking
-dependency detected ]
-Apr 25 17:28:18 epia kernel: 2.6.20.1 #8
-Apr 25 17:28:18 epia kernel:
--------------------------------------------------------
-Apr 25 17:28:18 epia kernel: cp/30380 is trying to acquire lock:
-Apr 25 17:28:18 epia kernel:  (sk_lock-AF_INET){--..}, at:
-[tcp_sendmsg+22/2523] tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:18 epia kernel:  (sk_lock-AF_INET){--..}, at: [<c02b8918>]
-tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:18 epia kernel:
-Apr 25 17:28:18 epia kernel: but task is already holding lock:
-Apr 25 17:28:18 epia kernel:  (&inode->i_alloc_sem){--..}, at:
-[notify_change+241/732] notify_change+0xf1/0x2dc
-Apr 25 17:28:18 epia kernel:  (&inode->i_alloc_sem){--..}, at:
-[<c0166719>] notify_change+0xf1/0x2dc
-Apr 25 17:28:18 epia kernel:
-Apr 25 17:28:18 epia kernel: which lock already depends on the new lock.
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: the existing dependency chain (in reverse
-order) is:
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: -> #3 (&inode->i_alloc_sem){--..}:
-Apr 25 17:28:19 epia kernel:        [__lock_acquire+2307/2616]
-__lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [<c012b1f4>] __lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [lock_acquire+104/130]
-lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [<c012b391>] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [down_write+58/83] down_write+0x3a/0x53
-Apr 25 17:28:19 epia kernel:        [<c0126fb7>] down_write+0x3a/0x53
-Apr 25 17:28:19 epia kernel:        [notify_change+241/732]
-notify_change+0xf1/0x2dc
-Apr 25 17:28:19 epia kernel:        [<c0166719>] notify_change+0xf1/0x2dc
-Apr 25 17:28:19 epia kernel:        [do_truncate+83/108]
-do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:        [<c0153572>] do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:        [may_open+442/514] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:        [<c015bfda>] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:        [open_namei+639/1455]
-open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:        [<c015df44>] open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:        [do_filp_open+38/59]
-do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:        [<c01532d7>] do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:        [do_sys_open+67/194]
-do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:        [<c015332f>] do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:        [sys_open+28/30] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:        [<c01533e6>] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:        [syscall_call+7/11] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<c0102af0>] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<ffffffff>] 0xffffffff
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: -> #2 (&sysfs_inode_imutex_key){--..}:
-Apr 25 17:28:19 epia kernel:        [__lock_acquire+2307/2616]
-__lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [<c012b1f4>] __lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [lock_acquire+104/130]
-lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [<c012b391>] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [__mutex_lock_slowpath+220/614]
-__mutex_lock_slowpath+0xdc/0x266
-Apr 25 17:28:19 epia kernel:        [<c02ea424>]
-__mutex_lock_slowpath+0xdc/0x266
-Apr 25 17:28:19 epia kernel:        [mutex_lock+28/31] mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel:        [<c02ea5ca>] mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel:        [create_dir+32/406]
-create_dir+0x20/0x196
-Apr 25 17:28:19 epia kernel:        [<c018a53d>] create_dir+0x20/0x196
-Apr 25 17:28:19 epia kernel:        [sysfs_create_dir+70/96]
-sysfs_create_dir+0x46/0x60
-Apr 25 17:28:19 epia kernel:        [<c018ad9a>] sysfs_create_dir+0x46/0x60
-Apr 25 17:28:19 epia kernel:        [kobject_add+207/392]
-kobject_add+0xcf/0x188
-Apr 25 17:28:19 epia kernel:        [<c01d0f74>] kobject_add+0xcf/0x188
-Apr 25 17:28:19 epia kernel:        [class_device_add+158/909]
-class_device_add+0x9e/0x38d
-Apr 25 17:28:19 epia kernel:        [<c0220c4c>] class_device_add+0x9e/0x38d
-Apr 25 17:28:19 epia kernel:        [netdev_register_sysfs+112/117]
-netdev_register_sysfs+0x70/0x75
-Apr 25 17:28:19 epia kernel:        [<c029dd90>]
-netdev_register_sysfs+0x70/0x75
-Apr 25 17:28:19 epia kernel:        [register_netdevice+556/740]
-register_netdevice+0x22c/0x2e4
-Apr 25 17:28:19 epia kernel:        [<c0293d76>]
-register_netdevice+0x22c/0x2e4
-Apr 25 17:28:19 epia kernel:        [register_netdev+64/77]
-register_netdev+0x40/0x4d
-Apr 25 17:28:19 epia kernel:        [<c0294eb4>] register_netdev+0x40/0x4d
-Apr 25 17:28:19 epia kernel:        [rhine_init_one+1171/1616]
-rhine_init_one+0x493/0x650
-Apr 25 17:28:19 epia kernel:        [<c0225ae5>] rhine_init_one+0x493/0x650
-Apr 25 17:28:19 epia kernel:        [pci_device_probe+57/91]
-pci_device_probe+0x39/0x5b
-Apr 25 17:28:19 epia kernel:        [<c01dfab8>] pci_device_probe+0x39/0x5b
-Apr 25 17:28:19 epia kernel:        [really_probe+127/258]
-really_probe+0x7f/0x102
-Apr 25 17:28:19 epia kernel:        [<c02201da>] really_probe+0x7f/0x102
-Apr 25 17:28:19 epia kernel:        [driver_probe_device+149/161]
-driver_probe_device+0x95/0xa1
-Apr 25 17:28:19 epia kernel:        [<c02202f2>]
-driver_probe_device+0x95/0xa1
-Apr 25 17:28:19 epia kernel:        [__driver_attach+106/161]
-__driver_attach+0x6a/0xa1
-Apr 25 17:28:19 epia kernel:        [<c02203fd>] __driver_attach+0x6a/0xa1
-Apr 25 17:28:19 epia kernel:        [bus_for_each_dev+54/91]
-bus_for_each_dev+0x36/0x5b
-Apr 25 17:28:19 epia kernel:        [<c021f809>] bus_for_each_dev+0x36/0x5b
-Apr 25 17:28:19 epia kernel:        [driver_attach+25/27]
-driver_attach+0x19/0x1b
-Apr 25 17:28:19 epia kernel:        [<c022008c>] driver_attach+0x19/0x1b
-Apr 25 17:28:19 epia kernel:        [bus_add_driver+106/368]
-bus_add_driver+0x6a/0x170
-Apr 25 17:28:19 epia kernel:        [<c021faf9>] bus_add_driver+0x6a/0x170
-Apr 25 17:28:19 epia kernel:        [driver_register+121/126]
-driver_register+0x79/0x7e
-Apr 25 17:28:19 epia kernel:        [<c0220608>] driver_register+0x79/0x7e
-Apr 25 17:28:19 epia kernel:        [__pci_register_driver+117/162]
-__pci_register_driver+0x75/0xa2
-Apr 25 17:28:19 epia kernel:        [<c01dfc39>]
-__pci_register_driver+0x75/0xa2
-Apr 25 17:28:19 epia kernel:        [rhine_init+15/17] rhine_init+0xf/0x11
-Apr 25 17:28:19 epia kernel:        [<c03f3425>] rhine_init+0xf/0x11
-Apr 25 17:28:19 epia kernel:        [init+149/573] init+0x95/0x23d
-Apr 25 17:28:19 epia kernel:        [<c01003ee>] init+0x95/0x23d
-Apr 25 17:28:19 epia kernel:        [kernel_thread_helper+7/16]
-kernel_thread_helper+0x7/0x10
-Apr 25 17:28:19 epia kernel:        [<c0103ca7>]
-kernel_thread_helper+0x7/0x10
-Apr 25 17:28:19 epia kernel:        [<ffffffff>] 0xffffffff
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: -> #1 (rtnl_mutex){--..}:
-Apr 25 17:28:19 epia kernel:        [__lock_acquire+2307/2616]
-__lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [<c012b1f4>] __lock_acquire+0x903/0xa38
-Apr 25 17:28:19 epia kernel:        [lock_acquire+104/130]
-lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [<c012b391>] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [__mutex_lock_slowpath+220/614]
-__mutex_lock_slowpath+0xdc/0x266
-Apr 25 17:28:19 epia kernel:        [<c02ea424>]
-__mutex_lock_slowpath+0xdc/0x266
-Apr 25 17:28:19 epia kernel:        [mutex_lock+28/31] mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel:        [<c02ea5ca>] mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel:        [rtnl_lock+13/15] rtnl_lock+0xd/0xf
-Apr 25 17:28:19 epia kernel:        [<c029b5fd>] rtnl_lock+0xd/0xf
-Apr 25 17:28:19 epia kernel:        [ip_mc_join_group+44/201]
-ip_mc_join_group+0x2c/0xc9
-Apr 25 17:28:19 epia kernel:        [<c02d3a88>] ip_mc_join_group+0x2c/0xc9
-Apr 25 17:28:19 epia kernel:        [ip_setsockopt+1607/2466]
-ip_setsockopt+0x647/0x9a2
-Apr 25 17:28:19 epia kernel:        [<c02b51f6>] ip_setsockopt+0x647/0x9a2
-Apr 25 17:28:19 epia kernel:        [udp_setsockopt+67/74]
-udp_setsockopt+0x43/0x4a
-Apr 25 17:28:19 epia kernel:        [<c02caa0c>] udp_setsockopt+0x43/0x4a
-Apr 25 17:28:19 epia kernel:        [sock_common_setsockopt+30/36]
-sock_common_setsockopt+0x1e/0x24
-Apr 25 17:28:19 epia kernel:        [<c028ccae>]
-sock_common_setsockopt+0x1e/0x24
-Apr 25 17:28:19 epia kernel:        [sys_setsockopt+123/151]
-sys_setsockopt+0x7b/0x97
-Apr 25 17:28:19 epia kernel:        [<c028b45a>] sys_setsockopt+0x7b/0x97
-Apr 25 17:28:19 epia kernel:        [sys_socketcall+488/577]
-sys_socketcall+0x1e8/0x241
-Apr 25 17:28:19 epia kernel:        [<c028c9c7>] sys_socketcall+0x1e8/0x241
-Apr 25 17:28:19 epia kernel:        [syscall_call+7/11] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<c0102af0>] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<ffffffff>] 0xffffffff
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: -> #0 (sk_lock-AF_INET){--..}:
-Apr 25 17:28:19 epia kernel:        [__lock_acquire+2052/2616]
-__lock_acquire+0x804/0xa38
-Apr 25 17:28:19 epia kernel:        [<c012b0f5>] __lock_acquire+0x804/0xa38
-Apr 25 17:28:19 epia kernel:        [lock_acquire+104/130]
-lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [<c012b391>] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:        [lock_sock_nested+186/199]
-lock_sock_nested+0xba/0xc7
-Apr 25 17:28:19 epia kernel:        [<c028d3d7>] lock_sock_nested+0xba/0xc7
-Apr 25 17:28:19 epia kernel:        [tcp_sendmsg+22/2523]
-tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:19 epia kernel:        [<c02b8918>] tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:19 epia kernel:        [inet_sendmsg+62/73]
-inet_sendmsg+0x3e/0x49
-Apr 25 17:28:19 epia kernel:        [<c02d043c>] inet_sendmsg+0x3e/0x49
-Apr 25 17:28:19 epia kernel:        [sock_sendmsg+231/260]
-sock_sendmsg+0xe7/0x104
-Apr 25 17:28:19 epia kernel:        [<c028b89b>] sock_sendmsg+0xe7/0x104
-Apr 25 17:28:19 epia kernel:        [kernel_sendmsg+40/55]
-kernel_sendmsg+0x28/0x37
-Apr 25 17:28:19 epia kernel:        [<c028ca48>] kernel_sendmsg+0x28/0x37
-Apr 25 17:28:19 epia kernel:        [pg0+510032686/1067033600]
-smb_send+0x92/0x11c [cifs]
-Apr 25 17:28:19 epia kernel:        [<deccbb2e>] smb_send+0x92/0x11c [cifs]
-Apr 25 17:28:19 epia kernel:        [pg0+510033207/1067033600]
-SendReceive+0x17f/0x3dc [cifs]
-Apr 25 17:28:19 epia kernel:        [<deccbd37>] SendReceive+0x17f/0x3dc
-[cifs]
-Apr 25 17:28:19 epia kernel:        [pg0+509966217/1067033600]
-CIFSSMBSetEOF+0x1e6/0x229 [cifs]
-Apr 25 17:28:19 epia kernel:        [<decbb789>]
-CIFSSMBSetEOF+0x1e6/0x229 [cifs]
-Apr 25 17:28:19 epia kernel:        [pg0+510014126/1067033600]
-cifs_setattr+0x25d/0x79c [cifs]
-Apr 25 17:28:19 epia kernel:        [<decc72ae>]
-cifs_setattr+0x25d/0x79c [cifs]
-Apr 25 17:28:19 epia kernel:        [notify_change+313/732]
-notify_change+0x139/0x2dc
-Apr 25 17:28:19 epia kernel:        [<c0166761>] notify_change+0x139/0x2dc
-Apr 25 17:28:19 epia kernel:        [do_truncate+83/108]
-do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:        [<c0153572>] do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:        [may_open+442/514] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:        [<c015bfda>] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:        [open_namei+639/1455]
-open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:        [<c015df44>] open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:        [do_filp_open+38/59]
-do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:        [<c01532d7>] do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:        [do_sys_open+67/194]
-do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:        [<c015332f>] do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:        [sys_open+28/30] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:        [<c01533e6>] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:        [syscall_call+7/11] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<c0102af0>] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:        [<ffffffff>] 0xffffffff
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: other info that might help us debug this:
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: 2 locks held by cp/30380:
-Apr 25 17:28:19 epia kernel:  #0:  (&inode->i_mutex){--..}, at:
-[mutex_lock+28/31] mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel: node->i_mutex){--..}, at: [<c02ea5ca>]
-mutex_lock+0x1c/0x1f
-Apr 25 17:28:19 epia kernel:  #1:  (&inode->i_alloc_sem){--..}, at:
-[notify_change+241/732] notify_change+0xf1/0x2dc
-Apr 25 17:28:19 epia kernel:  #1:  (&inode->i_alloc_sem){--..}, at:
-[<c0166719>] notify_change+0xf1/0x2dc
-Apr 25 17:28:19 epia kernel:
-Apr 25 17:28:19 epia kernel: stack backtrace:
-Apr 25 17:28:19 epia kernel:  [show_trace_log_lvl+26/47]
-show_trace_log_lvl+0x1a/0x2f
-Apr 25 17:28:19 epia kernel:  [<c0104003>] show_trace_log_lvl+0x1a/0x2f
-Apr 25 17:28:19 epia kernel:  [show_trace+18/20] show_trace+0x12/0x14
-Apr 25 17:28:19 epia kernel:  [<c0104656>] show_trace+0x12/0x14
-Apr 25 17:28:19 epia kernel:  [dump_stack+22/24] dump_stack+0x16/0x18
-Apr 25 17:28:19 epia kernel:  [<c01046f3>] dump_stack+0x16/0x18
-Apr 25 17:28:19 epia kernel:  [print_circular_bug_tail+95/104]
-print_circular_bug_tail+0x5f/0x68
-Apr 25 17:28:19 epia kernel:  [<c0129a7f>] print_circular_bug_tail+0x5f/0x68
-Apr 25 17:28:19 epia kernel:  [__lock_acquire+2052/2616]
-__lock_acquire+0x804/0xa38
-Apr 25 17:28:19 epia kernel:  [<c012b0f5>] __lock_acquire+0x804/0xa38
-Apr 25 17:28:19 epia kernel:  [lock_acquire+104/130] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:  [<c012b391>] lock_acquire+0x68/0x82
-Apr 25 17:28:19 epia kernel:  [lock_sock_nested+186/199]
-lock_sock_nested+0xba/0xc7
-Apr 25 17:28:19 epia kernel:  [<c028d3d7>] lock_sock_nested+0xba/0xc7
-Apr 25 17:28:19 epia kernel:  [tcp_sendmsg+22/2523] tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:19 epia kernel:  [<c02b8918>] tcp_sendmsg+0x16/0x9db
-Apr 25 17:28:19 epia kernel:  [inet_sendmsg+62/73] inet_sendmsg+0x3e/0x49
-Apr 25 17:28:19 epia kernel:  [<c02d043c>] inet_sendmsg+0x3e/0x49
-Apr 25 17:28:19 epia kernel:  [sock_sendmsg+231/260] sock_sendmsg+0xe7/0x104
-Apr 25 17:28:19 epia kernel:  [<c028b89b>] sock_sendmsg+0xe7/0x104
-Apr 25 17:28:19 epia kernel:  [kernel_sendmsg+40/55]
-kernel_sendmsg+0x28/0x37
-Apr 25 17:28:19 epia kernel:  [<c028ca48>] kernel_sendmsg+0x28/0x37
-Apr 25 17:28:19 epia kernel:  [pg0+510032686/1067033600]
-smb_send+0x92/0x11c [cifs]
-Apr 25 17:28:19 epia kernel:  [<deccbb2e>] smb_send+0x92/0x11c [cifs]
-Apr 25 17:28:19 epia kernel:  [pg0+510033207/1067033600]
-SendReceive+0x17f/0x3dc [cifs]
-Apr 25 17:28:19 epia kernel:  [<deccbd37>] SendReceive+0x17f/0x3dc [cifs]
-Apr 25 17:28:19 epia kernel:  [pg0+509966217/1067033600]
-CIFSSMBSetEOF+0x1e6/0x229 [cifs]
-Apr 25 17:28:19 epia kernel:  [<decbb789>] CIFSSMBSetEOF+0x1e6/0x229 [cifs]
-Apr 25 17:28:19 epia kernel:  [pg0+510014126/1067033600]
-cifs_setattr+0x25d/0x79c [cifs]
-Apr 25 17:28:19 epia kernel:  [<decc72ae>] cifs_setattr+0x25d/0x79c [cifs]
-Apr 25 17:28:19 epia kernel:  [notify_change+313/732]
-notify_change+0x139/0x2dc
-Apr 25 17:28:19 epia kernel:  [<c0166761>] notify_change+0x139/0x2dc
-Apr 25 17:28:19 epia kernel:  [do_truncate+83/108] do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:  [<c0153572>] do_truncate+0x53/0x6c
-Apr 25 17:28:19 epia kernel:  [may_open+442/514] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:  [<c015bfda>] may_open+0x1ba/0x202
-Apr 25 17:28:19 epia kernel:  [open_namei+639/1455] open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:  [<c015df44>] open_namei+0x27f/0x5af
-Apr 25 17:28:19 epia kernel:  [do_filp_open+38/59] do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:  [<c01532d7>] do_filp_open+0x26/0x3b
-Apr 25 17:28:19 epia kernel:  [do_sys_open+67/194] do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:  [<c015332f>] do_sys_open+0x43/0xc2
-Apr 25 17:28:19 epia kernel:  [sys_open+28/30] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:  [<c01533e6>] sys_open+0x1c/0x1e
-Apr 25 17:28:19 epia kernel:  [syscall_call+7/11] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:  [<c0102af0>] syscall_call+0x7/0xb
-Apr 25 17:28:19 epia kernel:  =======================
-Apr 25 17:28:19 epia kernel: pwc: Too many ISOC errors, bailing out.
-Apr 25 17:28:19 epia last message repeated 5 times
+Frank van Maarseveen wrote:
+> Tested on 2.6.20.6 and 2.6.21.1
+> 
+> I decided to swich from the old IDE drivers to libata and now there
+> seems to be a little but annoying problem: cannot mount an ISO image
+> after burning it.
+> 
+> May  1 14:32:55 kernel: attempt to access beyond end of device
+> May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+> May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0, iso_blknum=16, block=16
+> 
+> an "eject" command seems to fix the state of the PATA DVD writer
+> or driver. The problem occurs for burning a CD and for DVD too with
+> identical error messages.
+> 
+> 
+> relevant kernel boot messages:
+> | ata1: PATA max UDMA/100 cmd 0x000101f0 ctl 0x000103f6 bmdma 0x0001ffa0 irq 14
+> | ata2: PATA max UDMA/100 cmd 0x00010170 ctl 0x00010376 bmdma 0x0001ffa8 irq 15
+> | scsi0 : ata_piix
+> | ata1.00: ATA-7: ST3120814A, 3.AAJ, max UDMA/100
+> | ata1.00: 234441648 sectors, multi 8: LBA48 
+> | ata1.00: configured for UDMA/100
+> | scsi1 : ata_piix
+> | ata2.00: ATAPI, max UDMA/33
+> | ata2.01: ATAPI, max UDMA/33
+> | ata2.00: configured for UDMA/33
+> | ata2.01: configured for UDMA/33
+> | scsi 0:0:0:0: Direct-Access     ATA      ST3120814A       3.AA PQ: 0 ANSI: 5
+> | SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+> | sda: Write Protect is off
+> | SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> | SCSI device sda: 234441648 512-byte hdwr sectors (120034 MB)
+> | sda: Write Protect is off
+> | SCSI device sda: write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> |  sda: sda1 sda2 sda4
+> | sd 0:0:0:0: Attached scsi disk sda
+> | sd 0:0:0:0: Attached scsi generic sg0 type 0
+> | scsi 1:0:0:0: CD-ROM            HP       DVD Writer 640c  CS30 PQ: 0 ANSI: 5
+> | sr0: scsi3-mmc drive: 40x/40x writer cd/rw xa/form2 cdda tray
+> | Uniform CD-ROM driver Revision: 3.20
+> | sr 1:0:0:0: Attached scsi generic sg1 type 5
+> | scsi 1:0:1:0: CD-ROM            SAMSUNG  CD-ROM SC-148C   B105 PQ: 0 ANSI: 5
+> | sr1: scsi3-mmc drive: 1x/48x cd/rw xa/form2 cdda tray
+> | sr 1:0:1:0: Attached scsi generic sg2 type 5
+> 
+> stripped config (well, as far of I'm sure it shouldn't matter):
+> | CONFIG_PM=y
+> | CONFIG_PM_LEGACY=y
+> | 
+> | CONFIG_ACPI=y
+> | CONFIG_ACPI_PROCFS=y
+> | CONFIG_ACPI_FAN=y
+> | CONFIG_ACPI_PROCESSOR=y
+> | CONFIG_ACPI_THERMAL=y
+> | CONFIG_ACPI_BLACKLIST_YEAR=0
+> | CONFIG_ACPI_EC=y
+> | CONFIG_ACPI_POWER=y
+> | CONFIG_ACPI_SYSTEM=y
+> | CONFIG_X86_PM_TIMER=y
+> | 
+> | CONFIG_PCI=y
+> | CONFIG_PCI_GOANY=y
+> | CONFIG_PCI_BIOS=y
+> | CONFIG_PCI_DIRECT=y
+> | CONFIG_PCI_MMCONFIG=y
+> | CONFIG_PCIEPORTBUS=y
+> | CONFIG_PCIEAER=y
+> | CONFIG_HT_IRQ=y
+> | CONFIG_ISA_DMA_API=y
+> | 
+> | CONFIG_PNP=y
+> | 
+> | CONFIG_PNPACPI=y
+> | 
+> | CONFIG_CDROM_PKTCDVD=y
+> | CONFIG_CDROM_PKTCDVD_BUFFERS=8
+> | 
+> | CONFIG_IDE=y
+> | 
+> | CONFIG_RAID_ATTRS=y
+> | CONFIG_SCSI=y
+> | CONFIG_SCSI_PROC_FS=y
+> | 
+> | CONFIG_BLK_DEV_SD=y
+> | CONFIG_BLK_DEV_SR=y
+> | CONFIG_CHR_DEV_SG=y
+> | 
+> | CONFIG_SCSI_MULTI_LUN=y
+> | CONFIG_SCSI_CONSTANTS=y
+> | CONFIG_SCSI_LOGGING=y
+> | 
+> | CONFIG_SCSI_SPI_ATTRS=y
+> | 
+> | CONFIG_ATA=y
+> | CONFIG_SATA_AHCI=y
+> | CONFIG_ATA_PIIX=y
+> | CONFIG_SATA_INTEL_COMBINED=y
+> | CONFIG_SATA_ACPI=y
+> | CONFIG_PATA_SERVERWORKS=y
+> 
+> 
+> lspci:
+> 00:00.0 Host bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE DRAM Controller/Host-Hub Interface (rev 01)
+> 00:01.0 PCI bridge: Intel Corporation 82845G/GL[Brookdale-G]/GE/PE Host-to-AGP Bridge (rev 01)
+> 00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01)
+> 00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 01)
+> 00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
+> 00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2 EHCI Controller (rev 01)
+> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 81)
+> 00:1f.0 ISA bridge: Intel Corporation 82801DB/DBL (ICH4/ICH4-L) LPC Interface Bridge (rev 01)
+> 00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01)
+> 00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) SMBus Controller (rev 01)
+> 00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
+> 01:00.0 VGA compatible controller: nVidia Corporation NV18 [GeForce4 MX 440 AGP 8x] (rev a2)
+> 02:0c.0 Ethernet controller: Intel Corporation 82541PI Gigabit Ethernet Controller (rev 05)
+> 
+> lspci -v -v -v for IDE
+> 00:1f.1 IDE interface: Intel Corporation 82801DB (ICH4) IDE Controller (rev 01) (prog-if 8a [Master SecP PriP])
+>         Subsystem: Dell Unknown device 0142
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+>         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>         Latency: 0
+>         Interrupt: pin A routed to IRQ 17
+>         Region 0: I/O ports at 01f0 [size=8]
+>         Region 1: I/O ports at 03f4 [size=1]
+>         Region 2: I/O ports at 0170 [size=8]
+>         Region 3: I/O ports at 0374 [size=1]
+>         Region 4: I/O ports at ffa0 [size=16]
+>         Region 5: Memory at 50100000 (32-bit, non-prefetchable) [size=1K]
+> 
 
