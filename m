@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945985AbXEAUsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423612AbXEAUsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945985AbXEAUsN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423665AbXEAUmL
+	id S1423612AbXEAUsw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423659AbXEAUmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:42:11 -0400
-Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:33416 "EHLO
-	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423617AbXEAUe4 (ORCPT
+	Tue, 1 May 2007 16:42:00 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:44978 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423625AbXEAUe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:34:56 -0400
-Message-Id: <20070501203333.407583654@mail.of.borg>
+	Tue, 1 May 2007 16:34:57 -0400
+Message-Id: <20070501203334.262699091@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:32:48 +0200
+Date: Tue, 01 May 2007 22:32:51 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "James E.J. Bottomley" <James.Bottomley@SteelEye.com>
-Subject: [patch 14/33] m68k: Atari SCSI workqueue updates
-Content-Disposition: inline; filename=atari_NCR5380-work.diff
+       Finn Thain <fthain@telegraphics.com.au>
+Subject: [patch 17/33] m68k: remove unused adb.h
+Content-Disposition: inline; filename=mac68k-remove-unused-adb-header.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Workqueue updates for the Atari SCSI driver
+From: Finn Thain <fthain@telegraphics.com.au>
 
+The asm-m68k/adb.h header is unused. Some definitions are wrong and the rest
+are duplicated in linux/adb.h. Remove it.
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/scsi/atari_NCR5380.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- linux-m68k-2.6.21.orig/drivers/scsi/atari_NCR5380.c
-+++ linux-m68k-2.6.21/drivers/scsi/atari_NCR5380.c
-@@ -657,7 +657,7 @@ static inline void NCR5380_print_phase(s
- #include <linux/interrupt.h>
- 
- static volatile int main_running;
--static DECLARE_WORK(NCR5380_tqueue, (void (*)(void *))NCR5380_main, NULL);
-+static DECLARE_WORK(NCR5380_tqueue, NCR5380_main);
- 
- static inline void queue_main(void)
- {
-@@ -1075,7 +1075,7 @@ static int NCR5380_queue_command(Scsi_Cm
-  *  reenable them.  This prevents reentrancy and kernel stack overflow.
-  */
- 
--static void NCR5380_main(void *bl)
-+static void NCR5380_main(struct work_struct *work)
- {
- 	Scsi_Cmnd *tmp, *prev;
- 	struct Scsi_Host *instance = first_instance;
+--- linux-m68k-2.6.21.orig/include/asm-m68k/adb.h
++++ /dev/null
+@@ -1,75 +0,0 @@
+-/*
+- * Definitions for talking to ADB and CUDA.  The CUDA is a microcontroller
+- * which controls the ADB, system power, RTC, and various other things on
+- * later Macintoshes
+- *
+- * Copyright (C) 1996 Paul Mackerras.
+- */
+-
+-/* First byte sent to or received from CUDA */
+-#define ADB_PACKET	0
+-#define CUDA_PACKET	1
+-#define ERROR_PACKET	2
+-#define TIMER_PACKET	3
+-#define POWER_PACKET	4
+-#define MACIIC_PACKET	5
+-
+-/* ADB commands (2nd byte) */
+-#define ADB_BUSRESET		0
+-#define ADB_FLUSH(id)		(1 + ((id) << 4))
+-#define ADB_WRITEREG(id, reg)	(8 + (reg) + ((id) << 4))
+-#define ADB_READREG(id, reg)	(0xc + (reg) + ((id) << 4))
+-
+-/* ADB default device IDs (upper 4 bits of 2nd byte) */
+-#define ADB_DONGLE	1	/* "software execution control" devices */
+-#define ADB_KEYBOARD	2
+-#define ADB_MOUSE	3
+-#define ADB_TABLET	4
+-#define ADB_MODEM	5
+-#define ADB_MISC	7	/* maybe a monitor */
+-
+-/* CUDA commands (2nd byte) */
+-#define CUDA_WARM_START		0
+-#define CUDA_AUTOPOLL		1
+-#define CUDA_GET_6805_ADDR	2
+-#define CUDA_GET_TIME		3
+-#define CUDA_GET_PRAM		7
+-#define CUDA_SET_6805_ADDR	8
+-#define CUDA_SET_TIME		9
+-#define CUDA_POWERDOWN		0xa
+-#define CUDA_POWERUP_TIME	0xb
+-#define CUDA_SET_PRAM		0xc
+-#define CUDA_MS_RESET		0xd
+-#define CUDA_SEND_DFAC		0xe
+-#define CUDA_RESET_SYSTEM	0x11
+-#define CUDA_SET_IPL		0x12
+-#define CUDA_SET_AUTO_RATE	0x14
+-#define CUDA_GET_AUTO_RATE	0x16
+-#define CUDA_SET_DEVICE_LIST	0x19
+-#define CUDA_GET_DEVICE_LIST	0x1a
+-#define CUDA_GET_SET_IIC	0x22
+-
+-#ifdef __KERNEL__
+-
+-struct adb_request {
+-    unsigned char data[16];
+-    int nbytes;
+-    unsigned char reply[16];
+-    int reply_len;
+-    unsigned char reply_expected;
+-    unsigned char sent;
+-    unsigned char got_reply;
+-    void (*done)(struct adb_request *);
+-    void *arg;
+-    struct adb_request *next;
+-};
+-
+-void via_adb_init(void);
+-int adb_request(struct adb_request *req,
+-		 void (*done)(struct adb_request *), int nbytes, ...);
+-int adb_send_request(struct adb_request *req);
+-void adb_poll(void);
+-int adb_register(int default_id,
+-		 void (*handler)(unsigned char *, int, struct pt_regs *));
+-
+-#endif	/* __KERNEL */
 
 --
 Gr{oetje,eeting}s,
