@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXEAQgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbXEAQh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbXEAQgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 12:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbXEAQgR
+	id S1754746AbXEAQh2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 12:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbXEAQh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 12:36:17 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:64786 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754585AbXEAQgQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 12:36:16 -0400
-Date: Tue, 1 May 2007 09:31:40 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Bill Irwin <bill.irwin@oracle.com>, linux-kernel@vger.kernel.org,
-       bunk@stusta.de, akpm@osdl.org, gcoady@gmail.com, zlynx@acm.org,
-       dgc@sgi.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-       hch@infradead.org, jengelh@linux01.gwdg.de, zwane@infradead.org,
-       neilb@suse.de, jens.axboe@oracle.com, eric@provenscaling.com,
-       wli@holomorphy.com
-Subject: Re: [3/3] use vmalloc() to arrange guard pages for stacks
-Message-ID: <20070501163140.GM26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-	bunk@stusta.de, akpm@osdl.org, gcoady@gmail.com, zlynx@acm.org,
-	dgc@sgi.com, alan@lxorguk.ukuu.org.uk, andi@firstfloor.org,
-	hch@infradead.org, jengelh@linux01.gwdg.de, zwane@infradead.org,
-	neilb@suse.de, jens.axboe@oracle.com, eric@provenscaling.com
-References: <20070430232351.GG26598@holomorphy.com> <20070430233309.GH26598@holomorphy.com> <20070430233712.GI26598@holomorphy.com> <20070430234030.GJ26598@holomorphy.com> <463757A3.7010808@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463757A3.7010808@redhat.com>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 1 May 2007 12:37:28 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:50615 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754746AbXEAQh1 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 12:37:27 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andre Tomt <andre@tomt.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+Subject: Re: so ... what *are* candidates for removal?
+In-Reply-To: Your message of "Tue, 01 May 2007 17:30:36 +0200."
+             <46375D1C.4050404@tomt.net>
+From: Valdis.Kletnieks@vt.edu
+References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
+            <46375D1C.4050404@tomt.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1178037443_3583P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 01 May 2007 12:37:23 -0400
+Message-ID: <10590.1178037443@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Irwin wrote:
->> This patch introduces CONFIG_DEBUG_STACK, which vmalloc()'s task and IRQ
->> stacks in order to establish guard pages. In such a manner any stack
->> overflow that references pages immediately adjacent to the stack is
->> immediately trapped with a fault, which precludes silent memory corruption
->> or difficult-to-decipher failure modes resulting from stack corruption.
+--==_Exmh_1178037443_3583P
+Content-Type: text/plain; charset=us-ascii
 
-On Tue, May 01, 2007 at 11:07:15AM -0400, Chuck Ebbert wrote:
-> Is there a guard page below and above the stack? (I've seen stack underflow
-> before, as well as overflow.)
+On Tue, 01 May 2007 17:30:36 +0200, Andre Tomt said:
+> Robert P. J. Day wrote:
 
-vmallocspace allocations are always separated by at least a page, so
-this establishes guard pages both above and below the stack by virtue
-of such.
+> > http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
 
-It's also notable that the option establishes guard pages for IRQ stacks
-in like fashion.
+> Already documented in the kernel tarball, see 
+> Documentation/feature-removal-schedule.txt
 
-It's a shame that the resource scalability implications of vmallocspace
-allocations prevent this from being useful in production. One could, in
-principle, establish guard pages within ZONE_NORMAL, but for 4KB stacks
-it's somewhat awkward to dredge up 3 contigous pages, and 4 defeats the
-purpose. Alignment with 8KB stacks wants 2 contiguous order 1 pages that
-span an order 2 page boundary. I guess I could rewrite the page allocator
-(again), but people seem to feel safest with the buddy allocator affairs.
+Robert's point is that the file you cited is horrendously out of date, and
+we need to create a consensus of what *should* be in feature-removal-schedule.txt
+so we can update it to correspond to some sort of reality, or at the very least
+some politically correct sanitized view of reality. It currently lists
+stuff scheduled to be removed 18 months ago, and doesn't list stuff that
+everybody agrees deserves to be heaved over the side as soon as the users have
+had "enough warning" (whatever that means)....
 
-BTW, did the original patches for this prove to be of any use to you?
+--==_Exmh_1178037443_3583P
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
--- wli
+iD8DBQFGN2zDcC3lWbTT17ARAqE6AKCQuKx9eEN0t3F5SZbU5a+WfueuxACglFlP
+laV+hRei+beJMlBAHGSJYoI=
+=PE1s
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1178037443_3583P--
