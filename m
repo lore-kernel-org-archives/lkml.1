@@ -1,95 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945971AbXEAVr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945974AbXEAVtP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945971AbXEAVr6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945974AbXEAVr6
+	id S1945974AbXEAVtP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:49:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945976AbXEAVtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:47:58 -0400
-Received: from mail.screens.ru ([213.234.233.54]:50102 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1945971AbXEAVr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:47:57 -0400
-Date: Wed, 2 May 2007 01:47:37 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: ego@in.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] workqueues: shift kthread_bind() from CPU_UP_PREPARE to CPU_ONLINE
-Message-ID: <20070501214737.GA183@tv-sign.ru>
-Mime-Version: 1.0
+	Tue, 1 May 2007 17:49:15 -0400
+Received: from netblock-66-245-252-131.dslextreme.com ([66.245.252.131]:44883
+	"EHLO Angel.zoy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1945974AbXEAVtN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 17:49:13 -0400
+Date: Tue, 1 May 2007 14:49:12 -0700
+From: Michel Lespinasse <walken@zoy.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       Jeb Cramer <cramerj@intel.com>, John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: 24 lost ticks with 2.6.20.10 kernel
+Message-ID: <20070501214912.GA4048@zoy.org>
+References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <46375E04.5030506@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-CPU_UP_PREPARE binds cwq->thread to the new CPU. So CPU_UP_CANCELED tries to
-wake up the task which is bound to the failed CPU.
+(I've added the E1000 maintainers to the thread as I found the issue
+seems to go away after I compile out that driver. For reference, I was
+trying to figure out why I lose exactly 24 ticks about every two
+seconds, as shown with report_lost_ticks. This is with a DQ965GF
+motherboard with onboard E1000).
 
-With this patch we don't bind cwq->thread until CPU becomes online. The first
-wake_up() after kthread_create() is a bit special, make a simple helper for
-that.
+On Tue, May 01, 2007 at 11:34:28AM -0400, Chuck Ebbert wrote:
+> Michel Lespinasse wrote:
+> > running with report_lost_ticks, I see the following:
+> > 
+> > May  1 12:58:57 server kernel: time.c: Lost 24 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
+> > May  1 12:58:59 server kernel: time.c: Lost 24 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> Try disabling CONFIG_CPU_FREQ?
 
---- OLD/kernel/workqueue.c~2_BIND	2007-05-01 22:18:15.000000000 +0400
-+++ OLD/kernel/workqueue.c	2007-05-02 00:17:01.000000000 +0400
-@@ -631,15 +631,21 @@ static int create_workqueue_thread(struc
- 
- 	cwq->thread = p;
- 	cwq->should_stop = 0;
--	if (!is_single_threaded(wq))
--		kthread_bind(p, cpu);
--
--	if (is_single_threaded(wq) || cpu_online(cpu))
--		wake_up_process(p);
- 
- 	return 0;
- }
- 
-+static void start_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
-+{
-+	struct task_struct *p = cwq->thread;
-+
-+	if (p != NULL) {
-+		if (cpu >= 0)
-+			kthread_bind(p, cpu);
-+		wake_up_process(p);
-+	}
-+}
-+
- struct workqueue_struct *__create_workqueue(const char *name,
- 					    int singlethread, int freezeable)
- {
-@@ -665,6 +671,7 @@ struct workqueue_struct *__create_workqu
- 	if (singlethread) {
- 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
- 		err = create_workqueue_thread(cwq, singlethread_cpu);
-+		start_workqueue_thread(cwq, -1);
- 	} else {
- 		mutex_lock(&workqueue_mutex);
- 		list_add(&wq->list, &workqueues);
-@@ -674,6 +681,7 @@ struct workqueue_struct *__create_workqu
- 			if (err || !cpu_online(cpu))
- 				continue;
- 			err = create_workqueue_thread(cwq, cpu);
-+			start_workqueue_thread(cwq, cpu);
- 		}
- 		mutex_unlock(&workqueue_mutex);
- 	}
-@@ -773,12 +781,11 @@ static int __devinit workqueue_cpu_callb
- 			return NOTIFY_BAD;
- 
- 		case CPU_ONLINE:
--			wake_up_process(cwq->thread);
-+			start_workqueue_thread(cwq, cpu);
- 			break;
- 
- 		case CPU_UP_CANCELED:
--			if (cwq->thread)
--				wake_up_process(cwq->thread);
-+			start_workqueue_thread(cwq, -1);
- 		case CPU_DEAD:
- 			cleanup_workqueue_thread(cwq, cpu);
- 			break;
+OK, so I tried a few things.
 
+Disabling CONFIG_CPU_FREQ does not fix the issue.
+
+Running with 2.6.16.49 did fix the issue, but my onboard E1000 is not
+    detected then (I do see the 'Intel Pro/1000 network driver' message
+    at boot time, but ifconfig -a does not show an ethernet interface)
+
+Going back to 2.6.20.10 with no E1000 driver (so really no
+    network devices at all): aaaaaah, lost ticks are gone.
+    I can even re-enable CONFIG_CPU_FREQ.
+
+With 2.6.20.10, E1000 compiled in, without NAPI: I do see the lost ticks.
+
+With 2.6.20.10, modular E1000 with NAPI: I did not get any lost ticks.
+    However the network did not work correctly after boot up.
+    The e1000 module was loaded, the routes were set etc... but I could
+    not ping anything. The switch lights seemed to indicate no packets
+    were coming out. After ifdown eth0 and ifup eth0 again, the network
+    came up fine, but at 100 megabit speed (full duplex) instead of gigabit.
+    A few log messages come up:
+e1000: eth0: e1000_probe: Intel(R) PRO/1000 Network Connection
+e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
+e1000: eth0: e1000_watchdog: NIC Link is Down
+e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
+e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
+    Which is slightly strange since the box is connected to a gigabit switch.
+
+The default kernel from debian etch, 2.6.18 based with modular e1000,
+connects at gigabit speeds but loses ticks on this machine.
+
+> > One last thing: I have another box which is fairly similar, with a
+> > DG965RY motherboard. That other box does *not* seem to lose any ticks,
+> > running the same kernel that works so poorly on the DQ965GF board.
+> > Does that point to a hardware/bios issue then ?????
+> 
+> Is it running the exact same kernel, with the same cpufreq settings at
+> runtime (governor, controller, etc?)
+
+I have not been running 2.6.20.10 on the DG965RY yet. However, the kernel
+I use on the DG965RY (2.6.20.7 with statically compiled E1000 driver),
+which does not lose ticks there, does lose ticks when I move it to the DQ965GF.
+
+If it makes any difference, the DQ965GF is running with BIOS version 5882
+dated 4/13/2007. The DG965RY runs with BIOS version 1676 (same date).
+I have not changed any settings in the 'management engine' BIOS menu
+(actually I have not entered it since it'd require me to set a password,
+and I thought I'd avoid features I dont fully understand :)
+
+Anything else I should try ?
+
+Thanks,
+
+-- 
+Michel "Walken" Lespinasse
+"Bill Gates is a monocle and a Persian cat away from being the villain
+in a James Bond movie." -- Dennis Miller
