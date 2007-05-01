@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXEADz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030521AbXEAD5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932224AbXEADz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 23:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932212AbXEADz6
+	id S1030521AbXEAD5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 23:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932451AbXEAD5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 23:55:58 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60762 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030515AbXEADz4 (ORCPT
+	Mon, 30 Apr 2007 23:57:40 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56144 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932398AbXEAD5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:55:56 -0400
-Date: Tue, 1 May 2007 09:25:39 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Andi Kleen <ak@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       Jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org,
-       Helge Hafting <helgehaf@aitel.hist.no>, Horms <horms@verge.net.au>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/2] x86_64: Reflect the relocatability of the kernel in the ELF header.
-Message-ID: <20070501035539.GA15472@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <m1slah6gm0.fsf@ebiederm.dsl.xmission.com> <200704301717.08230.ak@suse.de>
-Mime-Version: 1.0
+	Mon, 30 Apr 2007 23:57:39 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeff Garzik <jeff@garzik.org>, Andi Kleen <ak@suse.de>,
+       patches@x86-64.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com>
+	<1177902195.30071.203.camel@localhost.localdomain>
+	<463572B7.90202@zytor.com>
+	<1177909434.30071.216.camel@localhost.localdomain>
+	<m1ejm16flv.fsf@ebiederm.dsl.xmission.com>
+	<1177990722.28659.39.camel@localhost.localdomain>
+Date: Mon, 30 Apr 2007 21:57:05 -0600
+In-Reply-To: <1177990722.28659.39.camel@localhost.localdomain> (Rusty
+	Russell's message of "Tue, 01 May 2007 13:38:42 +1000")
+Message-ID: <m18xc919im.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200704301717.08230.ak@suse.de>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 05:17:07PM +0200, Andi Kleen wrote:
-> On Monday 30 April 2007 17:12:39 Eric W. Biederman wrote:
-> > 
-> > Currently because vmlinux does not reflect that the kernel is relocatable
-> > we still have to support CONFIG_PHYSICAL_START.  So this patch adds a small
-> > c program to do what we cannot do with a linker script set the elf header
-> > type to ET_DYN.
-> > 
-> > Since last time I have fixed the type to be in my code ET_DYN (oops),
-> > and verified this works with kexec.  I realized while testing that we
-> > don't have anyway of identifying a kernel vmlinux as linux so we
-> > probably want to add an ELF note but that will be another patch.
-> 
-> The patch is ok for me, but does it pass Vivek's usual testing?
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
-I am facing one issue with this patch. gdb can not analyze the
-resulting kernel core file. Looks like gdb treats vmlinux differently if
-ELF header type is "ET_DYN". It reads the symbol values incorrectly.
+> On Mon, 2007-04-30 at 09:34 -0600, Eric W. Biederman wrote:
+>> Reading this it occurs to me what I object to wasn't that clear.
+>> 
+>> I have no problem with the testing of %cs to see if we are not in ring0.
+>> That part while a little odd is fine, and we will certainly need a test
+>> to skip the protected instructions in head.S
+>> 
+>> What I object to in particular is having (struct lguest_info?) instead
+>> of using the standard format for kernel parameters pointed to in %esi.
+>
+> Here's a rough patch to see what it looks like from an lguest POV.  It's
+> an improvement in many ways: I chose to hardcode the search for matching
+> backend rather than use paravirt_probe-style magic.
 
-For example, symbol value of "panic_timeout" is 0xffffffff808a1fa8 but
-gdb somehow things that it is 0xffffffff008aaebf. Looks like it is
-performing some relocation.
+Cool.
 
-I am using GNU gdb Red Hat Linux (6.5-5.fc6rh).
+> It'd be nicer if there were a "struct boot_params" declaration, but we
+> can't have everything.
 
-Thanks
-Vivek
+Well it will come.  I have an old one in kexec-tools and HPA looks like
+he has one in his C rewrite.
+
+I'm not going to worry about going farther until the patches in flight
+settle down a little bit, but this looks promising.
+
+Eric
