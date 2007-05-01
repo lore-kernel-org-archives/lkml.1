@@ -1,96 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031634AbXEAJon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031637AbXEAJpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031634AbXEAJon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 05:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031635AbXEAJon
+	id S1031637AbXEAJpj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 05:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031639AbXEAJpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 05:44:43 -0400
-Received: from 1wt.eu ([62.212.114.60]:2445 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031634AbXEAJom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 05:44:42 -0400
-Date: Tue, 1 May 2007 11:44:00 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
-Subject: Re: pcmcia ioctl removal
-Message-ID: <20070501094400.GX943@1wt.eu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org> <Pine.LNX.4.64.0705010514300.9162@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705010514300.9162@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	Tue, 1 May 2007 05:45:39 -0400
+Received: from aibn55.astro.uni-bonn.de ([131.220.96.55]:45851 "EHLO
+	aibn55.astro.uni-bonn.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031637AbXEAJpi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 05:45:38 -0400
+Message-ID: <46370BFA.1020300@astro.uni-bonn.de>
+Date: Tue, 01 May 2007 11:44:26 +0200
+From: Manuel Metz <mmetz@astro.uni-bonn.de>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: linux-kernel@vger.kernel.org, nappers@gmail.com,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: PROBLEM: oops in 2.6.21.1 after bringing up the network
+References: <8fgo8-1wP-9@gated-at.bofh.it> <4635D7B1.2040001@astro.uni-bonn.de> <46365E3F.9070109@redhat.com>
+In-Reply-To: <46365E3F.9070109@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 05:16:13AM -0400, Robert P. J. Day wrote:
-> On Tue, 1 May 2007, Christoph Hellwig wrote:
+Chuck Ebbert wrote:
+> Manuel Metz wrote:
+>> Brett Ryland wrote:
+>>> Hi,
+>>> I am consistently getting a kernel oops from a vanilla 2.6.21.1 kernel. It 
+>>> also occurs in vanilla 2.6.21, but not in 2.6.20.8. The relevant section of 
+>>> the kernel is networking, in particular the sis900 module (I think).
+>>> The attached file contains the oops and the information asked for on the site 
+>>> http://www.kernel.org/pub/linux/docs/lkml/reporting-bugs.html for reporting 
+>>> kernel oopses. The oops fully crashes my computer and leaves the capslock and 
+>>> numlock leds flashing, so the oops is transcribed by hand from a photo 
+>>> (hopefully I haven't made a mistake, I do still have the photo if it's 
+>>> needed).
+>>>
+>>> I'm not subscribed to the mailing list so please CC any questions/solutions to 
+>>> me.
+>>>
+>>> Regards,
+>>> Nappers.
+>> Hi, I have the same problem here on an ASUS laptop with sis network
+>> card. The system worked fine with kernel 2.6.21-rc7-mm2 and 2.6.20.7,
+>> but crashes with 2.6.21.1.
+>>
 > 
-> > >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
-> >
-> > ...
-> >
-> > > Dominik is busy.  Will probably re-review and send these direct to Linus.
-> >
-> > The patch above is the removal of cardmgr support.  While I'd love
-> > to see this cruft gone it definitively needs maintainer judgement on
-> > whether they time has come that no one relies on cardmgr anymore.
+> Fixed by this:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=dc5a144991ba803bc8afded105c9db1dea0e57ab
 > 
-> since i was the one who submitted the original patch to remove that
-> stuff, let me make an observation.
-> 
-> when i submitted a patch to remove, for instance, the traffic shaper
-> since it's clearly obsolete, i was told -- in no uncertain terms --
-> that that couldn't be done since there had been no warning about its
-> impending removal.
-> 
-> fair enough, i can accept that.
-> 
-> on the other hand, the features removal file contains the following:
-> 
-> ...
-> What:   PCMCIA control ioctl (needed for pcmcia-cs [cardmgr, cardctl])
-> When:   November 2005
-> ...
-> 
-> in other words, the PCMCIA ioctl feature *has* been listed as obsolete
-> for quite some time, and is already a *year and a half* overdue for
-> removal.
-> 
-> in short, it's annoying to take the position that stuff can't be
-> deleted without warning, then turn around and be reluctant to remove
-> stuff for which *more than ample warning* has already been given.
-> doing that just makes a joke of the features removal file, and makes
-> you wonder what its purpose is in the first place.
-> 
-> a little consistency would be nice here, don't you think?
+> Look here before reporting bugs to linux-kernel:
+> http://kernelnewbies.org/known_regressions
 
-No, it just shows how useless this file is. What is needed is a big
-warning during usage, not a file that nobody reads. Facts are :
+As far as I can tell, it's working til now ... Thanks ...
 
-  - 90% of people here do not even know that this file exists
-  - 80% of the people who know about it do not consult it on a regular basis
-  - 80% of those who consult it on a regular basis are not concerned
-  - 75% of statistics are invented
-
-=> only 20% of 20% of 10% of those who read LKML know that one feature
-   they are concerned about will soon be removed = 0.4% of LKML readers.
-
-If you put a warning in kernel messages (as I've seen for a long time
-about tcpdump using obsolete AF_PACKET), close to 100% of the users
-of the obsolete code who are likely to change their kernels will notice
-it.
-
-I'm sorry for your patch which may get delayed a lot. You would spend
-fewer time stuffing warnings in areas affected by scheduled removal.
-
-BTW, I'm not even against the end of cardmgr support, it's just that
-I don't know what the alternative is, and I suspect that many users
-do not either. A big warning would have brought them to google who
-would have provided them with suggestions for alternatives.
-
-Willy
-
+Manuel
