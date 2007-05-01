@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbXEAWzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946046AbXEAW4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbXEAWzL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 18:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbXEAWzK
+	id S1946046AbXEAW4K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946048AbXEAW4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 18:55:10 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:61209 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754791AbXEAWzI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 18:55:08 -0400
-Date: Tue, 1 May 2007 15:51:25 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
-       Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, wli@holomorphy.com
-Subject: Re: [2/6] add config option to vmalloc stacks (was: Re: [-mm patch] i386: enable 4k stacks by default)
-Message-ID: <20070501225125.GU26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Matt Mackall <mpm@selenic.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <andi@firstfloor.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
-	Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174310.GE19966@holomorphy.com> <20070430181104.GB14739@infradead.org> <20070430190952.GP31925@holomorphy.com> <20070430191511.GA25318@infradead.org> <20070501223606.GQ11166@waste.org>
+	Tue, 1 May 2007 18:56:10 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:59904 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946046AbXEAW4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 18:56:09 -0400
+Date: Wed, 2 May 2007 01:56:05 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/33] m68k: CROSS_COMPILE = m68k-linux-gnu-
+Message-ID: <20070501225605.GA5533@sci.fi>
+References: <20070501203234.252205858@mail.of.borg> <20070501203330.778353898@mail.of.borg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070501223606.GQ11166@waste.org>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070501203330.778353898@mail.of.borg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 08:15:11PM +0100, Christoph Hellwig wrote:
->> So if you want to invest some time into getting this into mergeable
->> shape I'd suggest you redo the patch series in the following way:
->>  patch 1: dynamic allocated irq stacks
+On Tue, May 01, 2007 at 10:32:40PM +0200, Geert Uytterhoeven wrote:
+> Recent cross-compilers are called m68k-linux-gnu-gcc instead of m68k-linux-gcc
+> 
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+>  arch/m68k/Makefile |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-m68k-2.6.21.orig/arch/m68k/Makefile
+> +++ linux-m68k-2.6.21/arch/m68k/Makefile
+> @@ -21,7 +21,7 @@ AS += -m68020
+>  LDFLAGS := -m m68kelf
+>  ifneq ($(COMPILE_ARCH),$(ARCH))
+>  	# prefix for cross-compiling binaries
+> -	CROSS_COMPILE = m68k-linux-
+> +	CROSS_COMPILE = m68k-linux-gnu-
+>  endif
+>  
+>  ifdef CONFIG_SUN3
 
-On Tue, May 01, 2007 at 05:36:06PM -0500, Matt Mackall wrote:
-> Can we register them lazily at request_irq time?
+What about using ?= so the user can override it. I sent a patch doing
+just that but never got any response.
 
-These IRQ stacks are per-cpu, not per-IRQ. It may make sense to
-implement per-IRQ stacks, in which case dynamic allocation at the time
-of request_irq() will make sense.
-
-Would you like me to implement per-IRQ IRQ stacks?
-
-
--- wli
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
