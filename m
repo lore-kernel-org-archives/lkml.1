@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992466AbXEAEDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992456AbXEAEDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992466AbXEAEDm (ORCPT <rfc822;w@1wt.eu>);
+	id S2992456AbXEAEDm (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 1 May 2007 00:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946311AbXEAEBk
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946476AbXEAEBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 00:01:40 -0400
-Received: from ns1.suse.de ([195.135.220.2]:60922 "EHLO mx1.suse.de"
+	Tue, 1 May 2007 00:01:30 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60919 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1946408AbXEAD6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 23:58:07 -0400
+	id S1946311AbXEAD6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 23:58:05 -0400
 From: Andi Kleen <ak@suse.de>
 References: <20070501557.815359000@suse.de>
 In-Reply-To: <20070501557.815359000@suse.de>
-To: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] [9/30] x86_64: Use symbolic CPU features in early CPUID check
-Message-Id: <20070501035806.AE6BF13CAF@wotan.suse.de>
-Date: Tue,  1 May 2007 05:58:06 +0200 (CEST)
+To: dpreed@reed.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [7/30] x86_64: Avoid overflows during apic timer calibration
+Message-Id: <20070501035804.940A313CAF@wotan.suse.de>
+Date: Tue,  1 May 2007 05:58:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Dead to magic numbers!
+From: David P. Reed <dpreed@reed.com>
 
-Generated code is the same.
+- Use 64bit TSC calculations to avoid handling overflow
+- Use 32bit unsigned arithmetic for the APIC timer. This
+way overflows are handled correctly.
+- Fix exit check of loop to account for apic timer counting down
 
+Signed-off-by: dpreed@reed.com
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86_64/kernel/verify_cpu.S |   23 ++++++++++++++++-------
- 1 file changed, 16 insertions(+), 7 deletions(-)
+ arch/x86_64/kernel/apic.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Index: linux/arch/x86_64/kernel/verify_cpu.S
+Index: linux/arch/x86_64/kernel/apic.c
 ===================================================================
---- linux.orig/arch/x86_64/kernel/verify_cpu.S
-+++ linux/arch/x86_64/kernel/verify_cpu.S
-@@ -30,18 +30,27 @@
-  * 	appropriately. Either display a message or halt.
-  */
+--- linux.orig/arch/x86_64/kernel/apic.c
++++ linux/arch/x86_64/kernel/apic.c
+@@ -839,14 +839,15 @@ static void setup_APIC_timer(unsigned in
  
--verify_cpu:
-+#include <asm/cpufeature.h>
+ static int __init calibrate_APIC_clock(void)
+ {
+-	int apic, apic_start, tsc, tsc_start;
++	unsigned apic, apic_start;
++	unsigned long tsc, tsc_start;
+ 	int result;
+ 	/*
+ 	 * Put whatever arbitrary (but long enough) timeout
+ 	 * value into the APIC clock, we just want to get the
+ 	 * counter running for calibration.
+ 	 */
+-	__setup_APIC_LVTT(1000000000);
++	__setup_APIC_LVTT(4000000000);
  
-+verify_cpu:
- 	pushfl				# Save caller passed flags
- 	pushl	$0			# Kill any dangerous flags
- 	popfl
+ 	apic_start = apic_read(APIC_TMCCT);
+ #ifdef CONFIG_X86_PM_TIMER
+@@ -857,13 +858,13 @@ static int __init calibrate_APIC_clock(v
+ 	} else
+ #endif
+ 	{
+-		rdtscl(tsc_start);
++		rdtscll(tsc_start);
  
--	/* minimum CPUID flags for x86-64 */
--	/* see http://www.x86-64.org/lists/discuss/msg02971.html */
--#define SSE_MASK ((1<<25)|(1<<26))
--#define REQUIRED_MASK1 ((1<<0)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<8)|\
--					   (1<<13)|(1<<15)|(1<<24))
--#define REQUIRED_MASK2 (1<<29)
-+	/* minimum CPUID flags for x86-64 as defined by AMD */
-+#define M(x) (1<<(x))
-+#define M2(a,b) M(a)|M(b)
-+#define M4(a,b,c,d) M(a)|M(b)|M(c)|M(d)
-+
-+#define SSE_MASK \
-+	(M2(X86_FEATURE_XMM,X86_FEATURE_XMM2))
-+#define REQUIRED_MASK1 \
-+	(M4(X86_FEATURE_FPU,X86_FEATURE_PSE,X86_FEATURE_TSC,X86_FEATURE_MSR)|\
-+	 M4(X86_FEATURE_PAE,X86_FEATURE_CX8,X86_FEATURE_PGE,X86_FEATURE_CMOV)|\
-+	 M(X86_FEATURE_FXSR))
-+#define REQUIRED_MASK2 \
-+	(M(X86_FEATURE_LM - 32))
-+
- 	pushfl				# standard way to check for cpuid
- 	popl	%eax
- 	movl	%eax,%ebx
+ 		do {
+ 			apic = apic_read(APIC_TMCCT);
+-			rdtscl(tsc);
++			rdtscll(tsc);
+ 		} while ((tsc - tsc_start) < TICK_COUNT &&
+-				(apic - apic_start) < TICK_COUNT);
++				(apic_start - apic) < TICK_COUNT);
+ 
+ 		result = (apic_start - apic) * 1000L * tsc_khz /
+ 					(tsc - tsc_start);
