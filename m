@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750907AbXEAOhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbXEAOhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750907AbXEAOhF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 10:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbXEAOhF
+	id S1753025AbXEAOhd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 10:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXEAOhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 10:37:05 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:38434 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbXEAOhC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 10:37:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=JzG82N3PmQb2qq4v7z5YHLoVgl3z5N2HU0PtnBtzFhUU7blvhIsdQhLUSBeDZzELSHUntCyUWVzJFK0bsV/yoe2JPpHTeTbTKKjnkid7vUlPBehZslfjLHyCBCDmvFYRtJXrboz6HGEynP0rGhtsFI7C/JDnyS2gwI5LhR819u0=
-Date: Tue, 1 May 2007 17:36:57 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <1068016897.20070501173657@gmail.com>
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       <kernel-discuss@handhelds.org>
-Subject: Re: [RFC, PATCH 0/4] SoC base drivers
-In-Reply-To: <46374645.2030900@gmail.com>
-References: <1354376306.20070501080806@gmail.com> <46374645.2030900@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 1 May 2007 10:37:33 -0400
+Received: from pat.uio.no ([129.240.10.15]:56273 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751555AbXEAOh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 10:37:29 -0400
+Subject: Re: [NFS] [PATCH] NFS: supress warnings about NFS4ERR_OLD_STATEID
+	in	nfs4_handle_exception
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org, ffilz@us.ibm.com
+In-Reply-To: <20070426191336.GB31081@dantu.rdu.redhat.com>
+References: <20070426191336.GB31081@dantu.rdu.redhat.com>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 07:42:29 -0700
+Message-Id: <1178030549.5444.11.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=12.0, autolearn=disabled, none)
+X-UiO-Scanned: A0227E44889C8DA9E32826500584A2EB557FBBB6
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 294 total 1435162 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dmitry,
+On Thu, 2007-04-26 at 15:13 -0400, Jeff Layton wrote:
+> I recently posted this patch to the nfs mailing list, but got no comment.
+> Reposting with an actual "[PATCH]" subject...
+> 
+> In certain situations, a NFSv4 client can end up with a set of racing calls
+> that cause the server to return a NFS4ERR_OLD_STATEID error. When this occurs,
+> the only real recourse that the client has is to retry the call. In the
+> current code, when this occurs, it triggers a useless printk (in
+> nfs4_map_errors):
+> 
+>     nfs4_map_errors could not handle NFSv4 error 10024
+> 
+> Trond recently mentioned that we really don't need to worry users with that
+> info. The following patch is based on a suggestion by Frank Filz and supresses
+> this error. Changing the return code here to 0 should be safe since all callers
+> of nfs4_handle_exception are expected to retry the call in this situation
+> anyway.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> Signed-off-by: Frank Filz <ffilz@us.ibm.com>
+> 
+> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
+> index f52cf5c..b456783 100644
+> --- a/fs/nfs/nfs4proc.c
+> +++ b/fs/nfs/nfs4proc.c
+> @@ -2774,6 +2774,7 @@ int nfs4_handle_exception(const struct nfs_server *server, int errorcode, struct
+>  				break;
+>  		case -NFS4ERR_OLD_STATEID:
+>  			exception->retry = 1;
+> +			ret = 0;
+>  	}
+>  	/* We failed to handle the error */
+>  	return nfs4_map_errors(ret);
 
-Tuesday, May 1, 2007, 4:53:09 PM, you wrote:
+Surely "return 0;" is more efficient.
 
-> Hi Paul,
+...and a minor nit about the comment: it doesn't trigger a printk(). It
+rather triggers a dprintk(), (which should be turned off by default
+unless you happen to be debugging the code).
 
-> Paul Sokolovsky wrote:
->> In contemporary systems, lots of functionality oftentimes handled by various
->> kinds of SoCs (system-on-chip), representing a number of deversified
->> controllers packaged in one chip. 
+The other nit is that I'm not sure the dprintk() is totally useless. It
+is always nice to know _why_ the thing looped when you are debugging.
+That said, we should perhaps rather put the dprintk() for that in
+nfs4_handle_exception instead...
 
-> I think your referring to the term "SoC (system-on-chip)" is confusing
-> (at least for me). You rather consider companion chips than SoCs.
+Trond
 
-> Yes, any chip integrating a number of controllers could be considered
-> as a system-on-chip but if the chip doesn't make sense without
-> some master chip (processor) I'd consider the chip as a companion
-> (to the processor) chip.
-
-        Ditto for me - I find "companion" thing confusing. What's
-important for the RFC/topic discussed is that it is integrated
-controller with many diversified functions, not what it is helper to
-something. I understand that for many people SoC means CPU with ties,
-but IMHO, it's less stretch to take such chip, remove CPU, and still
-call it a SoC, than call an integrated audio/touchscreen controller a
-companion chip (well, of course it is; and RAM chip too ;-) ).
-
-        Either way, I don't pledge to be a HW designer with
-contemporary lexicon. The aim was simple - as a single word would be
-too ambiguous, general, or vice-versa, omitting, then acronym is
-needed, hopefully existing, and not new, and SoC is the most fitting
-TLA, IMHO. But I'm open to specific suggestions for improvement. For
-example, if I was to write a Documentation/ entry for that, I'd mention
-companion chips, peripheral/integrated controllers, etc. But renaming
-drivers/soc/ to drivers/companion/ would be more confusing, as the
-concept described is not tied to companion chips per se (even though
-many of chips we (handhelds.org) deal with, can be classified as
-such).
-
-
-> Regards,
-> Dmitry
-
-
--- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
 
