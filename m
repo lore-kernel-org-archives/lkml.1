@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031615AbXEAJ3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031624AbXEAJbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031615AbXEAJ3o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 05:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031625AbXEAJ3o
+	id S1031624AbXEAJbV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 05:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031627AbXEAJbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 05:29:44 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3925 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031608AbXEAJ3m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 05:29:42 -0400
-Date: Tue, 1 May 2007 10:29:33 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Corey Minyard <minyard@acm.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org
-Subject: Re: Serial 8250: clear the lsr_break_flag at open
-Message-ID: <20070501092933.GB18233@flint.arm.linux.org.uk>
-Mail-Followup-To: Corey Minyard <minyard@acm.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linux-serial@vger.kernel.org
-References: <20070430220858.GA28890@localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430220858.GA28890@localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 1 May 2007 05:31:21 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:38894 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031624AbXEAJbT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 05:31:19 -0400
+Date: Tue, 1 May 2007 11:30:31 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Steve French <smfrench@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-cifs-client@lists.samba.org
+Subject: Re: SMB2 file system - should it be a distinct module
+In-Reply-To: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705011127130.18504@yvahk01.tjqt.qr>
+References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 05:08:59PM -0500, Corey Minyard wrote:
-> I think I've spotted a bug in the 8250 code, but I'm not really
-> sure.
 
-Yes, clearing lsr_break_flag prior to opening the port is probably a good
-thing.
+On Apr 30 2007 17:52, Steve French wrote:
+>
+> Now that we (Samba team) understand enough about it to implement
+> prototypes (there is a prototype server in Samba 4, and a userspace
+> client library for testing), we need to decide whether the kernel
+> implementation of SMB2 client should be a distinct module or just part
+> of the cifs.ko module.
 
-> I'm having a hard time understanding why the lsr_break_flag
-> is necessary.
+Do it like CONFIG_FAT_FS/CONFIG_MSDOS_FS/CONFIG_VFAT_FS...
 
-Merely reading the LSR clears status bits.  We read the LSR repeatedly
-so that we can monitor the transmit FIFO when outputting serial console
-messages.
+config SMB_COMMON
+    tristate
 
-This means that if you have a busy serial console, and you want to send
-it a sysrq request, there's a chance that the break flag in the LSR will
-be cleared by the transmit FIFO status polling code thereby being lost.
+config CIFS
+    select SMB_COMMON
 
-So, we need to remember that status, and we do this via the lsr_break_flag.
+config SMB2
+    select SMB_COMMON
 
+> SMB2 (the protocol) is smaller than cifs,
+
+Could not they have named it CIFS2... :p
+
+And, what also puzzles me... almost every filesystem that's not at revision 1
+anymore (ext2/3/4, reiser4, smb2) does not have the usually omnipresent "fs"
+suffix anymore (cf. reiserfs, smbfs). Maybe it's time to drop all the "fs"
+suffixes? :)
+
+
+Jan
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
