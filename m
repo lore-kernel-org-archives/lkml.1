@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031672AbXEALWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031675AbXEALWN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031672AbXEALWN (ORCPT <rfc822;w@1wt.eu>);
+	id S1031675AbXEALWN (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 1 May 2007 07:22:13 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031676AbXEALWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 1 May 2007 07:22:13 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60422 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031672AbXEALWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+Received: from 85-218-34-145.dclient.lsne.ch ([85.218.34.145]:47023 "EHLO vdr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031675AbXEALWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 1 May 2007 07:22:12 -0400
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, hch@lst.de, npiggin@suse.de, a.p.zijlstra@chello.nl
-Subject: Re: 2.6.22 -mm merge plans
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<84144f020705010217j738e461ey6b09fd738574fb70@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 May 2007 14:19:45 +0200
-In-Reply-To: <84144f020705010217j738e461ey6b09fd738574fb70@mail.gmail.com>
-Message-ID: <p73y7k8ybvi.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+Date: Tue, 1 May 2007 13:22:09 +0200
+From: Gregoire Favre <Gregoire.Favre@gmail.com>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
+Subject: Re: More than 2Gb problem (dvb related) ?
+Message-ID: <20070501112208.GD6895@gmail.com>
+References: <fa.pO/RoNmzgLz6KNMO4Ste8iezOk8@ifi.uio.no> <46327F5D.4060708@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46327F5D.4060708@shaw.ca>
+X-Operating-System: Linux 2.6.21
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Pekka Enberg" <penberg@cs.helsinki.fi> writes:
+On Fri, Apr 27, 2007 at 04:55:25PM -0600, Robert Hancock wrote:
 
-> On 5/1/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> >  revoke-special-mmap-handling.patch
-> 
-> [snip]
-> 
-> > Hold.  This is tricky stuff and I don't think we've seen sufficient
-> > reviewing, testing and acking yet?
-> 
-> Agreed. While Peter and Nick have done some review of the patches, I
-> would really like VFS maintainers to review them before merge.
-> Christoph, have you had the chance to take a look at it?
+>  Sounds like the cx88 driver is not using the DMA API properly to set up 
+>  proper mappings, this will blow up if it tries to access memory above the 
+>  4GB mark if the device cannot do >32bit DMA..
 
-Also have the cache performance concerns raised on the original review
-been addressed?
+Any idea on how to solve this ?
 
--Andi
+Thank,
+-- 
+Grégoire FAVRE  http://gregoire.favre.googlepages.com  http://www.gnupg.org
+               http://picasaweb.google.com/Gregoire.Favre
