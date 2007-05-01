@@ -1,32 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1945993AbXEAVyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946004AbXEAVzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1945993AbXEAVyr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946004AbXEAVyr
+	id S1946004AbXEAVzc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946005AbXEAVzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:54:47 -0400
-Received: from iriserv.iradimed.com ([72.242.190.170]:43714 "EHLO iradimed.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1945993AbXEAVyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:54:46 -0400
-Message-ID: <4637B751.1080907@cfl.rr.com>
-Date: Tue, 01 May 2007 17:55:29 -0400
-From: Phillip Susi <psusi@cfl.rr.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 1 May 2007 17:55:32 -0400
+Received: from mx1.suse.de ([195.135.220.2]:44696 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946004AbXEAVza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 17:55:30 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Wed, 2 May 2007 07:54:57 +1000
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Execute in place
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 May 2007 21:54:58.0932 (UTC) FILETIME=[5CAF9B40:01C78C3B]
-X-TM-AS-Product-Ver: SMEX-7.2.0.1122-3.6.1039-15150.001
-X-TM-AS-Result: No--3.653400-5.000000-31
+Message-ID: <17975.46897.298001.690089@notabene.brown>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [NFS] [PATCH] RPC: add wrapper for svc_reserve to account for
+	checksum
+In-Reply-To: message from Jeff Layton on Tuesday May 1
+References: <20070421131523.GA18100@dantu.rdu.redhat.com>
+	<17974.41587.666167.650575@notabene.brown>
+	<20070501170123.GB15222@salusa.poochiereds.net>
+	<20070501171121.GC15222@salusa.poochiereds.net>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I seem to remember seeing some patches go by at some point that allowed 
-one of the rom type embeded system filesystems to directly execute 
-binaries out of the original rom memory rather than copying them to ram 
-first, then executing from there.  I was wondering if rootfs or tmpfs 
-support such execute in place today, or if binaries executed from there 
-have their code segments duplicated in ram?
+On Tuesday May 1, jlayton@redhat.com wrote:
+> 
+> Resending patch with a proper signed-off-by line. Also cc'ing Andrew:
+
+Thanks, but it isn't much good to Andrew without a changelog entry,
+though probably it should just go in as
+  rpc--add-wrapper-for-svc_reserve-to-account-for-checksum-fix
+
+Acked-by: NeilBrown <neilb@suse.de>
+
+(If it doesn't appear in the next -mm, I'll send it all nicely
+formated and changeloged).
+
+NeilBrown
+
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> 
+> diff --git a/include/linux/sunrpc/svc.h b/include/linux/sunrpc/svc.h
+> index 9114f11..ed7cbf1 100644
+> --- a/include/linux/sunrpc/svc.h
+> +++ b/include/linux/sunrpc/svc.h
+> @@ -399,10 +399,9 @@ char *		   svc_print_addr(struct svc_rqst *, char *, size_t);
+>  /*
+>   * When we want to reduce the size of the reserved space in the response
+>   * buffer, we need to take into account the size of any checksum data that
+> - * may be at the end of the packet. For now, just use a hardcoded value
+> - * for each possible authflavor. This will need to be updated when new
+> - * encryption types or algorithms are added, or we'll have to come up with
+> - * a way to reasonably calculate this on the fly (maybe via a new auth_op).
+> + * may be at the end of the packet. This is difficult to determine exactly
+> + * for all cases without actually generating the checksum, so we just use a
+> + * static value.
+>   */
+>  static inline void 
+>  svc_reserve_auth(struct svc_rqst *rqstp, int space)
+> @@ -411,7 +410,7 @@ svc_reserve_auth(struct svc_rqst *rqstp, int space)
+>  
+>  	switch(rqstp->rq_authop->flavour) {
+>  		case RPC_AUTH_GSS:
+> -			added_space = 56; /* determined empirically */
+> +			added_space = RPC_MAX_AUTH_SIZE;
+>  	}
+>  	return svc_reserve(rqstp, space + added_space);
+>  }
