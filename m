@@ -1,214 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423680AbXEAUfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945910AbXEAUfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423680AbXEAUfS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 16:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423665AbXEAUfQ
+	id S1945910AbXEAUfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 16:35:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423665AbXEAUfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 16:35:16 -0400
-Received: from hoboe1bl1.telenet-ops.be ([195.130.137.72]:40880 "EHLO
-	hoboe1bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423663AbXEAUfM (ORCPT
+	Tue, 1 May 2007 16:35:20 -0400
+Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:33534 "EHLO
+	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423658AbXEAUfJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 16:35:12 -0400
-Message-Id: <20070501203337.746958387@mail.of.borg>
+	Tue, 1 May 2007 16:35:09 -0400
+Message-Id: <20070501203336.299500248@mail.of.borg>
 References: <20070501203234.252205858@mail.of.borg>
 User-Agent: quilt/0.45-1
-Date: Tue, 01 May 2007 22:33:03 +0200
+Date: Tue, 01 May 2007 22:32:58 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
        Finn Thain <fthain@telegraphics.com.au>
-Subject: [patch 29/33] SONIC interrupt handling
-Content-Disposition: inline; filename=mac68k-macsonic-via-alt-mapping.diff
+Subject: [patch 24/33] m68k: Mac IRQ cleanup
+Content-Disposition: inline; filename=mac68k-finish_irq_cleanup.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Finn Thain <fthain@telegraphics.com.au>
 
-Install the built-in macsonic interrupt handler on both IRQs when using
-via_alt_mapping. Otherwise the rare interrupt that still comes from the nubus
-slot will wedge the nubus.
-
-$ cat /proc/interrupts
-auto       2:      89176 via2
-auto       3:     744367 sonic
-auto       4:          0 scc
-auto       6:     318363 via1
-auto       7:          0 NMI
-mac        9:     119413 framebuffer vbl
-mac       10:       1971 ADB
-mac       14:     198517 timer
-mac       17:      89104 nubus
-mac       19:         72 Mac ESP SCSI
-mac       56:        629 sonic
-mac       62:    1142593 ide0
-
-Version 1 of this patch had a bug where a nubus sonic card would register two
-interrupt handlers. Only a built-in sonic needs both.
-  
-Version 2 needed some cleanups, as Raylynn Knight pointed out (thanks).
+There are no slow IRQs on Macs since Roman Zippel's IRQ reorganisation that
+went into 2.6.16 and removed mac_irq_list[] and the do_mac_irq_list()
+dispatcher. (They were implemented in do_mac_irq_list() by lowering the IPL.)
+Hence there's no more use for mutual exclusion in the Mac interrupt
+dispatchers. Remove it.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/net/jazzsonic.c |   21 +++++++++++++++++----
- drivers/net/macsonic.c  |   43 +++++++++++++++++++++++++++++++++++++++----
- drivers/net/sonic.c     |   25 -------------------------
- 3 files changed, 56 insertions(+), 33 deletions(-)
+ arch/m68k/mac/baboon.c |   20 +++++++-------------
+ arch/m68k/mac/oss.c    |    4 ----
+ arch/m68k/mac/psc.c    |    2 --
+ arch/m68k/mac/via.c    |   10 ----------
+ 4 files changed, 7 insertions(+), 29 deletions(-)
 
---- linux-m68k-2.6.21.orig/drivers/net/jazzsonic.c
-+++ linux-m68k-2.6.21/drivers/net/jazzsonic.c
-@@ -88,6 +88,21 @@ static unsigned short known_revisions[] 
- 	0xffff			/* end of list */
- };
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/baboon.c
++++ linux-m68k-2.6.21/arch/m68k/mac/baboon.c
+@@ -22,7 +22,7 @@
+ /* #define DEBUG_BABOON */
+ /* #define DEBUG_IRQS */
  
-+static int jazzsonic_open(struct net_device* dev) {
-+	if (request_irq(dev->irq, &sonic_interrupt, IRQF_DISABLED, "sonic", dev)) {
-+		printk(KERN_ERR "\n%s: unable to get IRQ %d.\n", dev->name, dev->irq);
-+		return -EAGAIN;
-+	}
-+	return sonic_open(dev);
-+}
-+
-+static int jazzsonic_close(struct net_device* dev) {
-+	int err;
-+	err = sonic_close(dev);
-+	free_irq(dev->irq, dev);
-+	return err;
-+}
-+
- static int __init sonic_probe1(struct net_device *dev)
- {
- 	static unsigned version_printed;
-@@ -169,8 +184,8 @@ static int __init sonic_probe1(struct ne
- 	lp->rra_laddr = lp->rda_laddr + (SIZEOF_SONIC_RD * SONIC_NUM_RDS
- 	                     * SONIC_BUS_SCALE(lp->dma_bitmode));
+-int baboon_present,baboon_active;
++int baboon_present;
+ volatile struct baboon *baboon;
  
--	dev->open = sonic_open;
--	dev->stop = sonic_close;
-+	dev->open = jazzsonic_open;
-+	dev->stop = jazzsonic_close;
- 	dev->hard_start_xmit = sonic_send_packet;
- 	dev->get_stats = sonic_get_stats;
- 	dev->set_multicast_list = &sonic_multicast_list;
-@@ -260,8 +275,6 @@ MODULE_DESCRIPTION("Jazz SONIC ethernet 
- module_param(sonic_debug, int, 0);
- MODULE_PARM_DESC(sonic_debug, "jazzsonic debug level (1-4)");
+ irqreturn_t baboon_irq(int, void *);
+@@ -45,7 +45,6 @@ void __init baboon_init(void)
  
--#define SONIC_IRQ_FLAG IRQF_DISABLED
--
- #include "sonic.c"
+ 	baboon = (struct baboon *) BABOON_BASE;
+ 	baboon_present = 1;
+-	baboon_active = 0;
  
- static int __devexit jazz_sonic_device_remove (struct platform_device *pdev)
---- linux-m68k-2.6.21.orig/drivers/net/macsonic.c
-+++ linux-m68k-2.6.21/drivers/net/macsonic.c
-@@ -130,6 +130,43 @@ static inline void bit_reverse_addr(unsi
- 		addr[i] = bitrev8(addr[i]);
+ 	printk("Baboon detected at %p\n", baboon);
  }
+@@ -70,9 +69,9 @@ irqreturn_t baboon_irq(int irq, void *de
+ 	unsigned char events;
  
-+static irqreturn_t macsonic_interrupt(int irq, void *dev_id) {
-+	irqreturn_t result;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	result = sonic_interrupt(irq, dev_id);
-+	local_irq_restore(flags);
-+	return result;
-+}
-+
-+static int macsonic_open(struct net_device* dev) {
-+	if (request_irq(dev->irq, &sonic_interrupt, IRQ_FLG_FAST, "sonic", dev)) {
-+		printk(KERN_ERR "\n%s: unable to get IRQ %d.\n", dev->name, dev->irq);
-+		return -EAGAIN;
-+	}
-+	/* Under the A/UX interrupt scheme, the onboard SONIC interrupt comes
-+	 * in at priority level 3. However, we sometimes get the level 2 inter-
-+	 * rupt as well, which must prevent re-entrance of the sonic handler.
-+	 */
-+	if (dev->irq == IRQ_AUTO_3)
-+		if (request_irq(IRQ_NUBUS_9, &macsonic_interrupt, IRQ_FLG_FAST, "sonic", dev)) {
-+			printk(KERN_ERR "\n%s: unable to get IRQ %d.\n", dev->name, IRQ_NUBUS_9);
-+			free_irq(dev->irq, dev);
-+			return -EAGAIN;
-+		}
-+	return sonic_open(dev);
-+}
-+
-+static int macsonic_close(struct net_device* dev) {
-+	int err;
-+	err = sonic_close(dev);
-+	free_irq(dev->irq, dev);
-+	if (dev->irq == IRQ_AUTO_3)
-+		free_irq(IRQ_NUBUS_9, dev);
-+	return err;
-+}
-+
- int __init macsonic_init(struct net_device* dev)
- {
- 	struct sonic_local* lp = netdev_priv(dev);
-@@ -160,8 +197,8 @@ int __init macsonic_init(struct net_devi
- 	lp->rra_laddr = lp->rda_laddr + (SIZEOF_SONIC_RD * SONIC_NUM_RDS
- 	                     * SONIC_BUS_SCALE(lp->dma_bitmode));
+ #ifdef DEBUG_IRQS
+-	printk("baboon_irq: mb_control %02X mb_ifr %02X mb_status %02X active %02X\n",
++	printk("baboon_irq: mb_control %02X mb_ifr %02X mb_status %02X\n",
+ 		(uint) baboon->mb_control, (uint) baboon->mb_ifr,
+-		(uint) baboon->mb_status,  baboon_active);
++		(uint) baboon->mb_status);
+ #endif
  
--	dev->open = sonic_open;
--	dev->stop = sonic_close;
-+	dev->open = macsonic_open;
-+	dev->stop = macsonic_close;
- 	dev->hard_start_xmit = sonic_send_packet;
- 	dev->get_stats = sonic_get_stats;
- 	dev->set_multicast_list = &sonic_multicast_list;
-@@ -572,8 +609,6 @@ MODULE_DESCRIPTION("Macintosh SONIC ethe
- module_param(sonic_debug, int, 0);
- MODULE_PARM_DESC(sonic_debug, "macsonic debug level (1-4)");
- 
--#define SONIC_IRQ_FLAG IRQ_FLG_FAST
--
- #include "sonic.c"
- 
- static int __devexit mac_sonic_device_remove (struct platform_device *pdev)
---- linux-m68k-2.6.21.orig/drivers/net/sonic.c
-+++ linux-m68k-2.6.21/drivers/net/sonic.c
-@@ -50,29 +50,6 @@ static int sonic_open(struct net_device 
- 	if (sonic_debug > 2)
- 		printk("sonic_open: initializing sonic driver.\n");
- 
--	/*
--	 * We don't need to deal with auto-irq stuff since we
--	 * hardwire the sonic interrupt.
--	 */
--/*
-- * XXX Horrible work around:  We install sonic_interrupt as fast interrupt.
-- * This means that during execution of the handler interrupt are disabled
-- * covering another bug otherwise corrupting data.  This doesn't mean
-- * this glue works ok under all situations.
-- *
-- * Note (dhd): this also appears to prevent lockups on the Macintrash
-- * when more than one Ethernet card is installed (knock on wood)
-- *
-- * Note (fthain): whether the above is still true is anyones guess. Certainly
-- * the buffer handling algorithms will not tolerate re-entrance without some
-- * mutual exclusion added. Anyway, the memcpy has now been eliminated from the
-- * rx code to make this a faster "fast interrupt".
-- */
--	if (request_irq(dev->irq, &sonic_interrupt, SONIC_IRQ_FLAG, "sonic", dev)) {
--		printk(KERN_ERR "\n%s: unable to get IRQ %d .\n", dev->name, dev->irq);
--		return -EAGAIN;
--	}
--
- 	for (i = 0; i < SONIC_NUM_RRS; i++) {
- 		struct sk_buff *skb = dev_alloc_skb(SONIC_RBSIZE + 2);
- 		if (skb == NULL) {
-@@ -169,8 +146,6 @@ static int sonic_close(struct net_device
+ 	if (!(events = baboon->mb_ifr & 0x07))
+@@ -81,11 +80,9 @@ irqreturn_t baboon_irq(int irq, void *de
+ 	irq_num = IRQ_BABOON_0;
+ 	irq_bit = 1;
+ 	do {
+-	        if (events & irq_bit/* & baboon_active*/) {
+-			baboon_active &= ~irq_bit;
++	        if (events & irq_bit) {
+ 			baboon->mb_ifr &= ~irq_bit;
+ 			m68k_handle_int(irq_num);
+-			baboon_active |= irq_bit;
  		}
- 	}
- 
--	free_irq(dev->irq, dev);	/* release the IRQ */
--
- 	return 0;
+ 		irq_bit <<= 1;
+ 		irq_num++;
+@@ -99,21 +96,18 @@ irqreturn_t baboon_irq(int irq, void *de
  }
  
+ void baboon_irq_enable(int irq) {
+-	int irq_idx	= IRQ_IDX(irq);
+-
+ #ifdef DEBUG_IRQUSE
+ 	printk("baboon_irq_enable(%d)\n", irq);
+ #endif
+-	baboon_active |= (1 << irq_idx);
++	/* FIXME: figure out how to mask and unmask baboon interrupt sources */
++	enable_irq(IRQ_NUBUS_C);
+ }
+ 
+ void baboon_irq_disable(int irq) {
+-	int irq_idx	= IRQ_IDX(irq);
+-
+ #ifdef DEBUG_IRQUSE
+ 	printk("baboon_irq_disable(%d)\n", irq);
+ #endif
+-	baboon_active &= ~(1 << irq_idx);
++	disable_irq(IRQ_NUBUS_C);
+ }
+ 
+ void baboon_irq_clear(int irq) {
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/oss.c
++++ linux-m68k-2.6.21/arch/m68k/mac/oss.c
+@@ -112,10 +112,8 @@ irqreturn_t oss_irq(int irq, void *dev_i
+ 		oss->irq_pending &= ~OSS_IP_SOUND;
+ 		/* FIXME: call sound handler */
+ 	} else if (events & OSS_IP_SCSI) {
+-		oss->irq_level[OSS_SCSI] = OSS_IRQLEV_DISABLED;
+ 		oss->irq_pending &= ~OSS_IP_SCSI;
+ 		m68k_handle_int(IRQ_MAC_SCSI);
+-		oss->irq_level[OSS_SCSI] = OSS_IRQLEV_SCSI;
+ 	} else {
+ 		/* FIXME: error check here? */
+ 	}
+@@ -149,10 +147,8 @@ irqreturn_t oss_nubus_irq(int irq, void 
+ 		--i;
+ 		irq_bit >>= 1;
+ 		if (events & irq_bit) {
+-			oss->irq_level[i] = OSS_IRQLEV_DISABLED;
+ 			oss->irq_pending &= ~irq_bit;
+ 			m68k_handle_int(NUBUS_SOURCE_BASE + i);
+-			oss->irq_level[i] = OSS_IRQLEV_NUBUS;
+ 		}
+ 	} while(events & (irq_bit - 1));
+ 	return IRQ_HANDLED;
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/psc.c
++++ linux-m68k-2.6.21/arch/m68k/mac/psc.c
+@@ -147,10 +147,8 @@ irqreturn_t psc_irq(int irq, void *dev_i
+ 	irq_bit = 1;
+ 	do {
+ 		if (events & irq_bit) {
+-			psc_write_byte(pIER, irq_bit);
+ 			psc_write_byte(pIFR, irq_bit);
+ 			m68k_handle_int(irq_num);
+-			psc_write_byte(pIER, irq_bit | 0x80);
+ 		}
+ 		irq_num++;
+ 		irq_bit <<= 1;
+--- linux-m68k-2.6.21.orig/arch/m68k/mac/via.c
++++ linux-m68k-2.6.21/arch/m68k/mac/via.c
+@@ -443,11 +443,6 @@ void __init via_nubus_init(void)
+ /*
+  * The generic VIA interrupt routines (shamelessly stolen from Alan Cox's
+  * via6522.c :-), disable/pending masks added.
+- *
+- * The new interrupt architecture in macints.c takes care of a lot of the
+- * gruntwork for us, including tallying the interrupts and calling the
+- * handlers on the linked list. All we need to do here is basically generate
+- * the machspec interrupt number after clearing the interrupt.
+  */
+ 
+ irqreturn_t via1_irq(int irq, void *dev_id)
+@@ -463,10 +458,8 @@ irqreturn_t via1_irq(int irq, void *dev_
+ 	irq_bit = 1;
+ 	do {
+ 		if (events & irq_bit) {
+-			via1[vIER] = irq_bit;
+ 			via1[vIFR] = irq_bit;
+ 			m68k_handle_int(irq_num);
+-			via1[vIER] = irq_bit | 0x80;
+ 		}
+ 		++irq_num;
+ 		irq_bit <<= 1;
+@@ -502,11 +495,8 @@ irqreturn_t via2_irq(int irq, void *dev_
+ 	irq_bit = 1;
+ 	do {
+ 		if (events & irq_bit) {
+-			via2[gIER] = irq_bit;
+ 			via2[gIFR] = irq_bit | rbv_clear;
+ 			m68k_handle_int(irq_num);
+-			if (irq_num != IRQ_MAC_NUBUS || nubus_disabled == 0)
+-				via2[gIER] = irq_bit | 0x80;
+ 		}
+ 		++irq_num;
+ 		irq_bit <<= 1;
 
 --
 Gr{oetje,eeting}s,
