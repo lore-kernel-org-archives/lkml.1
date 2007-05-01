@@ -1,42 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbXEASDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXEASDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755226AbXEASDy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 14:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755231AbXEASDx
+	id S1755225AbXEASDs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 14:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXEASDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 14:03:53 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:24769 "EHLO
-	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755226AbXEASDw (ORCPT
+	Tue, 1 May 2007 14:03:48 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:36110 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755225AbXEASDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 14:03:52 -0400
-Subject: Re: 2.6.22 -mm merge plans -- lumpy reclaim
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Mel Gorman <mel@skynet.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, clameter@sgi.com,
-       y-goto@jp.fujitsu.com
-In-Reply-To: <46373A71.4030200@shadowen.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	 <20070501101651.GA29957@skynet.ie>  <46373A71.4030200@shadowen.org>
-Content-Type: text/plain
-Date: Tue, 01 May 2007 20:03:49 +0200
-Message-Id: <1178042629.24217.5.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 14:03:46 -0400
+Date: Tue, 1 May 2007 20:03:42 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: ballabio_dario@emc.com
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070501180113.20160.77978.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] drivers/scsi/pci2000.h: Remove unused file
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 14:02 +0100, Andy Whitcroft wrote:
+Remove the unused header drivers/scsi/pci2000.h
 
-> Perhaps Peter would have some time to take a look over the latest stack
-> as it appears in -mm when that releases; ping me for a patch kit if you
-> want it before then :).
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+'grep -nr "pci2000"' on the whole tree results only in a reference to pci2000.h
+Diffed against Linus' git-tree.
 
-Lumpy-reclaim -v7, as per the roll-up provided privately;
 
-Code is looking good, I like what you did to it :-)
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
+diff --git a/drivers/scsi/pci2000.h b/drivers/scsi/pci2000.h
+deleted file mode 100644
+index 0ebd8ce..0000000
+--- a/drivers/scsi/pci2000.h
++++ /dev/null
+@@ -1,197 +0,0 @@
+-/****************************************************************************
+- * Perceptive Solutions, Inc. PCI-2000 device driver for Linux.
+- *
+- * pci2000.h - Linux Host Driver for PCI-2000 IntelliCache SCSI Adapters
+- *
+- * Copyright (c) 1997-1999 Perceptive Solutions, Inc.
+- * All Rights Reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that redistributions of source
+- * code retain the above copyright notice and this comment without
+- * modification.
+- *
+- * Technical updates and product information at:
+- *  http://www.psidisk.com
+- *
+- * Please send questions, comments, bug reports to:
+- *  tech@psidisk.com Technical Support
+- *
+- ****************************************************************************/
+-#ifndef _PCI2000_H
+-#define _PCI2000_H
+-
+-#include <linux/types.h>
+-
+-#ifndef	PSI_EIDE_SCSIOP
+-#define	PSI_EIDE_SCSIOP	1
+-
+-#define	LINUXVERSION(v,p,s)    (((v)<<16) + ((p)<<8) + (s))
+-
+-/************************************************/
+-/*		definition of standard data types		*/
+-/************************************************/
+-#define	CHAR	char
+-#define	UCHAR	unsigned char
+-#define	SHORT	short
+-#define	USHORT	unsigned short
+-#define	BOOL	long
+-#define	LONG	long
+-#define	ULONG	unsigned long
+-#define	VOID	void
+-
+-typedef	CHAR	*PCHAR;
+-typedef	UCHAR	*PUCHAR;
+-typedef	SHORT	*PSHORT;
+-typedef	USHORT	*PUSHORT;
+-typedef	BOOL	*PBOOL;
+-typedef	LONG	*PLONG;
+-typedef	ULONG	*PULONG;
+-typedef	VOID	*PVOID;
+-
+-
+-/************************************************/
+-/*		Misc. macros			 				*/
+-/************************************************/
+-#define ANY2SCSI(up, p)					\
+-((UCHAR *)up)[0] = (((ULONG)(p)) >> 8);	\
+-((UCHAR *)up)[1] = ((ULONG)(p));
+-
+-#define SCSI2LONG(up)					\
+-( (((long)*(((UCHAR *)up))) << 16)		\
+-+ (((long)(((UCHAR *)up)[1])) << 8)		\
+-+ ((long)(((UCHAR *)up)[2])) )
+-
+-#define XANY2SCSI(up, p)				\
+-((UCHAR *)up)[0] = ((long)(p)) >> 24;	\
+-((UCHAR *)up)[1] = ((long)(p)) >> 16;	\
+-((UCHAR *)up)[2] = ((long)(p)) >> 8;	\
+-((UCHAR *)up)[3] = ((long)(p));
+-
+-#define XSCSI2LONG(up)					\
+-( (((long)(((UCHAR *)up)[0])) << 24)	\
+-+ (((long)(((UCHAR *)up)[1])) << 16)	\
+-+ (((long)(((UCHAR *)up)[2])) <<  8)	\
+-+ ((long)(((UCHAR *)up)[3])) )
+-
+-/************************************************/
+-/*		SCSI CDB operation codes 				*/
+-/************************************************/
+-#define SCSIOP_TEST_UNIT_READY		0x00
+-#define SCSIOP_REZERO_UNIT			0x01
+-#define SCSIOP_REWIND				0x01
+-#define SCSIOP_REQUEST_BLOCK_ADDR	0x02
+-#define SCSIOP_REQUEST_SENSE		0x03
+-#define SCSIOP_FORMAT_UNIT			0x04
+-#define SCSIOP_READ_BLOCK_LIMITS	0x05
+-#define SCSIOP_REASSIGN_BLOCKS		0x07
+-#define SCSIOP_READ6				0x08
+-#define SCSIOP_RECEIVE				0x08
+-#define SCSIOP_WRITE6				0x0A
+-#define SCSIOP_PRINT				0x0A
+-#define SCSIOP_SEND					0x0A
+-#define SCSIOP_SEEK6				0x0B
+-#define SCSIOP_TRACK_SELECT			0x0B
+-#define SCSIOP_SLEW_PRINT			0x0B
+-#define SCSIOP_SEEK_BLOCK			0x0C
+-#define SCSIOP_PARTITION			0x0D
+-#define SCSIOP_READ_REVERSE			0x0F
+-#define SCSIOP_WRITE_FILEMARKS		0x10
+-#define SCSIOP_FLUSH_BUFFER			0x10
+-#define SCSIOP_SPACE				0x11
+-#define SCSIOP_INQUIRY				0x12
+-#define SCSIOP_VERIFY6				0x13
+-#define SCSIOP_RECOVER_BUF_DATA		0x14
+-#define SCSIOP_MODE_SELECT			0x15
+-#define SCSIOP_RESERVE_UNIT			0x16
+-#define SCSIOP_RELEASE_UNIT			0x17
+-#define SCSIOP_COPY					0x18
+-#define SCSIOP_ERASE				0x19
+-#define SCSIOP_MODE_SENSE			0x1A
+-#define SCSIOP_START_STOP_UNIT		0x1B
+-#define SCSIOP_STOP_PRINT			0x1B
+-#define SCSIOP_LOAD_UNLOAD			0x1B
+-#define SCSIOP_RECEIVE_DIAGNOSTIC	0x1C
+-#define SCSIOP_SEND_DIAGNOSTIC		0x1D
+-#define SCSIOP_MEDIUM_REMOVAL		0x1E
+-#define SCSIOP_READ_CAPACITY		0x25
+-#define SCSIOP_READ					0x28
+-#define SCSIOP_WRITE				0x2A
+-#define SCSIOP_SEEK					0x2B
+-#define SCSIOP_LOCATE				0x2B
+-#define SCSIOP_WRITE_VERIFY			0x2E
+-#define SCSIOP_VERIFY				0x2F
+-#define SCSIOP_SEARCH_DATA_HIGH		0x30
+-#define SCSIOP_SEARCH_DATA_EQUAL	0x31
+-#define SCSIOP_SEARCH_DATA_LOW		0x32
+-#define SCSIOP_SET_LIMITS			0x33
+-#define SCSIOP_READ_POSITION		0x34
+-#define SCSIOP_SYNCHRONIZE_CACHE	0x35
+-#define SCSIOP_COMPARE				0x39
+-#define SCSIOP_COPY_COMPARE			0x3A
+-#define SCSIOP_WRITE_DATA_BUFF		0x3B
+-#define SCSIOP_READ_DATA_BUFF		0x3C
+-#define SCSIOP_CHANGE_DEFINITION	0x40
+-#define SCSIOP_READ_SUB_CHANNEL		0x42
+-#define SCSIOP_READ_TOC				0x43
+-#define SCSIOP_READ_HEADER			0x44
+-#define SCSIOP_PLAY_AUDIO			0x45
+-#define SCSIOP_PLAY_AUDIO_MSF		0x47
+-#define SCSIOP_PLAY_TRACK_INDEX		0x48
+-#define SCSIOP_PLAY_TRACK_RELATIVE	0x49
+-#define SCSIOP_PAUSE_RESUME			0x4B
+-#define SCSIOP_LOG_SELECT			0x4C
+-#define SCSIOP_LOG_SENSE			0x4D
+-#define SCSIOP_MODE_SELECT10		0x55
+-#define SCSIOP_MODE_SENSE10			0x5A
+-#define SCSIOP_LOAD_UNLOAD_SLOT		0xA6
+-#define SCSIOP_MECHANISM_STATUS		0xBD
+-#define SCSIOP_READ_CD				0xBE
+-
+-// SCSI read capacity structure
+-typedef	struct _READ_CAPACITY_DATA
+-	{
+-	ULONG blks;				/* total blocks (converted to little endian) */
+-	ULONG blksiz;			/* size of each (converted to little endian) */
+-	}	READ_CAPACITY_DATA, *PREAD_CAPACITY_DATA;
+-
+-// SCSI inquiry data
+-typedef struct _INQUIRYDATA
+-	{
+-	UCHAR DeviceType			:5;
+-	UCHAR DeviceTypeQualifier	:3;
+-	UCHAR DeviceTypeModifier	:7;
+-	UCHAR RemovableMedia		:1;
+-    UCHAR Versions;
+-    UCHAR ResponseDataFormat;
+-    UCHAR AdditionalLength;
+-    UCHAR Reserved[2];
+-	UCHAR SoftReset				:1;
+-	UCHAR CommandQueue			:1;
+-	UCHAR Reserved2				:1;
+-	UCHAR LinkedCommands		:1;
+-	UCHAR Synchronous			:1;
+-	UCHAR Wide16Bit				:1;
+-	UCHAR Wide32Bit				:1;
+-	UCHAR RelativeAddressing	:1;
+-    UCHAR VendorId[8];
+-    UCHAR ProductId[16];
+-    UCHAR ProductRevisionLevel[4];
+-    UCHAR VendorSpecific[20];
+-    UCHAR Reserved3[40];
+-	}	INQUIRYDATA, *PINQUIRYDATA;
+-
+-#endif
+-
+-// function prototypes
+-int Pci2000_Detect			(struct scsi_host_template *tpnt);
+-int Pci2000_Command			(Scsi_Cmnd *SCpnt);
+-int Pci2000_QueueCommand	(Scsi_Cmnd *SCpnt, void (*done)(Scsi_Cmnd *));
+-int Pci2000_Abort			(Scsi_Cmnd *SCpnt);
+-int Pci2000_Reset			(Scsi_Cmnd *SCpnt, unsigned int flags);
+-int Pci2000_Release			(struct Scsi_Host *pshost);
+-int Pci2000_BiosParam		(struct scsi_device *sdev,
+-					struct block_device *bdev,
+-					sector_t capacity, int geom[]);
+-
+-#endif
