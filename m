@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031683AbXEAMJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031682AbXEAMMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031683AbXEAMJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 08:09:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031686AbXEAMJN
+	id S1031682AbXEAMMN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 08:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031686AbXEAMMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 08:09:13 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:31535 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1031683AbXEAMJM (ORCPT
+	Tue, 1 May 2007 08:12:13 -0400
+Received: from wx-out-0506.google.com ([66.249.82.228]:4776 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031682AbXEAMML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 08:09:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=f+BgNUY1K3iqTGPCbr/AiupcunSvmUNKb4TYxZM/z2o5ZUnX8fyY3siBBhbZOwUu1Et1vDtR01VYdbAqGYQzswzGs5pBsucVHjjkor8lQceNNUl/D7H8nMP2FqGPDe4CCVEGf1fdn7ZL++eqlvBsENqQCU6TkyIE59DTjhHYDm4=  ;
-X-YMail-OSG: zv8Syp0VM1lSIHuqoOxiSVQEpVkQ9020Yer1oSpM5QaJ8jq8S0.qoakGiJ145gcgS0LoqyXPQA--
-Message-ID: <46372DDE.2040207@yahoo.com.au>
-Date: Tue, 01 May 2007 22:09:02 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
-CC: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       "'Daniel J Blueman'" <daniel.blueman@gmail.com>
-Subject: Re: How to make mmap'ed kernel buffer non-cacheable
-References: <03eb01c78ba5$091f4f20$142ec70a@dlh.st.com>
-In-Reply-To: <03eb01c78ba5$091f4f20$142ec70a@dlh.st.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 1 May 2007 08:12:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=BRPrI9ipb9H90kusH+6r7vnMHTacXi3l0/i23bTo5ZBWsYwqUpzMYCpDTsZ8PXgdLnac1LY19SP33aCxr4bGdIWDBj9mi3QMAZUvAO5ED4TuX8AJTrUrVgnsn2TKsfzlX9DAaKPNYCquOvNIetntqY/kK564H0mZoTJxHXs3b40=
+Subject: Re: console font limits
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Albert Cahalan <acahalan@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl, hpa@zytor.com
+In-Reply-To: <Pine.LNX.4.64.0705011347300.27246@anakin>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
+	 <Pine.LNX.4.64.0705011347300.27246@anakin>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 20:11:56 +0800
+Message-Id: <1178021516.4372.62.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bhuvan Kumar MITTAL wrote:
-> Hi Alan,Nick
+On Tue, 2007-05-01 at 13:49 +0200, Geert Uytterhoeven wrote:
+> On Tue, 1 May 2007, Albert Cahalan wrote:
+> > I'm having problems with a font I just created. It's a rather big one,
+> > intended for a framebuffer console in UTF-8 mode. The strace program
+> > reports that /bin/setfont fails on a KDFONTOP ioctl with EINVAL.
+> > In reading the kernel code, I find this:
+> > 
+> > vt.c:static int con_font_set(struct vc_data *vc, struct console_font_op *op)
+> > vt.c-{
+> > vt.c-   struct console_font font;
+> > vt.c-   int rc = -EINVAL;
+> > vt.c-   int size;
+> > vt.c-
+> > vt.c-   if (vc->vc_mode != KD_TEXT)
+> > vt.c-           return -EINVAL;
+> > vt.c-   if (!op->data)
+> > vt.c-           return -EINVAL;
+> > vt.c-   if (op->charcount > 512)
+> > vt.c-           return -EINVAL;
+> > 
+> > Ouch. Why is the old VGA limit being applied to the framebuffer console?
+> > Could this just get removed? I dearly hope we aren't still storing the
+> > framebuffer data as two bytes per character+attribute pair.
 > 
-> Thanks for your inputs. I was able to solve the problem of mapping kernel buffer to user space. Just FYI, I am working on a sh4 based architecture proprietary board with Linux kernel 2.6.17.3
+> The shadow screen (accessed using scr_*()) still uses the old VGA
+> format.
 
-So... you used flush_dcache_page? Or what?
+And this will entail a lot of work to change (Is it worth it to rework
+the code and remove the limitation?). The linux-console project
+(http://linuxconsole.sourceforge.net/) might have , but I don't know its
+current status.
 
-
-> Initially I was adopting the following approach: 
-> 1.The kernel thread was copying some data and waiting on a semaphore for the user task to make an ioctl into the kernel space and relieve the wait.
-> 2. Then the user task was getting spawned and taking the data from kernel.
-> 
-> ---> This was resulting in some initial data drop coz the kernel task was overwhelming and outspeeding the user task (Maybe someone can explain how)
-> 
-> How I solved the problem?
-> 
-> Instead of making the kernel wait for the user task, I reversed the sequence and did not let the kernel task be activated till the user task was spawned and waiting in kernel space(after making ioctl) for the kernel task. Then I started the kernel task and the problem of data dropping was resolved.
-
-OK. Seems like a straightfoward producer-consumer problem.
-
-I don't know why you should be dropping data if your kernel task blocks when
-its output buffer is full and your user task blocks when it is empty. But anyway,
-it seems you solved it. Good :)
+Tony
 
 
-> In continuation to this, I have another query:
-> As mentioned above, If there is a kernel task waiting on a semaphore (maybe even in hung state) and I wish to kill the kernel task from user space by making an ioctl call into the kernel, then how is it possible? Is it feasible at all?
-
-If the kernel task is hung because of some bug in your code, then it isn't
-really possible in general. You could always just "up" the semaphore and hope,
-but things might be corrupted.
-
-If you just want to tell the kernel task to quit, I guess you'd just introduce
-some quit ioctl message, and have the kernel thread respond to that.
-
--- 
-SUSE Labs, Novell Inc.
