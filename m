@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754510AbXEACl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbXEACpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754510AbXEACl5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 22:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXEACl5
+	id S1754112AbXEACpd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 22:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbXEACpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 22:41:57 -0400
-Received: from ns1.suse.de ([195.135.220.2]:56224 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510AbXEACl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 22:41:56 -0400
-Date: Tue, 1 May 2007 05:39:31 +0200
-From: Andi Kleen <ak@suse.de>
+	Mon, 30 Apr 2007 22:45:33 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54738 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933454AbXEACpG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 22:45:06 -0400
+Date: Mon, 30 Apr 2007 19:43:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Jeff Garzik <jeff@garzik.org>,
-       Andi Kleen <ak@suse.de>, patches@x86-64.org,
-       Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-Message-ID: <20070501033931.GI25929@bingen.suse.de>
-References: <20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org> <m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org> <m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <m18xc9344o.fsf@ebiederm.dsl.xmission.com> <463670D1.3000003@goop.org> <m14pmx31bw.fsf@ebiederm.dsl.xmission.com> <463678BA.5080609@zytor.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+In-Reply-To: <463698D5.20102@zytor.com>
+Message-ID: <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
+References: <463698D5.20102@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463678BA.5080609@zytor.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 04:16:10PM -0700, H. Peter Anvin wrote:
-> Eric W. Biederman wrote:
-> > 
-> > I'm tempted to just reload the segments in setup.S, but that might
-> > break loadlin support or one of the other bootloaders that starts the
-> > kernel in 32bit mode so we need to be careful.
-> > 
+
+
+On Mon, 30 Apr 2007, H. Peter Anvin wrote:
 > 
-> We already load all the segments in setup.S.  I'm retaining this in my
-> rewrite.
+> Does *anyone* care about these anymore?
 
-It's still unclear to me why exactly you want to rewrite it?
-Are there any particular bugs in the current code you want to fix?
+Doubtful. The Tseng ET4000 cards may have been the gold standard in 1991, 
+but I don't think most people even _remember_ them. And if they have them 
+in their machines, they probably tend to run a Linux-1.2 kernel, or at 
+least not care a lot about graphics (ie they may have an old card in the 
+machine just because they need VGA to boot, rather than because they care 
+about Tseng).
 
--Andi
+And compared to Tseng and S3, most of the other cards there are just 
+obscure.
+
+			Linus
