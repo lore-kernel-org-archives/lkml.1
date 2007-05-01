@@ -1,41 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbXEAWk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbXEAWkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbXEAWk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 18:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXEAWk2
+	id S1754766AbXEAWkw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 18:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXEAWkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 18:40:28 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:38700 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753498AbXEAWk1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 18:40:27 -0400
-Message-ID: <4637C14F.3050702@vmware.com>
-Date: Tue, 01 May 2007 15:38:07 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 1 May 2007 18:40:52 -0400
+Received: from waste.org ([66.93.16.53]:37100 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754751AbXEAWku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 18:40:50 -0400
+Date: Tue, 1 May 2007 17:36:06 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       David Chinner <dgc@sgi.com>, Zan Lynx <zlynx@acm.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2/6] add config option to vmalloc stacks (was: Re: [-mm patch] i386: enable 4k stacks by default)
+Message-ID: <20070501223606.GQ11166@waste.org>
+References: <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174310.GE19966@holomorphy.com> <20070430181104.GB14739@infradead.org> <20070430190952.GP31925@holomorphy.com> <20070430191511.GA25318@infradead.org>
 MIME-Version: 1.0
-To: Marcos Pinto <markybob@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: VMware, x86_64 and 2.6.21.
-References: <62eb359a0704302350m5e639c17t8517865c885c9ba9@mail.gmail.com>
-In-Reply-To: <62eb359a0704302350m5e639c17t8517865c885c9ba9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430191511.GA25318@infradead.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcos Pinto wrote:
-> I'm having the same problem.  I think it has to do with timer problems...
-> Does /sbin/hwclock --show freeze your box?  It "sometimes" works on
-> mine, but it  more often than not locks it hard (especially as user,
-> not root) with no hints in syslog or anywhere else as to what
-> happened.  This is a turion x2 with nvidia mcp51
+On Mon, Apr 30, 2007 at 08:15:11PM +0100, Christoph Hellwig wrote:
+> So if you want to invest some time into getting this into mergeable
+> shape I'd suggest you redo the patch series in the following way:
+> 
+>  patch 1: dynamic allocated irq stacks
 
-/sbin/hwclock freezes the whole box for me turion x2 with nvidia mcp51 
-(HP Pavillion dv9210us), but only when syncing hwclock to system time.  
-I suspect it could be a hwclock IOPL bug, but I will have to check 
-source to be sure.  But I see this with 2.6.20 Gentoo kernel, not just 
-2.6.21, so I think it is a different bug.
+Can we register them lazily at request_irq time?
 
-Zach
+-- 
+Mathematics is the supreme nostalgia of our time.
