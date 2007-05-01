@@ -1,95 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423464AbXEAAyZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423467AbXEAA5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423464AbXEAAyZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Apr 2007 20:54:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423467AbXEAAyZ
+	id S1423467AbXEAA5K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Apr 2007 20:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423468AbXEAA5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Apr 2007 20:54:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48402 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423464AbXEAAyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Apr 2007 20:54:24 -0400
-Message-ID: <46368FAA.3080104@redhat.com>
-Date: Mon, 30 Apr 2007 20:54:02 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Mon, 30 Apr 2007 20:57:10 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:54222 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423467AbXEAA5J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Apr 2007 20:57:09 -0400
+X-Greylist: delayed 746 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Apr 2007 20:57:08 EDT
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200705010044.l410ifIv003245@clem.clem-digital.net>
+Subject: 2.6.21-git3 Broke UDP Reception
+To: linux-kernel@vger.kernel.org (linux-kernel)
+Date: Mon, 30 Apr 2007 20:44:41 -0400 (EDT)
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: MADV_FREE functionality
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
->  lazy-freeing-of-memory-through-madv_free.patch
->  lazy-freeing-of-memory-through-madv_free-vs-mm-madvise-avoid-exclusive-mmap_sem.patch
->  restore-madv_dontneed-to-its-original-linux-behaviour.patch
-> 
-> I think the MADV_FREE changes need more work:
-> 
-> We need crystal-clear statements regarding the present functionality, the new
-> functionality and how these relate to the spec and to implmentations in other
-> OS'es.  Once we have that info we are in a position to work out whether the
-> code can be merged as-is, or if additional changes are needed.
-
-There are two MADV variants that free pages, both do the exact
-same thing with mapped file pages, but both do something slightly
-different with anonymous pages.
-
-MADV_DONTNEED will unmap file pages and free anonymous pages.
-When a process accesses anonymous memory at an address that
-was zapped with MADV_DONTNEED, it will return fresh zero filled
-pages.
-
-MADV_FREE will unmap file pages.  MADV_FREE on anonymous pages
-is interpreted as a signal that the application no longer needs
-the data in the pages, and they can be thrown away if the kernel
-needs the memory for something else.  However, if the process
-accesses the memory again before the kernel needs it, the process
-will simply get the original pages back.  If the kernel needed
-the memory first, the process will get a fresh zero filled page
-like with MADV_DONTNEED.
-
-In short:
-- both MADV_FREE and MADV_DONTNEED only unmap file pages
-- after MADV_DONTNEED the application will always get back
-   fresh zero filled anonymous pages when accessing the
-   memory
-- after MADV_FREE the application can either get back the
-   original data (without a page fault) or zero filled
-   anonymous memory
-
-The Linux MADV_DONTNEED behavior is not POSIX compliant.
-POSIX says that with MADV_DONTNEED the application's data
-will be preserved.
-
-Currently glibc simply ignores POSIX_MADV_DONTNEED requests
-from applications on Linux.  Changing the behaviour which
-some Linux applications may rely on might not be the best
-idea.
-
-If you want POSIX_MADV_DONTNEED behaviour added, please let
-me know and I'll whip up a patch.
-
-> Because right now, I don't know where we are with respect to these things and
-> I doubt if many of our users know either.  How can Michael write a manpage for
-> this is we don't tell him what it all does?
-
-If you need any additional information, please let me know.
-
-If you still think the MADV_FREE patches themselves should
-not be merged yet, can we at least merge the #defines, so
-the Fedora kernel can get the MADV_FREE functionality?
-
-Again, I'd be more than willing to whip up a patch for that.
-
+fyi:
+Looks like 2.6.21-git3 broke UDP inbound. Inbound UDP traffic
+generates an ICMP port unreachable, dns/ntp. Git2 works fine.
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Pete Clements 
