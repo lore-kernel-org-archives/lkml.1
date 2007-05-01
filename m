@@ -1,133 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965654AbXEAIAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbXEAIC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965654AbXEAIAY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 04:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965662AbXEAIAY
+	id S1754681AbXEAIC3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 04:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754692AbXEAIC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 04:00:24 -0400
-Received: from gw.goop.org ([64.81.55.164]:60296 "EHLO mail.goop.org"
+	Tue, 1 May 2007 04:02:29 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:5989 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965657AbXEAIAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 04:00:21 -0400
-Message-ID: <4636F3A5.6070808@goop.org>
-Date: Tue, 01 May 2007 01:00:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [8/30] x86_64: Add vDSO for x86-64 with gettimeofday/clock_gettime/getcpu
-References: <20070501557.815359000@suse.de> <20070501035805.9FA9513CAF@wotan.suse.de> <4636D6E5.8090006@goop.org> <200705010923.33771.ak@suse.de>
-In-Reply-To: <200705010923.33771.ak@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	id S1754681AbXEAIC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 04:02:27 -0400
+Date: Tue, 1 May 2007 10:01:51 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>, Zan Lynx <zlynx@acm.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [-mm patch] i386: enable 4k stacks by default
+Message-ID: <20070501080151.GS21015@kernel.dk>
+References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <17973.44824.631204.926723@notabene.brown> <20070430085916.GA31397@infradead.org> <20070430113044.GJ21015@kernel.dk> <17974.31415.121135.794681@notabene.brown>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17974.31415.121135.794681@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> Use linux/elfnote.h?
->>     
->
-> Good point. Will fix. I just copied it from i386, but it probably
-> should be there fixed too.
->   
+On Tue, May 01 2007, Neil Brown wrote:
+> On Monday April 30, jens.axboe@oracle.com wrote:
+> > On Mon, Apr 30 2007, Christoph Hellwig wrote:
+> > > On Mon, Apr 30, 2007 at 06:55:52PM +1000, Neil Brown wrote:
+> > > > On Saturday April 28, zlynx@acm.org wrote:
+> > > > > On Sat, 2007-04-28 at 21:19 +0200, Adrian Bunk wrote:
+> > > > > > 4k stacks have become a well-tested feature used fore a long time in
+> > > > > > Fedora and even in RHEL 4.
+> > > > > 
+> > > > > So has anyone fixed the bugs involving ext3 and LVM snapshots on top of
+> > > > > DM mirror?
+> > > > 
+> > > > Well -mm has a patch which makes stacked block devices much less of an
+> > > > issue, but this hasn't made it -linus yet - I think the dm developer
+> > > > isn't happy that dm works properly with it.
+> > > 
+> > > I get a little tired about this objection.  If the particular dm code
+> > > was racy before and this can in theory make it worse it's their problem,
+> > > and putting in perfectly fine code will give them an incentive to
+> > > fix their year old race.
+> > 
+> > Agree, Neil would you mind if I merged the patch?
+> 
+> I am perfectly happy with this patch being merged - yes.
 
-Already has been.  I posted a patch a day or so ago (reposted below).
+Ok, queued for inclusion.
 
-> Actually they are not completely equivalent because the old macro
-> generates the section name differently from the name in the payload
-> (kernelversion, Linux). But I split that up into two notes now.
->   
+-- 
+Jens Axboe
 
-Roland agreed that it doesn't matter.
-
-> If that is done on i386 it might break gdb reading core files though?
->   
-
-No.  The notename in the final output is the same either way.  The
-linker packs .note.* into a single .note section.
-
-Subject: use elfnote.h to generate vsyscall notes.
-
-Use existing elfnote.h to generate vsyscall notes, rather than doing
-it locally.  Changes elfnote.h a bit to suite, since this is the first
-asm user, and it wasn't quite right.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Roland McGrath <roland@redhat.com>
-
----
- arch/i386/kernel/vsyscall-note.S |   23 ++++++-----------------
- include/linux/elfnote.h          |   18 +++++++++++++-----
- 2 files changed, 19 insertions(+), 22 deletions(-)
-
-===================================================================
---- a/arch/i386/kernel/vsyscall-note.S
-+++ b/arch/i386/kernel/vsyscall-note.S
-@@ -3,23 +3,12 @@
-  * Here we can supply some information useful to userland.
-  */
- 
--#include <linux/uts.h>
- #include <linux/version.h>
-+#include <linux/elfnote.h>
- 
--#define ASM_ELF_NOTE_BEGIN(name, flags, vendor, type)			      \
--	.section name, flags;						      \
--	.balign 4;							      \
--	.long 1f - 0f;		/* name length */			      \
--	.long 3f - 2f;		/* data length */			      \
--	.long type;		/* note type */				      \
--0:	.asciz vendor;		/* vendor name */			      \
--1:	.balign 4;							      \
--2:
--
--#define ASM_ELF_NOTE_END						      \
--3:	.balign 4;		/* pad out section */			      \
--	.previous
--
--	ASM_ELF_NOTE_BEGIN(".note.kernel-version", "a", UTS_SYSNAME, 0)
-+/* Ideally this would use UTS_NAME, but using a quoted string here
-+   doesn't work. Remember to change this when changing the
-+   kernel's name. */
-+ELFNOTE_START(Linux, 0, "a")
- 	.long LINUX_VERSION_CODE
--	ASM_ELF_NOTE_END
-+ELFNOTE_END
-===================================================================
---- a/include/linux/elfnote.h
-+++ b/include/linux/elfnote.h
-@@ -38,17 +38,25 @@
-  * e.g. ELFNOTE(XYZCo, 42, .asciz, "forty-two")
-  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
-  */
--#define ELFNOTE(name, type, desctype, descdata)	\
--.pushsection .note.name, "",@note	;	\
-+#define ELFNOTE_START(name, type, flags)	\
-+.pushsection .note.name, flags,@note	;	\
-   .align 4				;	\
-   .long 2f - 1f		/* namesz */	;	\
--  .long 4f - 3f		/* descsz */	;	\
-+  .long 4484f - 3f	/* descsz */	;	\
-   .long type				;	\
- 1:.asciz #name				;	\
- 2:.align 4				;	\
--3:desctype descdata			;	\
--4:.align 4				;	\
-+3:
-+
-+#define ELFNOTE_END				\
-+4484:.align 4				;	\
- .popsection				;
-+
-+#define ELFNOTE(name, type, desc)		\
-+	ELFNOTE_START(name, type, "")		\
-+		desc			;	\
-+	ELFNOTE_END
-+
- #else	/* !__ASSEMBLER__ */
- #include <linux/elf.h>
- /*
-
-    J
