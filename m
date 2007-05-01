@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423578AbXEAVZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423617AbXEAV2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423578AbXEAVZw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 17:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423606AbXEAVZw
+	id S1423617AbXEAV2O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 17:28:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423663AbXEAV2O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 17:25:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34467 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423578AbXEAVZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 17:25:51 -0400
-Date: Tue, 1 May 2007 18:30:50 -0300
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: ak@suse.de, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove unnecessary irq disabling
-Message-ID: <20070501213050.GD6119@redhat.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 1 May 2007 17:28:14 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:22695 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423617AbXEAV2N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 17:28:13 -0400
+Date: Tue, 1 May 2007 14:30:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, trivial@kernel.org
+Subject: [PATCH] doc: fix oops-tracing duplicate
+Message-Id: <20070501143009.39abf496.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Remove duplicate 'U' entry -- fix mis-merge.
 
-RR asks us if it is really necessary to disable interrupts in
-setup_secondary_APIC_clock(). The answer is no, since setup_APIC_timer()
-starts by saving irq flags, which also disables them.
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+---
+ Documentation/oops-tracing.txt |    3 ---
+ 1 file changed, 3 deletions(-)
 
--- 
-Glauber de Oliveira Costa
-Red Hat Inc.
-"Free as in Freedom"
-
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="irq_disable.patch"
-
-diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
-index 124b2d2..7eacd5f 100644
---- a/arch/x86_64/kernel/apic.c
-+++ b/arch/x86_64/kernel/apic.c
-@@ -875,9 +875,7 @@ void __init setup_boot_APIC_clock (void)
+--- linux-2.6.21-git4.orig/Documentation/oops-tracing.txt
++++ linux-2.6.21-git4/Documentation/oops-tracing.txt
+@@ -234,9 +234,6 @@ characters, each representing a particul
+   6: 'B' if a page-release function has found a bad page reference or
+      some unexpected page flags.
  
- void __cpuinit setup_secondary_APIC_clock(void)
- {
--	local_irq_disable(); /* FIXME: Do we need this? --RR */
- 	setup_APIC_timer(calibration_result);
--	local_irq_enable();
- }
+-  7: 'U' if a user specifically requested that the Tainted flag be set,
+-     ' ' otherwise.
+-
+   7: 'U' if a user or user application specifically requested that the
+      Tainted flag be set, ' ' otherwise.
  
- void disable_APIC_timer(void)
-
---ZPt4rx8FFjLCG7dd--
