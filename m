@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965461AbXEAHgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965472AbXEAHgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965461AbXEAHgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 03:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXEAHgY
+	id S965472AbXEAHgd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 03:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965528AbXEAHgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 03:36:24 -0400
-Received: from nigel.suspend2.net ([203.171.70.205]:47796 "EHLO
-	nigel.suspend2.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965461AbXEAHgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 03:36:23 -0400
-Subject: Re: VMware, x86_64 and 2.6.21.
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-To: Michael Gerdau <mgd@technosis.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705010924.51590.mgd@technosis.de>
-References: <1177998147.8981.16.camel@nigel.suspend2.net>
-	 <200705010924.51590.mgd@technosis.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8pWh4DSr1AZYG0gtdufF"
-Date: Tue, 01 May 2007 17:36:21 +1000
-Message-Id: <1178004981.8981.27.camel@nigel.suspend2.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 1 May 2007 03:36:33 -0400
+Received: from phoenix.bawue.net ([193.7.176.60]:52916 "EHLO mail.bawue.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965472AbXEAHgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 03:36:31 -0400
+Date: Tue, 1 May 2007 09:36:24 +0200
+From: Joerg Sommrey <jo@sommrey.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.21: pmtmr losing time
+Message-ID: <20070501073624.GA6835@sommrey.de>
+Mail-Followup-To: Joerg Sommrey <jo@sommrey.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+References: <20070430125200.GA5379@sommrey.de> <1177950216.5791.241.camel@localhost.localdomain> <20070430163944.GA29206@sommrey.de> <1177969115.5791.244.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177969115.5791.244.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Apr 30, 2007 at 11:38:34PM +0200, Thomas Gleixner wrote:
+> On Mon, 2007-04-30 at 18:39 +0200, Joerg Sommrey wrote:
+> > Here it is.  Maybe this problem is related to the usage of the
+> > "experimental" amd76x_pm module?
+> 
+> Can you please verify what happens w/o that module ?
+> 
+After rebooting the problem vanished for now.  It first appeared after
+an uptime of about 3 days.  I'll wait a few days.  If it shows
+again, then I'll check without amd76x_pm.
 
---=-8pWh4DSr1AZYG0gtdufF
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+-jo
 
-Hi.
+> Thanks,
+> 
+> 	tglx
+> 
+> 
 
-On Tue, 2007-05-01 at 09:24 +0200, Michael Gerdau wrote:
-> > Does anyone have VMware working on x86_64 with 2.6.21?
->=20
-> VMware server 1.0.2 (free edition) is working fine here with 2.6.21.1
-> using vmware-any-any-update109.
->=20
-> System is Intel Core2 T7600 (x86_64)
-
-Ok. Maybe I'll try the any-any update. I'm using the Workstation 6 beta.
-Could I get you to send me your .config, just in case?
-
-Regards,
-
-Nigel
-
---=-8pWh4DSr1AZYG0gtdufF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGNu31N0y+n1M3mo0RArpLAJ9DiK4qeuXG/mrgs+Kdb5gq15pxKQCfQHDo
-nvvnilFGIjxuGeAg3SqA4xA=
-=HYpg
------END PGP SIGNATURE-----
-
---=-8pWh4DSr1AZYG0gtdufF--
-
+-- 
+-rw-r--r-- 1 jo users 62 2007-05-01 01:11 /home/jo/.signature
