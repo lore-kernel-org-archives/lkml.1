@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031677AbXEALYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031161AbXEALkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031677AbXEALYF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 07:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031676AbXEALYF
+	id S1031161AbXEALkL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 07:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030599AbXEALkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 07:24:05 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33671 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031677AbXEALYE (ORCPT
+	Tue, 1 May 2007 07:40:10 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:41913 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754389AbXEALj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 07:24:04 -0400
-X-Sasl-enc: 8YZp+JeCLadnm0VGwlbe/yWfvQSIyYfHwoJOHNG9bHk0 1178018642
-Message-ID: <463723F4.8060009@imap.cc>
-Date: Tue, 01 May 2007 13:26:44 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Tue, 1 May 2007 07:39:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=ZGnuK3vOVkUH/qXUSro2rXswrl7I1aWrt+yvt1mQEEDMwUJyeAXGVHzFCr9gpkirBJoJ16rHB9Yvu71B7z8+aHra7zXQhbOdvwwbAg5XO7YTZIy6emFsk/9HEdITHNSosB8m/DXViArHkJp4jsDbRhaBjtksrJZKIDPC+ua7l8M=  ;
+X-YMail-OSG: OXz1LsYVM1lvVsXDkQJgdLXnd4vPIwCmiyhIc3HX3b6uFm5xLJLHWGR9A4Q8aswf5HH8Gh8MCw--
+Message-ID: <46372706.5030609@yahoo.com.au>
+Date: Tue, 01 May 2007 21:39:50 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
- (-1)
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<46338AEB.2070109@imap.cc>	<20070428141024.887342bd.akpm@linux-foundation.org>	<4636248E.7030309@imap.cc>	<20070430112130.b64321d3.akpm@linux-foundation.org>	<46364346.6030407@imap.cc> <20070430124638.10611058.akpm@linux-foundation.org>
-In-Reply-To: <20070430124638.10611058.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig169B8AB500AA3D3DC48A5AF1"
+To: Rohit Seth <rohitseth@google.com>
+CC: "'Mike Stroyan'" <mike.stroyan@hp.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Hugh Dickins'" <hugh@veritas.com>,
+       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+References: <200704281757.l3SHvUrs026921@smtp.corp.google.com>
+In-Reply-To: <200704281757.l3SHvUrs026921@smtp.corp.google.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig169B8AB500AA3D3DC48A5AF1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Rohit Seth wrote:
+>  
+> 
+> -----Original Message-----
+> From: Nick Piggin [mailto:nickpiggin@yahoo.com.au] 
+> Sent: Friday, April 27, 2007 7:00 PM
+> To: rohitseth@google.com
+> Cc: Mike Stroyan; Andrew Morton; Hugh Dickins; Luck, Tony;
+> linux-ia64@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+> 
+> Rohit Seth wrote:
+> 
+>>
+>>>You mean by user space? If so, then it is user space responsibility to 
+>>>do the appropriate operations (like flush icache in this case).
+> 
+> 
+>>No, I mean places that set PG_arch_1. flush_dcache_page. This can happen 
+>>for mapped pages in write, splice, install_arg_page looks questionable,
+> 
+> direct IO...
+> 
+> 
+> If a user is requesting kernel to do (for example) write on a page that is
+> already mapped with execute and write permissions then it should be treated
+> as if the user space is doing modifications to that page.  There is no
+> change in protections so lazy_prot_mmu_update shouldn't be called even
+> though PG_arch_1 is (I think) set.  Does it answer your concern?
 
-Am 30.04.2007 21:46 schrieb Andrew Morton:
-> Sure, but what about 2.6.21-git3 (or, better, current -git)?
+I'm not sure that I would agree. For direct modifications of memory via
+a passed in user virtual address, perhaps. For operations on pagecache,
+we may not even have a handle to issue the flush cache instruction on (ie.
+a user virtual address), let alone know whether anyone else is mapping
+the page.
 
-2.6.21-git3 crashed with panic blink at "scanning usb: .."
-(Nothing in the log this time.)
+>>What if you were to say remove all the PG_arch_1 code, and do 
+>>something really simple like flush icache in 
+>>flush_dcache_page? Would performance suffer horribly?
+> 
+> 
+> On Itanium, I think it will have some performance penalty (horrible or not I
+> don't know) as you will be invalidating the caches more often.  And they
+> alsways look for last 0.1% performance that they can get.
 
-Will continue bisecting -rc7-mm2.
+Sure, but if we _only_ flushed when page_mapcount was raised, then we
+should have most of the benefits of lazy flushing, and the main places
+were we do extra flushes are those where aliases could potentially occur
+under the old scheme.
 
-HTH
-T.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- Undetected errors are handled as if no error occurred. (IBM) -
-
-
---------------enig169B8AB500AA3D3DC48A5AF1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGNyP7MdB4Whm86/kRAu6NAKCCDqVmTb3bFAHvg6W3Mt6BHg28RgCeIQFg
-y3R14g7jgk7fchI3j2WEdAE=
-=HysZ
------END PGP SIGNATURE-----
-
---------------enig169B8AB500AA3D3DC48A5AF1--
+-- 
+SUSE Labs, Novell Inc.
