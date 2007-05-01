@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXEAT0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbXEAT2C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbXEAT0s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 15:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbXEAT0s
+	id S1754630AbXEAT2C (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 15:28:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755301AbXEAT2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 15:26:48 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37582 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754684AbXEAT0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 15:26:46 -0400
-Cc: linux-kernel@vger.kernel.org, abraham.manu@gmail.com, xyzzy@speakeasy.org,
-       linux-dvb@linuxtv.org, mchehab@infradead.org, mrechberger@gmail.com
-Content-Type: text/plain; charset="us-ascii"
-Date: Tue, 01 May 2007 21:26:45 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <463792E1.6000908@gmail.com>
-Message-ID: <20070501192645.272410@gmx.net>
-MIME-Version: 1.0
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	<1178031333.3958.63.camel@localhost> <20070501164054.26090@gmx.net>
- <20070501183048.268140@gmx.net> <463792E1.6000908@gmail.com>
-Subject: Re: [linux-dvb] Re: DST/BT878 module customization (.. was: Critical
- points about ...)
-To: e9hack <e9hack@googlemail.com>
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX193AkBGmAp3GiFbiNc++wUr6Jiybp0yPCA18yz8YX
- EgmYkK5cuB4Ij1xIrFq0D4BjkMQXv8Hj0ubg== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: QqwCciIgRkkNRnD0DGRqv+RudWkvKFNL
+	Tue, 1 May 2007 15:28:01 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3487 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754630AbXEAT2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 15:28:00 -0400
+Date: Tue, 1 May 2007 20:27:48 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Paul Sokolovsky <pmiscml@gmail.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>,
+       Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
+       kernel-discuss@handhelds.org, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [RFC, PATCH 0/4] SoC base drivers
+Message-ID: <20070501192747.GE19872@flint.arm.linux.org.uk>
+Mail-Followup-To: Paul Sokolovsky <pmiscml@gmail.com>,
+	Richard Purdie <rpurdie@rpsys.net>,
+	Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
+	kernel-discuss@handhelds.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.arm.linux.org.uk
+References: <1354376306.20070501080806@gmail.com> <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com> <1178031675.5883.67.camel@localhost.localdomain> <97946200.20070501201821@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <97946200.20070501201821@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
--------- Original-Nachricht --------
-Datum: Tue, 01 May 2007 21:20:01 +0200
-Von: e9hack <e9hack@googlemail.com>
-An: Uwe Bugla <uwe.bugla@gmx.de>
-CC: mrechberger@gmail.com, mchehab@infradead.org, linux-dvb@linuxtv.org, xyzzy@speakeasy.org, abraham.manu@gmail.com, linux-kernel@vger.kernel.org
-Betreff: Re: [linux-dvb] Re: DST/BT878 module customization (.. was: Critical points about ...)
-
-> Uwe Bugla wrote:
-> > 
-> > The biggest problem that I had with you in the past weeks is and was
-> that you never even once offer full transparency when you are building up
-> theses NOT TO accept patches.
-> > 
-> > And if it is only the other side (me, Trent, others) to be forced to
-> offer transparent information BUT NOT YOU YOURSELF
-> > then this is what I would call a deep anti-democratic behaviour.
-> > 
-> > You can neither help nor can you solve any problem continuing in that
-> manner,
-> > can you?
-> > 
-> > Happy reflection on your very strange methods, with the hope to do
-> better in the future! If there is some hope - well, I doubt!
-> > 
+On Tue, May 01, 2007 at 08:18:21PM +0300, Paul Sokolovsky wrote:
+>         Well, while description catches the essence of course, TLA is
+> far from being perfect: 1) Completely unknown; 2) can be easily
+> confused with mtd.
 > 
-> Hi Uwe,
-> 
-> I would like it if you only post technical topics without any comments to
-> some person. In your case, the comments are
-> mostly a personally attacks against someone. If I use google to search for
-> your name: in the last 5 years, on every
-> board, forum, ML,.. you had trouble with many people. It was always
-> because someone wasn't your opinion or someone
-> didn't do what you seems to expect. Afterwards, you did always start your
-> attacks and flame war. As a result nobody did
-> response to you and you was fired from some places. Your problem with some
-> people from this list isn't a problem of this
-> people. It's a problem of your own and of your communicative skills. If
-> you cannot respect sentence #1, please go away
-> and do never post to this list again.
-> 
-> Just my two cents..
-> 
-> - Hartmut
+>         But it's even more funny: there *is* drivers/mfd/ already in
+> mainline. I'd say that we were blind, but even you say "proposed", not
+> "exists", nor anybody else brought that to attention. I'm afraid, that
+> proves point 1 above ;-).
 
-Hartmut,
-one strategy to establish democratic principles is showing up methods of other people like Abraham and Chehab. If you are not ready to perceive this you're really poor.
-Uwe
+It's only unknown to communities which do not read this mailing list.
 
+drivers/mfd was suggested after discussion here about where to put the
+UCB1[23]00 device drivers, since it was felt that drivers/misc was
+inappropriate.
+
+There's not much infrastructure there though.
 
 -- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
