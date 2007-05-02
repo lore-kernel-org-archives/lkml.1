@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993219AbXEBOHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993222AbXEBOMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993219AbXEBOHL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 10:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993210AbXEBOHK
+	id S2993222AbXEBOMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993223AbXEBOMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 10:07:10 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:47423 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993217AbXEBOHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 10:07:08 -0400
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Fix skb header access
-Date: Wed, 2 May 2007 16:07:05 +0200
-User-Agent: KMail/1.8.2
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+	Wed, 2 May 2007 10:12:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58085 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993222AbXEBOMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 10:12:12 -0400
+Message-ID: <46389BBF.5000508@redhat.com>
+Date: Wed, 02 May 2007 10:10:07 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] to something appropriate (was Re: 2.6.22 -mm merge plans)
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <46368062.6000100@garzik.org> <20070430170919.45e4b42b.akpm@linux-foundation.org> <463688AD.1050903@garzik.org> <20070501004036.GS2819@sequoia.sous-sol.org> <46368DA5.7070003@garzik.org> <20070501045806.GA3697@kroah.com> <46376748.6020408@redhat.com> <20070501174033.2046f289@the-village.bc.nu> <20070501233419.GA10462@kroah.com> <20070502005212.GY2819@sequoia.sous-sol.org>
+In-Reply-To: <20070502005212.GY2819@sequoia.sous-sol.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705021607.05338.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adapt to new skb header access functions.
+Chris Wright wrote:
+> * Greg KH (greg@kroah.com) wrote:
+>> And is this really a problem?  The whole goal of the -stable tree was to
+>> accomidate the users who relied on kernel.org kernels, and wanted
+>> bugfixes and security updates.  It was not for new features or new
+>> hardware support.
+>>
+>> If people feel we should revisit this goal, then that's fine, and I have
+>> no objection to that.  But until then, I think the rules that we have
+>> had in place for over the past 2 years should still remain in affect.
+> 
+> I have to agree.  I went back through my mbox and found vanishingly few
+> pci_id update patches.   So it's not clear there's even a big issue.
+> 
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
-
-
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index c7a5614..7211648 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -1803,10 +1803,10 @@ static inline int ehea_hash_skb(struct s
- 	u32 tmp;
- 
- 	if ((skb->protocol == htons(ETH_P_IP)) &&
--	    (skb->nh.iph->protocol == IPPROTO_TCP)) {
--		tcp = (struct tcphdr*)(skb->nh.raw + (skb->nh.iph->ihl * 4));
-+	    (ip_hdr(skb)->protocol == IPPROTO_TCP)) {
-+		tcp = (struct tcphdr*)(skb_network_header(skb) + (ip_hdr(skb)->ihl * 4));
- 		tmp = (tcp->source + (tcp->dest << 16)) % 31;
--		tmp += skb->nh.iph->daddr % 31;
-+		tmp += ip_hdr(skb)->daddr % 31;
- 		return tmp % num_qps;
- 	}
- 	else
-
-
+Of course you didn't find many -- most people know that's not part of
+the -stable charter. If you asked for them you'd get them...
