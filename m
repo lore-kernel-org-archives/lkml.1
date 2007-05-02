@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767044AbXEBV2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767040AbXEBVgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767044AbXEBV2G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767030AbXEBV2G
+	id S1767040AbXEBVgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767043AbXEBVgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:28:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59981 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766800AbXEBV2E (ORCPT
+	Wed, 2 May 2007 17:36:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53223 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767040AbXEBVgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:28:04 -0400
-Date: Wed, 2 May 2007 14:27:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] slub: remove duplicate VM_BUG_ON
-Message-Id: <20070502142756.de29ab08.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705021413570.2469@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705022307310.16215@sbz-30.cs.Helsinki.FI>
-	<Pine.LNX.4.64.0705021311440.1978@schroedinger.engr.sgi.com>
-	<4638F2DA.9080100@cs.helsinki.fi>
-	<Pine.LNX.4.64.0705021413570.2469@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 17:36:49 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <20070428758.455116000@suse.de>
+	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
+	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
+	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
+	<46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>
+	<4638F9BE.8090508@zytor.com>
+	<m13b2fvsbn.fsf@ebiederm.dsl.xmission.com> <46390185.30900@zytor.com>
+Date: Wed, 02 May 2007 15:36:17 -0600
+In-Reply-To: <46390185.30900@zytor.com> (H. Peter Anvin's message of "Wed, 02
+	May 2007 14:24:21 -0700")
+Message-ID: <m1y7k6vrfy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007 14:14:39 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> On Wed, 2 May 2007, Pekka Enberg wrote:
-> 
-> > Christoph Lameter wrote:
-> > > Patch is already in mm. Could you download all the patches after that before
-> > > testing? There was quite a number.
-> > 
-> > I am on 2.6.21-rc7-mm2. Me goes to wonder where Andrew's snapshots are...
-> 
-> Too much going on I think. I guess I saturated him with patches.
->  
+> Eric W. Biederman wrote:
+>> 
+>> So we won't do this casually and if it there are real problems we will
+>> remove the ELF magic number.
+>> 
+>
+> I think we can use ELF-compatible format just fine, but it would make
+> more sense to use a non-ELF magic number from the start, instead of
+> signalling it with a note.  Since bootloaders need to be aware, anyway,
+> they can just detect this magic and treat is as an Linux calling
+> convention ELF image, or they can not detect it, and treat it as a
+> bzImage.  As a side benefit, we:
+>
+> a) can use a magic number that contains a jump instruction (to keep the
+> non-bootsector happy);
+> b) get a proper Linux kernel magic number.
 
-yes, I'm very much in "slow things down, do it more carefully" mode.  I
-have 350 patches sitting awaiting later consideration at present.
+To the best of my knowledge I have already resolved both of those concerns,
+in my current code.
 
-It's not so much that I'm personally swamped - it's more that I think we've
-hit (exceeded) the rate at which we can feed stuff into the tree while
-maintaining acceptable quality.
-
-If others were to increase the amount of time they spend on testing,
-reviewing and bugfixing it would help to level things out. 
-
-I should have got the 2.6.22-mm-merge-plans email out a week or two
-earlier, I'm afraid.  Things are looking somewhat messy.
-
+Eric
