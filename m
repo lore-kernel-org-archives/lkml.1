@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbXEBKGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992996AbXEBKG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbXEBKGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754961AbXEBKGV
+	id S2992996AbXEBKG6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992963AbXEBKG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:06:21 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:31280 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754457AbXEBKGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:06:20 -0400
-Date: Wed, 2 May 2007 03:06:00 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bill Irwin <bill.irwin@oracle.com>, Dan Kruchinin <dubalom@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, wli@holomorphy.com
-Subject: Re: [RFC BUG?] dereference PAGE_OFFSET address (rc7-mm2)
-Message-ID: <20070502100600.GZ26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-	Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-	Ingo Molnar <mingo@elte.hu>
-References: <a8f16e2b0705012026u6078f90dsbe55f854d8638795@mail.gmail.com> <20070502005140.b94500ff.akpm@linux-foundation.org> <20070502084617.GY26598@holomorphy.com>
-MIME-Version: 1.0
+	Wed, 2 May 2007 06:06:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60033 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992996AbXEBKG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 06:06:57 -0400
+Date: Wed, 2 May 2007 12:05:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502100545.GA6857@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070502084617.GY26598@holomorphy.com>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <463854F3.3020403@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 12:51:40AM -0700, Andrew Morton wrote:
->> Thanks for the report.  I can reproduce it.
->> Bisection shows that x86_64-mm-paravirt-initial-pagetable.patch caused
->> this.
->> I didn't check whether the patch actually permits us to read kernel
->> memory.  Probably it does.  Probably we'd prefer that it didn't ;)
 
-On Wed, May 02, 2007 at 01:46:17AM -0700, Bill Irwin wrote:
-> Brown paper bag time. I don't know how it got past me.
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Brain dump before crashing for the night:
+> With -v7 I would run the n/n+1 test. Basically on a system with n 
+> cpus, I would run n+1 tasks and see how their load is distributed. I 
+> usually find that the last two tasks would get stuck on one CPU on the 
+> system and would get half the cpu time as their other peers. I think 
+> this issue has been around for long even before CFS. But while I was 
+> investigating that, I found that with -v8, all the n+1 tasks are stuck 
+> on the same cpu.
 
-The patch refuses to clobber already-present pagetable entries of
-whatever origin. There are pagetables prior to this setup covering the
-address range just above PAGE_OFFSET. If this theory is correct, you
-should only be able to go a few MB above PAGE_OFFSET before encountering
-unreadable kernel memory. IIRC those pagetables are a statically
-allocated array in assembly; altering that array to set supervisor bits
-may resolve it, though it may also be freed as initmem.
+i believe this problem is specific to powerpc - load is distributed fine 
+on i686/x86_64 and your sched_debug shows a cpu_load[0] == 0 on CPU#2 
+which is 'impossible'. (I sent a few suggestions off-Cc about how to 
+debug this.)
 
-
--- wli
+	Ingo
