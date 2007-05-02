@@ -1,105 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993449AbXEBQRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993462AbXEBQUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993449AbXEBQRq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993447AbXEBQRq
+	id S2993462AbXEBQUA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993463AbXEBQUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:17:46 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:36301
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993449AbXEBQRj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:17:39 -0400
-Subject: [PATCH] synclink_gt use dynamic tty device registration
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 11:17:33 -0500
-Message-Id: <1178122653.4485.2.camel@amdx2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 12:20:00 -0400
+Received: from lucidpixels.com ([75.144.35.66]:37066 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993462AbXEBQT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:19:59 -0400
+Date: Wed, 2 May 2007 12:19:14 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+cc: Nick Piggin <nickpiggin@yahoo.com.au>, neilb@suse.de,
+       akpm@linux-foundation.org,
+       "Leech, Christopher" <christopher.leech@intel.com>,
+       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Subject: RE: [PATCH 00/16] raid acceleration and asynchronous offload api
+ for 2.6.22
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0705021218380.25382@p34.internal.lan>
+References: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change synclink_gt driver to use dynamic tty device registration.
-
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
 
 
---- a/drivers/char/synclink_gt.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/char/synclink_gt.c	2007-05-02 11:11:34.000000000 -0500
-@@ -3415,6 +3415,9 @@ static void device_init(int adapter_num,
- 			}
- 		}
- 	}
-+
-+	for (i=0; i < port_count; ++i)
-+		tty_register_device(serial_driver, port_array[i]->line, &(port_array[i]->pdev->dev));
- }
- 
- static int __devinit init_one(struct pci_dev *dev,
-@@ -3466,6 +3469,8 @@ static void slgt_cleanup(void)
- 	printk("unload %s %s\n", driver_name, driver_version);
- 
- 	if (serial_driver) {
-+		for (info=slgt_device_list ; info != NULL ; info=info->next_device)
-+			tty_unregister_device(serial_driver, info->line);
- 		if ((rc = tty_unregister_driver(serial_driver)))
- 			DBGERR(("tty_unregister_driver error=%d\n", rc));
- 		put_tty_driver(serial_driver);
-@@ -3506,23 +3511,10 @@ static int __init slgt_init(void)
- 
-  	printk("%s %s\n", driver_name, driver_version);
- 
--	slgt_device_count = 0;
--	if ((rc = pci_register_driver(&pci_driver)) < 0) {
--		printk("%s pci_register_driver error=%d\n", driver_name, rc);
--		return rc;
--	}
--	pci_registered = 1;
--
--	if (!slgt_device_list) {
--		printk("%s no devices found\n",driver_name);
--		pci_unregister_driver(&pci_driver);
--		return -ENODEV;
--	}
--
- 	serial_driver = alloc_tty_driver(MAX_DEVICES);
- 	if (!serial_driver) {
--		rc = -ENOMEM;
--		goto error;
-+		printk("%s can't allocate tty driver\n", driver_name);
-+		return -ENOMEM;
- 	}
- 
- 	/* Initialize the tty_driver structure */
-@@ -3539,7 +3531,7 @@ static int __init slgt_init(void)
- 		B9600 | CS8 | CREAD | HUPCL | CLOCAL;
- 	serial_driver->init_termios.c_ispeed = 9600;
- 	serial_driver->init_termios.c_ospeed = 9600;
--	serial_driver->flags = TTY_DRIVER_REAL_RAW;
-+	serial_driver->flags = TTY_DRIVER_REAL_RAW | TTY_DRIVER_DYNAMIC_DEV;
- 	tty_set_operations(serial_driver, &ops);
- 	if ((rc = tty_register_driver(serial_driver)) < 0) {
- 		DBGERR(("%s can't register serial driver\n", driver_name));
-@@ -3552,6 +3544,16 @@ static int __init slgt_init(void)
- 		driver_name, driver_version,
- 		serial_driver->major);
- 
-+	slgt_device_count = 0;
-+	if ((rc = pci_register_driver(&pci_driver)) < 0) {
-+		printk("%s pci_register_driver error=%d\n", driver_name, rc);
-+		goto error;
-+	}
-+	pci_registered = 1;
-+
-+	if (!slgt_device_list)
-+		printk("%s no devices found\n",driver_name);
-+
- 	return 0;
- 
- error:
+On Wed, 2 May 2007, Williams, Dan J wrote:
 
+>> From: Justin Piszcz [mailto:jpiszcz@lucidpixels.com]
+>> I have not been following this closely, must you have an
+>> CONFIG_INTEL_IOP_ADMA piece of hardware and/or chipset to use this
+>> feature or can regular desktop users take hold of it as well?
+>>
+> Currently this feature is available on the iop series of processors,
+> e.g. http://www.intel.com/design/iio/iop348.htm
+>
+> And there is a driver in the works to support the 440spe platform
+> (http://marc.info/?l=linux-raid&m=117400143317440&w=2)
+>
+> Desktops currently take advantage of architecture specific SIMD
+> instructions to accelerate xor calculations.
+>
+>> Justin.
+>
+> Dan
+>
 
+Ahh-- these are the family of chips in the Areca controllers (or close to 
+them)-- so md/software raid will utilize the HW functions of the chip? 
+If so, that is pretty slick :)
+
+Justin.
