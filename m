@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993045AbXEBKoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993026AbXEBKrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993045AbXEBKoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993044AbXEBKop
+	id S2993026AbXEBKrE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXEBKrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:44:45 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:50034 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993026AbXEBKoo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:44:44 -0400
-Subject: Re: [patch 20/38] Minor fault path optimization.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>
-In-Reply-To: <20070428083409.GA22156@infradead.org>
-References: <20070427140503.087958775@de.ibm.com>
-	 <20070427140516.523272684@de.ibm.com>
-	 <17970.53875.506097.699517@cargo.ozlabs.ibm.com>
-	 <20070428083409.GA22156@infradead.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 02 May 2007 12:45:06 +0200
-Message-Id: <1178102706.2440.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 2 May 2007 06:47:03 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45195 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754438AbXEBKrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 06:47:01 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: [PATCH] [24/30] x86_64: Shut up warnings for vfat compat ioctls on other file systems
+Date: Wed, 2 May 2007 12:46:50 +0200
+User-Agent: KMail/1.9.6
+Cc: patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <20070501557.815359000@suse.de> <20070501035822.B3FC613CAF@wotan.suse.de> <463760B0.8020705@redhat.com>
+In-Reply-To: <463760B0.8020705@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705021246.51039.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-04-28 at 09:34 +0100, Christoph Hellwig wrote:
-> Well, here's my powerpc patch to do the direct call that I sent out
-> a few weeks ago.  It not just speed up the pagefault path a lot, 
-> but also is a major code cleanup.  Andi and Anton didn't like it
-> because they have ambition for murky debugger code to possibly
-> use it one day..
+On Tuesday 01 May 2007 17:45:52 Chuck Ebbert wrote:
+> Andi Kleen wrote:
+> > vfat implements compat handlers for these ioctls, but when they
+> > were executed on other file systems the kernel would still complain
+> > about an unknown compat ioctl.  Just declare them as compatible
+> > and let them be rejected when not needed by the normal path.
+> > 
+> > This makes wine runs a lot quieter
+> 
+> Does this also restore the original -ENOTTY return code?
+> 
+> The change that made it return -EINVAL broke a few Wine apps.
 
-I thought about using a direct call for s390 as well. The advantage of a
-direct call is that it avoids the overhead of a notifier call even if
-kprobes is running. The disadvantage is that there cannot be a second
-consumer of the fault notifications. I choose the middle way: avoid the
-overhead if kprobes is not active and use the full notifier if kprobes
-is running. It should not hurt the performance too badly since
-kprobe_running is only true if the cpu gets a page fault while executing
-a kprobe.
+No it's still EINVAL as before. I just eliminated the printks.
 
--- 
-blue skies,
-  Martin.
+I guess one could add a IGNORE_IOCTL_ENOTTY() or somesuch though if it's 
+really a problem.
 
-"Reality continues to ruin my life." - Calvin.
-
+-Andi
 
