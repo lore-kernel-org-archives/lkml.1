@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766847AbXEBTxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766852AbXEBTyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766847AbXEBTxU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766852AbXEBTxU
+	id S1766852AbXEBTyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766856AbXEBTyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:53:20 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55567 "EHLO pasmtpB.tele.dk"
+	Wed, 2 May 2007 15:54:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35070 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766847AbXEBTxT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:53:19 -0400
-Date: Wed, 2 May 2007 21:54:12 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Hugh Dickins <hugh@veritas.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-Message-ID: <20070502195412.GC9044@uranus.ravnborg.org>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com> <20070501125559.9ab42896.akpm@linux-foundation.org> <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com> <20070501133618.93793687.akpm@linux-foundation.org> <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com> <Pine.LNX.4.64.0705021002040.32271@schroedinger.engr.sgi.com> <20070502121105.de3433d5.akpm@linux-foundation.org> <Pine.LNX.4.64.0705021234470.1543@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705021234470.1543@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1766852AbXEBTyp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:54:45 -0400
+Message-ID: <4638EC24.2020703@redhat.com>
+Date: Wed, 02 May 2007 15:53:08 -0400
+From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Olaf Hering <olh@suse.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] New firewire stack
+References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de>
+In-Reply-To: <20070502122147.GA31215@suse.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 12:42:54PM -0700, Christoph Lameter wrote:
-> On Wed, 2 May 2007, Andrew Morton wrote:
+Olaf Hering wrote:
+> On Tue, May 01, Kristian Høgsberg wrote:
 > 
-> > > At some point I dream that SLUB could become the default but I thought 
-> > > this would take at least 6 month or so. If want to force this now then I 
-> > > will certainly have some busy weeks ahead.
-> > 
-> > s/dream/promise/ ;)
-> > 
-> > Six months sounds reasonable - I was kind of hoping for less.  Make it
-> > default-to-on in 2.6.23-rc1, see how it goes.
+>>   drivers/firewire/Kconfig          |   60 ++
 > 
-> Here is how I think the future could develop
-> 
-> Cycle	SLAB		SLUB		SLOB		SLxB
-> 
-> 2.6.22	API fixes	Stabilization	API fixes
-> 
-> Major event: SLUB availability as experimental
-> 
-> 2.6.23	API upgrades	Perf. Valid.	EOL
-> 
-> Major events: SLUB performance validation. Switch off
-> 	experimental (could even be the default) 
-> 	Slab allocators support targeted reclaim for at
-> 	least one slab cache (dentry?)
-> 	(vacate/move all objects in a slab)
+> NACK.
+> Upgrade the current drivers/ieee1394/ with the new code, and keep all
+> existing module names.
 
-To facilitate this do NOT introduce CONFIG_SLAB until we decide
-that SLUB are default. In this way we can make CONFIG_SLUB be default
-and people will not continue with CONFIG_SLAB because they had it in their
-.config already.
-Or just rename CONFIG_SLAB to CONFIG_SLAB_DEPRECATED or something.
+What's your reasoning here?  Having different module names allows people to 
+compile both stacks and switch between them as they wish.
 
-The point is make sure that LSUB becomes default for people that does
-an make oldconfig (explicit or implicit).
+Another point in favour of different module names is that the new stack 
+doesn't actually provide the same user space interfaces as the old stack. 
+Basically, no applications use the raw kernel interfaces and the new stack is 
+only compatible at the library level.  In the light of this, I think it's fair 
+to change the module names.
 
-	Sam
+As for putting the new stack in drivers/ieee1394 - I don't know, I think it 
+makes sense to keep the new stack in it's own directory.  If it's a deal 
+breaker for inclusion, let's talk about moving it, but it would be nice if you 
+could elaborate just a little bit beyond "NACK".
+
+thanks,
+Kristian
+
+
