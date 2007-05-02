@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992735AbXEBE51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992760AbXEBE7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992735AbXEBE51 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 00:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992738AbXEBE51
+	id S2992760AbXEBE7t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 00:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992754AbXEBE7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 00:57:27 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:35148 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992735AbXEBE50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 00:57:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PbjH8TRQ4tTHcCyS8DBM6F8bIlP/t44aKEZ11bEjeUZA9VIufmVpbtdRn3AkIJmVvJ7kOTwyQrSeawhTHABsL5fIrj1nJ7gho8IykLo78smtuzTJXFlwiHkP/y+cTk+3xl+G3xU/6FoenmDGNnv48QCVJr8192rTIAI9rVVI9sI=
-Message-ID: <a36005b50705012157p15eee224o5511e60c4a956bd@mail.gmail.com>
-Date: Tue, 1 May 2007 21:57:25 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Ulrich Drepper" <drepper@gmail.com>,
-       "Bill Irwin" <bill.irwin@oracle.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Eric Dumazet" <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com
-Subject: Re: per-thread rusage
-In-Reply-To: <20070502043100.GI26093@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070404194829.1a93d8fd.dada1@cosmosbay.com>
-	 <20070409165315.4704021f.akpm@linux-foundation.org>
-	 <20070410004201.GA2986@holomorphy.com>
-	 <20070501172937.GQ26598@holomorphy.com>
-	 <a36005b50705011139p361dbc46ube0da5e42955f8b0@mail.gmail.com>
-	 <20070501202456.GR26598@holomorphy.com>
-	 <a36005b50705011510k4cd7873dr3fb8206c0f107169@mail.gmail.com>
-	 <20070501222724.GG26093@thunk.org>
-	 <a36005b50705011717g28023c58m431ec28413c1b613@mail.gmail.com>
-	 <20070502043100.GI26093@thunk.org>
+	Wed, 2 May 2007 00:59:47 -0400
+Received: from ozlabs.org ([203.10.76.45]:58524 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992741AbXEBE7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 00:59:46 -0400
+Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+In-Reply-To: <200702281834.10856.ossthema@de.ibm.com>
+References: <200702281834.10856.ossthema@de.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QHBAM+ndYevc28pSUDFh"
+Date: Wed, 02 May 2007 14:59:43 +1000
+Message-Id: <1178081983.5296.5.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/07, Theodore Tso <tytso@mit.edu> wrote:
-> The question is should we use setrlimit() to set the per-thread CPU
-> limit, given that we would need some separate interface to set signal
-> that should be sent.
->
-> Is there any reason why we should have the interface specify whether
-> the signal should be directed to a specified process or kernel
-> thread-id, perhaps using si_pid field in the siginfo_t to specify
-> which thread had exceeded its CPU limit.  Or would this be overkill?
 
-The more I think about it the more complex it gets.  There is a
-problem with delivering the signal to the receiving process itself: it
-is out of time and cannot perform the cleanup operation anymore.  You
-could grant it a grace period but how long should that be?  Some of
-the cleanup handlers might take a long time.  If you don't enforce the
-CPU limit then it doesn't have to be in the kernel and you might as
-well use CLOCK_THREAD_CPUTIME_ID and create a timer.  This should
-already work today.  If not it must be fixed.
+--=-QHBAM+ndYevc28pSUDFh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Delivering the timeout signal to another thread isn't really possible
-either since the cleanup code might access thread-local data which
-wouldn't work since it's not the canceled thread's data which is
-accessed.
+On Wed, 2007-02-28 at 18:34 +0100, Jan-Bernd Themann wrote:
+> This patch provides a functionality that allows parallel=20
+> RX processing on multiple RX queues by using dummy netdevices.
+>=20
+>=20
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> ---
 
-I don't have a good answer right now whether enforced CPU limits can
-be implemented at all.  But it seems for your purposes a timer with
-the CPU clock might be sufficient.
+> @@ -1789,6 +1798,22 @@ static void ehea_xmit3(struct sk_buff *s
+>  	dev_kfree_skb(skb);
+>  }
+> =20
+> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
+> +{
+> +	struct tcphdr *tcp;
+> +	u32 tmp;
+> +
+> +	if ((skb->protocol =3D=3D htons(ETH_P_IP)) &&
+> +	    (skb->nh.iph->protocol =3D=3D IPPROTO_TCP)) {
 
+This breaks the build, looks like skb->nh went away:
+b0e380b1d8a8e0aca215df97702f99815f05c094
 
-> Do you think this is something that we could get standardized into an
-> upcoming Posix/Posix Threads standard?
+/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1806: error:=
+ 'struct sk_buff' has no member named 'nh'
+/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1807: error:=
+ 'struct sk_buff' has no member named 'nh'
+/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1807: error:=
+ 'struct sk_buff' has no member named 'nh'
+/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1809: error:=
+ 'struct sk_buff' has no member named 'nh'
 
-Regardless of whether a solution can be found, it's too late for the
-next revision.  The deadline for new features is long gone by.
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-QHBAM+ndYevc28pSUDFh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGOBq/dSjSd0sB4dIRAiTPAKCVylILpeJAj70ItmUjBsd2icLayACeLoSq
+43nBSFyiC/bKGGxIA8Uy6oE=
+=AsQ6
+-----END PGP SIGNATURE-----
+
+--=-QHBAM+ndYevc28pSUDFh--
+
