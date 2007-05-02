@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992687AbXEBDo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992694AbXEBDvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992687AbXEBDo0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161591AbXEBDo0
+	id S2992694AbXEBDvo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992689AbXEBDvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:44:26 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:54474 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161512AbXEBDoY (ORCPT
+	Tue, 1 May 2007 23:51:44 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3946 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992669AbXEBDvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:44:24 -0400
-Message-ID: <46380901.2050001@linux.vnet.ibm.com>
-Date: Wed, 02 May 2007 09:14:01 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: menage@google.com, vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net,
-       balbir@in.ibm.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
-       mbligh@google.com, rohitseth@google.com, serue@us.ibm.com,
-       akpm@linux-foundation.org, svaidy@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] [PATCH 1/9] Containers (V9): Basic container framework
-References: <20070427104607.252541000@menage.corp.google.com> <20070427111300.015604000@menage.corp.google.com> <46377BA4.6030701@linux.vnet.ibm.com> <20070501114030.62b85494.pj@sgi.com>
-In-Reply-To: <20070501114030.62b85494.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 23:51:43 -0400
+Date: Wed, 2 May 2007 13:51:27 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>
+Subject: Re: netfront for review
+Message-ID: <20070502035127.GA28090@gondor.apana.org.au>
+References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178077033.28659.173.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
->   [[ I have bcc'd one or more batch scheduler experts on this post.
->      They will know who they are, and should be aware that they are
->      not listed in the public cc list of this message.     - pj ]]
+On Wed, May 02, 2007 at 01:37:13PM +1000, Rusty Russell wrote:
+>
+> > +static int xennet_change_mtu(struct net_device *dev, int mtu)
+> > +{
+> > +	int max = xennet_can_sg(dev) ? 65535 - ETH_HLEN : ETH_DATA_LEN;
+> > +
+> > +	if (mtu > max)
+> > +		return -EINVAL;
+> > +	dev->mtu = mtu;
+> > +	return 0;
+> > +}
 > 
-> Balbir Singh, responding to Paul Menage's Container patch set on lkml, wrote:
->>> +*** notify_on_release is disabled in the current patch set. It may be
->>> +*** reactivated in a future patch in a less-intrusive manner
->>> +
->> Won't this break user space tools for cpusets?
-> 
-> 
-> Yes - disabling notify_on_release would definitely break some important
-> uses of cpusets.  This feature must be reactivated somehow before I'll
-> sign up for putting this patch set in the main line.
-> 
-> Actually, after I posted a few days ago in another lkml post:
-> 	http://lkml.org/lkml/2007/4/29/66
-> 
-> that just the simplest cpuset command:
-> 	mount -t cpuset cpuset /dev/cpuset
-> 	mkdir /dev/cpuset/foo
-> 	echo 0 > /dev/cpuset/foo/mems
-> 
-> caused an immediate kernel deadlock (Srivatsa has proposed a fix), it
-> is pretty clear that this container patch set is not getting the cpuset
-> testing it will need for acceptance.  That's partly my fault.
-> 
-> The batch scheduler folks, such as the variants of PBS, LSF and SGE are
-> major user of cpusets on NUMA hardware.
-> 
-> This container based replacement for cpusets isn't ready for the main
-> line until at least one of those schedulers can run through one of
-> their test suites.  I hesitate to even acknowledge this, as I might be
-> the only person in a position to make this happen, and my time
-> available to contribute to this patch set has been less than I would
-> like.
-> 
-> But if it looks like we have all the pieces in place to base cpusets
-> on containers, with no known regressions in cpuset capability, then
-> we must find a way to ensure that one of these batch schedulers, using
-> cpusets on a NUMA box, still works.
-> 
+> This seems odd to me: just because a device does TSO should we really
+> allow huge mtu settings?  Herbert?
 
-Would it be possible to extract those test cases and integrate them
-with a testing framework like LTP? Do you have any regression test
-suite for cpusets that can be made available publicly so that
-any changes to cpusets can be validated?
+Actually this has nothing to do with TSO/GSO.  This driver inherently
+supports arbitrary MTUs that's only limited by our network stack.  If
+the physical network device can't handle it you'll just get an ICMP
+error back or fragmentation.
 
-The reason I ask for the test suite is that I suspect that the
-container framework will evolve further and a reliable testing
-mechanism would be extremely useful.
-
+Cheers,
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
