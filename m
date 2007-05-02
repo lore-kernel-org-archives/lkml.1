@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993345AbXEBPTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993355AbXEBPXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993345AbXEBPTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993347AbXEBPTN
+	id S2993355AbXEBPXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993356AbXEBPXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:19:13 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:50892 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993345AbXEBPTM (ORCPT
+	Wed, 2 May 2007 11:23:00 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:22197 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993355AbXEBPXA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:19:12 -0400
-Date: Wed, 2 May 2007 17:19:03 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] Reorder Kconfig: General setup
-Message-ID: <Pine.LNX.4.58.0705021549110.5442@be1.lrz>
+	Wed, 2 May 2007 11:23:00 -0400
+Date: Wed, 2 May 2007 16:22:43 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+cc: Phillip Susi <psusi@cfl.rr.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Execute in place
+In-Reply-To: <20070502143839.GA31961@atjola.homenet>
+Message-ID: <Pine.LNX.4.64.0705021616260.31229@blonde.wat.veritas.com>
+References: <4637B751.1080907@cfl.rr.com> <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
+ <20070502143839.GA31961@atjola.homenet>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX19nVD6Clc3Ak0zAEMm0mPmahrtWURx0M9/IQME
- AoYAvy9T99wHTaxfI+zkYkPVGIN7KYoUFdao5gDht0Nf8eDNIZ
- AsYBhUZ8ozJ5NeEt1eR9w==
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-159877230-1178119363=:31229"
+X-OriginalArrivalTime: 02 May 2007 15:22:56.0641 (UTC) FILETIME=[C2B89710:01C78CCD]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAA2luYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAQi5TdGVpbmJyaW5rQGdteC5kZQBwc3VzaUBjZmwucnIuY29tAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some Kconfig menus are very unsorted, so finding the option you want to 
-change takes careful reading of the complete menu.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I'm about to change some of the menus to be more user-friendly, starting
-with the general setup and working my way through the rest as time permits.
+--8323584-159877230-1178119363=:31229
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
+On Wed, 2 May 2007, Bj=C3=B6rn Steinbrink wrote:
+> On 2007.05.02 15:04:44 +0100, Hugh Dickins wrote:
+> > On Tue, 1 May 2007, Phillip Susi wrote:
+> > > I seem to remember seeing some patches go by at some point that
+> > > allowed one of the rom type embeded system filesystems to directly
+> > > execute binaries out of the original rom memory rather than copying
+> > > them to ram first, then executing from there.  I was wondering if
+> > > rootfs or tmpfs support such execute in place today, or if binaries
+> > > executed from there have their code segments duplicated in ram?
+> >=20
+> > Only ext2 supports it today: see Documentation/filesystems/xip.txt
+>=20
+> As I understand it, xip avoids the page cache copy. But tmpfs already
+> lives in the page cache (or swap), so avoiding that "copy" is
+> impossible. But I always expected tmpfs to implicitly due its own kind
+> of xip, i.e. that it doesn't have to store its stuff in the page cache
+> twice. Are you saying that this isn't true?
 
-In order to make the correct changes, I need some ACK/NACK/comments to 
-some of the changes:
+tmpfs doesn't store its stuff in the page cache twice: that's true,
+and I didn't mean to imply otherwise.  But tmpfs doesn't contain any
+support for rom memory: you'd have to copy from rom to tmpfs to use it.
 
-1) Initrd/initramfs: This does add about 6 KB of init(?) memory.
-   IMO, it could default to y and be moved to embedded.
-
-2) There are many options that are only usefull with 
-   vserver-virtualisation. I'd like to introduce a select (none/all/some)
-   to get rid of these 1001 individual options.
-
-3) UTS namespaces are a bad name while talking to non-programmers.
-   Can you provide a better caption/description? Otherwise I'll try to 
-   find something.
-
-4) Is it usefull to have relay(fs) in this menu? IMO it should be
-   selected by it's users and moved to libraries or filesystems.
-
-5) Some entries in other menus say "Support (for) ..." or "... support"
-   I'd like to remove that part.
-
-
-
-This is how I'd like to change the order of the items in General Setup,
-not including the changes above:
-
-General Setup
-
-Version information:
-  ()  Local version - append to kernel release
-  [*] Automatically append version information to the version string
-  <*> Kernel .config support
-  [*]   Enable access to .config through /proc/config.gz
-
-Kernel features:
-  [ ] Initial RAM filesystem and RAM disk (initramfs/initrd) support
-  [*] UTS Namespaces
-  [*] Support for paging of anonymous memory (swap)
-  [*] System V IPC
-  [*]   IPC Namespaces
-  [*] POSIX Message Queues
-
-Accounting:
-  [ ] BSD Process Accounting
-  [ ] Export task/process statistics through netlink (EXPERIMENTAL)
-  [ ] Auditing support
-  [ ] Kernel->user space relay support (formerly relayfs)
-
-Extra settings
-  [ ] Create deprecated sysfs files
-  [*] Optimize for size (Look out for broken compilers!)
-  [ ] Configure standard kernel features (for small systems)  --->
-  [ ] Include all symbols in kallsyms
-  [ ] Do an extra kallsyms pass
-
-
--- 
-Top 100 things you don't want the sysadmin to say:
-91. Well, it's doing _something_.....
+Hugh
+--8323584-159877230-1178119363=:31229--
