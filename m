@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766786AbXEBTms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766794AbXEBTmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766786AbXEBTms (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766794AbXEBTms
+	id S1766794AbXEBTmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766800AbXEBTmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:42:48 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:1625 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766786AbXEBTmr (ORCPT
+	Wed, 2 May 2007 15:42:55 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36660 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766794AbXEBTmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:42:47 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 2 May 2007 12:42:45 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Davi Arnaut <davi@haxent.com.br>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 00/22] pollfs: filesystem abstraction for pollable objects
-In-Reply-To: <4638DD76.7090904@haxent.com.br>
-Message-ID: <Pine.LNX.4.64.0705021159340.7176@alien.or.mcafeemobile.com>
-References: <20070502052235.914764000@haxent.com.br>
- <20070501230529.424f17c6.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705021010390.7176@alien.or.mcafeemobile.com>
- <4638CECE.6060409@haxent.com.br> <Pine.LNX.4.64.0705021053040.7176@alien.or.mcafeemobile.com>
- <4638DD76.7090904@haxent.com.br>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 2 May 2007 15:42:54 -0400
+Date: Wed, 2 May 2007 12:42:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+In-Reply-To: <20070502121105.de3433d5.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705021234470.1543@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+ <20070501125559.9ab42896.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+ <20070501133618.93793687.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705021002040.32271@schroedinger.engr.sgi.com>
+ <20070502121105.de3433d5.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Davi Arnaut wrote:
+On Wed, 2 May 2007, Andrew Morton wrote:
 
-> So in this case I may borrow some signalfd code :-) I really like the
-> signalfd approach, but IMHO the code is quite ugly and duplicates
-> a lot of hairy code.
+> > At some point I dream that SLUB could become the default but I thought 
+> > this would take at least 6 month or so. If want to force this now then I 
+> > will certainly have some busy weeks ahead.
+> 
+> s/dream/promise/ ;)
+> 
+> Six months sounds reasonable - I was kind of hoping for less.  Make it
+> default-to-on in 2.6.23-rc1, see how it goes.
 
-Ugly, really? Please ...
+Here is how I think the future could develop
 
-+	while (!mutex_trylock(&evs->mutex))
-+		cpu_relax();
+Cycle	SLAB		SLUB		SLOB		SLxB
 
-So, let's see. The whole things adds an unneeded (read "empty") extra 
-layer of indirections over the existing file_operations. Timerfd added the 
-return of the structure (because "developer may need it"), that wants 
-extra compat too. Your signal code does not handle things that is supposed 
-to be handling (easy to write clean code when the code does not actually 
-do what is supposed to be doing), and you'll be sucking code from 
-signalfd. On top of that, it returns a structure that needs compat too. 
-AIO code added an extra unnecessary wrapper over AIO native calls (by 
-literally calling sys_io_*). And the compat on sys_read/sys_write I 
-guess will be funny to watch. So what does your code effectively adds that 
-is useful in some way? Undocumented and testcase-less code?
-As I see it, your code badly copies exiting one, and adds uneeded 
-infrastrcture/functionality.
-See, I really wouldn't care, if you'd keep the "ugly" word for yourself.
-Actually, I really care only about the functionality, so I leave the whole 
-ball into Andrew's hands ;)
+2.6.22	API fixes	Stabilization	API fixes
 
+Major event: SLUB availability as experimental
 
+2.6.23	API upgrades	Perf. Valid.	EOL
 
-- Davide
+Major events: SLUB performance validation. Switch off
+	experimental (could even be the default) 
+	Slab allocators support targeted reclaim for at
+	least one slab cache (dentry?)
+	(vacate/move all objects in a slab)
 
+2.6.24	Earliest EOL	Stable		- 		Experiments
+
+Major events: SLUB stable. Stable targeted reclaim
+		for all major reclaimable slabs.
+		Maybe experiments with another new allocator?
+
+2.6.25	EOL		default		-		?
+
+Death of SLAB. SLUB default. Hopefully new ideas on the horizon.
 
