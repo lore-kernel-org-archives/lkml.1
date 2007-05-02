@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993493AbXEBQec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993502AbXEBQgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993493AbXEBQec (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993497AbXEBQec
+	id S2993502AbXEBQgh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993498AbXEBQgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:34:32 -0400
-Received: from sceptre.pobox.com ([207.106.133.20]:38610 "EHLO
-	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993493AbXEBQea (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:34:30 -0400
-Date: Wed, 2 May 2007 11:37:57 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, ashok.raj@intel.com,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: /sys/devices/system/cpu/*: Present cpus or Possible cpus
-Message-ID: <20070502163757.GF30688@localdomain>
-References: <20070502110022.GA13040@in.ibm.com>
+	Wed, 2 May 2007 12:36:37 -0400
+Received: from ping.uio.no ([129.240.78.2]:56103 "EHLO ping.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993503AbXEBQgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:36:36 -0400
+From: ilmari@ilmari.org (Dagfinn Ilmari =?utf-8?Q?Manns=C3=A5ker?=)
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>, <neilb@suse.de>,
+       <akpm@linux-foundation.org>,
+       "Leech, Christopher" <christopher.leech@intel.com>,
+       <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>
+Subject: Re: [PATCH 00/16] raid acceleration and asynchronous offload api for 2.6.22
+Organization: Program-, Informasjons- og Nettverksteknologisk Gruppe, UiO
+References: <Pine.LNX.4.64.0705021154410.25382@p34.internal.lan>
+	<0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
+Mail-Copies-To: nobody
+Date: Wed, 02 May 2007 17:36:07 +0100
+In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
+	(Dan J. Williams's message of "Wed, 2 May 2007 09:17:13 -0700")
+Message-ID: <d8jy7k7rxmw.fsf@nygaard.ping.uio.no>
+User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502110022.GA13040@in.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+X-Exiscan-Spam-Score: -7.3 (-------)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gautham-
+"Williams, Dan J" <dan.j.williams@intel.com> writes:
 
-Gautham R Shenoy wrote:
-> 
-> Looking at the topology_init() code, I observe that the meaning of
-> the cpuX/ directory entries in /sys/devices/system/cpu/ might be
-> different for different architectures. 
-> 
-> Looks like, in case of i386, ia64, m32, mips etc, the cpuX directory entries
-> represent the "present cpus".
-> 
-> However, in case of powerpc, s390 etc, the cpuX entries represent the
-> "possible cpus".
-> 
-> Wondering if there is any particular reason for this discrepancy.
-
-I believe that the powerpc behavior was established before
-cpu_present_map was introduced.
-
-
-> I am not entirely surely if it's due cpu hotplug because 
-> both i386 and powerpc support it!
-
-powerpc also supports processor add and remove (as opposed to
-online/offline); i386 does not AFAIK.  I think this may be a reason
-for the difference.
-
-
-> When I do a 
-> "echo 1 > /sys/devices/system/cpu/cpuX/online" on a power box as root, 
-> I might get "-bash: echo: write error: Invalid argument" 
-> because cpuX might not be present!
+>> From: Justin Piszcz [mailto:jpiszcz@lucidpixels.com]
+>> I have not been following this closely, must you have an
+>> CONFIG_INTEL_IOP_ADMA piece of hardware and/or chipset to use this
+>> feature or can regular desktop users take hold of it as well?
+>> 
+> Currently this feature is available on the iop series of processors,
+> e.g. http://www.intel.com/design/iio/iop348.htm
 >
-> In case of lpar, cpu_present_map need not necessarily be equal to
-> cpu_possible_map, so the above error is observable.
+> And there is a driver in the works to support the 440spe platform
+> (http://marc.info/?l=linux-raid&m=117400143317440&w=2)
+>
+> Desktops currently take advantage of architecture specific SIMD
+> instructions to accelerate xor calculations.
 
-Working as intended.  You have to add a cpu to the partition before
-you can online it.
+How about hard drive controllers with RAID accelleration features (but
+not full hardware RAID capability) such as the Promise SX4
+(http://linux-ata.org/faq-sata-raid.html#sx4)?
 
-
-> Is this discrepency intentional ?
-> Or is it due to the fact that in most cases,
-> cpu_present_map == cpu_possible_map, so lets not bother about it :-?
-
-I think it's the inevitable result when architectures are free to
-invent their own versions of the same sysfs interface.  But is it
-really causing a problem in this case?
-
+-- 
+ilmari
+"A disappointingly low fraction of the human race is,
+ at any given time, on fire." - Stig Sandbeck Mathisen
