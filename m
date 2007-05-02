@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXEBPqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbXEBPqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754044AbXEBPqf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXEBPqf
+	id S1755216AbXEBPqy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXEBPqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:46:35 -0400
-Received: from newmail.sw.starentnetworks.com ([12.33.234.78]:33150 "EHLO
-	mail.sw.starentnetworks.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754044AbXEBPqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:46:34 -0400
-X-Greylist: delayed 1768 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 11:46:34 EDT
-MIME-Version: 1.0
+	Wed, 2 May 2007 11:46:54 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38522 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755218AbXEBPqv (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:46:51 -0400
+Date: Thu, 3 May 2007 01:46:37 +1000
+From: David Chinner <dgc@sgi.com>
+To: Gerhard Mack <gmack@innerfire.net>
+Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070502154637.GC77450368@melbourne.sgi.com>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17976.43884.191895.235227@zeus.sw.starentnetworks.com>
-Date: Wed, 2 May 2007 11:17:00 -0400
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-To: linux-kernel@vger.kernel.org
-Subject: do_tty_write() can block even with O_NONBLOCK?
-X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 01, 2007 at 11:54:04PM -0400, Gerhard Mack wrote:
+> On Tue, 1 May 2007, Cabot, Mason B wrote:
+> 
+> > Hello all,
+> > 
+> > I've been testing the NAS performance of ext3/Openfiler 2.2 against
+> > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+> > video workloads. The Windows CIFS client will attempt a poor-man's
+> > pre-allocation of the file on the server by sending 1-byte writes at
+> > 128K-byte strides, breaking block allocation on ext3 and leading to
+> > fragmentation and poor performance. This will happen for many
+> > applications (including iTunes) as the CIFS client issues these
+> > pre-allocates under the application layer.
+> > 
+> > I've posted a brief paper on Intel's OSS website
+> > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
+> > it a read and let me know what you think. In particular, I'd like to
+> > arrive at the right place to fix this problem: is it in the filesystem,
+> > VFS, or Samba?
+> > 
+> > thanks,
+> > Mason 
+> > 
+> 
+> Just out of curiosity do other filesystems(reiser, xfs) take the same 
+> performance hit?
 
-I have two processes with the same tty open, one opens blocking and
-one opens nonblocking.
+XFS was also tested - it is as fast as the Windows NTFS based
+server.....
 
-If the blocking process blocks doing a write (due to flow control,
-just going to fast, etc...) the nonblocking process will also block
-when it writes until the blocking process unblocks.
+Cheers,
 
-This seems to occur because do_tty_write() isn't checking for
-O_NONBLOCK when taking the tty's write mutex.
-
-
-Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-
-===== drivers/char/tty_io.c 1.237 vs edited =====
---- 1.237/drivers/char/tty_io.c	2007-03-18 16:40:06 -04:00
-+++ edited/drivers/char/tty_io.c	2007-05-01 10:53:27 -04:00
-@@ -1690,9 +1690,13 @@
- 	ssize_t ret = 0, written = 0;
- 	unsigned int chunk;
- 	
--	/* FIXME: O_NDELAY ... */
--	if (mutex_lock_interruptible(&tty->atomic_write_lock)) {
--		return -ERESTARTSYS;
-+	if (file->f_flags & O_NONBLOCK) {
-+		if (!mutex_trylock(&tty->atomic_write_lock))
-+			return -EAGAIN;
-+	}
-+	else {
-+		if (mutex_lock_interruptible(&tty->atomic_write_lock))
-+			return -ERESTARTSYS;
- 	}
- 
- 	/*
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
