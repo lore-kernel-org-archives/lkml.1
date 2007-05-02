@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992908AbXEBIsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992913AbXEBItk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992908AbXEBIsy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992913AbXEBIsy
+	id S2992913AbXEBItk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992923AbXEBItk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:48:54 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:55970 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992908AbXEBIsw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:48:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=cC1Ol54O6DqycDZUffH48u+wMGa8/TL5iIAxrywnfBcC3IQzVparziuLF0wnoNrD4nMOPiB539mgkrPcoRsbYzbyZI9kAn+9oxQoZRxmjVtXbfQlMOFizLiAi3vPVCLDM0dPGyjt6X9Ru8QZEnOpbGliQPxFdh/edceXFhC/PIc=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch] CFS scheduler, -v8
-Date: Wed, 2 May 2007 04:48:45 -0400
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
-       Balbir Singh <balbir@in.ibm.com>
-References: <20070501212223.GA29867@elte.hu> <200705020403.35385.gene.heskett@gmail.com> <1178093536.8926.47.camel@Homer.simpson.net>
-In-Reply-To: <1178093536.8926.47.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 2 May 2007 04:49:40 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:44221 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992916AbXEBItj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 04:49:39 -0400
+Date: Wed, 2 May 2007 10:49:36 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: "Ulrich Drepper" <drepper@gmail.com>
+Cc: "Davi Arnaut" <davi@haxent.com.br>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+Message-Id: <20070502104936.674a4b54.dada1@cosmosbay.com>
+In-Reply-To: <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
+References: <20070502052235.914764000@haxent.com.br>
+	<20070502053427.123392000@haxent.com.br>
+	<a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+	<20070502095503.a06f5472.dada1@cosmosbay.com>
+	<a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705020448.46255.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 May 2007, Mike Galbraith wrote:
->On Wed, 2007-05-02 at 04:03 -0400, Gene Heskett wrote:
->> I just checked my logs, and it appears my workload didn't trigger this one
->> Mike.
->
->It's just a build time compiler warning.
+On Wed, 2 May 2007 01:08:26 -0700
+"Ulrich Drepper" <drepper@gmail.com> wrote:
 
-Duh.  I have a couple of pages of "may be used uninitialized" warnings.
-Including one in serial.c for the raw channel.  And I have a bit of trouble 
-there too.  Related?  Dunno.
+> On 5/2/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> > Well, poll() level edge semantic is well defined, you cannot cheat or change it.
+> >
+> > If many threads call poll() on the same end point, they should *all* return POLLIN/whatever status.
+> 
+> This means to me it's the wrong abstraction for this.  We had a nice
+> solution for this with Evgeniy's kevent interfaces.  It worked without
+> forcing futexes is this inflexible poll() interface.
 
->> Ingo asked for a 0-100 rating, where 0 is mainline as I recall it, and 100
->> is the best of the breed.  I'll give this one a 100 till something better
->> shows up.
->
->Ditto.  (so far... ya never know;)
->
->	-Mike
+poll() is a generalist interface. Not the *perfect* one, but well spreaded on other OS as well.
 
-Yup, this is sweet so far. :-)
+> 
+> 
+> 
+> > This is why programs usually use one thread to dispatch events to workers, or at least dont queue XXXX threads calling poll() on one fd.
+> 
+> No.  This is why programs are forced to waste cycles by doing this.
+> Ideally this would not happen.  Ideally you'd park all worker thread
+> in the same place and have them woken up one by one.  Again, Evgeniy's
+> code was able to do this.  This approach seems to be a big step
+> backward.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The vulcan-death-grip ping has been applied.
+I understand your concerns, but *this* patch bundle extends poll()/select()/epoll, and is not an alternative to kevent or other work in progress, (and linux centered)
+
+Are you suggesting poll() system call should be deprecated ?
+
+Most programs still use the archaic select() thing you know ...
+
