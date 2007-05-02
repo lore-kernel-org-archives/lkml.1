@@ -1,52 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbXEBKh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbXEBKlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbXEBKh5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993026AbXEBKh5
+	id S1754292AbXEBKlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXEBKlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:37:57 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:42540 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754311AbXEBKh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:37:56 -0400
-Message-ID: <463869FB.7000209@snapgear.com>
-Date: Wed, 02 May 2007 20:37:47 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
-References: <46382055.8030203@snapgear.com> <20070502090620.GB28174@infradead.org>
-In-Reply-To: <20070502090620.GB28174@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 06:41:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58327 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750917AbXEBKlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 06:41:21 -0400
+Date: Wed, 2 May 2007 12:40:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mike Galbraith <efault@gmx.de>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502104038.GA11057@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <1178092794.8926.43.camel@Homer.simpson.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178092794.8926.43.camel@Homer.simpson.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Christoph,
+* Mike Galbraith <efault@gmx.de> wrote:
 
-Christoph Hellwig wrote:
-> On Wed, May 02, 2007 at 03:23:33PM +1000, Greg Ungerer wrote:
->> Hi All,
->>
->> An update of the uClinux (MMU-less) code against 2.6.21.
->> A lot of cleanups, and a few bug fixes.
+> On Tue, 2007-05-01 at 23:22 +0200, Ingo Molnar wrote:
+> >  - interactivity: precise load calculation and load smoothing
 > 
-> Any chance you could split this into a few patches and send
-> upstream? m68knommu has gone quite badly out of sync once again.
+> This seems to help quite a bit.
 
-Yes, I have already started the process. I have sent quite
-a few of these to Linus in the last few hours.
+great :)
 
-Regards
-Greg
+> (5 second top sample)
+> 
+>  2636 root      15  -5 19148  15m 5324 R   73  1.5   1:42.29 0 amarok_libvisua
+>  5440 root      20   0  320m  36m 8388 S   18  3.6   3:28.55 1 Xorg
+>  4621 root      20   0 22776  18m 4168 R   12  1.8   0:00.63 1 cc1
+>  4616 root      20   0 19456  13m 2200 R    9  1.3   0:00.43 0 cc1
+> 
+> I no longer have to renice both X and Gforce to achieve a perfect 
+> display when they are sharing my box with a make -j2.  X is displaying 
+> everything it's being fed beautifully with no help.  I have to renice 
+> Gforce (amarok_libvisual), but given it's very heavy CPU usage, that 
+> seems perfectly fine.
 
+ah! Besides OpenGL behavior and app startup performance i didnt 
+originally have Xorg in mind with this change, but thinking about it, 
+precise load calculations and load smoothing does have a positive effect 
+on 'coupled' workloads where under the previous variant of CFS's load 
+calculation one task component of the workload could become 'invisible' 
+to another task and hence cause macro-scale scheduling artifacts not 
+expected by humans. With smoothing these are dealt with more 
+consistently. Xorg can be a quite strongly coupled workload.
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+> No regressions noticed so far.  Box is _very_ responsive under load, 
+> seemingly even more so than with previous releases.  That is purely 
+> subjective, but the first impression was very distinct.
+
+yeah, make -jN workloads (and any mixture of non-identical scheduling 
+patterns, which most real workloads consist of) should be handled more 
+consistently too by -v8.
+
+so your workload (and Gene's workload) were the ones in fact that i had 
+hoped not to _hurt_ with -v8 (neither of you being the hardcore gamer 
+type ;), and in reality -v8 ended up helping them too. These sorts of 
+side-effects are always welcome ;-)
+
+	Ingo
