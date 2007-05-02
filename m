@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992847AbXEBGaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030894AbXEBGeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992847AbXEBGaK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992859AbXEBGaK
+	id S1030894AbXEBGeb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030918AbXEBGeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:30:10 -0400
-Received: from ozlabs.org ([203.10.76.45]:47353 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992847AbXEBGaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:30:07 -0400
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
-	 <1178084403.28659.222.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 16:29:53 +1000
-Message-Id: <1178087393.28659.238.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 02:34:31 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:10766 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030894AbXEBGea (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 02:34:30 -0400
+Message-ID: <463830E1.8080107@interia.pl>
+Date: Wed, 02 May 2007 08:34:09 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: Tim Hockin <thockin@hockin.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: Natsemi DP83815 driver spaming
+References: <46365887.3010705@interia.pl>	 <20070430205522.abad2481.akpm@linux-foundation.org>	 <20070501084639.GA528@sirena.org.uk> <46371590.4090004@interia.pl>	 <20070501180830.GA31630@sirena.org.uk> <46379A7E.3000109@interia.pl>	 <20070501212750.GC31630@sirena.org.uk>	 <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com>	 <46382798.2090709@interia.pl> <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com>
+In-Reply-To: <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-EMID: 2209aacc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 23:06 -0700, David Rientjes wrote:
-> On Wed, 2 May 2007, Rusty Russell wrote:
+[...]
 > 
-> > Adding this macro doesn't give us anything that simply saying
-> > "__attribute__((unused))" doesn't give.  But it does add a layer of
-> > kernel-specific indirection.
-> > 
+>> With code commented out I have 1 error / 30000 transmitted packets from
+>> DP83815C. I have 1 error / 100000 transmitted packets to DP83815C. Maybe
+>> it works at all because I have short cable, only 10m long.
+>> I don't remember any errors with plain 2.6.21.1.
+Sorry. I mean transmition errors, but of course log was full of "wakeup" 
+messages. 
+> Well, I certainly haven't changed anything in there.  If the behavior
+> has changed in recent kernels, check the rest of the diffs.
 > 
-> That's obviously true since we're defining __attribute_unused__ to be 
-> __attribute__((unused)).
+> Tim
 
-Hi David,
+2.6.21.1 is first kernel which I'm using at this device. Earlier it was 
+WindowsCE terminal. It is hardware fault. Commenting out the code is my 
+way to avoid "wakeup" messages in log, but I don't want to change anything 
+in vanilla kernel. I'm lucky that NIC is working at all.
 
-	I'm horribly familiar with this issue, BTW, so we don't need so many
-words 8)
+Thank You
+Rafa³
 
-> The patched version makes this:
-> 
-> 	int type __attribute_unused__ = 0;
->
-> which definitely tells you that you're using a compiler attribute that 
-> will be attached to that automatic.  In your case:
-> 
-> 	int type __unneeded = 0;
-> 
-> doesn't say anything in this case.  It doesn't resemble any attribute that 
-> a programmer might be familiar with and begs the question of why we've 
-> declared it if it's truly "unneeded"?
 
-Your version makes one wonder why they didn't use
-"__attribute__((unused))".  Obviously the __attribute_unused__ macro
-exists for a reason, so they wonder what's the difference between that
-and the attribute?  The answer: nothing.
 
-OTOH, your point about "__unneeded" is well taken.  "__needed" and
-"__optional" perhaps?  But their feature is *exactly* that the don't
-look like the gcc attributes, hence avoid their semantic screwage.
+----------------------------------------------------------------------
+NIE KUPUJ!!!
+...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
 
-> By the way, there are tons of these instances where __attribute__((used)) 
-> needs to be added in driver code to suppress unreferenced warnings.
-
-Sure; historically we refactor around it.  But warnings are now so
-commonplace few people care 8(
-
-Cheers,
-Rusty.
 
 
