@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766993AbXEBUgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767002AbXEBUjP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766993AbXEBUgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766996AbXEBUgo
+	id S1767002AbXEBUjP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:39:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767009AbXEBUjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:36:44 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:52232 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766993AbXEBUgn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:36:43 -0400
-Date: Wed, 2 May 2007 15:46:21 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070502194621.GY1518@think.oraclecorp.com>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com>
+	Wed, 2 May 2007 16:39:15 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33597 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767002AbXEBUjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 16:39:13 -0400
+Message-ID: <4638F6DF.7020400@garzik.org>
+Date: Wed, 02 May 2007 16:38:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502154414.GB77450368@melbourne.sgi.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Theodore Tso <tytso@mit.edu>, Jeremy Allison <jra@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Cabot, Mason B" <mason.b.cabot@intel.com>,
+       linux-kernel@vger.kernel.org, tridge@samba.com
+Subject: Re: Ext3 vs NTFS performance
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070501142325.09c294bd.akpm@linux-foundation.org> <20070502161638.GB19442@thunk.org> <20070502180810.GC28726@jeremy-laptop> <20070502193456.GE19442@thunk.org>
+In-Reply-To: <20070502193456.GE19442@thunk.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 01:44:14AM +1000, David Chinner wrote:
-> On Tue, May 01, 2007 at 01:43:18PM -0700, Cabot, Mason B wrote:
-> > Hello all,
-> > 
-> > I've been testing the NAS performance of ext3/Openfiler 2.2 against
-> > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
-> > video workloads. The Windows CIFS client will attempt a poor-man's
-> > pre-allocation of the file on the server by sending 1-byte writes at
-> > 128K-byte strides, breaking block allocation on ext3 and leading to
-> > fragmentation and poor performance. This will happen for many
-> > applications (including iTunes) as the CIFS client issues these
-> > pre-allocates under the application layer.
-> > 
-> > I've posted a brief paper on Intel's OSS website
-> > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
-> > it a read and let me know what you think. In particular, I'd like to
-> > arrive at the right place to fix this problem: is it in the filesystem,
-> > VFS, or Samba?
-> 
-> As I commented on IRC to Val Henson - the XFS performance indicates
-> that it is not a VFS or Samba problem.
-> 
-> I'd say it's probably delayed allocation that is making the
-> difference here - no allocation occurs on the single byte writes, it
-> occurs when the larger data writes are flushed to disk. Hence no
-> adverse fragmentation will occur and there wil be no extra
-> allocations being done.
-> 
-> Hence I think it's probably a filesystm problem - it would be
-> interesting to see how ext4 performs on this workload....
+Theodore Tso wrote:
+> 	FYI, we are currently closing on a new system call so that
+> glibc's fallocate() will be able to call into the appropriate
+> per-filesystem routines in a portable way, since ext4 will have
+> persistent preallocation support.
 
-If we rely on delalloc for this, what happens if another proc on the
-same fs is doing synchronous writes to other files? (say for mail
-delivery).  Will random FS commits force delayed allocations to become
-real?
+Yep.
 
-Also, I'd expect a sufficiently loaded server to break down eventually
-as load/users increase.  The cost of a bad delalloc decision gets much
-higher if we're using it as a crutch for this kind of bad userland
-coding.
 
--chris
+> 	I think we mostly have consensus on a calling convention which
+> all of the architectures (s390, power, arm, ia64, etc.); of course
+> then we will need to get glibc to support the new system call.
+
+glibc has had support for a while, in emulated form: 
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0004.1/1153.html
+
+So when kernel support arrives, it should be easy and (hopefully) 
+seamless to plug in the new syscall.
+
+	Jeff
+
 
