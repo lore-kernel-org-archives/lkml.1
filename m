@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161754AbXEBIWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXEBIZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161754AbXEBIWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXEBIWe
+	id S1754923AbXEBIZG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbXEBIZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:22:34 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1624 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752881AbXEBIWb (ORCPT
+	Wed, 2 May 2007 04:25:06 -0400
+Received: from lon-del-04.spheriq.net ([195.46.50.101]:46488 "EHLO
+	lon-del-04.spheriq.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbXEBIZD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:22:31 -0400
-Date: Wed, 2 May 2007 09:22:13 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Tim Hockin <thockin@hockin.org>
-Cc: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Message-ID: <20070502082211.GD31630@sirena.org.uk>
-Mail-Followup-To: Tim Hockin <thockin@hockin.org>,
-	=?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <20070501084639.GA528@sirena.org.uk> <46371590.4090004@interia.pl> <20070501180830.GA31630@sirena.org.uk> <46379A7E.3000109@interia.pl> <20070501212750.GC31630@sirena.org.uk> <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com> <46382798.2090709@interia.pl> <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com> <463830E1.8080107@interia.pl> <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
+	Wed, 2 May 2007 04:25:03 -0400
+From: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
+To: "'Nick Piggin'" <nickpiggin@yahoo.com.au>
+Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>, <linux-kernel@vger.kernel.org>,
+       "'Daniel J Blueman'" <daniel.blueman@gmail.com>
+Subject: RE: How to make mmap'ed kernel buffer non-cacheable
+Date: Wed, 2 May 2007 13:53:08 +0530
+Message-ID: <04b101c78c93$1e234ea0$142ec70a@dlh.st.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FFoLq8A0u+X9iRU8"
-Content-Disposition: inline
-In-Reply-To: <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
-X-Cookie: Are you sure the back door is locked?
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 82.32.140.119
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: Natsemi DP83815 driver spaming
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <46372DDE.2040207@yahoo.com.au>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
+Thread-Index: AceL6enUtpG7LzVrTd2cCej/l9fBiwAqOVBQ
+X-O-Spoofed: Not Scanned
+X-O-General-Status: No
+X-O-Spam1-Status: Not Scanned
+X-O-Spam2-Status: Not Scanned
+X-O-URL-Status: Not Scanned
+X-O-Virus1-Status: No
+X-O-Virus2-Status: Not Scanned
+X-O-Virus3-Status: No
+X-O-Virus4-Status: No
+X-O-Virus5-Status: Not Scanned
+X-O-Image-Status: Not Scanned
+X-O-Attach-Status: Not Scanned
+X-SpheriQ-Ver: 4.2.04
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'll rephrase the problem as follow:
 
---FFoLq8A0u+X9iRU8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I have a userthread which makes ioctl calls to the kernel and once it reaches inside the kernel it waits on a semaphore. It then does some work inside the kernel and continuously keeps looping between the kernel and user space in an endless while loop. 
 
-On Tue, May 01, 2007 at 11:51:41PM -0700, Tim Hockin wrote:
+I want to kill that thread from another user thread while the former is waiting on a semaphore in kernel (which it will never get) coz I want a clean exit of my driver. Please suggest me a way. I did try the use of pthread_cancel, but that is possible only if the target thread is executing in user space and making use of a pthread_testcancel call (with cancelability enabled ofcourse). 
 
-> I'm not sure what the right answer is.  The code was designed to do
-> the right thing, and yet in your case it's broken.  Does it need to be
-> a build option to work around broken hardware?  Yuck.
+Kindly suggest something. 
 
-Without a system that really needs the original problem that was being
-worked around it's going to be hard to see if the workaround still does
-the job.  Given the nature of the failure I wouldn't be surprised if it
-broke different things on every board that has problems.
+> In continuation to this, I have another query:
+> As mentioned above, If there is a kernel task waiting on a semaphore (maybe even in hung state) and I wish to kill the kernel task from user space by making an ioctl call into the kernel, then how is it possible? Is it feasible at all?
 
-How about a sysfs tuneable?  It's not nice but at least it's runtime.
+If the kernel task is hung because of some bug in your code, then it isn't
+really possible in general. You could always just "up" the semaphore and hope,
+but things might be corrupted.
 
---=20
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
+If you just want to tell the kernel task to quit, I guess you'd just introduce
+some quit ioctl message, and have the kernel thread respond to that.
 
---FFoLq8A0u+X9iRU8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQCVAwUBRjhKMA2erOLNe+68AQIcjQP+LTDTrSu3WKuiAAI4swDlo06iP3MfZFo3
-N/1NgP23gXxkrPYnMjlPkjJOeTpbDDkdD2UdoheExSvNaJ069rdURIvnjanTe+52
-ewJMpWYSNi5DZOgyMU1AlOcFN8OcKJ/bGSUl5aMPnGt5+/NdFAC7yIriCsgbbHFd
-mrBKjDG4IMQ=
-=o2XV
------END PGP SIGNATURE-----
-
---FFoLq8A0u+X9iRU8--
