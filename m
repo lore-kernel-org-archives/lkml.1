@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766885AbXEBRkJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766915AbXEBRm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766885AbXEBRkJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:40:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766901AbXEBRkJ
+	id S1766915AbXEBRm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766904AbXEBRm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:40:09 -0400
-Received: from vsmtp14.tin.it ([212.216.176.118]:51826 "EHLO vsmtp14.tin.it"
+	Wed, 2 May 2007 13:42:59 -0400
+Received: from mx1.suse.de ([195.135.220.2]:49700 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766885AbXEBRkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:40:07 -0400
-Date: Wed, 2 May 2007 19:39:48 +0200 (CEST)
-From: l.genoni@oltrelinux.com
-X-X-Sender: venom@Phoenix.oltrelinux.com
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-cc: Rajib Majumder <rajibm2005@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, l.genoni@sns.it
-Subject: Re: Kernel Scalability
-In-Reply-To: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705021933320.14034@Phoenix.oltrelinux.com>
-References: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com>
+	id S1766915AbXEBRm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 13:42:58 -0400
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Cabot, Mason B" <mason.b.cabot@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+	<20070501142325.09c294bd.akpm@linux-foundation.org>
+	<p73slafxvor.fsf@bingen.suse.de> <20070502160436.GA19442@thunk.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 02 May 2007 20:40:35 +0200
+In-Reply-To: <20070502160436.GA19442@thunk.org>
+Message-ID: <p73y7k7vzks.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso <tytso@mit.edu> writes:
 
-On Wed, 2 May 2007, Daniel J Blueman wrote:
-
-> Date: Wed, 2 May 2007 16:43:44 +0100
-> From: Daniel J Blueman <daniel.blueman@gmail.com>
-> To: Rajib Majumder <rajibm2005@gmail.com>
-> Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-> Subject: Re: Kernel Scalability
-> Resent-Date: Wed, 02 May 2007 17:44:58 +0200
-> Resent-From: <l.genoni@sns.it>
+> On Wed, May 02, 2007 at 02:21:40PM +0200, Andi Kleen wrote:
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > > 
+> > > Conceivably we could address this in the filesystem without mucking other
+> > > things up.  But I'd have thought the simplest damage-control would be to
+> > > detect this pattern in samba and to then use glibc's fallocate().
+> > 
+> > The advantage of detecting it in kernel would be that it would handle
+> > Linux applications that do this (I suspect there are some) too.
 > 
-> On 2 May, 14:00, "Rajib Majumder" <rajibm2005@gmail.com> wrote:
->> Hi,
->> 
->> I am wondering if 2.4.x/2.6.x kernel is scalable enough to run on
->> 8-CPU hardware. Do we have any scalability comparison data between
->> 2.4/2.6 kernels and beyond 4-CPU?
->> 
->> If yes, is the scalablity is near linear?
->> 
->> Any input is appreciated.
->
-> There are 128-processor IA64 systems which run recent 2.6 kernels out
-> there; the per-processor counters, RCU and page-fault scalability work
-> has been instrumental to the necessary scaling for decent resource
-> usage on these.
->
-> IIRC, there were some patches being developed to improve pagecache
-> scalability lately too, but I guess it all depends on what kind of
-> workload you have...
->
-To stay on systems probably more familiar to the user who asked this 
-question, there are also some 64 core X86_64 bot AMD and Intel out there, 
-here the 2.6 kernel is doing 
-very well even on those intel CPU with shared L2 cache.
-I have some 16 and 32 core Opteron and never had scalability problems.
-You have to pay a lot of attention to your kernel configuration  (100 HZ, 
-just BKL preemption), and to the 
-filesystems you decide to use.
+> Um, which applications do you suspect?  So we can hunt down those user
+> space applications programmers and slap them silly?  Or rather,
+> unsilly, since that there's no good reason to ever suspect that
+> writing a byte every 128k would result in a good allocation layout on disk?
 
+Anything that uses glibc fallocate() ?
 
+-Andi
