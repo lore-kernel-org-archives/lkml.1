@@ -1,79 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992992AbXEBJvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992978AbXEBJww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992992AbXEBJvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 05:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992986AbXEBJvo
+	id S2992978AbXEBJww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 05:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992982AbXEBJww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 05:51:44 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:33987 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992992AbXEBJvn (ORCPT
+	Wed, 2 May 2007 05:52:52 -0400
+Received: from 71-32.202-62.fix.bluewin.ch ([62.202.32.71]:32293 "EHLO
+	mail.locatellimax.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992978AbXEBJwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 05:51:43 -0400
-Message-ID: <46385EF8.8040005@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 11:50:48 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Wed, 2 May 2007 05:52:51 -0400
+X-Greylist: delayed 852 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 05:52:51 EDT
+Date: Wed, 02 May 2007 08:37:33 -0200
+From: "Deana V Reyes" <Newton_Faith@adiamas.com>
+To: linux-howto@sunsite.unc.edu, linux-kernel@vger.kernel.org,
+       linux-legal-request@nl.linux.org, linux-lvm@redhat.com,
+       linux-mac68k-cvs-request@nl.linux.org,
+       linux-mac68k-request@nl.linux.org
+Subject: database of US dental offices on sale
+Message-ID: <2AA37EE3.7684.3B15C2D5@localhost>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Valdis.Kletnieks@vt.edu, Andre Tomt <andre@tomt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: so ... what *are* candidates for removal?
-References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>            <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu> <4637C04E.4070306@s5r6.in-berlin.de> <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-type: text/plain; charset=US-ASCII
+X-OriginalArrivalTime: 02 May 2007 09:37:14.0458 (UTC) FILETIME=[776AA3A0:01C78C9D]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1217-3.6.1039-15150.003
+X-TM-AS-Result: No-1.117400-4.000000-1
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Wed, 2 May 2007, Stefan Richter wrote:
-> 
->> Regarding features that are overdue for removal according to
->> feature-removal-schedule.txt:
->>
->> I remember that at least one person used to watch for due dates for
->> feature removal, wrote the removing patches, and sent them to the
->> appropriate lists and maintainers.  This either got rid of the
->> obsolete stuff, or it turned up reasons why some feature could not
->> be removed just yet and how to update feature-removal-schedule.txt
->> to correctly reflect that.
->>
->> So, as they say, Patches Are Welcome.
-> 
-> that's a nice idea, but it doesn't address the problem that someone
-> might go to the trouble to create such a patch and send it in, only to
-> have that submission generate shrieking along the lines of "OHMIGOD,
-> we can't delete that *yet*!!!"
 
-You are absolutely right.
 
-We have to try to avoid this waste of resources when we put features
-into feature-removal-schedule.txt.  That's what I meant with "the hard
-part" in the other post.
 
-BTW, of course it doesn't suffice to say "we can't remove it yet" after
-the due day.  There need to be well-founded reasons for another
-deferral.  Of course if there are such reasons, it means something went
-wrong when the feature was put into removal schedule.  (Some facts
-weren't known.)
+Just extracted - all new DENTIST Directory
 
-> that's the whole point of this wiki page:
-> 
-> http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
+Fields: Dentist/Clinic Name, Postal Address, Phone, Fax, Email and Website
 
-Yep; if that page helps to collect the facts, then all the better.
+Breakdown:
 
-Though in the very end, a feature goes away by means of a patch.
+597,959 Total Records
+6,494 Emails
+6,000 Faxes
 
-[...]
-> i'm sure most people here can think of better things to do with their
-> time.
+Special price until May 4 - $199 
 
-Funny (or not so) how this sentence applies to all kinds of activities
-into which more than one person is involved.  So let's try to plan our
-work carefully and *timely*, to let as little of it go to waste as possible.
--- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+For more information or to place an order please send an email to dentistdata@hotmail.com
+To delete your email from our list please send an email with "delete" in the subject heading.
