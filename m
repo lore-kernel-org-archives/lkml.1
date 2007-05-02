@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXEBFgn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbXEBFhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXEBFgn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:36:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030682AbXEBFf1
+	id S1754873AbXEBFhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030818AbXEBFfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:35:27 -0400
-Received: from haxent.com ([65.99.219.155]:2202 "EHLO haxent.com"
+	Wed, 2 May 2007 01:35:25 -0400
+Received: from haxent.com ([65.99.219.155]:2208 "EHLO haxent.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030664AbXEBFe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:34:56 -0400
-Message-Id: <20070502053427.352183000@haxent.com.br>
+	id S1030628AbXEBFe6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 01:34:58 -0400
+Message-Id: <20070502053427.592929000@haxent.com.br>
 References: <20070502052235.914764000@haxent.com.br>
 User-Agent: quilt/0.45-1
-Date: Wed, 02 May 2007 02:22:50 -0300
+Date: Wed, 02 May 2007 02:22:51 -0300
 From: Davi Arnaut <davi@haxent.com.br>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Davide Libenzi <davidel@xmailserver.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch 15/22] pollfs: export the plfutex system call
-Content-Disposition: inline; filename=pollfs-futex-syscall.patch
+Subject: [patch 16/22] pollfs: x86, wire up the plfutex system call
+Content-Disposition: inline; filename=pollfs-futex-i386-syscall.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export the new plfutex syscall prototype. While there, make it "conditional".
+Make the plfutex syscall available to user-space on x86.
 
 Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
 
 ---
- include/linux/syscalls.h |    2 ++
- kernel/sys_ni.c          |    1 +
- 2 files changed, 3 insertions(+)
+ arch/i386/kernel/syscall_table.S |    1 +
+ include/asm-i386/unistd.h        |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/include/linux/syscalls.h
+Index: linux-2.6/include/asm-i386/unistd.h
 ===================================================================
---- linux-2.6.orig/include/linux/syscalls.h
-+++ linux-2.6/include/linux/syscalls.h
-@@ -609,4 +609,6 @@ asmlinkage long sys_plsignal(const sigse
+--- linux-2.6.orig/include/asm-i386/unistd.h
++++ linux-2.6/include/asm-i386/unistd.h
+@@ -327,10 +327,11 @@
+ #define __NR_epoll_pwait	319
+ #define __NR_plsignal		320
+ #define __NR_pltimer		321
++#define __NR_plfutex		322
  
- asmlinkage long sys_pltimer(void);
+ #ifdef __KERNEL__
  
-+asmlinkage long sys_plfutex(void);
-+
- #endif
-Index: linux-2.6/kernel/sys_ni.c
+-#define NR_syscalls 322
++#define NR_syscalls 323
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+Index: linux-2.6/arch/i386/kernel/syscall_table.S
 ===================================================================
---- linux-2.6.orig/kernel/sys_ni.c
-+++ linux-2.6/kernel/sys_ni.c
-@@ -114,6 +114,7 @@ cond_syscall(compat_sys_ipc);
- cond_syscall(compat_sys_sysctl);
- cond_syscall(sys_plsignal);
- cond_syscall(sys_pltimer);
-+cond_syscall(sys_plfutex);
- 
- /* arch-specific weak syscall entries */
- cond_syscall(sys_pciconfig_read);
+--- linux-2.6.orig/arch/i386/kernel/syscall_table.S
++++ linux-2.6/arch/i386/kernel/syscall_table.S
+@@ -321,3 +321,4 @@ ENTRY(sys_call_table)
+ 	.long sys_epoll_pwait
+ 	.long sys_plsignal		/* 320 */
+ 	.long sys_pltimer
++	.long sys_plfutex
 
 --
