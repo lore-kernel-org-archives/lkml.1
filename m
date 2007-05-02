@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993079AbXEBMfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbXEBMjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993079AbXEBMfN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993093AbXEBMfM
+	id S1755116AbXEBMjf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbXEBMjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:35:12 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:23782 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993079AbXEBMfK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:35:10 -0400
-Date: Wed, 2 May 2007 14:38:08 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: gregkh@suse.de, dmitry.torokhov@gmail.com, oneukum@suse.de,
-       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] sysfs: sysfs rework, take #2
-Message-ID: <20070502143808.37dd5ff0@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
-References: <11777675753460-git-send-email-htejun@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 May 2007 08:39:35 -0400
+Received: from haxent.com ([65.99.219.155]:1778 "EHLO haxent.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbXEBMjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:39:35 -0400
+Message-ID: <46388677.4050706@haxent.com.br>
+Date: Wed, 02 May 2007 09:39:19 -0300
+From: Davi Arnaut <davi@haxent.com.br>
+MIME-Version: 1.0
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+References: <20070502052235.914764000@haxent.com.br>	 <20070502053427.123392000@haxent.com.br> <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+In-Reply-To: <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 22:39:35 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+Ulrich Drepper wrote:
+> On 5/1/07, Davi Arnaut <davi@haxent.com.br> wrote:
+>> The pollable futex approach is far superior (send and receive events from
+>> userspace or kernel) to eventfd and fixes (supercedes) FUTEX_FD at the same time.
+>> [...]
+> 
 
-> All the known regrssions are fixed.  I think I've got all the
-> attr->owner but haven't verified with cross compiling yet, just
-> allyesconfig on x86-64 and i386.  I'll try to setup some cross compile
-> environments tomorrow and follow up if I can find more fallouts.
+<snip>
 
-s390 attr->owner seems to be fine afaics.
+> 
+> - more complicated case: I have to wait for multiple futexes and lock
+> them all at the same time or don't return at all.  This is possible with
+> SysV semaphores and generally useful and needed.
+> How can this be implemented with your scheme?
 
-I've run some stress tests (attach/detach) on s390 and haven't run into
-any problems yet.
+It's quite easy to implement this scheme by write()ing the futexes all
+at once but that would break the one futex per fd association. For
+atomicity: if one of the futexes can't be queued, we would rollback
+(unqueue) the others.
+
+Sounds sane?
+
+--
+Davi Arnaut
