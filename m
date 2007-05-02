@@ -1,144 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbXEBPpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbXEBPpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbXEBPpJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXEBPpJ
+	id S1753906AbXEBPpX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXEBPpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:45:09 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46302 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993380AbXEBPpF (ORCPT
+	Wed, 2 May 2007 11:45:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:10448 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbXEBPpS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:45:05 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Dean Nelson <dcn@sgi.com>
-Cc: hch@infradead.org, akpm@osdl.org, containers@lists.osdl.org,
-       oleg@tv-sign.ru, linux-kernel@vger.kernel.org, jes@sgi.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH] ia64 sn xpc: Convert to use kthread API.
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<1176969574439-git-send-email-ebiederm@xmission.com>
-	<20070422203647.GC23015@infradead.org>
-	<20070427174142.GA16811@sgi.com>
-	<m1hcr1is4l.fsf@ebiederm.dsl.xmission.com>
-	<20070427201211.GA20297@sgi.com>
-	<m1d51pimlf.fsf@ebiederm.dsl.xmission.com>
-	<20070430152230.GB22243@sgi.com> <20070502151642.GA23925@sgi.com>
-Date: Wed, 02 May 2007 09:44:11 -0600
-In-Reply-To: <20070502151642.GA23925@sgi.com> (Dean Nelson's message of "Wed,
-	2 May 2007 10:16:42 -0500")
-Message-ID: <m1vefbw7qs.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 2 May 2007 11:45:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,480,1170662400"; 
+   d="scan'208";a="223130232"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 00/16] raid acceleration and asynchronous offload api for 2.6.22
+Date: Wed, 2 May 2007 08:45:14 -0700
+Message-ID: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8DF4@azsmsx413.amr.corp.intel.com>
+In-Reply-To: <463835C7.3020902@yahoo.com.au>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 00/16] raid acceleration and asynchronous offload api for 2.6.22
+Thread-Index: AceMhtm7Le0KJo4eT/O+Rzrtottw1AARSUrw
+From: "Williams, Dan J" <dan.j.williams@intel.com>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Cc: <neilb@suse.de>, <akpm@linux-foundation.org>,
+       "Leech, Christopher" <christopher.leech@intel.com>,
+       <linux-kernel@vger.kernel.org>, <linux-raid@vger.kernel.org>
+X-OriginalArrivalTime: 02 May 2007 15:45:15.0730 (UTC) FILETIME=[E0E15B20:01C78CD0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dean Nelson <dcn@sgi.com> writes:
+> From: Nick Piggin [mailto:nickpiggin@yahoo.com.au]
+> > I am pleased to release this latest spin of the raid acceleration
+> > patches for merge consideration.  This release aims to address all
+> > pending review items including MD bug fixes and async_tx api changes
+> > from Neil, and concerns on channel management from Chris and others.
+> >
+> > Data integrity tests using home grown scripts and 'iozone -V' are
+> > passing.  I am open to suggestions for additional testing criteria.
+> 
+> Do you have performance numbers?
+> 
+Patch #4 outlines the throughput gains as reported by tiobench.  20-30%
+for sequential writes, and 40-55% for degraded reads.
 
-> On Mon, Apr 30, 2007 at 10:22:30AM -0500, Dean Nelson wrote:
->> On Fri, Apr 27, 2007 at 02:33:32PM -0600, Eric W. Biederman wrote:
->> > Dean Nelson <dcn@sgi.com> writes:
->> > 
->> > > Taking it one step further, if you added the notion of a thread pool,
->> > > where upon exit, a thread isn't destroyed but rather is queued ready to
->> > > handle the next kthread_create_quick() request.
->> > 
->> > That might happen.  So far I am avoiding the notion of a thread pool for
->> > as long as I can.  There is some sense in it, especially in generalizing
->> > the svc thread pool code from nfs.  But if I don't have to go there I would
->> > prefer it.
->> 
->> This means that XPC will have to retain its thread pool, but I can
->> understand you not wanting to go there.
->
-> On Thu, Apr 26, 2007 at 01:11:15PM -0600, Eric W. Biederman wrote:
->>
->> Ok.    Because of the module unloading issue, and because we don't have
->> a lot of these threads running around, the current plan is to fix
->> thread_create and kthread_stop so that they must always be paired,
->> and so that kthread_stop will work correctly if the task has already
->> exited.
->>
->> Basically that just involves calling get_task_struct in kthread_create
->> and put_task_struct in kthread_stop.
->
-> Okay, so I need to expand upon Christoph Hellwig's patch so that all
-> the kthread_create()'d threads are kthread_stop()'d.
->
-> This is easy to do for the XPC thread that exists for the lifetime of XPC,
-> as well as for the threads created to manage the SGI system partitions.
->
-> XPC has the one discovery thread that is created when XPC is first started
-> and exits as soon as it has finished discovering all existing SGI system
-> partitions. With your forthcoming change to kthread_stop() that will allow
-> it to be called after the thread has exited, doing this one is also easy.
-> Note that the kthread_stop() for this discovery thread won't occur until
-> XPC is rmmod'd. This means that its task_struct will not be freed for
-> possibly a very long time (i.e., weeks). Is that a problem?
+Here are some recent screen captures of a resync operation with and
+without offload, this is on an iop13xx platform:
 
-As long as there is only one, not really.  It would be good if we could
-get rid of it though.
+mdadm --create /dev/md0 /dev/sd[abc] missing -n 4 -l 5
+mdadm --add /dev/md0 /dev/sdd
 
-The practical problem is the race with rmmod, in particular if someone
-calls rmmod while this thread is still running.
+---
+CONFIG_DMA_ENGINE = n
 
-If I get clever I think this is likely solvable with something like.
+top - 00:01:39 up 1 min,  1 user,  load average: 0.77, 0.20, 0.06
+Tasks:  50 total,   1 running,  49 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.3% us, 47.4% sy,  0.0% ni, 49.0% id,  0.0% wa,  0.7% hi,
+2.6% si
+Mem:   2074836k total,    36276k used,  2038560k free,        0k buffers
+Swap:        0k total,        0k used,        0k free,    16560k cached
 
-kthread_maybe_stop(struct task_struct **loc)
-{
-        struct task_struct *tsk;
-        tsk = xchg(loc, NULL);
-        if (tsk)
-        	kthread_stop(tsk);
-}
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 1307 root      11  -5     0    0    0 S 48.0  0.0   0:14.14 md0_raid5
+ 1319 root      15   0  2260 1052  868 R  0.3  0.1   0:00.12 top
 
-kthread_stop_self(struct task_struct **loc, int exit_code)
-{
-        struct task_struct *tsk;
-        
-        tsk = xchg(loc, NULL);
-        if (tsk)
-        	put_task_struct(tsk);
-	do_exit(tsk);                
-}
+iq81340mc:~# cat /proc/mdstat
+Personalities : [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
+md0 : active raid5 sda[0] sdd[4] sdc[2] sdb[1]
+      468872448 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
+      [>....................]  recovery =  0.7% (1104000/156290816)
+finish=108.1min speed=23919K/sec
 
-I'm not quite convinced that is a common enough paradigm to implement
-that.
+---
+CONFIG_DMA_ENGINE = y && CONFIG_INTEL_IOP_ADMA = y
 
-> But then we come to XPC's pool of threads that deliver channel messages
-> to the appropriate consumer (like XPNET) and can block indefinitely. As
-> mentioned earlier there could be hundreds if not thousands of these
-> (our systems keep getting bigger). So now requiring a kthread_stop()
-> for each one of these becomes more of a problem, as it is a lot of
-> task_struct pointers to maintain.
->
-> Currently, XPC maintains these threads via a
-> wait_event_interruptible_exclusive() queue so that it can wakeup as many
-> or as few as needed at any given moment by calling wake_up_nr(). When XPC
-> is rmmod'd, a flag is set which causes them to exit and wake_up_all()
-> is called.  Therefore XPC dosen't need to remember their pids or
-> task_struct pointers.
->
-> So what would you suggest we do for this pool of threads?
+top - 00:06:21 up 6 min,  1 user,  load average: 1.10, 0.68, 0.29
+Tasks:  51 total,   1 running,  50 sleeping,   0 stopped,   0 zombie
+Cpu(s):  0.5% us,  7.5% sy,  0.1% ni, 85.8% id,  1.9% wa,  0.5% hi,
+3.5% si
+Mem:   2074776k total,    40520k used,  2034256k free,        0k buffers
+Swap:        0k total,        0k used,        0k free,    19448k cached
 
-Good question.
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+ 1354 root      10  -5     0    0    0 S 11.6  0.0   0:29.32 md0_raid5
+ 1491 root      18   0  2256  964  780 R  1.9  0.0   0:00.03 top
+	
+iq81340mc:/mnt# cat /proc/mdstat
+Personalities : [raid0] [raid1] [raid10] [raid6] [raid5] [raid4]
+md0 : active raid5 sdd[4] sdc[2] sdb[1] sda[0]
+      468872448 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
+      [>....................]  recovery =  3.5% (5474916/156290816)
+finish=52.2min speed=48061K/sec
 
-The whole concept of something that feels like a core part of the
-platform code being modular I'm still looking at strange.
+Some older iozone data is available here:
+https://sourceforge.net/project/showfiles.php?group_id=115074&package_id
+=203776
 
-> Is there any way to have a version of kthread_create() that doesn't
-> require a matching kthread_stop()? Or add a kthread_not_stopping()
-> that does the put_task_struct() call, so as to eliminate the need for
-> calling kthread_stop()?
-
-Yes.  I was thinking calling it kthread_orphan or something like that.
-We can't make anything like that the default, because of the modular
-remove problem, but it's not to hard.
-
-> Or should we reconsider the kthread pool approach
-> (and get XPC out of the thread management business altogether)? Robin
-> Holt is putting together a proposal for how one could do a kthread pool,
-> it should provide a bit more justification for going down that road.
-
-Eric
+Regards,
+Dan
