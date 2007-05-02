@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767021AbXEBV0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767044AbXEBV2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767021AbXEBV0M (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767040AbXEBV0M
+	id S1767044AbXEBV2G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767030AbXEBV2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:26:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:54579 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767021AbXEBV0L (ORCPT
+	Wed, 2 May 2007 17:28:06 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59981 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766800AbXEBV2E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:26:11 -0400
-Message-ID: <463901C9.7090107@zytor.com>
-Date: Wed, 02 May 2007 14:25:29 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com> <4638FDA6.9030500@gmail.com> <4638FF70.8020400@zytor.com> <46390086.2030904@gmail.com>
-In-Reply-To: <46390086.2030904@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 2 May 2007 17:28:04 -0400
+Date: Wed, 2 May 2007 14:27:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slub: remove duplicate VM_BUG_ON
+Message-Id: <20070502142756.de29ab08.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705021413570.2469@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705022307310.16215@sbz-30.cs.Helsinki.FI>
+	<Pine.LNX.4.64.0705021311440.1978@schroedinger.engr.sgi.com>
+	<4638F2DA.9080100@cs.helsinki.fi>
+	<Pine.LNX.4.64.0705021413570.2469@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 05/02/2007 11:15 PM, H. Peter Anvin wrote:
+On Wed, 2 May 2007 14:14:39 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Wed, 2 May 2007, Pekka Enberg wrote:
 > 
->> However, the pluggable framework is quite trivial and makes the code
->> look really clean, so I'm keeping it regardless.
+> > Christoph Lameter wrote:
+> > > Patch is already in mm. Could you download all the patches after that before
+> > > testing? There was quite a number.
+> > 
+> > I am on 2.6.21-rc7-mm2. Me goes to wonder where Andrew's snapshots are...
 > 
-> Sheesh. Anyways, I know you asked about register writes but in case it's
-> still useful info: the CL54xx adapters have 132x43 and 132x25 as BIOS
-> modes 0x54 and 0x55 (ie, just int 0x10 modes) respectively. No idea how
-> complete the Bochs/Qemu video BIOS is.
+> Too much going on I think. I guess I saturated him with patches.
+>  
 
-No, they don't.  I've found enough Cirrus docs to learn that that was
-pulled out of their BIOS when they ran out of space.
+yes, I'm very much in "slow things down, do it more carefully" mode.  I
+have 350 patches sitting awaiting later consideration at present.
 
-The Bochs/Qemu biosen don't have it.
+It's not so much that I'm personally swamped - it's more that I think we've
+hit (exceeded) the rate at which we can feed stuff into the tree while
+maintaining acceptable quality.
 
-	-hpa
+If others were to increase the amount of time they spend on testing,
+reviewing and bugfixing it would help to level things out. 
+
+I should have got the 2.6.22-mm-merge-plans email out a week or two
+earlier, I'm afraid.  Things are looking somewhat messy.
+
