@@ -1,52 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993378AbXEBPte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbXEBPvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993378AbXEBPte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993358AbXEBPte
+	id S1755234AbXEBPvK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:51:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755242AbXEBPvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:49:34 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48296 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993378AbXEBPtd (ORCPT
+	Wed, 2 May 2007 11:51:09 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:50968 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755234AbXEBPvI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:49:33 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Dean Nelson <dcn@sgi.com>
-Cc: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: "partical" kthread conversion
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<20070501084245.GA14364@infradead.org>
-	<20070501015141.f09f6dde.akpm@linux-foundation.org>
-	<20070502140115.GA23595@sgi.com>
-	<m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
-	<20070502153727.GA31794@sgi.com>
-Date: Wed, 02 May 2007 09:49:05 -0600
-In-Reply-To: <20070502153727.GA31794@sgi.com> (Dean Nelson's message of "Wed,
-	2 May 2007 10:37:27 -0500")
-Message-ID: <m1r6pzw7im.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 2 May 2007 11:51:08 -0400
+X-Sasl-enc: BdY0xKWZqiexYcN7frvH9tBhkmZFOewUc4QJrUV6sDKB 1178121066
+Date: Wed, 2 May 2007 12:51:02 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][ 3/5] sched: implement staircase deadline cpu scheduler
+Message-ID: <20070502155102.GB18127@khazad-dum.debian.net>
+References: <200703271210.39429.kernel@kolivas.org> <20070430115014.0fff7772.akpm@linux-foundation.org> <200705022223.51809.kernel@kolivas.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705022223.51809.kernel@kolivas.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dean Nelson <dcn@sgi.com> writes:
+On Wed, 02 May 2007, Con Kolivas wrote:
+> Anyway, good, bad or indifferent I intend to keep it around for comparison to 
+> drive cfs further.
 
-> I'd typed up some questions for you about the new patch I need to create
-> which I'd just sent to you, so I won't repeat them here.
->
-> Before proceeding to far with your above changes, you might wait to see
-> the proposal that Robin Holt is putting together for a kthread pool.
-> I'm not sure how spawning a thread (which involves allocation of the
-> task_struct amongst other things, plus scheduling) can beat a wake_up()
-> of an already existing thread for cost time-wise.
+Well, just to let you know some of us really like the design, and prefer to
+use SD and have an extremely strict scheduling priority set through nice
+levels, so it is not there just to drive CFS further :-)   I imagine people
+in the embedded world might want it for that reason, too.
 
-A reasonable point, although if you don't happen to sleep in the allocations
-I suspect time wise it's pretty much a wash.
-
-I have some other reasons I might need the capability of clone a thread
-from a non-parent process, and it has the potential to simplify some things
-in the kthread case so I'm going to finish investigating, since I believe
-I have figured out a path to that target.
-
-Eric
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
