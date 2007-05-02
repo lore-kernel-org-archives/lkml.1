@@ -1,319 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbXEBFnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992763AbXEBFpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754770AbXEBFnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXEBFnb
+	id S2992763AbXEBFpP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992765AbXEBFpO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:43:31 -0400
-Received: from haxent.com ([65.99.219.155]:2161 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754770AbXEBFen (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:34:43 -0400
-Message-Id: <20070502053424.323964000@haxent.com.br>
-References: <20070502052235.914764000@haxent.com.br>
-User-Agent: quilt/0.45-1
-Date: Wed, 02 May 2007 02:22:37 -0300
-From: Davi Arnaut <davi@haxent.com.br>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch 02/22] pollfs: file system operations
-Content-Disposition: inline; filename=pollfs-core.patch
+	Wed, 2 May 2007 01:45:14 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:18970 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992763AbXEBFpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 01:45:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent:from;
+	b=M2TbxCssK/waXZwpq8TngY3wXvZASF4qL6sxtH/oysfLyCAZmYbGCCvnyGGHOXDoq
+	8DDXaHBVRJ9RMt6GZyGPQ==
+Date: Tue, 1 May 2007 22:44:53 -0700
+To: ak@suse.de, vojtech@suse.cz
+Cc: linux-kernel@vger.kernel.org, akpm@google.com
+Subject: [PATCH] x86_64: O_EXCL on /dev/mcelog
+Message-ID: <20070502054453.GA18501@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
+From: thockin@google.com (Tim Hockin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The key feature of the pollfs file operations is to internally handle
-pollable (waitable) resources as files without exporting complex and
-bug-prone underlying (VFS) implementation details.
+From: Tim Hockin <thockin@google.com>
 
-All resource handlers are required to implement the read, write, poll,
-release operations and must not block.
+Background:
+ /dev/mcelog is a clear-on-read interface.  It is currently possible for
+ multiple users to open and read() the device.  Users are protected from
+ each other during any one read, but not across reads.
 
-Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
+Description:
+ This patch adds support for O_EXCL to /dev/mcelog.  If a user opens the
+ device with O_EXCL, no other user may open the device (EBUSY).  Likewise,
+ any user that tries to open the device with O_EXCL while another user has
+ the device will fail (EBUSY).
+
+Result:
+ Applications can get exclusive access to /dev/mcelog.  Applications that
+ do not care will be unchanged.
+
+Alternatives:
+ A simpler choice would be to only allow one open() at all, regardless of
+ O_EXCL.
+
+Testing:
+ I wrote an application that opens /dev/mcelog with O_EXCL and observed
+ that any other app that tried to open /dev/mcelog would fail until the
+ exclusive app had closed the device.
+
+Caveats:
+ None.
+
+Patch:
+ This patch is against 2.6.21-rc7.
+
+Signed-off-by: Tim Hockin <thockin@google.com>
 
 ---
- fs/Makefile        |    1 
- fs/pollfs/Makefile |    2 
- fs/pollfs/file.c   |  238 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- init/Kconfig       |    6 +
- 4 files changed, 247 insertions(+)
 
-Index: linux-2.6/fs/pollfs/file.c
-===================================================================
---- /dev/null
-+++ linux-2.6/fs/pollfs/file.c
-@@ -0,0 +1,238 @@
-+/*
-+ * Copyright (C) 2007 Davi E. M. Arnaut
-+ *
-+ * Licensed under the GNU GPL. See the file COPYING for details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/slab.h>
-+#include <linux/err.h>
-+#include <linux/wait.h>
-+#include <asm/uaccess.h>
-+#include <linux/poll.h>
-+#include <linux/file.h>
-+#include <linux/mount.h>
-+#include <linux/pollfs_fs.h>
-+
-+#define POLLFS_MAGIC 0x9a6afcd
-+
-+MODULE_LICENSE("GPL");
-+
-+/* pollfs vfsmount entry */
-+static struct vfsmount *pfs_mnt;
-+
-+/* pollfs file operations */
-+static const struct file_operations pfs_fops;
-+
-+static inline ssize_t
-+pfs_read_nonblock(const struct pfs_operations *fops, void *data,
-+		  void __user *obj, size_t nr)
-+{
-+	ssize_t count = 0, res = 0;
-+
-+	do {
-+		res = fops->read(data, obj);
-+		if (res)
-+			break;
-+		count++;
-+		obj += fops->rsize;
-+	} while (--nr);
-+
-+	if (count)
-+		return count * fops->rsize;
-+	else if (res)
-+		return res;
-+	else
-+		return -EAGAIN;
-+}
-+
-+static inline ssize_t
-+pfs_read_block(const struct pfs_operations *fops, void *data,
-+	       wait_queue_head_t *wait, void __user *obj, size_t nr)
-+{
-+	ssize_t count;
-+
-+	do {
-+		count = pfs_read_nonblock(fops, data, obj, nr);
-+		if (count != -EAGAIN)
-+			break;
-+		count = wait_event_interruptible((*wait), fops->poll(data));
-+	} while (!count);
-+
-+	return count;
-+}
-+
-+static ssize_t pfs_read(struct file *filp, char __user *buf,
-+			size_t count, loff_t * pos)
-+{
-+	size_t nevents = count;
-+	struct pfs_file *pfs = filp->private_data;
-+	const struct pfs_operations *fops = pfs->fops;
-+
-+	if (fops->rsize)
-+		nevents /= fops->rsize;
-+	else
-+		nevents = 1;
-+
-+	if (!nevents)
-+		return -EINVAL;
-+
-+	if (filp->f_flags & O_NONBLOCK)
-+		return pfs_read_nonblock(fops, pfs->data, buf, nevents);
-+	else
-+		return pfs_read_block(fops, pfs->data, pfs->wait, buf, nevents);
-+}
-+
-+static ssize_t pfs_write(struct file *filp, const char __user *buf,
-+			 size_t count, loff_t * ppos)
-+{
-+	ssize_t res = 0;
-+	size_t nevents = count;
-+	struct pfs_file *pfs = filp->private_data;
-+	const struct pfs_operations *fops = pfs->fops;
-+
-+	if (fops->wsize)
-+		nevents /= fops->wsize;
-+	else
-+		nevents = 1;
-+
-+	if (!nevents)
-+		return -EINVAL;
-+
-+	count = 0;
-+
-+	do {
-+		res = fops->write(pfs->data, buf);
-+		if (res)
-+			break;
-+		count++;
-+		buf += fops->wsize;
-+	} while (--nevents);
-+
-+	if (count)
-+		return count * fops->wsize;
-+	else if (res)
-+		return res;
-+	else
-+		return 0;
-+}
-+
-+static unsigned int pfs_poll(struct file *filp, struct poll_table_struct *wait)
-+{
-+	int ret = 0;
-+	struct pfs_file *pfs = filp->private_data;
-+
-+	poll_wait(filp, pfs->wait, wait);
-+
-+	if (pfs->fops->poll)
-+		ret = pfs->fops->poll(pfs->data);
-+	else
-+		ret = POLLIN;
-+
-+	return ret;
-+}
-+
-+static int pfs_mmap(struct file *filp, struct vm_area_struct *vma)
-+{
-+	struct pfs_file *pfs = filp->private_data;
-+
-+	return (pfs->fops->mmap) ? pfs->fops->mmap(pfs->data, vma) : -ENODEV;
-+}
-+
-+static int pfs_release(struct inode *inode, struct file *filp)
-+{
-+	struct pfs_file *pfs = filp->private_data;
-+
-+	return pfs->fops->release(pfs->data);
-+}
-+
-+static const struct file_operations pfs_fops = {
-+	.poll = pfs_poll,
-+	.mmap = pfs_mmap,
-+	.read = pfs_read,
-+	.write = pfs_write,
-+	.release = pfs_release
-+};
-+
-+long pfs_open(struct pfs_file *pfs)
-+{
-+	int fd;
-+	struct file *filp;
-+	const struct pfs_operations *fops = pfs->fops;
-+
-+	if (IS_ERR(pfs_mnt))
-+		return -ENOSYS;
-+
-+	if (!fops->poll || (!fops->read || !fops->write))
-+		return -EINVAL;
-+
-+	fd = get_unused_fd();
-+	if (fd < 0)
-+		return -ENFILE;
-+
-+	filp = get_empty_filp();
-+	if (!filp) {
-+		put_unused_fd(fd);
-+		return -ENFILE;
-+	}
-+
-+	filp->f_op = &pfs_fops;
-+	filp->f_path.mnt = mntget(pfs_mnt);
-+	filp->f_path.dentry = dget(pfs_mnt->mnt_root);
-+	filp->f_mapping = filp->f_path.dentry->d_inode->i_mapping;
-+	filp->f_mode = 0;
-+	filp->f_flags = 0;
-+	filp->private_data = pfs;
-+
-+	if (fops->read) {
-+		filp->f_flags = O_RDONLY;
-+		filp->f_mode |= FMODE_READ;
-+	}
-+
-+	if (fops->write) {
-+		filp->f_flags = O_WRONLY;
-+		filp->f_mode |= FMODE_WRITE;
-+	}
-+
-+	if (fops->write && fops->read)
-+		filp->f_flags = O_RDWR;
-+
-+	fd_install(fd, filp);
-+
-+	return fd;
-+}
-+
-+EXPORT_SYMBOL(pfs_open);
-+
-+static int pfs_get_sb(struct file_system_type *fs_type, int flags,
-+		      const char *dev_name, void *data, struct vfsmount *mnt)
-+{
-+	return get_sb_pseudo(fs_type, "pollfs", NULL, POLLFS_MAGIC, mnt);
-+}
-+
-+static struct file_system_type pollfs_type = {
-+	.name = "pollfs",
-+	.get_sb = pfs_get_sb,
-+	.kill_sb = kill_anon_super
-+};
-+
-+static int __init pollfs_init(void)
-+{
-+	int ret;
-+
-+	ret = register_filesystem(&pollfs_type);
-+	if (ret)
-+		return ret;
-+
-+	pfs_mnt = kern_mount(&pollfs_type);
-+	if (IS_ERR(pfs_mnt)) {
-+		ret = PTR_ERR(pfs_mnt);
-+		unregister_filesystem(&pollfs_type);
-+	}
-+
-+	return ret;
-+}
-+
-+__initcall(pollfs_init);
-Index: linux-2.6/init/Kconfig
-===================================================================
---- linux-2.6.orig/init/Kconfig
-+++ linux-2.6/init/Kconfig
-@@ -463,6 +463,12 @@ config EPOLL
- 	  Disabling this option will cause the kernel to be built without
- 	  support for epoll family of system calls.
+This is the first version version of this patch.  The simpler alternative
+of only one open() sounds better to me, but becomes a net change in
+behavior.
+
+
+diff -pruN linux-2.6.20+th/arch/x86_64/kernel/mce.c linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c
+--- linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 14:19:08.000000000 -0700
++++ linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c	2007-05-01 21:53:10.000000000 -0700
+@@ -465,6 +465,40 @@ void __cpuinit mcheck_init(struct cpuinf
+  * Character device to read and clear the MCE log.
+  */
  
-+config POLLFS
-+	bool "Enable pollfs support" if EMBEDDED
-+	default y
-+	help
-+	 Pollfs support
++static DEFINE_SPINLOCK(mce_state_lock);
++static int open_count;	/* #times opened */
++static int open_exclu;	/* already open exclusive? */
 +
- config SHMEM
- 	bool "Use full shmem filesystem" if EMBEDDED
- 	default y
-Index: linux-2.6/fs/Makefile
-===================================================================
---- linux-2.6.orig/fs/Makefile
-+++ linux-2.6/fs/Makefile
-@@ -114,3 +114,4 @@ obj-$(CONFIG_HPPFS)		+= hppfs/
- obj-$(CONFIG_DEBUG_FS)		+= debugfs/
- obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
- obj-$(CONFIG_GFS2_FS)           += gfs2/
-+obj-$(CONFIG_POLLFS)		+= pollfs/
-Index: linux-2.6/fs/pollfs/Makefile
-===================================================================
---- /dev/null
-+++ linux-2.6/fs/pollfs/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_POLLFS) += pollfs.o
-+pollfs-y := file.o
-
---
++static int mce_open(struct inode *inode, struct file *file)
++{
++	spin_lock(&mce_state_lock);
++
++	if (open_exclu || (open_count && (file->f_flags & O_EXCL))) {
++		spin_unlock(&mce_state_lock);
++		return -EBUSY;
++	}
++
++	if (file->f_flags & O_EXCL)
++		open_exclu = 1;
++	open_count++;
++
++	spin_unlock(&mce_state_lock);
++
++	return 0;
++}
++
++static int mce_release(struct inode *inode, struct file *file)
++{
++	spin_lock(&mce_state_lock);
++
++	open_count--;
++	open_exclu = 0;
++
++	spin_unlock(&mce_state_lock);
++
++	return 0;
++}
++
+ static void collect_tscs(void *data) 
+ { 
+ 	unsigned long *cpu_tsc = (unsigned long *)data;
+@@ -553,6 +587,8 @@ static int mce_ioctl(struct inode *i, st
+ }
+ 
+ static const struct file_operations mce_chrdev_ops = {
++	.open = mce_open,
++	.release = mce_release,
+ 	.read = mce_read,
+ 	.ioctl = mce_ioctl,
+ };
