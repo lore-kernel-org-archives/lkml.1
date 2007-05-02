@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbXEBI0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753423AbXEBI2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbXEBI0v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXEBI0v
+	id S1753423AbXEBI2s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbXEBI2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:26:51 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60961 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751762AbXEBI0u (ORCPT
+	Wed, 2 May 2007 04:28:48 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:34163 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbXEBI2q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:26:50 -0400
-Date: Wed, 2 May 2007 01:26:47 -0700
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: torvalds@linux-foundation.org, menage@google.com,
-       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
- unpopulated cpuset
-Message-Id: <20070502012647.fbc0d502.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 04:28:46 -0400
+X-Originating-Ip: 74.109.98.66
+Date: Wed, 2 May 2007 04:28:04 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Valdis.Kletnieks@vt.edu, Andre Tomt <andre@tomt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: so ... what *are* candidates for removal?
+In-Reply-To: <4637C04E.4070306@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
+References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>      
+      <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu>
+ <4637C04E.4070306@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Other than the detail of allowing a newline from doing:
+On Wed, 2 May 2007, Stefan Richter wrote:
 
-	echo > cpus
+> Regarding features that are overdue for removal according to
+> feature-removal-schedule.txt:
+>
+> I remember that at least one person used to watch for due dates for
+> feature removal, wrote the removing patches, and sent them to the
+> appropriate lists and maintainers.  This either got rid of the
+> obsolete stuff, or it turned up reasons why some feature could not
+> be removed just yet and how to update feature-removal-schedule.txt
+> to correctly reflect that.
+>
+> So, as they say, Patches Are Welcome.
 
-to work, I'm ok with this patch.  It passes my cpuset_test,
-and seems to allow unpopulating cpusets, as advertised.
+that's a nice idea, but it doesn't address the problem that someone
+might go to the trouble to create such a patch and send it in, only to
+have that submission generate shrieking along the lines of "OHMIGOD,
+we can't delete that *yet*!!!"
 
-Aha - as I was writing this, I noticed that the command:
+that's the whole point of this wiki page:
 
-  echo -n '' > cpus
+http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
 
-does -not- work!  The echo command recognizes that as a write
-of zero non-null bytes, and skips the write altogether.
+it's meant for active participation to converge on a *consensus* as to
+what should go and what shouldn't, *after* which the features removal
+file can be updated appropriately and patches can start to be
+generated.
 
-We have to add the code to handle an input line consisting of
-just a bare newline, to mean an empty mask.  Well, we don't
--have- to.  But writing a single nul byte in shell script will
-challenge most shell script hackers.
+it's incredibly wasteful to take the time to create and submit a
+feature removal patch that ends up just *establishing* that something
+shouldn't be deleted yet.  i'm sure most people here can think of
+better things to do with their time.
 
+rday
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
