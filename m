@@ -1,96 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766864AbXEBTzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766871AbXEBT73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766864AbXEBTzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766873AbXEBTzW
+	id S1766871AbXEBT73 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766873AbXEBT73
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:55:22 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:48142 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1766864AbXEBTzS (ORCPT
+	Wed, 2 May 2007 15:59:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:59993 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1766871AbXEBT72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:55:18 -0400
-Date: Wed, 2 May 2007 21:55:16 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Hellwig <hch@infradead.org>, Dave Jones <davej@redhat.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-In-Reply-To: <20070502124154.fa55fec9.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0705022148170.20159@pademelon.sonytel.be>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
- <20070425112133.4ae86399.randy.dunlap@oracle.com>
- <20070425143011.57247c1d.akpm@linux-foundation.org>
- <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
- <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
- <20070428030805.GA13331@redhat.com> <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
- <20070502152906.GA29642@infradead.org> <Pine.LNX.4.62.0705021731580.3706@pademelon.sonytel.be>
- <20070502124154.fa55fec9.akpm@linux-foundation.org>
+	Wed, 2 May 2007 15:59:28 -0400
+Date: Wed, 2 May 2007 15:59:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, <marcel@holtmann.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] usb/core/hub.c loops forever on resume
+ from ram due to bluetooth
+In-Reply-To: <4637CD25.5070104@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0705021557470.2628-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Andrew Morton wrote:
-> On Wed, 2 May 2007 17:32:49 +0200 (CEST)
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Tue, 1 May 2007, Mark Lord wrote:
+
+> I have just replaced my primary single-core notebook
+> with a nearly identical dual-core notebook,
+> and moved the usb-bluetooth peripheral from the old
+> machine to the new one.
 > 
-> > On Wed, 2 May 2007, Christoph Hellwig wrote:
-> > > On Wed, May 02, 2007 at 04:28:27PM +0200, Geert Uytterhoeven wrote:
-> > > >   - Check for GNU extension __FUNCTION__
-> > > 
-> > > __FUNCTION__ is prefered  over __func__
-> > 
-> > Is there a reason for that?
-> >   - __FUNCTION__ is a GNU extension
-> >   - __func__ is C99
-> >   - __func__ is shorter to type ;-)
-> > 
+> On the single-core machine, suspend/resume (RAM) worked
+> fine even with the bluetooth module enabled.
 > 
-> In that case we should use __func__.
+> On the new dual-core machine, resuming with bluetooth
+> enabled results in an infinite(?) lockup in an unbounded
+> loop in hub_tt_kevent().  With PM debug on, I see
+> tens of thousands of these messages scrolling on the console:
 > 
-> But we discussed this at some length 3-4 years ago and decided to use
-> __FUNCTION__.  I don't remember why.  Perhaps problems with gcc support for
-> __func__?
-
-I tried gcc 2.95/3.2/3.3/3.4/4.0/4.1, they all recognize __func__ and
-__FUNCTION__, like in e.g. printf("%s", __func__);
-
-> (It could have been that compile-time string concatenation was involved:
+>      kernel: usb 5-1: clear tt 4 (9042) error -71
+>      kernel: usb 5-1: clear tt 4 (9042) error -71
+>      kernel: usb 5-1: clear tt 4 (9042) error -71
+>      (over and over and ...)
 > 
+> By restricting iterations on the unbounded loop
+> the machine is able to resume again.
 > 
->         printf("xxx" __FILE__);			/* works */
->         printf("xxx" __FUNCTION__);		/* doesn't */
+> Greg / Marcel: any words of wisdom?
 > 
-> Or not.)
+> And we should probably put bounds permanently on that loop:
+> 
+> I devised/used this patch to accomplish it.
+> Now, I still get close to a thousand or so such
+> messages, in groups, showing up in syslog,
+> but at least the system can resume after suspend.
 
-Yep, when trying concatenation, I got:
-  - 2.95: works fine
-  - 3.2:
-      syntax error before "__func__"
-      warning: concatenation of string literals with __FUNCTION__ is deprecated
-  - 3.3:
-      error: syntax error before "__func__"
-      warning: concatenation of string literals with __FUNCTION__ is deprecated
-  - 3.4/4.0:
-      error: syntax error before "__func__"
-      error: syntax error before "__FUNCTION__"
-  - 4.1:
-      error: expected ')' before '__func__'
-      error: expected ')' before '__FUNCTION__'
+A better approach would be to find out why your system gets into that loop 
+and fix the underlying cause.
 
-Hence gcc 3.2 and up treat __func__ like the a variable, as per C99, while
-__FUNCTION__ has been moving from a virtual preprocessor definition in 2.95 to
-a variable, like __func__.
+Alan Stern
 
-So in the end it doesn't matter, as concatenation has been fixed in the Linux
-source tree anyway.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
