@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767181AbXEBSmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767189AbXEBSnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767181AbXEBSmX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767188AbXEBSmX
+	id S1767189AbXEBSnA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767190AbXEBSnA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:42:23 -0400
-Received: from mga01.intel.com ([192.55.52.88]:57303 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767181AbXEBSmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:42:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
-   d="scan'208";a="240832852"
-Subject: Re: [patch] CFS scheduler, -v8
-From: "Li, Tong N" <tong.n.li@intel.com>
-To: tingy@cs.umass.edu
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <4637FE0A.7090405@cs.umass.edu>
-References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu>
-Content-Type: text/plain
+	Wed, 2 May 2007 14:43:00 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:40315 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767189AbXEBSm6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:42:58 -0400
+Date: Wed, 2 May 2007 11:42:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+Message-Id: <20070502114233.30143b0b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705021124040.646@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+	<20070501125559.9ab42896.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0705020955550.32271@schroedinger.engr.sgi.com>
+	<Pine.LNX.4.64.0705021903320.20615@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0705021124040.646@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 2 May 2007 11:42:20 -0700
-Message-ID: <1178131340.25170.24.camel@tongli.jf.intel.com>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 02 May 2007 18:42:21.0370 (UTC) FILETIME=[9E4159A0:01C78CE9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   Based on my understanding, adopting something like EEVDF in CFS should 
-> not be very difficult given their similarities, although I do not have 
-> any idea on how this impacts the load balancing for SMP. Does this worth 
-> a try?
+On Wed, 2 May 2007 11:28:26 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Wed, 2 May 2007, Hugh Dickins wrote:
 > 
->   Sorry for such a long email :-)
+> > On Wed, 2 May 2007, Christoph Lameter wrote:
+> > > 
+> > > But these are arch specific problems. We could use 
+> > > ARCH_USES_SLAB_PAGE_STRUCT to disable SLUB on these platforms.
+> > 
+> > As a quick hack, sure.  But every ARCH_USES_SLAB_PAGE_STRUCT
+> > diminishes the testing SLUB will get.  If the idea is that we're
+> > going to support both SLAB and SLUB, some arches with one, some
+> > with another, some with either, for more than a single release,
+> > then I'm back to saying SLUB is being pushed in too early.
+> > I can understand people wanting pluggable schedulers,
+> > but pluggable slab allocators?
+> 
+> This is a sensitive piece of the kernel as you say and we better allow the 
+> running of two allocator for some time to make sure that it behaves in all 
+> load situations. The design is fundamentally different so its performance 
+> characteristics may diverge significantly and perhaps there will be corner 
+> cases for each where they do the best job.
 
-Thanks for the excellent explanation. I think EEVDF and many algs alike
-assume global ordering of all tasks in the system (based on virtual
-time), whereas CFS does so locally on each processor and relies on load
-balancing to achieve fairness across processors. It'd achieve strong
-fairness locally, but I'm not sure about its global fairness properties
-in an MP environment. If ideally the total load weight on each processor
-is always the same, then local fairness would imply global fairness, but
-this is a bin packing problem and is intractable ...
-
-  tong
+eek.  We'd need to fix those corner cases then.  Our endgame
+here really must be rm mm/slab.c.
