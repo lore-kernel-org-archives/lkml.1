@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767043AbXEBVkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767053AbXEBVld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767043AbXEBVkf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767053AbXEBVkf
+	id S1767053AbXEBVld (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767058AbXEBVld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:40:35 -0400
-Received: from gw.goop.org ([64.81.55.164]:48102 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767043AbXEBVkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:40:33 -0400
-Message-ID: <46390523.5010809@goop.org>
-Date: Wed, 02 May 2007 14:39:47 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 17:41:33 -0400
+Received: from web88108.mail.re2.yahoo.com ([206.190.37.209]:42582 "HELO
+	web88108.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1767053AbXEBVlc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 17:41:32 -0400
+X-YMail-OSG: y21L_G0VM1m6GgamVoQecQoE8oHH36ZwBUyr2w9Qm1t4d613jaSmkoRSyZNQV28Njhisj3cZiSKLb2JrAYPeBpeoVUOCFpuGPSlHME_IMksiRAmdMY8_
+X-Mailer: YahooMailRC/478 YahooMailWebService/0.7.41.10
+Date: Wed, 2 May 2007 14:41:30 -0700 (PDT)
+From: Matt Ranon <mranon@javadevices.com>
+Subject: [ANNOUNCE][PATCH] Kcfg - simple kernel configuration
+To: linux maillist <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Gerd Hoffmann <kraxel@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org> <4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org> <4638FE1B.9050901@zytor.com>
-In-Reply-To: <4638FE1B.9050901@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ascii
+Message-ID: <589896.50284.qm@web88108.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Hm, that's unfortunate.  How about an ELF file wrapped in some other
->> container, so that we can easily extract a properly formed ELF file?
->>
->>     
->
-> Effectively the same thing as changing the magic number.  Note that the
-> format for bzImage is pretty rigid, and it would be *highly* undesirable
-> to muck that up.
+The Jem team is pleased to announce the release of Kcfg, an in-kernel simple 
+configuration utility. Kcfg is intended for the same class of special embedded 
+Linux applications as Kcli is, i.e., those applications with no user space. If 
+you don't understand what kind of application that is, look at Jem itself 
+at http://www.javadevices.com which is on schedule for release in August. 
+Kcfg is the second spin-off from the Jem project.
 
-So the bzImage structure is currently:
+Kcfg is a kernel loadable module that reads a configuration file of name/value 
+pairs, and allows other kernel modules to query those values. Once a 
+configuration file has been loaded by the module, other kernel modules can 
+query the configuration values by name, set values, add new values, store 
+the current values back to the configuration file and add callbacks to values 
+in order to be informed when the values are modified.
 
-   1. old-style boot sector
-   2. old-style boot info, followed by 0xaa55 at the end of the sector
-   3. the HdrS boot param block
-   4. setup.S boot code
-   5. the self-decompressing kernel
+To head off the obvious criticisms, be aware of the following:
+1) We know about module parameters, but, when you have 20 configurable 
+items, module parameters become impractical. Also, when you have no user 
+space from which to load the module, parameters are even less practical.
+2) We know about the other possibilities like sysfs, or the firmware mechanism, 
+but we don't have a user space so that doesn't work for us either.
 
-If we make 5 actually an ELF file, containing properly formed Ehdr,
-Phdrs (for all the mappings required), and the actual kernel
-decompressor, relocator and compressed kernel data, then it would be
-easy for the Xen domain builder to find that and use it as a basis for
-loading.  I think it would just require the bzImage boot param block to
-contain an offset of the start of the ELF file.  The contents of the ELF
-file would be in a form where the normal boot code could just jump over
-the ELF headers, directly into the segment data itself.
+As always, and just like the GPL says, we don't claim that this code is fit for any 
+purpose, nor do we claim that it is a better way of doing things. However, judging 
+by the amount of downloads of Kcli,we think we were quite right in our assumption 
+that people are doing some pretty weird things with the Linux kernel, and this 
+code is for them.
 
-ie:
+Finally, don't even bother thinking about including this code in the mainline kernel, 
+as it breaks some rules, like reading and writing files in a kernel module. We 
+think the greatest fun of the Linux kernel, is you get to break all the rules.
 
-   1. old-style boot sector
-   2. old-style boot info, followed by 0xaa55 at the end of the sector
-   3. the HdrS boot param block
-   4. setup.S boot code (jumps directly into 5.3)
-   5. 32-bit self-decompressing kernel:
-         1. Ehdr
-         2. Phdrs for all necessary mappings
-         3. decompressor/relocator .text
-         4. compressed kernel data
+The patch is available at: ftp://www.javadevices.com/kcfg
 
+As a side note, updates to Kcli  have been posted at: ftp://www.javadevices.com/kcli 
 
-Does that sound reasonable?
-
-    J
+MRanon
