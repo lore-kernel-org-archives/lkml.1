@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766933AbXEBRsK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766951AbXEBRst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766933AbXEBRsK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:48:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766949AbXEBRsK
+	id S1766951AbXEBRst (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766949AbXEBRss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:48:10 -0400
-Received: from holomorphy.com ([66.93.40.71]:37423 "EHLO holomorphy.com"
+	Wed, 2 May 2007 13:48:48 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:37614 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766933AbXEBRsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:48:08 -0400
-Date: Wed, 2 May 2007 10:48:29 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Ting Yang <tingy@cs.umass.edu>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070502174829.GX19966@holomorphy.com>
-References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com>
+	id S1766952AbXEBRsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 13:48:47 -0400
+Date: Wed, 2 May 2007 19:47:58 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 18/36] Use menuconfig objects II - MMC
+In-Reply-To: <46381F5D.3070509@drzeus.cx>
+Message-ID: <Pine.LNX.4.61.0705021943200.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0704301340180.29151@yvahk01.tjqt.qr> <4637636C.50704@drzeus.cx>
+ <Pine.LNX.4.61.0705012237140.18504@yvahk01.tjqt.qr> <46381F5D.3070509@drzeus.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502173634.GA11308@in.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 10:57:14PM -0400, Ting Yang wrote:
->>  "A Proportional Share REsource Allocation Algorithm for Real-Time, 
->> Time-Shared Systems", by Ion Stoica. You can find the paper here: 
->> http://citeseer.ist.psu.edu/37752.html
 
-On Wed, May 02, 2007 at 11:06:34PM +0530, Srivatsa Vaddagiri wrote:
-> Good paper ..thanks for the pointer.
-> I briefly went thr' the paper and my impression is it expect each task
-> to specify the length of each new request it initiates. Is that correct?
-> If we have to apply EEVDF to SCHED_NORMAL task scheduling under CFS, how
-> would we calculate that "length of each new request" (which is reqd
-> before we calculate its virtual deadline)?
+On May 2 2007 07:19, Pierre Ossman wrote:
+>Jan Engelhardt wrote:
+>> 
+>> If it works, no problem. just put your sign-off somewhere
+>> and let Andrew (or the appropriate subsys maintainer) have it :)
+>> 
+>
+>Well, the appropriate subsys maintainer would be me. :)
+>
+>Has it been decided that this is the way to go? I have no strong
+>feelings either way.
 
-l_i and w_i are both functions of the priority. You essentially arrange
-l_i to express QoS wrt. latency, and w_i to express QoS wrt. bandwidth.
-
-
-On Tue, May 01, 2007 at 10:57:14PM -0400, Ting Yang wrote:
->>  EXAMPLE: assume the system runs at 1000 tick/second, i.e. 1ms a tick, 
->> and the granularity of pre-exemption for CFS is 5 virtual ticks (the 
->> current setting). If, at time t=0, we start 2 tasks: p1 and p2, both 
->> have nice value 0 (weight 1024), and rq->fair_clock is initialized to 0. 
->> Now we have: 
->>        p1->fair_key = p2->fair_key = rq->fair_clock = 0.
->> CFS breaks the tie arbitrarily, say it executes p1. After 1 system tick 
->> (1ms later) t=1, we have:
->>        rq->fair_clock = 1/2, p1->fair_key = 1,  p2->fair_key = 0.
->> Suppose, a new task p3 starts with nice value -10 at this moment, that 
->> is p3->fair_key=1/2. In this case, CFS will not schedule p3 for 
->> execution until the fair_keys of p1 and p2 go beyond 5+1/2 (which 
->> translates to about 10ms later in this setting), _regardless_ the 
->> priority (weight) of p3.
-
-On Wed, May 02, 2007 at 11:06:34PM +0530, Srivatsa Vaddagiri wrote:
-> There is also p->wait_runtime which is taken into account when
-> calculating p->fair_key. So if p3 had waiting in runqueue for long
-> before, it can get to run quicker than 10ms later.
-
-Virtual time is time from the task's point of view, which it has spent
-executing. ->wait_runtime is a device to subtract out time spent on the
-runqueue but not running from what would otherwise be virtual time to
-express lag, whether deliberately or coincidentally. ->wait_runtime
-would not be useful for EEVDF AFAICT, though it may be interesting to
-report.
+Who is to decide this? I have not seen any strong objections yet, either 
+yes-please or I-don't-mind, so it looks kinda ok. Just act innocent. If
+it bugs someone, there's always the signed-off list, which will blame me :)
 
 
--- wli
+
+Jan
+-- 
