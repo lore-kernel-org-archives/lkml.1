@@ -1,68 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993159AbXEBVN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766954AbXEBVNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993159AbXEBVN0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766954AbXEBVN0
+	id S1766954AbXEBVNs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767022AbXEBVNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:13:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32944 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993159AbXEBVNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:13:25 -0400
-Message-ID: <4638FE91.6050001@redhat.com>
-Date: Wed, 02 May 2007 17:11:45 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
+	Wed, 2 May 2007 17:13:48 -0400
+Received: from www.osadl.org ([213.239.205.134]:50675 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1766954AbXEBVNq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 17:13:46 -0400
+Subject: Re: [patch 09/22] pollfs: pollable hrtimers
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Davi Arnaut <davi@haxent.com.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 3/6] firewire: char device interface
-References: <4637A29F.6070302@redhat.com>	<20070502090007.GA28174@infradead.org>	<tkrat.087ee29add656926@s5r6.in-berlin.de>	<tkrat.350cb4dfe522266e@s5r6.in-berlin.de>	<tkrat.65aea95f1451c211@s5r6.in-berlin.de>	<tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <17976.44988.734513.121919@smtp.charter.net>
-In-Reply-To: <17976.44988.734513.121919@smtp.charter.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070502053426.030750000@haxent.com.br>
+References: <20070502052235.914764000@haxent.com.br>
+	 <20070502053426.030750000@haxent.com.br>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 23:16:07 +0200
+Message-Id: <1178140567.2340.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Stoffel wrote:
->>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+On Wed, 2007-05-02 at 02:22 -0300, Davi Arnaut wrote:
+> plain text document attachment (pollfs-timer.patch)
+> Per file descriptor high-resolution timers. A classic unix file interface for
+> the POSIX timer_(create|settime|gettime|delete) family of functions.
 > 
-> Stefan> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Stefan> ---
-> Stefan>  drivers/firewire/fw-cdev.c    |  954 ++++++++++++++++++++++++++++++++++
-> Stefan>  include/linux/firewire-cdev.h |  268 +++++++++
-> Stefan>  2 files changed, 1222 insertions(+)
-> 
-> Stefan> Index: linux_juju/include/linux/firewire-cdev.h
-...
-> Stefan> +#define RCODE_SEND_ERROR		0x10
-> Stefan> +#define RCODE_CANCELLED			0x11
-> Stefan> +#define RCODE_BUSY			0x12
-> Stefan> +#define RCODE_GENERATION		0x13
-> Stefan> +#define RCODE_NO_ACK			0x14
-> Stefan> +
-> Stefan> +#define SCODE_100			0x0
-> Stefan> +#define SCODE_200			0x1
-> Stefan> +#define SCODE_400			0x2
-> Stefan> +#define SCODE_800			0x3
-> Stefan> +#define SCODE_1600			0x4
-> Stefan> +#define SCODE_3200			0x5
-> 
-> These are also defined in fw-transaction.h, though that file doesn't
-> have all the values.  Can these just be combined into a single
-> fw-constants.h file instead?  
-> 
-> I honestly haven't checked all your defines....
+> Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
 
-The firewire-cdev.h file is meant to be a self-contained userspace header file 
-and shouldn't include other kernel header files.  All duplicated values are 
-standardized ieee1394 values and won't ever change.  I should put a #ifndef 
-__FW_COMMON_DEFINES protection around the duplicate values, I guess, but I'm 
-just wondering why I never saw a "symbol redefined" warning...
+Nacked-by-me.
 
-Kristian
+Aside of the fact, that it is a bad clone of the timerfd code, it is
+simply broken and untested.
+
+> +
+> +struct hrtimerspec {
+> +	int flags;
+> +	clockid_t clock;
+> +	struct itimerspec expr;
+> +};
+
+How exactly knows userspace what a struct hrtimerspec is ? Is the c file
+exported as a header ?
+
+> +static ssize_t read(struct pfs_timer *evs, struct itimerspec __user *uspec)
+> +{
+> +	int ret = -EAGAIN;
+> +	ktime_t remaining = {};
+> +	unsigned long overruns = 0;
+> +	struct itimerspec spec = {};
+> +	struct hrtimer *timer = &evs->timer;
+> +
+> +	spin_lock_irq(&evs->lock);
+> +
+> +	if (!evs->overruns)
+> +		goto out_unlock;
+> +
+> +	if (hrtimer_active(timer))
+> +		remaining = hrtimer_get_remaining(timer);
+> +	else if (evs->interval.tv64 > 0)
+> +		overruns = hrtimer_forward(timer, hrtimer_cb_get_time(timer),
+> +					   evs->interval);
+
+Where is the logic here ? 
+
+If no overrun, return remaining time = 0
+
+If active, return the real remaining time. This path is never hit, as
+the timer is nowhere restarted.
+
+If not active, return remanining time = 0. How does the caller know how
+many events are missed ? 
+
+> +	ret = -EOVERFLOW;
+> +	if (overruns > (ULONG_MAX - evs->overruns))
+> +		goto out_unlock;
+> +	else
+> +		evs->overruns += overruns;
+
+Interesting feature. evs->overruns is adding up forever and then limited
+to ULONG_MAX
+
+> +static enum hrtimer_restart timer_fn(struct hrtimer *timer)
+> +{
+> +	struct pfs_timer *evs = container_of(timer, struct pfs_timer, timer);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&evs->lock, flags);
+> +	/* timer tick, interval has elapsed */
+> +	if (!evs->overruns++)
+> +		wake_up_all(&evs->wait);
+
+Cool. Waiters, which came after the first event are stuck. Simply
+because there is no second event.
+
+> +static ssize_t write(struct pfs_timer *evs,
+> +		     const struct hrtimerspec __user *uspec)
+> +{
+> +	struct hrtimerspec spec;
+
+See first comment !
+
+> +	if (copy_from_user(&spec, uspec, sizeof(spec)))
+> +		return -EFAULT;
+> +
+> +	if (spec_invalid(&spec))
+> +		return -EINVAL;
+> +
+> +	rearm_timer(evs, &spec);
+> +
+> +	return 0;
+> +}
+> +
+> +static int poll(struct pfs_timer *evs)
+> +{
+> +	int ret;
+> +
+> +	ret = evs->overruns ? POLLIN : 0;
+> +
+> +	return ret;
+> +}
+
+Creative lockless programming style with 4 lines overhead and a
+guaranteed return POLLIN after the first timer event. This is really
+cute as it covers the missing timer restart and guarantees 100% CPU load
+for ever. Hmm, maybe it's correct: polling should loop for ever,
+shouldn't it ?
+
+> +static const struct pfs_operations timer_ops = {
+> +	.read = PFS_READ(read, struct pfs_timer, struct itimerspec),
+> +	.write = PFS_WRITE(write, struct pfs_timer, struct hrtimerspec),
+> +	.poll = PFS_POLL(poll, struct pfs_timer),
+> +	.release = PFS_RELEASE(release, struct pfs_timer),
+> +	.rsize = sizeof(struct itimerspec),
+> +	.wsize = sizeof(struct hrtimerspec),
+
+See first comment !
+
+	tglx
+
+
 
