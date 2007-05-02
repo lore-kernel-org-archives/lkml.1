@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992878AbXEBHzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992880AbXEBH50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992878AbXEBHzP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992880AbXEBHzP
+	id S2992880AbXEBH50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992883AbXEBH50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:55:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58831 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992878AbXEBHzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:55:13 -0400
-Date: Wed, 2 May 2007 00:52:38 -0700
-From: Greg KH <gregkh@suse.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
-	(-1)
-Message-ID: <20070502075238.GA9083@suse.de>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46338AEB.2070109@imap.cc> <20070428141024.887342bd.akpm@linux-foundation.org> <4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org> <46364346.6030407@imap.cc> <20070430124638.10611058.akpm@linux-foundation.org> <46383742.9050503@imap.cc> <20070502001000.8460fb31.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502001000.8460fb31.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Wed, 2 May 2007 03:57:26 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51260 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992880AbXEBH5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 03:57:25 -0400
+To: lkml123@s2y4n2c.de
+CC: linux-kernel@vger.kernel.org
+In-reply-to: <1177873151.4343.29.camel@segv.aura.of.mankind> (message from utz
+	lehmann on Sun, 29 Apr 2007 20:59:11 +0200)
+Subject: Re: unprivileged mount problems: device permissions ignored, mount
+	sharing
+References: <1177873151.4343.29.camel@segv.aura.of.mankind>
+Message-Id: <E1Hj9hk-00019p-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 02 May 2007 09:56:52 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 12:10:00AM -0700, Andrew Morton wrote:
-> On Wed, 02 May 2007 09:01:22 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
+> I tried the unprivileged mount v5 patches with 2.6.21.1. I made some
+> experiments with normal filesystems (ext3, xfs, iso9660). I removed the
+> FS_SAFE checks for that.
+
+Thanks for looking at this.
+
+> Mounting and umounting as unprivileged user (user1) works, e.g.
+> (/mnt/user1 is a mount owned by user1)
 > 
-> > Am 30.04.2007 21:46 schrieb Andrew Morton:
-> > > Not really - everything's tangled up.  A bisection search on the
-> > > 2.6.21-rc7-mm2 driver tree would be the best bet.
-> > 
-> > And the winner is:
-> > 
-> > gregkh-driver-driver-core-make-uevent-environment-available-in-uevent-file.patch
-> > 
-> > Reverting only that from 2.6.21-rc7-mm2 gives me a working kernel
-> > again.
+> [user1@segv ~]$ mmount -t xfs /dev/mapper/vg00-test /mnt/user1
 > 
-> cripes.
+> But the device permissions are ignored. The unprivileged user can mount
+> the block device even there are no permissions to access it:
 > 
-> +static ssize_t show_uevent(struct device *dev, struct device_attribute *attr,
-> +                          char *buf)
-> +{
-> +       struct kobject *top_kobj;
-> +       struct kset *kset;
-> +       char *envp[32];
-> +       char data[PAGE_SIZE];
+> brw------- 1 root root 253, 5 Apr 29 18:32 /dev/mapper/vg00-test
+
+Yes, I'm aware of this.  Before we enable FS_SAFE for block
+filesystems, this must be addressed.
+
+But I'm not sure _if_ we'll ever want this.  It is very likely that
+there are some other security holes in most filesystems that are
+difficult to address.  One example is checking for hard-linked
+directories, which is normally only done during an fsck.
+
+> And there is another problem with sharing the device (superblock?).
+> If user1 mount a device readonly:
 > 
-> That won't work too well with 4k stacks.
+> [user1@segv ~]$ mmount -r -t xfs /dev/mapper/vg00-test /mnt/user1
+> 
+> Than root cannot mount the device rw:
+> 
+> [root@segv ~]# mount /dev/mapper/vg00-test /mnt/test/
+> mount: /dev/mapper/vg00-test already mounted or /mnt/test/ busy
+> 
+> Mounting ro works and than remounting rw work. But than /mnt/user1 is rw
+> too.
+> 
+> This can DoS e.g. the automounter mounting /dev/mapper/vg00-test rw.
 
-Tilman, here's a patch, can you try this on top of your tree that dies?
+Right.
 
-thanks,
+There are patches for enabling per-mount read-only, but this shows
+well, that unprivileged block device mounts are far from trivial.
 
-greg k-h
-
----
- drivers/base/core.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -252,7 +252,7 @@ static ssize_t show_uevent(struct device
- 	struct kobject *top_kobj;
- 	struct kset *kset;
- 	char *envp[32];
--	char data[PAGE_SIZE];
-+	char *data = NULL;
- 	char *pos;
- 	int i;
- 	size_t count = 0;
-@@ -276,6 +276,10 @@ static ssize_t show_uevent(struct device
- 		if (!kset->uevent_ops->filter(kset, &dev->kobj))
- 			goto out;
- 
-+	data = (char *)get_zeroed_page(GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
- 	/* let the kset specific function add its keys */
- 	pos = data;
- 	retval = kset->uevent_ops->uevent(kset, &dev->kobj,
-@@ -290,6 +294,7 @@ static ssize_t show_uevent(struct device
- 		count += sprintf(pos, "%s\n", envp[i]);
- 	}
- out:
-+	free_page((unsigned long)data);
- 	return count;
- }
- 
+Miklos
