@@ -1,69 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXEBGww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754877AbXEBGyZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754883AbXEBGww (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbXEBGwv
+	id S1754877AbXEBGyZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:54:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbXEBGyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:52:51 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:36219 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754883AbXEBGwu (ORCPT
+	Wed, 2 May 2007 02:54:25 -0400
+Received: from haxent.com ([65.99.219.155]:4107 "EHLO haxent.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754877AbXEBGyY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:52:50 -0400
-Date: Tue, 1 May 2007 23:52:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-Message-Id: <20070501235237.ba43586a.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
-	<1178084403.28659.222.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
-	<1178087393.28659.238.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 02:54:24 -0400
+Message-ID: <4638359B.6050500@haxent.com.br>
+Date: Wed, 02 May 2007 03:54:19 -0300
+From: Davi Arnaut <davi@haxent.com.br>
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+References: <20070502052235.914764000@haxent.com.br> <20070502053427.123392000@haxent.com.br> <4638279A.9010105@cosmosbay.com> <46382CA2.1020504@haxent.com.br> <46383218.4020406@cosmosbay.com>
+In-Reply-To: <46383218.4020406@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007 23:41:34 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
+Eric Dumazet wrote:
+> Davi Arnaut a écrit :
+>> Eric Dumazet wrote:
+>>> Davi Arnaut a écrit :
+>>>> Asynchronously wait for FUTEX_WAKE operation on a futex if it still contains
+>>>> a given value. There can be only one futex wait per file descriptor. However,
+>>>> it can be rearmed (possibly at a different address) anytime.
+>>>>
+>>>> The pollable futex approach is far superior (send and receive events from
+>>>> userspace or kernel) to eventfd and fixes (supercedes) FUTEX_FD at the same time.
+>>>>
+>>>> Building block for pollable semaphores and user-defined events.
+>>>>
+>>>> Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
+>>>>
 
-> compiler: define __maybe_unused
+<snip>
+
+>>>> +
+>>>> +struct futex_event {
+>>>> +	union {
+>>>> +		void __user *addr;
+>>>> +		u64 padding;
+>>>> +	};
+>>>> +	int val;
+>>>> +};
+>>> Hum... Here we might have a problem with 64 bit futexes, or private futexes
+>>>
+>>> So I believe this interface is not well defined and not expandable: in case of 
+>>> future additions to futexes, an old application compiled with an old pollable 
+>>> futex_event type might fail.
+>>>
+>> Hmm, how about:
+>>
+>> struct futex_event {
+>> 	union {
+>> 		void __user *addr;
+>> 		u64 padding;
+>> 	};
+>> 	union {
+>> 		int val;
+>> 		s64 val64;
+>> 	};
+>> 	/* whatever room is necessary for future improvements */
+>> };
+>>
+>> I haven't been keeping up with 64 bit or private futexes. What else
+>> could probably go wrong?
 > 
-> Define __maybe_unused to apply to both functions or variables as
-> __attribute__((unused)).  This will not emit a compile-time warning when
-> a function or variable is declared but unreferenced.
+> Well, that's the point : This interface is like an ioctl() one : pretty bad if 
+> not properly designed :)
+
+I was merely mirroring the futex syscall arguments for FUTEX_WAIT. Will
+those change? I hope not :)
+
+> You probably need to stick one field containing one command or version number, 
+> something like that.
+
+I'm a bit skeptical that we need versioning for such a simple operation
+(command) as FUTEX_WAIT that takes an address and a value.
+
 > 
-> We eventually want to change the name of __attribute_used__ to __used.
 > 
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  include/linux/compiler-gcc.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> struct futex_event {
+> 	int     type;
+> 	union {
+> 		void __user *addr;
+> 		u64 padding;
+> 	};
+> 	union {
+> 		int val;
+> 		s64 val64;
+> 	};
+> };
 > 
-> diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-> --- a/include/linux/compiler-gcc.h
-> +++ b/include/linux/compiler-gcc.h
-> @@ -37,3 +37,4 @@
->  #define  noinline			__attribute__((noinline))
->  #define __attribute_pure__		__attribute__((pure))
->  #define __attribute_const__		__attribute__((__const__))
-> +#define __maybe_unused			__attribute__((unused))
+> #define  FUTEX_EVENT_SHARED32  1
+> #define  FUTEX_EVENT_SHARED64  2
+> #define  FUTEX_EVENT_PRIVATE32 (128|1)
+> #define  FUTEX_EVENT_PRIVATE64 (128|2)
 
-Seems sane to me.  We'd need a definition in compiler-intel.h too.  I don't
-know if ICC implements __attribute__((unused)) - probably it does.
+I will take a look at the private futexes patches before commenting further.
 
-I guess we can get by without any commentary describing __maybe_unused, but
-I think __used would need one - it's pretty obscure.
+> ...
+> 
+> Also, you should take care of alignements constraints (a 32bit user program 
+> might run on a 64bit kernel)
+> 
 
+Compat code? or futex alignements constraints?
 
-+@cindex @code{used} attribute.
-+@item used
-+This attribute, attached to a function, means that code must be emitted
-+for the function even if it appears that the function is not referenced.
-+This is useful, for example, when the function is referenced only in
-+inline assembly.
+--
+Davi Arnaut
 
