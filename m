@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXEBIZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbXEBI0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbXEBIZG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbXEBIZG
+	id S1751762AbXEBI0v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbXEBI0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:25:06 -0400
-Received: from lon-del-04.spheriq.net ([195.46.50.101]:46488 "EHLO
-	lon-del-04.spheriq.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751762AbXEBIZD convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 04:26:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60961 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751762AbXEBI0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:25:03 -0400
-From: Bhuvan Kumar MITTAL <bhuvan.mittal@st.com>
-To: "'Nick Piggin'" <nickpiggin@yahoo.com.au>
-Cc: "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>, <linux-kernel@vger.kernel.org>,
-       "'Daniel J Blueman'" <daniel.blueman@gmail.com>
-Subject: RE: How to make mmap'ed kernel buffer non-cacheable
-Date: Wed, 2 May 2007 13:53:08 +0530
-Message-ID: <04b101c78c93$1e234ea0$142ec70a@dlh.st.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <46372DDE.2040207@yahoo.com.au>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.2962
-Thread-Index: AceL6enUtpG7LzVrTd2cCej/l9fBiwAqOVBQ
-X-O-Spoofed: Not Scanned
-X-O-General-Status: No
-X-O-Spam1-Status: Not Scanned
-X-O-Spam2-Status: Not Scanned
-X-O-URL-Status: Not Scanned
-X-O-Virus1-Status: No
-X-O-Virus2-Status: Not Scanned
-X-O-Virus3-Status: No
-X-O-Virus4-Status: No
-X-O-Virus5-Status: Not Scanned
-X-O-Image-Status: Not Scanned
-X-O-Attach-Status: Not Scanned
-X-SpheriQ-Ver: 4.2.04
+	Wed, 2 May 2007 04:26:50 -0400
+Date: Wed, 2 May 2007 01:26:47 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: torvalds@linux-foundation.org, menage@google.com,
+       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
+ unpopulated cpuset
+Message-Id: <20070502012647.fbc0d502.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'll rephrase the problem as follow:
+Other than the detail of allowing a newline from doing:
 
-I have a userthread which makes ioctl calls to the kernel and once it reaches inside the kernel it waits on a semaphore. It then does some work inside the kernel and continuously keeps looping between the kernel and user space in an endless while loop. 
+	echo > cpus
 
-I want to kill that thread from another user thread while the former is waiting on a semaphore in kernel (which it will never get) coz I want a clean exit of my driver. Please suggest me a way. I did try the use of pthread_cancel, but that is possible only if the target thread is executing in user space and making use of a pthread_testcancel call (with cancelability enabled ofcourse). 
+to work, I'm ok with this patch.  It passes my cpuset_test,
+and seems to allow unpopulating cpusets, as advertised.
 
-Kindly suggest something. 
+Aha - as I was writing this, I noticed that the command:
 
-> In continuation to this, I have another query:
-> As mentioned above, If there is a kernel task waiting on a semaphore (maybe even in hung state) and I wish to kill the kernel task from user space by making an ioctl call into the kernel, then how is it possible? Is it feasible at all?
+  echo -n '' > cpus
 
-If the kernel task is hung because of some bug in your code, then it isn't
-really possible in general. You could always just "up" the semaphore and hope,
-but things might be corrupted.
+does -not- work!  The echo command recognizes that as a write
+of zero non-null bytes, and skips the write altogether.
 
-If you just want to tell the kernel task to quit, I guess you'd just introduce
-some quit ioctl message, and have the kernel thread respond to that.
+We have to add the code to handle an input line consisting of
+just a bare newline, to mean an empty mask.  Well, we don't
+-have- to.  But writing a single nul byte in shell script will
+challenge most shell script hackers.
 
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
