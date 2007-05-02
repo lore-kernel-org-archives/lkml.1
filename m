@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767269AbXEBTIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767271AbXEBTJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767269AbXEBTIl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767259AbXEBTIl
+	id S1767271AbXEBTJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767272AbXEBTJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:08:41 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:37236 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767269AbXEBTIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:08:40 -0400
-Date: Wed, 2 May 2007 21:05:28 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-In-Reply-To: <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.61.0705022103230.18504@yvahk01.tjqt.qr>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
- <20070425112133.4ae86399.randy.dunlap@oracle.com>
- <20070425143011.57247c1d.akpm@linux-foundation.org>
- <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
- <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
- <20070428030805.GA13331@redhat.com> <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 2 May 2007 15:09:04 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3862 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767273AbXEBTJB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:09:01 -0400
+Date: Wed, 2 May 2007 20:08:50 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Corey Minyard <minyard@acm.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
+Message-ID: <20070502190850.GA16696@flint.arm.linux.org.uk>
+Mail-Followup-To: Corey Minyard <minyard@acm.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linux-serial@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+References: <20070502142900.GA22000@localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502142900.GA22000@localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 02, 2007 at 09:29:00AM -0500, Corey Minyard wrote:
+> I didn't hear back, so I went ahead and did a patch.
 
-On May 2 2007 16:28, Geert Uytterhoeven wrote:
+You haven't heard back because I've not had a chance (and still
+haven't) to look at the various data sheets I've accumulated.
+I'll be catching up with anything not requiring a simple
+email reply tomorrow.
 
->  - Check for all of (u)int{8,16,32,64}_t
-
-I strongly disagree. These should be allowed, for they are (I think) C99.
-
-
-Jan
 -- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
