@@ -1,97 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766949AbXEBUP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766955AbXEBUQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766949AbXEBUP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766955AbXEBUP0
+	id S1766955AbXEBUQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766956AbXEBUQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:15:26 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:49951 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766949AbXEBUPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:15:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=I/GAfuqappL4GFUtMz94asIAnq798mdwxyh+obhhHGtIHQmqJgyWsq4JwOXaXGZumVDPL/rNAJT9Elegcq1G86MMwyesvbE6uRlgs5QUi37bEDPu/U41NRVWx+ZkLkd6f5APGgroxtpAUHlGsAa14jn1k5FRRLZT3heb/u5zUNI=
-Message-ID: <4638F14E.6000803@googlemail.com>
-Date: Wed, 02 May 2007 22:15:10 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: =?ISO-8859-2?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: kernel BUG at include/net/tcp.h:739
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Wed, 2 May 2007 16:16:50 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:45961 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766955AbXEBUQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 16:16:49 -0400
+Date: Wed, 2 May 2007 22:17:41 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: [GIT PATCHES] kbuild, kconfig + Kconfig updates
+Message-ID: <20070502201741.GD9044@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ilpo,
+Hi Linus.
 
-Please take a look at this bug
+Please pull latest kbuild/kconfig and Kconfig updates.
+Most of these have been present in -mm although a bunch
+of trivial updates has been applied the last week too.
 
-[15236.638092] kernel BUG at /mnt/md0/devel/linux-git/include/net/tcp.h:739!
-[15236.644860] invalid opcode: 0000 [#1]
-[15236.648514] PREEMPT SMP 
-[15236.651075] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd intel_agp i2c_i801 soundcore agpgart snd_page_alloc ide_cd cdrom rtc unix
-[15236.698898] CPU:    0
-[15236.698899] EIP:    0060:[<c02f798b>]    Not tainted VLI
-[15236.698900] EFLAGS: 00010206   (2.6.21-gdc87c398 #169)
-[15236.711580] EIP is at tcp_ack+0xc54/0x16a0
-[15236.715664] eax: 00000017   ebx: 00000000   ecx: 00000003   edx: 0000010e
-[15236.722433] esi: d5bc1254   edi: 0000010e   ebp: c0462e18   esp: c0462da8
-[15236.729202] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-[15236.735019] Process swapper (pid: 0, ti=c0462000 task=c03f14e0 task.ti=c0427000)
-[15236.742219] Stack: 00000000 00000000 00000000 00000198 00000100 00000000 00000000 00000018 
-[15236.750698]        3b4d5775 0ffef1c0 3b4d79ad 00000001 00000018 00000006 3b4d79ad 003f14e0 
-[15236.759178]        00000006 0000082a d4b9cde0 00e4059a 0000000c 00000000 00000000 0130204a 
-[15236.767649] Call Trace:
-[15236.770286]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
-[15236.775438]  [<c01050eb>] show_stack_log_lvl+0x9d/0xa5
-[15236.780590]  [<c01052e0>] show_registers+0x1ed/0x32c
-[15236.785569]  [<c0105537>] die+0x118/0x22f
-[15236.789588]  [<c01056c7>] do_trap+0x79/0x91
-[15236.793781]  [<c0105f57>] do_invalid_op+0x97/0xa1
-[15236.798501]  [<c031f38c>] error_code+0x7c/0x84
-[15236.802960]  [<c02fafb7>] tcp_rcv_established+0x568/0x645
-[15236.808354]  [<c03000bd>] tcp_v4_do_rcv+0x2b/0x32c
-[15236.813144]  [<c030243a>] tcp_v4_rcv+0x7f9/0x86b
-[15236.817777]  [<c02e9dd3>] ip_local_deliver+0x170/0x235
-[15236.822928]  [<c02e9c2a>] ip_rcv+0x4f3/0x52c
-[15236.827199]  [<c02d4909>] netif_receive_skb+0x1b9/0x252
-[15236.832437]  [<c02635c2>] skge_poll+0x47a/0x545
-[15236.836967]  [<c02d68df>] net_rx_action+0x9f/0x192
-[15236.841772]  [<c0126408>] __do_softirq+0x6d/0xea
-[15236.846407]  [<c01069b5>] do_softirq+0x64/0xd1
-[15236.850867]  =======================
-[15236.854437] Code: 69 42 c0 f7 d0 64 8b 15 04 00 00 00 8b 04 90 ff 80 a4 00 00 00 8b 9e 70 05 00 00 89 d8 03 86 74 05 00 00 3b 86 8c 04 00 00 76 04 <0f> 0b eb fe 89 86 90 04 00 00 8a 86 88 03 00 00 84 c0 75 3c 83 
-[15236.874343] EIP: [<c02f798b>] tcp_ack+0xc54/0x16a0 SS:ESP 0068:c0462da8
 
-l *0xc02f798b
-0xc02f798b is in tcp_ack (/mnt/md0/devel/linux-git/include/net/tcp.h:739).
-734                                 (tp->snd_cwnd >> 2)));
-735     }
-736
-737     static inline void tcp_sync_left_out(struct tcp_sock *tp)
-738     {
-739             BUG_ON(tp->sacked_out + tp->lost_out > tp->packets_out);
-740             tp->left_out = tp->sacked_out + tp->lost_out;
-741     }
-742
-743     extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
+Main changes
+o Added cleanfile and cleanpatch scripts
+  Useful to tidy up stuff before submission.
+  The discussed checkpatch script may be a good third candidate
+o section mismatch does now include vmlinux so expect a few new warnings
+o Ignore section mismatch warnings in several cases to bring down false positives significantly
+o complain about missing system calls
+  The way to find missing system calls was discussed but in general the current version
+  was apprecated and triggered davem to add a few to sparc64 for example
+o It is now possible to override build version and build timestamp using
+  KBUILD_BUILD_VERSION and KBUILD_BUILD_TIMESTAMP
+o One patch does some trivial fixes in several Kconfig files which
+  caused some 'nosie' in the diffstat.
+o Another patch deals with module alias which explain the changes in input.h
 
-Caused by commit 34588b4c046c34773e5a1a962da7b78b05c4d1bd 
+Please pull from
+git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
 
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/serial-console.log
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/git-config
+shortlog + diffstat below.
 
-Regards,
-Michal
+	Sam
 
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+
+Alex Landau (1):
+      kbuild: handle compressed cpio initramfs-es
+
+Alexander E. Patrakov (2):
+      usr/Kconfig: fix typo
+      kconfig: fix path to modules.txt in Kconfig help
+
+Andreas Dilger (1):
+      kconfig.debug: clarify CONFIG_DEBUG_INFO help text
+
+Andy Green (1):
+      kbuild: scripts/basic/fixdep segfault on pathological string-o-death
+
+Anton Blanchard (1):
+      kbuild: small documentation fix in Documentation/kbuild/modules.txt
+
+Don Mullis (1):
+      kbuild: move tags from ARCH and include/ ahead of drivers
+
+H. Peter Anvin (2):
+      cleanfile: a script to clean up stealth whitespace
+      cleanpatch: a script to clean up stealth whitespace added by a patch
+
+Marco Costalba (1):
+      kconfig/xconfig: sync main view with search dialog current menu
+
+Matthew Wilcox (1):
+      kbuild: distinguish between errors and warnings in modpost
+
+Michael Ellerman (1):
+      kbuild: propagate errors from find in scripts/gen_initramfs_list.sh
+
+Mike Frysinger (1):
+      menuconfig: dont use obsolete index() function in lxdialog
+
+Randy Dunlap (2):
+      kbuild: be more explicit on missing .config file
+      kernel-doc: alphabetically-sorted entries in index.html of 'htmldocs'
+
+Robert P. J. Day (2):
+      kbuild: clarify the creation of the LOCALVERSION_AUTO string.
+      kconfig: correct minor typo in Kconfig warning message.
+
+Sam Ravnborg (16):
+      kbuild: fix section mismatch check for vmlinux
+      kbuild: whitelist section mismatch in init/main.c
+      kbuild: fix warnings from .pci_fixup section
+      kbuild: fix segmentation fault in modpost
+      kbuild: whitelist logo references from .text to .init.data
+      kbuild: remove dependency on input.h from file2alias
+      menuconfig: remember alternate config filename
+      kbuild: do not emit src version warning for non-modules
+      kbuild: complain about missing system calls
+      kbuild: override build timestamp & version
+      kconfig/menuconfig: do not hardcode '.config'
+      kbuild: remove kconfig binaries during make mrproper
+      kbuild: fix make mrproper for Documentation/DocBook/man
+      kbuild: remove stale comment in modpost.c
+      kbuild: ignore section mismatch warning for references from .paravirtprobe to .init.text
+      kconfig: refer to qt3 if we cannot find qt libraries
+
+Uwe Zeisberger (1):
+      kbuild: add a missing slash in the comments
+
+Uwe kleine-König (1):
+      kbuild/mkuboot.sh: allow spaces in CROSS_COMPILE
+
+ Documentation/DocBook/Makefile     |    9 +-
+ Documentation/DocBook/man/Makefile |    3 -
+ Documentation/kbuild/modules.txt   |    2 +-
+ Kbuild                             |   11 ++
+ Makefile                           |   15 ++-
+ drivers/mtd/devices/Kconfig        |    4 +-
+ drivers/net/Kconfig                |    6 +-
+ drivers/net/wireless/Kconfig       |   12 +-
+ drivers/scsi/Kconfig               |    4 +-
+ drivers/video/Kconfig              |    8 +-
+ include/linux/input.h              |    4 +
+ include/linux/mod_devicetable.h    |    1 +
+ init/Kconfig                       |   16 ++-
+ init/main.c                        |    6 +-
+ lib/Kconfig.debug                  |    3 +
+ net/ipv6/netfilter/Kconfig         |    2 +-
+ net/netfilter/Kconfig              |   24 ++--
+ net/tipc/Kconfig                   |    2 +-
+ scripts/Makefile.modpost           |    8 +-
+ scripts/basic/fixdep.c             |    2 +
+ scripts/checksyscalls.sh           |  118 ++++++++++++++++++++
+ scripts/cleanfile                  |  126 ++++++++++++++++++++++
+ scripts/cleanpatch                 |  206 ++++++++++++++++++++++++++++++++++++
+ scripts/gen_initramfs_list.sh      |   12 ++-
+ scripts/kconfig/Makefile           |    5 +-
+ scripts/kconfig/conf.c             |    1 +
+ scripts/kconfig/lkc.h              |    1 +
+ scripts/kconfig/lxdialog/dialog.h  |    1 +
+ scripts/kconfig/lxdialog/util.c    |    9 ++-
+ scripts/kconfig/mconf.c            |   43 ++++++--
+ scripts/kconfig/menu.c             |    2 +-
+ scripts/kconfig/qconf.cc           |    5 +-
+ scripts/kconfig/qconf.h            |    2 +-
+ scripts/mkcompile_h                |   27 ++++--
+ scripts/mkuboot.sh                 |    2 +-
+ scripts/mod/file2alias.c           |   21 ++--
+ scripts/mod/modpost.c              |  141 +++++++++++++++++++------
+ scripts/mod/modpost.h              |    1 +
+ scripts/mod/sumversion.c           |    5 +-
+ usr/Kconfig                        |    2 +-
+ 40 files changed, 735 insertions(+), 137 deletions(-)
