@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767098AbXEBSNc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767105AbXEBSOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767098AbXEBSNc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:13:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767100AbXEBSNc
+	id S1767105AbXEBSOz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767107AbXEBSOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:13:32 -0400
-Received: from mga02.intel.com ([134.134.136.20]:16799 "EHLO mga02.intel.com"
+	Wed, 2 May 2007 14:14:55 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55034 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767098AbXEBSNb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:13:31 -0400
+	id S1767105AbXEBSOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:14:54 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
-   d="scan'208";a="238145527"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+   d="scan'208";a="223232121"
+Message-ID: <4638D51C.7010603@intel.com>
+Date: Wed, 02 May 2007 11:14:52 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: vmstat: use our own timer events
-Date: Wed, 2 May 2007 11:13:20 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F55455F0@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0704282206530.29468@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: vmstat: use our own timer events
-thread-index: AceKIFYJlhriXpEkQ6+RPoj577g7PACxDfJA
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Christoph Lameter" <clameter@sgi.com>, <akpm@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>, "Arjan van de Ven" <arjan@linux.intel.com>
-X-OriginalArrivalTime: 02 May 2007 18:13:21.0595 (UTC) FILETIME=[9144C0B0:01C78CE5]
+To: Michel Lespinasse <walken@zoy.org>
+CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: 24 lost ticks with 2.6.20.10 kernel
+References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org>
+In-Reply-To: <20070502084146.GA6089@zoy.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 May 2007 18:14:53.0093 (UTC) FILETIME=[C7CE3D50:01C78CE5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
->-----Original Message-----
->From: linux-kernel-owner@vger.kernel.org 
->[mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of 
->Christoph Lameter
->Sent: Saturday, April 28, 2007 10:09 PM
->To: akpm@linux-foundation.org
->Cc: linux-kernel@vger.kernel.org; Arjan van de Ven
->Subject: vmstat: use our own timer events
->
->
->We could implement an alternate approach that runs the first processor
->on each node at the second and then each of the other processor on a
->node on a subsequent tick. That may be useful to keep a large amount
->of the second free of timer activity. Maybe the timer folks will have
->some feedback on this one?
->
-
-Can this use 'deferrable timer' along with round_jiffies. That
-will eliminate the issue of too frequent interrupt when CPU is idle.
-
-
->CC: Arjan van de Ven <arjan@linux.intel.com>
->Signed-off-by: Christoph Lameter <clameter@sgi.com>
->
->Index: slub/mm/vmstat.c
->===================================================================
->--- slub.orig/mm/vmstat.c	2007-04-28 19:30:01.000000000 -0700
->+++ slub/mm/vmstat.c	2007-04-28 19:36:38.000000000 -0700
->@@ -640,6 +640,22 @@ const struct seq_operations vmstat_op = 
-> #endif /* CONFIG_PROC_FS */
+Michel Lespinasse wrote:
+>> I've had good results with 2.6.21.1 (even running tickless :)) on these 
+>> NICs. Have you tried that yet?
 > 
-> #ifdef CONFIG_SMP
->+static DEFINE_PER_CPU(struct delayed_work, vmstat_work);
->+
->+static void vmstat_update(struct work_struct *w)
->+{
->+	refresh_cpu_vm_stats(smp_processor_id());
->+	schedule_delayed_work(&__get_cpu_var(vmstat_work), HZ);
->+}
->+
->+static void __devinit start_cpu_timer(int cpu)
->+{
->+	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
->+
->+	INIT_DELAYED_WORK(vmstat_work, vmstat_update);
+> Not yet. Coming up... I'd prefer not to rely on new kernels at this
+> point though - but I can certainly try it just to report on current status.
 
-This change alone should help.
-	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
+I just checked and the fix I was referring to earlier didn't make it into 
+2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
 
+http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
 
->+	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
->+}
->+
+for the changelog and commit id's for the patch:
 
+commit c58b8e4a25a1ba347a0e5d21984c97bd296f1691
+Merge: afc2e82... f50393f...
+Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+Date:   Fri Apr 27 10:14:53 2007 -0700
 
-Thanks,
-Venki
+     Merge branch 'e1000-fixes' of 
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6
 
-Thanks,
-Venki
+     * 'e1000-fixes' of 
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6:
+       e1000: FIX: Stop raw interrupts disabled nag from RT
+       e1000: FIX: firmware handover bits
+       e1000: FIX: be ready for incoming irq at pci_request_irq
+
+Please give this a try and see if it resolves your issues.
+
+hth,
+
+Auke
