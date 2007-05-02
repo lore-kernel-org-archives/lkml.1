@@ -1,25 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992885AbXEBILh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992902AbXEBIM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992885AbXEBILh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992895AbXEBILh
+	id S2992902AbXEBIM0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992908AbXEBIM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:11:37 -0400
-Received: from wx-out-0506.google.com ([66.249.82.238]:45932 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992885AbXEBILd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:11:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=uS8CJfO+u0gfKeC/twtV7nZPH1HFBdapUcjIv8CrwQlZzrRXnAmWpFgaPAn3qJdN8gT+Rd9jAzCmtnoIXtniq48YpLKCiHSWGQI7+52qMOVuME2BNvI1Qs7GvpeMzbwYXW3YLeWrfYGt1kKHqRyyvbWj8UruTKMAqzEKTBnLX7U=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Mike Galbraith <efault@gmx.de>
+	Wed, 2 May 2007 04:12:26 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35266 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S2992902AbXEBIMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 04:12:21 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19wW/8GXq9wO7ZRUPFQWizT88EW8DSIISWCsT26cK
+	fJB6nGMxb7+dss
 Subject: Re: [patch] CFS scheduler, -v8
-Date: Wed, 2 May 2007 04:11:27 -0400
-User-Agent: KMail/1.9.6
+From: Mike Galbraith <efault@gmx.de>
+To: Gene Heskett <gene.heskett@gmail.com>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -30,52 +25,32 @@ Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
        Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
        Balbir Singh <balbir@in.ibm.com>
-References: <20070501212223.GA29867@elte.hu> <1178092794.8926.43.camel@Homer.simpson.net>
-In-Reply-To: <1178092794.8926.43.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+In-Reply-To: <200705020403.35385.gene.heskett@gmail.com>
+References: <20070501212223.GA29867@elte.hu>
+	 <1178087834.8640.7.camel@Homer.simpson.net>
+	 <200705020403.35385.gene.heskett@gmail.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 10:12:16 +0200
+Message-Id: <1178093536.8926.47.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705020411.28457.gene.heskett@gmail.com>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 May 2007, Mike Galbraith wrote:
->On Tue, 2007-05-01 at 23:22 +0200, Ingo Molnar wrote:
->>  - interactivity: precise load calculation and load smoothing
->
->This seems to help quite a bit.
->
->(5 second top sample)
->
-> 2636 root      15  -5 19148  15m 5324 R   73  1.5   1:42.29 0
-> amarok_libvisua 5440 root      20   0  320m  36m 8388 S   18  3.6   3:28.55
-> 1 Xorg 4621 root      20   0 22776  18m 4168 R   12  1.8   0:00.63 1 cc1
-> 4616 root      20   0 19456  13m 2200 R    9  1.3   0:00.43 0 cc1
->
->I no longer have to renice both X and Gforce to achieve a perfect
->display when they are sharing my box with a make -j2.  X is displaying
->everything it's being fed beautifully with no help.  I have to renice
->Gforce (amarok_libvisual), but given it's very heavy CPU usage, that
->seems perfectly fine.
->
->No regressions noticed so far.  Box is _very_ responsive under load,
->seemingly even more so than with previous releases.  That is purely
->subjective, but the first impression was very distinct.
->
->	-Mike
+On Wed, 2007-05-02 at 04:03 -0400, Gene Heskett wrote:
 
-And I have a make -j4 running to apply your patch Mike, and can't tell it from 
-here, no lag.
+> I just checked my logs, and it appears my workload didn't trigger this one 
+> Mike.
 
-This is another keeper folks.
+It's just a build time compiler warning.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-It takes less time to do a thing right than it does to explain why you
-did it wrong.
-		-- H.W. Longfellow
+> Ingo asked for a 0-100 rating, where 0 is mainline as I recall it, and 100 is 
+> the best of the breed.  I'll give this one a 100 till something better shows 
+> up.
+
+Ditto.  (so far... ya never know;)
+
+	-Mike
+
