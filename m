@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993109AbXEBMsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993117AbXEBMxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993109AbXEBMsh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993110AbXEBMsg
+	id S2993117AbXEBMxQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993114AbXEBMxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:48:36 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60984 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993109AbXEBMsf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:48:35 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4638888B.4080908@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 14:48:11 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [git pull] New firewire stack
-References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de>
-In-Reply-To: <20070502122147.GA31215@suse.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 2 May 2007 08:53:16 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:37322 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993111AbXEBMxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:53:14 -0400
+Date: Wed, 2 May 2007 18:23:12 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Chris Wedgwood <cw@f00f.org>
+Cc: David Chinner <dgc@sgi.com>, torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 0/5] fallocate system call
+Message-ID: <20070502125312.GA5845@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070430004702.GM32602149@melbourne.sgi.com> <20070430052559.GA13145@tuatara.stupidest.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430052559.GA13145@tuatara.stupidest.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Hering wrote:
-> On Tue, May 01, Kristian Høgsberg wrote:
+On Sun, Apr 29, 2007 at 10:25:59PM -0700, Chris Wedgwood wrote:
+> On Mon, Apr 30, 2007 at 10:47:02AM +1000, David Chinner wrote:
 > 
->>   drivers/firewire/Kconfig          |   60 ++
+> > For FA_ALLOCATE, it's supposed to change the file size if we
+> > allocate past EOF, right?
 > 
-> NACK.
-> Upgrade the current drivers/ieee1394/ with the new code,
+> I would argue no.  Use truncate for that.
 
-Last time I believe I was the only one who asked whether to put it into
-drivers/ieee1394 instead of another directory.  Of course I acknowledge
-that everytime a new review round is started, people do reconsider.
-Especially since we had a gap of a few months since the last LKML review.
+The patch I posted for ext4 *does* change the filesize after
+preallocation, if required (i.e. when preallocation is after EOF).
+I may have to change that, if we decide on not doing this.
 
-> and keep all existing module names.
-
-I'm impartial to that.  Using same names might ease the transition from
-the userspace side, as far as there is userland which relies on module
-names.
-
-A certain drawback of same names would be that geeks cannot install both
-stacks at once during the transition period.  Therefore, checking
-whether eventual problems are in fact regressions involves a module
-unload/ configure/ build/ install/ reload cycle, instead of just module
-unload/ reload.  This especially means we can only get help from testers
-who are able to build kernels.
-
-Other opinions?
--- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+--
+Regards,
+Amit Arora 
