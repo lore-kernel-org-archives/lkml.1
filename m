@@ -1,97 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993335AbXEBPQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993220AbXEBPRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993335AbXEBPQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993338AbXEBPQv
+	id S2993220AbXEBPRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993338AbXEBPRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:16:51 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49052 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993335AbXEBPQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:16:48 -0400
-Date: Wed, 2 May 2007 10:16:42 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: ebiederm@xmission.com
-Cc: hch@infradead.org, akpm@osdl.org, containers@lists.osdl.org,
-       oleg@tv-sign.ru, linux-kernel@vger.kernel.org, jes@sgi.com,
-       tony.luck@intel.com
-Subject: Re: [PATCH] ia64 sn xpc: Convert to use kthread API.
-Message-ID: <20070502151642.GA23925@sgi.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com> <1176969574439-git-send-email-ebiederm@xmission.com> <20070422203647.GC23015@infradead.org> <20070427174142.GA16811@sgi.com> <m1hcr1is4l.fsf@ebiederm.dsl.xmission.com> <20070427201211.GA20297@sgi.com> <m1d51pimlf.fsf@ebiederm.dsl.xmission.com> <20070430152230.GB22243@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070430152230.GB22243@sgi.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 2 May 2007 11:17:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:35663 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993220AbXEBPRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:17:22 -0400
+Message-ID: <4638AB55.20408@goop.org>
+Date: Wed, 02 May 2007 08:16:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Gerd Hoffmann <kraxel@redhat.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Jeff Garzik <jeff@garzik.org>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com>
+In-Reply-To: <46385A8A.6070405@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Apr 30, 2007 at 10:22:30AM -0500, Dean Nelson wrote:
-> On Fri, Apr 27, 2007 at 02:33:32PM -0600, Eric W. Biederman wrote:
-> > Dean Nelson <dcn@sgi.com> writes:
-> > 
-> > > Taking it one step further, if you added the notion of a thread pool,
-> > > where upon exit, a thread isn't destroyed but rather is queued ready to
-> > > handle the next kthread_create_quick() request.
-> > 
-> > That might happen.  So far I am avoiding the notion of a thread pool for
-> > as long as I can.  There is some sense in it, especially in generalizing
-> > the svc thread pool code from nfs.  But if I don't have to go there I would
-> > prefer it.
-> 
-> This means that XPC will have to retain its thread pool, but I can
-> understand you not wanting to go there.
+Gerd Hoffmann wrote:
+> Doesn't need to be ELF notes.  The current (3.0.5+) domain builder has
+> pluggable binary parsers.  Right now there are two:  ELF (obviously
+> ...) and binary (with a multiboot-like header).  Filling the
+> informations such as virt_base is a function of the parser, so when
+> adding one more parser to the domain builder for bzImage kernels the
+> parser could do something completely different to gather the needed
+> information ...
 
-On Thu, Apr 26, 2007 at 01:11:15PM -0600, Eric W. Biederman wrote:
+True.  But the plan is already to make bzImage an ELF file, so notes
+would seem to be the best option.  At worst, it could be ELF notes
+wrapped in some other container, but that's not pretty.
+
+>> That works OK for a kernel which is compiled to run under Xen and can't
+>> run in any other environment, but now that we can generate a single
+>> kernel which can run in any number of different environments, its
+>> unfortunate that we still need multiple variants of the kernel image.
 >
-> Ok.    Because of the module unloading issue, and because we don't have
-> a lot of these threads running around, the current plan is to fix
-> thread_create and kthread_stop so that they must always be paired,
-> and so that kthread_stop will work correctly if the task has already
-> exited.
+> Yep, although already much better than completely different kernels.
+> Most space of a typical distro kernel is modules which are shared even
+> with different kernel binaries.
+
+Yep.
+
+>> So, I have no problem in also building a boot protocol info structure,
+>> and passing that in %esi, so long as I can store a pointer to the
+>> Xen-specific info as well.
 >
-> Basically that just involves calling get_task_struct in kthread_create
-> and put_task_struct in kthread_stop.
+> Yep, should work fine.
+>
+>> I think I'd prefer to have the domain builder decompress/relocate the
+>> kernel from the bzImage and start it directly, rather than have it
+>> decompress/relocate itself,
+>
+> I'd expect that work better too.
+>
+>> It depends
+>> on how well it can deal with having paging enabled and being in ring 1. 
+>
+> Xen direct paging mode requiring (leaf) page tables being mapped
+> read-only makes page table manipulation a bit difficult.  Xen has to
+> care whenever the memory it maps is a page table.  Native hasn't.
+>
+> Also switching to a completely different set of page tables isn't easy
+> under Xen.  My xen guest kexec patches have to perform some intresting
+> tricks because of that ...
 
-Okay, so I need to expand upon Christoph Hellwig's patch so that all
-the kthread_create()'d threads are kthread_stop()'d.
+Yeah, that's tricky.  I ended up copying the Xen pagetables's pmd into
+the kernel's so that they could share ptes.  Making a completely new
+pagetable means you need to update the RO state on both old and new.
 
-This is easy to do for the XPC thread that exists for the lifetime of XPC,
-as well as for the threads created to manage the SGI system partitions.
+>> Looks like it might just be a matter of starting up with "enough" memory
+>> mapped.
+>
+> Doesn't solve the problem of having to switch from identity mapping to
+> the 0xc0000000 one ...
 
-XPC has the one discovery thread that is created when XPC is first started
-and exits as soon as it has finished discovering all existing SGI system
-partitions. With your forthcoming change to kthread_stop() that will allow
-it to be called after the thread has exited, doing this one is also easy.
-Note that the kthread_stop() for this discovery thread won't occur until
-XPC is rmmod'd. This means that its task_struct will not be freed for
-possibly a very long time (i.e., weeks). Is that a problem?
+Hm.  That's right.  Xen will boot a vmlinux with its pagetable
+pre-constructed to map it at its virtual address.  Going through bzImage
+would mean it would be identity mapped, and someone early would need to
+construct the virtual mapping.
 
-But then we come to XPC's pool of threads that deliver channel messages
-to the appropriate consumer (like XPNET) and can block indefinitely. As
-mentioned earlier there could be hundreds if not thousands of these
-(our systems keep getting bigger). So now requiring a kthread_stop()
-for each one of these becomes more of a problem, as it is a lot of
-task_struct pointers to maintain.
+But if the path is:
 
-Currently, XPC maintains these threads via a
-wait_event_interruptible_exclusive() queue so that it can wakeup as many
-or as few as needed at any given moment by calling wake_up_nr(). When XPC
-is rmmod'd, a flag is set which causes them to exit and wake_up_all()
-is called.  Therefore XPC dosen't need to remember their pids or
-task_struct pointers.
+   1. enter bzImage in 32-bit mode
+   2. decompress kernel
+   3. jump to startup_32
+   4. detect paravirt and choose appropriate backend
+   5. run Xen startup code
 
-So what would you suggest we do for this pool of threads?
+then the Xen startup code can construct the virtual mapping before going
+on with the rest of the kernel boot - steps 1-4 can be run with identity
+mapping.
 
-Is there any way to have a version of kthread_create() that doesn't
-require a matching kthread_stop()? Or add a kthread_not_stopping()
-that does the put_task_struct() call, so as to eliminate the need for
-calling kthread_stop()?  Or should we reconsider the kthread pool approach
-(and get XPC out of the thread management business altogether)? Robin
-Holt is putting together a proposal for how one could do a kthread pool,
-it should provide a bit more justification for going down that road.
 
-Thanks,
-Dean
-
+    J
