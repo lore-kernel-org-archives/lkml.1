@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbXEBPqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXEBPrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216AbXEBPqy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXEBPqy
+	id S1755223AbXEBPrO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXEBPrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:46:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38522 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755218AbXEBPqv (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:46:51 -0400
-Date: Thu, 3 May 2007 01:46:37 +1000
-From: David Chinner <dgc@sgi.com>
-To: Gerhard Mack <gmack@innerfire.net>
-Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070502154637.GC77450368@melbourne.sgi.com>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 May 2007 11:47:14 -0400
+Received: from h155.mvista.com ([63.81.120.155]:4347 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755223AbXEBPrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:47:12 -0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+To: tglx@linuxtronux.de
+Subject: [PATCH] clockchips.h: kernel-doc fix
+Date: Wed, 2 May 2007 19:48:47 +0400
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705021948.47563.sshtylyov@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 11:54:04PM -0400, Gerhard Mack wrote:
-> On Tue, 1 May 2007, Cabot, Mason B wrote:
-> 
-> > Hello all,
-> > 
-> > I've been testing the NAS performance of ext3/Openfiler 2.2 against
-> > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
-> > video workloads. The Windows CIFS client will attempt a poor-man's
-> > pre-allocation of the file on the server by sending 1-byte writes at
-> > 128K-byte strides, breaking block allocation on ext3 and leading to
-> > fragmentation and poor performance. This will happen for many
-> > applications (including iTunes) as the CIFS client issues these
-> > pre-allocates under the application layer.
-> > 
-> > I've posted a brief paper on Intel's OSS website
-> > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
-> > it a read and let me know what you think. In particular, I'd like to
-> > arrive at the right place to fix this problem: is it in the filesystem,
-> > VFS, or Samba?
-> > 
-> > thanks,
-> > Mason 
-> > 
-> 
-> Just out of curiosity do other filesystems(reiser, xfs) take the same 
-> performance hit?
+Fix misnamed fields of 'struct clock_event_device' in the kernel-doc comment.
+Convert the acronyms to uppercase, while at it...
 
-XFS was also tested - it is as fast as the Windows NTFS based
-server.....
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-Cheers,
+---
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+ include/linux/clockchips.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/include/linux/clockchips.h
+===================================================================
+--- linux-2.6.orig/include/linux/clockchips.h
++++ linux-2.6/include/linux/clockchips.h
+@@ -54,17 +54,17 @@ enum clock_event_nofitiers {
+ /**
+  * struct clock_event_device - clock event device descriptor
+  * @name:		ptr to clock event name
+- * @hints:		usage hints
++ * @features:		features
+  * @max_delta_ns:	maximum delta value in ns
+  * @min_delta_ns:	minimum delta value in ns
+  * @mult:		nanosecond to cycles multiplier
+  * @shift:		nanoseconds to cycles divisor (power of two)
+  * @rating:		variable to rate clock event devices
+- * @irq:		irq number (only for non cpu local devices)
+- * @cpumask:		cpumask to indicate for which cpus this device works
+- * @set_next_event:	set next event
++ * @irq:		IRQ number (only for non CPU local devices)
++ * @cpumask:		cpumask to indicate for which CPUs this device works
++ * @set_next_event:	set next event function
+  * @set_mode:		set mode function
+- * @evthandler:		Assigned by the framework to be called by the low
++ * @event_handler:	Assigned by the framework to be called by the low
+  *			level handler of the event source
+  * @broadcast:		function to broadcast events
+  * @list:		list head for the management code
+
