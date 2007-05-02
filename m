@@ -1,47 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993222AbXEBOMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993237AbXEBO2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993222AbXEBOMN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 10:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993223AbXEBOMN
+	id S2993237AbXEBO2b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993238AbXEBO2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 10:12:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58085 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993222AbXEBOMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 10:12:12 -0400
-Message-ID: <46389BBF.5000508@redhat.com>
-Date: Wed, 02 May 2007 10:10:07 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 10:28:31 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:45046 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2993237AbXEBO23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 10:28:29 -0400
+Date: Wed, 2 May 2007 16:28:27 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Dave Jones <davej@redhat.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+In-Reply-To: <20070428030805.GA13331@redhat.com>
+Message-ID: <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
+ <20070425112133.4ae86399.randy.dunlap@oracle.com>
+ <20070425143011.57247c1d.akpm@linux-foundation.org>
+ <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
+ <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
+ <20070428030805.GA13331@redhat.com>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] to something appropriate (was Re: 2.6.22 -mm merge plans)
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <46368062.6000100@garzik.org> <20070430170919.45e4b42b.akpm@linux-foundation.org> <463688AD.1050903@garzik.org> <20070501004036.GS2819@sequoia.sous-sol.org> <46368DA5.7070003@garzik.org> <20070501045806.GA3697@kroah.com> <46376748.6020408@redhat.com> <20070501174033.2046f289@the-village.bc.nu> <20070501233419.GA10462@kroah.com> <20070502005212.GY2819@sequoia.sous-sol.org>
-In-Reply-To: <20070502005212.GY2819@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * Greg KH (greg@kroah.com) wrote:
->> And is this really a problem?  The whole goal of the -stable tree was to
->> accomidate the users who relied on kernel.org kernels, and wanted
->> bugfixes and security updates.  It was not for new features or new
->> hardware support.
->>
->> If people feel we should revisit this goal, then that's fine, and I have
->> no objection to that.  But until then, I think the rules that we have
->> had in place for over the past 2 years should still remain in affect.
+On Fri, 27 Apr 2007, Dave Jones wrote:
+> On Wed, Apr 25, 2007 at 08:02:07PM -0700, Andrew Morton wrote:
+>  > > Yep, I was going to mention your scripts but you beat me to it.
+>  > > 
+>  > > I'll be glad to help maintain such animals if wanted.
+>  > > 
+>  > wanted ;)
+>  > 
+>  > At least, it would be interesting to investigate the usefulness.  I suspect
+>  > it will prove to be very useful for the little things.
 > 
-> I have to agree.  I went back through my mbox and found vanishingly few
-> pci_id update patches.   So it's not clear there's even a big issue.
+> Randy and I got together and hashed out a first cut at this.
+> (Randy actually gutted quite a lot of what I originally wrote, so deserves
+>  much kudos for improving this beyond my initial crappy version).
+> You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
+> There's also a git clonable tree there (only http right now).
 > 
+> http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
+> what fell out of running it on my mbox of lkml from the past month.
+> Some of them are kinda noisy, and perhaps should be moved under --pedantic
+> 
+> I'm all ears for additional regexps, bug reports or other suggestions.
 
-Of course you didn't find many -- most people know that's not part of
-the -stable charter. If you asked for them you'd get them...
+Nice!
+
+Here are a few more:
+  - Check for all of (u)int{8,16,32,64}_t
+  - Check for GNU extension __FUNCTION__
+  - Don't use space before tab
+  - Don't use trailing white space
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+
+diff --git a/checkpatch.pl b/checkpatch.pl
+index cbda29a..b44a3f3 100755
+--- a/checkpatch.pl
++++ b/checkpatch.pl
+@@ -143,10 +143,26 @@ sub process {
+ 			"Bad variable name: tmp. Please use something more descriptive.\n");
+ 		$warnings += search(qr/temp(,|;)/,
+ 			"Bad variable name: temp. Please use something more descriptive.\n");
++		$warnings += search(qr/uint8_t/,
++			"Incorrect type usage for kernel code. Use __u8/u8\n");
++		$warnings += search(qr/uint16_t/,
++			"Incorrect type usage for kernel code. Use __u16/u16\n");
+ 		$warnings += search(qr/uint32_t/,
+-			"Incorrect type usage for kernel code. Use __u32 etc.\n");
++			"Incorrect type usage for kernel code. Use __u32/u32\n");
++		$warnings += search(qr/uint64_t/,
++			"Incorrect type usage for kernel code. Use __u64/u64\n");
++		$warnings += search(qr/int8_t/,
++			"Incorrect type usage for kernel code. Use __s8/s8\n");
++		$warnings += search(qr/int16_t/,
++			"Incorrect type usage for kernel code. Use __s16/s16\n");
++		$warnings += search(qr/int32_t/,
++			"Incorrect type usage for kernel code. Use __s32/s32\n");
++		$warnings += search(qr/int64_t/,
++			"Incorrect type usage for kernel code. Use __s64/s64\n");
+ 		$warnings += search(qr/\b(BUG|BUG_ON)\b/,
+ 			"Try to use WARN_ON & Recovery code rather than BUG() or BUG_ON()\n");
++		$warnings += search(qr/__FUNCION__/,
++			"Should use C99 __func__ instead of GNU __FUNCTION__\n");
+ 	}
+ 
+ 	# coding style:
+@@ -154,6 +170,8 @@ sub process {
+ 		$warnings += search(qr/,[^[:space:]]/, "Need space after comma:\n");
+ 		$warnings += search(qr/\([[:space:]]/, "Don't use space after '(':\n");
+ 		$warnings += search(qr/[[:space:]]\)/, "Don't use space before ')':\n");
++		$warnings += search(qr/ \t/, "Don't use space before tab:\n");
++		$warnings += search(qr/[[:space:]]$/, "Don't use trailing white space:\n");
+ 		$warnings += search(qr/if\(|for\(|while\(|switch\(/,
+ 				"Need space after if/for/while/switch:\n");
+ 		$warnings += search(qr/sizeof[[:space:]]/,
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
