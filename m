@@ -1,49 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993038AbXEBKw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbXEBK7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993038AbXEBKw3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993036AbXEBKw3
+	id S1755005AbXEBK7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993044AbXEBK67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:52:29 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:43116
-	"EHLO gwia-smtp.id2.novell.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993028AbXEBKw2 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:52:28 -0400
-Message-Id: <463889A9.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.1 
-Date: Wed, 02 May 2007 11:52:57 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>, <zach@vmware.com>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [28/34] i386: pte xchg optimization
-References: <20070430549.617098000@suse.de>
- <20070430155001.8525915209@wotan.suse.de>
-In-Reply-To: <20070430155001.8525915209@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 2 May 2007 06:58:59 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:37751 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755005AbXEBK66 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 06:58:58 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Wed, 2 May 2007 06:58:15 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Valdis.Kletnieks@vt.edu,
+       Andre Tomt <andre@tomt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: so ... what *are* candidates for removal?
+In-Reply-To: <alpine.DEB.0.98.0705020612290.9993@sigma.j-a-k-j.com>
+Message-ID: <Pine.LNX.4.64.0705020653560.7971@localhost.localdomain>
+References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>      
+      <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu>
+ <4637C04E.4070306@s5r6.in-berlin.de> <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
+ <46385EF8.8040005@s5r6.in-berlin.de> <alpine.DEB.0.98.0705020612290.9993@sigma.j-a-k-j.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 30.04.07 17:50 >>>
+On Wed, 2 May 2007, John Anthony Kazos Jr. wrote:
+
+> stefan richter wrote:
+
+> > We have to try to avoid this waste of resources when we put
+> > features into feature-removal-schedule.txt.  That's what I meant
+> > with "the hard part" in the other post.
+> >
+> > BTW, of course it doesn't suffice to say "we can't remove it yet"
+> > after the due day.  There need to be well-founded reasons for
+> > another deferral.  Of course if there are such reasons, it means
+> > something went wrong when the feature was put into removal
+> > schedule.  (Some facts weren't known.)
 >
->From: Zachary Amsden <zach@vmware.com>
->
->In situations where page table updates need only be made locally, and there is
->no cross-processor A/D bit races involved, we need not use the heavyweight
->xchg instruction to atomically fetch and clear page table entries.  Instead,
->we can just read and clear them directly.
+> So when this sort of thing comes up, why can't somebody put together
+> a trivial patch to update feature-removal-schedule.txt? If a
+> deadline is reached, and a removal is attempted and aborted, the
+> deadline should be extended, obviously. So then the patches can be
+> resubmitted (or recreated, even) when the new deadline is reached,
+> da capo.
 
-I always wondered why the xchg is necessary here at all. If the process of
-tearing down a page table entry has started, other users of the mapped
-linear address are broken anyway - why is it necessary to still monitor the
-effect they may have on the A/D bits, unless this is a transient tear down?
+argh.  the whole point of this discussion is to come to a *consensus*
+on what should be in that feature removal file.  there is no point in
+creating and submitting patches, either to update that file or remove
+kernel features, until enough people *agree*.
 
-Checking for the uses of ptep_get_and_clear, I would judge that the use in
-change_pte_range() may in fact need the xchg, but the uses in
-vunmap_pte_range() and zap_pte_range() shouldn't.
+at the risk of being head-bangingly repetitive, that's what the wiki
+page is for:
 
-Jan
+http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
 
+go.  read.  comment.  update.  add.  remove.  it's a wiki.  don't make
+me pull this car over and explain it.  :-)
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
