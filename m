@@ -1,89 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXEBCF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752820AbXEBCQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbXEBCF0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 22:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbXEBCF0
+	id S1752820AbXEBCQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 22:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbXEBCQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 22:05:26 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:38925 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751627AbXEBCFY (ORCPT
+	Tue, 1 May 2007 22:16:34 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:32890 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752820AbXEBCQd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 22:05:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=xPCmwNaQLCdRch+SLhmaPsYCp48XTbKmdw+a028T6oyHY/XQbZeBr+13Blz4XXHfQlcmH4pTj0pjK/q7dHBo9OfCMjry5OU3Hi5QGz+TEAFT0MPo2fOULTpZFEgvXiLNZ0Mk5+E7gMemr4S92SvmvTYQkWnjtWM3MiOv9B/DjNY=  ;
-X-YMail-OSG: pTZuvu4VM1lGzbQjvn_MDzfE_qdui85Svkih9b.DJw2qkCUrCEyvI9DtgQ3LJaLySDodaAScxA--
-Message-ID: <4637F1DB.2010507@yahoo.com.au>
-Date: Wed, 02 May 2007 12:05:15 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 1 May 2007 22:16:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fiYso5h7IB/HsA4Bxlj+wDRG+uw7ensHt5/3aLFZ0ICa+h/5tI6Tz0zRcwG/bEnRYtjzrqEu/WNWUqQMAYv24w8k1Cazj2OhZAttVHOHSgqCuR4ZCvt/2ngoMTETSLTULAxLxGuCo31YzckKTBdgP9yB03j3hH1j1d1KkaSyAlQ=
+Message-ID: <5c49b0ed0705011916y89212c0v1cec1cb1edae052f@mail.gmail.com>
+Date: Tue, 1 May 2007 19:16:32 -0700
+From: "Nate Diller" <nate.diller@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH] zero_user_page uses in fs/buffer.c and fs/libfs.c
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705011807550.28210@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: rohitseth@google.com
-CC: "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <200704281817.l3SIHu0P001764@smtp.corp.google.com>	 <46372A12.9080802@yahoo.com.au> <1178066180.19466.68.camel@galaxy.corp.google.com>
-In-Reply-To: <1178066180.19466.68.camel@galaxy.corp.google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0704292313060.3018@schroedinger.engr.sgi.com>
+	 <a781481a0704292353v34ea217fpbbf732465dd652e8@mail.gmail.com>
+	 <Pine.LNX.4.64.0704300000430.3147@schroedinger.engr.sgi.com>
+	 <20070501172643.270bb061.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705011807550.28210@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rohit Seth wrote:
-> On Tue, 2007-05-01 at 21:52 +1000, Nick Piggin wrote:
-> 
->>Rohit Seth wrote:
->>
->>
->>>>and 
->>>>it's only interested when it's executable i.e. "lazy_mmu_prot_update"
->>>>is a name concealing some overdesign.
->>>
->>>
->>>You are right that ia64 is only interested in whne the execute permissions
->>>kick in (and FWIW ia64 used to use update_mmu_cache API to do what it is now
->>>doing lazy_mmu_prot_update).  Though the idea was to design an API that any
->>>arch can use to know when ever there is change in protections on a mapping.
->>
->>What I think what we should do is audit flush_icache_page coverage, and
->>convert ia64 to use that (because it needs this to happen _before_ the
->>pte is set).
->>
-> 
-> 
-> That doesn't address the underlying requirement that arch specific code
-> should be told of change in protections. 
+On 5/1/07, Christoph Lameter <clameter@sgi.com> wrote:
+> On Tue, 1 May 2007, Andrew Morton wrote:
+>
+> > As Satyam said, this will sometimes cause us to map and unmap the page
+> > twice, and to run flush_dcache_page() twice.  In not-terribly-uncommon
+> > circumstances in very frequently called functions.
+> >
+> > Doesn't seem worth it to me.
+>
+> Ok but we have that code three times. Should I add a variant of
+> zero_user_page that zeroes everything but the section specified?
+>
+> zero_user_page_allbut() ?
 
-But you would add the flush_icache_page_chprot to address that.
+the function already exists, it's called simple_prepare_write(), and i
+thought there were patches to convert those callsites in -mm ...
+although it looks like i let a review comment on that slide by.  I
+need to redo a bunch of patches for re-submission anyway, so i guess
+i'll deal with that tomorrow.
 
-
-> For ia64, you are right that
-> it equates to flushing icache in some cases, but this API is more
-> generic.
-
-And it is also broken, because it needs to be done before the set_pte
-for ia64. It needs to be done where flush_icache_page is done. And on
-ia64 it flushes the icache. So I don't understand why ia64 would not
-use flush_icache_page but add something completely new "because it is
-more generic".
-
-
->>All we should need to do is add a pte argument to flush_icache,
-> 
-> 
-> I'm sure this is doable.  Though it is more of design issue of whether
-> that is the right way to do it.  I understand this extra API is
-> difficult at this time because of one single consumer.
-
-There is just no point in adding something else if you already have
-a hook that seems to do what ia64 wants (or could, with a small amount
-of work).
-
--- 
-SUSE Labs, Novell Inc.
+NATE
