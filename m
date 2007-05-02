@@ -1,41 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992729AbXEBEvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992730AbXEBExS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992729AbXEBEvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 00:51:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992730AbXEBEvN
+	id S2992730AbXEBExS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 00:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992732AbXEBExS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 00:51:13 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4149 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992729AbXEBEvM (ORCPT
+	Wed, 2 May 2007 00:53:18 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47968 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992730AbXEBExR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 00:51:12 -0400
-Date: Wed, 2 May 2007 14:50:42 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       michal@logix.cz, ioe-lkml@rameria.de
-Subject: Re: [PATCH (v2)] crypto: Remove pointless padlock module
-Message-ID: <20070502045042.GB29384@gondor.apana.org.au>
-References: <4633DB56.6070000@simon.arlott.org.uk> <4633FBFF.7050202@oracle.com> <463450C6.5060103@simon.arlott.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 May 2007 00:53:17 -0400
+Message-Id: <1178081597.3065.1187632233@webmail.messagingengine.com>
+X-Sasl-Enc: /TakoM2e/Q6E8NvaDKCqvazNSZQxKnIvlDRHDySlQows 1178081597
+From: lkml777@123mail.org
+To: "Edward Shishkin" <edward@namesys.com>
+Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
+       "William Heimbigner" <icxcnika@mar.tar.cc>,
+       "Alex Zarochentsev" <zam@namesys.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
+       "Jeff Chua" <jeff.chua.linux@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <463450C6.5060103@simon.arlott.org.uk>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
+   <462E17AF.7090604@namesys.com>
+Subject: Re: Question about Reiser4
+In-Reply-To: <462E17AF.7090604@namesys.com>
+Date: Tue, 01 May 2007 21:53:17 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Apr 29, 2007 at 09:01:10AM +0100, Simon Arlott wrote:
-> 
-> Well that's mostly the point - it shouldn't get compiled in - ever, 
-> but it also has other modules depending on it in Kconfig that 
-> shouldn't need to be modules.
 
-Patch applied.  Thanks!
+Hi Edward, it seems that lkml has contacted both of my email accounts
+and cripped them.
+
+I can no longer recieve email from lkml on this account.
+
+I can neither recieve or send email to lkml from my other account.
+
+They have also just deleted the 4 emails I sent to lkml from the page
+http://lkml.org/lkml/2007/4/30/
+
+This included one to you.
+
+In case you didn't get it,... here it is again.
+
+(Since you still haven't answered this one).
+
+-----------------
+
+On Wed, 25 Apr 2007 19:03:12 +0400, "Edward Shishkin"
+<edward@namesys.com> said:
+> lkml777@123mail.org wrote:
+> 
+> >
+> >As I understand it, the default Reiser4 DOES NOT USE any compression at
+> >all, not even tail compression,
+> >
+> 
+> ^tail compression^tail conversion
+> Reiser4 does use tail conversion by default.
+> 
+> > but saves space by eliminating block
+> >alignment wastage (tail compression is an option).
+> >
+> >So lets LOSE the statistics that involve compression. The results now
+> >look like this:
+> >
+> >.-------------------------.
+> >| FILESYSTEM | TIME |DISK |
+> >| TYPE       |(secs)|USAGE|
+> >.-------------------------.
+> >|REISER4     | 3462 | 692 |
+> >|EXT2        | 4092 | 816 |
+> >|JFS         | 4225 | 806 |
+> >|EXT4        | 4408 | 816 |
+> >|EXT3        | 4421 | 816 |
+> >|XFS         | 4625 | 779 |
+> >|REISER3     | 6178 | 793 |
+> >|FAT32       |12342 | 988 |
+> >|NTFS-3g     |10414 | 772 |
+> >.-------------------------.
+> >
+> >These results are still EXTREMELY GOOD for REISER4.
+> >  
+> >
+> 
+> Everything is not so simple in the science of testing..
+> Would you please change direction of your activity to stressing
+> instead of benchmarking? Caught oopses would have great value..
+> OK?
+> 
+> Regards,
+> Edward.
+> 
+
+Tail conversion is NOT compression,....
+
+So what exactly is your point?
+
+By "tail compression" I mean plugin ctail40, but since I was never able
+to get it to work, maybe its not tail compression at all.
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+  
+  lkml777@123mail.org
+
+-- 
+http://www.fastmail.fm - Faster than the air-speed velocity of an
+                          unladen european swallow
+
