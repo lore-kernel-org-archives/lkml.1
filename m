@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766988AbXEBRxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766981AbXEBRyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766988AbXEBRxn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766985AbXEBRxn
+	id S1766981AbXEBRyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766985AbXEBRyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:53:43 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:27682 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766988AbXEBRxl (ORCPT
+	Wed, 2 May 2007 13:54:22 -0400
+Received: from emailgw01.pnl.gov ([192.101.109.33]:13269 "EHLO
+	emailgw01.pnl.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766981AbXEBRyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:53:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IDnsEX1AtWTtul/rob/tjktSmmAMZ5ukoqZWWAM8nkOY7Dks+6xmSBj2VfxY8jzgALOuMPMYQtIrmwHueEDlAI4iG71ocAU/0S2r8xXQJ1FUvBlhDa5TbO0MIZiYwQQdPh/vxLRC87PDXB5yqE4hc3AC1wnGI98sAOg9cmXCsMo=
-Message-ID: <a36005b50705021053r2fcaf225l956921570dff20e8@mail.gmail.com>
-Date: Wed, 2 May 2007 10:53:40 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davide Libenzi" <davidel@xmailserver.org>
-Subject: Re: [patch 14/22] pollfs: pollable futex
-Cc: "Davi Arnaut" <davi@haxent.com.br>, "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705021028520.7176@alien.or.mcafeemobile.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 2 May 2007 13:54:21 -0400
+X-Greylist: delayed 3603 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 13:54:21 EDT
+X-Possible-Spoof: True
+X-IronPort-AV: i="4.14,480,1170662400"; 
+   d="scan'208"; a="30353026:sNHT30585709"
+Subject: Re: Kernel Scalability
+From: Kevin Fox <Kevin.Fox@pnl.gov>
+To: Rajib Majumder <rajibm2005@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <fdb8a7ad0705020556t5015f95fqbd2638dd4636db87@mail.gmail.com>
+References: <fdb8a7ad0705020556t5015f95fqbd2638dd4636db87@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 09:54:17 -0700
+Message-Id: <1178124858.10228.83.camel@zathras.emsl.pnl.gov>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-1.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070502052235.914764000@haxent.com.br>
-	 <20070502053427.123392000@haxent.com.br>
-	 <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
-	 <20070502095503.a06f5472.dada1@cosmosbay.com>
-	 <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
-	 <20070502104936.674a4b54.dada1@cosmosbay.com>
-	 <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
-	 <4638C37D.7050503@haxent.com.br>
-	 <a36005b50705021010l5c7badc6ub61228f14fdbb28a@mail.gmail.com>
-	 <Pine.LNX.4.64.0705021028520.7176@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/2/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> Is it? Please do tell me more...
+There are multiple 512 processor altix's in production. :)
 
-Come on, we went through all this.  Having to do syscalls for event
-retrieval plus the limited channel available for feedback (the POLL*
-bits) is to limiting.  This is where the kevent stuff innovated and
-really fixed the problems.  Userlevel ring buffers are more efficient.
+Kevin
 
-Yes, a unifying event look is what is wanted.  But it does not have to
-be poll based.  Given the right abstraction you can fit in the kevent
-technology or similar things.
-
-And seeing all these requirements of this approach: kevent is also
-much more resource efficient.  No "one file desriptor per thread per
-object".  These are important factors.
+On Wed, 2007-05-02 at 20:56 +0800, Rajib Majumder wrote:
+> Hi,
+> 
+> I am wondering if 2.4.x/2.6.x kernel is scalable enough to run on
+> 8-CPU hardware. Do we have any scalability comparison data between
+> 2.4/2.6 kernels and beyond 4-CPU?
+> 
+> If yes, is the scalablity is near linear?
+> 
+> Any input is appreciated.
+> 
+> Thanks
+> 
+> Rajib
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
