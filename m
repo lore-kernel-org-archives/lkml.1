@@ -1,99 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbXEBFeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbXEBFeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbXEBFeo (ORCPT <rfc822;w@1wt.eu>);
+	id S1754725AbXEBFeo (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 2 May 2007 01:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbXEBFen
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbXEBFeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:34:43 -0400
-Received: from haxent.com ([65.99.219.155]:2152 "EHLO haxent.com"
+	Wed, 2 May 2007 01:34:44 -0400
+Received: from haxent.com ([65.99.219.155]:2153 "EHLO haxent.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754721AbXEBFem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754725AbXEBFem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 May 2007 01:34:42 -0400
-Message-Id: <20070502053424.077818000@haxent.com.br>
-References: <20070502052235.914764000@haxent.com.br>
+Message-Id: <20070502052235.914764000@haxent.com.br>
 User-Agent: quilt/0.45-1
-Date: Wed, 02 May 2007 02:22:36 -0300
+Date: Wed, 02 May 2007 02:22:35 -0300
 From: Davi Arnaut <davi@haxent.com.br>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Davide Libenzi <davidel@xmailserver.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch 01/22] pollfs: kernel-side API header
-Content-Disposition: inline; filename=pollfs-api.patch
+Subject: [patch 00/22] pollfs: filesystem abstraction for pollable objects
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add pollfs_fs.h header which contains the kernel-side declarations
-and auxiliary macros for type safety checks. Those macros can be
-simplified later.
+This patch set introduces a new file system for the delivery of pollable
+events through file descriptors. To the detriment of debugability, pollable
+objects are a nice adjunct to nonblocking/epoll/event-based servers.
 
-Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
+The pollfs filesystem abstraction provides better mechanisms needed for
+creating and maintaining pollable objects. Also the pollable futex approach
+is far superior (send and receive events from userspace or kernel) to eventfd
+and fixes (supercedes) FUTEX_FD at the same time.
 
----
- include/linux/pollfs_fs.h |   57 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+The (non) blocking and object size (user <-> kernel) semantics and are handled
+internally, decoupling the core filesystem from the "subsystems" (mere push and
+pop operations).
 
-Index: linux-2.6/include/linux/pollfs_fs.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/linux/pollfs_fs.h
-@@ -0,0 +1,57 @@
-+/*
-+ * pollfs, a naive filesystem for pollable (waitable) files (objects)
-+ *
-+ * Copyright (C) 2007 Davi E. M. Arnaut
-+ *
-+ */
-+
-+#ifndef _LINUX_POLL_FS_H
-+#define _LINUX_POLL_FS_H
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/types.h>
-+#include <linux/dcache.h>
-+#include <linux/fs.h>
-+
-+#define PFS_CHECK_CALLBACK_1(f, a) (void*)				\
-+	(sizeof((f)((typeof(a *))0)))
-+
-+#define PFS_CHECK_CALLBACK_2(f, a, b) (void*)				\
-+	(sizeof((f)((typeof(a *))0, (typeof(b*))0)))
-+
-+#define PFS_WRITE(func, type, utype)					\
-+	(ssize_t (*)(void *, const void __user *))			\
-+	(0 ? PFS_CHECK_CALLBACK_2(func, type, utype) : func)
-+
-+#define PFS_READ(func, type, utype)					\
-+	(ssize_t (*)(void *, void __user *))				\
-+	(0 ? PFS_CHECK_CALLBACK_2(func, type, utype) : func)
-+
-+#define PFS_POLL(func, type)						\
-+	(int (*)(void *))(0 ? PFS_CHECK_CALLBACK_1(func, type) : func)
-+
-+#define PFS_RELEASE(func, type)						\
-+	(int (*)(void *))(0 ? PFS_CHECK_CALLBACK_1(func, type) : func)
-+
-+struct pfs_operations {
-+	ssize_t (*read)(void *, void __user *);
-+	ssize_t (*write)(void *, const void __user *);
-+	int (*mmap)(void *, struct vm_area_struct *);
-+	int (*poll)(void *);
-+	int (*release)(void *);
-+	size_t rsize;
-+	size_t wsize;
-+};
-+
-+struct pfs_file {
-+	void *data;
-+	wait_queue_head_t *wait;
-+	const struct pfs_operations *fops;
-+};
-+
-+long pfs_open(struct pfs_file *pfs);
-+
-+#endif	/* __KERNEL __ */
-+
-+#endif	/* _LINUX_POLLFS_FS_H */
+Currently implemented waitable "objects" are: signals, futexes, ai/o blocks and
+timers.
+
+More details at each patch.
+
+http://haxent.com/~davi/pollfs/
+
+Comments are welcome.
 
 --
+Davi Arnaut
