@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767027AbXEBVSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767026AbXEBVUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767027AbXEBVSe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423524AbXEBVSe
+	id S1767026AbXEBVUJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767030AbXEBVUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:18:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34821 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423508AbXEBVSd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:18:33 -0400
-Message-ID: <4638FFB2.4000609@redhat.com>
-Date: Wed, 02 May 2007 17:16:34 -0400
-From: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 17:20:09 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39363 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767026AbXEBVUH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 17:20:07 -0400
+X-Sasl-enc: rPZfs8lHirMdSwAWtltn1opcvn572TfTXTa90/iEzmFX 1178140806
+Message-ID: <46390129.4020801@imap.cc>
+Date: Wed, 02 May 2007 23:22:49 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH 1/6] firewire: handling of cards, buses, nodes
-References: <4637A29F.6070302@redhat.com>	 <20070502090007.GA28174@infradead.org>	 <tkrat.087ee29add656926@s5r6.in-berlin.de>	 <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <84144f020705020855q6e68381el899261fa30f60cc4@mail.gmail.com>
-In-Reply-To: <84144f020705020855q6e68381el899261fa30f60cc4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
+ (-1)
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<46338AEB.2070109@imap.cc>	<20070428141024.887342bd.akpm@linux-foundation.org>	<4636248E.7030309@imap.cc>	<20070430112130.b64321d3.akpm@linux-foundation.org>	<46364346.6030407@imap.cc>	<20070430124638.10611058.akpm@linux-foundation.org>	<46383742.9050503@imap.cc>	<20070502001000.8460fb31.akpm@linux-foundation.org>	<20070502075238.GA9083@suse.de>	<4638CC03.7030903@imap.cc> <20070502130746.265bba0f.akpm@linux-foundation.org>
+In-Reply-To: <20070502130746.265bba0f.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig00F219DB640D3586A4CAC9A8"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On 5/2/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> +/* The lib/crc16.c implementation uses the standard (0x8005)
->> + * polynomial, but we need the ITU-T (or CCITT) polynomial (0x1021).
->> + * The implementation below works on an array of host-endian u32
->> + * words, assuming they'll be transmited msb first. */
->> +u16
->> +crc16_itu_t(const u32 *buffer, size_t length)
->> +{
-> 
-> [snip]
-> 
-> So put it in lib/crc-itu-t.c? Btw, there's apparently another ITU-T
-> implementation floating around by Ivo van Doorn.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig00F219DB640D3586A4CAC9A8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I looked into this a while back, and the kernel does have a CCITT based crc16 
-function.  The problem is that it works on the opposite bit order from what I 
-need, so to use it I'll have to bitswap every byte as it goes in and then 
-bitswap the resulting crc16.  That's more code and probably less efficient 
-than just implementing the crc itself.  I wouldn't mind moving it to lib/ 
-though, but nobody else in the kernel is using this bit order.
+Am 02.05.2007 22:07 schrieb Andrew Morton:
+>> Started to git-bisect mainline now, but that will take some time.
+[...]
+> I don't think there's much point in you doing that.  We know what the b=
+ug is.
 
-Kristian
+Good. Saves me some work. :-)
 
+If you'd like me to test anything, just let me know.
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+- Undetected errors are handled as if no error occurred. (IBM) -
+
+
+--------------enig00F219DB640D3586A4CAC9A8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGOQExMdB4Whm86/kRAm9jAJ9DZjLpQWN1FY27ZWHT1smk0xojlwCggv1N
+1KQiVAt6tlPyy73mtjYL1DI=
+=+Q0I
+-----END PGP SIGNATURE-----
+
+--------------enig00F219DB640D3586A4CAC9A8--
