@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766703AbXEBWll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767132AbXEBWmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766703AbXEBWll (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767132AbXEBWll
+	id S1767132AbXEBWmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767143AbXEBWmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:41:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56575 "EHLO mx1.redhat.com"
+	Wed, 2 May 2007 18:42:49 -0400
+Received: from lucidpixels.com ([75.144.35.66]:39258 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766703AbXEBWlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:41:40 -0400
-Message-ID: <46391392.4070706@redhat.com>
-Date: Wed, 02 May 2007 15:41:22 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1767132AbXEBWms (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:42:48 -0400
+Date: Wed, 2 May 2007 18:41:59 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Nicolas Boichat <nicolas@boichat.ch>
+cc: Rudolf Marek <r.marek@assembler.cz>,
+       LM Sensors <lm-sensors@lm-sensors.org>, bytes@linuxgazette.net,
+       debian-user@lists.debian.org, linux-kernel@vger.kernel.org
+Subject: Re: coretemp - take3
+In-Reply-To: <45FE0EE3.2030201@boichat.ch>
+Message-ID: <Pine.LNX.4.64.0705021841280.14579@p34.internal.lan>
+References: <45FDC7A4.9070601@assembler.cz> <45FE0EE3.2030201@boichat.ch>
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
-Subject: Why ssse3?
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFFA09106E8D9E85FED75E34B"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFFA09106E8D9E85FED75E34B
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Note the extra 's'.  We use "sse" and "sse2", but "ssse3".  I assume
-it's a typo.
 
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+On Mon, 19 Mar 2007, Nicolas Boichat wrote:
 
---- arch/i386/kernel/cpu/proc.c	2007-02-15 11:21:18.000000000 -0800
-+++ arch/i386/kernel/cpu/proc.c-new	2007-05-02 15:31:17.000000000 -0700
-@@ -46,7 +46,7 @@
+> Rudolf Marek wrote:
+>> Hello all,
+>>
+>> I'm CCing all interested parties, if some isn't please tell!
+>>
+>> On URL bellow is current version of coretemp driver.
+>>
+>> http://ssh.cz/~ruik/patches/
+>
+> Small glitch in coretemp_init:
+>
+>    printk(KERN_NOTICE DRVNAME ": This driver uses undocumented features"
+>
+>        "of Core CPU. Temperature might be wrong!\n");
+>
+>
+> Prints this in dmesg:
+>
+> [46487.231000] coretemp: This driver uses undocumented featuresof Core CPU. Temperature might be wrong!
+>
+>
+> (Notice the space missing between "features" and "of")
+>
+> Best regards,
+>
+> Nicolas
+>
 
- 		/* Intel-defined (#2) */
- 		"pni", NULL, NULL, "monitor", "ds_cpl", "vmx", "smx", "est",
--		"tm2", "ssse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
-+		"tm2", "sse3", "cid", NULL, NULL, "cx16", "xtpr", NULL,
- 		NULL, NULL, "dca", NULL, NULL, NULL, NULL, "popcnt",
- 		NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-
-
---=20
-=E2=9E=A7 Ulrich Drepper =E2=9E=A7 Red Hat, Inc. =E2=9E=A7 444 Castro St =
-=E2=9E=A7 Mountain View, CA =E2=9D=96
-
-
---------------enigFFA09106E8D9E85FED75E34B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGOROS2ijCOnn/RHQRAnA0AJ9qSjBgx7mYKepqWp1/vARDSXrsYwCgsUJZ
-eRAnDVrLm8+xdh8J8XUvo74=
-=Z8Ag
------END PGP SIGNATURE-----
-
---------------enigFFA09106E8D9E85FED75E34B--
+This did not make it into 2.6.21?  Will it get into 2.6.22?
