@@ -1,76 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992953AbXEBJ36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992954AbXEBJcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992953AbXEBJ36 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 05:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992954AbXEBJ36
+	id S2992954AbXEBJcX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 05:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992958AbXEBJcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 05:29:58 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53902 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992953AbXEBJ35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 05:29:57 -0400
-Message-ID: <46385A18.30804@vmware.com>
-Date: Wed, 02 May 2007 02:30:00 -0700
-From: Petr Vandrovec <petr@vmware.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.3) Gecko/20070217 Iceape/1.1.1 (Debian-1.1.1-2)
+	Wed, 2 May 2007 05:32:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50554 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992954AbXEBJcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 05:32:21 -0400
+Message-ID: <46385A8A.6070405@redhat.com>
+Date: Wed, 02 May 2007 11:31:54 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: nigel@nigel.suspend2.net
-CC: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: VMware, x86_64 and 2.6.21.
-References: <1177998147.8981.16.camel@nigel.suspend2.net>	 <1178031475.3448.0.camel@laptopd505.fenrus.org> <1178032456.13953.12.camel@nigel.suspend2.net>
-In-Reply-To: <1178032456.13953.12.camel@nigel.suspend2.net>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Jeff Garzik <jeff@garzik.org>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       Vivek Goyal <vgoyal@in.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
+In-Reply-To: <46363A68.6080201@goop.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nigel Cunningham wrote:
-> Hi Arjan.
+Jeremy Fitzhardinge wrote:
+> Eric W. Biederman wrote:
+>> I have several ideas on how we can make this work but first I have to
+>> ask what is it that you are trying to accomplish?
 > 
-> On Tue, 2007-05-01 at 07:57 -0700, Arjan van de Ven wrote:
->> On Tue, 2007-05-01 at 15:42 +1000, Nigel Cunningham wrote:
->>> Hi.
->>>
->>> Does anyone have VMware working on x86_64 with 2.6.21? It's working fine
->>> for me with 2.6.20, but freezes the whole computer with 2.6.21. Before I
->>> start a git-bisect, I thought I might ask if anyone knew of some
->>> compilation option I might have missed.
->>
->> if you want to ask questions about proprietary kernel stuff you're
->> better off asking the vendor directly, not lkml
+> The requirements are:
 > 
-> I did, but given that it the failure only appeared with a change of
-> vanilla kernel version, I didn't think it was out of place to ask here
-> too.
+>    1. the domain builder needs to get various information about the
+>       guest kernel by inspecting its ELF notes
 
-I thought I already talked about that on VMware's forums, but apparently 
-I just discussed it in email only.  Culprit (if I can say that) is 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=610142927b5bc149da92b03c7ab08b8b5f205b74
+Doesn't need to be ELF notes.  The current (3.0.5+) domain builder has 
+pluggable binary parsers.  Right now there are two:  ELF (obviously ...) 
+and binary (with a multiboot-like header).  Filling the informations 
+such as virt_base is a function of the parser, so when adding one more 
+parser to the domain builder for bzImage kernels the parser could do 
+something completely different to gather the needed information ...
 
-It changed interrupt layout - before that change IRQ 0-15 were using 
-vectors 0x20-0x2F, after change they use interrupts 0x30-0x3F.  Which 
-has unfortunate effect that when hardware IRQ 8 arrives while VM is 
-running, vmm believes that it internally used 'INT 0x38' to call some 
-hypervisor service - and (1) hardware interrupt is never acknowledged, 
-and (2) hypervisor issues random operation depending on contents of 
-registers at the time interrupt arrived.  Both are quite bad, and usual 
-result is that VMware panics, and while writing core dump kernel hangs 
-as IOAPIC believes that there is IRQ 8 in service, and so it does not 
-ever deliver IRQs 14/15 for legacy IDE harddisks (which are at same level).
+> That works OK for a kernel which is compiled to run under Xen and can't
+> run in any other environment, but now that we can generate a single
+> kernel which can run in any number of different environments, its
+> unfortunate that we still need multiple variants of the kernel image.
 
-One of possible fixes (if you need to run older products than VMware 
-Workstation 6 on 64bit 2.6.21+) is replacing
+Yep, although already much better than completely different kernels. 
+Most space of a typical distro kernel is modules which are shared even 
+with different kernel binaries.
 
-#define IRQ0_VECTOR            FIRST_EXTERNAL_VECTOR + 0x10
+> So, I have no problem in also building a boot protocol info structure,
+> and passing that in %esi, so long as I can store a pointer to the
+> Xen-specific info as well.
 
-with
+Yep, should work fine.
 
-#define IRQ0_VECTOR            FIRST_EXTERNAL_VECTOR + 0x08
+> I think I'd prefer to have the domain builder decompress/relocate the
+> kernel from the bzImage and start it directly, rather than have it
+> decompress/relocate itself,
 
-Then IRQ 0x38 will be skipped.  Other option is move only IRQ8_VECTOR 
-somewhere else (into 0x21-0x2F range).
-							Petr Vandrovec
+I'd expect that work better too.
 
-P.S.: Well, and obviously this has nothing to do with vmmon...
+> It depends
+> on how well it can deal with having paging enabled and being in ring 1. 
+
+Xen direct paging mode requiring (leaf) page tables being mapped 
+read-only makes page table manipulation a bit difficult.  Xen has to 
+care whenever the memory it maps is a page table.  Native hasn't.
+
+Also switching to a completely different set of page tables isn't easy 
+under Xen.  My xen guest kexec patches have to perform some intresting 
+tricks because of that ...
+
+> Looks like it might just be a matter of starting up with "enough" memory
+> mapped.
+
+Doesn't solve the problem of having to switch from identity mapping to 
+the 0xc0000000 one ...
+
+cheers,
+   Gerd
+
+
