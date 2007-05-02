@@ -1,264 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161512AbXEBGNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030283AbXEBGOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161512AbXEBGNM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161263AbXEBGNM
+	id S1030283AbXEBGOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030664AbXEBGOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:13:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44681 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992770AbXEBGNK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:13:10 -0400
-Date: Tue, 1 May 2007 23:12:54 -0700
-From: Paul Jackson <pj@sgi.com>
-To: balbir@linux.vnet.ibm.com
-Cc: menage@google.com, vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net,
-       balbir@in.ibm.com, haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru,
-       containers@lists.osdl.org, devel@openvz.org, ebiederm@xmission.com,
-       mbligh@google.com, rohitseth@google.com, serue@us.ibm.com,
-       akpm@linux-foundation.org, svaidy@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ckrm-tech] [PATCH 1/9] Containers (V9): Basic container
- framework
-Message-Id: <20070501231254.4267777e.pj@sgi.com>
-In-Reply-To: <46380901.2050001@linux.vnet.ibm.com>
-References: <20070427104607.252541000@menage.corp.google.com>
-	<20070427111300.015604000@menage.corp.google.com>
-	<46377BA4.6030701@linux.vnet.ibm.com>
-	<20070501114030.62b85494.pj@sgi.com>
-	<46380901.2050001@linux.vnet.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Tue__1_May_2007_23_12_54_-0700_vRP0wToZSVAhzsSB"
+	Wed, 2 May 2007 02:14:43 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61430 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030283AbXEBGOl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 02:14:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,477,1170662400"; 
+   d="scan'208";a="240422824"
+From: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 00/16] raid acceleration and asynchronous offload api for
+	2.6.22
+To: neilb@suse.de, akpm@linux-foundation.org, christopher.leech@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
+Date: Tue, 01 May 2007 23:14:40 -0700
+Message-ID: <20070502060949.7066.357.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+I am pleased to release this latest spin of the raid acceleration
+patches for merge consideration.  This release aims to address all
+pending review items including MD bug fixes and async_tx api changes
+from Neil, and concerns on channel management from Chris and others.
 
---Multipart=_Tue__1_May_2007_23_12_54_-0700_vRP0wToZSVAhzsSB
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Data integrity tests using home grown scripts and 'iozone -V' are
+passing.  I am open to suggestions for additional testing criteria.  I
+have also verified that git bisect is not broken by this set.
 
-Balbir wrote:
-> Would it be possible to extract those test cases and integrate them
-> with a testing framework like LTP? Do you have any regression test
-> suite for cpusets that can be made available publicly so that
-> any changes to cpusets can be validated?
+The short log below highlights the most recent changes.  The patches
+will be sent as a reply to this message, and they are also available via
+git:
 
-There are essentially two sorts of cpuset regression tests of interest.
+	git pull git://lost.foo-projects.org/~dwillia2/git/iop md-accel-linus
 
-I have one such test, and the batch scheduler developers have various
-tests of their batch schedulers.
+Additional comments and feedback welcome.
 
-1) Testing batch schedulers against cpusets:
+Thanks,
+Dan
 
-    I doubt that the batch scheduler developers would be able to
-    extract a cpuset test from their tests, or be able to share it if
-    they did.  Their tests tend to be large tests of batch schedulers,
-    and only incidentally test cpusets -- if we break cpusets,
-    in sometimes even subtle ways that they happen to depend on,
-    we break them.
+--
+01/16: dmaengine: add base support for the async_tx api
+	* convert channel capabilities to a 'cpumask_t like' bitmap
+02/16: dmaengine: move channel management to the client
+	* this patch is new to this series
+03/16: ARM: Add drivers/dma to arch/arm/Kconfig
+04/16: dmaengine: add the async_tx api
+	* remove the per operation type list, and distribute operation
+	  capabilities evenly amongst the available channels
+	* simplify async_tx_find_channel to optimize the fast path
+05/16: md: add raid5_run_ops and support routines
+	* explicitly handle the 2-disk raid5 case (xor becomes memcpy)
+	* fix race between async engines and bi_end_io call for reads,
+	  Neil Brown
+	* remove unnecessary spin_lock from ops_complete_biofill
+	* remove test_and_set/test_and_clear BUG_ONs, Neil Brown
+	* remove explicit interrupt handling, Neil Brown
+06/16: md: use raid5_run_ops for stripe cache operations
+07/16: md: move write operations to raid5_run_ops
+	* remove test_and_set/test_and_clear BUG_ONs, Neil Brown
+08/16: md: move raid5 compute block operations to raid5_run_ops
+	* remove the req_compute BUG_ON
+09/16: md: move raid5 parity checks to raid5_run_ops
+	* remove test_and_set/test_and_clear BUG_ONs, Neil Brown
+10/16: md: satisfy raid5 read requests via raid5_run_ops
+	* cleanup to_read and to_fill accounting
+	* do not fail reads that have reached the cache
+11/16: md: use async_tx and raid5_run_ops for raid5 expansion operations
+12/16: md: move raid5 io requests to raid5_run_ops
+13/16: md: remove raid5 compute_block and compute_parity5
+14/16: dmaengine: driver for the iop32x, iop33x, and iop13xx raid engines
+	* fix locking bug in iop_adma_alloc_chan_resources, Benjamin
+	  Herrenschmidt
+	* convert capabilities over to dma_cap_mask_t
+15/16: iop13xx: Surface the iop13xx adma units to the iop-adma driver
+16/16: iop3xx: Surface the iop3xx DMA and AAU units to the iop-adma driver
 
-    Sometimes there is no way to guess exactly what sorts of changes
-    will break their code; we'll just have to schedule at least one
-    run through one or more of them that rely heavily on cpusets
-    before a change as big as rebasing cpusets on containers is
-    reasonably safe.  This test cycle won't be all that easy, so I'd
-    wait until we are pretty close to what we think should be taken
-    into the mainline kernel.
-
-    I suppose I will have to be the one co-ordinating this test,
-    as I am the only one I know with a presence in both camps.
-
-    Once this test is done, from then forward, if we break them,
-    we'll just have to deal with it as we do now, when the breakage
-    shows up well down stream from the main kernel tree, at the point
-    that a major batch scheduler release runs into a major distribution
-    release containing the breakage.  There is no practical way that I
-    can see, as an ongoing basis, to continue testing for such breakage
-    with every minor change to cpuset related code in the kernel.  Any
-    breakage found this way is dealt with by changes in user level code.
-
-    Once again, I have bcc'd one or more developers of batch schedulers,
-    so they can see what nonsense I am spouting about them now ;).
-
-2) Testing cpusets with a specific test.
-
-    There I can do better.  Attached is the cpuset regression test I
-    use.  It requires at least 4 cpus and 2 memory nodes to do anything
-    useful.  It is copyright by SGI, released under GPL license.
-
-    This regression test is the primary cpuset test upon which I
-    relied during the development of cpusets, and continue to rely.
-    Except for one subtle race condition in the test itself, it has
-    not changed in the last two to three years.
-
-    This test requires no user level code not found in an ordinary
-    distro.  It does require the taskset and numactl commands,
-    for the purposes of testing certain interactions with them.
-    It assumes that there are not other cpusets currently setup in
-    the system that happen to conflict with the ones it creates.
-
-    See further comments within the test script itself.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
-
---Multipart=_Tue__1_May_2007_23_12_54_-0700_vRP0wToZSVAhzsSB
-Content-Type: application/octet-stream;
- name="cpuset_test"
-Content-Disposition: attachment;
- filename="cpuset_test"
-Content-Transfer-Encoding: base64
-
-IyEvYmluL2Jhc2ggLWUKIyAKIyBjcHVzZXRfdGVzdCAtIHJlZ3Jlc3Npb24gdGVzdCBmb3IgTGlu
-dXgga2VybmVsIGNwdXNldCBzdXBwb3J0LgojCiMgQ29weXJpZ2h0IChjKSAyMDA1IFNpbGljb24g
-R3JhcGhpYywgSW5jLiAgQWxsIHJpZ2h0cyByZXNlcnZlZC4KIwojIyMKIwojIFRoaXMgcHJvZ3Jh
-bSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5
-CiMgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBh
-cyBwdWJsaXNoZWQgYnkKIyB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyBlaXRoZXIgdmVy
-c2lvbiAyIG9mIHRoZSBMaWNlbnNlLCBvcgojIChhdCB5b3VyIG9wdGlvbikgYW55IGxhdGVyIHZl
-cnNpb24uCiMKIyBUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhvcGUgdGhhdCBp
-dCB3aWxsIGJlIHVzZWZ1bCwKIyBidXQgV0lUSE9VVCBBTlkgV0FSUkFOVFk7IHdpdGhvdXQgZXZl
-biB0aGUgaW1wbGllZCB3YXJyYW50eSBvZgojIE1FUkNIQU5UQUJJTElUWSBvciBGSVRORVNTIEZP
-UiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4gIFNlZSB0aGUKIyBHTlUgR2VuZXJhbCBQdWJsaWMgTGlj
-ZW5zZSBmb3IgbW9yZSBkZXRhaWxzLgojCiMgWW91IHNob3VsZCBoYXZlIHJlY2VpdmVkIGEgY29w
-eSBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UKIyBhbG9uZyB3aXRoIHRoaXMgcHJv
-Z3JhbTsgaWYgbm90LCB3cml0ZSB0byB0aGUgRnJlZSBTb2Z0d2FyZQojIEZvdW5kYXRpb24sIElu
-Yy4sIDU5IFRlbXBsZSBQbGFjZSwgU3VpdGUgMzMwLCBCb3N0b24sIE1BICAwMjExMS0xMzA3ICBV
-U0EKIwojIyMKIwojIFRoaXMgaXMgYSByZWdyZXNzaW9uIHRlc3QgZm9yIGNwdXNldHMuICBJdCB0
-ZXN0cyB0aGUgdmFyaW91cwojIGZ1bmN0aW9ucywgZGlzcGxheXMgc3VjY2Vzc2VzIGFuZCBmYWls
-dXJlcyB0byBzdGRvdXQgYW5kIHN0ZGVyci4KIyAKIyBJZiBzdWNjZXNzZnVsLCBpdCBleGl0cyB3
-aXRoIGEgdmFsdWUgb2YgMCwgYW5kIHRoZSBsYXN0IGxpbmUKIyBvZiBvdXRwdXQgaXM6CiMgCiMg
-CWNwdXNldCB0ZXN0IHN1Y2Nlc3MgISEhCiMgCiMgSWYgZmFpbGVkLCBpdCBleGl0cyB3aXRoIGEg
-dmFsdWUgb2YgMSwgYW5kIHRoZSBsYXN0IGxpbmUgb2YKIyBvdXRwdXQgaXM6CiMgCiMgCWNwdXNl
-dCB0ZXN0IGZhaWxlZCA7KTspOykKIyAKIyBJdCBuZWVkcyB0byBiZSBydW4gd2l0aCByb290IHBl
-cm1pc3Npb25zLCBhbmQgaXQgcmVxdWlyZXMKIyBiZWluZyBydW4gb24gYSBzeXN0ZW0gd2l0aCBh
-dCBsZWFzdCA0IENQVXMgdG8gYWN0dWFsbHkgdGVzdAojIGFueXRoaW5nLgojCiMgSWYgcnVuIG9u
-IGEgc3lzdGVtIHdpdGhvdXQgY3B1c2V0IHN1cHBvcnQgaW4gdGhlIGtlcm5lbCwgaXQKIyB3aWxs
-IGZhaWwgd2l0aCBhbiBleGl0IHN0YXR1cyBvZiAxLCBhbmQgb3V0cHV0IG9mOgojIAojIAltb3Vu
-dDogZnMgdHlwZSBjcHVzZXQgbm90IHN1cHBvcnRlZCBieSBrZXJuZWwKIyAJRmFpbGVkOiBtb3Vu
-dCAtdCBjcHVzZXQgY3B1c2V0IC9kZXYvY3B1c2V0IGF0IExJTkUgNDYKIyAJY3B1c2V0IHRlc3Qg
-ZmFpbGVkIDspOyk7KQojIAojIElmIHJ1biBvbiBhIHN5c3RlbSB3aXRoIDMgb3IgZmV3ZXIgQ1BV
-cywgaXQgZG9lcyBub3RoaW5nIG11Y2gsCiMgc3VjY2Vzc2Z1bGx5LCBhbmQgZXhpdHMgd2l0aCBh
-IHZhbHVlIG9mIDAuCiMgCiMgQWxsIHN1Y2Nlc3MgYW5kIGZhaWwgbGluZXMgZm9yIHNwZWNpZmlj
-IHRlc3RzIHByb3ZpZGUgdGhlCiMgTElORSBudW1iZXIgaW4gdGhpcyBzaGVsbCBzY3JpcHQgb2Yg
-dGhlIHRlc3QgY29tbWFuZCwgZm9yCiMgY29udmVuaWVudCBhbmFseXNpcy4KIyAKIyBQYXVsIEph
-Y2tzb24KIyBwakBzZ2kuY29tCiMgMjYgSmFuIDIwMDUKCgpleGl0dmFsPTEKdHJhcCAnCiAgICB0
-ZXN0ICRleGl0dmFsIC1lcSAwICYmIHI9InN1Y2Nlc3MgISEhIiB8fCByPSJmYWlsZWQgOyk7KTsp
-IgogICAgZWNobyBjcHVzZXQgdGVzdCAkcgogICAgdHJhcCAwCiAgICBleGl0ICRleGl0dmFsCicg
-MCAxIDIgMyAxNQoKZmFpbCgpCnsKCWVjaG8gRmFpbGVkOiAkKgoJZXhpdHZhbD0xCglleGl0Cn0K
-CnN1Y2NlZWQoKQp7CgllY2hvIFN1Y2NlZWRlZDogJCoKCWV4aXR2YWw9MAoJZXhpdAp9Cgp2ZXJi
-b3NlKCkKewoJbGluZT0kMQoJc2hpZnQKCSQqIHx8IGZhaWwgJCogYXQgTElORSAkbGluZQoJZWNo
-byAkKiBhdCBMSU5FICRsaW5lIG9rCn0KCmRvX2VjaG8oKQp7CgkvYmluL2VjaG8gJDEgPiAkMiAm
-JgoJCWVjaG8gZWNobyAkMSAnPicgJDIgYXQgTElORSAkMyBvayB8fAoJCWZhaWwgZWNobyAkMSAn
-PicgJDIgYXQgTElORSAkMwp9Cgp0ZXN0IC1kIC9kZXYvY3B1c2V0ICYmCgllY2hvIGRpcmVjdG9y
-eSAvZGV2L2NwdXNldCBleGlzdHMgYXQgTElORSAkTElORU5PIHx8Cgl2ZXJib3NlICRMSU5FTk8g
-bWtkaXIgL2Rldi9jcHVzZXQKCm1vdW50IHwgZ3JlcCAnL2Rldi9jcHVzZXQgdHlwZSBjcHVzZXQn
-ID4vZGV2L251bGwgJiYKCWVjaG8gL2Rldi9jcHVzZXQgbW91bnRlZCBhdCBMSU5FICRMSU5FTk8g
-fHwKCXZlcmJvc2UgJExJTkVOTyBtb3VudCAtdCBjcHVzZXQgY3B1c2V0IC9kZXYvY3B1c2V0Cgoj
-IElmIHJ1biBvbiBhIHN5c3RlbSB3aXRoIDwgNCBDUFVzLCBkbyBub3RoaW5nLCBzdWNjZXNzZnVs
-bHkuCnRlc3QgJChncmVwIC1jIHByb2Nlc3NvciAvcHJvYy9jcHVpbmZvKSAtZ2UgNCB8fAoJc3Vj
-Y2VlZCBjcHVzZXQgdGVzdGluZyBza2lwcGVkIGZvciBsYWNrIG9mIGF0IGxlYXN0IDQgQ1BVcwoK
-IyBEbyBhbGwgdGVzdGluZyBpbiBvdXIgb3duIGNwdXNldCBzdWJ0cmVlICdjcHVzZXRfdGVzdF90
-cmVlJwp0ZXN0IC1kIC9kZXYvY3B1c2V0L2NwdXNldF90ZXN0X3RyZWUgJiYKCWVjaG8gY3B1c2V0
-IGNwdXNldF90ZXN0X3RyZWUgZXhpc3RzIGF0IExJTkUgJExJTkVOTyB8fAoJdmVyYm9zZSAkTElO
-RU5PIG1rZGlyIC9kZXYvY3B1c2V0L2NwdXNldF90ZXN0X3RyZWUKCnZlcmJvc2UgJExJTkVOTyBj
-ZCAvZGV2L2NwdXNldC9jcHVzZXRfdGVzdF90cmVlCgpybWRpciA/IDI+Ji0gfHwgdHJ1ZQoKZG9f
-ZWNobyAwLTMgY3B1cyAkTElORU5PCmRvX2VjaG8gMC0xIG1lbXMgJExJTkVOTwpkb19lY2hvIDAg
-Y3B1X2V4Y2x1c2l2ZSAkTElORU5PCmRvX2VjaG8gMCBtZW1fZXhjbHVzaXZlICRMSU5FTk8KZG9f
-ZWNobyAkJCB0YXNrcyAkTElORU5PCgp0ZXN0ICQoPC9wcm9jL3NlbGYvY3B1c2V0KSA9IC9jcHVz
-ZXRfdGVzdF90cmVlIHx8CglmYWlsIGJpbmQgc2VsZiB0byAvY3B1c2V0X3Rlc3RfdHJlZSBhdCBM
-SU5FICRMSU5FTk8KZWNobyBiaW5kIHNlbGYgdG8gL2NwdXNldF90ZXN0X3RyZWUgYXQgTElORSAk
-TElORU5PIG9rCgojIFNldCB1cCA0IGNoaWxkIGNwdXNldHMsIG5hbWVkIDAsIDEsIDIsIGFuZCAz
-LCBjb250YWluaW5nCiMgQ1BVcyAwLCAxLCAyLCBhbmQgMyByZXNwZWN0aXZlbHksIG9uIE1lbW9y
-eSBOb2RlcyAwLCAwLCAxLAojIGFuZCAxLiAgQmluZCB0aGlzIHRhc2sgdG8gZWFjaCBjcHVzZXQs
-IGluIG9yZGVyLgpmb3IgaSBpbiAwIDEgMiAzCmRvCiAgICB0ZXN0IC1kICRpICYmIHJtZGlyICRp
-CiAgICBta2RpciAkaQogICAgZG9fZWNobyAkaSAkaS9jcHVzICRMSU5FTk8KICAgIGRvX2VjaG8g
-JChleHByICRpIC8gMikgJGkvbWVtcyAkTElORU5PCiAgICBkb19lY2hvICQkICRpL3Rhc2tzICRM
-SU5FTk8KICAgIGo9JChhd2sgPCAvcHJvYy9zZWxmL3N0YXQgJ3twcmludCAkMzl9JykKICAgIHRl
-c3QgJGkgLWVxICRqIHx8CglmYWlsIGJpbmQgdG8gQ1BVICRpIGZhaWxlZCAtIG9uIENQVSAkaiBp
-bnN0ZWFkIExJTkUgJExJTkVOTwogICAgZWNobyBiaW5kIHRvIENQVSAkaSBhdCBMSU5FICRMSU5F
-Tk8gb2sKZG9uZQoKIyBCaW5kIHRoaXMgdGFzayB0byB0aGUgcGFyZW50IC9jcHVzZXRfdGVzdF90
-cmVlIGNwdXNldC4KZG9fZWNobyAkJCB0YXNrcyAkTElORU5PCgp0ZXN0ICQoPC9wcm9jL3NlbGYv
-Y3B1c2V0KSA9IC9jcHVzZXRfdGVzdF90cmVlIHx8CiAgICAgICAgZmFpbCBiaW5kIHNlbGYgdG8g
-L2NwdXNldF90ZXN0X3RyZWUKCiMgVHJ5IHRvIG1ha2UgY2hpbGQgY3B1c2V0IDAgZXhjbHVzaXZl
-IGZvciBDUFVzLgojIFRoaXMgc2hvdWxkIGZhaWwgc2luY2UgaXRzIHBhcmVudCBpc24ndCBleGNs
-dXNpdmUuCi9iaW4vZWNobyAxID4gMC9jcHVfZXhjbHVzaXZlIDI+Ji0gJiYKCWZhaWwgbmVzdGVk
-IGNwdV9leGNsdXNpdmUgYXQgTElORSAkTElORU5PCmVjaG8gbmVzdGVkIGNwdV9leGNsdXNpdmUg
-YXQgTElORSAkTElORU5PIG9rCgojIE5vdyBtYWtlIHRoZSBwYXJlbnQgY3B1c2V0IGV4Y2x1c2l2
-ZS4KZG9fZWNobyAxIGNwdV9leGNsdXNpdmUgJExJTkVOTwoKIyBOb3cgbWFraW5nIHRoZSBjaGls
-ZCBjcHVzZXQgMCBleGNsdXNpdmUgc2hvdWxkIHdvcmsuCi9iaW4vZWNobyAxID4gMC9jcHVfZXhj
-bHVzaXZlIDI+Ji0gfHwKCWZhaWwgbmVzdGVkIGNwdV9leGNsdXNpdmUgYXQgTElORSAkTElORU5P
-CmVjaG8gbmVzdGVkIGNwdV9leGNsdXNpdmUgYXQgTElORSAkTElORU5PIG9rCgojIEFzIGFib3Zl
-LCBmb3IgTWVtb3J5IGV4Y2x1c2l2ZSBpbnN0ZWFkIG9mIENQVSBleGNsdXNpdmUuCi9iaW4vZWNo
-byAxID4gMC9tZW1fZXhjbHVzaXZlIDI+Ji0gJiYKCWZhaWwgbmVzdGVkIG1lbV9leGNsdXNpdmUg
-YXQgTElORSAkTElORU5PCmVjaG8gbmVzdGVkIG1lbV9leGNsdXNpdmUgYXQgTElORSAkTElORU5P
-IG9rCgpkb19lY2hvIDEgbWVtX2V4Y2x1c2l2ZSAkTElORU5PCgojIEV2ZW4gd2l0aCBwYXJlbnQg
-bWVtX2V4Y2x1c2l2ZSBzZXQsIGNwdXNldCAwCiMgc2hvdWxkIHJlZnVzZSB0byBzZXQgbWVtX2V4
-Y2x1c2l2ZSwgc2luY2UgaXQKIyBzaGFyZXMgdGhlIHNhbWUgbWVtcyBhcyBjaGlsZCBjcHVzZXQg
-MS4KL2Jpbi9lY2hvIDEgPiAwL21lbV9leGNsdXNpdmUgMj4mLSAmJgoJZmFpbCBzaWJsaW5nIG1l
-bV9leGNsdXNpdmUgYXQgTElORSAkTElORU5PCmVjaG8gc2libGluZyBtZW1fZXhjbHVzaXZlIGF0
-IExJTkUgJExJTkVOTyBvawoKIyBSZW1vdmUgY2hpbGQgY3B1c2V0ICIxIi4KdmVyYm9zZSAkTElO
-RU5PIHJtZGlyIDEKCiMgTm93IGZpbmFsbHkgc2hvdWxkIGJlIGFibGUgdG8gbWFrZSBjcHVzZXQg
-MCBtZW1zX2V4Y2x1c2l2ZS4KL2Jpbi9lY2hvIDEgPiAwL21lbV9leGNsdXNpdmUgMj4mLSB8fAoJ
-ZmFpbCBzaWJsaW5nIG1lbV9leGNsdXNpdmUgYXQgTElORSAkTElORU5PCmVjaG8gc2libGluZyBt
-ZW1fZXhjbHVzaXZlIGF0IExJTkUgJExJTkVOTyBvawoKIyBOb3cgbGV0cyBjaGRpciB0byAwLCBh
-bmQgd29yayBpbiB0aGF0IGNwdXNldCBhIHdoaWxlLgp2ZXJib3NlICRMSU5FTk8gY2QgL2Rldi9j
-cHVzZXQvY3B1c2V0X3Rlc3RfdHJlZS8wCgojIEF0dGFjaCBjdXJyZW50IHRhc2sgdG8gY3B1c2V0
-IDAsIHZlcmlmeWluZyBhdHRhY2htZW50Lgpkb19lY2hvICQkIHRhc2tzICRMSU5FTk8KCmo9JChh
-d2sgPCAvcHJvYy9zZWxmL3N0YXQgJ3twcmludCAkMzl9JykKdGVzdCAwIC1lcSAkaiB8fAogICAg
-ZmFpbCBiaW5kIHRvIENQVSAwIGZhaWxlZCAtIG9uIENQVSAkaiBpbnN0ZWFkIExJTkUgJExJTkVO
-TwplY2hvIGJpbmQgdG8gQ1BVIDAgYXQgTElORSAkTElORU5PIG9rCgojIFNob3VsZCBiZSB1bmFi
-bGUgdG8gY2hhbmdlIGNwdXMgdG8gMC0yLCBiZWNhdXNlIHdlJ3JlCiMgc3RpbGwgY3B1X2V4Y2x1
-c2l2ZSAoZnJvbSBhYm92ZSkgYW5kIDAtMiB3b3VsZCBvdmVybGFwCiMgb3VyIHNpYmxpbmcgY3B1
-c2V0IC4uLzEuCi9iaW4vZWNobyAwLTIgPiBjcHVzIDI+Ji0gJiYKCWZhaWwgZXhjbHVzaXZlIGNw
-dXMgZ3Jvd3RoIGF0IExJTkUgJExJTkVOTwplY2hvIGV4Y2x1c2l2ZSBjcHVzIGdyb3d0aCBhdCBM
-SU5FICRMSU5FTk8gb2sKCiMgUmVtb3ZlIG91ciBjcHVfZXhjbHVzaXZlLgpkb19lY2hvIDAgY3B1
-X2V4Y2x1c2l2ZSAkTElORU5PCgojIE5vdyB3ZSBzaG91bGQgYmUgYWJsZSB0byBjaGFuZ2UgQ1BV
-cyB0byAwLTIuCi9iaW4vZWNobyAwLTIgPiBjcHVzIDI+Ji0gfHwKCWZhaWwgZXhjbHVzaXZlIGNw
-dXMgZ3Jvd3RoIGF0IExJTkUgJExJTkVOTwplY2hvIGV4Y2x1c2l2ZSBjcHVzIGdyb3d0aCBhdCBM
-SU5FICRMSU5FTk8gb2sKCiMgQW5kIHdlIHNob3VsZCBiZSBhYmxlIHRvIHVzZSB0YXNrc2V0IChz
-Y2hlZF9zZXRhZmZpbml0eSkKIyB0byBydW4gYSB0YXNrIG9uIGVhY2ggb2YgdGhlIENQVXMgaW4g
-b3VyIGNwdXNldCwgMC0yLgpmb3IgaSBpbiAwIDEgMgpkbwogICAgdmVyYm9zZSAkTElORU5PIHRh
-c2tzZXQgLWMgJGkgL2Jpbi90cnVlCmRvbmUKCiMgQnV0IHdlIHNob3VsZCBiZSB1bmFibGUgdG8g
-dGFza3NldCBhIHRhc2sgb250byBDUFUgMy4KdGFza3NldCAtYyAzIGVjaG8gdGVzdGluZyB0YXNr
-c2V0IG9uIENQVSAzIDI+Ji0gJiYKCWZhaWwgdGVzdGluZyB0YXNrc2V0IG9uIGludmFsaWQgQ1BV
-IDMgYXQgTElORSAkTElORU5PCmVjaG8gdGVzdGluZyB0YXNrc2V0IG9uIGludmFsaWQgQ1BVIDMg
-YXQgTElORSAkTElORU5PIG9rCgojIEhlcmUgbGllcyBpbmZvcm1hdGlvbiBvbiB3aGljaCBDUFVz
-IGFyZSBvbiB3aGljaCBub2Rlcy4Kc3lzPS9zeXMvZGV2aWNlcy9zeXN0ZW0vbm9kZQoKIyBUZXN0
-IG51bWFjdGwgKHNldF9tZW1wb2xpY3kpIG9uIGVhY2ggb2YgdGhlIGZpcnN0IDQgbm9kZXMsCiMg
-dmVyaWZ5aW5nIHdlIGNhbiBvbmx5IHVzZSBudW1hY3RsIHRvIHJ1biBvbiBhIE1lbW9yeSBOb2Rl
-CiMgb3IgQ1BVIGlmIGl0IGlzIGluIG91ciBjdXJyZW50IGNwdXNldC4KZm9yIG5vZGUgaW4gMCAx
-IDIgMwpkbwoKICAgICMgU2tpcCBub24tZXhpc3RhbnQgbm9kZXMKICAgIHRlc3QgLWQgJHN5cy9u
-b2RlJG5vZGUgfHwgY29udGludWUKCiAgICAjIE9ubHkgbm9kZXMgdGhhdCBoYXZlIGF0IGxlYXN0
-IG9uZSBvZiBjcHVzIDAsIDEgb3IgMgogICAgIyAoY3B1cyBpbiBvdXIgY3VycmVudCBjcHVzZXQp
-IGNhbiBudW1hY3RsIC0tY3B1YmluZC4KICAgIHNob3VsZHdvcms9ZmFsc2UKICAgIGZvciBjcHUg
-aW4gMCAxIDIKICAgIGRvCgkgICAgdGVzdCAtTCAkc3lzL25vZGUkbm9kZS9jcHUkY3B1ICYmIHNo
-b3VsZHdvcms9dHJ1ZQogICAgZG9uZQoKICAgIGlmICRzaG91bGR3b3JrCiAgICB0aGVuCgkgICAg
-dmVyYm9zZSAkTElORU5PIG51bWFjdGwgLS1jcHViaW5kPSRub2RlIC9iaW4vdHJ1ZQogICAgZWxz
-ZQoJICAgIG51bWFjdGwgLS1jcHViaW5kPSRub2RlIC9iaW4vdHJ1ZSAyPiYtICYmCgkJICAgIGZh
-aWwgdGVzdCBudW1hY3RsIG9uIGNwdWJpbmQgJG5vZGUgYXQgTElORSAkTElORU5PCgkgICAgZWNo
-byB0ZXN0IG51bWFjdGwgb24gaW52YWxpZCBjcHViaW5kICRub2RlIGF0IExJTkUgJExJTkVOTyBv
-awogICAgZmkKCiAgICAjIE9ubHkgbm9kZSAwICh0aGUgbWVtcyBpbiBvdXIgY3VycmVudCBjcHVz
-ZXQpIGNhbiBudW1hY3RsIC0tbWVtYmluZAogICAgaWYgdGVzdCAkbm9kZSAtZXEgMAogICAgdGhl
-bgoJICAgIHZlcmJvc2UgJExJTkVOTyBudW1hY3RsIC0tbWVtYmluZD0kbm9kZSAvYmluL3RydWUK
-ICAgIGVsc2UKCSAgICBudW1hY3RsIC0tbWVtYmluZD0kbm9kZSAvYmluL3RydWUgMj4mLSAmJgoJ
-CSAgICBmYWlsIHRlc3QgbnVtYWN0bCBvbiBtZW1iaW5kICRub2RlIGF0IExJTkUgJExJTkVOTwoJ
-ICAgIGVjaG8gdGVzdCBudW1hY3RsIG9uIG1lbWJpbmQgJG5vZGUgYXQgTElORSAkTElORU5PIG9r
-CiAgICBmaQpkb25lCgojIEJhY2sgdG8gdG9wIG9mIG91ciBjcHVzZXQgdGVzdCB0cmVlCnZlcmJv
-c2UgJExJTkVOTyBjZCAvZGV2L2NwdXNldC9jcHVzZXRfdGVzdF90cmVlCgpkb19lY2hvICQkIC4u
-L3Rhc2tzICRMSU5FTk8KIyAgTWFyayBhbGwgdGVzdCBjcHVzZXRzIHRvIGJlIHJlbW92ZWQgb24g
-cmVsZWFzZS4KZWNobyAxIHwgdGVlICQoZmluZCAuIC1uYW1lIG5vdGlmeV9vbl9yZWxlYXNlKSA+
-L2Rldi9udWxsCgp2ZXJib3NlICRMSU5FTk8gY2QgL2Rldi9jcHVzZXQKcm1kaXIgY3B1c2V0X3Rl
-c3RfdHJlZS8/IHx8CglmYWlsIHJtZGlyIHN1YiBjcHVzZXRzIGF0IExJTkUgJExJTkVOTwpzbGVl
-cCAzCQkjIHRpbWUgZm9yIC9zYmluL2NwdXNldF9yZWxlYXNlX2FnZW50IHRvIHJtZGlyCnRlc3Qg
-LWQgY3B1c2V0X3Rlc3RfdHJlZSAmJgoJZmFpbCBub3RpZnlfb25fcmVsZWFzZSBhdCBMSU5FICRM
-SU5FTk8KCmV4aXR2YWw9MAo=
-
---Multipart=_Tue__1_May_2007_23_12_54_-0700_vRP0wToZSVAhzsSB--
+(previous release: http://marc.info/?l=linux-raid&m=117463257423193&w=2)
