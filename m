@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXEBHo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbXEBHpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbXEBHo5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:44:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXEBHo4
+	id S1752145AbXEBHpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXEBHpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:44:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:57344 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752145AbXEBHoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:44:55 -0400
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both
-	of	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Mark Lord <lkml@rtr.ca>
-Cc: Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <46377055.2060605@rtr.ca>
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
-	 <463653A3.5040606@rtr.ca>  <46367D7E.6060502@rtr.ca>
-	 <1177976798.12796.286.camel@imap.mvista.com>  <463683A6.4010505@rtr.ca>
-	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
-			 <463741F1.7050706@rtr.ca>
-	 <1178027285.5791.307.camel@localhost.localdomain> <46374B1D.6050509@rtr.ca>
-	 <1178035058.5791.333.camel@localhost.localdomain> <46377055.2060605@rtr.ca>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 09:47:15 +0200
-Message-Id: <1178092035.5791.349.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 03:45:06 -0400
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35]:1259 "EHLO
+	smtp-vbr15.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbXEBHpC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 03:45:02 -0400
+X-Greylist: delayed 740 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 03:45:02 EDT
+Message-ID: <24627.194.196.35.3.1178091127.squirrel@webmail.xs4all.nl>
+In-Reply-To: <1178039010.6754.20.camel@localhost>
+References: <Pine.LNX.4.64.0704280628180.571@localhost.localdomain>
+    <1178039010.6754.20.camel@localhost>
+Date: Wed, 2 May 2007 09:32:07 +0200 (CEST)
+Subject: Re: [v4l-dvb-maintainer] Re: [PATCH] VIDEO4LINUX-2: Replace 
+     MINOR() with a call to iminor().
+From: "Hans Verkuil" <hverkuil@xs4all.nl>
+To: "Mauro Carvalho Chehab" <mchehab@infradead.org>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Andrew Morton" <akpm@osdl.org>, "Hans Verkuil" <hverkuil@xs4all.nl>,
+       michael@mihu.de,
+       "v4l-dvb maintainer list" <v4l-dvb-maintainer@linuxtv.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark,
+> Hi Robert,
+>
+> Em Sáb, 2007-04-28 às 06:32 -0400, Robert P. J. Day escreveu:
+>> Replace the call to MINOR() with a call to the inline iminor()
+>> routine.
+>>
+>> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+>>
+>> ---
+>>
+>> that's the last of those changes, but it's not clear who the official
+>> maintainer is, so i took a chance and picked a likely looking victim
+>> out of the MAINTAINERS file.  apologies if i picked wrong.
+>
+> You've picked it wrongly. The Maintainer for ivtv is Hans Verkuil.
+> However, for every stuff under drivers/media, you can reach the active
+> maintainers at v4l-dvb-maintainers list
+> (v4l-dvb-maintainer@linuxtv.org).
+>
+> Hans,
+>
+> If you are ok with this trivial change, please send me your acked-by or
+> SOB for me to commit and send to mainstream.
 
-On Tue, 2007-05-01 at 12:52 -0400, Mark Lord wrote:
-> Done, and done.
-> And I managed to capture more of the boot messages, too.
-> This new capture is in the "sequence" subdir at the previous link.
+Acked-by: Hans Verkuil <hverkuil@xs4all.nl>
 
-thanks. Can you apply this patch please:
-http://lkml.org/lkml/2007/4/13/190
+Regards,
 
-It somehow did not make it into 2.6.21.
+       Hans
 
-	tglx
+>>
+>>
+>> diff --git a/drivers/media/video/ivtv/ivtv-fileops.c
+>> b/drivers/media/video/ivtv/ivtv-fileops.c
+>> index 1637097..8976487 100644
+>> --- a/drivers/media/video/ivtv/ivtv-fileops.c
+>> +++ b/drivers/media/video/ivtv/ivtv-fileops.c
+>> @@ -804,7 +804,7 @@ int ivtv_v4l2_open(struct inode *inode, struct file
+>> *filp)
+>>  	struct ivtv_open_id *item;
+>>  	struct ivtv *itv = NULL;
+>>  	struct ivtv_stream *s = NULL;
+>> -	int minor = MINOR(inode->i_rdev);
+>> +	int minor = iminor(inode);
+>>
+>>  	/* Find which card this open was on */
+>>  	spin_lock(&ivtv_cards_lock);
+> --
+> Cheers,
+> Mauro
+>
+>
+> _______________________________________________
+> v4l-dvb-maintainer mailing list
+> v4l-dvb-maintainer@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/v4l-dvb-maintainer
+>
 
 
