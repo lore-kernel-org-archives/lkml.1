@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766636AbXEBTTA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766633AbXEBTS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766636AbXEBTTA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:19:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766637AbXEBTTA
+	id S1766633AbXEBTS7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766637AbXEBTS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:19:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:41766 "EHLO
+	Wed, 2 May 2007 15:18:59 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:42179 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766636AbXEBTS6 (ORCPT
+	with ESMTP id S1766633AbXEBTS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 May 2007 15:18:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gV0diPHrVr83J/2Dtho7fRSjU9IBNClGRalLf1remMXrnJGubE9UEKwraghkHpgwTPEDGzHb7yeCfM8gX8VoZxy1nlMQDlnicubUHy/agbAOfsnn1CGHdtxOFsC2disqsbu60npc3Jj2QxozI/CSSNLjuMnuawhnQwIxIoeaRug=
-Message-ID: <f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com>
-Date: Wed, 2 May 2007 20:18:55 +0100
-From: "Miguel Sousa Filipe" <miguel.filipe@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: FEATURE REQUEST: merge MD software raid and LVM in one unique layer.
-In-Reply-To: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com>
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EtI3TLy3QHcEh4F7PehaGCWdCo6rNUh1sOV5Dcr999PJjqgx/3YmBv0PIMDT5BX9k3Y/G1ayOJn+5pwxcP9MgCVU0E2S+/qhpB8drcZci5UobSH3Y1AdNkeaVEgDE5474HrTwZNPaQj40QMPj/Ssmvi6jwTejaRICapuvYSxE9I=
+Message-ID: <84144f020705021218v7ab2461ala215bbb034475e07@mail.gmail.com>
+Date: Wed, 2 May 2007 22:18:55 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: 2.6.22 -mm merge plans: slub
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh@veritas.com>, haveblue@ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0705021158150.1220@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <20070501125559.9ab42896.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+	 <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
+	 <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
+	 <Pine.LNX.4.64.0705021924200.24456@blonde.wat.veritas.com>
+	 <Pine.LNX.4.64.0705021137210.1027@schroedinger.engr.sgi.com>
+	 <20070502115725.683ac702.akpm@linux-foundation.org>
+	 <Pine.LNX.4.64.0705021158150.1220@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: 9b9ca7774d32ff14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello kernel hackers,
+On 5/2/07, Christoph Lameter <clameter@sgi.com> wrote:
+> Owww... You throw my roadmap out of the window and may create too
+> high expectations of SLUB.
 
-Some weeks ago, in a ZFS related thread, some kernel hackers asked the
-user what did they liked in ZFS that linux didn't have, so that they
-could (possibly) work on it.
+Me too!
 
-So, here is my feature request:
-- merge MD software raid framework and LVM in one unique
-API/framework, to be controled/managed by one unique userland
-toolset.
+On 5/2/07, Christoph Lameter <clameter@sgi.com> wrote:
+> I am the one who has to maintain SLAB and SLUB it seems and I have been
+> dealing with the trio SLAB, SLOB and SLUB for awhile now. Its okay and it
+> will be much easier once the cleanups are in.
 
+And then there's patches such as kmemleak which would need to target
+all three. Plus it doesn't really make sense for users to select
+between three competiting implementations. Please don't take away our
+high hopes of getting rid of mm/slab.c Christoph =)
 
-Any sysadmin which needs to do device & volume management and FS
-management in Linux has do use three diferent tools, for 3 diferent
-layers (that I think shouldn't be 3 layers.. but only 2).
-- md :
-   MD is a software raid framework, with raid0, 1, 4, 5, 6, append and others..
-- lvm :
-  The logical volume manager: this allows you to manage logical disks
-(devices), grow a  device, add phisical devices to a existing volume,
-snapshot.. etc..
-- fs
- duh... the FileSystem level.
-
-
-However, MD and LVM have feature replications:
-- raid1 / mirroring
-- raid0 / stripping
-- append / concatenate
-
-I find it high irritanting having two kernel interfaces and two
-userland tools that provide the same funcionality, which one should I
-use?
-
-I also don't understand from the point of view of code maintenance..
-shurely there is some unneeded duplicate code lying in the kernel
-tree.
-
-One of the  good things (my opinion) about ZFS is putting these things
-in one unique place, with a good user interface (the zpool & other zfs
-command tools are quite easy and simple to use).
-
-On linux, I find myself having to setup each layer by hand, each with
-its own peculiarities and command line tools.. I consede that maybe
-the FS layer and the device management layer shouldn't be merged.
-But clearly that in Linux we have too different layers (that aren't
-really layers since they do not depend on one another) for the same
-purpose:
-- device manangement.
-
-I'm no kernel hacker, I'm just a simple user, but this is my *pretty
-please* that some kernel hackers work together to unite and simplify
-the work that has to be made to use software raid and volume
-management on Linux.
-
-In essence, I believe that bringing the funcionality that is unique to
-MD integrated in LVM would suffice (leaving MD there for legacy compat.. but
-warning users about future improvements on LVM only)
-
-Thank you very much,
-
-
-PS: I'm not subscribed to lkml yet, please CC me any reply
--- 
-Miguel Sousa Filipe
+                                      Pekka
