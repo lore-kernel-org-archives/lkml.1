@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932458AbXEBCpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992530AbXEBCr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932458AbXEBCpc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 22:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXEBCpc
+	id S2992530AbXEBCr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 22:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992549AbXEBCr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 22:45:32 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43707 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932458AbXEBCpb (ORCPT
+	Tue, 1 May 2007 22:47:59 -0400
+Received: from outbound-mail-53.bluehost.com ([69.89.20.33]:40714 "HELO
+	outbound-mail-53.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S2992530AbXEBCr5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 22:45:31 -0400
-Message-Id: <1178073930.23727.1187619425@webmail.messagingengine.com>
-X-Sasl-Enc: MWN0mUL8Ud5cQjtgEKKE3VVjJJrLHVh3jdfHboWsVpNU 1178073930
-From: lkml777@123mail.org
-To: "Andi Kleen" <andi@firstfloor.org>
-Cc: "Jeff Chua" <jeff.chua.linux@gmail.com>, linux-kernel@vger.kernel.org,
-       "Eric Hopper" <hopper@omnifarious.org>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Alex Zarochentsev" <zam@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
-       "Edward Shishkin" <edward@namesys.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 1 May 2007 22:47:57 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 22:47:57 EDT
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Olivier Galibert <galibert@pobox.com>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
+Date: Tue, 1 May 2007 19:41:06 -0700
+User-Agent: KMail/1.9.6
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+References: <4635510D.4060103@shaw.ca> <20070430225916.GA39223@dspnet.fr.eu.org>
+In-Reply-To: <20070430225916.GA39223@dspnet.fr.eu.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <462E17AF.7090604@namesys.com>
-   <20070424193921.GA17129@one.firstfloor.org>
-   <462F6717.70508@namesys.com>
-   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
-   <1177564182.15467.1186637743@webmail.messagingengine.com>
-   <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com>
-   <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
-   <1177658163.8094.1186854037@webmail.messagingengine.com>
-   <b6a2187b0704270937g18f305cdxfdd54349fb73f3ea@mail.gmail.com>
-   <1177717116.1762.1186993177@webmail.messagingengine.com>
-   <20070428182928.GA8436@one.firstfloor.org>
-Subject: Re: Question about Reiser4 (how to boot it?)
-In-Reply-To: <20070428182928.GA8436@one.firstfloor.org>
-Date: Tue, 01 May 2007 19:45:30 -0700
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705011941.07438.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, April 30, 2007, Olivier Galibert wrote:
+> On Sun, Apr 29, 2007 at 08:14:37PM -0600, Robert Hancock wrote:
+> > -Validate that the area is reserved even if we read it from the
+> > chipset directly and not from the MCFG table. This catches the case
+> > where the BIOS didn't set the location properly in the chipset and
+> > has mapped it over other things it shouldn't have.  This might be
+> > overly pessimistic - we might be able to instead verify that no
+> > other reserved resources (like chipset registers) are inside this
+> > memory range.
+>
+> I have a fundamental problem with that: you don't validate a higher
+> reliability information against a lower one.  The chipset registers
+> are high reliability.  Modulo unknown hardware erratas and bugs in the
+> code (and accepting f0000000 is in practice a bug in the code, the
+> docs are starting to catch up with it too), the chipset *will* decode
+> mmconfig at the looked up address no matter what.  On the other side,
+> the ACPI data is bios generated, and that is well known to be horribly
+> unreliable.  Hell, if it was reliable we could just use the MFCG ACPI
+> table without questions.
 
-On Sat, 28 Apr 2007 20:29:28 +0200, "Andi Kleen" <andi@firstfloor.org>
-said:
-> > By any chance did you do that?
-> 
-> It will likely work with lilo -- it is file system independent as 
-> long as the file system implements the IOC_UNPACK ioctl, which
-> r4 seems to.
-> 
-> -Andi
+Now that I've read his patch closely I think you're right.
 
-I used a kernel and initrd transfered to an ext3 partition to boot the
-reiser4 partition.
--- 
-  
-  lkml777@123mail.org
+Robert, it looks like you'll trust acpi_table_parse if 
+pci_mmcfg_check_hostbridge returns a failure.  I think it should be 
+treated with a higher priority.  If pci_mmcfg_check_hostbridge returns a 
+failure, there's no way MCFG space can work, so we should disable it 
+unconditionally in that case (even if ACPI says "trust me, when have I 
+ever lied to you?").
 
--- 
-http://www.fastmail.fm - Send your email first class
+I'm testing it now on my 965...
 
+Thanks,
+Jesse
