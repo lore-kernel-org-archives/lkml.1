@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993261AbXEBOfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993265AbXEBOio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993261AbXEBOfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 10:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993262AbXEBOfb
+	id S2993265AbXEBOio (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993266AbXEBOin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 10:35:31 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:11719 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993261AbXEBOfa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 10:35:30 -0400
-Date: Wed, 02 May 2007 08:34:36 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
- resources
-In-reply-to: <200705012227.31729.jbarnes@virtuousgeek.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Olivier Galibert <galibert@pobox.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
-Message-id: <4638A17C.40209@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <4635510D.4060103@shaw.ca>
- <200705011941.07438.jbarnes@virtuousgeek.org>
- <200705011956.30629.jbarnes@virtuousgeek.org>
- <200705012227.31729.jbarnes@virtuousgeek.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 2 May 2007 10:38:43 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37356 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S2993265AbXEBOin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 10:38:43 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1+GQRFAxP2GtcAlrUV0x3lP4/lSYKhYD3TMyjcXPD
+	a72gnb+xU/CnXx
+Date: Wed, 2 May 2007 16:38:39 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Phillip Susi <psusi@cfl.rr.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Execute in place
+Message-ID: <20070502143839.GA31961@atjola.homenet>
+Mail-Followup-To: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>,
+	Hugh Dickins <hugh@veritas.com>, Phillip Susi <psusi@cfl.rr.com>,
+	Linux-kernel <linux-kernel@vger.kernel.org>
+References: <4637B751.1080907@cfl.rr.com> <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Tuesday, May 01, 2007, Jesse Barnes wrote:
->>> I'm testing it now on my 965...
->> Bah... nevermind Robert, I see you're doing this already in
->> pci_mmcfg_reject_broken.  I'm about to reboot & test now.
+On 2007.05.02 15:04:44 +0100, Hugh Dickins wrote:
+> On Tue, 1 May 2007, Phillip Susi wrote:
+> > I seem to remember seeing some patches go by at some point that
+> > allowed one of the rom type embeded system filesystems to directly
+> > execute binaries out of the original rom memory rather than copying
+> > them to ram first, then executing from there.  I was wondering if
+> > rootfs or tmpfs support such execute in place today, or if binaries
+> > executed from there have their code segments duplicated in ram?
 > 
-> Ok, I've tested a bit on my 965 (after re-adding my old patch to support 
-> it) and the new checks are more complete, but my BIOS still appears to be 
-> buggy.
-> 
-> The extended config space (as defined by the register) is at 0xf0000000 
-> (full value is 0xf0000003 indicating 128M enabled).  The ACPI MCFG table 
-> has this space reserved according to Robert's new code, but the machine 
-> hangs due to the address space aliasing Olivier mentioned awhile back.  I 
-> don't have a PCIe card to test with (or any devices that require extended 
-> config space that I know of) so I can't really tell if Windows supports 
-> PCIe on this platform, but if it does I don't see how it would w/o having 
-> a full bridge driver and sophisticated address space allocation builtin.
+> Only ext2 supports it today: see Documentation/filesystems/xip.txt
 
-Windows XP doesn't use MMCONFIG or any extended configuration space. I 
-believe Vista is supposed to, though. Not sure how they are handling 
-this issue.
+As I understand it, xip avoids the page cache copy. But tmpfs already
+lives in the page cache (or swap), so avoiding that "copy" is
+impossible. But I always expected tmpfs to implicitly due its own kind
+of xip, i.e. that it doesn't have to store its stuff in the page cache
+twice. Are you saying that this isn't true?
 
-> 
-> I'm going to try updating my BIOS, but if that doesn't solve this problem, 
-> I'm not sure what we can do about it.  Should pci_mmcfg_insert_resources 
-> check for conflicts?  Should we just blacklist certain boards?  I can try 
-> pinging our BIOS folks about this board to see what was intended, but I'm 
-> sure this won't be the only board we have problems with, so we'll need to 
-> address it generically somehow.
+According to Documentation/filesystems/xip.txt the ramdisk driver does
+something similar, pushing the data into the page cache and discarding
+the original data.
 
-Can you post what your board has for PNPACPI reserved resources (I 
-believe they're in /sys/devices/pnp0/*/resources IIRC, don't have a 
-Linux box handy right now). Full dmesg would also be useful, I think it 
-dumps out those reservations at boot nowadays..
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+thanks,
+Björn
