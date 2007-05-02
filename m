@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767213AbXEBSxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767228AbXEBSyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767213AbXEBSxV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767223AbXEBSxU
+	id S1767228AbXEBSyP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:54:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767227AbXEBSyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:53:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48966 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767211AbXEBSxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:53:04 -0400
-Date: Wed, 2 May 2007 11:53:03 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+	Wed, 2 May 2007 14:54:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2459 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767228AbXEBSyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:54:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
+   d="scan'208";a="82791965"
+Date: Wed, 2 May 2007 11:52:01 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
 Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <20070502114233.30143b0b.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705021144110.1119@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705020955550.32271@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021903320.20615@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021124040.646@schroedinger.engr.sgi.com>
- <20070502114233.30143b0b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20070502185201.GA12097@linux-os.sc.intel.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com> <20070501125559.9ab42896.akpm@linux-foundation.org> <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com> <20070501133618.93793687.akpm@linux-foundation.org> <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Andrew Morton wrote:
-
-> > This is a sensitive piece of the kernel as you say and we better allow the 
-> > running of two allocator for some time to make sure that it behaves in all 
-> > load situations. The design is fundamentally different so its performance 
-> > characteristics may diverge significantly and perhaps there will be corner 
-> > cases for each where they do the best job.
+On Wed, May 02, 2007 at 05:54:53AM -0700, Hugh Dickins wrote:
+> On Tue, 1 May 2007, Andrew Morton wrote:
+> > So on balance, given that we _do_ expect slub to have a future, I'm
+> > inclined to crash ahead with it.  The worst that can happen will be a later
+> > rm mm/slub.c which would be pretty simple to do.
 > 
-> eek.  We'd need to fix those corner cases then.  Our endgame
-> here really must be rm mm/slab.c.
+> Okay.  And there's been no chorus to echo my concern.
 
-First we need to discover them and I doubt that mm covers much more than 
-development loads. I hope we can get to a point where we have SLUB be 
-the primarily allocator soon but I would expect various performance issues 
-to show up.
+I have been looking into "slub" recently to avoid some of the NUMA alien
+cache issues that we were encountering on the regular slab.
 
-On the other hand: I am pretty sure that SLUB can replace SLOB completely 
-given SLOBs limitations and SLUBs more efficient use of space. SLOB needs 
-8 bytes of overhead. SLUB needs none. We may just have to #ifdef out the 
-debugging support to make the code be of similar size to SLOB too. SLOB is 
-a general problem because its features are not compatible to SLAB. F.e. it 
-does not support DESTROY_BY_RCU and does not do reclaim the right way etc 
-etc. SLUB may turn out to be the ideal embedded slab allocator.
+I am having some stability issues with slub on an ia64 NUMA platform and
+didn't have time to dig further. I am hoping to look into it soon
+and share the data/findings with  Christoph.
+
+We also did a quick perf collection on x86_64(atleast didn't hear
+any stability issues from our team on regular x86_64 SMP), that we will be
+sharing shortly.
+
+> But if Linus' tree is to be better than a warehouse to avoid
+> awkward merges, I still think we want it to default to on for
+> all the architectures, and for most if not all -rcs.
+
+I will not suggest for default on at this point.
+
+thanks,
+suresh
