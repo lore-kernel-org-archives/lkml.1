@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767217AbXEBXV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767232AbXEBXWB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767217AbXEBXV0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 19:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767223AbXEBXV0
+	id S1767232AbXEBXWB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 19:22:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767231AbXEBXWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 19:21:26 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60293 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767217AbXEBXVZ (ORCPT
+	Wed, 2 May 2007 19:22:00 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49164 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767223AbXEBXV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 19:21:25 -0400
-Message-ID: <46391C54.5070503@gmail.com>
-Date: Thu, 03 May 2007 01:18:44 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com> <4638FDA6.9030500@gmail.com> <4638FF70.8020400@zytor.com> <46390086.2030904@gmail.com> <463901C9.7090107@zytor.com> <46390503.1000401@gmail.com> <46390CA3.5030300@zytor.com> <46391590.8080209@gmail.com> <463917DD.8020500@zytor.com>
-In-Reply-To: <463917DD.8020500@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 2 May 2007 19:21:59 -0400
+Date: Wed, 2 May 2007 16:21:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, wfg@ustc.edu
+Subject: Re: 2.6.22 -mm merge plans
+Message-Id: <20070502162135.f949e371.akpm@linux-foundation.org>
+In-Reply-To: <20070502231104.GA26045@Krystal>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<p733b2gzqkg.fsf@bingen.suse.de>
+	<20070501220803.GA27698@Krystal>
+	<20070502104413.GC4392@one.firstfloor.org>
+	<20070502094707.4197ab7a.akpm@linux-foundation.org>
+	<20070502172934.GA17782@infradead.org>
+	<20070502203627.GA18733@Krystal>
+	<20070502135336.6d6d3569.akpm@linux-foundation.org>
+	<20070502231104.GA26045@Krystal>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/03/2007 12:59 AM, H. Peter Anvin wrote:
+On Wed, 2 May 2007 19:11:04 -0400
+Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> Rene Herman wrote:
-
->> Checking here, and mine also has 132x25 as BIOS mode 0x14 in addition to
->> 0x55. Probably also not universal, and 0x54 (132x43) doesn't seem to be
->> repeated. Unfortunate that Qemu/Bocks don't have the VESA text modes.
+> > I didn't know that this was the plan.
+> > 
+> > The problem I have with this is that once we've merged one part, we're
+> > committed to merging the other parts even though we haven't seen them yet.
+> > 
+> > What happens if there's a revolt over the next set of patches?  Do we
+> > remove the core markers patches again?  We end up in a cant-go-forward,
+> > cant-go-backward situation.
+> > 
+> > I thought the existing code was useful as-is for several projects, without
+> > requiring additional patching to core kernel.  If such additional patching
+> > _is_ needed to make the markers code useful then I agree that we should
+> > continue to buffer the markers code in -mm until the
+> > use-markers-for-something patches have been eyeballed.
+> > 
 > 
-> Does it export these modes though the VESA interface, or do you have to
-> "select them blind?"
+> My statement was probably not clear enough. The actual marker code is
+> useful as-is without any further kernel patching required : SystemTAP is
+> an example where they use external modules to load probes that can
+> connect either to markers or through kprobes. LTTng, in its current state,
+> has a mostly modular core that also uses the markers.
 
-It also provides them as VESA modes yes. On further inspection, 0x14 is 
-actually a bit different:
+OK, that's what I thought.
 
-BIOS 0x14 =              132x25, 8x16 char cell on 1056x400
-BIOS 0x54 = VESA 0x10A = 132x43, 8x8  char cell on 1056x350
-BIOS 0x55 = VESA 0x109 = 132x25, 8x14 char cell on 1056x350
+> Although some, like Christoph and myself, think that it would benefit to
+> the kernel community to have a common infrastructure for more than just
+> markers (meaning common serialization and buffering mechanism), it does
+> not change the fact that the markers, being in mainline, are usable by
+> projects through additional kernel modules.
+> 
+> If we are looking at current "potential users" that are already in
+> mainline, we could change blktrace to make it use the markers.
 
-Booting 2.6.20.1 on the machine with vga=ask finds BIOS 0x14 as 0214 and 
-VESA 0x10A as 030A but allows me to select 0254, 0255 and 0309 as well.
-('scan' finds BIOS 0x14 as 0114 and BIOS 0x54 as 0154)
-
-Rene.
-
+That'd be a useful demonstration.
