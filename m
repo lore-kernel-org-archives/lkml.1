@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992694AbXEBDvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXEBDyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992694AbXEBDvo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992689AbXEBDvo
+	id S2992696AbXEBDyJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992698AbXEBDyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:51:44 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3946 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992669AbXEBDvn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:51:43 -0400
-Date: Wed, 2 May 2007 13:51:27 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>
-Subject: Re: netfront for review
-Message-ID: <20070502035127.GA28090@gondor.apana.org.au>
-References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178077033.28659.173.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+	Tue, 1 May 2007 23:54:09 -0400
+Received: from [69.90.0.18] ([69.90.0.18]:57563 "EHLO mtl.rackplans.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S2992696AbXEBDyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 23:54:07 -0400
+Date: Tue, 1 May 2007 23:54:04 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+X-X-Sender: gmack@mtl.rackplans.net
+To: "Cabot, Mason B" <mason.b.cabot@intel.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+In-Reply-To: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 01:37:13PM +1000, Rusty Russell wrote:
->
-> > +static int xennet_change_mtu(struct net_device *dev, int mtu)
-> > +{
-> > +	int max = xennet_can_sg(dev) ? 65535 - ETH_HLEN : ETH_DATA_LEN;
-> > +
-> > +	if (mtu > max)
-> > +		return -EINVAL;
-> > +	dev->mtu = mtu;
-> > +	return 0;
-> > +}
+On Tue, 1 May 2007, Cabot, Mason B wrote:
+
+> Hello all,
 > 
-> This seems odd to me: just because a device does TSO should we really
-> allow huge mtu settings?  Herbert?
+> I've been testing the NAS performance of ext3/Openfiler 2.2 against
+> NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+> video workloads. The Windows CIFS client will attempt a poor-man's
+> pre-allocation of the file on the server by sending 1-byte writes at
+> 128K-byte strides, breaking block allocation on ext3 and leading to
+> fragmentation and poor performance. This will happen for many
+> applications (including iTunes) as the CIFS client issues these
+> pre-allocates under the application layer.
+> 
+> I've posted a brief paper on Intel's OSS website
+> (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
+> it a read and let me know what you think. In particular, I'd like to
+> arrive at the right place to fix this problem: is it in the filesystem,
+> VFS, or Samba?
+> 
+> thanks,
+> Mason 
+> 
 
-Actually this has nothing to do with TSO/GSO.  This driver inherently
-supports arbitrary MTUs that's only limited by our network stack.  If
-the physical network device can't handle it you'll just get an ICMP
-error back or fragmentation.
+Just out of curiosity do other filesystems(reiser, xfs) take the same 
+performance hit?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+	Gerjard
+
+--
+Gerhard Mack
+
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
