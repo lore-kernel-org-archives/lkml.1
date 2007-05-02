@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767228AbXEBSyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767229AbXEBSzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767228AbXEBSyP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767227AbXEBSyP
+	id S1767229AbXEBSzF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767232AbXEBSzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:54:15 -0400
-Received: from mga09.intel.com ([134.134.136.24]:2459 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767228AbXEBSyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:54:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
-   d="scan'208";a="82791965"
-Date: Wed, 2 May 2007 11:52:01 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-Message-ID: <20070502185201.GA12097@linux-os.sc.intel.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com> <20070501125559.9ab42896.akpm@linux-foundation.org> <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com> <20070501133618.93793687.akpm@linux-foundation.org> <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
+	Wed, 2 May 2007 14:55:05 -0400
+Received: from smtp-103-wednesday.noc.nerim.net ([62.4.17.103]:4373 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767229AbXEBSzD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:55:03 -0400
+Date: Wed, 2 May 2007 20:55:54 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] platform: reorder platform_device_del
+Message-ID: <20070502205554.55a5956d@hyperion.delvare>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 05:54:53AM -0700, Hugh Dickins wrote:
-> On Tue, 1 May 2007, Andrew Morton wrote:
-> > So on balance, given that we _do_ expect slub to have a future, I'm
-> > inclined to crash ahead with it.  The worst that can happen will be a later
-> > rm mm/slub.c which would be pretty simple to do.
+Hi Greg,
+
+I seem to remember that you had acked this patch, however it still
+isn't in Linus' tree. Some of the hwmon patches I want to send to Linus
+for 2.6.22 depend on it. Can you please push it now? Thanks.
+
+* * * * *
+
+In platform_device_del(), we currently delete the device resources
+first, then we delete the device itself. This causes a (minor) bug to
+occur when one unregisters a platform device before unregistering its
+platform driver, and the driver is requesting (in .probe()) and
+releasing (in .remove()) a resource of the device. The device
+resources are already gone by the time the driver gets the chance to
+release the resources it had been requesting, causing an error like:
+Trying to free nonexistent resource <0000000000000295-0000000000000296>
+
+If the platform driver is unregistered first, the problem doesn't
+occur, as the driver will have the opportunity to release the
+resources it had requested before the device resources themselves are
+released. It's a bit odd that unregistering the driver first or the
+device first doesn't lead to the same result.
+
+So I believe that we should delete the device first in
+platform_device_del(). I've searched the git history and found that it
+used to be the case before 2.6.8, but was changed here:
+
+http://www.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=96ef7b3689936ee1e64b711511342026a8ce459c
+
+> 2004/07/14 16:09:44-07:00 dtor_core
+> [PATCH] Driver core: Fix OOPS in device_platform_unregister
 > 
-> Okay.  And there's been no chorus to echo my concern.
+> Driver core: platform_device_unregister should release resources first
+>              and only then call device_unregister, otherwise if there
+>              are no more references to the device it will be freed and
+>              the fucntion will try to access freed memory.  
 
-I have been looking into "slub" recently to avoid some of the NUMA alien
-cache issues that we were encountering on the regular slab.
+However we now have an explicit call to put_device() at the end of
+platform_device_unregister() so I guess the original problem no longer
+exists and it is safe to revert that change.
 
-I am having some stability issues with slub on an ia64 NUMA platform and
-didn't have time to dig further. I am hoping to look into it soon
-and share the data/findings with  Christoph.
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ drivers/base/platform.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-We also did a quick perf collection on x86_64(atleast didn't hear
-any stability issues from our team on regular x86_64 SMP), that we will be
-sharing shortly.
+--- linux-2.6.21-pre.orig/drivers/base/platform.c	2007-02-20 11:05:25.000000000 +0100
++++ linux-2.6.21-pre/drivers/base/platform.c	2007-02-20 22:44:35.000000000 +0100
+@@ -292,20 +292,22 @@ EXPORT_SYMBOL_GPL(platform_device_add);
+  *	@pdev:	platform device we're removing
+  *
+  *	Note that this function will also release all memory- and port-based
+- *	resources owned by the device (@dev->resource).
++ *	resources owned by the device (@dev->resource).  This function
++ *	must _only_ be externally called in error cases.  All other usage
++ *	is a bug.
+  */
+ void platform_device_del(struct platform_device *pdev)
+ {
+ 	int i;
+ 
+ 	if (pdev) {
++		device_del(&pdev->dev);
++
+ 		for (i = 0; i < pdev->num_resources; i++) {
+ 			struct resource *r = &pdev->resource[i];
+ 			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
+ 				release_resource(r);
+ 		}
+-
+-		device_del(&pdev->dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(platform_device_del);
 
-> But if Linus' tree is to be better than a warehouse to avoid
-> awkward merges, I still think we want it to default to on for
-> all the architectures, and for most if not all -rcs.
 
-I will not suggest for default on at this point.
 
-thanks,
-suresh
+-- 
+Jean Delvare
