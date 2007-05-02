@@ -1,223 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766976AbXEBUVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766876AbXEBUaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766976AbXEBUVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766985AbXEBUVb
+	id S1766876AbXEBUaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766977AbXEBUaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:21:31 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:53069
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766976AbXEBUVa (ORCPT
+	Wed, 2 May 2007 16:30:20 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42415 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766876AbXEBUaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:21:30 -0400
-Subject: [PATCH] synclink_gt add compat_ioctl
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 15:21:21 -0500
-Message-Id: <1178137281.10111.8.camel@amdx2.microgate.com>
+	Wed, 2 May 2007 16:30:17 -0400
+Date: Wed, 2 May 2007 13:29:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Dave Jones <davej@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-Id: <20070502132938.4349a4ed.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0705022148170.20159@pademelon.sonytel.be>
+References: <20070423141123.GA21174@skybase>
+	<20070423104534.51bac974.akpm@linux-foundation.org>
+	<20070425112133.4ae86399.randy.dunlap@oracle.com>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<20070426003911.GA19383@redhat.com>
+	<4630109F.6090002@oracle.com>
+	<20070425200207.77a2721a.akpm@linux-foundation.org>
+	<20070428030805.GA13331@redhat.com>
+	<Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+	<20070502152906.GA29642@infradead.org>
+	<Pine.LNX.4.62.0705021731580.3706@pademelon.sonytel.be>
+	<20070502124154.fa55fec9.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0705022148170.20159@pademelon.sonytel.be>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add compat_ioctl handler to synclink_gt driver.
+On Wed, 2 May 2007 21:55:16 +0200 (CEST)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-The one case requiring a separate 32 bit handler could be
-removed by redefining the associated structure in
-a way compatible with both 32 and 64 bit systems. But that
-approach would break existing native 64 bit user applications.
+> On Wed, 2 May 2007, Andrew Morton wrote:
+> > On Wed, 2 May 2007 17:32:49 +0200 (CEST)
+> > Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> > 
+> > > On Wed, 2 May 2007, Christoph Hellwig wrote:
+> > > > On Wed, May 02, 2007 at 04:28:27PM +0200, Geert Uytterhoeven wrote:
+> > > > >   - Check for GNU extension __FUNCTION__
+> > > > 
+> > > > __FUNCTION__ is prefered  over __func__
+> > > 
+> > > Is there a reason for that?
+> > >   - __FUNCTION__ is a GNU extension
+> > >   - __func__ is C99
+> > >   - __func__ is shorter to type ;-)
+> > > 
+> > 
+> > In that case we should use __func__.
+> > 
+> > But we discussed this at some length 3-4 years ago and decided to use
+> > __FUNCTION__.  I don't remember why.  Perhaps problems with gcc support for
+> > __func__?
+> 
+> I tried gcc 2.95/3.2/3.3/3.4/4.0/4.1, they all recognize __func__ and
+> __FUNCTION__, like in e.g. printf("%s", __func__);
+> 
+> > (It could have been that compile-time string concatenation was involved:
+> > 
+> > 
+> >         printf("xxx" __FILE__);			/* works */
+> >         printf("xxx" __FUNCTION__);		/* doesn't */
+> > 
+> > Or not.)
+> 
+> Yep, when trying concatenation, I got:
+>   - 2.95: works fine
+>   - 3.2:
+>       syntax error before "__func__"
+>       warning: concatenation of string literals with __FUNCTION__ is deprecated
+>   - 3.3:
+>       error: syntax error before "__func__"
+>       warning: concatenation of string literals with __FUNCTION__ is deprecated
+>   - 3.4/4.0:
+>       error: syntax error before "__func__"
+>       error: syntax error before "__FUNCTION__"
+>   - 4.1:
+>       error: expected ')' before '__func__'
+>       error: expected ')' before '__FUNCTION__'
+> 
+> Hence gcc 3.2 and up treat __func__ like the a variable, as per C99, while
+> __FUNCTION__ has been moving from a virtual preprocessor definition in 2.95 to
+> a variable, like __func__.
+> 
+> So in the end it doesn't matter, as concatenation has been fixed in the Linux
+> source tree anyway.
+> 
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+Great, thanks for working all that out.
+
+So __func__ it is.  In new code.  However "convert __FUNCTION__ to
+__func__" patches will be cheerfully ignored - life is too short.
 
 
---- a/drivers/char/synclink_gt.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/char/synclink_gt.c	2007-05-02 14:52:48.000000000 -0500
-@@ -73,6 +73,7 @@
- #include <linux/bitops.h>
- #include <linux/workqueue.h>
- #include <linux/hdlc.h>
-+#include <linux/compat.h>
- 
- #include <asm/system.h>
- #include <asm/io.h>
-@@ -530,6 +531,10 @@ static int  set_interface(struct slgt_in
- static int  set_gpio(struct slgt_info *info, struct gpio_desc __user *gpio);
- static int  get_gpio(struct slgt_info *info, struct gpio_desc __user *gpio);
- static int  wait_gpio(struct slgt_info *info, struct gpio_desc __user *gpio);
-+#ifdef CONFIG_COMPAT
-+static long set_params32(struct slgt_info *info, struct MGSL_PARAMS32 __user *new_params);
-+static long get_params32(struct slgt_info *info, struct MGSL_PARAMS32 __user *new_params);
-+#endif
- 
- /*
-  * driver functions
-@@ -1170,6 +1175,55 @@ static int ioctl(struct tty_struct *tty,
- 	return 0;
- }
- 
-+#ifdef CONFIG_COMPAT
-+static long compat_ioctl(struct tty_struct *tty, struct file *file,
-+			 unsigned int cmd, unsigned long arg)
-+{
-+	struct slgt_info *info = tty->driver_data;
-+	int rc = -ENOIOCTLCMD;
-+
-+	if (sanity_check(info, tty->name, "compat_ioctl"))
-+		return -ENODEV;
-+	DBGINFO(("%s compat_ioctl() cmd=%08X\n", info->device_name, cmd));
-+
-+	switch (cmd) {
-+
-+	case MGSL_IOCSPARAMS32:
-+		rc = set_params32(info, (struct MGSL_PARAMS32 __user *)compat_ptr(arg));
-+		break;
-+
-+	case MGSL_IOCGPARAMS32:
-+		rc = get_params32(info, (struct MGSL_PARAMS32 __user *)compat_ptr(arg));
-+		break;
-+
-+	case MGSL_IOCGPARAMS:
-+	case MGSL_IOCSPARAMS:
-+	case MGSL_IOCGTXIDLE:
-+	case MGSL_IOCGSTATS:
-+	case MGSL_IOCWAITEVENT:
-+	case MGSL_IOCGIF:
-+	case MGSL_IOCSGPIO:
-+	case MGSL_IOCGGPIO:
-+	case MGSL_IOCWAITGPIO:
-+	case TIOCGICOUNT:
-+		rc = ioctl(tty, file, cmd, (unsigned long)(compat_ptr(arg)));
-+		break;
-+
-+	case MGSL_IOCSTXIDLE:
-+	case MGSL_IOCTXENABLE:
-+	case MGSL_IOCRXENABLE:
-+	case MGSL_IOCTXABORT:
-+	case TIOCMIWAIT:
-+	case MGSL_IOCSIF:
-+		rc = ioctl(tty, file, cmd, arg);
-+		break;
-+	}
-+
-+	DBGINFO(("%s compat_ioctl() cmd=%08X rc=%d\n", info->device_name, cmd, rc));
-+	return rc;
-+}
-+#endif
-+
- /*
-  * proc fs support
-  */
-@@ -2507,6 +2561,61 @@ static int set_params(struct slgt_info *
- 	return 0;
- }
- 
-+#ifdef CONFIG_COMPAT
-+static long get_params32(struct slgt_info *info, struct MGSL_PARAMS32 __user *user_params)
-+{
-+	struct MGSL_PARAMS32 tmp_params;
-+
-+	DBGINFO(("%s get_params32\n", info->device_name));
-+	tmp_params.mode            = (unsigned int)info->params.mode;
-+	tmp_params.loopback        = info->params.loopback;
-+	tmp_params.flags           = info->params.flags;
-+	tmp_params.encoding        = info->params.encoding;
-+	tmp_params.clock_speed     = (unsigned int)info->params.clock_speed;
-+	tmp_params.addr_filter     = info->params.addr_filter;
-+	tmp_params.crc_type        = info->params.crc_type;
-+	tmp_params.preamble_length = info->params.preamble_length;
-+	tmp_params.preamble        = info->params.preamble;
-+	tmp_params.data_rate       = (unsigned int)info->params.data_rate;
-+	tmp_params.data_bits       = info->params.data_bits;
-+	tmp_params.stop_bits       = info->params.stop_bits;
-+	tmp_params.parity          = info->params.parity;
-+	if (copy_to_user(user_params, &tmp_params, sizeof(struct MGSL_PARAMS32)))
-+		return -EFAULT;
-+	return 0;
-+}
-+
-+static long set_params32(struct slgt_info *info, struct MGSL_PARAMS32 __user *new_params)
-+{
-+ 	unsigned long flags;
-+	struct MGSL_PARAMS32 tmp_params;
-+
-+	DBGINFO(("%s set_params32\n", info->device_name));
-+	if (copy_from_user(&tmp_params, new_params, sizeof(struct MGSL_PARAMS32)))
-+		return -EFAULT;
-+
-+	spin_lock_irqsave(&info->lock, flags);
-+	info->params.mode            = tmp_params.mode;
-+	info->params.loopback        = tmp_params.loopback;
-+	info->params.flags           = tmp_params.flags;
-+	info->params.encoding        = tmp_params.encoding;
-+	info->params.clock_speed     = tmp_params.clock_speed;
-+	info->params.addr_filter     = tmp_params.addr_filter;
-+	info->params.crc_type        = tmp_params.crc_type;
-+	info->params.preamble_length = tmp_params.preamble_length;
-+	info->params.preamble        = tmp_params.preamble;
-+	info->params.data_rate       = tmp_params.data_rate;
-+	info->params.data_bits       = tmp_params.data_bits;
-+	info->params.stop_bits       = tmp_params.stop_bits;
-+	info->params.parity          = tmp_params.parity;
-+	spin_unlock_irqrestore(&info->lock, flags);
-+
-+ 	change_params(info);
-+
-+	return 0;
-+}
-+#endif
-+
- static int get_txidle(struct slgt_info *info, int __user *idle_mode)
- {
- 	DBGINFO(("%s get_txidle=%d\n", info->device_name, info->idle_mode));
-@@ -3443,6 +3552,9 @@ static const struct tty_operations ops =
- 	.chars_in_buffer = chars_in_buffer,
- 	.flush_buffer = flush_buffer,
- 	.ioctl = ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl = compat_ioctl,
-+#endif
- 	.throttle = throttle,
- 	.unthrottle = unthrottle,
- 	.send_xchar = send_xchar,
---- a/include/linux/synclink.h	2007-04-25 22:08:32.000000000 -0500
-+++ b/include/linux/synclink.h	2007-05-02 14:59:17.000000000 -0500
-@@ -167,6 +167,24 @@ typedef struct _MGSL_PARAMS
- 
- } MGSL_PARAMS, *PMGSL_PARAMS;
- 
-+/* provide 32 bit ioctl compatibility on 64 bit systems */
-+struct MGSL_PARAMS32
-+{
-+	unsigned int	mode;
-+	unsigned char	loopback;
-+	unsigned short	flags;
-+	unsigned char	encoding;
-+	unsigned int	clock_speed;
-+	unsigned char	addr_filter;
-+	unsigned short	crc_type;
-+	unsigned char	preamble_length;
-+	unsigned char	preamble;
-+	unsigned int	data_rate;
-+	unsigned char	data_bits;
-+	unsigned char	stop_bits;
-+	unsigned char	parity;
-+};
-+
- #define MICROGATE_VENDOR_ID 0x13c0
- #define SYNCLINK_DEVICE_ID 0x0010
- #define MGSCC_DEVICE_ID 0x0020
-@@ -276,6 +294,8 @@ struct gpio_desc {
- #define MGSL_MAGIC_IOC	'm'
- #define MGSL_IOCSPARAMS		_IOW(MGSL_MAGIC_IOC,0,struct _MGSL_PARAMS)
- #define MGSL_IOCGPARAMS		_IOR(MGSL_MAGIC_IOC,1,struct _MGSL_PARAMS)
-+#define MGSL_IOCSPARAMS32	_IOW(MGSL_MAGIC_IOC,0,struct MGSL_PARAMS32)
-+#define MGSL_IOCGPARAMS32	_IOR(MGSL_MAGIC_IOC,1,struct MGSL_PARAMS32)
- #define MGSL_IOCSTXIDLE		_IO(MGSL_MAGIC_IOC,2)
- #define MGSL_IOCGTXIDLE		_IO(MGSL_MAGIC_IOC,3)
- #define MGSL_IOCTXENABLE	_IO(MGSL_MAGIC_IOC,4)
+err, kernel.h has
 
+/* Trap pasters of __FUNCTION__ at compile-time */
+#define __FUNCTION__ (__func__)
 
