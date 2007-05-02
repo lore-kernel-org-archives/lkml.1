@@ -1,51 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992522AbXEBAbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992524AbXEBAeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992522AbXEBAbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 20:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992524AbXEBAbZ
+	id S2992524AbXEBAeN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 20:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992536AbXEBAeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 20:31:25 -0400
-Received: from ozlabs.org ([203.10.76.45]:47294 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992522AbXEBAbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 20:31:24 -0400
-Subject: Re: 2.6.22 -mm merge plans
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <p733b2gzqkg.fsf@bingen.suse.de>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	 <p733b2gzqkg.fsf@bingen.suse.de>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 10:31:10 +1000
-Message-Id: <1178065870.28659.96.camel@localhost.localdomain>
+	Tue, 1 May 2007 20:34:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43898 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992524AbXEBAeM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 20:34:12 -0400
+Date: Tue, 1 May 2007 17:33:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [patch 0/3] Clocksource / clockevent updates
+Message-Id: <20070501173356.15e9d482.akpm@linux-foundation.org>
+In-Reply-To: <20070430102837.748238000@linutronix.de>
+References: <20070430102837.748238000@linutronix.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 14:17 +0200, Andi Kleen wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> > Will merge the rustyvisor.
+On Mon, 30 Apr 2007 10:43:31 -0000
+Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> Andrew,
 > 
-> IMHO the user code still doesn't belong into Documentation.
-> Also it needs another review round I guess. And some beta testing by
-> more people.
+> please pick up the following updates to clocksource / clockevents:
+> 
+> - Fixups to the resume logic
+> - Keep TSC stable, when lapic_timer_c2_ok is set
+> 
 
-Like any piece of code more review and more testing would be great.
-(Your earlier review was particularly useful!).  But it's not clear that
-waiting for longer will achieve either.
-
-Look at kvm's experience for the reverse case: it went in, then got
-rewritten.
-
-As for the code in Documentation, my initial attempts tried to get
-around the need for a userspace part by putting everything in the kernel
-module.  It meant you could launch a guest by writing a string
-to /dev/lguest (no real ABI burden there), but it's a worse solution
-than some user code in the kernel tree 8(
-
-Cheers,
-Rusty.
+Should we be targetting these at 2.6.20.x?
 
