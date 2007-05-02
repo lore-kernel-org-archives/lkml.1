@@ -1,211 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992644AbXEBDHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965426AbXEBDI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992644AbXEBDHI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992621AbXEBDHI
+	id S965426AbXEBDI0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030591AbXEBDI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:07:08 -0400
-Received: from dodo.cs.umass.edu ([128.119.242.12]:48298 "EHLO
-	dodo.cs.umass.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992644AbXEBDHF (ORCPT
+	Tue, 1 May 2007 23:08:26 -0400
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:20726 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965426AbXEBDIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:07:05 -0400
-X-Greylist: delayed 585 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 May 2007 23:07:05 EDT
-Message-ID: <4637FE0A.7090405@cs.umass.edu>
-Date: Tue, 01 May 2007 22:57:14 -0400
-From: Ting Yang <tingy@cs.umass.edu>
-Reply-To: tingy@cs.umass.edu
-Organization: ALI Lab, CS Dept, UMASS
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Tue, 1 May 2007 23:08:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=SLPQDtjZsNYf2vOb1Jw2JnSTAPJdlz37/PcoO9Rfl+9RJgWj7Ae9/oekcRmHYu72lTtatCgRmv4x+cjwf+s1OQsN64NRQpx6x7Q0g7m5Ro5FTsUF0Z0wMe17m5yukcPHRgilTjBgHmPY+syfUyeftJ4UYBqX/KvTHQLzHp2Kn9M=  ;
+X-YMail-OSG: tO195RUVM1n.MutqbIOJ3cz12G6J2uVINhpryRh3vHm4WLqLZCk8ccs3e1XQY3AUgGb6cfV84g--
+Message-ID: <4638009E.3070408@yahoo.com.au>
+Date: Wed, 02 May 2007 13:08:14 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v8
-References: <20070501212223.GA29867@elte.hu>
-In-Reply-To: <20070501212223.GA29867@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hugh Dickins wrote:
+> On Tue, 1 May 2007, Nick Piggin wrote:
 
-Hi, Ingo
+>>There were concerns that we could do this more cheaply, but I think it
+>>is important to start with a base that is simple and more likely to
+>>be correct and build on that. My testing didn't show any obvious
+>>problems with performance.
+> 
+> 
+> I don't see _problems_ with performance, but I do consistently see the
+> same kind of ~5% degradation in lmbench fork, exec, sh, mmap latency
+> and page fault tests on SMP, several machines, just as I did last year.
 
-  My name is Ting Yang, a graduate student from UMASS. I am currently 
-studying the linux scheduler and virtual memory manager to solve some 
-page swapping problems. I am very excited with the new scheduler CFS. 
-After I read through your code, I think that you might be interested in 
-reading this paper:
+OK. I did run some tests at one stage which didn't show a regression
+on my P4, however I don't know that they were statistically significant.
+I'll try a couple more runs and post numbers.
 
-  "A Proportional Share REsource Allocation Algorithm for Real-Time, 
-Time-Shared Systems", by Ion Stoica. You can find the paper here: 
-http://citeseer.ist.psu.edu/37752.html
 
-  Authors of this paper proposed a scheduler: Earlist Eligible Virtual 
-Deadline First (EEVDF). EEVDF uses exactly the same method as CFS to 
-track the execution of each running task. The only difference between 
-EEVDF and CFS is that EEVDF tries to _deadline_ fair while CFS is 
-_start-time_ fair. Scheduling based on deadline gives better reponse 
-time bound and seems to more fair.
+> I'm assuming this patch is the one responsible: at 2.6.20-rc4 time
+> you posted a set of 10 and a set of 7 patches I tried in versus out;
+> at 2.6.21-rc3-mm2 time you had a group of patches in -mm I tried in
+> versus out; with similar results.
+> 
+> I did check the graphs on test.kernel.org, I couldn't see any bad
+> behaviour there that correlated with this work; though each -mm
+> has such a variety of new work in it, it's very hard to attribute.
+> And nobody else has reported any regression from your patches.
+> 
+> I'm inclined to write it off as poorer performance in some micro-
+> benchmarks, against which we offset the improved understandabilty
+> of holding the page lock over the file fault.
+> 
+> But I was quite disappointed when 
+> mm-fix-fault-vs-invalidate-race-for-linear-mappings-fix.patch
+> appeared, putting double unmap_mapping_range calls in.  Certainly
+> you were wrong to take the one out, but a pity to end up with two.
+> 
+> Your comment says/said:
+> The nopage vs invalidate race fix patch did not take care of truncating
+> private COW pages. Mind you, I'm pretty sure this was previously racy
+> even for regular truncate, not to mention vmtruncate_range.
+> 
+> vmtruncate_range (holepunch) was deficient I agree, and though we
+> can now take out your second unmap_mapping_range there, that's only
+> because I've slipped one into shmem_truncate_range.  In due course it
+> needs to be properly handled by noting the range in shmem inode info.
+> 
+> (I think you couldn't take that approach, noting invalid range in
+> ->mapping while invalidating, because NFS has/had some cases of
+> invalidate_whatever without i_mutex?)
 
-  In the following part of this email, I will try to explain the 
-similarities and differences between EEVDF and CFS. Hopefully, this 
-might provide you with some useful information w.r.t your current work 
-on CFS.
+Sorry, I didn't parse this? But I wonder whether it is better to do
+it in vmtruncate_range than the filesystem? Private COWed pages are
+not really a filesystem "thing"...
 
-Similarities:
-1. both EEVDF and CFS use virtual time to track the system's progress.
- 
-  CFS maintains rq->fair_clock for each cpu, which is updated every 
-tick  by:
-                SCALE/sum(p_i->loadweight)
-  where p_i->loadweight is the weight of each task mapped from its nice  
-value in prio_to_load_shift[], given that the default weight is SCALE (1024)
- 
-  EEVDF maintains a virtual time, which is advanced every tick by:
-                1/sum(w_i) 
-  where w_i is the weight of each task, given that the default weight is 1.
 
-  Therefore, EEVDF and CFS monitors system progress in the same way,  
-except normalized to different scale.
+> But I'm pretty sure (to use your words!) regular truncate was not racy
+> before: I believe Andrea's sequence count was handling that case fine,
+> without a second unmap_mapping_range.
 
-2. EEVDF and CFS monitors the progress in the same way.
- 
-  CFS maintains a p->fair_key which indicating the amount of work done 
-by this task. When p executes for a period t, then p->fair_key 
-incremented by:
-           t * SCALE/p->loadweight //the default weight is SCALE
-           (based on solving equations in your code :-))
- 
-  EEVDF does the same thing with assumption that the default weight is 
-1,  it uses the same equation to calculate deadlines for running tasks.
+OK, I think you're right. I _think_ it should also be OK with the
+lock_page version as well: we should not be able to have any pages
+after the first unmap_mapping_range call, because of the i_size
+write. So if we have no pages, there is nothing to 'cow' from.
 
-Differences:
-  The main difference between CFS and EEVDF lies in the scheduling 
-policy, although they follow the same model for tracking tasks.
 
-***  CFS: When a task starts, it gets p->fair_key from the current 
-virtual time rq->fair_clock. It will not be scheduled for execution 
-until all other running tasks' fair_key go beyond p->fair_key by certain 
-virtual ticks (which is 5 ticks for the current setting of CFS).
- 
-  (I wish I could show examples with graphs, instead of my not-so-good 
-english, but I am not sure if it appropriate to attach figures on this 
-maillist)
+> Well, I guess I've come to accept that, expensive as unmap_mapping_range
+> may be, truncating files while they're mmap'ed is perverse behaviour:
+> perhaps even deserving such punishment.
+> 
+> But it is a shame, and leaves me wondering what you gained with the
+> page lock there.
+> 
+> One thing gained is ease of understanding, and if your later patches
+> build an edifice upon the knowledge of holding that page lock while
+> faulting, I've no wish to undermine that foundation.
 
-  EXAMPLE: assume the system runs at 1000 tick/second, i.e. 1ms a tick, 
-and the granularity of pre-exemption for CFS is 5 virtual ticks (the 
-current setting). If, at time t=0, we start 2 tasks: p1 and p2, both 
-have nice value 0 (weight 1024), and rq->fair_clock is initialized to 0. 
-Now we have: 
-        p1->fair_key = p2->fair_key = rq->fair_clock = 0.
-CFS breaks the tie arbitrarily, say it executes p1. After 1 system tick 
-(1ms later) t=1, we have:
-        rq->fair_clock = 1/2, p1->fair_key = 1,  p2->fair_key = 0.
-Suppose, a new task p3 starts with nice value -10 at this moment, that 
-is p3->fair_key=1/2. In this case, CFS will not schedule p3 for 
-execution until the fair_keys of p1 and p2 go beyond 5+1/2 (which 
-translates to about 10ms later in this setting), _regardless_ the 
-priority (weight) of p3. Further imagine, if we starts n tasks at time 
-t=0 and then start a task p_(n+1) at time t = 1, the delay of task 
-p_(n+1) actually is proportional to the number of running tasks n.
+It also fixes a bug, doesn't it? ;)
 
-  Formally speaking, CFS can has a *O(n)* lag w.r.t the ideal 
-proportional shared fluid-flow system, which can be arbitrarily fine 
-granularity. The cause of this problem is that p->fair_key only reflects 
-a fair point that a task should be started, but does not has any 
-information about how urgent the task is (i.e. the priority or weight of 
-the task).
-
-***  In EEVDF, each task p_i is specified by 2 parameters: weight w_i 
-and timeslice length l_i. EEVDF tries to schedule tasks based on the 
-virtual deadline vd_i where a timeslice l_i should be finished.
-     EEVDF keeps a virtual start (ve_i) and virtual deadline (vd_i) for 
-each tasks. When a tasks starts, its ve_i is initialized to be the 
-current virtual time, and calculates its virtual deadline as:
-        vd_i = ve_i + l_i/w_i  //the same method as CFS updates fair_key.
-When l_i amount of work is done, the just finished vd_i becomes the new 
-ve_i. That is the virtual start time of next l_i amount work is the 
-deadline of previous finished timeslice. The virtual deadline vd_i is 
-then updated using the above equation.
-
-     EEVDF schedule policy: always executes the task with the _earliest_ 
-virtual deadline.
-
-   EXAMPLE: Assume the system has 1000 ticks per second. At time t = 0, 
-we start 2 tasks: p1 and p2, such that w_1 = w_2 = 1 and l_1 = l_2 = 5 
-ticks, i.e 5ms (which reflects the similar setting in CFS case). 
-Furthermore,  the system virtual time vt is initialized to be 0. Now at 
-time t = 0, we have
-            vt = 0,
-            ve_1 = 0, vd_1 = ve_1 + l_1/w_1 = 5
-            ve_2 = 0, vd_2 = vd_2 + l_2/w_2 = 5
-As p1 and p2 have the same virtual deadline, EEVDF breaks the tie 
-arbitrarily, say it executes p1. After 1 system tick (1ms later), we have:
-      vt = 0 + 1 / (w_1 + w_2) = 1/2 //just as CFS updates rq->fair_clock
-      ve_1 = 0, vd_1 = 5             //not changed
-      ve_2 = 0, vd_1 = 5             //not changed
-Suppose, we starts a new task p2 at this moment, with weight w_3 = 2 and 
-timeslice l_3 = 5 ticks (5ms), Then
-      ve_3 = vt = 1/2
-      vd_3 = ve_3 + l_3/w_2 = 1/2 + 5/2 = 3
-hmmm, the scheduler now will execute task p3 first since it has the 
-earliest deadline. The deadline implicitly contains some very important 
-information that the CFS fair_key does not have: how urgent this amount of
-work has to be done, which comes from the weight of a task.
-
-   Formally speaking, EEVDF has a constant O(1) lag w.r.t the ideal 
-proportional shared fluid-flow system. (Please look at the paper for 
-detail proofs.) Under normal cases, for a task p_i, EEVDF ensures that 
-it does not fall behind the ideal system by more than l_i time. 
-Occasionally, the delay can be max(l_i), the maximum timeslice used by 
-all active tasks, due to the dynamic entering and leaving of tasks. 
-(Again, the paper give more detailed explanation on this).
-
-   We can see that here the timeslice l_i used by a task p_i actually 
-controls accuracy of scheduling p_i. The smaller l_i, the closer to the 
-ideal system during p_i's execution. For example, in above case, if p3 
-has w_3 = 1 (the same as p1 and p2) and l_3 = 3 (3ms). Since vd_3 = 1/2 
-+ l_3/w_3 = 7/2, the scheduler still executes p3 first, even though 
-p1,p2 and p3 have the same weight. Smaller l_i leads the scheduler to 
-handle p_i in finer granularity.  Intuitively, it makes scheduler checks 
-the deadline of p_i more frequently
-and ensures each small piece of work is done on time, while larger l_i 
-does the reverse.
-
-  The decouple of weight w_i and timeslice l_i is important. Generally 
-speaking, weight determines throughput and timeslice determines the 
-responsiveness of a task. In normal situation, high priority tasks 
-usually need more cpu capacity within short period of time (bursty, such 
-as keyboard, mouse move, X updates, daemons, etc), and need to be 
-processed as quick as possible (responsiveness and interactiveness). 
-Follow the analysis above, we know that for higher priority tasks we 
-should give _higher weight_ to ensure its CPU throughput, and at the 
-same time give _smaller timeslice_ to ensure better responsiveness.  
-This is a bit counter-intuitive against the current linux 
-implementation: smaller nice value leads to higher weight and larger 
-timeslice.
-
-  Now let's see what happens in the Real-Time world. Usually a real-time 
-application is specified with (C_i, T_i), where C_i is the amount of 
-work  and T_i is the period of time that the work has to be finished. 
-For example, (20ms, 50ms) says the scheduler has to do 20ms work within 
-a window of 50ms for this task. Smaller T_i gives tighter response 
-constraints. Note that Bi = Ci/Ti is really the CPU proportion for the 
-task during its execution. In our proportional time share world, weight 
-w_i decides the cpu proportion which maps to Bi, and timeslice l_i gives 
-the amount works should be done each time, which maps Ci. Then using w_i 
-and l_i, we can get a window size, which actually maps Ti. Therefore 
-smaller l_i leads to smaller Ti which means tighter response 
-constraints. It seems to me all these make a lot sense in both 
-proportional time share and real-time world.  
-
-  Based on my understanding, adopting something like EEVDF in CFS should 
-not be very difficult given their similarities, although I do not have 
-any idea on how this impacts the load balancing for SMP. Does this worth 
-a try?
-
-  Sorry for such a long email :-)
-
-Ting
-
+-- 
+SUSE Labs, Novell Inc.
