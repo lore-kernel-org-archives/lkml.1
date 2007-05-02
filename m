@@ -1,79 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992702AbXEBEKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992723AbXEBENJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992702AbXEBEKG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 00:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992705AbXEBEKG
+	id S2992723AbXEBENJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 00:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992718AbXEBENJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 00:10:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:47991 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992702AbXEBEKD (ORCPT
+	Wed, 2 May 2007 00:13:09 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4019 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992714AbXEBENF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 00:10:03 -0400
-Date: Tue, 1 May 2007 21:09:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Nate Diller <nate.diller@gmail.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] zero_user_page uses in fs/buffer.c and fs/libfs.c
-Message-Id: <20070501210955.d2c3d682.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705012046120.28655@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704292313060.3018@schroedinger.engr.sgi.com>
-	<a781481a0704292353v34ea217fpbbf732465dd652e8@mail.gmail.com>
-	<Pine.LNX.4.64.0704300000430.3147@schroedinger.engr.sgi.com>
-	<20070501172643.270bb061.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705011807550.28210@schroedinger.engr.sgi.com>
-	<5c49b0ed0705011916y89212c0v1cec1cb1edae052f@mail.gmail.com>
-	<5c49b0ed0705011927n66208c1egd7cfdb6985dc901b@mail.gmail.com>
-	<Pine.LNX.4.64.0705012046120.28655@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 2 May 2007 00:13:05 -0400
+Date: Wed, 2 May 2007 14:12:22 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: xemul@sw.ru, netdev@vger.kernel.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org, devel@openvz.org, kaber@trash.net,
+       dev@openvz.org
+Subject: Re: [NETLINK] Don't attach callback to a going-away netlink socket
+Message-ID: <20070502041222.GA28620@gondor.apana.org.au>
+References: <20070418.170636.77057313.davem@davemloft.net> <E1HeM9f-0001Dt-00@gondolin.me.apana.org.au> <20070428.231849.59657032.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070428.231849.59657032.davem@davemloft.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007 20:58:02 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
+On Sat, Apr 28, 2007 at 11:18:49PM -0700, David Miller wrote:
+> 
+> Herbert, could you refresh this refinement to the current
+> tree?
 
-> On Tue, 1 May 2007, Nate Diller wrote:
-> 
-> > well, leave it to me to reply too quickly, sorry.  i think we should
-> > leave simple_prepare_write() the way it is, since it's a library
-> > function itself.  the other two callsites in your patch are buffers,
-> > which may themselves be smaller than a page so you would need a
-> > special function for just those two uses, there's no other way to
-> > avoid making two calls to flush_dcache_page().  if it's tremendously
-> > important to you to eliminate open coding of these, maybe make a
-> > 'static int buffer_prepare_write()' or some such in fs/buffer.c
-> 
-> All three sites zap two parts of a page. If we had a 
-> zero_user_page2 like this
-> 
-> zero_user_page2(page, start1, end1, start2, end2, kmap)
-> 
-> then all 3 sites could use the same funtion.
-> 
-> libfs.c:
-> 
-> zero_user_page_segments(page, 0, from, to, PAGE_CACHE_SIZE, KM_USER0);
-> 
-> buffer.c:
-> 
-> zero_user_page_segments(page, from, block_start, to, block_end, KM_USER0)
-> 
-> zero_user_page_segments(page, blockstart, from, to, block_end, KM_USER0)
-> 
+Dave, thanks for reminding me.  Here it is.
 
-yup.  And perhaps zero_user_page() becomes a caller to
-zero_user_page_segments() if we're sure that the compiler will dtrt.
+[NETLINK]: Kill CB only when socket is unused
 
-> 
-> I did not look through the whole kernel but this zapping segments is 
-> likely frequent given the nature of the blocklayer.
-> 
-> The 3 call sites pretty ugly on their own. I think it would be good 
-> to have one clearly commented version of this somewhere. Call sites
-> will be much clearer since you do not have the kmap_ obfuscation nor
-> the calculation of the length of each segment.
+Since we can still receive packets until all references to the
+socket are gone, we don't need to kill the CB until that happens.
+This also aligns ourselves with the receive queue purging which
+happens at that point.
 
-Sure.
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/netlink/af_netlink.c b/net/netlink/af_netlink.c
+index 42d2fb9..7fc6b4d 100644
+--- a/net/netlink/af_netlink.c
++++ b/net/netlink/af_netlink.c
+@@ -140,6 +140,15 @@ static struct hlist_head *nl_pid_hashfn(struct nl_pid_hash *hash, u32 pid)
+ 
+ static void netlink_sock_destruct(struct sock *sk)
+ {
++	struct netlink_sock *nlk = nlk_sk(sk);
++
++	BUG_ON(mutex_is_locked(nlk_sk(sk)->cb_mutex));
++	if (nlk->cb) {
++		if (nlk->cb->done)
++			nlk->cb->done(nlk->cb);
++		netlink_destroy_callback(nlk->cb);
++	}
++
+ 	skb_queue_purge(&sk->sk_receive_queue);
+ 
+ 	if (!sock_flag(sk, SOCK_DEAD)) {
+@@ -148,7 +157,6 @@ static void netlink_sock_destruct(struct sock *sk)
+ 	}
+ 	BUG_TRAP(!atomic_read(&sk->sk_rmem_alloc));
+ 	BUG_TRAP(!atomic_read(&sk->sk_wmem_alloc));
+-	BUG_TRAP(!nlk_sk(sk)->cb);
+ 	BUG_TRAP(!nlk_sk(sk)->groups);
+ }
+ 
+@@ -456,17 +464,10 @@ static int netlink_release(struct socket *sock)
+ 	sock_orphan(sk);
+ 	nlk = nlk_sk(sk);
+ 
+-	mutex_lock(nlk->cb_mutex);
+-	if (nlk->cb) {
+-		if (nlk->cb->done)
+-			nlk->cb->done(nlk->cb);
+-		netlink_destroy_callback(nlk->cb);
+-		nlk->cb = NULL;
+-	}
+-	mutex_unlock(nlk->cb_mutex);
+-
+-	/* OK. Socket is unlinked, and, therefore,
+-	   no new packets will arrive */
++	/*
++	 * OK. Socket is unlinked, any packets that arrive now
++	 * will be purged.
++	 */
+ 
+ 	sock->sk = NULL;
+ 	wake_up_interruptible_all(&nlk->wait);
+@@ -1426,9 +1427,9 @@ int netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
+ 		return -ECONNREFUSED;
+ 	}
+ 	nlk = nlk_sk(sk);
+-	/* A dump or destruction is in progress... */
++	/* A dump is in progress... */
+ 	mutex_lock(nlk->cb_mutex);
+-	if (nlk->cb || sock_flag(sk, SOCK_DEAD)) {
++	if (nlk->cb) {
+ 		mutex_unlock(nlk->cb_mutex);
+ 		netlink_destroy_callback(cb);
+ 		sock_put(sk);
