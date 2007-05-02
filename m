@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767092AbXEBVms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767074AbXEBVmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767092AbXEBVms (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767095AbXEBVms
+	id S1767074AbXEBVmw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767097AbXEBVmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:42:48 -0400
-Received: from nz-out-0506.google.com ([64.233.162.227]:44603 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767092AbXEBVmp (ORCPT
+	Wed, 2 May 2007 17:42:52 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42523 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767074AbXEBVmu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:42:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=qvCgTpUGUeirH9tYfJ93a/wpKs+BV+2Jg3wj8LmLv62Ywfam2eWVBMTDCA1TPSIFxWTRpQ5RstKy8EG4r5X4LE6GxQo8L8y3YZzN2NZY+DOV37gMj4Fy5/5w9M1xo7WZQEQYlMJNR1QJk7mS/abKbGK3e3VkRWeCbE2++dXsfDk=
-Message-ID: <6bffcb0e0705021442k68d265b3m88746051aa95cb00@mail.gmail.com>
-Date: Wed, 2 May 2007 23:42:44 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: 2.6.21-git4 BUG: soft lockup detected on CPU#1!
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Wed, 2 May 2007 17:42:50 -0400
+Date: Wed, 2 May 2007 14:42:49 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Current SLUB Tree
+In-Reply-To: <20070502142756.de29ab08.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705021435200.2724@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705022307310.16215@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0705021311440.1978@schroedinger.engr.sgi.com>
+ <4638F2DA.9080100@cs.helsinki.fi> <Pine.LNX.4.64.0705021413570.2469@schroedinger.engr.sgi.com>
+ <20070502142756.de29ab08.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+I put my slub patches development directory onto 
+http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub-patches.
 
-I hit this soft lockup
+Take 2.6.21-rc7-mm2  and apply the patches in that directory following the 
+series file.
 
-[ 5401.599275] BUG: soft lockup detected on CPU#1!
-[ 5401.603809]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
-[ 5401.608980]  [<c0105720>] show_trace+0x12/0x14
-[ 5401.613456]  [<c01057d2>] dump_stack+0x16/0x18
-[ 5401.617934]  [<c01518e8>] softlockup_tick+0xa7/0xb9
-[ 5401.622841]  [<c012a0b5>] run_local_timers+0x12/0x14
-[ 5401.627829]  [<c012a482>] update_process_times+0x3e/0x63
-[ 5401.633164]  [<c013a028>] tick_sched_timer+0x5d/0xa1
-[ 5401.638160]  [<c01366fb>] hrtimer_interrupt+0x127/0x1b4
-[ 5401.643415]  [<c0114c66>] smp_apic_timer_interrupt+0x72/0x84
-[ 5401.649097]  [<c0104b2b>] apic_timer_interrupt+0x33/0x38
-[ 5401.654437]  =======================
-[ 5401.658055] Clocksource tsc unstable (delta = 9372000804 ns)
-[ 5401.664061] Time: acpi_pm clocksource has been installed.
-
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/git-config
-http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/git-dmesg
-
-Regards,
-Michal
-
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
