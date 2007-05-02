@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993383AbXEBPhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993385AbXEBPig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993383AbXEBPhc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993381AbXEBPhc
+	id S2993385AbXEBPig (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993386AbXEBPig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:37:32 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37970 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993379AbXEBPh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:37:29 -0400
-Date: Wed, 2 May 2007 10:37:27 -0500
-From: Dean Nelson <dcn@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: "partical" kthread conversion
-Message-ID: <20070502153727.GA31794@sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084245.GA14364@infradead.org> <20070501015141.f09f6dde.akpm@linux-foundation.org> <20070502140115.GA23595@sgi.com> <m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
+	Wed, 2 May 2007 11:38:36 -0400
+Received: from www.osadl.org ([213.239.205.134]:52056 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S2993385AbXEBPif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:38:35 -0400
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of
+	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mark Lord <lkml@rtr.ca>, Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20070502010527.e64dcce9.akpm@linux-foundation.org>
+References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
+	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>
+	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>
+	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
+	 <463741F1.7050706@rtr.ca> <1178027285.5791.307.camel@localhost.localdomain>
+	 <46374B1D.6050509@rtr.ca> <1178035058.5791.333.camel@localhost.localdomain>
+	 <46377055.2060605@rtr.ca> <1178092035.5791.349.camel@localhost.localdomain>
+	 <20070502010527.e64dcce9.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 17:40:57 +0200
+Message-Id: <1178120457.25504.17.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 08:45:54AM -0600, Eric W. Biederman wrote:
-> Dean Nelson <dcn@sgi.com> writes:
-> 
-> > On Tue, May 01, 2007 at 01:51:41AM -0700, Andrew Morton wrote:
-> >> I might send ia64-sn-xpc-convert-to-use-kthread-api.patch+fixes off to
-> >> Tony, as people put quite a bit of review and test effort into that one.
+On Wed, 2007-05-02 at 01:05 -0700, Andrew Morton wrote:
+> > thanks. Can you apply this patch please:
+> > http://lkml.org/lkml/2007/4/13/190
 > >
-> > Andrew, I would recommend holding off on sending these xpc patches to
-> > Tony as the kthread_run()s aren't paired with kthread_stop()s yet. I
-> > need to generate an additional patch after I've first sorted out how
-> > best to deal with kthread_stop()'ng XPC's pool of kthreads with Eric.
+> > It somehow did not make it into 2.6.21.
+> > 
 > 
-> Ok.  Dean gve me a couple of a day or so.  I think I have just worked
-> through how to directly create kthreads without too much pain.  We are
-> still going to need kthreadd for spawning for a bit because I don't
-> expect all architectures to change over immediately, but I think
-> things can be done in a fairly simple low risk manner.
-> 
-> The changes to the kernel_thread replacement aren't going to be too
-> bad, pretty much just adding a couple of parameters.   It is
-> copy_thread where things get sticky.
-> 
-> If we can spawn threads fast enough we don't need a thread pool, I
-> would rather do that.
+> Alas, poor me.  I ain't going to merge a contention-reduction patch when
+> we're at -rc6.  If a patch fixes a bug, please tell me!
 
-I'd typed up some questions for you about the new patch I need to create
-which I'd just sent to you, so I won't repeat them here.
+It was not a bug fix at this point, I merily tried to solve the lock
+contention problem, which was reported by Steven Rostedt.
 
-Before proceeding to far with your above changes, you might wait to see
-the proposal that Robin Holt is putting together for a kthread pool.
-I'm not sure how spawning a thread (which involves allocation of the
-task_struct amongst other things, plus scheduling) can beat a wake_up()
-of an already existing thread for cost time-wise.
+The confusing thing on Marks config bisecting was that the softlock
+detection fixed his problem. The only difference of the softlock
+detection is that it starts the watchdog thread and a one second timer.
+I was looking into the code and noticed that this patch did not make it.
 
-Dean
+Honestly it was a shot into the dark and I'd really like to know why
+this makes the problem go away.
+
+Mark, did you ever enable CONFIG_PROVE_LOCKING as a single add on to
+your not working config ? If not, can you please try ?
+
+	tglx
+
 
