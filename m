@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbXEBCdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030302AbXEBCeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbXEBCdM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 22:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbXEBCdM
+	id S1030302AbXEBCeQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 22:34:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030433AbXEBCeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 22:33:12 -0400
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7]:50419 "EHLO
-	mail5.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754050AbXEBCdL (ORCPT
+	Tue, 1 May 2007 22:34:16 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:55953 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1030302AbXEBCeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 22:33:11 -0400
-Message-ID: <4637F864.7090601@freedesktop.org>
-Date: Tue, 01 May 2007 19:33:08 -0700
-From: Josh Triplett <josh@freedesktop.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Tue, 1 May 2007 22:34:15 -0400
+Message-Id: <1178073255.22739.1187618133@webmail.messagingengine.com>
+X-Sasl-Enc: TnIpP5/keD1xkA/9UL4r4nzsjwJ2ZlGIUMGzhPHQTurw 1178073255
+From: lkml777@123mail.org
+To: "Jeff Garzik" <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: linux-sparse@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Sparse 0.3 version number
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig98166A780C043F79DDC635DB"
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <1177477555.20837.1186422725@webmail.messagingengine.com>
+   <462F57AF.2040104@garzik.org>
+Subject: Re: SOME STUFF ABOUT REISER4 To Mr Hopper
+In-Reply-To: <462F57AF.2040104@garzik.org>
+Date: Tue, 01 May 2007 19:34:15 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig98166A780C043F79DDC635DB
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-So, the 0.3 release went out...with VERSION=3D0.2 in the Makefile.  Oops.=
+> Please fix your caps lock key.  Thanks.
+> 
+> 	Jeff
 
+Please Jeff,... fix your attitude
+-- 
+  
+  lkml777@123mail.org
 
-Fortunately, $(VERSION) currently only affects the version number in the
-pkg-config file sparse.pc.  If you have written some software that depend=
-s on
-Sparse, uses pkg-config to check for it with a sufficient version number,=
- and
-hoped to depend on 0.3 or newer, my apologies.  Fortunately, I suspect fe=
-w to
-no people have done this.
+-- 
+http://www.fastmail.fm - IMAP accessible web-mail
 
-I plan to put out a release shortly with a fix for this, as well as a cou=
-ple
-of additional opportunistic fixes.  I also plan to include a "make dist" =
-with
-some checks to prevent this from happening again.
-
-- Josh Triplett
-
-
---------------enig98166A780C043F79DDC635DB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGN/hkGJuZRtD+evsRAoPHAJ45ZaUxRYhedOeD4h0shwYTgcUD4QCbBt/2
-wBLyCdThJdEE9uB55/mAb/M=
-=md39
------END PGP SIGNATURE-----
-
---------------enig98166A780C043F79DDC635DB--
