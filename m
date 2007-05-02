@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161782AbXEBVXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161786AbXEBVYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161782AbXEBVXE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161784AbXEBVXE
+	id S1161786AbXEBVYh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161790AbXEBVYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:23:04 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:47155 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161782AbXEBVXD (ORCPT
+	Wed, 2 May 2007 17:24:36 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:54559 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161786AbXEBVYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:23:03 -0400
-Message-ID: <46390086.2030904@gmail.com>
-Date: Wed, 02 May 2007 23:20:06 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 2 May 2007 17:24:35 -0400
+Message-ID: <46390185.30900@zytor.com>
+Date: Wed, 02 May 2007 14:24:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com> <4638FDA6.9030500@gmail.com> <4638FF70.8020400@zytor.com>
-In-Reply-To: <4638FF70.8020400@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>	<46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>	<4638F9BE.8090508@zytor.com> <m13b2fvsbn.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m13b2fvsbn.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/02/2007 11:15 PM, H. Peter Anvin wrote:
+Eric W. Biederman wrote:
+> 
+> So we won't do this casually and if it there are real problems we will
+> remove the ELF magic number.
+> 
 
-> However, the pluggable framework is quite trivial and makes the code
-> look really clean, so I'm keeping it regardless.
+I think we can use ELF-compatible format just fine, but it would make
+more sense to use a non-ELF magic number from the start, instead of
+signalling it with a note.  Since bootloaders need to be aware, anyway,
+they can just detect this magic and treat is as an Linux calling
+convention ELF image, or they can not detect it, and treat it as a
+bzImage.  As a side benefit, we:
 
-Sheesh. Anyways, I know you asked about register writes but in case it's 
-still useful info: the CL54xx adapters have 132x43 and 132x25 as BIOS modes 
-0x54 and 0x55 (ie, just int 0x10 modes) respectively. No idea how complete 
-the Bochs/Qemu video BIOS is.
+a) can use a magic number that contains a jump instruction (to keep the
+non-bootsector happy);
+b) get a proper Linux kernel magic number.
 
-Rene.
-
+	-hpa
