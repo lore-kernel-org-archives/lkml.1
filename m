@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766936AbXEBULb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766950AbXEBUMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766936AbXEBULb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766939AbXEBULa
+	id S1766950AbXEBUMN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766949AbXEBUMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:11:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:44434 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766936AbXEBUL3 convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 16:12:13 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38249 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766946AbXEBUML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:11:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=JkDpyrKafHFgDLWEGQeEZqwio460+OwHAPn/vRZYd15SJBtp5pa/EmL1hJjNav8FQ8ayBHVS9I9I9L8MFRqQMXyaZMeb+1vKUC814BRRobCfH0nJEMSOsEkQ0RJnVD/6T2m3Fo/VH1Yp8xc+kSpDXOwkbqdFELmCJH7ch7eKvew=
-Date: Wed, 2 May 2007 22:10:45 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: "Miguel Sousa Filipe" <miguel.filipe@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: FEATURE REQUEST: merge MD software raid and LVM in one unique
- layer.
-Message-Id: <20070502221045.ad20b915.diegocg@gmail.com>
-In-Reply-To: <f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com>
-References: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com>
-	<f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 May 2007 16:12:11 -0400
+Date: Wed, 2 May 2007 13:12:10 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] slub: remove duplicate VM_BUG_ON
+In-Reply-To: <Pine.LNX.4.64.0705022307310.16215@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0705021311440.1978@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705022307310.16215@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, 2 May 2007 20:18:55 +0100, "Miguel Sousa Filipe" <miguel.filipe@gmail.com> escribió:
+Patch is already in mm. Could you download all the patches after that 
+before testing? There was quite a number.
 
-> I find it high irritanting having two kernel interfaces and two
-> userland tools that provide the same funcionality, which one should I
-> use?
+On Wed, 2 May 2007, Pekka J Enberg wrote:
 
-I doubt users care about kernel's design; however the lack of unification of
-userspace tools is a real problem. Just my 2¢.
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> 
+> This patch removes a duplicate VM_BUG_ON from add_full().
+> 
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  mm/slub.c |    2 --
+>  1 file changed, 2 deletions(-)
+> 
+> Index: 26-mm/mm/slub.c
+> ===================================================================
+> --- 26-mm.orig/mm/slub.c	2007-05-02 23:00:58.000000000 +0300
+> +++ 26-mm/mm/slub.c	2007-05-02 23:01:15.000000000 +0300
+> @@ -633,8 +633,6 @@ static void add_full(struct kmem_cache *
+>  
+>  	VM_BUG_ON(!irqs_disabled());
+>  
+> -	VM_BUG_ON(!irqs_disabled());
+> -
+>  	if (!(s->flags & SLAB_STORE_USER))
+>  		return;
+>  
+> 
