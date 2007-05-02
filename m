@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766783AbXEBQ7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766782AbXEBRBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766783AbXEBQ7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766774AbXEBQ7u
+	id S1766782AbXEBRBE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766786AbXEBRBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:59:50 -0400
-Received: from haxent.com ([65.99.219.155]:3693 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766785AbXEBQ7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:59:46 -0400
-Message-ID: <4638C37D.7050503@haxent.com.br>
-Date: Wed, 02 May 2007 13:59:41 -0300
-From: Davi Arnaut <davi@haxent.com.br>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Wed, 2 May 2007 13:01:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5371 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766782AbXEBRBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 13:01:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=fvvdbi+Pnzh/PZFRa/waVwoFuoVN9Bti4YwJfG2ePn1G3KmYbYBFN2Tjts5dObugX
+	1roi1P44xiOct2YhnInIA==
+Date: Wed, 2 May 2007 10:00:08 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Adam Belay <ambx1@neo.rr.com>, Jaroslav Kysela <perex@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: [patch] wavefront: only declare isapnp on CONFIG_PNP
+Message-ID: <Pine.LNX.4.64.0705020042520.22968@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 14/22] pollfs: pollable futex
-References: <20070502052235.914764000@haxent.com.br>	 <20070502053427.123392000@haxent.com.br>	 <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>	 <20070502095503.a06f5472.dada1@cosmosbay.com>	 <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>	 <20070502104936.674a4b54.dada1@cosmosbay.com> <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
-In-Reply-To: <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> On 5/2/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
->> I understand your concerns, but *this* patch bundle extends 
->> poll()/select()/epoll, and is not an alternative to kevent or other 
->> work in progress, (and linux centered)
->
-> It is adding huge amounts of complexity and at the same time is not
-> future-safe.  I consider this enough reason to reject this approach.
-Huge amounts of complexity? It just _moves_ some futex code around!
-The intended use is not for locking, but for event signaling. Why can't
-it be future-safe? It just needs a address and a value! Pseudocode:
+isapnp[] is only used for CONFIG_PNP.  If this configuration option is
+not set, do not declare the array.
 
-thread A:
-    int fd = plfutex(addr, 0);
-    do
-        poll(fdset+fd);
-        process network events
-        queue obj to thread B
-        if fd:
-            job processed
+Cc: Adam Belay <ambx1@neo.rr.com>
+Cc: Jaroslav Kysela <perex@suse.cz>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ sound/isa/wavefront/wavefront.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-thread B:
-    wait_job();
-    process_job();
-    raise_event(addr);
-> You never can get rid of the interface.  It's much cleaner and safer
-> to do it right instead of piling on more and more workarounds for
-> special situations.
-It simple as is, there is no need to overdesign.
-
---
-Davi Arnaut
+diff --git a/sound/isa/wavefront/wavefront.c b/sound/isa/wavefront/wavefront.c
+--- a/sound/isa/wavefront/wavefront.c
++++ b/sound/isa/wavefront/wavefront.c
+@@ -40,7 +40,9 @@ MODULE_SUPPORTED_DEVICE("{{Turtle Beach,Maui/Tropez/Tropez+}}");
+ static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	    /* Index 0-MAX */
+ static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	    /* ID for this card */
+ static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE;	    /* Enable this card */
++#ifdef CONFIG_PNP
+ static int isapnp[SNDRV_CARDS] = {[0 ... (SNDRV_CARDS - 1)] = 1};
++#endif
+ static long cs4232_pcm_port[SNDRV_CARDS] = SNDRV_DEFAULT_PORT;	/* PnP setup */
+ static int cs4232_pcm_irq[SNDRV_CARDS] = SNDRV_DEFAULT_IRQ; /* 5,7,9,11,12,15 */
+ static long cs4232_mpu_port[SNDRV_CARDS] = SNDRV_DEFAULT_PORT; /* PnP setup */
