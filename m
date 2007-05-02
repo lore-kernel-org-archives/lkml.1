@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751696AbXEBHgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbXEBHkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751696AbXEBHgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXEBHgw
+	id S1752674AbXEBHkV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXEBHkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:36:52 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36087 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751696AbXEBHgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:36:51 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19EtXtHZJVEJVBZ95h4AKcAALbK+P62C8CzsHp1tH
-	Bke+sqsH4DrCjR
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
-	FS is under heavy write load (massive starvation)
-From: Mike Galbraith <efault@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070502065355.GB15878@kernel.dk>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	 <alpine.LFD.0.98.0704270806230.9964@woody.linux-foundation.org>
-	 <20070502065355.GB15878@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 09:36:47 +0200
-Message-Id: <1178091407.8926.24.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 2 May 2007 03:40:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:41768 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992878AbXEBHkS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 03:40:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cSDTXgOSpxkZHMXj+p1EmPnl76YyYeuQSLaRuTkKWm5h8ZFilIOPrVT34Y3/LkaIQtwkEoTbJgm9r3mJMQnYutY6+BgFnucyavqNhfPLW6K827qvkYUXkXhkP69XG0cj4eA8gaRJcj+vYUtCCCY9L2wOG3BKe7p8cAsu/XI1vdU=
+Message-ID: <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+Date: Wed, 2 May 2007 00:40:17 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davi Arnaut" <davi@haxent.com.br>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070502053427.123392000@haxent.com.br>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Disposition: inline
+References: <20070502052235.914764000@haxent.com.br>
+	 <20070502053427.123392000@haxent.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 08:53 +0200, Jens Axboe wrote:
-> On Fri, Apr 27 2007, Linus Torvalds wrote:
-> > So I do believe that we could probably do something about the IO 
-> > scheduling _too_:
-> > 
-> >  - break up large write requests (yeah, it will make for worse IO 
-> >    throughput, but if make it configurable, and especially with 
-> >    controllers that don't have insane overheads per command, the 
-> >    difference between 128kB requests and 16MB requests is probably not 
-> >    really even noticeable - SCSI things with large per-command overheads 
-> >    are just stupid)
-> > 
-> >    Generating huge requests will automatically mean that they are 
-> >    "unbreakable" from an IO scheduler perspective, so it's bad for latency 
-> >    for other reqeusts once they've started.
-> 
-> Overlooked this one initially... We actually don't generate huge
-> requests, exactly because of that. Even if the device can do large
-> requests (most SATA disks today can do 32meg), we default to 512kB as
-> the largest one that we will build due to file system requests. It's
-> trivial to reduce that limit, see /sys/block/<dev>/queue/max_sectors_kb.
-> That controls the maximum per-request size.
+On 5/1/07, Davi Arnaut <davi@haxent.com.br> wrote:
+> The pollable futex approach is far superior (send and receive events from
+> userspace or kernel) to eventfd and fixes (supercedes) FUTEX_FD at the same time.
+> [...]
 
-For the record, I haven't been able to stall KDE for ages with
-data=writeback.
+You have to explain in detail how these interfaces are supposed to
+work.  From first sight and without understanding (all) the it seems
+it's far from useful.
 
-	-Mike
+Pollable futexes are useful, but any solution which gets implemented
+must be sufficiently useful for all the uses we might have.
 
+- the trivial is that you have a futex and you are just interest in
+seeing it change.   The
+  same as FUTEX_WAIT.  I cannot figure out how all this works in your
+code.  Does your
+  read() call (that's the one to wait, yes?) work with O_NONBLOCK or
+how else do you get
+  that behavior?
+
+- more complicated case: I have to wait for multiple futexes and lock
+them all at the same
+  time or don't return at all.  This is possible with SysV semaphores
+and generally useful
+  and needed.  How can this be implemented with your scheme?
+
+- how does it work with PI futexes?
+
+- can I use a futex at the same time through this mechanism and using the normal
+  FUTEX_WAIT operation?  This is a killer if it's not the case.
+
+- if you have multiple threads polling a futex and the waker wakes up
+one, what happens?
+  It is simply not acceptable to have more than one thread return from
+the poll() call, this
+  would waste too many cycles, just to put all threads but one back to sleep.
