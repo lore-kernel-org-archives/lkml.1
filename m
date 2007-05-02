@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767119AbXEBVnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767094AbXEBVq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767119AbXEBVnu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767117AbXEBVnu
+	id S1767094AbXEBVq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767100AbXEBVq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:43:50 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54484 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767107AbXEBVns (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:43:48 -0400
-X-Sasl-enc: 5RdzwISoK1m+wcRXwUIOUkCbZ5NqMGIMF2gUzAUxhS2r 1178142228
-Message-ID: <463906C0.1080208@imap.cc>
-Date: Wed, 02 May 2007 23:46:40 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, wfg@ustc.edu
-Subject: Re: 2.6.22 -mm merge plans
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <20070501220803.GA27698@Krystal> <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502174940.GA9089@one.firstfloor.org>
-In-Reply-To: <20070502174940.GA9089@one.firstfloor.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig0876C052BBD67017316336B3"
+	Wed, 2 May 2007 17:46:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:37399 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767094AbXEBVqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 17:46:55 -0400
+Subject: Re: 2.6.21-git4 BUG: soft lockup detected on CPU#1!
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <6bffcb0e0705021442k68d265b3m88746051aa95cb00@mail.gmail.com>
+References: <6bffcb0e0705021442k68d265b3m88746051aa95cb00@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 23:49:16 +0200
+Message-Id: <1178142556.2340.24.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig0876C052BBD67017316336B3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2007-05-02 at 23:42 +0200, Michal Piotrowski wrote:
+> Hi Thomas,
+> 
+> I hit this soft lockup
+> 
+> [ 5401.599275] BUG: soft lockup detected on CPU#1!
+> [ 5401.603809]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
+> [ 5401.608980]  [<c0105720>] show_trace+0x12/0x14
+> [ 5401.613456]  [<c01057d2>] dump_stack+0x16/0x18
+> [ 5401.617934]  [<c01518e8>] softlockup_tick+0xa7/0xb9
+> [ 5401.622841]  [<c012a0b5>] run_local_timers+0x12/0x14
+> [ 5401.627829]  [<c012a482>] update_process_times+0x3e/0x63
+> [ 5401.633164]  [<c013a028>] tick_sched_timer+0x5d/0xa1
+> [ 5401.638160]  [<c01366fb>] hrtimer_interrupt+0x127/0x1b4
+> [ 5401.643415]  [<c0114c66>] smp_apic_timer_interrupt+0x72/0x84
+> [ 5401.649097]  [<c0104b2b>] apic_timer_interrupt+0x33/0x38
+> [ 5401.654437]  =======================
+> [ 5401.658055] Clocksource tsc unstable (delta = 9372000804 ns)
+> [ 5401.664061] Time: acpi_pm clocksource has been installed.
 
-Am 02.05.2007 19:49 schrieb Andi Kleen:
-> And also I think when something is merged it should have some users in =
-tree.
+Hmm. Looks like TSC going awry and the softlockup hits before the tsc
+watchdog logic kicks in.
 
-Isn't that a circular dependency?
+Was the system stable afterwards ?
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- Undetected errors are handled as if no error occurred. (IBM) -
+	tglx
 
 
---------------enig0876C052BBD67017316336B3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGOQbAMdB4Whm86/kRAuKuAJ9/l1zPQ/1k5Aik2N9J3zLGVfg5GQCfea5d
-/jYm/qo32aK8RY1OVWLjDmE=
-=hm0e
------END PGP SIGNATURE-----
-
---------------enig0876C052BBD67017316336B3--
