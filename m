@@ -1,79 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992899AbXEBIPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161754AbXEBIWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992899AbXEBIPy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992908AbXEBIPx
+	id S1161754AbXEBIWe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964796AbXEBIWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:15:53 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40822 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992899AbXEBIPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:15:52 -0400
-Date: Wed, 2 May 2007 10:13:56 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070502081356.GA21827@elte.hu>
-References: <20070501212223.GA29867@elte.hu> <1178087834.8640.7.camel@Homer.simpson.net> <200705020403.35385.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 May 2007 04:22:34 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1624 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752881AbXEBIWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 04:22:31 -0400
+Date: Wed, 2 May 2007 09:22:13 +0100
+From: Mark Brown <broonie@sirena.org.uk>
+To: Tim Hockin <thockin@hockin.org>
+Cc: =?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Message-ID: <20070502082211.GD31630@sirena.org.uk>
+Mail-Followup-To: Tim Hockin <thockin@hockin.org>,
+	=?utf-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <20070501084639.GA528@sirena.org.uk> <46371590.4090004@interia.pl> <20070501180830.GA31630@sirena.org.uk> <46379A7E.3000109@interia.pl> <20070501212750.GC31630@sirena.org.uk> <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com> <46382798.2090709@interia.pl> <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com> <463830E1.8080107@interia.pl> <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FFoLq8A0u+X9iRU8"
 Content-Disposition: inline
-In-Reply-To: <200705020403.35385.gene.heskett@gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
+X-Cookie: Are you sure the back door is locked?
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: Natsemi DP83815 driver spaming
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Gene Heskett <gene.heskett@gmail.com> wrote:
+--FFoLq8A0u+X9iRU8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > I noticed a (harmless) bounds warning triggered by the reduction in 
-> > size of array->bitmap.  Patchlet below.
-> 
-> I just checked my logs, and it appears my workload didn't trigger this 
-> one Mike. [...]
+On Tue, May 01, 2007 at 11:51:41PM -0700, Tim Hockin wrote:
 
-yeah: this is a build-time warning and it needs a newer/smarter gcc to 
-notice that provably redundant piece of code. It's a harmless thing - 
-but nevertheless Mike's fix is a nice little micro-optimization as well: 
-it always bothered me a bit that at 140 priority levels we were _just_ 
-past the 128 bits boundary by 12 bits. Now on 64-bit boxes it's just two 
-64-bit words to cover all 100 priority levels of RT tasks.
+> I'm not sure what the right answer is.  The code was designed to do
+> the right thing, and yet in your case it's broken.  Does it need to be
+> a build option to work around broken hardware?  Yuck.
 
-> [...]  And so far, v8 is working great here.  And that great is in my 
-> best "Tony the Tiger" voice, stolen shamelessly from the breakfast 
-> cereal tv commercial of 30+ years ago. :)
+Without a system that really needs the original problem that was being
+worked around it's going to be hard to see if the workaround still does
+the job.  Given the nature of the failure I wouldn't be surprised if it
+broke different things on every board that has problems.
 
-heh :-)
+How about a sysfs tuneable?  It's not nice but at least it's runtime.
 
-> Ingo asked for a 0-100 rating, where 0 is mainline as I recall it, and 
-> 100 is the best of the breed.  I'll give this one a 100 till something 
-> better shows up.
+--=20
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
 
-nice - and you arent even using any OpenGL games ;)
+--FFoLq8A0u+X9iRU8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-The 0-100 rating is really useful to me so that i can see the impact of 
-regressions (if any) and it's also one single number representing the 
-subjective impression - that way it's easier to keep tab of things.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-btw., do you still renice kmail slightly, or does it now work out of box 
-with default nice 0?
+iQCVAwUBRjhKMA2erOLNe+68AQIcjQP+LTDTrSu3WKuiAAI4swDlo06iP3MfZFo3
+N/1NgP23gXxkrPYnMjlPkjJOeTpbDDkdD2UdoheExSvNaJ069rdURIvnjanTe+52
+ewJMpWYSNi5DZOgyMU1AlOcFN8OcKJ/bGSUl5aMPnGt5+/NdFAC7yIriCsgbbHFd
+mrBKjDG4IMQ=
+=o2XV
+-----END PGP SIGNATURE-----
 
-	Ingo
+--FFoLq8A0u+X9iRU8--
