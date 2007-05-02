@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767271AbXEBTJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993133AbXEBTKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767271AbXEBTJF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767272AbXEBTJE
+	id S2993133AbXEBTKJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993136AbXEBTKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:09:04 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3862 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767273AbXEBTJB (ORCPT
+	Wed, 2 May 2007 15:10:08 -0400
+Received: from h155.mvista.com ([63.81.120.158]:25450 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S2993133AbXEBTJw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:09:01 -0400
-Date: Wed, 2 May 2007 20:08:50 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Corey Minyard <minyard@acm.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
-Message-ID: <20070502190850.GA16696@flint.arm.linux.org.uk>
-Mail-Followup-To: Corey Minyard <minyard@acm.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	linux-serial@vger.kernel.org, Andrew Morton <akpm@osdl.org>
-References: <20070502142900.GA22000@localdomain>
+	Wed, 2 May 2007 15:09:52 -0400
+Subject: Re: [PATCH 1/3] ia64: convert to use clocksource code
+From: Daniel Walker <dwalker@mvista.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Peter Keilty <peter.keilty@hp.com>, linux-ia64@vger.kernel.org,
+       Eric Whitney <eric.whitney@hp.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1178128707.6183.6.camel@localhost.localdomain>
+References: <20070426202632.23343.54944.sendpatchset@rambler.zko.hp.com>
+	 <1177621673.12796.121.camel@imap.mvista.com>  <46320ACD.6090704@hp.com>
+	 <1177688158.12796.125.camel@imap.mvista.com>  <463219CD.5040203@hp.com>
+	 <1177688931.12796.130.camel@imap.mvista.com>  <463220C8.5060408@hp.com>
+	 <1178128707.6183.6.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 12:08:01 -0700
+Message-Id: <1178132881.12796.385.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502142900.GA22000@localdomain>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 09:29:00AM -0500, Corey Minyard wrote:
-> I didn't hear back, so I went ahead and did a patch.
+On Wed, 2007-05-02 at 10:58 -0700, john stultz wrote:
+> On Fri, 2007-04-27 at 12:11 -0400, Peter Keilty wrote:
+> > Daniel Walker wrote:
+> > >On Fri, 2007-04-27 at 11:42 -0400, Peter Keilty wrote:
+> > >>>There is a read(), and a vread() did you modify the slow syscall path to
+> > >>>use the vread()?
+> > >>> 
+> > >John mentioned that he thought fsys_mmio_ptr could be held in the vread
+> > >pointer. vread() is used in x86 for vsyscalls. It looks like you've used
+> > >the update_vsyscall() which is also used for vsyscalls. So vread could
+> > >also be used .. Have you considered that at all?
+> > >  
+> > >
+> > No, but yes it can be done, overloading the meaning.
+> 
+> Yea. I'm not really psyched about overloading the vread pointer's use. I
+> mentioned it could be done if the #ifdef was objected to, but it seems a
+> bit abusive. The #ifdef isn't great, but I think its something I can
+> live with for now. At least its explicit.
 
-You haven't heard back because I've not had a chance (and still
-haven't) to look at the various data sheets I've accumulated.
-I'll be catching up with anything not requiring a simple
-email reply tomorrow.
+Use of config options like that is a bad precedence I think, which is
+why I commented on it .. Since we have a vread pointer that exists
+already, and it's used a very similar purpose it seems like bloat to
+just add another pointer.. 
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+We could change the vread to be a plain void pointer, then let each
+architecture use it however they want.
+
+Daniel
+
