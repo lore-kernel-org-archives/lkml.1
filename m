@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766762AbXEBTfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766751AbXEBTfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766762AbXEBTfB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766752AbXEBTfB
+	id S1766751AbXEBTfN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766763AbXEBTfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:35:01 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:45555 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1766742AbXEBTey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:34:54 -0400
-Date: Wed, 2 May 2007 12:33:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: Dean Nelson <dcn@sgi.com>, hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: "partical" kthread conversion
-Message-Id: <20070502123359.e82a668d.akpm@linux-foundation.org>
-In-Reply-To: <m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<20070501084245.GA14364@infradead.org>
-	<20070501015141.f09f6dde.akpm@linux-foundation.org>
-	<20070502140115.GA23595@sgi.com>
-	<m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 15:35:12 -0400
+Received: from THUNK.ORG ([69.25.196.29]:51025 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766751AbXEBTfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:35:07 -0400
+Date: Wed, 2 May 2007 15:34:56 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jeremy Allison <jra@samba.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Cabot, Mason B" <mason.b.cabot@intel.com>,
+       linux-kernel@vger.kernel.org, tridge@samba.com
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070502193456.GE19442@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jeremy Allison <jra@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Cabot, Mason B" <mason.b.cabot@intel.com>,
+	linux-kernel@vger.kernel.org, tridge@samba.com
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070501142325.09c294bd.akpm@linux-foundation.org> <20070502161638.GB19442@thunk.org> <20070502180810.GC28726@jeremy-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502180810.GC28726@jeremy-laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 May 2007 08:45:54 -0600
-ebiederm@xmission.com (Eric W. Biederman) wrote:
+On Wed, May 02, 2007 at 11:08:10AM -0700, Jeremy Allison wrote:
+> > The right place is clearly Samba.  I can't think of any other program
+> > or filesystem protocol where writing a 1 byte write at 128k strides
+> > would be used to signal a desire to do preallocation.  In fact, it's
+> > hard to think of a worse way of doing things.
+> 
+> In fact they don't need to do this - there's an explicit CIFS
+> set file allocation call to pre-allocate size they could use.
+> 
+> There's a specific Samba VFS module that has XFS specific calls
+> to do this - vfs_prealloc. - but this won't work on ext3.
 
-> Dean Nelson <dcn@sgi.com> writes:
-> 
-> > On Tue, May 01, 2007 at 01:51:41AM -0700, Andrew Morton wrote:
-> >> > There's probably a few more patches falling into this category, these
-> >> > were just the first one the stick into my eye.
-> >> 
-> >> Yes, I think I'll probably drop all of them - I've completely lost track of
-> >> which ones are complete, which ones need more work, etc.
-> 
-> Andrew as far as dropping them.  If all you have is one of my dinky patches
-> that changes things to use kthread_run feel free, because of the general
-> necessity of calling kthread_stop I'm going to have to rework those anyway,
-> and I still have the originals.
-> 
+Jeremy,
 
-I gave up and dropped them all - let's have another run at it.  Possibly
-some of them were complete and didn't deserve dropping, in which case you
-can send them straight back at me.
+	FYI, we are currently closing on a new system call so that
+glibc's fallocate() will be able to call into the appropriate
+per-filesystem routines in a portable way, since ext4 will have
+persistent preallocation support.
+
+	I think we mostly have consensus on a calling convention which
+all of the architectures (s390, power, arm, ia64, etc.); of course
+then we will need to get glibc to support the new system call.
+
+						- Ted
 
