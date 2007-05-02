@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbXEBESZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752992AbXEBEUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbXEBESZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 00:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbXEBESZ
+	id S1752992AbXEBEUn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 00:20:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbXEBEUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 00:18:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:44247 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXEBESY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 00:18:24 -0400
-Message-ID: <46381106.8010605@goop.org>
-Date: Tue, 01 May 2007 21:18:14 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 00:20:42 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:36797 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbXEBEUm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 00:20:42 -0400
+Date: Tue, 1 May 2007 20:57:45 -0700
+From: Greg KH <greg@kroah.com>
+To: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Cc: kristen.c.accardi@intel.com
+Subject: Re: pci hotplug patches
+Message-ID: <20070502035745.GB8877@kroah.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084841.GC14364@infradead.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: netfront for review
-References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain>
-In-Reply-To: <1178077033.28659.173.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070501084841.GC14364@infradead.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Tue, 2007-05-01 at 17:08 -0700, Jeremy Fitzhardinge wrote:
->   
->> Add the Xen virtual network device driver.
->>     
->
-> (Herbert: there's a question for you: grep for Herbert)
->
-> OK, this is a remarkably non-trivial driver.  If the v0.1 of the driver
-> had been in the kernel, I'm sure it would have been about 1/4 the size
-> and far easier to review 8(
->
-> Nonetheless, I have scoured the entire thing.  It's not actually too
-> bad.
->   
+On Tue, May 01, 2007 at 09:48:41AM +0100, Christoph Hellwig wrote:
+> >  fix-gregkh-pci-pci-remove-the-broken-pci_multithread_probe-option.patch
+> >  remove-pci_dac_dma_-apis.patch
+> >  round_up-macro-cleanup-in-drivers-pci.patch
+> >  pcie-remove-spin_lock_unlocked.patch
+> >  cpqphp-partially-convert-to-use-the-kthread-api.patch
+> >  ibmphp-partially-convert-to-use-the-kthreads-api.patch
+> >  cpci_hotplug-partially-convert-to-use-the-kthread-api.patch
+> >  msi-fix-arm-compile.patch
+> >  support-pci-mcfg-space-on-intel-i915-bridges.patch
+> >  pci-syscallc-switch-to-refcounting-api.patch
+> > 
+> > Stuff to (various levels of re-)send to Greg for the PCI tree.  I'll probably
+> > drop the kthread patches as they seemed a bit half-baked and I've lost track
+> > of which ones have which levels of baking.
+> 
+> All the partially kthread conversion were superceed with full conversion
+> from me.  I've only got feedback from the cpci maintainer, and he acked
+> my patch together with a simple fix from him.
 
-Lovely, thanks.  I'm at the double disadvantage of not really knowing
-how the network stack works or precisely how Xen does networking, but
-the homework exercises ("comment this") will definitely help my education.
+Hm, I'm no longer the PCI Hotplug maintainer, so that's why I haven't
+added them to my tree.  It would probably be best for everyone involved
+to send them to her instead :)
 
-    J
+thanks,
+
+greg k-h
