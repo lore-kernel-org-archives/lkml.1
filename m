@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993053AbXEBMER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993062AbXEBMFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993053AbXEBMER (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993054AbXEBMER
+	id S2993062AbXEBMFt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993061AbXEBMFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:04:17 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60538 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S2993053AbXEBMEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:04:15 -0400
-Cc: abraham.manu@gmail.com, linux-kernel@vger.kernel.org,
-       linux-dvb@linuxtv.org, mchehab@infradead.org
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Wed, 02 May 2007 14:04:14 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
-Message-ID: <20070502120414.80840@gmx.net>
-MIME-Version: 1.0
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com> 
-	<1178031333.3958.63.camel@localhost>
-	<Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
-	<1178071431.11109.62.camel@localhost>
- <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
-Subject: Re: [linux-dvb] Re: DST/BT878 module customization (.. was:	Critical
-	points about ...)
-To: Trent Piepho <xyzzy@speakeasy.org>, mchehab@infradead.org
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19zSSZLADVz7QP0+uob8KR1bRCj/P42/UmwPzrCdm
- syWCEnDlfsv5jS+8b/BRgqEKKYFqYYdHgfTw== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: B0YOD9xYQEV/GzO4FnVp2zdCNzg2NYL5
+	Wed, 2 May 2007 08:05:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41032 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993054AbXEBMFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:05:48 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <m1fy6fxwx5.fsf@ebiederm.dsl.xmission.com> 
+References: <m1fy6fxwx5.fsf@ebiederm.dsl.xmission.com>  <m1y7k8x910.fsf@ebiederm.dsl.xmission.com> <alpine.DEB.0.98.0705011054060.12931@sigma.j-a-k-j.com> <20061127165138.GA2991@lst.de> <20070430040213.BF9901801A4@magilla.sf.frob.com> <20070430091121.GC31397@infradead.org> <20070430100917.439ebfc8.akpm@linux-foundation.org> <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com> <Pine.LNX.4.64.0705011058330.27246@anakin> <1178028973.2875.78.camel@pmac.infradead.org> <9185.1178035627@redhat.com> <24844.1178098371@redhat.com> 
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: condingstyle, was Re: utrace comments 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 02 May 2007 13:05:34 +0100
+Message-ID: <31688.1178107534@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman <ebiederm@xmission.com> wrote:
 
--------- Original-Nachricht --------
-Datum: Wed, 2 May 2007 04:10:03 -0700 (PDT)
-Von: Trent Piepho <xyzzy@speakeasy.org>
-An: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
-Betreff: Re: [linux-dvb] Re: DST/BT878 module customization (.. was:	Critical	points about ...)
-
-> On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
-> > Em Ter, 2007-05-01 Ã s 16:16 -0700, Trent Piepho escreveu:
-> > > On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
-> > > > With this configuration, dvb-bt8xx hangs during initialization,
-> > > > generating an OOPS, if you have a board with DST (modprobe dvb-bt8xx
-> > > > never returns).
-> > >
-> > > Stupid typo in the first patch, a != should have been ==.
-> > >
-> > > Fixed:
-> > > http://linuxtv.org/hg/~tap/dst-new
-> >
-> > With the changes, the dst unselection worked.
-> >
-> > Those are the logs with dst unselected:
-> >
-> > DVB: registering new adapter (bttv0).
-> > DVB: Unable to find symbol dst_attach()
-> > frontend_init: Could not find a Twinhan DST.
-> > dvb-bt8xx: A frontend driver was not found for device 109e/0878
-> subsystem fbfb/f800
+> > But the condition doesn't line up with the code:
 > 
-> This is the dvb_attach() "not found" message.  You should see this same
-> message if you leave dst selected and then just delete the dst modules
-> before
-> loading dvb-bt8xx.
-> 
-> If you turn dvb_attach off, you should see a different "dst support was
-> disabled" message (and no crash!).
-> 
-> > However, when dst is selected, I got those errors:
-> 
-> When I made this patch I was basing it off a patch I made around 9 months
-> ago.  I thought since that one was ok, this would be ok too, and in my
-> hurry to get it done I've clearly put too little effort into checking it,
-> and I'm sorry to have wasted your time.
-> 
-> I promise, this time it's right!
-> http://linuxtv.org/hg/~tap/dst-new
+> Exactly.  The condition not lining up with the following code helps
+> code helps separate the two.
 
-The DST card with CA slot and the DST card without CA slot are two different cases.
-Like the Pinnacle PCTV SAT with CI extension and the Pinnacle PCTV SAT without CI extension.
+Sorry about that: I realised you were agreeing with me about 5s after I sent
+the message.
 
-In so far my questions are:
-Shouldn't there be two cases for deselecting DST modules?
-At least my basic approach tried to distinct those two cases.
-In how far is it enough or technically sufficient to treat those two cases as one?
+> However there is the practical way to solve this if you have
+> a sufficiently large conditional, or the conditional appears
+> several times.
 
-And, as already mentioned: At least in all of those 4 cases no dvb-pll module
-isn't needed at all - someone simply forgot to add some lines for the exception handling in dvb-bt8xx to get rid of dvb-pll.c if there is no lgdt330x frontend needed (read: if there is no Fusion HDTV Lite card in the machine at all).
+That doesn't necessarily work - for instance if the condition has side effects
+on local variables (eg: postinc).  OTOH, large complex conditions with side
+effects have to be abused with care and preferably avoided.  goto is your
+friend:-)
 
-If this small case is being fixed you simply can expand the deselection of dvb-pll.c
-on all cards treated in backend module dvb-bt8xx.c.
-
-Uwe
-
-> 
-> _______________________________________________
-> linux-dvb mailing list
-> linux-dvb@linuxtv.org
-> http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
-
--- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+David
