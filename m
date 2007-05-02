@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767167AbXEBWxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767168AbXEBWzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767167AbXEBWxc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767168AbXEBWxc
+	id S1767168AbXEBWzI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767177AbXEBWzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:53:32 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:48211 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767167AbXEBWxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:53:31 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: jack@suse.cz
-Subject: [patch] hide spinlock in linux/quota.h behind __KERNEL__
-Date: Wed, 2 May 2007 18:53:39 -0400
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 2 May 2007 18:55:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57508 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767168AbXEBWzG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:55:06 -0400
+Date: Wed, 2 May 2007 23:58:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Ioan Ionita <opslynx@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       htejun@gmail.com
+Subject: Re: More JMicron troubles with 2.6.21
+Message-ID: <20070502235851.16936fe5@the-village.bc.nu>
+In-Reply-To: <46390781.10507@rtr.ca>
+References: <df47b87a0705021037k7dc2d408mcdddbc83daa3b68b@mail.gmail.com>
+	<20070502201511.4c8085e9@the-village.bc.nu>
+	<46390781.10507@rtr.ca>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705021853.39952.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-diff --git a/include/linux/quota.h b/include/linux/quota.h
-index 77db80a..6243982 100644
---- a/include/linux/quota.h
-+++ b/include/linux/quota.h
-@@ -44,8 +44,6 @@
- typedef __kernel_uid32_t qid_t; /* Type in which we store ids in memory */
- typedef __u64 qsize_t;          /* Type in which we store sizes */
- 
--extern spinlock_t dq_data_lock;
--
- /* Size of blocks in which are counted size limits */
- #define QUOTABLOCK_BITS 10
- #define QUOTABLOCK_SIZE (1 << QUOTABLOCK_BITS)
-@@ -139,6 +137,8 @@ struct if_dqinfo {
- #include <linux/dqblk_v1.h>
- #include <linux/dqblk_v2.h>
- 
-+extern spinlock_t dq_data_lock;
-+
- /* Maximal numbers of writes for quota operation (insert/delete/update)
-  * (over VFS all formats) */
- #define DQUOT_INIT_ALLOC max(V1_INIT_ALLOC, V2_INIT_ALLOC)
+> The old IDE driver for JMicron didn't work well for me either,
+> running on Kubuntu Edgy 2.6.17.  It would find the PATA DVD drive,
+> and work okay for the first half of a DVD movie playback, and then go bonkers.
+
+"go bonkers" being ? (and did you keep any dumps of it ?)
+
+> 
+> I eventually gave up on it and installed a pure SATA DVD drive on ICH7(8?)
+> and just disabled the JMicron completely.
+
+
+Alan
