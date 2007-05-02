@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767175AbXEBSjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767181AbXEBSmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767175AbXEBSjV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767177AbXEBSjV
+	id S1767181AbXEBSmX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767188AbXEBSmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:39:21 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32943 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767175AbXEBSjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:39:20 -0400
-Date: Wed, 2 May 2007 11:39:20 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, haveblue@ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <Pine.LNX.4.64.0705021924200.24456@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0705021137210.1027@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021924200.24456@blonde.wat.veritas.com>
+	Wed, 2 May 2007 14:42:23 -0400
+Received: from mga01.intel.com ([192.55.52.88]:57303 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767181AbXEBSmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:42:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
+   d="scan'208";a="240832852"
+Subject: Re: [patch] CFS scheduler, -v8
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: tingy@cs.umass.edu
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <4637FE0A.7090405@cs.umass.edu>
+References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 2 May 2007 11:42:20 -0700
+Message-ID: <1178131340.25170.24.camel@tongli.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 02 May 2007 18:42:21.0370 (UTC) FILETIME=[9E4159A0:01C78CE9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Hugh Dickins wrote:
+>   Based on my understanding, adopting something like EEVDF in CFS should 
+> not be very difficult given their similarities, although I do not have 
+> any idea on how this impacts the load balancing for SMP. Does this worth 
+> a try?
+> 
+>   Sorry for such a long email :-)
 
-> I'm astonished and impressed, both with Kconfig and your use of it:
+Thanks for the excellent explanation. I think EEVDF and many algs alike
+assume global ordering of all tasks in the system (based on virtual
+time), whereas CFS does so locally on each processor and relies on load
+balancing to achieve fairness across processors. It'd achieve strong
+fairness locally, but I'm not sure about its global fairness properties
+in an MP environment. If ideally the total load weight on each processor
+is always the same, then local fairness would imply global fairness, but
+this is a bin packing problem and is intractable ...
 
-Thanks!
-
-> I'd much rather be testing a quicklist patch:
-> I'd better give that a try.
-
-Great. But I certainly do not mind people use SLAB. I do not think that 
-one approach should be there for all. Choice is the way to have multiple 
-allocators compete. One reason that SLAB is so crusty is because it was 
-the only solution for so long.
-
-
+  tong
