@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993088AbXEBM6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993119AbXEBNFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993088AbXEBM6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993118AbXEBM6e
+	id S2993119AbXEBNFT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 09:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993126AbXEBNFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:58:34 -0400
-Received: from rtr.ca ([64.26.128.89]:2320 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993088AbXEBM6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:58:33 -0400
-Message-ID: <46388AF0.6020108@rtr.ca>
-Date: Wed, 02 May 2007 08:58:24 -0400
-From: Mark Lord <lkml@rtr.ca>
+	Wed, 2 May 2007 09:05:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:57412 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993119AbXEBNFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 09:05:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EQW/+5gv1a/OKHYRaUtmOLqvIbJU/LoKbhBNhdV8DpUTY3w+ZF91dz7/ppUndHZCPetra0/f7r4rNmgwg0aipzGi4d1k7igWz+Aw5pdMAdPchJR/s4AHjOfwV91QBqzVGOC5YZAwtmdkw9gxSobPQxEpW8/YlcjV56d9JDAPexs=
+Message-ID: <46388C43.8020800@gmail.com>
+Date: Wed, 02 May 2007 15:04:03 +0200
+From: Tejun Heo <htejun@gmail.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v8
-References: <20070501212223.GA29867@elte.hu>
-In-Reply-To: <20070501212223.GA29867@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: gregkh@suse.de, dmitry.torokhov@gmail.com, oneukum@suse.de,
+       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] sysfs: sysfs rework, take #2
+References: <11777675753460-git-send-email-htejun@gmail.com> <20070502143808.37dd5ff0@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070502143808.37dd5ff0@gondolin.boeblingen.de.ibm.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i'm pleased to announce release -v8 of the CFS scheduler patchset. (The 
-> main goal of CFS is to implement "desktop scheduling" with as high 
-> quality as technically possible.)
+Cornelia Huck wrote:
+> On Sat, 28 Apr 2007 22:39:35 +0900,
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> The CFS patch against v2.6.21.1 (or against v2.6.20.10) can be 
-> downloaded from the usual place:
+>> All the known regrssions are fixed.  I think I've got all the
+>> attr->owner but haven't verified with cross compiling yet, just
+>> allyesconfig on x86-64 and i386.  I'll try to setup some cross compile
+>> environments tomorrow and follow up if I can find more fallouts.
 > 
->     http://people.redhat.com/mingo/cfs-scheduler/
+> s390 attr->owner seems to be fine afaics.
+> 
+> I've run some stress tests (attach/detach) on s390 and haven't run into
+> any problems yet.
 
-Excellent.  I've switched machines here, so my "old" single-core 2GHz notebook
-is no longer being used as much.  The new machine is a more or less identical
-notebook, but with a 2.1GHz Core2Duo CPU.
+Great, thanks a lot for testing.  I've long stress tests but the only
+oops I've seen (which I'm trying to reproduce without success) is caused
+by deallocated platform device when udev for it is generated.  So, I
+think the sysfs changes are pretty stable.
 
-And.. man, the mainline scheduler really sucks eggs on the dual-core!
-On single core it was nearly always "nice" enough for me,
-but wow.. what a degradation with the extra CPU.
-
-So, CFS is now a permanent add-on for kernels I use here on either machine,
-and I also can say that it works GGGGGGGRRRRRRRRRRREEEEEEEEEAAAAAAAAAATTTTTTTT!!!
-(please excuse the North American excuse for a "cultural" reference).  ;)
+-- 
+tejun
