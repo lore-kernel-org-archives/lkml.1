@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766742AbXEBTfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766763AbXEBTgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766742AbXEBTfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766771AbXEBTfo
+	id S1766763AbXEBTgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766771AbXEBTfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:35:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:60447 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766747AbXEBTfh (ORCPT
+	Wed, 2 May 2007 15:35:48 -0400
+Received: from mga05.intel.com ([192.55.52.89]:12131 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766769AbXEBTfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:35:37 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Wed, 2 May 2007 15:35:16 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: dead CONFIG variables:  net/atm/
-Message-ID: <Pine.LNX.4.64.0705021534420.15204@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 2 May 2007 15:35:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
+   d="scan'208";a="240860762"
+Subject: Regression with SLUB on Netperf and Volanomark
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: clameter@sgi.com
+Cc: suresh.b.siddha@intel.com, yanmin.zhang@intel.com,
+       peter.xihong.wang@intel.com, arjan.van.de.ven@intel.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain
+Organization: Intel
+Date: Wed, 02 May 2007 11:43:29 -0700
+Message-Id: <1178131409.23795.160.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph,
 
-$ ../dead_config.sh net/atm
-========== BR2684_FAST_TRANS ==========
-net/atm/br2684.c:#ifdef CONFIG_BR2684_FAST_TRANS
-net/atm/br2684.c:#endif /* CONFIG_BR2684_FAST_TRANS */
+We tested SLUB on a 2 socket Clovertown (Core 2 cpu with 2 cores/socket)
+and a 2 socket Woodcrest (Core2 cpu with 4 cores/socket).  
 
-rday
+We found that for Netperf's TCP streaming tests in a loop back mode, the
+TCP streaming performance is about 7% worse when SLUB is enabled on
+2.6.21-rc7-mm1 kernel (x86_64).  This test have a lot of sk_buff
+allocation/deallocation.
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+For Volanomark, the performance is 7% worse for Woodcrest and 12% worse
+for Clovertown.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Regards,
+Tim
