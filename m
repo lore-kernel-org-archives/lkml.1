@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767227AbXEBX1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767231AbXEBXeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767227AbXEBX1l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 19:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767231AbXEBX1k
+	id S1767231AbXEBXeX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 19:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767238AbXEBXeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 19:27:40 -0400
-Received: from mga02.intel.com ([134.134.136.20]:10494 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767227AbXEBX1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 19:27:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,482,1170662400"; 
-   d="scan'208";a="238311161"
-Subject: Re: [GIT PULL] I/OAT updates for 2.6.22
-From: Chris Leech <christopher.leech@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, netdev <netdev@vger.kernel.org>
-In-Reply-To: <20070502.154403.77034296.davem@davemloft.net>
-References: <1178145460.16258.3.camel@cleech-lnx>
-	 <20070502.154403.77034296.davem@davemloft.net>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 02 May 2007 16:27:44 -0700
-Message-Id: <1178148464.16670.14.camel@cleech-lnx>
+	Wed, 2 May 2007 19:34:23 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51315 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767231AbXEBXeW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 19:34:22 -0400
+Date: Wed, 2 May 2007 16:37:34 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org, tglx@linutronix.de
+Subject: Re: [PATCH 2/3] UIO: Documentation
+Message-Id: <20070502163734.070d5047.randy.dunlap@oracle.com>
+In-Reply-To: <200705030000.29272.hjk@linutronix.de>
+References: <20070427224957.GA17967@kroah.com>
+	<200705021041.35422.hjk@linutronix.de>
+	<20070502135237.59a46232.randy.dunlap@oracle.com>
+	<200705030000.29272.hjk@linutronix.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-X-OriginalArrivalTime: 02 May 2007 23:27:38.0652 (UTC) FILETIME=[78F34DC0:01C78D11]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 15:44 -0700, David Miller wrote:
-> 
-> Chrstopher, I really really would like you to post these patches early
-> and often to netdev@vger.kernel.org especially because you are
-> touching the TCP code.
+On Thu, 3 May 2007 00:00:28 +0200 Hans-Jürgen Koch wrote:
 
-You're right, I should have sent this to netdev as well.  I'm Sorry.
+> Am Mittwoch 02 Mai 2007 schrieb Randy Dunlap:
+> > On Wed, 2 May 2007 10:41:35 +0200 Hans-Jürgen Koch wrote:
+> > > Am Mittwoch 02 Mai 2007 01:42 schrieb Randy Dunlap:
+> > > > > +<title>The Userspace I/O HOWTO</title>
+> > > >
+> > > > Most of this reads well.  Thanks.
+> > > > A few typo corrections are below...
+> > >
+> > > Thank you for your work. I generated a new patch that includes all your
+> > > suggestions and also fixes the build problems.
 
-As for early and often, I have posted all of these patches to netdev,
-and made suggested changes, and re-posted.
+OK, your fixes all look good, but still needs one minor fix (below).
 
-And when I have other networking changes, you can bet they'll get sent
-to netdev for review first before I think about asking that they be
-included.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> You aren't doing this, for several rounds, and just submitting your
-> stuff directly to Linus, Andrew, and lkml, and it's starting to annoy
-> me greatly.
+---
 
-For several rounds, I've been posting patches that go nowhere.  I
-honestly don't care if they go straight to Linus, through you, or
-through Andrew.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-- Chris
+Fix last UIO kernel-doc problem.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/uio/uio.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- linux-2.6.21-git4.orig/drivers/uio/uio.c
++++ linux-2.6.21-git4/drivers/uio/uio.c
+@@ -582,7 +582,6 @@ static void uio_class_destroy(void)
+ 
+ /**
+  * uio_register_device - register a new userspace IO device
+- *
+  * @owner:	module that creates the new device
+  * @parent:	parent device
+  * @info:	UIO device capabilities
