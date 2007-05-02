@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993054AbXEBMeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993079AbXEBMfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993054AbXEBMeR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993079AbXEBMeR
+	id S2993079AbXEBMfN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993093AbXEBMfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:34:17 -0400
-Received: from ozlabs.org ([203.10.76.45]:56969 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993054AbXEBMeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:34:16 -0400
-Subject: Re: Race between RCU and rmmod
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: dipankar@in.ibm.com
-Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070502120051.GA13349@in.ibm.com>
-References: <30958.1178106624@redhat.com>
-	 <20070502120051.GA13349@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 22:33:40 +1000
-Message-Id: <1178109221.28659.312.camel@localhost.localdomain>
+	Wed, 2 May 2007 08:35:12 -0400
+Received: from mtagate4.uk.ibm.com ([195.212.29.137]:23782 "EHLO
+	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993079AbXEBMfK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:35:10 -0400
+Date: Wed, 2 May 2007 14:38:08 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: gregkh@suse.de, dmitry.torokhov@gmail.com, oneukum@suse.de,
+       rpurdie@rpsys.net, stern@rowland.harvard.edu, maneesh@in.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] sysfs: sysfs rework, take #2
+Message-ID: <20070502143808.37dd5ff0@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <11777675753460-git-send-email-htejun@gmail.com>
+References: <11777675753460-git-send-email-htejun@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 17:30 +0530, Dipankar Sarma wrote:
-> On Wed, May 02, 2007 at 12:50:24PM +0100, David Howells wrote:
-> > 
-> > Hi Dipankar, Rusty,
-> > 
-> > I seem to have found a race between RCU and rmmod.  What I see appears to be
-> > an RCU destructor function that has a call pending but lives in a module, gets
-> > deleted before the RCU callback is processed:
-> > 
-> > RIP: 0010:[<ffffffff880329b7>]  [<ffffffff880329b7>]
-> > 
-> > I think that rmmod needs to clear the RCU destructor queue, probably inside of
-> > __try_stop_module().
-> 
-> This is why we have rcu_barrier() although the corresponding documentation
-> patch seems to have got dropped. Modules that use RCU must call
-> rcu_barrier() in their cleanup routine.
+On Sat, 28 Apr 2007 22:39:35 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-Hi David, Dipankar,
+> All the known regrssions are fixed.  I think I've got all the
+> attr->owner but haven't verified with cross compiling yet, just
+> allyesconfig on x86-64 and i386.  I'll try to setup some cross compile
+> environments tomorrow and follow up if I can find more fallouts.
 
-	My first thought was wondering if doing it for them isn't a bad thing,
-but they need to do it if they've got other teardown which would mess up
-RCU callbacks anyway...
+s390 attr->owner seems to be fine afaics.
 
-Cheers,
-Rusty.
-
-
+I've run some stress tests (attach/detach) on s390 and haven't run into
+any problems yet.
