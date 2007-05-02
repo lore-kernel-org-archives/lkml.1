@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993163AbXEBVKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993159AbXEBVN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993163AbXEBVKZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767021AbXEBVKZ
+	id S2993159AbXEBVN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766954AbXEBVN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:10:25 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50749 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993163AbXEBVKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:10:20 -0400
-Message-ID: <4638FDA6.9030500@gmail.com>
-Date: Wed, 02 May 2007 23:07:50 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 2 May 2007 17:13:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32944 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993159AbXEBVNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 17:13:25 -0400
+Message-ID: <4638FE91.6050001@redhat.com>
+Date: Wed, 02 May 2007 17:11:45 -0400
+From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+To: John Stoffel <john@stoffel.org>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com>
-In-Reply-To: <4638FBB8.4020506@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 3/6] firewire: char device interface
+References: <4637A29F.6070302@redhat.com>	<20070502090007.GA28174@infradead.org>	<tkrat.087ee29add656926@s5r6.in-berlin.de>	<tkrat.350cb4dfe522266e@s5r6.in-berlin.de>	<tkrat.65aea95f1451c211@s5r6.in-berlin.de>	<tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <17976.44988.734513.121919@smtp.charter.net>
+In-Reply-To: <17976.44988.734513.121919@smtp.charter.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/02/2007 10:59 PM, H. Peter Anvin wrote:
+John Stoffel wrote:
+>>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+> 
+> Stefan> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Stefan> ---
+> Stefan>  drivers/firewire/fw-cdev.c    |  954 ++++++++++++++++++++++++++++++++++
+> Stefan>  include/linux/firewire-cdev.h |  268 +++++++++
+> Stefan>  2 files changed, 1222 insertions(+)
+> 
+> Stefan> Index: linux_juju/include/linux/firewire-cdev.h
+...
+> Stefan> +#define RCODE_SEND_ERROR		0x10
+> Stefan> +#define RCODE_CANCELLED			0x11
+> Stefan> +#define RCODE_BUSY			0x12
+> Stefan> +#define RCODE_GENERATION		0x13
+> Stefan> +#define RCODE_NO_ACK			0x14
+> Stefan> +
+> Stefan> +#define SCODE_100			0x0
+> Stefan> +#define SCODE_200			0x1
+> Stefan> +#define SCODE_400			0x2
+> Stefan> +#define SCODE_800			0x3
+> Stefan> +#define SCODE_1600			0x4
+> Stefan> +#define SCODE_3200			0x5
+> 
+> These are also defined in fw-transaction.h, though that file doesn't
+> have all the values.  Can these just be combined into a single
+> fw-constants.h file instead?  
+> 
+> I honestly haven't checked all your defines....
 
-> I'm having a framework for multiple drivers (probe and set methods,
-> basically); the stock distro will have VGA and VESA drivers only.
-> Dropping new drivers in is trivial if someone wants to.
+The firewire-cdev.h file is meant to be a self-contained userspace header file 
+and shouldn't include other kernel header files.  All duplicated values are 
+standardized ieee1394 values and won't ever change.  I should put a #ifndef 
+__FW_COMMON_DEFINES protection around the duplicate values, I guess, but I'm 
+just wondering why I never saw a "symbol redefined" warning...
 
-It sounds like going overboard a bit; 80x25 standard VGA, 80x43/50 line VGA 
-(settable through simple BIOS calls) and VESA (80x60, 132x25/43/50/60) is 
-all that anyone wants. If Bochs and Qemu emulata a CL54xx, they'll provide a 
-VESA BIOS for it as well, I suppose?
-
-Rene.
+Kristian
 
