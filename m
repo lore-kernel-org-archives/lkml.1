@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766844AbXEBR2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766861AbXEBR3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766844AbXEBR2p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766848AbXEBR2p
+	id S1766861AbXEBR3w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766863AbXEBR3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:28:45 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4747 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766844AbXEBR2o (ORCPT
+	Wed, 2 May 2007 13:29:52 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41776 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766861AbXEBR3u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:28:44 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 2 May 2007 10:28:42 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
+	Wed, 2 May 2007 13:29:50 -0400
+Date: Wed, 2 May 2007 18:29:34 +0100
+From: Christoph Hellwig <hch@infradead.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Davi Arnaut <davi@haxent.com.br>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 00/22] pollfs: filesystem abstraction for pollable objects
-In-Reply-To: <20070501230529.424f17c6.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705021010390.7176@alien.or.mcafeemobile.com>
-References: <20070502052235.914764000@haxent.com.br>
- <20070501230529.424f17c6.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, wfg@ustc.edu
+Subject: Re: 2.6.22 -mm merge plans
+Message-ID: <20070502172934.GA17782@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andi Kleen <andi@firstfloor.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, wfg@ustc.edu
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <20070501220803.GA27698@Krystal> <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502094707.4197ab7a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Andrew Morton wrote:
+On Wed, May 02, 2007 at 09:47:07AM -0700, Andrew Morton wrote:
+> > That doesn't constitute using it.
+> 
+> Andi, there was a huge amount of discussion about all this in September last
+> year (subjects: *markers* and *LTTng*). The outcome of all that was, I
+> believe, that the kernel should have a static marker infrastructure.
 
-> David, could you provide some feedback please?  The patches are stunningly
-> free of comments, but you used to do that to me pretty often so my sympathy
-> is limited ;)
+Only when it's actually useable.  A prerequisite for merging it is
+having an actual trace transport infrastructure aswell as a few actually
+useful tracing modules in the kernel tree.
 
-You bastard! :)
-Ok, from a brief look ...
-
-[general]
-The code adds an extra indirection over the already existing 
-file_operations, that IMO already sufficently abstract a file.
-The compat code, if I read it correctly, does not support files crossing 
-32/64 bits boundaries (exec or SCM_RIGHTS).
-
-[timers]
-Returns a structure instead of a 32 bit counter (ala timerfd), and needs 
-extra compat code.
-
-[signal]
-All the discussions that went on for signalfd has been lost. It pins the 
-task struct and it does not handle process detach signaling.
-
-[aio]
-I prefer a signaling-only approach like the 20 lines patch I posted, and 
-use the standard AIO calls to fetch results. This code simply wraps AIO 
-calls. This is just my opinions of course, and others may disagree.
-
-[futex]
-I intentionally stayed out of there after all the talks about futexfd 
-being killed due to the impossibility of getting an interface right (did 
-not follow the talk, so I can't tell the level of BS contained in the 
-previous statement). We also have a nice printk in there, with the first 
-kill-on deadline that ever made mainline :)
-
-         printk(KERN_WARNING "Process `%s' used FUTEX_FD, which "
-                "will be removed from the kernel in June 2007\n",
-                 current->comm);
-
-
-
-
-- Davide
-
-
+Let this count as a vote to merge the markers once we have the infrastructure
+above ready, it'll be very useful then.
