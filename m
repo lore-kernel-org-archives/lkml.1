@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993062AbXEBMFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993052AbXEBMGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993062AbXEBMFt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993061AbXEBMFt
+	id S2993052AbXEBMGf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993060AbXEBMGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:05:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41032 "EHLO mx1.redhat.com"
+	Wed, 2 May 2007 08:06:35 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46791 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993054AbXEBMFs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:05:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <m1fy6fxwx5.fsf@ebiederm.dsl.xmission.com> 
-References: <m1fy6fxwx5.fsf@ebiederm.dsl.xmission.com>  <m1y7k8x910.fsf@ebiederm.dsl.xmission.com> <alpine.DEB.0.98.0705011054060.12931@sigma.j-a-k-j.com> <20061127165138.GA2991@lst.de> <20070430040213.BF9901801A4@magilla.sf.frob.com> <20070430091121.GC31397@infradead.org> <20070430100917.439ebfc8.akpm@linux-foundation.org> <a781481a0704301142sfec317cu8213750c9ab84416@mail.gmail.com> <Pine.LNX.4.64.0705011058330.27246@anakin> <1178028973.2875.78.camel@pmac.infradead.org> <9185.1178035627@redhat.com> <24844.1178098371@redhat.com> 
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Roland McGrath <roland@redhat.com>, Christoph Hellwig <hch@lst.de>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: condingstyle, was Re: utrace comments 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Wed, 02 May 2007 13:05:34 +0100
-Message-ID: <31688.1178107534@redhat.com>
+	id S2993052AbXEBMGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:06:33 -0400
+To: Dave Jones <davej@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Josh Triplett <josh@freedesktop.org>, linux-sparse@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: sparse -Wptr-subtraction-blows: still needed?
+References: <4637AC3D.6000008@freedesktop.org>
+	<alpine.LFD.0.98.0705011442320.3808@woody.linux-foundation.org>
+	<20070502024242.GC6935@redhat.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 02 May 2007 15:03:59 +0200
+In-Reply-To: <20070502024242.GC6935@redhat.com>
+Message-ID: <p73abwnxtq8.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman <ebiederm@xmission.com> wrote:
-
-> > But the condition doesn't line up with the code:
+Dave Jones <davej@redhat.com> writes:
 > 
-> Exactly.  The condition not lining up with the following code helps
-> code helps separate the two.
+> #define __page_to_pfn(page)     ((unsigned long)((page) - mem_map) + \
+>                                  ARCH_PFN_OFFSET)
+> 
+> looks like the other two variants of __page_to_pfn also use similar arithmatic.
 
-Sorry about that: I realised you were agreeing with me about 5s after I sent
-the message.
+No way around this. The only way to turn a page into a pfn is to do 
+a constant division.  Should be fairly cheap here though.
 
-> However there is the practical way to solve this if you have
-> a sufficiently large conditional, or the conditional appears
-> several times.
-
-That doesn't necessarily work - for instance if the condition has side effects
-on local variables (eg: postinc).  OTOH, large complex conditions with side
-effects have to be abused with care and preferably avoided.  goto is your
-friend:-)
-
-David
+-Andi (who thinks the sparse warning is dumb; better to look at oprofiles
+of hot paths)
