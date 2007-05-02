@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993005AbXEBKa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993031AbXEBKbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993005AbXEBKa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993008AbXEBKa1
+	id S2993031AbXEBKbB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993034AbXEBKbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:30:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52824
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S2993005AbXEBKa1 (ORCPT
+	Wed, 2 May 2007 06:31:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56872 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993031AbXEBKbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:30:27 -0400
-Date: Wed, 02 May 2007 03:30:25 -0700 (PDT)
-Message-Id: <20070502.033025.15241258.davem@davemloft.net>
-To: d13f00l@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange UDP Issue on 2.6.20.8 - broadcasts not being received
- if socket bound to local ip
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <47ed01bd0705020255x3a05cabbo955b4e980771b92@mail.gmail.com>
-References: <47ed01bd0705020255x3a05cabbo955b4e980771b92@mail.gmail.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 2 May 2007 06:31:00 -0400
+Date: Wed, 2 May 2007 12:30:56 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.22 -mm merge plans
+Message-ID: <20070502103056.GA4392@one.firstfloor.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <1178065870.28659.96.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178065870.28659.96.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 02, 2007 at 10:31:10AM +1000, Rusty Russell wrote:
+> On Tue, 2007-05-01 at 14:17 +0200, Andi Kleen wrote:
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > > Will merge the rustyvisor.
+> > 
+> > IMHO the user code still doesn't belong into Documentation.
+> > Also it needs another review round I guess. And some beta testing by
+> > more people.
+> 
+> Like any piece of code more review and more testing would be great.
+> (Your earlier review was particularly useful!).  But it's not clear that
+> waiting for longer will achieve either.
 
-SO_BROADCAST controls sending, not receiving.
+Not clear to me. Release a clear lguest patchkit with documentation
+on l-k several times and you'll probably get both reviewers and testers.
+Then confidence level will rise.
 
-This definition comes from the BSD sockets API, even
-Stevens TCP/IP Illustrated Volume 2, page 437, figure
-15.4 clearly states that SO_BROADCAST means "socket
-can send broadcast messages".  It says nothing about
-receiving and the BSD implementation matches that
-description, as does Linux.
+> 
+> Look at kvm's experience for the reverse case: it went in, then got
+> rewritten.
 
-This has been brought up before, search for the
-subject "UDP Broadcasts not delivered to IP address"
-in the linux-net list archives for one such thread.
+They at least already had some user base at this point.
+
+> As for the code in Documentation, my initial attempts tried to get
+> around the need for a userspace part by putting everything in the kernel
+> module.  It meant you could launch a guest by writing a string
+> to /dev/lguest (no real ABI burden there), but it's a worse solution
+> than some user code in the kernel tree 8(
+
+Just put it into a separate tarball.
+
+-Andi
