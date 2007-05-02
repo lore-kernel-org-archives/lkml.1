@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993185AbXEBWFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766637AbXEBWJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993185AbXEBWFN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993186AbXEBWFN
+	id S1766637AbXEBWJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993189AbXEBWJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:05:13 -0400
-Received: from eth8932.sa.adsl.internode.on.net ([150.101.246.227]:46036 "EHLO
-	aix.gdt.id.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993185AbXEBWFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:05:11 -0400
-X-Greylist: delayed 3624 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 18:05:11 EDT
-Message-ID: <4638FCEA.4010806@gdt.id.au>
-Date: Thu, 03 May 2007 06:34:42 +0930
-From: Glen Turner <gdt@gdt.id.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 18:09:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:61504 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993188AbXEBWJQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:09:16 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Fulghum <paulkf@microgate.com>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+Date: Thu, 3 May 2007 00:09:11 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <1178137281.10111.8.camel@amdx2.microgate.com>
+In-Reply-To: <1178137281.10111.8.camel@amdx2.microgate.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Detecting process death for anycast named process monitoring
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705030009.11502.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+VyH/HJj9HLDEVfWrOxXwIxbPCTyCgmrnLToq
+ Ed/vC+MIMrUIcBGXrGp6PujDRsCrMp8oBrLvHHFMjEIXIQ490Q
+ 9pPF9pV3bb7PZV9mG0LLw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 02 May 2007, Paul Fulghum wrote:
+> +	switch (cmd) {
+> +
+> +	case MGSL_IOCSPARAMS32:
+> +		rc = set_params32(info, (struct MGSL_PARAMS32 __user *)compat_ptr(arg));
+> +		break;
+> +
+> +	case MGSL_IOCGPARAMS32:
+> +		rc = get_params32(info, (struct MGSL_PARAMS32 __user *)compat_ptr(arg));
+> +		break;
 
-Hi folks,
+No need for the cast here.
 
-Anycast services are a nice way of robustly offering DNS and other
-services.  We create an interface which reflects the availability
-of the service and advertise that into the network using a OSPF
-router like Quagga.
+> +
+> +	spin_lock_irqsave(&info->lock, flags);
 
-For more detail see
-http://www.aarnet.edu.au/~gdt/presentations/2006-07-18-linuxsa-anycast/
-which is a summary of work which was presented at linux.conf.au.
+no need for _irqsave, just use spin_{,un}lock_irq() when you know that
+interrupts are enabled.
 
-The question is, how can a process with no relationship to another
-process detect that process unexpectedly dying?  If named goes
-away to a better place, we want to shut down the interface
-which causes Quagga to inject the anycast route.
+> --- a/include/linux/synclink.h	2007-04-25 22:08:32.000000000 -0500
+> +++ b/include/linux/synclink.h	2007-05-02 14:59:17.000000000 -0500
+> @@ -167,6 +167,24 @@ typedef struct _MGSL_PARAMS
+>  
+>  } MGSL_PARAMS, *PMGSL_PARAMS;
+>  
+> +/* provide 32 bit ioctl compatibility on 64 bit systems */
+> +struct MGSL_PARAMS32
+> +{
+> +	unsigned int	mode;
+> +	unsigned char	loopback;
+> +	unsigned short	flags;
+> +	unsigned char	encoding;
+> +	unsigned int	clock_speed;
+> +	unsigned char	addr_filter;
+> +	unsigned short	crc_type;
+> +	unsigned char	preamble_length;
+> +	unsigned char	preamble;
+> +	unsigned int	data_rate;
+> +	unsigned char	data_bits;
+> +	unsigned char	stop_bits;
+> +	unsigned char	parity;
+> +};
 
-We don't want to be the parent of the running process, because that
-doesn't add robustness. If the parent process dies, then the service
-dies, and the interface still stays up.
+The definition is correct, but by convention it would be better to use
+compat_ulong_t instead of unsigned int for those fields that are an
+unsigned long in native mode.
 
-We don't want to poll, because that isn't pretty and the polling
-interval needs to be very short on a big ISP's DNS servers.
-
-I have tried using the various notify functions against /proc, but
-they don't work for that filesystem. I have tried using notify
-against a UNIX domain socket, but notify doesn't work for
-that either.
-
-Suggestions, or a patch to support notify for /proc or to push
-process death notifications into DBUS or whatever, are welcome.
-
-Thank you, Glen
+	Arnd <><
