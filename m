@@ -1,50 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993001AbXEBKZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993002AbXEBK1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993001AbXEBKZk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 06:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993002AbXEBKZk
+	id S2993002AbXEBK1T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 06:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993003AbXEBK1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 06:25:40 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:23650 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993001AbXEBKZj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 06:25:39 -0400
-From: Stefan Roese <ml@stefan-roese.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Wed, 2 May 2007 12:25:53 +0200
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <200705011435.45046.ml@stefan-roese.de> <Pine.LNX.4.60.0705012301500.4972@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0705012301500.4972@poirot.grange>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 06:27:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39925 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993002AbXEBK1S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 06:27:18 -0400
+Date: Wed, 2 May 2007 12:27:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Ting Yang <tingy@cs.umass.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502102712.GA8893@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705021225.54417.ml@stefan-roese.de>
-X-RZG-AUTH: j/Xgg0n2J5AIUJCkqLmy+bJbs1jMc+ebRMH8X0gX2f46QMnUI4cTITA7kWi4aT1d6CSX
-X-RZG-CLASS-ID: mo00
+In-Reply-To: <4637FE0A.7090405@cs.umass.edu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 May 2007 23:03, Guennadi Liakhovetski wrote:
-> On Tue, 1 May 2007, Stefan Roese wrote:
-> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
-> > 405EZ PPC and looking for the correct location to place these drivers in
-> > the Linux source tree. The drivers are basically character-drivers, so my
-> > first thought is to put them in "drivers/char/adc/foo.c" or
-> > "drivers/char/adc_foo.c". Is this a good solution?
->
-> drivers/mfd following ucb1x00?
 
-Perhaps. Not sure though. I just checked again and I still think the drivers 
-will better fit for "our" drivers because of the chrdev nature.
+* Ting Yang <tingy@cs.umass.edu> wrote:
 
-Is there a maintainer for this "drivers/mfd" directory?
+>  My name is Ting Yang, a graduate student from UMASS. I am currently 
+> studying the linux scheduler and virtual memory manager to solve some 
+> page swapping problems. I am very excited with the new scheduler CFS. 
+> After I read through your code, I think that you might be interested 
+> in reading this paper:
 
-Thanks.
+thanks for your detailed analysis - it was very interesting!
 
-Best regards,
-Stefan
+>  Based on my understanding, adopting something like EEVDF in CFS 
+> should not be very difficult given their similarities, although I do 
+> not have any idea on how this impacts the load balancing for SMP. Does 
+> this worth a try?
+
+It would definitely be interesting to try! I dont think it should 
+negatively impact load balancing on SMP. The current fork-time behavior 
+of CFS is really just a first-approximation thing, and what you propose 
+seems to make more sense to me too because it preserves the fluidity of 
+fairness. (I'd probably apply your patch even if there was no directly 
+measurable impact on workloads, because the more natural approaches tend 
+to be more maintainable in the long run.)
+
+So by all means, please feel free to do a patch for this.
+
+>  Sorry for such a long email :-)
+
+it made alot of sense and was very useful :-)
+
+	Ingo
