@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161717AbXEBHZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992728AbXEBHbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161717AbXEBHZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161746AbXEBHZl
+	id S2992728AbXEBHbN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992855AbXEBHbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:25:41 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47205 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161717AbXEBHZk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:25:40 -0400
-Date: Wed, 2 May 2007 00:25:38 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Paul Menage" <menage@google.com>
-Cc: rientjes@google.com, torvalds@linux-foundation.org,
-       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
- unpopulated cpuset
-Message-Id: <20070502002538.a863bf95.pj@sgi.com>
-In-Reply-To: <6599ad830705012036g21cc8470nff246e146b1e4023@mail.gmail.com>
-References: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
-	<20070501202201.6903d922.pj@sgi.com>
-	<6599ad830705012036g21cc8470nff246e146b1e4023@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 03:31:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57141 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2992728AbXEBHbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 03:31:12 -0400
+Date: Wed, 2 May 2007 00:28:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, Kay Sievers <kay.sievers@vrfy.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
+	(-1)
+Message-ID: <20070502072836.GA7513@suse.de>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46338AEB.2070109@imap.cc> <20070428141024.887342bd.akpm@linux-foundation.org> <4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org> <46364346.6030407@imap.cc> <20070430124638.10611058.akpm@linux-foundation.org> <46383742.9050503@imap.cc> <20070502001000.8460fb31.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502001000.8460fb31.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul M wrote:
-> Otherwise the only way to reclaim
-> the node for a different sibling is to delete the cpuset.
+On Wed, May 02, 2007 at 12:10:00AM -0700, Andrew Morton wrote:
+> On Wed, 02 May 2007 09:01:22 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
+> 
+> > Am 30.04.2007 21:46 schrieb Andrew Morton:
+> > > Not really - everything's tangled up.  A bisection search on the
+> > > 2.6.21-rc7-mm2 driver tree would be the best bet.
+> > 
+> > And the winner is:
+> > 
+> > gregkh-driver-driver-core-make-uevent-environment-available-in-uevent-file.patch
+> > 
+> > Reverting only that from 2.6.21-rc7-mm2 gives me a working kernel
+> > again.
+> 
+> cripes.
+> 
+> +static ssize_t show_uevent(struct device *dev, struct device_attribute *attr,
+> +                          char *buf)
+> +{
+> +       struct kobject *top_kobj;
+> +       struct kset *kset;
+> +       char *envp[32];
+> +       char data[PAGE_SIZE];
+> 
+> That won't work too well with 4k stacks.
 
-Ah - I just made sense of that sentence.
+Oh crap.  Yeah, that's not nice.
 
-It means that if a particular memory node is in one cpuset, and you'd
-like to have it in another cpuset instead, then with the existing
-kernel code, you had to special case the situation where this memory
-node was the last node in the original cpuset - deleting the cpuset
-just to do this.
+> Who's reviewing this stuff?  The patch headers indicate that no mailing list was
+> cc'ed?
 
-Yeah - I have never given much thought to moving memory nodes from one
-cpuset to another.  No good reason; it just didn't happen to be a
-common operation for the uses of cpusets I cared about.
+Kay and I did this, sorry, it should have been cc:ed to lkml.
 
-I still have this niggling fear that there was something that passed my
-view, years ago, that this proposed change (to allow unpopulating a
-cpuset) will break.
+I'll go fix it up now...
 
-But I'll be damned if I can remember what it was.
+thanks,
 
-Ok ... if this patch passes my cpuset_test (guess I'll try that now)
-then I'm ok with this patch.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+greg k-h
