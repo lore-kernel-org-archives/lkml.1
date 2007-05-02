@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992765AbXEBG0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030622AbXEBG2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992765AbXEBG0A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992823AbXEBG0A
+	id S1030622AbXEBG2y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030894AbXEBG2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:26:00 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:58581 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992765AbXEBGZ6 (ORCPT
+	Wed, 2 May 2007 02:28:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:14705 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030622AbXEBG2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:25:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=S0/YaC6o5S3KC85IBDcc8BehWYst2jI96Yw+8jE6fcKk4zG7dOBRFJD+3o9jnNQ11
-	wI4ZcWowgGGWiTXBkXj5A==
-Date: Tue, 1 May 2007 23:25:38 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+	Wed, 2 May 2007 02:28:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ZYBDUSO1egw2W8m1KncGker/jJZMoi4Qve2aMLsi8nL6q3IMDhq7kjywTObEyXINiLgZHBXPUtC1a8DA/cS8UZImJXEM6R5DVFHxqs89mZbGzafKBub7sQhIIZGy0ATRpMvRdIuq1Sr/xCiXnIScltJkxEtFswhHSBTRa9YUlYg=
+Date: Wed, 2 May 2007 14:33:23 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-In-Reply-To: <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0705012320560.21985@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
- <1178084403.28659.222.camel@localhost.localdomain>
- <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <20070502063323.GA6444@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: David Rientjes <rientjes@google.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com> <20070502051723.GB5843@martell.zuzino.mipt.ru> <Pine.LNX.4.64.0705012252020.21669@chino.kir.corp.google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705012252020.21669@chino.kir.corp.google.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, David Rientjes wrote:
+On Tue, May 01, 2007 at 10:53:52PM -0700, David Rientjes wrote:
+>On Wed, 2 May 2007, Alexey Dobriyan wrote:
+>
+>> On Tue, May 01, 2007 at 09:28:18PM -0700, David Rientjes wrote:
+>> > +#define __attribute_unused__		__attribute__((unused))
+>> 
+>> Suggest __unused which is shorter and looks compiler-neutral.
+>> 
+>
+>So you would also suggest renaming __attribute_used__ and all 48 of its 
+>uses to __used?
 
-> The patched version makes this:
-> 
-> 	int type __attribute_unused__ = 0;
-> 
-> which definitely tells you that you're using a compiler attribute that 
-> will be attached to that automatic.  In your case:
-> 
-> 	int type __unneeded = 0;
-> 
-> doesn't say anything in this case.  It doesn't resemble any attribute that 
-> a programmer might be familiar with and begs the question of why we've 
-> declared it if it's truly "unneeded"?
-> 
+I suggest. ;-p 
+'__attribute_unused__' is really long. I would prefer '__attribute__((unused))', since your macro doesn't let me type much less characters.
 
-One possible way to remedy this situation is with __needed and 
-__maybe_unneeded.
-
-__needed would be defined to __attribute__ ((used)), which would apply to 
-functions only and specify that its code needs to be emitted anyway even 
-though it appears to be unreferenced.  This is needed for gcc >=3.4.  In 
-gcc <3.4, this gets defined to be __attribute__ ((unused)) to simply 
-suppress the warning.  So now all functions that are unreferenced except 
-in inline assembly get __needed appended.
-
-__maybe_unneeded would be defined to __attribute__ ((unused)).  It can 
-apply to either functions or variables to suppress the warning if they are 
-unused.
