@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993148AbXEBT3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993144AbXEBT34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993148AbXEBT3G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766675AbXEBT3G
+	id S2993144AbXEBT34 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993153AbXEBT3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:29:06 -0400
-Received: from THUNK.ORG ([69.25.196.29]:55603 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993148AbXEBT3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:29:03 -0400
-Date: Wed, 2 May 2007 15:28:49 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Cabot, Mason B" <mason.b.cabot@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070502192849.GD19442@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Cabot, Mason B" <mason.b.cabot@intel.com>,
-	linux-kernel@vger.kernel.org
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070501142325.09c294bd.akpm@linux-foundation.org> <p73slafxvor.fsf@bingen.suse.de> <20070502160436.GA19442@thunk.org> <p73y7k7vzks.fsf@bingen.suse.de>
+	Wed, 2 May 2007 15:29:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:26336 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993144AbXEBT3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:29:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Itmoe67pRyOFx4fpInHy+PwWuTVMR1WbsM9sUKaAoBOzX0jvBAE0xdH+wtpmTH3cntt+238zf4ZEzazsnGC/fqazrEKNd/lf1N5snwzOL33dJSrl78AqHA55omYCTY+XGUEJ3BNHIrahyDpYMz19H+/SNI0nlZgP9N74VnMn5A8=
+Message-ID: <df47b87a0705021229o6fb42d06ka8e37d1fdc32520a@mail.gmail.com>
+Date: Wed, 2 May 2007 15:29:52 -0400
+From: "Ioan Ionita" <opslynx@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: More JMicron troubles with 2.6.21
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       htejun@gmail.com
+In-Reply-To: <20070502201511.4c8085e9@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <p73y7k7vzks.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <df47b87a0705021037k7dc2d408mcdddbc83daa3b68b@mail.gmail.com>
+	 <20070502201511.4c8085e9@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 08:40:35PM +0200, Andi Kleen wrote:
-> Theodore Tso <tytso@mit.edu> writes:
-> 
-> > On Wed, May 02, 2007 at 02:21:40PM +0200, Andi Kleen wrote:
-> > > Andrew Morton <akpm@linux-foundation.org> writes:
-> > > > 
-> > > > Conceivably we could address this in the filesystem without mucking other
-> > > > things up.  But I'd have thought the simplest damage-control would be to
-> > > > detect this pattern in samba and to then use glibc's fallocate().
-> > > 
-> > > The advantage of detecting it in kernel would be that it would handle
-> > > Linux applications that do this (I suspect there are some) too.
-> > 
-> > Um, which applications do you suspect?  So we can hunt down those user
-> > space applications programmers and slap them silly?  Or rather,
-> > unsilly, since that there's no good reason to ever suspect that
-> > writing a byte every 128k would result in a good allocation layout on disk?
-> 
-> Anything that uses glibc fallocate() ?
-
-Glibc's fallocate current writes all zeros, not 1 byte every
-128kbytes.  And once we wire up the new sys_fallocate() support, we'll
-have the right preallocation support in ext4.
-
-					- Ted
+On 5/2/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> This is almost certainly a problem outside of the IDE handling in that
+> case. The jmicron controllers are smart, there is basically no code to
+> the IDE driver to go wrong (especially in the case of using the old IDE
+> for the PATA port where you basically use zero code that hasn't been
+> tested for years).
+Could this be a hardware problem then? The CD-ROM is recognized by
+BIOS and I'm able to boot bootable CDs fine.
+Could it be a setting in BIOS? I did try to switch from Enhanced to
+Compatible mode, but problem persists.
+With the ide driver, the device is recognized, but when I attempt to
+mount it, il times out, gets reset and my machine locks up at times.
+>
+> Do you get the odd timeout or continuous timeouts ?
+With the pata_jmicron, the device is not recognized. I get the
+timeouts only during the probing during the boot phase.
