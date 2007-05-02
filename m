@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993130AbXEBTLP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbXEBTLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993130AbXEBTLP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:11:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993136AbXEBTLP
+	id S1754182AbXEBTLq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXEBTLp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:11:15 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3868 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993130AbXEBTLN (ORCPT
+	Wed, 2 May 2007 15:11:45 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33979 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754182AbXEBTLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:11:13 -0400
-Date: Wed, 2 May 2007 20:11:01 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Stefan Roese <ml@stefan-roese.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Correct location for ADC/DAC drivers
-Message-ID: <20070502191101.GB16696@flint.arm.linux.org.uk>
-Mail-Followup-To: Robert Schwebel <r.schwebel@pengutronix.de>,
-	Stefan Roese <ml@stefan-roese.de>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <200705011435.45046.ml@stefan-roese.de> <Pine.LNX.4.60.0705012301500.4972@poirot.grange> <200705021225.54417.ml@stefan-roese.de> <20070502133512.GK22585@pengutronix.de>
+	Wed, 2 May 2007 15:11:24 -0400
+Date: Wed, 2 May 2007 12:11:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+Message-Id: <20070502121105.de3433d5.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705021002040.32271@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+	<20070501125559.9ab42896.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+	<20070501133618.93793687.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
+	<Pine.LNX.4.64.0705021002040.32271@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502133512.GK22585@pengutronix.de>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 03:35:12PM +0200, Robert Schwebel wrote:
-> On Wed, May 02, 2007 at 12:25:53PM +0200, Stefan Roese wrote:
-> > Is there a maintainer for this "drivers/mfd" directory?
+On Wed, 2 May 2007 10:03:50 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
+
+> On Wed, 2 May 2007, Hugh Dickins wrote:
 > 
-> rmk
+> > But if Linus' tree is to be better than a warehouse to avoid
+> > awkward merges, I still think we want it to default to on for
+> > all the architectures, and for most if not all -rcs.
+> 
+> At some point I dream that SLUB could become the default but I thought 
+> this would take at least 6 month or so. If want to force this now then I 
+> will certainly have some busy weeks ahead.
 
-I wouldn't go that far.  There's no real infrastructure there
-to maintain, so I'd actually say that the directory was
-maintainerless.  However, I'll own up to the UCB/MCP drivers
-in there.
+s/dream/promise/ ;)
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Six months sounds reasonable - I was kind of hoping for less.  Make it
+default-to-on in 2.6.23-rc1, see how it goes.
