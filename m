@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754295AbXEBUuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbXEBUvh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754295AbXEBUuL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXEBUuL
+	id S1754312AbXEBUvh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:51:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbXEBUvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:50:11 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:46555 "EHLO
+	Wed, 2 May 2007 16:51:37 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:52370 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754297AbXEBUuH (ORCPT
+	with ESMTP id S1754312AbXEBUvf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:50:07 -0400
-Message-ID: <4638F96B.8030506@zytor.com>
-Date: Wed, 02 May 2007 13:49:47 -0700
+	Wed, 2 May 2007 16:51:35 -0400
+Message-ID: <4638F9BE.8090508@zytor.com>
+Date: Wed, 02 May 2007 13:51:10 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Martin Mares <mj@ucw.cz>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Gerd Hoffmann <kraxel@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@osdl.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <46369B03.1060500@zytor.com> <mj+md-20070502.074425.20911.nikam@ucw.cz> <200705021122.20716.ak@suse.de>
-In-Reply-To: <200705021122.20716.ak@suse.de>
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>
+In-Reply-To: <4638AB55.20408@goop.org>
 X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+Jeremy Fitzhardinge wrote:
 > 
-> I agree; that code can all go.
-> 
-> What also seems to miss are the early CPUID checks I recently added
-> and which x86-64 has for some time.
-> 
-> Also if you ever add x86-64 support it does an additional BIOS
-> call to tell the BIOS it is 64bit.
+> True.  But the plan is already to make bzImage an ELF file, so notes
+> would seem to be the best option.  At worst, it could be ELF notes
+> wrapped in some other container, but that's not pretty.
 > 
 
-Will do.  I'd like to make this code unified between i386 and x86-64.
+It's not going to happen.  Too many boot loaders make assumptions about
+ELF files which aren't really compatible; the entry conditions for an
+ELF from a boot loader are pretty ill-defined, so I think this is a bad
+idea.
+
+At the very least, it shouldn't present the ELF magic number IMNSHO.
 
 	-hpa
