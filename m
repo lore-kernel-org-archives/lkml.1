@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755132AbXEBL4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbXEBL6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755132AbXEBL4x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 07:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbXEBL4x
+	id S1755115AbXEBL6c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 07:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbXEBL6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 07:56:53 -0400
-Received: from mail.suse.de ([195.135.220.2]:50887 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755132AbXEBL4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 07:56:52 -0400
-To: Michel Lespinasse <walken@zoy.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 24 lost ticks with 2.6.20.10 kernel
-References: <20070501130715.GB29131@zoy.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 02 May 2007 14:54:29 +0200
-In-Reply-To: <20070501130715.GB29131@zoy.org>
-Message-ID: <p73irbbxu62.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Wed, 2 May 2007 07:58:32 -0400
+Received: from mog.warmcat.com ([62.193.232.24]:47703 "EHLO
+	mailserver.mog.warmcat.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755115AbXEBL6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 07:58:31 -0400
+X-Greylist: delayed 561 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 07:58:31 EDT
+Message-ID: <46387AB2.1090800@warmcat.com>
+Date: Wed, 02 May 2007 12:49:06 +0100
+From: Andy Green <andy@warmcat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] scripts/basic/fixdep segfault on pathological string-o-death
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse <walken@zoy.org> writes:
-> 
-> running with report_lost_ticks, I see the following:
-> 
-> May  1 12:58:57 server kernel: time.c: Lost 24 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
-> May  1 12:58:59 server kernel: time.c: Lost 24 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
-> May  1 12:59:01 server kernel: time.c: Lost 25 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
-> May  1 12:59:03 server kernel: time.c: Lost 24 timer tick(s)! rip _spin_unlock_irqrestore+0x8/0x9)
+build scripts: fixdep blows segfault on string CONFIG_MODULE seen
 
-This means some code disabled interrupts using a spinlock for far too long.
-Can you add a dump_stack() in arch/x86_64/kernel/time.c:handle_lost_ticks()? That should 
-tell the culprit
+The string "CONFIG_MODULE" appearing anywhere in a source file causes
+fixdep to segfault.  This string appeared in the wild in the current
+mISDN sources (I think they meant CONFIG_MODULES).  But it shouldn't
+segfault (esp as CONFIG_MODULE appeared in a quoted string).
 
--Andi
+Signed-off-by: Andy Green <andy@warmcat.com>
+---
+ scripts/basic/fixdep.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+Index: 2.6.21-1.3116.fc7-i686/scripts/basic/fixdep.c
+===================================================================
+--- 2.6.21-1.3116.fc7-i686.orig/scripts/basic/fixdep.c
++++ 2.6.21-1.3116.fc7-i686/scripts/basic/fixdep.c
+@@ -249,6 +249,8 @@ void parse_config_file(char *map, size_t
+ 	found:
+ 		if (!memcmp(q - 7, "_MODULE", 7))
+ 			q -= 7;
++		if( (q-p-7) < 0 )
++			continue;
+ 		use_config(p+7, q-p-7);
+ 	}
+ }
