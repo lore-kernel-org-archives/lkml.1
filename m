@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993385AbXEBPig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993389AbXEBPiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993385AbXEBPig (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993386AbXEBPig
+	id S2993389AbXEBPiy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993391AbXEBPiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:38:36 -0400
-Received: from www.osadl.org ([213.239.205.134]:52056 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S2993385AbXEBPif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:38:35 -0400
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of
-	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mark Lord <lkml@rtr.ca>, Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20070502010527.e64dcce9.akpm@linux-foundation.org>
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
-	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>
-	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>
-	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
-	 <463741F1.7050706@rtr.ca> <1178027285.5791.307.camel@localhost.localdomain>
-	 <46374B1D.6050509@rtr.ca> <1178035058.5791.333.camel@localhost.localdomain>
-	 <46377055.2060605@rtr.ca> <1178092035.5791.349.camel@localhost.localdomain>
-	 <20070502010527.e64dcce9.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 17:40:57 +0200
-Message-Id: <1178120457.25504.17.camel@localhost.localdomain>
+	Wed, 2 May 2007 11:38:54 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38960 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2993388AbXEBPiw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:38:52 -0400
+Date: Wed, 2 May 2007 16:42:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tomasz =?UTF-8?B?S8WCb2N6a28=?= <kloczek@rudy.mif.pg.gda.pl>
+Cc: "David R. Litwin" <presently42@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: ZFS with Linux: An Open Plea
+Message-ID: <20070502164247.0e98f77c@the-village.bc.nu>
+In-Reply-To: <Pine.BSO.4.63.0705021658100.11088@rudy.mif.pg.gda.pl>
+References: <op.tqqwdfzcftfxs2@localhost.localdomain>
+	<Pine.BSO.4.63.0705021658100.11088@rudy.mif.pg.gda.pl>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 01:05 -0700, Andrew Morton wrote:
-> > thanks. Can you apply this patch please:
-> > http://lkml.org/lkml/2007/4/13/190
-> >
-> > It somehow did not make it into 2.6.21.
-> > 
+On Wed, 2 May 2007 17:03:22 +0200 (CEST)
+Tomasz Kłoczko <kloczek@rudy.mif.pg.gda.pl> wrote:
+
+> On Fri, 13 Apr 2007, David R. Litwin wrote:
+> [..]
 > 
-> Alas, poor me.  I ain't going to merge a contention-reduction patch when
-> we're at -rc6.  If a patch fixes a bug, please tell me!
+> I'm just found something new in filtered folder by "ZFS" word in RSS feed 
+> from blogs.sun.com and on firs look it may be some continuation of this 
+> thread:
+> 
+> http://blogs.sun.com/darren/entry/zfs_under_gplv2_already_exists
+> 
+> I'm not check completly this .. so don't beat me if it is not true :)
 
-It was not a bug fix at this point, I merily tried to solve the lock
-contention problem, which was reported by Steven Rostedt.
-
-The confusing thing on Marks config bisecting was that the softlock
-detection fixed his problem. The only difference of the softlock
-detection is that it starts the watchdog thread and a one second timer.
-I was looking into the code and noticed that this patch did not make it.
-
-Honestly it was a shot into the dark and I'd really like to know why
-this makes the problem go away.
-
-Mark, did you ever enable CONFIG_PROVE_LOCKING as a single add on to
-your not working config ? If not, can you please try ?
-
-	tglx
-
-
+Useful if accurate as the GPLv2 and Sun origin means youa re clear for
+any patents Sun used in that code but maybe not for any in the pure CDDL
+bits. Definitely positive.
