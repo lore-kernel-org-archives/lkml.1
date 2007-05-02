@@ -1,128 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993177AbXEBNjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993201AbXEBN5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993177AbXEBNjN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 09:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993181AbXEBNjN
+	id S2993201AbXEBN5J (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 09:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993204AbXEBN5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 09:39:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:25380 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993177AbXEBNjL (ORCPT
+	Wed, 2 May 2007 09:57:09 -0400
+Received: from wx-out-0506.google.com ([66.249.82.226]:56693 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993201AbXEBN5G convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 09:39:11 -0400
+	Wed, 2 May 2007 09:57:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=DJTeUECXWR+rPRFFPAYyjA+BpC+0FEiM4jYFfJETeorrsyjAyqF7b6w0ljnphU66JwAKt7CManQ1spZdg3ySixShb/PSjwtypxyJsFjVBjyLEc8dB4xGIaptEpG2PIH34/fTEQnuQAsrWNe8U+/Af9t62v87BpRi48RyKTRag8Y=
-Date: Wed, 2 May 2007 16:39:06 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <136343903.20070502163906@gmail.com>
-To: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-CC: ian <spyro@f2s.com>, kernel-discuss@handhelds.org,
-       <linux-kernel@vger.kernel.org>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [Kernel-discuss] Re: [RFC, PATCH 0/4] SoC base drivers
-In-Reply-To: <4637AE6D.4090408@gmail.com>
-References: <1354376306.20070501080806@gmail.com>  <46374645.2030900@gmail.com> <1068016897.20070501173657@gmail.com>  <46376AD9.3020701@gmail.com> <1178042924.15769.5.camel@wirenth> <46379027.7050202@gmail.com> <281618366.20070501230902@gmail.com> <4637AE6D.4090408@gmail.com>
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=a1H0Oc3YWmGymp4SeEd42ofaIRtYmF8EXXJkjVEkKFCCLKs6xeaAnU/UpgKMlAJvYBzEWZXU0ZjAUVkvB1SjkcTy8e5Lk9AoiLy/rB474s219RJZNqH7dEEvUSOhaQPi/pFnpsmIcDf/dRVU0oKJnalmOz8UA60XuOnyE+p6d7A=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [git pull] New firewire stack
+Date: Wed, 2 May 2007 09:56:59 -0400
+User-Agent: KMail/1.9.6
+Cc: Olaf Hering <olh@suse.de>,
+       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>
+References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de> <4638888B.4080908@s5r6.in-berlin.de>
+In-Reply-To: <4638888B.4080908@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705020956.59804.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Dmitry,
-
-Wednesday, May 2, 2007, 12:17:33 AM, you wrote:
-
-> Hello Paul,
-
-> Paul Sokolovsky wrote:
->>> ASIC-related code (I mean core) forms additional platform layer, so I
->>> suggest
->>> adding ASIC helpers to generic platform code i.e. drivers/platform.c, but
->>> ASIC drivers to drivers/asic/ directory.
+On Wednesday 02 May 2007, Stefan Richter wrote:
+>Olaf Hering wrote:
+>> On Tue, May 01, Kristian Høgsberg wrote:
+>>>   drivers/firewire/Kconfig          |   60 ++
 >>
->>         There problem here is the same - our target chips are not
->> just ASICs. 
+>> NACK.
+>> Upgrade the current drivers/ieee1394/ with the new code,
+>
+>Last time I believe I was the only one who asked whether to put it into
+>drivers/ieee1394 instead of another directory.  Of course I acknowledge
+>that everytime a new review round is started, people do reconsider.
+>Especially since we had a gap of a few months since the last LKML review.
+>
+>> and keep all existing module names.
+>
+>I'm impartial to that.  Using same names might ease the transition from
+>the userspace side, as far as there is userland which relies on module
+>names.
+>
+>A certain drawback of same names would be that geeks cannot install both
+>stacks at once during the transition period.  Therefore, checking
+>whether eventual problems are in fact regressions involves a module
+>unload/ configure/ build/ install/ reload cycle, instead of just module
+>unload/ reload.  This especially means we can only get help from testers
+>who are able to build kernels.
+>
+>Other opinions?
 
-> You say they are chips so they are integrated circuits (ICs), they
-> are designed to solve some specific needs, so they are
-> application-specific ICs, i.e. ASICs, what's the problem?
+I can and do build my own kernels so that's not a problem for me.  I also have 
+a firewire movie camera that went through absolute hell the last time a 
+firewire upgrade came by, and it was over 5 months before I had a working 
+kino install again.  So I'd vote unconditionally to have 2 trees to select 
+from at module load time until the shakeout has produced usable code in the 
+2nd tree.
 
-        The issue is that in this case functional organization what's
-important, not thing like (original) design purpose/method, expressed in
-vague terms like ASIC. A "passive" (from CPU point of view) chip of
-30-50 gates dealing with clock/control signals destribution is of
-course ASIC too, but has nothing to do with chips in question.
-
->> It just happens that the one we start with called such,
->> but we have different ones too. 
-
-> Interesting what are they?
-> Power management ICs? Power management + audio
-> + touchscreen + ADC + USB transceiver + UART + whatever
-> all such chips may be considered as ASICs.
-
-        "May" is a keyword here. They may be considered SoCs too, as
-they share one important trait with them: multiple devices of
-different functions in one package. I'd of course love idea of calling
-any chip but CPU and memory an ASIC, but that doesn't correspond with
-reality. As an example, ICH, etc chipsets are of course ASICs, but I
-personally never heard them called such, and I'm sure few listeners
-would be confused, if someone called them such.
-
->> It's still important that they contain
->> blocks with different functionality, and drivers we propose deal with
->> basic, common functionality of chips. 
-
-> That different functionality blocks will be handled by appropriate
-> device drivers, and in general the drivers should not depend on
-> a particular ASIC but use common ASIC API.
-> But "common functionality" drivers are ASIC-specific.
-
->> Now that it was pointed out that
->> there's place in the tree for such drivers, it would be not wise to
->> try to create another one.
->>
->>
->>
-
-> Perhaps, so.  Actually, MFD  (multi functional device) doesn't
-> imply a platform-level device but ASIC seems does.
-
-        That's also a subject of interpretation for specific
-chip/driver. Proposed soc-core is actually a helper, not a strict API
-to follow. We just found that many our drivers do common things, so
-factored out functionality for easier reuse. It of course can be
-extended given the need (but yes, so far all our MFD chips and their
-subdevices are treated as platform devices).
-
-
-        But back from ontology to specific ideas of patch
-restructuring. Given a need to distinguish discussed chips' handling
-model from "generic" MFDs (like ones already in drivers/mfd/), and the
-fact that Ian Molton, author of soc-core.*, likes ASIC designator, this
-warrants rename of it to asic-core.*, I guess. All it still goes to
-drivers/mfd/ to not create more stuff than needed.
-
-        As for driver headers, they apparently go to include/linux/ .
-That's of course keeps being out of hand, but small guy's way to
-a solution is apparently to accelerate that. When number of files in
-include/linux/ will hit 1K, I guess core maintainers will notice
-that something's wrong and find a global solution. (One good idea is to
-separate driver-specific headers from global and subsystem ones, but
-all that is out of scope for this discussion...).
-
-
-
-> Thanks,
-> Dmitry
-
-
-
+>From me, its a definite ACK.
 
 -- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
-
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+I owe, I owe,
+It's off to work I go...
