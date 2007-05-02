@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766806AbXEBTnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766809AbXEBTnf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766806AbXEBTnL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766810AbXEBTnK
+	id S1766809AbXEBTnf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:43:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766813AbXEBTnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:43:10 -0400
-Received: from holomorphy.com ([66.93.40.71]:40780 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766806AbXEBTnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:43:06 -0400
-Date: Wed, 2 May 2007 12:42:47 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ting Yang <tingy@cs.umass.edu>,
-       linux-kernel@vger.kernel.org, "Tong N. Li" <tong.n.li@intel.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070502194247.GW31925@holomorphy.com>
-References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com> <20070502174829.GX19966@holomorphy.com> <20070502181533.GA19479@elte.hu> <20070502185613.GU31925@holomorphy.com> <20070502191235.GA2455@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502191235.GA2455@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 2 May 2007 15:43:14 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:45413 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1766800AbXEBTnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:43:07 -0400
+Date: Wed, 2 May 2007 12:41:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Dave Jones <davej@redhat.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-Id: <20070502124154.fa55fec9.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0705021731580.3706@pademelon.sonytel.be>
+References: <20070423141123.GA21174@skybase>
+	<20070423104534.51bac974.akpm@linux-foundation.org>
+	<20070425112133.4ae86399.randy.dunlap@oracle.com>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<20070426003911.GA19383@redhat.com>
+	<4630109F.6090002@oracle.com>
+	<20070425200207.77a2721a.akpm@linux-foundation.org>
+	<20070428030805.GA13331@redhat.com>
+	<Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+	<20070502152906.GA29642@infradead.org>
+	<Pine.LNX.4.62.0705021731580.3706@pademelon.sonytel.be>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* William Lee Irwin III <wli@holomorphy.com> wrote:
->> Things are moving in good directions on all this as far as I'm 
->> concerned. Moving according to Ting Yang's analysis should wrap up the 
->> soundness concerns about intra-queue policy I've had. OTOH load 
->> balancing I know much less about (not that I was ever any sort of an 
->> expert on single queue affairs). [...]
+On Wed, 2 May 2007 17:32:49 +0200 (CEST)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-On Wed, May 02, 2007 at 09:12:35PM +0200, Ingo Molnar wrote:
-> the whole move to ->load_weight based calculations was to make CFS 
-> integrate better with load-balancing and to bring the smpnice 
-> infrastructure even more into the scheduler mainstream. [ There's a 
-> small smpnice related buglet i fixed in -v9-to-be (based on Balbir 
-> Singh's feedback), but otherwise it behaves quite well on SMP and that's 
-> not a big surprise: i left the load-balancer largely intact. ]
+> On Wed, 2 May 2007, Christoph Hellwig wrote:
+> > On Wed, May 02, 2007 at 04:28:27PM +0200, Geert Uytterhoeven wrote:
+> > >   - Check for GNU extension __FUNCTION__
+> > 
+> > __FUNCTION__ is prefered  over __func__
+> 
+> Is there a reason for that?
+>   - __FUNCTION__ is a GNU extension
+>   - __func__ is C99
+>   - __func__ is shorter to type ;-)
+> 
 
-Despite the original motive, the ->load_weight -based calculations
-largely resolved my concerns about intra-queue prioritization. They
-were the change to the ->fair_key computation I wanted to see, which
-were still not enough because of the O(rq->nr_running) lag issue due to
-the differences from EEVDF, but I wasn't entirely aware of that, only
-suspicious that some issue remained.
+In that case we should use __func__.
 
-Load balancing has non-negligible impacts on fairness but I'm almost
-entirely ignorant of the aspects of the theory relating to it. More
-knowledgeable people, e.g. Tong Li and Ting Yang, need to take over
-reviewing here much as they did on the intra-queue front, where I only
-knew enough to drop hints and not to make more useful suggestions.
-
-O(1) vs. O(lg(n)) priority queues are not what matter here (well,
-obviously O(n) priority queues would break), but rather O(1) vs. O(n)
-lag.
+But we discussed this at some length 3-4 years ago and decided to use
+__FUNCTION__.  I don't remember why.  Perhaps problems with gcc support for
+__func__?
 
 
--- wli
+(It could have been that compile-time string concatenation was involved:
+
+
+        printf("xxx" __FILE__);			/* works */
+        printf("xxx" __FUNCTION__);		/* doesn't */
+
+Or not.)
+
