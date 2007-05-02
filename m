@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767040AbXEBVgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767050AbXEBViY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767040AbXEBVgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767043AbXEBVgu
+	id S1767050AbXEBViY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767043AbXEBViX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:36:50 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53223 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767040AbXEBVgt (ORCPT
+	Wed, 2 May 2007 17:38:23 -0400
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:49528 "EHLO
+	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767045AbXEBViW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:36:49 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Gerd Hoffmann <kraxel@redhat.com>,
-       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-References: <20070428758.455116000@suse.de>
-	<20070428175909.1D09D151CA@wotan.suse.de> <46338D72.70402@garzik.org>
-	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com> <4634483E.9030307@goop.org>
-	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
-	<46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>
-	<4638F9BE.8090508@zytor.com>
-	<m13b2fvsbn.fsf@ebiederm.dsl.xmission.com> <46390185.30900@zytor.com>
-Date: Wed, 02 May 2007 15:36:17 -0600
-In-Reply-To: <46390185.30900@zytor.com> (H. Peter Anvin's message of "Wed, 02
-	May 2007 14:24:21 -0700")
-Message-ID: <m1y7k6vrfy.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 2 May 2007 17:38:22 -0400
+Date: Wed, 2 May 2007 14:38:21 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
+ DVB
+In-Reply-To: <1178129426.29579.17.camel@localhost>
+Message-ID: <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
+ <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr> <1178129426.29579.17.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
-
-> Eric W. Biederman wrote:
->> 
->> So we won't do this casually and if it there are real problems we will
->> remove the ELF magic number.
->> 
+On Wed, 2 May 2007, Mauro Carvalho Chehab wrote:
+> Em Seg, 2007-04-30 às 14:30 +0200, Jan Engelhardt escreveu:
+> > Change Kconfig objects from "menu, config" into "menuconfig" so
+> > that the user can disable the whole feature without having to
+> > enter the menu first.
+> >
+> > Also remove one indirection (CONFIG_DVB) that does not seem to
+> > be really used inside the kernel.
 >
-> I think we can use ELF-compatible format just fine, but it would make
-> more sense to use a non-ELF magic number from the start, instead of
-> signalling it with a note.  Since bootloaders need to be aware, anyway,
-> they can just detect this magic and treat is as an Linux calling
-> convention ELF image, or they can not detect it, and treat it as a
-> bzImage.  As a side benefit, we:
+> Hmm.. in fact, it becames harder to unselect DVB, at least on my tests.
+> The patch bellow solved the issue. It also allows keeping core DVB,
+> disabling the adapters menu.
 >
-> a) can use a magic number that contains a jump instruction (to keep the
-> non-bootsector happy);
-> b) get a proper Linux kernel magic number.
+> If nobody is against, I intend to apply both Jan and the patch bellow on
+> my tree by tomorrow.
 
-To the best of my knowledge I have already resolved both of those concerns,
-in my current code.
+The v4l-dvb build system doesn't support menuconfig yet.
 
-Eric
+I'm pretty sure stuff like:
+
+if VIDEO_CAPTURE_DRIVERS
+
+will not work correctly either.
