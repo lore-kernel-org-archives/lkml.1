@@ -1,128 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992891AbXEBIDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161746AbXEBIGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992891AbXEBIDr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992893AbXEBIDo
+	id S1161746AbXEBIGO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161754AbXEBIGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:03:44 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:42116 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992891AbXEBIDj convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 04:06:14 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46553 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161746AbXEBIGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:03:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=LmDIlzDjse07b5Gnfk7rhQHBZA8RbUnrFaCNpKqs/czyva4vy8JNGG7r1n3HLEXMKTtJKngToeggK9xpva1lDqZxtfJILB5kMfbbuNpMoVnfv2Ry3TCt4De2Ym6wIDVxqDzPf+UsUM1uXHXHuKM2zdIzlXzFvOrjh9GZKQWO6Xc=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: [patch] CFS scheduler, -v8
-Date: Wed, 2 May 2007 04:03:35 -0400
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
-       Balbir Singh <balbir@in.ibm.com>
-References: <20070501212223.GA29867@elte.hu> <1178087834.8640.7.camel@Homer.simpson.net>
-In-Reply-To: <1178087834.8640.7.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-7"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705020403.35385.gene.heskett@gmail.com>
+	Wed, 2 May 2007 04:06:10 -0400
+Date: Wed, 2 May 2007 01:05:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: Mark Lord <lkml@rtr.ca>, Daniel Walker <dwalker@mvista.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of
+ CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
+Message-Id: <20070502010527.e64dcce9.akpm@linux-foundation.org>
+In-Reply-To: <1178092035.5791.349.camel@localhost.localdomain>
+References: <46364EBC.5050804@rtr.ca>
+	<46364F5A.2030208@rtr.ca>
+	<463653A3.5040606@rtr.ca>
+	<46367D7E.6060502@rtr.ca>
+	<1177976798.12796.286.camel@imap.mvista.com>
+	<463683A6.4010505@rtr.ca>
+	<1178026458.5791.305.camel@localhost.localdomain>
+	<4637419D.8010303@rtr.ca>
+	<463741F1.7050706@rtr.ca>
+	<1178027285.5791.307.camel@localhost.localdomain>
+	<46374B1D.6050509@rtr.ca>
+	<1178035058.5791.333.camel@localhost.localdomain>
+	<46377055.2060605@rtr.ca>
+	<1178092035.5791.349.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 May 2007, Mike Galbraith wrote:
->On Tue, 2007-05-01 at 23:22 +0200, Ingo Molnar wrote:
->> i'm pleased to announce release -v8 of the CFS scheduler patchset. (The
->> main goal of CFS is to implement "desktop scheduling" with as high
->> quality as technically possible.)
->
->...
->
->> As usual, any sort of feedback, bugreport, fix and suggestion is more
->> than welcome,
->
->Greetings,
->
->I noticed a (harmless) bounds warning triggered by the reduction in size
->of array->bitmap.  Patchlet below.
->
->	-Mike
+On Wed, 02 May 2007 09:47:15 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-I just checked my logs, and it appears my workload didn't trigger this one 
-Mike.  And so far, v8 is working great here.  And that great is in my 
-best "Tony the Tiger" voice, stolen shamelessly from the breakfast cereal tv  
-commercial of 30+ years ago. :)
-
-Ingo asked for a 0-100 rating, where 0 is mainline as I recall it, and 100 is 
-the best of the breed.  I'll give this one a 100 till something better shows 
-up.
-
->  CC      kernel/sched.o
->kernel/sched_rt.c: In function ¡load_balance_start_rt¢:
->include/asm-generic/bitops/sched.h:30: warning: array subscript is above
-> array bounds kernel/sched_rt.c: In function ¡pick_next_task_rt¢:
->include/asm-generic/bitops/sched.h:30: warning: array subscript is above
-> array bounds
+> Mark,
+> 
+> On Tue, 2007-05-01 at 12:52 -0400, Mark Lord wrote:
+> > Done, and done.
+> > And I managed to capture more of the boot messages, too.
+> > This new capture is in the "sequence" subdir at the previous link.
+> 
+> thanks. Can you apply this patch please:
+> http://lkml.org/lkml/2007/4/13/190
 >
->--- linux-2.6.21-cfs.v8/include/asm-generic/bitops/sched.h.org	2007-05-02
-> 07:16:47.000000000 +0200 +++
-> linux-2.6.21-cfs.v8/include/asm-generic/bitops/sched.h	2007-05-02
-> 07:20:45.000000000 +0200 @@ -6,28 +6,23 @@
->
-> /*
->  * Every architecture must define this function. It's the fastest
->- * way of searching a 140-bit bitmap where the first 100 bits are
->- * unlikely to be set. It's guaranteed that at least one of the 140
->- * bits is cleared.
->+ * way of searching a 100-bit bitmap.  It's guaranteed that at least
->+ * one of the 100 bits is cleared.
->  */
-> static inline int sched_find_first_bit(const unsigned long *b)
-> {
-> #if BITS_PER_LONG == 64
->-	if (unlikely(b[0]))
->+	if (b[0])
-> 		return __ffs(b[0]);
->-	if (likely(b[1]))
->-		return __ffs(b[1]) + 64;
->-	return __ffs(b[2]) + 128;
->+	return __ffs(b[1]) + 64;
-> #elif BITS_PER_LONG == 32
->-	if (unlikely(b[0]))
->+	if (b[0])
-> 		return __ffs(b[0]);
->-	if (unlikely(b[1]))
->+	if (b[1])
-> 		return __ffs(b[1]) + 32;
->-	if (unlikely(b[2]))
->+	if (b[2])
-> 		return __ffs(b[2]) + 64;
->-	if (b[3])
->-		return __ffs(b[3]) + 96;
->-	return __ffs(b[4]) + 128;
->+	return __ffs(b[3]) + 96;
-> #else
-> #error BITS_PER_LONG not defined
-> #endif
+> It somehow did not make it into 2.6.21.
+> 
 
+Alas, poor me.  I ain't going to merge a contention-reduction patch when
+we're at -rc6.  If a patch fixes a bug, please tell me!
 
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-I met my latest girl friend in a department store.  She was looking at
-clothes, and I was putting Slinkys on the escalators.
-		-- Steven Wright
