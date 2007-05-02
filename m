@@ -1,159 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992868AbXEBHMG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992628AbXEBHRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992868AbXEBHMG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:12:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbXEBHMF
+	id S2992628AbXEBHRI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1945967AbXEBHRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:12:05 -0400
-Received: from haxent.com ([65.99.219.155]:2772 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754889AbXEBHME convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 03:17:07 -0400
+Received: from bill.weihenstephan.org ([82.135.35.21]:53537 "EHLO
+	bill.weihenstephan.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754753AbXEBHRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:12:04 -0400
-Message-ID: <463839BD.4030008@haxent.com.br>
-Date: Wed, 02 May 2007 04:11:57 -0300
-From: Davi Arnaut <davi@haxent.com.br>
+	Wed, 2 May 2007 03:17:05 -0400
+From: Juergen Beisert <juergen127@kreuzholzen.de>
+Organization: Privat
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [1/1] CPU-i386-Geode: Chipset access macros do not work as expected (2nd try)
+Date: Wed, 2 May 2007 09:16:59 +0200
+User-Agent: KMail/1.9.4
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+References: <200704301409.l3UE9sFg019392@harpo.it.uu.se> <200704301733.41903.juergen127@kreuzholzen.de> <20070501174808.4ac5378b.akpm@linux-foundation.org>
+In-Reply-To: <20070501174808.4ac5378b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 14/22] pollfs: pollable futex
-References: <20070502052235.914764000@haxent.com.br> <20070502053427.123392000@haxent.com.br> <4638279A.9010105@cosmosbay.com> <46382CA2.1020504@haxent.com.br> <46383218.4020406@cosmosbay.com>
-In-Reply-To: <46383218.4020406@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705020917.00134.juergen127@kreuzholzen.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> Davi Arnaut a écrit :
->> Eric Dumazet wrote:
->>> Davi Arnaut a écrit :
->>>> Asynchronously wait for FUTEX_WAKE operation on a futex if it still contains
->>>> a given value. There can be only one futex wait per file descriptor. However,
->>>> it can be rearmed (possibly at a different address) anytime.
->>>>
->>>> The pollable futex approach is far superior (send and receive events from
->>>> userspace or kernel) to eventfd and fixes (supercedes) FUTEX_FD at the same time.
->>>>
->>>> Building block for pollable semaphores and user-defined events.
->>>>
->>>> Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
->>>>
->>>> ---
->>>>  fs/pollfs/Makefile |    1 
->>>>  fs/pollfs/futex.c  |  154 +++++++++++++++++++++++++++++++++++++++++++++++++++++
->>>>  init/Kconfig       |    7 ++
->>>>  3 files changed, 162 insertions(+)
->>>>
->>>> Index: linux-2.6/fs/pollfs/Makefile
->>>> ===================================================================
->>>> --- linux-2.6.orig/fs/pollfs/Makefile
->>>> +++ linux-2.6/fs/pollfs/Makefile
->>>> @@ -3,3 +3,4 @@ pollfs-y := file.o
->>>>  
->>>>  pollfs-$(CONFIG_POLLFS_SIGNAL) += signal.o
->>>>  pollfs-$(CONFIG_POLLFS_TIMER) += timer.o
->>>> +pollfs-$(CONFIG_POLLFS_FUTEX) += futex.o
->>>> Index: linux-2.6/fs/pollfs/futex.c
->>>> ===================================================================
->>>> --- /dev/null
->>>> +++ linux-2.6/fs/pollfs/futex.c
->>>> @@ -0,0 +1,154 @@
->>>> +/*
->>>> + * pollable futex
->>>> + *
->>>> + * Copyright (C) 2007 Davi E. M. Arnaut
->>>> + *
->>>> + * Licensed under the GNU GPL. See the file COPYING for details.
->>>> + */
->>>> +
->>>> +#include <linux/kernel.h>
->>>> +#include <linux/sched.h>
->>>> +#include <linux/module.h>
->>>> +#include <linux/slab.h>
->>>> +#include <linux/err.h>
->>>> +#include <linux/wait.h>
->>>> +#include <linux/poll.h>
->>>> +#include <linux/pollfs_fs.h>
->>>> +#include <linux/futex.h>
->>>> +
->>>> +struct futex_event {
->>>> +	union {
->>>> +		void __user *addr;
->>>> +		u64 padding;
->>>> +	};
->>>> +	int val;
->>>> +};
->>> Hum... Here we might have a problem with 64 bit futexes, or private futexes
->>>
->>> So I believe this interface is not well defined and not expandable: in case of 
->>> future additions to futexes, an old application compiled with an old pollable 
->>> futex_event type might fail.
->>>
->> Hmm, how about:
->>
->> struct futex_event {
->> 	union {
->> 		void __user *addr;
->> 		u64 padding;
->> 	};
->> 	union {
->> 		int val;
->> 		s64 val64;
->> 	};
->> 	/* whatever room is necessary for future improvements */
->> };
->>
->> I haven't been keeping up with 64 bit or private futexes. What else
->> could probably go wrong?
-> 
-> Well, that's the point : This interface is like an ioctl() one : pretty bad if 
-> not properly designed :)
-> 
-> You probably need to stick one field containing one command or version number, 
-> something like that.
-> 
-> 
-> struct futex_event {
-> 	int     type;
-> 	union {
-> 		void __user *addr;
-> 		u64 padding;
-> 	};
-> 	union {
-> 		int val;
-> 		s64 val64;
-> 	};
-> };
-> 
-> #define  FUTEX_EVENT_SHARED32  1
-> #define  FUTEX_EVENT_SHARED64  2
-> #define  FUTEX_EVENT_PRIVATE32 (128|1)
-> #define  FUTEX_EVENT_PRIVATE64 (128|2)
-> 
+Hi Andrew,
 
-I'm changing the structure to:
+On Wednesday 02 May 2007 02:48, Andrew Morton wrote:
+> On Mon, 30 Apr 2007 17:33:41 +0200
+>
+> Juergen Beisert <juergen127@kreuzholzen.de> wrote:
+> > From: Juergen Beisert <juergen.beisert@weihenstephan.org>
+> >
+> > Replace NSC/Cyrix specific chipset access macros by inlined functions.
+> > With the macros a line like this fails (and does nothing):
+> > 	setCx86(CX86_CCR2, getCx86(CX86_CCR2) | 0x88);
+> > With inlined functions this line will work as expected.
+> >
+> > Note about a side effect: Seems on Geode GX1 based systems the
+> > "suspend on halt power saving feature" was never enabled due to this
+> > wrong macro expansion. With inlined functions it will be enabled, but
+> > this will stop the TSC when the CPU runs into a HLT instruction.
+> > Kernel outputs something like this:
+> > 	Clocksource tsc unstable (delta = -472746897 ns)
+> > Tested on a Geode GX1 system.
+> >
+> > This is the second version with some modifications suggested by
+> > Mikael Pettersson
+> >
+> > Signed-off-by: Juergen Beisert <juergen.beisert@weihenstephan.org>
+> >
+> > Index: linux-2.6.21/include/asm-i386/processor.h
+> > ===================================================================
+> > --- linux-2.6.21.orig/include/asm-i386/processor.h
+> > +++ linux-2.6.21/include/asm-i386/processor.h
+> > @@ -202,37 +202,6 @@ static inline void clear_in_cr4 (unsigne
+> >  	write_cr4(cr4);
+> >  }
+> >
+> > -/*
+> > - *      NSC/Cyrix CPU configuration register indexes
+> > - */
+> > -
+> > -#define CX86_PCR0 0x20
+> > -#define CX86_GCR  0xb8
+> > -#define CX86_CCR0 0xc0
+> > -#define CX86_CCR1 0xc1
+> > -#define CX86_CCR2 0xc2
+> > -#define CX86_CCR3 0xc3
+> > -#define CX86_CCR4 0xe8
+> > -#define CX86_CCR5 0xe9
+> > -#define CX86_CCR6 0xea
+> > -#define CX86_CCR7 0xeb
+> > -#define CX86_PCR1 0xf0
+> > -#define CX86_DIR0 0xfe
+> > -#define CX86_DIR1 0xff
+> > -#define CX86_ARR_BASE 0xc4
+> > -#define CX86_RCR_BASE 0xdc
+>
+> This clashes with Andi's "msr-index" patch:
+>
+> ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/msr-index
 
-struct futex_event {
-	union {
-		void __user *addr;
-		u64 addr64;
-	};
-	union {
-		int val;
-		s64 val64;
-	};
-	union {
-		s32 flags;
-		s64 flags64;
-	};
-};
+I see. He also moves these defines to another file. Not problem where they 
+are. But it isn't possible to replace the macros by the inlined functions in 
+processor.h. The used outb/inb macros fail for various other files.
 
-Plenty room for future FUTEX_WAIT growth ?
+> Perhaps it'd be best to wait until msr-index goes upstream and to raise a
+> patch then.  Or to redo and retest against 2.6.21-rc7-mm2, which includes
+> msr-index.
 
---
-Davi Arnaut
+All right. To wait is no problem for me (my system works with my 
+patch.... ;-) )
 
+> Also, include/asm-x86_64/processor.h has a getCx86(), too.  Does it also
+> need fixing?
+
+As I can see the macros are used in:
+ - i386/kernel/cpu/cpufreq/gx-suspmod.c (ups, its not in my patch, so it is
+   currently no complete)
+ - i386/kernel/cpu/mtrr/state.c (also not part of my patch yet)
+ - i386/kernel/cpu/cyrix.c
+ - i386/kernel/cpu/mtrr/cyrix.c
+
+Most comments states Cyrix CPUs when they are using the macros. Is anything 
+with Cyrix 64 bit relevant? Maybe "include/asm-x86_64/processor.h" is a 
+simple copy of "include/asm-i386/processor.h" and nobody delete the unused 
+macros?
+
+Please keep me informed and I will resend the patch.
+
+Juergen
