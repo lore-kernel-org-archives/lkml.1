@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992756AbXEBFAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992742AbXEBFCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992756AbXEBFAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992750AbXEBFAU
+	id S2992742AbXEBFCm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030622AbXEBFCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:00:20 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35413 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S2992756AbXEBFAR (ORCPT
+	Wed, 2 May 2007 01:02:42 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:4199 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1030572AbXEBFCl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:00:17 -0400
-Message-Id: <1178082017.3450.1187632739@webmail.messagingengine.com>
-X-Sasl-Enc: TMSlOLVI92P2KIyFVmbLgDaFwrr6v+tkLV/JrJ28orx8 1178082017
-From: lkml777@123mail.org
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
-       "William Heimbigner" <icxcnika@mar.tar.cc>,
-       "Alex Zarochentsev" <zam@namesys.com>,
-       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
-       "Edward Shishkin" <edward@namesys.com>,
-       "Xu CanHao" <xucanhao@gmail.com>,
-       "Vladimir V. Saveliev" <vs@namesys.com>, "Lex Lyamin" <flx@msu.ru>,
-       "Andrew Morton" <akpm@linux-foundation.org>, majordomo@vger.kernel.org
+	Wed, 2 May 2007 01:02:41 -0400
+Date: Wed, 2 May 2007 15:02:34 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Crypto Update for 2.6.22
+Message-ID: <20070502050234.GA29838@gondor.apana.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
-   <20070424193921.GA17129@one.firstfloor.org>
-   <462F6717.70508@namesys.com>
-   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
-   <1177564182.15467.1186637743@webmail.messagingengine.com>
-   <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com>
-   <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
-   <1177658163.8094.1186854037@webmail.messagingengine.com>
-   <b6a2187b0704270937g18f305cdxfdd54349fb73f3ea@mail.gmail.com>
-   <1177717116.1762.1186993177@webmail.messagingengine.com>
-   <b6a2187b0704271840l4ca69b27v7c687b546c28dd15@mail.gmail.com>
-Subject: Re: Question about Reiser4 (how to boot it?)
-In-Reply-To: <b6a2187b0704271840l4ca69b27v7c687b546c28dd15@mail.gmail.com>
-Date: Tue, 01 May 2007 22:00:17 -0700
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi:
 
-Hi Jeff, it seems that lkml has contacted both of my email accounts and
-cripped them.
+Here is the crypto update for 2.6.22:
 
-I can no longer recieve email from lkml on this account.
+Please pull from
 
-I can neither recieve or send email to lkml from my other account.
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-They have also just deleted the 4 emails I sent to lkml from the page
-http://lkml.org/lkml/2007/4/30/
+or
 
-This included one to you.
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-In case you didn't get it,... here it is again.
+Summary:
 
------------
+* Added API for asynchronous block ciphers.
+* Small clean-up's.
 
-I used GRUB and the kernel and initrd from a separate partition to boot
-a Reiser4 installation.
+
+Herbert Xu (9):
+      [CRYPTO] api: Proc functions should be marked as unused
+      [CRYPTO] api: Add async block cipher interface
+      [CRYPTO] tcrypt: Use async blkcipher interface
+      [CRYPTO] templates: Pass type/mask when creating instances
+      [CRYPTO] api: Add async blkcipher type
+      [CRYPTO] cryptomgr: Fix parsing of nested templates
+      [CRYPTO] api: Do not remove users unless new algorithm matches
+      [CRYPTO] cryptd: Add software async crypto daemon
+      [CRYPTO] api: Add ablkcipher_request_set_tfm
+
+Simon Arlott (1):
+      [CRYPTO] padlock: Remove pointless padlock module
+
+ crypto/Kconfig          |   13 +
+ crypto/Makefile         |    2 
+ crypto/ablkcipher.c     |   83 ++++++++++
+ crypto/algapi.c         |  169 +++++++++++++++++----
+ crypto/blkcipher.c      |   72 ++++++++-
+ crypto/cbc.c            |   11 +
+ crypto/cryptd.c         |  375 ++++++++++++++++++++++++++++++++++++++++++++++++
+ crypto/cryptomgr.c      |   66 +++++---
+ crypto/ecb.c            |   11 +
+ crypto/hash.c           |    2 
+ crypto/hmac.c           |   11 +
+ crypto/lrw.c            |   11 +
+ crypto/pcbc.c           |   11 +
+ crypto/tcrypt.c         |  121 ++++++++++-----
+ crypto/xcbc.c           |   12 +
+ drivers/crypto/Kconfig  |   16 --
+ drivers/crypto/Makefile |    1 
+ include/crypto/algapi.h |   84 ++++++++++
+ include/linux/crypto.h  |  236 +++++++++++++++++++++++++++++-
+ 19 files changed, 1166 insertions(+), 141 deletions(-)
+
+Cheers,
 -- 
-  
-  lkml777@123mail.org
-
--- 
-http://www.fastmail.fm - Does exactly what it says on the tin
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
