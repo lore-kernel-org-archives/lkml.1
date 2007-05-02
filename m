@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992696AbXEBDyJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992680AbXEBD6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992696AbXEBDyJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:54:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992698AbXEBDyJ
+	id S2992680AbXEBD6I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXEBD6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:54:09 -0400
-Received: from [69.90.0.18] ([69.90.0.18]:57563 "EHLO mtl.rackplans.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S2992696AbXEBDyH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:54:07 -0400
-Date: Tue, 1 May 2007 23:54:04 -0400 (EDT)
-From: Gerhard Mack <gmack@innerfire.net>
-X-X-Sender: gmack@mtl.rackplans.net
-To: "Cabot, Mason B" <mason.b.cabot@intel.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-In-Reply-To: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0705012353100.5330@mtl.rackplans.net>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+	Tue, 1 May 2007 23:58:08 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53174 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992680AbXEBD6G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 23:58:06 -0400
+Date: Tue, 1 May 2007 20:58:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nate Diller <nate.diller@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] zero_user_page uses in fs/buffer.c and fs/libfs.c
+In-Reply-To: <5c49b0ed0705011927n66208c1egd7cfdb6985dc901b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705012046120.28655@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0704292313060.3018@schroedinger.engr.sgi.com> 
+ <a781481a0704292353v34ea217fpbbf732465dd652e8@mail.gmail.com> 
+ <Pine.LNX.4.64.0704300000430.3147@schroedinger.engr.sgi.com> 
+ <20070501172643.270bb061.akpm@linux-foundation.org> 
+ <Pine.LNX.4.64.0705011807550.28210@schroedinger.engr.sgi.com> 
+ <5c49b0ed0705011916y89212c0v1cec1cb1edae052f@mail.gmail.com>
+ <5c49b0ed0705011927n66208c1egd7cfdb6985dc901b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Cabot, Mason B wrote:
+On Tue, 1 May 2007, Nate Diller wrote:
 
-> Hello all,
-> 
-> I've been testing the NAS performance of ext3/Openfiler 2.2 against
-> NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
-> video workloads. The Windows CIFS client will attempt a poor-man's
-> pre-allocation of the file on the server by sending 1-byte writes at
-> 128K-byte strides, breaking block allocation on ext3 and leading to
-> fragmentation and poor performance. This will happen for many
-> applications (including iTunes) as the CIFS client issues these
-> pre-allocates under the application layer.
-> 
-> I've posted a brief paper on Intel's OSS website
-> (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
-> it a read and let me know what you think. In particular, I'd like to
-> arrive at the right place to fix this problem: is it in the filesystem,
-> VFS, or Samba?
-> 
-> thanks,
-> Mason 
-> 
+> well, leave it to me to reply too quickly, sorry.  i think we should
+> leave simple_prepare_write() the way it is, since it's a library
+> function itself.  the other two callsites in your patch are buffers,
+> which may themselves be smaller than a page so you would need a
+> special function for just those two uses, there's no other way to
+> avoid making two calls to flush_dcache_page().  if it's tremendously
+> important to you to eliminate open coding of these, maybe make a
+> 'static int buffer_prepare_write()' or some such in fs/buffer.c
 
-Just out of curiosity do other filesystems(reiser, xfs) take the same 
-performance hit?
+All three sites zap two parts of a page. If we had a 
+zero_user_page2 like this
 
-	Gerjard
+zero_user_page2(page, start1, end1, start2, end2, kmap)
 
---
-Gerhard Mack
+then all 3 sites could use the same funtion.
 
-gmack@innerfire.net
+libfs.c:
 
-<>< As a computer I find your faith in technology amusing.
+zero_user_page_segments(page, 0, from, to, PAGE_CACHE_SIZE, KM_USER0);
+
+buffer.c:
+
+zero_user_page_segments(page, from, block_start, to, block_end, KM_USER0)
+
+zero_user_page_segments(page, blockstart, from, to, block_end, KM_USER0)
+
+
+I did not look through the whole kernel but this zapping segments is 
+likely frequent given the nature of the blocklayer.
+
+The 3 call sites pretty ugly on their own. I think it would be good 
+to have one clearly commented version of this somewhere. Call sites
+will be much clearer since you do not have the kmap_ obfuscation nor
+the calculation of the length of each segment.
+
