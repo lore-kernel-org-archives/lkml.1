@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766815AbXEBRJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766818AbXEBRK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766815AbXEBRJB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:09:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766816AbXEBRJB
+	id S1766818AbXEBRK0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:10:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766802AbXEBRK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:09:01 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:52362 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766815AbXEBRI7 (ORCPT
+	Wed, 2 May 2007 13:10:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:63138 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766818AbXEBRKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:08:59 -0400
-From: Kevin Corry <kevcorry@us.ibm.com>
-Organization: IBM
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2] powerpc: perfmon2 prereqs
-Date: Wed, 2 May 2007 12:08:57 -0500
-User-Agent: KMail/1.9.5
-Cc: Carl Love <carll@us.ibm.com>, Stephane Eranian <eranian@hpl.hp.com>
+	Wed, 2 May 2007 13:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oo937zM2OAq7Leh657V0VcAMmi6qyZZmSzIiLgYhNWaY0qm0o2eVvVkS6BLsyoqgUaD5UKVSytlvObnEETfmRu6Okd/uNxZLiDtiXnjTvGcNr55zeNwsginrLqVk3WBWK8OxRLq2hWqOgK0nhqpfx5f0HHyLkQBbPthW4Fdr9Ds=
+Message-ID: <a36005b50705021010l5c7badc6ub61228f14fdbb28a@mail.gmail.com>
+Date: Wed, 2 May 2007 10:10:22 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davi Arnaut" <davi@haxent.com.br>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+Cc: "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4638C37D.7050503@haxent.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705021208.59068.kevcorry@us.ibm.com>
+References: <20070502052235.914764000@haxent.com.br>
+	 <20070502053427.123392000@haxent.com.br>
+	 <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+	 <20070502095503.a06f5472.dada1@cosmosbay.com>
+	 <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
+	 <20070502104936.674a4b54.dada1@cosmosbay.com>
+	 <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
+	 <4638C37D.7050503@haxent.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 5/2/07, Davi Arnaut <davi@haxent.com.br> wrote:
+> thread A:
+>     int fd = plfutex(addr, 0);
+>     do
+>         poll(fdset+fd);
+>         process network events
+>         queue obj to thread B
+>         if fd:
+>             job processed
+>
+> thread B:
+>     wait_job();
+>     process_job();
+>     raise_event(addr);
 
-This is a repost of a couple patches I posted about a month ago related to 
-porting perfmon2 to powerpc. I wanted to see if there were any further 
-comments on these patches, and also wanted to ask if these should be 
-submitted separately to the ppc kernel maintainers, or if they should be kept 
-with the perfmon2 patches until those are submitted.
+This is not the model you can implement with your changes.  Because
+every single waiter is woken you need one thread listening for the
+jobs and then distribute the work.  Otherwise you have thundering
+herds of threads and only one gets to do some work.
 
-The first patch adds an smp_call_function_single() routine for powerpc. In 
-2.6.21, there's a prototype for this routine in include/linux/smp.h, and it 
-is implemented on i386, ia64, and x86-64. Since this routine is very similar 
-to the existing smp_call_function() routine, the common portions have been 
-pulled out into __smp_call_function(). Perfmon2 uses this unload a context 
-that's loaded on a CPU other than the one that's performing the close-context 
-routine.
 
-The second patch changes the powerpc version of topology_init() from an 
-__initcall to a subsys_initcall, which matches the definition of 
-topology_init() on all other architectures. Perfmon2's initialization is done 
-as a subsys_initcall, but it fails to set up its sysfs information if 
-topology_init() has not yet run. Changing perfmon2 to an __initcall() was 
-discussed, but we came to the conclusion that this would not work because the 
-perfmon2 core must be initialized before any of its sub-modules. These 
-sub-modules are located in arch/*/perfmon/, and thus if they are built 
-statically they would run their module_init routines before the perfmon2 core 
-ran its __initcall routine.
+> It simple as is, there is no need to overdesign.
 
-We have been running tests with these patches for the last few weeks on Cell 
-and Power5 systems without any problems.
+There is no reason to go with a limited, too-simple minded design if
+we've already identified a much better design.  The fact that poll is
+used today does not excuse piling on more and more code which makes
+additional functions which don't fit into the poll framework barely
+work.  Plus, poll/epoll itself is a problem.
 
-Thanks,
--- 
-Kevin Corry
-kevcorry@us.ibm.com
-http://www.ibm.com/linux/
+And you cannot talk about little changes and no "overdesign".  You
+have 22 patches for all this.  It's not just limited to futexes, it's
+the whole thing which IMO is unnecessary ballast going forward.
