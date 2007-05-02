@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993040AbXEBLF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993055AbXEBLFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993040AbXEBLF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 07:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993048AbXEBLF1
+	id S2993055AbXEBLFw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 07:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993054AbXEBLFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 07:05:27 -0400
-Received: from dspnet.fr.eu.org ([213.186.44.138]:1883 "EHLO dspnet.fr.eu.org"
+	Wed, 2 May 2007 07:05:52 -0400
+Received: from mx1.suse.de ([195.135.220.2]:47159 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993040AbXEBLFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 07:05:25 -0400
-Date: Wed, 2 May 2007 13:05:19 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: Andi Kleen <ak@novell.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com,
-       jesse.barnes@intel.com
-Subject: Re: [PATCH] mmconfig: Some additional chipset register values validation.
-Message-ID: <20070502110519.GA24043@dspnet.fr.eu.org>
-Mail-Followup-To: Olivier Galibert <galibert@pobox.com>,
-	Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, greg@kroah.com, jesse.barnes@intel.com
-References: <20070502005011.GA41935@dspnet.fr.eu.org> <200705021152.36648.ak@novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S2993059AbXEBLFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 07:05:51 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Jan Beulich" <jbeulich@novell.com>
+Subject: Re: [patches] [PATCH] [28/34] i386: pte xchg optimization
+Date: Wed, 2 May 2007 13:05:40 +0200
+User-Agent: KMail/1.9.6
+Cc: zach@vmware.com, linux-kernel@vger.kernel.org, patches@x86-64.org
+References: <20070430549.617098000@suse.de> <20070430155001.8525915209@wotan.suse.de> <463889A9.76E4.0078.0@novell.com>
+In-Reply-To: <463889A9.76E4.0078.0@novell.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200705021152.36648.ak@novell.com>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200705021305.40525.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 11:52:36AM +0200, Andi Kleen wrote:
-> On Wednesday 02 May 2007 02:50:11 Olivier Galibert wrote:
-> > On i945, a mmconfig range hitting the f0000000-ffffffff zone conflicts
-> > with the APIC registers and others.  Consider it invalid.
-> > 
-> > On E7520, values 0000 and f000 for the window register are defined
-> > invalid in the documentation.
+
+> I always wondered why the xchg is necessary here at all. If the process of
+> tearing down a page table entry has started, other users of the mapped
+> linear address are broken anyway - why is it necessary to still monitor the
+> effect they may have on the A/D bits, unless this is a transient tear down?
 > 
-> Added thanks
+> Checking for the uses of ptep_get_and_clear, I would judge that the use in
+> change_pte_range() may in fact need the xchg, but the uses in
+> vunmap_pte_range() and zap_pte_range() shouldn't.
 
-Oh, feel free to add the:
-Signed-off-by: Olivier Galibert <galibert@pobox.com>
+Yes I agree. Might be a nice speed up for exit to distingush the cases.
 
-I forgot in the original mail.
-
-  OG.
+-Andi
