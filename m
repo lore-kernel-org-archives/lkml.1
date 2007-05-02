@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993460AbXEBQeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993493AbXEBQec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993460AbXEBQeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993468AbXEBQeQ
+	id S2993493AbXEBQec (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993497AbXEBQec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:34:16 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:60023 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993460AbXEBQeP (ORCPT
+	Wed, 2 May 2007 12:34:32 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:38610 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993493AbXEBQea (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:34:15 -0400
-Date: Wed, 2 May 2007 09:32:44 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Bill Irwin <bill.irwin@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, wli@holomorphy.com
-Subject: Re: [RFC BUG?] dereference PAGE_OFFSET address (rc7-mm2)
-Message-ID: <20070502163244.GA26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Jeremy Fitzhardinge <jeremy@goop.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-	Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-	Ingo Molnar <mingo@elte.hu>,
-	"Eric W. Biederman" <ebiederm@xmission.com>
-References: <a8f16e2b0705012026u6078f90dsbe55f854d8638795@mail.gmail.com> <20070502005140.b94500ff.akpm@linux-foundation.org> <20070502084617.GY26598@holomorphy.com> <20070502100600.GZ26598@holomorphy.com> <4638BC3E.9080708@goop.org>
+	Wed, 2 May 2007 12:34:30 -0400
+Date: Wed, 2 May 2007 11:37:57 -0500
+From: Nathan Lynch <ntl@pobox.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ashok.raj@intel.com,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: /sys/devices/system/cpu/*: Present cpus or Possible cpus
+Message-ID: <20070502163757.GF30688@localdomain>
+References: <20070502110022.GA13040@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4638BC3E.9080708@goop.org>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070502110022.GA13040@in.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Irwin wrote:
->> Brain dump before crashing for the night:
->> The patch refuses to clobber already-present pagetable entries of
->> whatever origin. There are pagetables prior to this setup covering the
->> address range just above PAGE_OFFSET. If this theory is correct, you
->> should only be able to go a few MB above PAGE_OFFSET before encountering
->> unreadable kernel memory. IIRC those pagetables are a statically
->> allocated array in assembly; altering that array to set supervisor bits
->> may resolve it, though it may also be freed as initmem.
+Hi Gautham-
 
-On Wed, May 02, 2007 at 09:28:46AM -0700, Jeremy Fitzhardinge wrote:
-> I think this should be fixed now.  Eric made all those writes
-> unconditional (to fix a problem with PSE superpages not being created). 
-> The patch is in Andi's queue.
+Gautham R Shenoy wrote:
+> 
+> Looking at the topology_init() code, I observe that the meaning of
+> the cpuX/ directory entries in /sys/devices/system/cpu/ might be
+> different for different architectures. 
+> 
+> Looks like, in case of i386, ia64, m32, mips etc, the cpuX directory entries
+> represent the "present cpus".
+> 
+> However, in case of powerpc, s390 etc, the cpuX entries represent the
+> "possible cpus".
+> 
+> Wondering if there is any particular reason for this discrepancy.
 
-It needs verification with the testcase from this thread.
+I believe that the powerpc behavior was established before
+cpu_present_map was introduced.
 
 
--- wli
+> I am not entirely surely if it's due cpu hotplug because 
+> both i386 and powerpc support it!
+
+powerpc also supports processor add and remove (as opposed to
+online/offline); i386 does not AFAIK.  I think this may be a reason
+for the difference.
+
+
+> When I do a 
+> "echo 1 > /sys/devices/system/cpu/cpuX/online" on a power box as root, 
+> I might get "-bash: echo: write error: Invalid argument" 
+> because cpuX might not be present!
+>
+> In case of lpar, cpu_present_map need not necessarily be equal to
+> cpu_possible_map, so the above error is observable.
+
+Working as intended.  You have to add a cpu to the partition before
+you can online it.
+
+
+> Is this discrepency intentional ?
+> Or is it due to the fact that in most cases,
+> cpu_present_map == cpu_possible_map, so lets not bother about it :-?
+
+I think it's the inevitable result when architectures are free to
+invent their own versions of the same sysfs interface.  But is it
+really causing a problem in this case?
+
