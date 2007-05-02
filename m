@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993398AbXEBPnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbXEBPoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993398AbXEBPnq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:43:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993399AbXEBPnq
+	id S1752904AbXEBPoZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbXEBPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:43:46 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:6080 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993398AbXEBPnp (ORCPT
+	Wed, 2 May 2007 11:44:25 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50812 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753042AbXEBPoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:43:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=OuNQrLiC53XAcTfJuB6MKOuKNmF5cueWJ0dZsN5S4Jb0lhaVBCSPMzAhP/60ARgpUvdNcJZ6JXh3qLySWVSbN4Xrg6WbPxqu+FoNPFsMYg/x2rnLdxKJ55Yi9uoM+jh//7tBZFujCES6j1tKMhWZUa+apo/FE5rn1wuKLdxHclU=
-Message-ID: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com>
-Date: Wed, 2 May 2007 16:43:44 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Rajib Majumder" <rajibm2005@gmail.com>
-Subject: Re: Kernel Scalability
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 11:44:23 -0400
+Date: Thu, 3 May 2007 01:44:14 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Cabot, Mason B" <mason.b.cabot@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070502154414.GB77450368@melbourne.sgi.com>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2 May, 14:00, "Rajib Majumder" <rajibm2005@gmail.com> wrote:
-> Hi,
->
-> I am wondering if 2.4.x/2.6.x kernel is scalable enough to run on
-> 8-CPU hardware. Do we have any scalability comparison data between
-> 2.4/2.6 kernels and beyond 4-CPU?
->
-> If yes, is the scalablity is near linear?
->
-> Any input is appreciated.
+On Tue, May 01, 2007 at 01:43:18PM -0700, Cabot, Mason B wrote:
+> Hello all,
+> 
+> I've been testing the NAS performance of ext3/Openfiler 2.2 against
+> NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+> video workloads. The Windows CIFS client will attempt a poor-man's
+> pre-allocation of the file on the server by sending 1-byte writes at
+> 128K-byte strides, breaking block allocation on ext3 and leading to
+> fragmentation and poor performance. This will happen for many
+> applications (including iTunes) as the CIFS client issues these
+> pre-allocates under the application layer.
+> 
+> I've posted a brief paper on Intel's OSS website
+> (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
+> it a read and let me know what you think. In particular, I'd like to
+> arrive at the right place to fix this problem: is it in the filesystem,
+> VFS, or Samba?
 
-There are 128-processor IA64 systems which run recent 2.6 kernels out
-there; the per-processor counters, RCU and page-fault scalability work
-has been instrumental to the necessary scaling for decent resource
-usage on these.
+As I commented on IRC to Val Henson - the XFS performance indicates
+that it is not a VFS or Samba problem.
 
-IIRC, there were some patches being developed to improve pagecache
-scalability lately too, but I guess it all depends on what kind of
-workload you have...
+I'd say it's probably delayed allocation that is making the
+difference here - no allocation occurs on the single byte writes, it
+occurs when the larger data writes are flushed to disk. Hence no
+adverse fragmentation will occur and there wil be no extra
+allocations being done.
 
-> Thanks
->
-> Rajib
+Hence I think it's probably a filesystm problem - it would be
+interesting to see how ext4 performs on this workload....
+
+Cheers,
+
+Dave.
 -- 
-Daniel J Blueman
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
