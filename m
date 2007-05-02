@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767256AbXEBTBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767233AbXEBTFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767256AbXEBTBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767255AbXEBTBX
+	id S1767233AbXEBTFK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767254AbXEBTFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:01:23 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49442 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767256AbXEBTBW (ORCPT
+	Wed, 2 May 2007 15:05:10 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:57013 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767233AbXEBTFJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:01:22 -0400
-Date: Wed, 2 May 2007 12:01:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, haveblue@ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <20070502115725.683ac702.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705021158150.1220@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021924200.24456@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021137210.1027@schroedinger.engr.sgi.com>
- <20070502115725.683ac702.akpm@linux-foundation.org>
+	Wed, 2 May 2007 15:05:09 -0400
+Date: Wed, 2 May 2007 15:05:08 -0400
+To: Martin Mares <mj@ucw.cz>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linus Torvalds <torvalds@osdl.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+Message-ID: <20070502190508.GI5577@csclub.uwaterloo.ca>
+References: <463698D5.20102@zytor.com> <46369A8F.1050809@garzik.org> <46369B03.1060500@zytor.com> <mj+md-20070502.074425.20911.nikam@ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <mj+md-20070502.074425.20911.nikam@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Andrew Morton wrote:
+On Wed, May 02, 2007 at 09:46:07AM +0200, Martin Mares wrote:
+> > I mean the SVGA chip-specific code.
+> 
+> Feel free to kill it, anybody using these cards is very unlikely to run
+> a 2.6.x kernel.
+> 
+> However, the BIOS mode switching is still useful.
 
-> noooo, we don't want competing slab allocators, please.  We should get slub
-> working well on all architectures then remove slab completely.  Having to
-> maintain both slab.c and slub.c would be awful.
+I have a 486 with a Mach64 in it running 2.6.18, so well, it just might
+happen you know.  I do tend to run it plain 80x25 at the moment, but
+that is mainly because it is just doing firewall duties.  I never was
+very impressed by the mach64 fb driver when I played with it years ago,
+and vesa isn't an option on that card (needed a DOS TSR to do that).
 
-Owww... You throw my roadmap out of the window and may create too 
-high expectations of SLUB.
+Not sure if that card is covered by any of the chip specific code.
 
-I am the one who has to maintain SLAB and SLUB it seems and I have been 
-dealing with the trio SLAB, SLOB and SLUB for awhile now. Its okay and it 
-will be much easier once the cleanups are in.
+So what is wrong with a 15 year old machine when it has 48MB ram and
+18GB disk space?
+
+--
+Len Sorensen
