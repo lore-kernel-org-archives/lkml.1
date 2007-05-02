@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993096AbXEBMp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993109AbXEBMsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993096AbXEBMp7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993097AbXEBMp7
+	id S2993109AbXEBMsh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993110AbXEBMsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:45:59 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:64285 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993096AbXEBMp6 (ORCPT
+	Wed, 2 May 2007 08:48:36 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:60984 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993109AbXEBMsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:45:58 -0400
-Date: Wed, 2 May 2007 13:45:33 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+	Wed, 2 May 2007 08:48:35 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4638888B.4080908@s5r6.in-berlin.de>
+Date: Wed, 02 May 2007 14:48:11 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 02 May 2007 12:45:57.0039 (UTC) FILETIME=[D43363F0:01C78CB7]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBjbGFtZXRlckBzZ2kuY29tAGxpbnV4LW1tQGt2YWNrLm9yZwA=
-X-Brightmail-Tracker: AAAAAA==
+To: Olaf Hering <olh@suse.de>
+CC: =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>
+Subject: Re: [git pull] New firewire stack
+References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de>
+In-Reply-To: <20070502122147.GA31215@suse.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Christoph Lameter wrote:
-> On Tue, 1 May 2007, Hugh Dickins wrote:
+Olaf Hering wrote:
+> On Tue, May 01, Kristian Høgsberg wrote:
 > 
-> > Yes, to me it does.  If it could be defaulted to on throughout the
-> > -rcs, on every architecture, then I'd say that's "finishing work";
-> > and we'd be safe knowing we could go back to slab in a hurry if
-> > needed.  But it hasn't reached that stage yet, I think.
+>>   drivers/firewire/Kconfig          |   60 ++
 > 
-> Why would we need to go back to SLAB if we have not switched to SLUB? SLUB 
-> is marked experimental and not the default.
+> NACK.
+> Upgrade the current drivers/ieee1394/ with the new code,
 
-I said above that I thought SLUB ought to be defaulted to on throughout
-the -rcs: if we don't do that, we're not going to learn much from having
-it in Linus' tree.
+Last time I believe I was the only one who asked whether to put it into
+drivers/ieee1394 instead of another directory.  Of course I acknowledge
+that everytime a new review round is started, people do reconsider.
+Especially since we had a gap of a few months since the last LKML review.
 
-And perhaps that line which appends "PREEMPT " to an oops report ought
-to append "SLUB " too, for so long as there's a choice.
+> and keep all existing module names.
 
-> The only problems that I am aware of is(or was) the issue with arches 
-> modifying page struct fields of slab pages that SLUB needs for its own 
-> operations. And I thought it was all fixed since the powerpc guys were 
-> quiet and the patch was in for i386.
+I'm impartial to that.  Using same names might ease the transition from
+the userspace side, as far as there is userland which relies on module
+names.
 
-You're forgetting your unions in struct page: in the SPLIT_PTLOCK
-case (NR_CPUS >= 4) the pagetable code is using spinlock_t ptl,
-which overlays SLUB's first_page and slab pointers.
+A certain drawback of same names would be that geeks cannot install both
+stacks at once during the transition period.  Therefore, checking
+whether eventual problems are in fact regressions involves a module
+unload/ configure/ build/ install/ reload cycle, instead of just module
+unload/ reload.  This especially means we can only get help from testers
+who are able to build kernels.
 
-I just tried rebuilding powerpc with the SPLIT_PTLOCK cutover
-edited to 8 cpus instead, and then no crash.
-
-I presume the answer is just to extend your quicklist work to
-powerpc's lowest level of pagetables.  The only other architecture
-which is using kmem_cache for them is arm26, which has
-"#error SMP is not supported", so won't be giving this problem.
-
-Hugh
+Other opinions?
+-- 
+Stefan Richter
+-=====-=-=== -=-= ---=-
+http://arcgraph.de/sr/
