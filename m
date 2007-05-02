@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992986AbXEBJza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992988AbXEBJ6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992986AbXEBJza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 05:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992984AbXEBJza
+	id S2992988AbXEBJ6Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 05:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992994AbXEBJ6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 05:55:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:44280 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992986AbXEBJz3 (ORCPT
+	Wed, 2 May 2007 05:58:15 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:36805 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992988AbXEBJ6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 05:55:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VffyjdsAV9143zf6D+aspeNlhNgb5Ye/F6kpUu6NoJAA5WDakCLQe5CGma/vVUmKumreDPQ9GSfRA/QmnqioFgqf23Fhs6suGumqNMCuoWgiSoVgkM/NruVimcJ/xNxaQZkmtDg5gD9y/c/ifIz+jf3rlMFyL+qZyc37TVuV7i0=
-Message-ID: <47ed01bd0705020255x3a05cabbo955b4e980771b92@mail.gmail.com>
-Date: Wed, 2 May 2007 05:55:28 -0400
-From: "Dylan Taft" <d13f00l@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Strange UDP Issue on 2.6.20.8 - broadcasts not being received if socket bound to local ip
+	Wed, 2 May 2007 05:58:14 -0400
+Date: Wed, 2 May 2007 05:56:43 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: linux-kernel@vger.kernel.org, trivial@kernel.org, davem@davemloft.net,
+       linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert "crypto" subdirectory to UTF-8
+In-Reply-To: <20070502044345.GA29384@gondor.apana.org.au>
+Message-ID: <alpine.DEB.0.98.0705020547140.9993@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've been pulling my hair out for the past several hours trying to
-debug a program in wine.  I'm currently on kernel 2.6.20.8.  The
-problem was that I was not getting any broadcasts to 255.255.255.255
-on a UDP socket bound to 192.168.0.8 with SO_BROADCAST enabled.
+> > Convert the subdirectory "crypto" to UTF-8. The files changed are 
+> > <crypto/fcrypt.c> and <crypto/api.c>.
+> > 
+> > Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
+> 
+> Thanks.  Could you fix up include/linux/crypto.h as well?
 
-I was fiddling around a bit, broadcasts come in fine if the socket is
-bound to INADDR_ANY( 0.0.0.0), but if it's bound to 192.168.0.8
-nothing comes in.  I did a packet sniff, and indeed packets were being
-sent out to 255.255.255.255 via another machine on the network.  I
-wrote a quick test program that would bind a socket to the lan ip and
-wait for incoming data.  I tested it on a windows machine and linux.
-The windows machine could pick up packets fine, my linux machine could
-not.   Is this proper behavior?  It's fudging up several games and
-things in the wine project.
+Sure, will do. Since I've gotten almost no feedback about these patches 
+whatsoever, I figured either I was doing it wrong or nobody cared. I guess 
+I'll finish them all up and resubmit them and hope they stick. Gimme a 
+few days: There's a huge number of files throughout the tree to change, 
+and some of them (like the .map files) require non-trivial alterations.
 
-Does anyone else experience this?  Thanks!
-
-Dylan Taft
+(Were you able to successfully apply the patch attached in octet-stream 
+encoding?)
