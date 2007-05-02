@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992760AbXEBE7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992756AbXEBFAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992760AbXEBE7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 00:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992754AbXEBE7r
+	id S2992756AbXEBFAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992750AbXEBFAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 00:59:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:58524 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992741AbXEBE7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 00:59:46 -0400
-Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-In-Reply-To: <200702281834.10856.ossthema@de.ibm.com>
-References: <200702281834.10856.ossthema@de.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-QHBAM+ndYevc28pSUDFh"
-Date: Wed, 02 May 2007 14:59:43 +1000
-Message-Id: <1178081983.5296.5.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 2 May 2007 01:00:20 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35413 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992756AbXEBFAR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 01:00:17 -0400
+Message-Id: <1178082017.3450.1187632739@webmail.messagingengine.com>
+X-Sasl-Enc: TMSlOLVI92P2KIyFVmbLgDaFwrr6v+tkLV/JrJ28orx8 1178082017
+From: lkml777@123mail.org
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Cc: linux-kernel@vger.kernel.org, "Eric Hopper" <hopper@omnifarious.org>,
+       "William Heimbigner" <icxcnika@mar.tar.cc>,
+       "Alex Zarochentsev" <zam@namesys.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Rik van Riel" <riel@redhat.com>,
+       "Edward Shishkin" <edward@namesys.com>,
+       "Xu CanHao" <xucanhao@gmail.com>,
+       "Vladimir V. Saveliev" <vs@namesys.com>, "Lex Lyamin" <flx@msu.ru>,
+       "Andrew Morton" <akpm@linux-foundation.org>, majordomo@vger.kernel.org
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20070423111939.c876c9cc.akpm@linux-foundation.org>
+   <20070424193921.GA17129@one.firstfloor.org>
+   <462F6717.70508@namesys.com>
+   <b6a2187b0704250749s2a00dadep93b2943bc0b9df9d@mail.gmail.com>
+   <1177564182.15467.1186637743@webmail.messagingengine.com>
+   <b6a2187b0704252348t1242560dqad6a1d30e665abc5@mail.gmail.com>
+   <b6a2187b0704260118x7cf8ed57mab9a12d06a2471a9@mail.gmail.com>
+   <1177658163.8094.1186854037@webmail.messagingengine.com>
+   <b6a2187b0704270937g18f305cdxfdd54349fb73f3ea@mail.gmail.com>
+   <1177717116.1762.1186993177@webmail.messagingengine.com>
+   <b6a2187b0704271840l4ca69b27v7c687b546c28dd15@mail.gmail.com>
+Subject: Re: Question about Reiser4 (how to boot it?)
+In-Reply-To: <b6a2187b0704271840l4ca69b27v7c687b546c28dd15@mail.gmail.com>
+Date: Tue, 01 May 2007 22:00:17 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-QHBAM+ndYevc28pSUDFh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi Jeff, it seems that lkml has contacted both of my email accounts and
+cripped them.
 
-On Wed, 2007-02-28 at 18:34 +0100, Jan-Bernd Themann wrote:
-> This patch provides a functionality that allows parallel=20
-> RX processing on multiple RX queues by using dummy netdevices.
->=20
->=20
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-> ---
+I can no longer recieve email from lkml on this account.
 
-> @@ -1789,6 +1798,22 @@ static void ehea_xmit3(struct sk_buff *s
->  	dev_kfree_skb(skb);
->  }
-> =20
-> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
-> +{
-> +	struct tcphdr *tcp;
-> +	u32 tmp;
-> +
-> +	if ((skb->protocol =3D=3D htons(ETH_P_IP)) &&
-> +	    (skb->nh.iph->protocol =3D=3D IPPROTO_TCP)) {
+I can neither recieve or send email to lkml from my other account.
 
-This breaks the build, looks like skb->nh went away:
-b0e380b1d8a8e0aca215df97702f99815f05c094
+They have also just deleted the 4 emails I sent to lkml from the page
+http://lkml.org/lkml/2007/4/30/
 
-/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1806: error:=
- 'struct sk_buff' has no member named 'nh'
-/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1807: error:=
- 'struct sk_buff' has no member named 'nh'
-/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1807: error:=
- 'struct sk_buff' has no member named 'nh'
-/scratch/michael/kisskb-build/src/drivers/net/ehea/ehea_main.c:1809: error:=
- 'struct sk_buff' has no member named 'nh'
+This included one to you.
 
-cheers
+In case you didn't get it,... here it is again.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+-----------
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+I used GRUB and the kernel and initrd from a separate partition to boot
+a Reiser4 installation.
+-- 
+  
+  lkml777@123mail.org
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-QHBAM+ndYevc28pSUDFh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGOBq/dSjSd0sB4dIRAiTPAKCVylILpeJAj70ItmUjBsd2icLayACeLoSq
-43nBSFyiC/bKGGxIA8Uy6oE=
-=AsQ6
------END PGP SIGNATURE-----
-
---=-QHBAM+ndYevc28pSUDFh--
+-- 
+http://www.fastmail.fm - Does exactly what it says on the tin
 
