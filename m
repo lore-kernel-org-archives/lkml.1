@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbXEBMOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbXEBMOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbXEBMOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbXEBMOU
+	id S1755063AbXEBMOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170AbXEBMOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:14:20 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:54272 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbXEBMOT (ORCPT
+	Wed, 2 May 2007 08:14:34 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58608 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755063AbXEBMOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:14:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=uHT3W/FbB0dbf243pvoRKxWBROwywovRPxJjpW8dtcsJ8cYYHPWKrU67YZVyLnF7d8zdgfQHvqpwJSt6OxshZQZXxHV0Ql4Zfb/Dk2mgCDLHa6AvoQSQOeaz09dJdlfHFKvY6W9KsSt0wfKnU2QOGlpUdBe+UhJvFw3Y+o4w9HY=
-Message-ID: <3ae72650705020514m1e36caadtc9d64b5439b0cd03@mail.gmail.com>
-Date: Wed, 2 May 2007 14:14:11 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative! (-1)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Tilman Schmidt" <tilman@imap.cc>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Hugh Dickins" <hugh@veritas.com>
-In-Reply-To: <20070502074305.GA7761@suse.de>
+	Wed, 2 May 2007 08:14:32 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 2 May 2007 14:13:39 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [git pull] New firewire stack
+To: Christoph Hellwig <hch@infradead.org>
+cc: Kristian H??gsberg <krh@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>
+In-Reply-To: <20070502090007.GA28174@infradead.org>
+Message-ID: <tkrat.087ee29add656926@s5r6.in-berlin.de>
+References: <4637A29F.6070302@redhat.com>
+ <20070502090007.GA28174@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
-	 <46338AEB.2070109@imap.cc>
-	 <20070428141024.887342bd.akpm@linux-foundation.org>
-	 <4636248E.7030309@imap.cc>
-	 <20070430112130.b64321d3.akpm@linux-foundation.org>
-	 <46364346.6030407@imap.cc>
-	 <20070430124638.10611058.akpm@linux-foundation.org>
-	 <46383742.9050503@imap.cc>
-	 <20070502001000.8460fb31.akpm@linux-foundation.org>
-	 <20070502074305.GA7761@suse.de>
-X-Google-Sender-Auth: 8fd062d885d0b227
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/2/07, Greg KH <gregkh@suse.de> wrote:
-> On Wed, May 02, 2007 at 12:10:00AM -0700, Andrew Morton wrote:
-> > On Wed, 02 May 2007 09:01:22 +0200 Tilman Schmidt <tilman@imap.cc> wrote:
-> >
-> > > Am 30.04.2007 21:46 schrieb Andrew Morton:
-> > > > Not really - everything's tangled up.  A bisection search on the
-> > > > 2.6.21-rc7-mm2 driver tree would be the best bet.
-> > >
-> > > And the winner is:
-> > >
-> > > gregkh-driver-driver-core-make-uevent-environment-available-in-uevent-file.patch
-> > >
-> > > Reverting only that from 2.6.21-rc7-mm2 gives me a working kernel
-> > > again.
-> >
-> > cripes.
-> >
-> > +static ssize_t show_uevent(struct device *dev, struct device_attribute *attr,
-> > +                          char *buf)
-> > +{
-> > +       struct kobject *top_kobj;
-> > +       struct kset *kset;
-> > +       char *envp[32];
-> > +       char data[PAGE_SIZE];
-> >
-> > That won't work too well with 4k stacks.
+Christoph Hellwig wrote:
+> On Tue, May 01, 2007 at 04:27:11PM -0400, Kristian H??gsberg wrote:
+>> Hi Linus,
+>> 
+>> As you may know, we've been working on a new FireWire stack over on
+>> linux1394-devel.  The main driver behind this work is to get a small,
+>> maintainable and supportable FireWire stack, with an acceptable
+>> backwards compatibility story.
+> 
+> Please send out patches for review first.
+> 
 
-Yeah, sorry.
+Yes, it's been a while since the last submission for review [1], and
+most of the changes went over linux1394-devel only.  And to put it
+mildly, there aren't a lot of capable reviewers watching that list.
 
-> Wait, even though this isn't good, it shouldn't have been hit by anyone,
-> that file used to not be readable, so I doubt userspace would have been
-> trying to read it...
->
-> Tilman, what version of HAL and udev do you have on your machine?
->
-> Kay, did you get the 'read the uevent file' code already into udev
-> and/or HAL?
+Changes since last submission, AFAIR:
+  - completion of the DMA engine
+  - completion of the userspace ABI
+  - extensions to exported sysfs attributes
+  - some other feature additions like bus manager capability
+  - lots of bug fixes
+  - some style fixes
 
-Only udevtest uses this at the moment, but that is only used for debugging.
-It's probably the brain-dead libsysfs, which opens and reads every
-file in /sys, even when nobody is interested in the data.
+I'll folllow up with "git diff v2.6.21-rc3..juju" ripped apart,
+reordered, and refreshed against 2.6.21:
 
-Thanks,
-Kay
+[PATCH 1/6] firewire: handling of cards, buses, nodes
+[PATCH 2/6] firewire: isochronous and asynchronous I/O
+[PATCH 3/6] firewire: char device interface
+[PATCH 4/6] firewire: OHCI-1394 lowlevel driver
+[PATCH 5/6] firewire: SBP-2 highlevel driver
+[PATCH 6/6] firewire: add it all to kbuild
+
+(If this division seems odd, don't blame Kristian, blame me. :-)
+I'm looking forward to comments.
+
+
+   [1]	http://lkml.org/lkml/2006/12/19/306
+	http://lkml.org/lkml/2006/12/19/307
+	http://lkml.org/lkml/2006/12/19/309
+	http://lkml.org/lkml/2006/12/19/310
+	http://lkml.org/lkml/2006/12/19/308
+-- 
+Stefan Richter
+-=====-=-=== -=-= ---=-
+http://arcgraph.de/sr/
+
