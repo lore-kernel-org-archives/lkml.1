@@ -1,61 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993173AbXEBWKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993186AbXEBWMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993173AbXEBWKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993188AbXEBWKf
+	id S2993186AbXEBWMP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993194AbXEBWMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:10:35 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:45095 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993173AbXEBWKe (ORCPT
+	Wed, 2 May 2007 18:12:15 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:54090 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993186AbXEBWMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:10:34 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46390C3F.9060905@s5r6.in-berlin.de>
-Date: Thu, 03 May 2007 00:10:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Wed, 2 May 2007 18:12:13 -0400
+Message-ID: <46390CA3.5030300@zytor.com>
+Date: Wed, 02 May 2007 15:11:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org, Kristian H??gsberg <krh@redhat.com>,
+To: Rene Herman <rene.herman@gmail.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 5/6] firewire: SBP-2 highlevel driver
-References: <4637A29F.6070302@redhat.com> <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <tkrat.a41f7f10d21d3cc4@s5r6.in-berlin.de> <tkrat.c82a1d775d989371@s5r6.in-berlin.de> <20070502194408.GD1248@infradead.org> <4639085A.8010504@s5r6.in-berlin.de>
-In-Reply-To: <4639085A.8010504@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com> <4638FDA6.9030500@gmail.com> <4638FF70.8020400@zytor.com> <46390086.2030904@gmail.com> <463901C9.7090107@zytor.com> <46390503.1000401@gmail.com>
+In-Reply-To: <46390503.1000401@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> Christoph Hellwig wrote:
->>> +	/* Convert the scatterlist to an sbp2 page table.  If any
->>> +	 * scatterlist entries are too big for sbp2 we split the as we go. */
->> Please set the max_sectors value in your host template so that the
->> block layer doesn't build sg entries too big for you.
+Rene Herman wrote:
+> On 05/02/2007 11:25 PM, H. Peter Anvin wrote:
 > 
-> Hmm, what about this:
+>>> Anyways, I know you asked about register writes but in case it's
+>>> still useful info: the CL54xx adapters have 132x43 and 132x25 as BIOS
+>>> modes 0x54 and 0x55 (ie, just int 0x10 modes) respectively. No idea how
+>>> complete the Bochs/Qemu video BIOS is.
+>>
+>> No, they don't.  I've found enough Cirrus docs to learn that that was
+>> pulled out of their BIOS when they ran out of space.
 > 
-> James Bottomley wrote on 2007-01-15:
-> | Actually, there's one unfortunate case where Linux won't respect this:
-> | an IOMMU that can do virtual merging.  This parameter is a block queue
-> | parameter, so block will happily make sure the request segments obey it.
-> | However, when you get to dma_map_rq() it doesn't see the segment limits,
-> | so, if the iommu merges, you can end up with SG elements the other side
-> | that violate this.  I've been meaning to do something about this for
-> | ages (IDE is the other subsystem that has an absolute requirement for a
-> | fixed maximum segment size) but never found an excuse to fix it.
+> Mine has them.
 > 
-> http://marc.info/?l=linux-scsi&m=116889641203397
 
-PS:
-Nonetheless, yes, fw-sbp2.c is curiously missing to set the template's
-max_sectors.
--- 
-Stefan Richter
--=====-=-=== -=-= ---==
-http://arcgraph.de/sr/
+The problem is to detect the ones that have it from the ones that don't.
+
+	-hpa
