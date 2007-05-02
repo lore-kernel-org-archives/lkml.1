@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993050AbXEBLKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbXEBLSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993050AbXEBLKG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 07:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993048AbXEBLKG
+	id S1755018AbXEBLSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 07:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbXEBLSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 07:10:06 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:44733 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993050AbXEBLKF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 07:10:05 -0400
-Date: Wed, 2 May 2007 04:10:03 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Markus Rechberger <mrechberger@gmail.com>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
-Subject: Re: [linux-dvb] Re: DST/BT878 module customization (.. was:	Critical
- points about ...)
-In-Reply-To: <1178071431.11109.62.camel@localhost>
-Message-ID: <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com> 
- <1178031333.3958.63.camel@localhost>  <Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
- <1178071431.11109.62.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 May 2007 07:18:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48563 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755016AbXEBLSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 07:18:30 -0400
+Date: Wed, 2 May 2007 13:17:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502111742.GA18132@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46386F2B.9050307@linux.vnet.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
-> Em Ter, 2007-05-01 às 16:16 -0700, Trent Piepho escreveu:
-> > On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
-> > > With this configuration, dvb-bt8xx hangs during initialization,
-> > > generating an OOPS, if you have a board with DST (modprobe dvb-bt8xx
-> > > never returns).
-> >
-> > Stupid typo in the first patch, a != should have been ==.
-> >
-> > Fixed:
-> > http://linuxtv.org/hg/~tap/dst-new
->
-> With the changes, the dst unselection worked.
->
-> Those are the logs with dst unselected:
->
-> DVB: registering new adapter (bttv0).
-> DVB: Unable to find symbol dst_attach()
-> frontend_init: Could not find a Twinhan DST.
-> dvb-bt8xx: A frontend driver was not found for device 109e/0878 subsystem fbfb/f800
 
-This is the dvb_attach() "not found" message.  You should see this same
-message if you leave dst selected and then just delete the dst modules before
-loading dvb-bt8xx.
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-If you turn dvb_attach off, you should see a different "dst support was
-disabled" message (and no crash!).
+> The problem is with comparing a s64 values with (s64)ULONG_MAX, which 
+> evaluates to -1. Then we check if exec_delta64 and fair_delta64 are 
+> greater than (s64)ULONG_MAX (-1), if so we assign (s64)ULONG_MAX to 
+> the respective values.
 
-> However, when dst is selected, I got those errors:
+ah, indeed ...
 
-When I made this patch I was basing it off a patch I made around 9 months
-ago.  I thought since that one was ok, this would be ok too, and in my
-hurry to get it done I've clearly put too little effort into checking it,
-and I'm sorry to have wasted your time.
+> The fix is to compare these values against (s64)LONG_MAX and assign 
+> (s64)LONG_MAX to exec_delta64 and fair_delta64 if they are greater 
+> than (s64)LONG_MAX.
+> 
+> Tested on PowerPC, the regression is gone, tasks are load balanced as 
+> they were in v7.
 
-I promise, this time it's right!
-http://linuxtv.org/hg/~tap/dst-new
+thanks, applied!
+
+	Ingo
