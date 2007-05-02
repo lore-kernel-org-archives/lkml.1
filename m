@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992821AbXEBGTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161744AbXEBGUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992821AbXEBGTp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:19:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992826AbXEBGTo
+	id S1161744AbXEBGUR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161746AbXEBGUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:19:44 -0400
-Received: from mga02.intel.com ([134.134.136.20]:42723 "EHLO mga02.intel.com"
+	Wed, 2 May 2007 02:20:16 -0400
+Received: from mga01.intel.com ([192.55.52.88]:56929 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992821AbXEBGTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:19:42 -0400
+	id S1161740AbXEBGUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 02:20:12 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,477,1170662400"; 
-   d="scan'208";a="237751283"
+   d="scan'208";a="240426162"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 10/16] md: satisfy raid5 read requests via raid5_run_ops
+Subject: [PATCH 11/16] md: use async_tx and raid5_run_ops for raid5 expansion
+	operations
 To: neilb@suse.de, akpm@linux-foundation.org, christopher.leech@intel.com
 Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Date: Tue, 01 May 2007 23:19:41 -0700
-Message-ID: <20070502061941.7066.92570.stgit@dwillia2-linux.ch.intel.com>
+Date: Tue, 01 May 2007 23:20:11 -0700
+Message-ID: <20070502062011.7066.3182.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20070502060949.7066.357.stgit@dwillia2-linux.ch.intel.com>
 References: <20070502060949.7066.357.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.12.1
@@ -27,115 +28,100 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use raid5_run_ops to carry out the memory copies for a raid5 read request.
+The parity calculation for an expansion operation is the same as the
+calculation performed at the end of a write with the caveat that all blocks
+in the stripe are scheduled to be written.  An expansion operation is
+identified as a stripe with the POSTXOR flag set and the BIODRAIN flag not
+set.
 
-Changelog:
-* cleanup to_read and to_fill accounting
-* do not fail reads that have reached the cache
+The bulk copy operation to the new stripe is handled inline by async_tx.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- drivers/md/raid5.c |   61 ++++++++++++++++++++++++++--------------------------
- 1 files changed, 30 insertions(+), 31 deletions(-)
+ drivers/md/raid5.c |   48 ++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 36 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
-index f8a4522..6bde174 100644
+index 6bde174..1966713 100644
 --- a/drivers/md/raid5.c
 +++ b/drivers/md/raid5.c
-@@ -1998,7 +1998,7 @@ static void handle_stripe5(struct stripe_head *sh)
- 	int i;
- 	int syncing, expanding, expanded;
- 	int locked=0, uptodate=0, to_read=0, to_write=0, failed=0, written=0;
--	int compute=0, req_compute=0, non_overwrite=0;
-+	int to_fill=0, compute=0, req_compute=0, non_overwrite=0;
- 	int failed_num=0;
- 	struct r5dev *dev;
- 	unsigned long pending=0;
-@@ -2022,37 +2022,29 @@ static void handle_stripe5(struct stripe_head *sh)
- 		dev = &sh->dev[i];
- 		clear_bit(R5_Insync, &dev->flags);
- 
--		PRINTK("check %d: state 0x%lx read %p write %p written %p\n",
--			i, dev->flags, dev->toread, dev->towrite, dev->written);
--		/* maybe we can reply to a read */
--		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread) {
--			struct bio *rbi, *rbi2;
--			PRINTK("Return read for disc %d\n", i);
--			spin_lock_irq(&conf->device_lock);
--			rbi = dev->toread;
--			dev->toread = NULL;
--			if (test_and_clear_bit(R5_Overlap, &dev->flags))
--				wake_up(&conf->wait_for_overlap);
--			spin_unlock_irq(&conf->device_lock);
--			while (rbi && rbi->bi_sector < dev->sector + STRIPE_SECTORS) {
--				copy_data(0, rbi, dev->page, dev->sector);
--				rbi2 = r5_next_bio(rbi, dev->sector);
--				spin_lock_irq(&conf->device_lock);
--				if (--rbi->bi_phys_segments == 0) {
--					rbi->bi_next = return_bi;
--					return_bi = rbi;
--				}
--				spin_unlock_irq(&conf->device_lock);
--				rbi = rbi2;
--			}
--		}
-+		PRINTK("check %d: state 0x%lx toread %p read %p write %p written %p\n",
-+		i, dev->flags, dev->toread, dev->read, dev->towrite, dev->written);
-+
-+		/* maybe we can request a biofill operation
-+		 *
-+		 * new wantfill requests are only permitted while
-+		 * STRIPE_OP_BIOFILL is clear
-+		 */
-+		if (test_bit(R5_UPTODATE, &dev->flags) && dev->toread &&
-+			!test_bit(STRIPE_OP_BIOFILL, &sh->ops.pending))
-+			set_bit(R5_Wantfill, &dev->flags);
- 
- 		/* now count some things */
- 		if (test_bit(R5_LOCKED, &dev->flags)) locked++;
- 		if (test_bit(R5_UPTODATE, &dev->flags)) uptodate++;
-+
-+		if (test_bit(R5_Wantfill, &dev->flags))
-+			to_fill++;
-+		else if (dev->toread)
-+			to_read++;
-+
- 		if (test_bit(R5_Wantcompute, &dev->flags)) BUG_ON(++compute > 1);
- 
--		if (dev->toread) to_read++;
- 		if (dev->towrite) {
- 			to_write++;
- 			if (!test_bit(R5_OVERWRITE, &dev->flags))
-@@ -2073,9 +2065,13 @@ static void handle_stripe5(struct stripe_head *sh)
- 			set_bit(R5_Insync, &dev->flags);
+@@ -2538,18 +2538,32 @@ static void handle_stripe5(struct stripe_head *sh)
+ 		}
  	}
- 	rcu_read_unlock();
-+
-+	if (to_fill && !test_and_set_bit(STRIPE_OP_BIOFILL, &sh->ops.pending))
-+		sh->ops.count++;
-+
- 	PRINTK("locked=%d uptodate=%d to_read=%d"
--		" to_write=%d failed=%d failed_num=%d\n",
--		locked, uptodate, to_read, to_write, failed, failed_num);
-+		" to_write=%d to_fill=%d failed=%d failed_num=%d\n",
-+		locked, uptodate, to_read, to_write, to_fill, failed, failed_num);
- 	/* check if the array has lost two devices and, if so, some requests might
- 	 * need to be failed
- 	 */
-@@ -2127,9 +2123,12 @@ static void handle_stripe5(struct stripe_head *sh)
- 				bi = bi2;
- 			}
  
--			/* fail any reads if this device is non-operational */
--			if (!test_bit(R5_Insync, &sh->dev[i].flags) ||
--			    test_bit(R5_ReadError, &sh->dev[i].flags)) {
-+			/* fail any reads if this device is non-operational and
-+			 * the data has not reached the cache yet.
-+			 */
-+			if (!test_bit(R5_Wantfill, &sh->dev[i].flags) &&
-+			    (!test_bit(R5_Insync, &sh->dev[i].flags) ||
-+			      test_bit(R5_ReadError, &sh->dev[i].flags))) {
- 				bi = sh->dev[i].toread;
- 				sh->dev[i].toread = NULL;
- 				if (test_and_clear_bit(R5_Overlap, &sh->dev[i].flags))
+-	if (expanded && test_bit(STRIPE_EXPANDING, &sh->state)) {
+-		/* Need to write out all blocks after computing parity */
+-		sh->disks = conf->raid_disks;
+-		sh->pd_idx = stripe_to_pdidx(sh->sector, conf, conf->raid_disks);
+-		compute_parity5(sh, RECONSTRUCT_WRITE);
++	/* Finish postxor operations initiated by the expansion
++	 * process
++	 */
++	if (test_bit(STRIPE_OP_POSTXOR, &sh->ops.complete) &&
++		!test_bit(STRIPE_OP_BIODRAIN, &sh->ops.pending)) {
++
++		clear_bit(STRIPE_EXPANDING, &sh->state);
++
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.pending);
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.ack);
++		clear_bit(STRIPE_OP_POSTXOR, &sh->ops.complete);
++
+ 		for (i= conf->raid_disks; i--;) {
+-			set_bit(R5_LOCKED, &sh->dev[i].flags);
+-			locked++;
+ 			set_bit(R5_Wantwrite, &sh->dev[i].flags);
++			if (!test_and_set_bit(STRIPE_OP_IO, &sh->ops.pending))
++				sh->ops.count++;
+ 		}
+-		clear_bit(STRIPE_EXPANDING, &sh->state);
+-	} else if (expanded) {
++	}
++
++	if (expanded && test_bit(STRIPE_EXPANDING, &sh->state) &&
++		!test_bit(STRIPE_OP_POSTXOR, &sh->ops.pending)) {
++		/* Need to write out all blocks after computing parity */
++		sh->disks = conf->raid_disks;
++		sh->pd_idx = stripe_to_pdidx(sh->sector, conf, conf->raid_disks);
++		locked += handle_write_operations5(sh, 0, 1);
++	} else if (expanded && !test_bit(STRIPE_OP_POSTXOR, &sh->ops.pending)) {
+ 		clear_bit(STRIPE_EXPAND_READY, &sh->state);
+ 		atomic_dec(&conf->reshape_stripes);
+ 		wake_up(&conf->wait_for_overlap);
+@@ -2560,6 +2574,7 @@ static void handle_stripe5(struct stripe_head *sh)
+ 		/* We have read all the blocks in this stripe and now we need to
+ 		 * copy some of them into a target stripe for expand.
+ 		 */
++		struct dma_async_tx_descriptor *tx = NULL;
+ 		clear_bit(STRIPE_EXPAND_SOURCE, &sh->state);
+ 		for (i=0; i< sh->disks; i++)
+ 			if (i != sh->pd_idx) {
+@@ -2583,9 +2598,12 @@ static void handle_stripe5(struct stripe_head *sh)
+ 					release_stripe(sh2);
+ 					continue;
+ 				}
+-				memcpy(page_address(sh2->dev[dd_idx].page),
+-				       page_address(sh->dev[i].page),
+-				       STRIPE_SIZE);
++
++				/* place all the copies on one channel */
++				tx = async_memcpy(sh2->dev[dd_idx].page,
++					sh->dev[i].page, 0, 0, STRIPE_SIZE,
++					ASYNC_TX_DEP_ACK, tx, NULL, NULL);
++
+ 				set_bit(R5_Expanded, &sh2->dev[dd_idx].flags);
+ 				set_bit(R5_UPTODATE, &sh2->dev[dd_idx].flags);
+ 				for (j=0; j<conf->raid_disks; j++)
+@@ -2597,6 +2615,12 @@ static void handle_stripe5(struct stripe_head *sh)
+ 					set_bit(STRIPE_HANDLE, &sh2->state);
+ 				}
+ 				release_stripe(sh2);
++
++				/* done submitting copies, wait for them to complete */
++				if (i + 1 >= sh->disks) {
++					async_tx_ack(tx);
++					dma_wait_for_async_tx(tx);
++				}
+ 			}
+ 	}
+ 
