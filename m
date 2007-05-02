@@ -1,79 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993360AbXEBP1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993368AbXEBP3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993360AbXEBP1e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993361AbXEBP1e
+	id S2993368AbXEBP3V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993369AbXEBP3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:27:34 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:35764 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993360AbXEBP1d (ORCPT
+	Wed, 2 May 2007 11:29:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35749 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993368AbXEBP3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:27:33 -0400
-Date: Wed, 2 May 2007 17:27:32 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Olaf Hering <olh@suse.de>,
-       Kristian =?utf-8?B?SMO4Z3NiZXJn?= <krh@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [git pull] New firewire stack
-Message-ID: <20070502152732.GG3531@stusta.de>
-References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de> <4638888B.4080908@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 2 May 2007 11:29:20 -0400
+Date: Wed, 2 May 2007 16:29:06 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070502152906.GA29642@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Dave Jones <davej@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	linux-kernel@vger.kernel.org
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org> <20070425112133.4ae86399.randy.dunlap@oracle.com> <20070425143011.57247c1d.akpm@linux-foundation.org> <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com> <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org> <20070428030805.GA13331@redhat.com> <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4638888B.4080908@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 02:48:11PM +0200, Stefan Richter wrote:
-> Olaf Hering wrote:
-> > On Tue, May 01, Kristian Høgsberg wrote:
-> > 
-> >>   drivers/firewire/Kconfig          |   60 ++
-> > 
-> > NACK.
-> > Upgrade the current drivers/ieee1394/ with the new code,
-> 
-> Last time I believe I was the only one who asked whether to put it into
-> drivers/ieee1394 instead of another directory.  Of course I acknowledge
-> that everytime a new review round is started, people do reconsider.
-> Especially since we had a gap of a few months since the last LKML review.
-> 
-> > and keep all existing module names.
-> 
-> I'm impartial to that.  Using same names might ease the transition from
-> the userspace side, as far as there is userland which relies on module
-> names.
-> 
-> A certain drawback of same names would be that geeks cannot install both
-> stacks at once during the transition period.  Therefore, checking
-> whether eventual problems are in fact regressions involves a module
-> unload/ configure/ build/ install/ reload cycle, instead of just module
-> unload/ reload.  This especially means we can only get help from testers
-> who are able to build kernels.
-> 
-> Other opinions?
+On Wed, May 02, 2007 at 04:28:27PM +0200, Geert Uytterhoeven wrote:
+>   - Check for GNU extension __FUNCTION__
 
-An advantage of changing the names is that they are now prefixed.
-But looking at them, there will again be the point whether everyone will 
-think that "fw" is firmware, and perhaps switching to the (although 
-longer) prefix "firewire" might make sense?
-
-> Stefan Richter
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+__FUNCTION__ is prefered  over __func__
