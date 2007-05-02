@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030801AbXEBFi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbXEBFi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030801AbXEBFi0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030682AbXEBFiX
+	id S1754754AbXEBFi1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030664AbXEBFiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:38:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55825
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1030283AbXEBFeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:34:46 -0400
-Date: Tue, 01 May 2007 22:34:46 -0700 (PDT)
-Message-Id: <20070501.223446.21903762.davem@davemloft.net>
-To: lkml777@123mail.org
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, hopper@omnifarious.org,
-       icxcnika@mar.tar.cc, zam@namesys.com, andi@firstfloor.org,
-       riel@redhat.com, edward@namesys.com, jeff.chua.linux@gmail.com,
-       xucanhao@gmail.com
-Subject: Re: SOME STUFF ABOUT REISER4 To Mr Hopper
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1178081759.3239.1187632583@webmail.messagingengine.com>
-References: <1177477555.20837.1186422725@webmail.messagingengine.com>
-	<462F57AF.2040104@garzik.org>
-	<1178081759.3239.1187632583@webmail.messagingengine.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 01:38:21 -0400
+Received: from haxent.com ([65.99.219.155]:2180 "EHLO haxent.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030295AbXEBFer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 01:34:47 -0400
+Message-Id: <20070502053425.497799000@haxent.com.br>
+References: <20070502052235.914764000@haxent.com.br>
+User-Agent: quilt/0.45-1
+Date: Wed, 02 May 2007 02:22:42 -0300
+From: Davi Arnaut <davi@haxent.com.br>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch 07/22] pollfs: x86, wire up the plsignal system call
+Content-Disposition: inline; filename=pollfs-signal-i386-syscall.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: lkml777@123mail.org
-Date: Tue, 01 May 2007 21:55:59 -0700
+Make the plsignal syscall available to user-space on x86.
 
-> Hi Jeff, it seems that lkml has contacted both of my email accounts and
-> cripped them.
+Signed-off-by: Davi E. M. Arnaut <davi@haxent.com.br>
 
-Actually we aren't blocking your email address, rather we are blocking
-emails with lots of caps in them because that is what small children
-use when they first start using a computer.
+---
+ arch/i386/kernel/syscall_table.S |    1 +
+ include/asm-i386/unistd.h        |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-So if you stop using caps lock so much, you postings might start going
-through.
+Index: linux-2.6/include/asm-i386/unistd.h
+===================================================================
+--- linux-2.6.orig/include/asm-i386/unistd.h
++++ linux-2.6/include/asm-i386/unistd.h
+@@ -325,10 +325,11 @@
+ #define __NR_move_pages		317
+ #define __NR_getcpu		318
+ #define __NR_epoll_pwait	319
++#define __NR_plsignal		320
+ 
+ #ifdef __KERNEL__
+ 
+-#define NR_syscalls 320
++#define NR_syscalls 321
+ 
+ #define __ARCH_WANT_IPC_PARSE_VERSION
+ #define __ARCH_WANT_OLD_READDIR
+Index: linux-2.6/arch/i386/kernel/syscall_table.S
+===================================================================
+--- linux-2.6.orig/arch/i386/kernel/syscall_table.S
++++ linux-2.6/arch/i386/kernel/syscall_table.S
+@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_plsignal		/* 320 */
+
+--
