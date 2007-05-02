@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993400AbXEBPpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXEBPqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993400AbXEBPpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993380AbXEBPpm
+	id S1754044AbXEBPqf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXEBPqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:45:42 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:42390 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993338AbXEBPpk (ORCPT
+	Wed, 2 May 2007 11:46:35 -0400
+Received: from newmail.sw.starentnetworks.com ([12.33.234.78]:33150 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754044AbXEBPqe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:45:40 -0400
-Date: Wed, 2 May 2007 11:41:31 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: akpm@osdl.org, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 4/6] UML - free() wrapper should call libc free
-Message-ID: <20070502154131.GE6752@c2.user-mode-linux.org>
-References: <20070501182158.GA8358@c2.user-mode-linux.org> <4637FC1D.4040300@yahoo.com.au>
-Mime-Version: 1.0
+	Wed, 2 May 2007 11:46:34 -0400
+X-Greylist: delayed 1768 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 11:46:34 EDT
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4637FC1D.4040300@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
+Message-ID: <17976.43884.191895.235227@zeus.sw.starentnetworks.com>
+Date: Wed, 2 May 2007 11:17:00 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: linux-kernel@vger.kernel.org
+Subject: do_tty_write() can block even with O_NONBLOCK?
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 12:49:01PM +1000, Nick Piggin wrote:
-> I want to get rid of PG_reserved eventually. Is it possible to use PG_arch_1
-> for this?
 
-Yup.
+I have two processes with the same tty open, one opens blocking and
+one opens nonblocking.
 
-Andrew - Feel free to drop this or just sit on it until I send a
-replacement.  Whichever is easier.
+If the blocking process blocks doing a write (due to flow control,
+just going to fast, etc...) the nonblocking process will also block
+when it writes until the blocking process unblocks.
 
-				Jeff
+This seems to occur because do_tty_write() isn't checking for
+O_NONBLOCK when taking the tty's write mutex.
 
--- 
-Work email - jdike at linux dot intel dot com
+
+Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+
+===== drivers/char/tty_io.c 1.237 vs edited =====
+--- 1.237/drivers/char/tty_io.c	2007-03-18 16:40:06 -04:00
++++ edited/drivers/char/tty_io.c	2007-05-01 10:53:27 -04:00
+@@ -1690,9 +1690,13 @@
+ 	ssize_t ret = 0, written = 0;
+ 	unsigned int chunk;
+ 	
+-	/* FIXME: O_NDELAY ... */
+-	if (mutex_lock_interruptible(&tty->atomic_write_lock)) {
+-		return -ERESTARTSYS;
++	if (file->f_flags & O_NONBLOCK) {
++		if (!mutex_trylock(&tty->atomic_write_lock))
++			return -EAGAIN;
++	}
++	else {
++		if (mutex_lock_interruptible(&tty->atomic_write_lock))
++			return -ERESTARTSYS;
+ 	}
+ 
+ 	/*
+
