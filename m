@@ -1,38 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767146AbXEBWoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767145AbXEBWpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767146AbXEBWoG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767147AbXEBWoF
+	id S1767145AbXEBWpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767150AbXEBWpx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:44:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40628
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1767146AbXEBWoC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:44:02 -0400
-Date: Wed, 02 May 2007 15:44:03 -0700 (PDT)
-Message-Id: <20070502.154403.77034296.davem@davemloft.net>
-To: christopher.leech@intel.com
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [GIT PULL] I/OAT updates for 2.6.22
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1178145460.16258.3.camel@cleech-lnx>
-References: <1178145460.16258.3.camel@cleech-lnx>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 2 May 2007 18:45:53 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:42131 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1767145AbXEBWpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:45:53 -0400
+From: Ismail =?utf-8?q?D=C3=B6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Ulrich Drepper <drepper@redhat.com>
+Subject: Re: Why ssse3?
+Date: Thu, 3 May 2007 01:47:24 +0300
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+References: <46391392.4070706@redhat.com>
+In-Reply-To: <46391392.4070706@redhat.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1297352.z8IvkAO0OZ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705030147.29321.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1297352.z8IvkAO0OZ
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Chrstopher, I really really would like you to post these patches early
-and often to netdev@vger.kernel.org especially because you are
-touching the TCP code.
+On Thursday 03 May 2007 01:41:22 Ulrich Drepper wrote:
+> Note the extra 's'.  We use "sse" and "sse2", but "ssse3".  I assume
+> it's a typo.
 
-You aren't doing this, for several rounds, and just submitting your
-stuff directly to Linus, Andrew, and lkml, and it's starting to annoy
-me greatly.
+This might not be a typo see http://en.wikipedia.org/wiki/SSSE3
 
-Thanks in advance.
+Regards,
+ismail
+
+--nextPart1297352.z8IvkAO0OZ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGORUBGp0leluI9UwRAttdAJ9E58fUTdZHw304ibgwDd8wX+SDXACeL9ZW
+M7hOtBLBtrKlfpiKL8glxO4=
+=5JSQ
+-----END PGP SIGNATURE-----
+
+--nextPart1297352.z8IvkAO0OZ--
