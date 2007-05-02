@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993437AbXEBQEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993423AbXEBQGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993437AbXEBQEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993438AbXEBQEx
+	id S2993423AbXEBQGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993424AbXEBQGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:04:53 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59188 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993437AbXEBQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:04:52 -0400
-Date: Wed, 2 May 2007 12:04:36 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Cabot, Mason B" <mason.b.cabot@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070502160436.GA19442@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Cabot, Mason B" <mason.b.cabot@intel.com>,
-	linux-kernel@vger.kernel.org
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070501142325.09c294bd.akpm@linux-foundation.org> <p73slafxvor.fsf@bingen.suse.de>
+	Wed, 2 May 2007 12:06:49 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47006 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993423AbXEBQGs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:06:48 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4638B6F5.9070802@s5r6.in-berlin.de>
+Date: Wed, 02 May 2007 18:06:13 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73slafxvor.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: John Stoffel <john@stoffel.org>
+CC: Kristian H??gsberg <krh@redhat.com>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 3/6] firewire: char device interface
+References: <4637A29F.6070302@redhat.com>	<20070502090007.GA28174@infradead.org>	<tkrat.087ee29add656926@s5r6.in-berlin.de>	<tkrat.350cb4dfe522266e@s5r6.in-berlin.de>	<tkrat.65aea95f1451c211@s5r6.in-berlin.de>	<tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <17976.44988.734513.121919@smtp.charter.net>
+In-Reply-To: <17976.44988.734513.121919@smtp.charter.net>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 02:21:40PM +0200, Andi Kleen wrote:
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> > 
-> > Conceivably we could address this in the filesystem without mucking other
-> > things up.  But I'd have thought the simplest damage-control would be to
-> > detect this pattern in samba and to then use glibc's fallocate().
+John Stoffel wrote:
+>>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
+[...]
+
+Hmm, I'm just spotting some artifacts after a recent file-renaming patch:
+
+> Stefan> --- /dev/null
+> Stefan> +++ linux_juju/include/linux/firewire-cdev.h
+                                       ^^^^^^^^^^^^^^^
+> Stefan> @@ -0,0 +1,268 @@
+> Stefan> +/*						-*- c-basic-offset: 8 -*-
+> Stefan> + *
+> Stefan> + * fw-device-cdev.h -- Char device interface.
+              ^^^^^^^^^^^^^^^^
+[...]
+> Stefan> +#ifndef __fw_cdev_h
+> Stefan> +#define __fw_cdev_h
+                   ^^^^^^^^^^^
+[...]
+> Stefan> +#define TCODE_WRITE_QUADLET_REQUEST	0
+> Stefan> +#define TCODE_WRITE_BLOCK_REQUEST	1
+[...]
+> Stefan> +#define SCODE_100			0x0
+> Stefan> +#define SCODE_200			0x1
+> Stefan> +#define SCODE_400			0x2
+> Stefan> +#define SCODE_800			0x3
+> Stefan> +#define SCODE_1600			0x4
+> Stefan> +#define SCODE_3200			0x5
 > 
-> The advantage of detecting it in kernel would be that it would handle
-> Linux applications that do this (I suspect there are some) too.
+> These are also defined in fw-transaction.h, though that file doesn't
+> have all the values.  Can these just be combined into a single
+> fw-constants.h file instead?  
+> 
+> I honestly haven't checked all your defines....
+[...]
 
-Um, which applications do you suspect?  So we can hunt down those user
-space applications programmers and slap them silly?  Or rather,
-unsilly, since that there's no good reason to ever suspect that
-writing a byte every 128k would result in a good allocation layout on disk?
+Right, there are some overlaps...
 
-						- Ted
+Note, firewire-cdev.h declares a userspace ABI, while fw-transaction.h
+declares an in-kernel API.  I'm not quite sure right now how it should
+rather be organized.  Maybe rename fw-transaction.h's macros.  Only
+fw-cdev.c (which implements the userspace ABI) includes both header files.
+
+(PS: I'm not the author; only subsystem maintainer.)
+-- 
+Stefan Richter
+-=====-=-=== -=-= ---=-
+http://arcgraph.de/sr/
