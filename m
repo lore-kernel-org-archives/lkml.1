@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766691AbXEBW32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766663AbXEBWbI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766691AbXEBW32 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766703AbXEBW32
+	id S1766663AbXEBWbI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:31:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766703AbXEBWbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:29:28 -0400
-Received: from rtr.ca ([64.26.128.89]:2319 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766691AbXEBW31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:29:27 -0400
-Message-ID: <463910BF.9050103@rtr.ca>
-Date: Wed, 02 May 2007 18:29:19 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 2 May 2007 18:31:07 -0400
+Received: from zcars04f.nortel.com ([47.129.242.57]:50598 "EHLO
+	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766663AbXEBWbG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:31:06 -0400
+Message-ID: <4639111A.70202@nortel.com>
+Date: Wed, 02 May 2007 16:30:50 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: tglx@linutronix.de
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of	CONFIG_NO_HZ,
- CONFIG_HIGH_RES_TIMERS
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>	 <463741F1.7050706@rtr.ca> <1178027285.5791.307.camel@localhost.localdomain>	 <46374B1D.6050509@rtr.ca> <1178035058.5791.333.camel@localhost.localdomain>	 <46377055.2060605@rtr.ca> <1178092035.5791.349.camel@localhost.localdomain>	 <20070502010527.e64dcce9.akpm@linux-foundation.org> <1178120457.25504.17.camel@localhost.localdomain>
-In-Reply-To: <1178120457.25504.17.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Glen Turner <gdt@gdt.id.au>
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Detecting process death for anycast named process monitoring
+References: <4638FCEA.4010806@gdt.id.au>
+In-Reply-To: <4638FCEA.4010806@gdt.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 May 2007 22:30:55.0048 (UTC) FILETIME=[8C3E8C80:01C78D09]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oh crap.  It's back.
+Glen Turner wrote:
 
-I don't know what's different from before,
-but the system now locks up again exactly the same way,
-even with the lock contention fix applied.
+> The question is, how can a process with no relationship to another
+> process detect that process unexpectedly dying?  If named goes
+> away to a better place, we want to shut down the interface
+> which causes Quagga to inject the anycast route.
+> 
+> We don't want to be the parent of the running process, because that
+> doesn't add robustness. If the parent process dies, then the service
+> dies, and the interface still stays up.
+> 
+> We don't want to poll, because that isn't pretty and the polling
+> interval needs to be very short on a big ISP's DNS servers.
 
-With or without CONFIG_PROVE_LOCKING=y in the config.
+We did something similar where arbitrary processes can register to be 
+sent an arbitrary signal when the state of other processes change.  The 
+caller passes in the pid, the signal to be sent, and an event mask 
+describing which events you're interested in (stop/start/exit/kill/etc.).
 
-I've gotta get some work done here (this is my primary development machine),
-so it's back to CONFIG_DETECT_SOFTLOCKUP=y for a while.
+A signal number of 0 means to deregister interest in the specified pid.
 
-If anyone has a patch to dump out state/whatever just before that
-last message that preceeds all lockups, then pass it along and
-I'll queue it up for testing as soon as I can.
-
-Cheers
+Chris
