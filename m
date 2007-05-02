@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161746AbXEBIGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992897AbXEBIIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161746AbXEBIGO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161754AbXEBIGO
+	id S2992897AbXEBIIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992896AbXEBIIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:06:14 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161746AbXEBIGK (ORCPT
+	Wed, 2 May 2007 04:08:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:45216 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992897AbXEBII1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:06:10 -0400
-Date: Wed, 2 May 2007 01:05:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: Mark Lord <lkml@rtr.ca>, Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both of
- CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-Message-Id: <20070502010527.e64dcce9.akpm@linux-foundation.org>
-In-Reply-To: <1178092035.5791.349.camel@localhost.localdomain>
-References: <46364EBC.5050804@rtr.ca>
-	<46364F5A.2030208@rtr.ca>
-	<463653A3.5040606@rtr.ca>
-	<46367D7E.6060502@rtr.ca>
-	<1177976798.12796.286.camel@imap.mvista.com>
-	<463683A6.4010505@rtr.ca>
-	<1178026458.5791.305.camel@localhost.localdomain>
-	<4637419D.8010303@rtr.ca>
-	<463741F1.7050706@rtr.ca>
-	<1178027285.5791.307.camel@localhost.localdomain>
-	<46374B1D.6050509@rtr.ca>
-	<1178035058.5791.333.camel@localhost.localdomain>
-	<46377055.2060605@rtr.ca>
-	<1178092035.5791.349.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 May 2007 04:08:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iRm8pWyVP0Isf/0pWcvaK/d0Oi7LEE47QJvEjcCpWemZoS5mH8BOYfIniVVxDLDMBYoXHJVqozd6AVSs42TtzeFg3oPIwJVV46F5epmsSa2oDKbeqMXcBwK3qjEp8JN6Xoi0J4lryamkRFV6REWfitfEW/C6nV4t5lfr+LUem0A=
+Message-ID: <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
+Date: Wed, 2 May 2007 01:08:26 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Eric Dumazet" <dada1@cosmosbay.com>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+Cc: "Davi Arnaut" <davi@haxent.com.br>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Davide Libenzi" <davidel@xmailserver.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070502095503.a06f5472.dada1@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070502052235.914764000@haxent.com.br>
+	 <20070502053427.123392000@haxent.com.br>
+	 <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
+	 <20070502095503.a06f5472.dada1@cosmosbay.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 May 2007 09:47:15 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> Mark,
-> 
-> On Tue, 2007-05-01 at 12:52 -0400, Mark Lord wrote:
-> > Done, and done.
-> > And I managed to capture more of the boot messages, too.
-> > This new capture is in the "sequence" subdir at the previous link.
-> 
-> thanks. Can you apply this patch please:
-> http://lkml.org/lkml/2007/4/13/190
+On 5/2/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
+> Well, poll() level edge semantic is well defined, you cannot cheat or change it.
 >
-> It somehow did not make it into 2.6.21.
-> 
+> If many threads call poll() on the same end point, they should *all* return POLLIN/whatever status.
 
-Alas, poor me.  I ain't going to merge a contention-reduction patch when
-we're at -rc6.  If a patch fixes a bug, please tell me!
+This means to me it's the wrong abstraction for this.  We had a nice
+solution for this with Evgeniy's kevent interfaces.  It worked without
+forcing futexes is this inflexible poll() interface.
 
+
+
+> This is why programs usually use one thread to dispatch events to workers, or at least dont queue XXXX threads calling poll() on one fd.
+
+No.  This is why programs are forced to waste cycles by doing this.
+Ideally this would not happen.  Ideally you'd park all worker thread
+in the same place and have them woken up one by one.  Again, Evgeniy's
+code was able to do this.  This approach seems to be a big step
+backward.
