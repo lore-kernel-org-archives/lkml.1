@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766982AbXEBSDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767034AbXEBSFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766982AbXEBSDn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767013AbXEBSDn
+	id S1767034AbXEBSFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767040AbXEBSFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:03:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40965 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766982AbXEBSDm (ORCPT
+	Wed, 2 May 2007 14:05:34 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56961 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767034AbXEBSFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:03:42 -0400
-Subject: Re: [v4l-dvb-maintainer] [PATCH 36/36] Use menuconfig objects II -
-	V4L
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: v4l-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.61.0704301430200.29151@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-	 <Pine.LNX.4.61.0704301430200.29151@yvahk01.tjqt.qr>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 02 May 2007 15:03:06 -0300
-Message-Id: <1178128986.29579.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 2 May 2007 14:05:33 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4638D2CF.4080700@s5r6.in-berlin.de>
+Date: Wed, 02 May 2007 20:05:03 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Kristian H??gsberg <krh@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 6/6] firewire: add it all to kbuild
+References: <4637A29F.6070302@redhat.com> <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <tkrat.a41f7f10d21d3cc4@s5r6.in-berlin.de> <tkrat.c82a1d775d989371@s5r6.in-berlin.de> <tkrat.abd13e310a4516c7@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.abd13e310a4516c7@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
+I wrote:
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Em Seg, 2007-04-30 às 14:30 +0200, Jan Engelhardt escreveu:
-> Change Kconfig objects from "menu, config" into "menuconfig" so
-> that the user can disable the whole feature without having to
-> enter the menu first.
-> 
-> Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
-
-Seems OK to me. I'll commit on my tree and ask Linus to pull it with the
-next patch series.
-
-I intend also to add one patch to Kconfig, adding a short ---help--- to
-the newer variables.
-
-Cheers,
-Mauro
-
+PS, just to avoid misunderstandings: The "From:" and "Signed-off-by:" in
+the messages 1/6...6/6 don't signify authorship.  Authorship information
+can be found in linux1394-2.6.git.
+-- 
+Stefan Richter
+-=====-=-=== -=-= ---=-
+http://arcgraph.de/sr/
