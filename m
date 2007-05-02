@@ -1,71 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946144AbXEBBKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXEBBm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946144AbXEBBKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 21:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946128AbXEBBKX
+	id S1750755AbXEBBm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 21:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXEBBm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 21:10:23 -0400
-Received: from web54407.mail.yahoo.com ([206.190.49.137]:36924 "HELO
-	web54407.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1946146AbXEBBKV (ORCPT
+	Tue, 1 May 2007 21:42:58 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:20793 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750755AbXEBBm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 21:10:21 -0400
+	Tue, 1 May 2007 21:42:57 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=TgRY0GVS9i4iko3akMmGjCWhiYoFkcwgmKrGKKLLm49SeKIpERP/caOBq8jH3AngJ1qvDXxqEAX82CsgOmO1no/Zr3TKS8vXOLXhMLEEgRIbv/4SlEApMespn4bFzFVSRzL4FjckuQISNjFZEZcqTYkq6eLeMoJ9uD2aqSNJkiw=;
-X-YMail-OSG: WOIL7aYVM1k69x2zuY645thQM2XSvbPTMvgha_C48CkhzgPmzwqOmv8CxR9Zqe4rz8_hvcn0ovxh4yvNKIZQmOfnow3Xa7fXbjNNgJhgKTZ46sp_4MggNRPKKqd7
-Date: Tue, 1 May 2007 18:10:19 -0700 (PDT)
-From: Vlad <vladc6@yahoo.com>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-To: Rene Herman <rene.herman@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4637CB9F.9010408@gmail.com>
+  s=s1024; d=yahoo.com.au;
+  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=2dujixeMWOf7xgGTq4XNxwNZt2wDrdk/e0R6blGElLvKvOZYNF6mLw3fCSoOkSpjJxgl86eiviM6a8yv9P0xeYO4olPiGa5fhrRZaaVkQ20Nqp3Bs1RDmyvh8/Q+FIchD2wix4DvgtxnAwAO3n2LulZdttsOiDVqbhkxg7k0jkc=  ;
+Message-ID: <4637EC95.2010501@yahoo.com.au>
+Date: Wed, 02 May 2007 11:42:45 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <90482.84176.qm@web54407.mail.yahoo.com>
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Rene Herman <rene.herman@gmail.com> wrote:
-> On 05/02/2007 12:41 AM, Vlad wrote:
+Hugh Dickins wrote:
+> On Mon, 30 Apr 2007, Andrew Morton wrote:
 > 
-> > H. Peter Anvin wrote:
+>>... 
+>> mm-more-rmap-checking.patch
+>>...
+>>
+>>Misc MM things.  Will merge.
 > 
-> >> I'm rewriting the i386 setup code in C, instead of assembly,
-> >> and before I spend a very large amount of time translating
-> >> all the various card-specific probes, I want to ask the
-> >> following question...
-> >>
-> >> Does *anyone* care about these anymore?
-> > 
-> > Yes, booting Linux on old i386/i486 hardware is still very useful
-> for
-> > forensic purposes and recovering important data. I've personally
-> had
-> > to do this many times, and I'm sure others have as well.
-> > 
-> > Booting is such a critical process that a user would be completely
-> > lost as to why it fails, especially if they can't see any output
-> on
-> > the screen. I think it would be a shame to prevent Linux from
-> running
-> > on these machines.
 > 
-> He wasn't asking about doing away with all video output on 386/486s,
-> but 
-> with special Super VGA adapter specific modes. You'd have normal VGA
-> 
-> available as always, and VESA if the videocard supports it (which
-> all cards 
-> that _can_ do more than 80x25 do).
+> Would Nick mind very much if I ask you to drop this one?
+> You did CC me ages ago, but I've only just run across it.
+> It's a small matter, but I'd prefer it dropped for now.
 
-Oh, OK. Thanks for clarifying this for me.
+I guess I would prefer it to go under CONFIG_DEBUG_VM. Speaking
+of which, it would be nice to be able to turn that on unconditionally
+in -rc1. Although I may have put a few too many things under it, so
+it might slow down too much...
 
-Vlad
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+>>>Re-introduce rmap verification patches that Hugh removed when he removed
+>>>PG_map_lock. PG_map_lock actually isn't needed to synchronise access to
+>>>anonymous pages, because PG_locked and PTL together already do.
+>>>
+>>>These checks were important in discovering and fixing a rare rmap corruption
+>>>in SLES9.
+> 
+> 
+> It introduces some silly checks which were never in mainline,
+> nor so far as I can tell in SLES9: I'm thinking of those
+> +	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
+
+Yes, but IIRC I put that in because there was another check in
+SLES9 that I actually couldn't put in, but used this one instead
+because it also caught the bug we saw.
+
+
+> There are few callsites for these rmap functions, I don't think
+> they need to be checking their arguments in that way.
+> 
+> It also changes the inline page_dup_rmap (a single atomic increment)
+> into a bugchecking out-of-line function: do we really want to slow
+> down fork in that way, for 2.6.22 to fix a rare corruption in SLES9?
+
+This was actually a rare corruption that is also in 2.6.21, and
+as few rmap callsites as we have, it was never noticed until the
+SLES9 bug check was triggered.
+
+
+> What I really like about the patch is Nick's observation that my
+> 	/* else checking page index and mapping is racy */
+> is no longer true: a change we made to the do_swap_page sequence
+> some while ago has indeed cured that raciness, and I'm happy to
+> reintroduce the check on mapping and index in page_add_anon_rmap,
+> and his BUG_ON(!PageLocked(page)) there (despite BUG_ONs falling
+> out of fashion very recently).
+
+Hmm, I didn't notice the do_swap_page change, rather just derived
+its safety by looking at the current state of the code (which I
+guess must have been post-do_swap_page change)...
+
+Do you have a pointer to the patch, for my interest?
+
+-- 
+SUSE Labs, Novell Inc.
