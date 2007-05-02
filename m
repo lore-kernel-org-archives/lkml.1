@@ -1,44 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766551AbXEBVJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993163AbXEBVKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766551AbXEBVJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:09:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993163AbXEBVJ7
+	id S2993163AbXEBVKZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767021AbXEBVKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:09:59 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:57504 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993159AbXEBVJ6 (ORCPT
+	Wed, 2 May 2007 17:10:25 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50749 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993163AbXEBVKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:09:58 -0400
-Message-ID: <4638FE1B.9050901@zytor.com>
-Date: Wed, 02 May 2007 14:09:47 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Wed, 2 May 2007 17:10:20 -0400
+Message-ID: <4638FDA6.9030500@gmail.com>
+Date: Wed, 02 May 2007 23:07:50 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Gerd Hoffmann <kraxel@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org> <4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org>
-In-Reply-To: <4638FC39.4010101@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
+References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com>
+In-Reply-To: <4638FBB8.4020506@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> 
-> Hm, that's unfortunate.  How about an ELF file wrapped in some other
-> container, so that we can easily extract a properly formed ELF file?
-> 
+On 05/02/2007 10:59 PM, H. Peter Anvin wrote:
 
-Effectively the same thing as changing the magic number.  Note that the
-format for bzImage is pretty rigid, and it would be *highly* undesirable
-to muck that up.
+> I'm having a framework for multiple drivers (probe and set methods,
+> basically); the stock distro will have VGA and VESA drivers only.
+> Dropping new drivers in is trivial if someone wants to.
 
-	-hpa
+It sounds like going overboard a bit; 80x25 standard VGA, 80x43/50 line VGA 
+(settable through simple BIOS calls) and VESA (80x60, 132x25/43/50/60) is 
+all that anyone wants. If Bochs and Qemu emulata a CL54xx, they'll provide a 
+VESA BIOS for it as well, I suppose?
+
+Rene.
+
