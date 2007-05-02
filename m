@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbXEBFXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbXEBF1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbXEBFXm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXEBFXm
+	id S1754215AbXEBF1n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXEBF1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:23:42 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:58567 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754118AbXEBFXl (ORCPT
+	Wed, 2 May 2007 01:27:43 -0400
+Received: from outbound-mail-55.bluehost.com ([69.89.20.35]:43289 "HELO
+	outbound-mail-55.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754215AbXEBF1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:23:41 -0400
-Message-ID: <46382055.8030203@snapgear.com>
-Date: Wed, 02 May 2007 15:23:33 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Wed, 2 May 2007 01:27:42 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Olivier Galibert <galibert@pobox.com>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard resources
+Date: Tue, 1 May 2007 22:27:31 -0700
+User-Agent: KMail/1.9.6
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+References: <4635510D.4060103@shaw.ca> <200705011941.07438.jbarnes@virtuousgeek.org> <200705011956.30629.jbarnes@virtuousgeek.org>
+In-Reply-To: <200705011956.30629.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705012227.31729.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+On Tuesday, May 01, 2007, Jesse Barnes wrote:
+> > I'm testing it now on my 965...
+>
+> Bah... nevermind Robert, I see you're doing this already in
+> pci_mmcfg_reject_broken.  I'm about to reboot & test now.
 
-An update of the uClinux (MMU-less) code against 2.6.21.
-A lot of cleanups, and a few bug fixes.
+Ok, I've tested a bit on my 965 (after re-adding my old patch to support 
+it) and the new checks are more complete, but my BIOS still appears to be 
+buggy.
 
-Ahead is more changes to finalize platform device support
-for the new style ColdFire serial driver, and switching to
-the generic irq code.
+The extended config space (as defined by the register) is at 0xf0000000 
+(full value is 0xf0000003 indicating 128M enabled).  The ACPI MCFG table 
+has this space reserved according to Robert's new code, but the machine 
+hangs due to the address space aliasing Olivier mentioned awhile back.  I 
+don't have a PCIe card to test with (or any devices that require extended 
+config space that I know of) so I can't really tell if Windows supports 
+PCIe on this platform, but if it does I don't see how it would w/o having 
+a full bridge driver and sophisticated address space allocation builtin.
 
-http://www.uclinux.org/pub/uClinux/uClinux-2.6.x/linux-2.6.21-uc0.patch.gz
+I'm going to try updating my BIOS, but if that doesn't solve this problem, 
+I'm not sure what we can do about it.  Should pci_mmcfg_insert_resources 
+check for conflicts?  Should we just blacklist certain boards?  I can try 
+pinging our BIOS folks about this board to see what was intended, but I'm 
+sure this won't be the only board we have problems with, so we'll need to 
+address it generically somehow.
 
-
-Change log:
-
-. Arctururs UC5272 and UC5282 board support        David Wu
-. use THREAD_SIZE for stack manipulation           Philippe De Muyter
-. remove dead code from setup.c                    Greg Ungerer
-. remove dead cache code from mm                   Greg Ungerer
-. remove useless is_in_rom()                       Greg Ungerer
-. consolidate fixed bootparam code                 Greg Ungerer
-. no need to preserve THREAD_SR in resume          Philippe De Muyter
-. implement irq_regs in interrupt service          Greg Ungerer
-. remove machine specific irq code                 Greg Ungerer
-. fix timer step count for ColdFire                Philippe De Muyter
-. add chip select mappings for cobra5329           Thomas Brinker
-. remove old machine specific clock defines        Greg Ungerer
-. improve readability of fec driver code           Philippe De Muyter
-. do not read ICR before writing in fec driver     Philippe De Muyter
-. fix INIT_WORK usage in fec driver                Greg Ungerer
-. remove legacy PM code in 68328 serial driver     Greg Ungerer
-. fix errno reporting in binfmt_flat loader        Philippe De Muyter
-. create hw_irq.h for m68knommu                    Greg Ungerer
-. fix CLOCK_TICK_RATE for m68knommu                Philippe De Muyter
-. add expand_stack() funtcion to nommu             Greg Ungerer
-. move to platform device setup for 520x           Greg Ungerer
-. move to platform device setup for 5249           Greg Ungerer
-. new style serial driver for ColdFire UART        Greg Ungerer
-. add QSPI defines for 528x ColdFire parts         David Wu
-. improve SoC device defines for 523x ColdFire     Thomas Brinker
-
-
-Regards
-Greg
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-SnapGear -- a division of Secure Computing  PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
-
+Thanks,
+Jesse
