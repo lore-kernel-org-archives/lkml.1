@@ -1,36 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751717AbXEBFRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXEBFUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751717AbXEBFRY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbXEBFRY
+	id S1754006AbXEBFUu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXEBFUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:17:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:65300 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbXEBFRY (ORCPT
+	Wed, 2 May 2007 01:20:50 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:4591 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbXEBFUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:17:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=QxXh+PjjzkR3n3PBSbcDuOaWYdtRCTuaVYbnTlX54tWAsJXEaIxuzfwosyi5pMeCZTT8z7bn4W+LDeKtfF0Ce7qOyWUVzPcjsbEXSclup4q8wPx1JMX6t6Xmh3n75+AcBdu7ttUmAk00Wl9vJOxW6K5i/X52/QgN478DZ1qoLG8=
-Date: Wed, 2 May 2007 09:17:23 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-Message-ID: <20070502051723.GB5843@martell.zuzino.mipt.ru>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
+	Wed, 2 May 2007 01:20:49 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: linux-kernel@vger.kernel.org
+Subject: keyboard and mouse regresions as of dc87c398 plus cfs-v7
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.0 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMnRFWHRUaXRsZQAvbWF4dG9y
+ L2Nsb29zL2luY29taW5nLzIwMDQvMDIvUFdHL0pIQzE2LnBuZyJMlEwAAAAadEVYdFNvZnR3YXJl
+ AEdOT01FIEljb24gRWRpdG9ynioKbAAAAHFJREFUeJzFk8EKwCAMQ1/ED9cvzw6iuM0N9WIvDTWE
+ 1KjAxmKnLBEBjLcEIBCeI2nccy5YKrjxwbbvAvZ37zlo4GB9iRMC/cq/AppItwmMyJ5I98wd9G7P
+ xxgrSKlYS2lMrOcV13o95aVSKA7E5ndGXG+IIzcl4BNfAAAAAElFTkSuQmCC
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:070502:linux-kernel@vger.kernel.org::hV1bReFopGpuJ1eY:000000000000000000000000000000000HXuH
+Date: Wed, 02 May 2007 01:20:13 -0400
+Message-ID: <m34pmv244b.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 09:28:18PM -0700, David Rientjes wrote:
-> +#define __attribute_unused__		__attribute__((unused))
+I just tried out git as of commit dc87c398 plus Ingo's cfs v6 patch.
 
-Suggest __unused which is shorter and looks compiler-neutral.
+I'll try out w/o the patch to confirm later this morning.
 
+The kernel log shows no indication of a problem, but the (ps/2) mice do
+not work, and the keyboard repeat is *very* slow, and will not speed up
+if changed with xset(1x).
+
+>From dmesg(1):
+
+[   25.448092] PNP: PS/2 Controller [PNP0303:KBC,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+[   25.460470] serio: i8042 KBD port at 0x60,0x64 irq 1
+[   25.466816] serio: i8042 AUX port at 0x60,0x64 irq 12
+[   25.473262] mice: PS/2 mouse device common for all mice
+[   25.484605] input: AT Translated Set 2 keyboard as /class/input/input3
+[   25.497339] input: PC Speaker as /class/input/input4
+
+but no /class/input entry gets generated for the mice.
+
+/proc/interupts shows 5 ints for irq 12, and that does not increment no
+matter what is done to the trackpoint, syn pad or external ps/2 mouse.
+
+My last known good version was 0f851021c0f91e5073fa89f26b5ac68e23df8e11
+plus the rt patch.
+
+To get dc87c398 plus cfs-v7 I cloned, checked out v2.6.21, applied the
+cfs-v7 patch and then pulled in master.
+
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
