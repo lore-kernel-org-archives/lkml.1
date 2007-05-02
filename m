@@ -1,67 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992748AbXEBFFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbXEBFLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992748AbXEBFFU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 01:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992750AbXEBFFU
+	id S1752347AbXEBFLK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 01:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbXEBFLK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 01:05:20 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:33443 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992748AbXEBFFS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 01:05:18 -0400
-Message-ID: <46381BFD.8060301@linux.vnet.ibm.com>
-Date: Wed, 02 May 2007 10:35:01 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bill Irwin <bill.irwin@oracle.com>, Theodore Tso <tytso@mit.edu>,
-       Ulrich Drepper <drepper@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com
-Subject: Re: per-thread rusage
-References: <20070404172931.GM2986@holomorphy.com> <20070404194829.1a93d8fd.dada1@cosmosbay.com> <20070404181050.GN2986@holomorphy.com> <20070409165315.4704021f.akpm@linux-foundation.org> <20070410004201.GA2986@holomorphy.com> <20070501172937.GQ26598@holomorphy.com> <a36005b50705011139p361dbc46ube0da5e42955f8b0@mail.gmail.com> <20070501202456.GR26598@holomorphy.com> <a36005b50705011510k4cd7873dr3fb8206c0f107169@mail.gmail.com> <20070501222724.GG26093@thunk.org> <20070501223440.GT26598@holomorphy.com> <20070502000458.2a7885d9@the-village.bc.nu>
-In-Reply-To: <20070502000458.2a7885d9@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 01:11:10 -0400
+Received: from 1wt.eu ([62.212.114.60]:2468 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752347AbXEBFLH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 01:11:07 -0400
+Date: Wed, 2 May 2007 07:10:49 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ting Yang <tingy@cs.umass.edu>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502051049.GA943@1wt.eu>
+References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4637FE0A.7090405@cs.umass.edu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> I just so happen to think we should implement a variety of CPU resource
->> limits beyond what we now do, so this, too, interests me.
+Hi Ting,
+
+On Tue, May 01, 2007 at 10:57:14PM -0400, Ting Yang wrote:
 > 
-> Agreed - and make them all 64bit while doing the cleanup. One thing
-> several Unixen have we don't for 32bi boxes is a proper set of 64bit
-> resource handling for memory/file etc.
+> Hi, Ingo
 > 
-> We could also start using the CPU facilities to enforce some of
-> the really interesting real time process ones (like main memory
-> bandwidth) that at the moment we have no control over and can lead to
-> very unfair behaviour.
+>  My name is Ting Yang, a graduate student from UMASS. I am currently 
+> studying the linux scheduler and virtual memory manager to solve some 
+> page swapping problems. I am very excited with the new scheduler CFS. 
+> After I read through your code, I think that you might be interested in 
+> reading this paper:
 > 
-> Alan
+>  "A Proportional Share REsource Allocation Algorithm for Real-Time, 
+> Time-Shared Systems", by Ion Stoica. You can find the paper here: 
+> http://citeseer.ist.psu.edu/37752.html
+> 
+>  Authors of this paper proposed a scheduler: Earlist Eligible Virtual 
+> Deadline First (EEVDF). EEVDF uses exactly the same method as CFS to 
+> track the execution of each running task. The only difference between 
+> EEVDF and CFS is that EEVDF tries to _deadline_ fair while CFS is 
+> _start-time_ fair. Scheduling based on deadline gives better reponse 
+> time bound and seems to more fair.
+> 
+>  In the following part of this email, I will try to explain the 
+> similarities and differences between EEVDF and CFS. Hopefully, this 
+> might provide you with some useful information w.r.t your current work 
+> on CFS.
 
-Hi, Alan,
+(...)
+Thanks very much for this very clear explanation. Now I realize that
+some of the principles I've had in mind for a long time already exist
+and are documented ! That's what I called sorting by job completion
+time in the past, which might not have been clear for everyone. Now
+you have put words on all those concepts, it's more clear ;-)
 
-Thanks for bringing this up. There are a couple of patches posted to
-lkml for RSS control (unmapped page cache controller under development).
+> The decouple of weight w_i and timeslice l_i is important. Generally 
+> speaking, weight determines throughput and timeslice determines the 
+> responsiveness of a task.
 
-http://lwn.net/Articles/223829/
+I 100% agree. That's the problem we have with nice today. Some people
+want to use nice to assign more CPU to tasks (as has always been for
+years) and others want to use nice to get better interactivity (meaning
+nice as when you're in a queue and leaving the old woman go before you).
 
-and the new enhanced verison by Pavel at
+IMHO, the two concepts are opposed. Either you're a CPU hog OR you get
+quick responsiveness.
 
-http://www.opensubscriber.com/message/linux-kernel@vger.kernel.org/6456480.html
+> In normal situation, high priority tasks 
+> usually need more cpu capacity within short period of time (bursty, such 
+> as keyboard, mouse move, X updates, daemons, etc), and need to be 
+> processed as quick as possible (responsiveness and interactiveness). 
+> Follow the analysis above, we know that for higher priority tasks we 
+> should give _higher weight_ to ensure its CPU throughput, and at the 
+> same time give _smaller timeslice_ to ensure better responsiveness.  
+> This is a bit counter-intuitive against the current linux 
+> implementation: smaller nice value leads to higher weight and larger 
+> timeslice.
 
-We would appreciate any feedback to help us move the work forward and
-make the code ready for acceptance
+We have an additional problem in Linux, and not the least : it already
+exists and is deployed everywhere, so we cannot break existing setups.
+More specifically, we don't want to play with nice values of processes
+such as X.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+That's why I think that monitoring the amount of the time-slice (l_i)
+consumed by the task is important. I proposed to conserve the unused
+part of l_i as a credit (and conversely the credit can be negative if
+the time-slice has been over-used). This credit would serve two purposes :
+
+  - reassign the unused part of l_i on next time-slices to get the
+    most fair share of CPU between tasks
+
+  - use it as an interactivity key to sort the tasks. Basically, if
+    we note u_i the unused CPU cycles, you can sort based on
+    (d_i - u_i) instead of just d_i, and the less hungry tasks will
+    reach the CPU faster than others.
+
+(...)
+
+>  Based on my understanding, adopting something like EEVDF in CFS should 
+> not be very difficult given their similarities, although I do not have 
+> any idea on how this impacts the load balancing for SMP. Does this worth 
+> a try?
+
+I think that if you have time to spend on this, everyone would like to
+see the difference. All the works on the scheduler are more or less
+experimental and several people are exchanging ideas right now, so it
+should be the right moment. You seem to understand very well both
+approaches and it's likely that it will not take you too much time :-)
+
+
+> Sorry for such a long email :-)
+
+It was worth it, thanks !
+
+Willy
+
