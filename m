@@ -1,114 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993237AbXEBO2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993243AbXEBO3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993237AbXEBO2b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 10:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993238AbXEBO2b
+	id S2993243AbXEBO3H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993246AbXEBO3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 10:28:31 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:45046 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993237AbXEBO23 (ORCPT
+	Wed, 2 May 2007 10:29:07 -0400
+Received: from mta16.mail.adelphia.net ([68.168.78.211]:58156 "EHLO
+	mta16.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993243AbXEBO3E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 10:28:29 -0400
-Date: Wed, 2 May 2007 16:28:27 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Dave Jones <davej@redhat.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-In-Reply-To: <20070428030805.GA13331@redhat.com>
-Message-ID: <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
- <20070425112133.4ae86399.randy.dunlap@oracle.com>
- <20070425143011.57247c1d.akpm@linux-foundation.org>
- <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
- <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
- <20070428030805.GA13331@redhat.com>
+	Wed, 2 May 2007 10:29:04 -0400
+Date: Wed, 2 May 2007 09:29:00 -0500
+From: Corey Minyard <minyard@acm.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-serial@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
+Message-ID: <20070502142900.GA22000@localdomain>
+Reply-To: minyard@acm.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Dave Jones wrote:
-> On Wed, Apr 25, 2007 at 08:02:07PM -0700, Andrew Morton wrote:
->  > > Yep, I was going to mention your scripts but you beat me to it.
->  > > 
->  > > I'll be glad to help maintain such animals if wanted.
->  > > 
->  > wanted ;)
->  > 
->  > At least, it would be interesting to investigate the usefulness.  I suspect
->  > it will prove to be very useful for the little things.
-> 
-> Randy and I got together and hashed out a first cut at this.
-> (Randy actually gutted quite a lot of what I originally wrote, so deserves
->  much kudos for improving this beyond my initial crappy version).
-> You can find the script at http://www.codemonkey.org.uk/projects/checkpatch/
-> There's also a git clonable tree there (only http right now).
-> 
-> http://www.codemonkey.org.uk/projects/checkpatch/example.log shows
-> what fell out of running it on my mbox of lkml from the past month.
-> Some of them are kinda noisy, and perhaps should be moved under --pedantic
-> 
-> I'm all ears for additional regexps, bug reports or other suggestions.
+I didn't hear back, so I went ahead and did a patch.  This patch
+collects the bits from the LSR (and the MSR, which had the same
+problem in one place) for later use.
 
-Nice!
+Subject: Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
 
-Here are a few more:
-  - Check for all of (u)int{8,16,32,64}_t
-  - Check for GNU extension __FUNCTION__
-  - Don't use space before tab
-  - Don't use trailing white space
+Reading the LSR clears the break, parity, frame error, and overrun
+bits in the 8250 chip, but these are not being saved in all places
+that read the LSR.  Same goes for the MSR delta bits.  Save the LSR
+bits off whenever the lsr is read so they can be handled later in the
+receive routine.  Save the MSR bits to be handled in the modem status
+routine.
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Also, clear the stored bits and clear the interrupt registers before
+enabling interrupts, to avoid handling old values of the stored bits
+in the interrupt routines.
 
-diff --git a/checkpatch.pl b/checkpatch.pl
-index cbda29a..b44a3f3 100755
---- a/checkpatch.pl
-+++ b/checkpatch.pl
-@@ -143,10 +143,26 @@ sub process {
- 			"Bad variable name: tmp. Please use something more descriptive.\n");
- 		$warnings += search(qr/temp(,|;)/,
- 			"Bad variable name: temp. Please use something more descriptive.\n");
-+		$warnings += search(qr/uint8_t/,
-+			"Incorrect type usage for kernel code. Use __u8/u8\n");
-+		$warnings += search(qr/uint16_t/,
-+			"Incorrect type usage for kernel code. Use __u16/u16\n");
- 		$warnings += search(qr/uint32_t/,
--			"Incorrect type usage for kernel code. Use __u32 etc.\n");
-+			"Incorrect type usage for kernel code. Use __u32/u32\n");
-+		$warnings += search(qr/uint64_t/,
-+			"Incorrect type usage for kernel code. Use __u64/u64\n");
-+		$warnings += search(qr/int8_t/,
-+			"Incorrect type usage for kernel code. Use __s8/s8\n");
-+		$warnings += search(qr/int16_t/,
-+			"Incorrect type usage for kernel code. Use __s16/s16\n");
-+		$warnings += search(qr/int32_t/,
-+			"Incorrect type usage for kernel code. Use __s32/s32\n");
-+		$warnings += search(qr/int64_t/,
-+			"Incorrect type usage for kernel code. Use __s64/s64\n");
- 		$warnings += search(qr/\b(BUG|BUG_ON)\b/,
- 			"Try to use WARN_ON & Recovery code rather than BUG() or BUG_ON()\n");
-+		$warnings += search(qr/__FUNCION__/,
-+			"Should use C99 __func__ instead of GNU __FUNCTION__\n");
+Signed-off-by: Corey Minyard <minyard@acm.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>
+
+ drivers/serial/8250.c      |   72 ++++++++++++++++++++++++++-------------------
+ include/linux/serial_reg.h |    1 
+ 2 files changed, 44 insertions(+), 29 deletions(-)
+
+Index: linux-2.6.21/drivers/serial/8250.c
+===================================================================
+--- linux-2.6.21.orig/drivers/serial/8250.c
++++ linux-2.6.21/drivers/serial/8250.c
+@@ -129,7 +129,16 @@ struct uart_8250_port {
+ 	unsigned char		mcr;
+ 	unsigned char		mcr_mask;	/* mask of user bits */
+ 	unsigned char		mcr_force;	/* mask of forced bits */
+-	unsigned char		lsr_break_flag;
++
++	/*
++	 * Some bits in registers are cleared on a read, so they must
++	 * be saved whenever the register is read but the bits will not
++	 * be immediately processed.
++	 */
++#define LSR_SAVE_FLAGS UART_LSR_BRK_ERROR_BITS
++	unsigned char		lsr_saved_flags;
++#define MSR_SAVE_FLAGS UART_MSR_ANY_DELTA
++	unsigned char		msr_saved_flags;
+ 
+ 	/*
+ 	 * We provide a per-port pm hook.
+@@ -1159,6 +1168,7 @@ static void serial8250_start_tx(struct u
+ 		if (up->bugs & UART_BUG_TXEN) {
+ 			unsigned char lsr, iir;
+ 			lsr = serial_in(up, UART_LSR);
++			up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
+ 			iir = serial_in(up, UART_IIR);
+ 			if (lsr & UART_LSR_TEMT && iir & UART_IIR_NO_INT)
+ 				transmit_chars(up);
+@@ -1208,18 +1218,10 @@ receive_chars(struct uart_8250_port *up,
+ 		flag = TTY_NORMAL;
+ 		up->port.icount.rx++;
+ 
+-#ifdef CONFIG_SERIAL_8250_CONSOLE
+-		/*
+-		 * Recover the break flag from console xmit
+-		 */
+-		if (up->port.line == up->port.cons->index) {
+-			lsr |= up->lsr_break_flag;
+-			up->lsr_break_flag = 0;
+-		}
+-#endif
++		lsr |= up->lsr_saved_flags;
++		up->lsr_saved_flags = 0;
+ 
+-		if (unlikely(lsr & (UART_LSR_BI | UART_LSR_PE |
+-				    UART_LSR_FE | UART_LSR_OE))) {
++		if (unlikely(lsr & UART_LSR_BRK_ERROR_BITS)) {
+ 			/*
+ 			 * For statistics only
+ 			 */
+@@ -1310,6 +1312,8 @@ static unsigned int check_modem_status(s
+ {
+ 	unsigned int status = serial_in(up, UART_MSR);
+ 
++	status |= up->msr_saved_flags;
++	up->msr_saved_flags = 0;
+ 	if (status & UART_MSR_ANY_DELTA && up->ier & UART_IER_MSI &&
+ 	    up->port.info != NULL) {
+ 		if (status & UART_MSR_TERI)
+@@ -1496,7 +1500,7 @@ static void serial8250_timeout(unsigned 
+ static void serial8250_backup_timeout(unsigned long data)
+ {
+ 	struct uart_8250_port *up = (struct uart_8250_port *)data;
+-	unsigned int iir, ier = 0;
++	unsigned int iir, ier = 0, lsr;
+ 
+ 	/*
+ 	 * Must disable interrupts or else we risk racing with the interrupt
+@@ -1515,9 +1519,11 @@ static void serial8250_backup_timeout(un
+ 	 * the "Diva" UART used on the management processor on many HP
+ 	 * ia64 and parisc boxes.
+ 	 */
++	lsr = serial_in(up, UART_LSR);
++	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
+ 	if ((iir & UART_IIR_NO_INT) && (up->ier & UART_IER_THRI) &&
+ 	    (!uart_circ_empty(&up->port.info->xmit) || up->port.x_char) &&
+-	    (serial_in(up, UART_LSR) & UART_LSR_THRE)) {
++	    (lsr & UART_LSR_THRE)) {
+ 		iir &= ~(UART_IIR_ID | UART_IIR_NO_INT);
+ 		iir |= UART_IIR_THRI;
+ 	}
+@@ -1536,13 +1542,14 @@ static unsigned int serial8250_tx_empty(
+ {
+ 	struct uart_8250_port *up = (struct uart_8250_port *)port;
+ 	unsigned long flags;
+-	unsigned int ret;
++	unsigned int lsr;
+ 
+ 	spin_lock_irqsave(&up->port.lock, flags);
+-	ret = serial_in(up, UART_LSR) & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
++	lsr = serial_in(up, UART_LSR);
++	up->lsr_saved_flags |= lsr & LSR_SAVE_FLAGS;
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+-	return ret;
++	return lsr & UART_LSR_TEMT ? TIOCSER_TEMT : 0;
+ }
+ 
+ static unsigned int serial8250_get_mctrl(struct uart_port *port)
+@@ -1613,8 +1620,7 @@ static inline void wait_for_xmitr(struct
+ 	do {
+ 		status = serial_in(up, UART_LSR);
+ 
+-		if (status & UART_LSR_BI)
+-			up->lsr_break_flag = UART_LSR_BI;
++		up->lsr_saved_flags |= status & LSR_SAVE_FLAGS;
+ 
+ 		if (--tmout == 0)
+ 			break;
+@@ -1623,8 +1629,12 @@ static inline void wait_for_xmitr(struct
+ 
+ 	/* Wait up to 1s for flow control if necessary */
+ 	if (up->port.flags & UPF_CONS_FLOW) {
+-		tmout = 1000000;
+-		while (!(serial_in(up, UART_MSR) & UART_MSR_CTS) && --tmout) {
++		unsigned int tmout;
++		for (tmout = 1000000; tmout; tmout--) {
++			unsigned int msr = serial_in(up, UART_MSR);
++			up->msr_saved_flags |= msr & MSR_SAVE_FLAGS;
++			if (msr & UART_MSR_CTS)
++				break;
+ 			udelay(1);
+ 			touch_nmi_watchdog();
+ 		}
+@@ -1794,6 +1804,18 @@ static int serial8250_startup(struct uar
+ 	spin_unlock_irqrestore(&up->port.lock, flags);
+ 
+ 	/*
++	 * Clear the interrupt registers again for luck, and clear the
++	 * saved flags to avoid getting false values from polling
++	 * routines or the previous session.
++	 */
++	(void) serial_inp(up, UART_LSR);
++	(void) serial_inp(up, UART_RX);
++	(void) serial_inp(up, UART_IIR);
++	(void) serial_inp(up, UART_MSR);
++	up->lsr_saved_flags = 0;
++	up->msr_saved_flags = 0;
++
++	/*
+ 	 * Finally, enable interrupts.  Note: Modem status interrupts
+ 	 * are set via set_termios(), which will be occurring imminently
+ 	 * anyway, so we don't enable them here.
+@@ -1811,14 +1833,6 @@ static int serial8250_startup(struct uar
+ 		(void) inb_p(icp);
  	}
  
- 	# coding style:
-@@ -154,6 +170,8 @@ sub process {
- 		$warnings += search(qr/,[^[:space:]]/, "Need space after comma:\n");
- 		$warnings += search(qr/\([[:space:]]/, "Don't use space after '(':\n");
- 		$warnings += search(qr/[[:space:]]\)/, "Don't use space before ')':\n");
-+		$warnings += search(qr/ \t/, "Don't use space before tab:\n");
-+		$warnings += search(qr/[[:space:]]$/, "Don't use trailing white space:\n");
- 		$warnings += search(qr/if\(|for\(|while\(|switch\(/,
- 				"Need space after if/for/while/switch:\n");
- 		$warnings += search(qr/sizeof[[:space:]]/,
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+-	/*
+-	 * And clear the interrupt registers again for luck.
+-	 */
+-	(void) serial_inp(up, UART_LSR);
+-	(void) serial_inp(up, UART_RX);
+-	(void) serial_inp(up, UART_IIR);
+-	(void) serial_inp(up, UART_MSR);
+-
+ 	return 0;
+ }
+ 
+Index: linux-2.6.21/include/linux/serial_reg.h
+===================================================================
+--- linux-2.6.21.orig/include/linux/serial_reg.h
++++ linux-2.6.21/include/linux/serial_reg.h
+@@ -116,6 +116,7 @@
+ #define UART_LSR_PE		0x04 /* Parity error indicator */
+ #define UART_LSR_OE		0x02 /* Overrun error indicator */
+ #define UART_LSR_DR		0x01 /* Receiver data ready */
++#define UART_LSR_BRK_ERROR_BITS	0x1E /* BI, FE, PE, OE bits */
+ 
+ #define UART_MSR	6	/* In:  Modem Status Register */
+ #define UART_MSR_DCD		0x80 /* Data Carrier Detect */
