@@ -1,68 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767097AbXEBWiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766755AbXEBWj7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767097AbXEBWiz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 18:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767121AbXEBWiy
+	id S1766755AbXEBWj7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 18:39:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767132AbXEBWj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 18:38:54 -0400
-Received: from www.osadl.org ([213.239.205.134]:37017 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767117AbXEBWix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 18:38:53 -0400
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both
-	of	CONFIG_NO_HZ, CONFIG_HIGH_RES_TIMERS
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Mark Lord <lkml@rtr.ca>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <463910BF.9050103@rtr.ca>
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>
-	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>
-	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>
-	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>
-		 <463741F1.7050706@rtr.ca>
-	 <1178027285.5791.307.camel@localhost.localdomain> <46374B1D.6050509@rtr.ca>
-	 <1178035058.5791.333.camel@localhost.localdomain> <46377055.2060605@rtr.ca>
-	 <1178092035.5791.349.camel@localhost.localdomain>
-	 <20070502010527.e64dcce9.akpm@linux-foundation.org>
-	 <1178120457.25504.17.camel@localhost.localdomain> <463910BF.9050103@rtr.ca>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 00:41:15 +0200
-Message-Id: <1178145675.2340.28.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 2 May 2007 18:39:59 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:40349
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766755AbXEBWju (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 18:39:50 -0400
+Message-ID: <46392142.2030201@microgate.com>
+Date: Wed, 02 May 2007 17:39:46 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+References: <1178137281.10111.8.camel@amdx2.microgate.com> <200705030009.11502.arnd@arndb.de>
+In-Reply-To: <200705030009.11502.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 18:29 -0400, Mark Lord wrote:
-> Oh crap.  It's back.
+Arnd Bergmann wrote:
+>> +	case MGSL_IOCGPARAMS32:
+>> +		rc = get_params32(info, (struct MGSL_PARAMS32 __user *)compat_ptr(arg));
+>> +		break;
 > 
-> I don't know what's different from before,
-> but the system now locks up again exactly the same way,
-> even with the lock contention fix applied.
+> No need for the cast here.
 
-Which is less surprising and confusing than the previous result. It
-points to some subtle race condition somewhere, which got affected by
-the slightly timing change.
+OK, for some reason I remember getting a warning
+error without it. I must have been mistaken.
 
-> With or without CONFIG_PROVE_LOCKING=y in the config.
-
-Ok.
-
-> I've gotta get some work done here (this is my primary development machine),
-> so it's back to CONFIG_DETECT_SOFTLOCKUP=y for a while.
+>> +
+>> +	spin_lock_irqsave(&info->lock, flags);
 > 
-> If anyone has a patch to dump out state/whatever just before that
-> last message that preceeds all lockups, then pass it along and
-> I'll queue it up for testing as soon as I can.
+> no need for _irqsave, just use spin_{,un}lock_irq() when you know that
+> interrupts are enabled.
 
-I try to come up with something, but I'm travelling tomorrow, so it
-might be not before end of week.
+That makes me a little uneasy. The locking
+mechanisms (and just about everything else) above the driver
+seem to change frequently. This involves not just the VFS but
+the tty core as well.
 
-	tglx
+If you are confident this will not change, I will
+switch to spin_lock(). I used spin_lock_irqsave() to be
+more robust against changes to behavior outside my driver.
 
+>> +/* provide 32 bit ioctl compatibility on 64 bit systems */
+>> +struct MGSL_PARAMS32
+>> +{
+>> +	unsigned int	mode;
+>> +	unsigned char	loopback;
+>> +	unsigned short	flags;
+>> +	unsigned char	encoding;
+>> +	unsigned int	clock_speed;
+>> +	unsigned char	addr_filter;
+>> +	unsigned short	crc_type;
+>> +	unsigned char	preamble_length;
+>> +	unsigned char	preamble;
+>> +	unsigned int	data_rate;
+>> +	unsigned char	data_bits;
+>> +	unsigned char	stop_bits;
+>> +	unsigned char	parity;
+>> +};
+> 
+> The definition is correct, but by convention it would be better to use
+> compat_ulong_t instead of unsigned int for those fields that are an
+> unsigned long in native mode.
 
+OK
+
+--
+Paul
