@@ -1,62 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766961AbXEBRvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766960AbXEBRwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766961AbXEBRvz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766964AbXEBRvz
+	id S1766960AbXEBRwm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766970AbXEBRwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:51:55 -0400
-Received: from nn7.de ([85.214.94.156]:37269 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766961AbXEBRvy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:51:54 -0400
-Subject: oops in 2.6.21...
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
+	Wed, 2 May 2007 13:52:42 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38865
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766960AbXEBRwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 13:52:40 -0400
+Subject: [PATCH] tty add compat_ioctl method
+From: Paul Fulghum <paulkf@microgate.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Arnd Bergmann <arnd@arndb.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200704270008.58811.arnd@arndb.de>
+References: <1177620717.5060.11.camel@amdx2.microgate.com>
+	 <200704262337.56240.arnd@arndb.de> <46312AEE.1000302@microgate.com>
+	 <200704270008.58811.arnd@arndb.de>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 02 May 2007 17:29:32 +0000
-Message-Id: <1178126972.24565.36.camel@localhost>
+Date: Wed, 02 May 2007 12:52:01 -0500
+Message-Id: <1178128321.9430.14.camel@amdx2.microgate.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-happened unfortunately with a tainted kernel (fglrx,ath_pci), although
-the machine survived a couple of s2ram/resume cycles before:
+Add compat_ioctl method for tty code to allow processing
+of 32 bit ioctl calls on 64 bit systems by tty core,
+tty drivers, and line disciplines.
 
-BUG: unable to handle kernel paging request at virtual address 07ff800d
- printing eip:
-c01880a4
-*pde = 00000000
-Oops: 0000 [#1]
-PREEMPT SMP 
-Modules linked in: sky2 ath_pci uinput snd_usb_audio snd_usb_lib snd_seq_oss snd_seq_midi snd_seq_midi_event snd_seq snd_rawmidi snd_seq_device snd_hwdep wlan_tkip fglrx(P) hci_usb rfcomm hidp l2cap blue
-CPU:    0
-EIP:    0060:[<c01880a4>]    Tainted: P       VLI
-EFLAGS: 00010283   (2.6.21-sonne #2)
-EIP is at iput+0x14/0x70
-eax: 07ff7fed   ebx: c008fd70   ecx: c008fd88   edx: c008fd88
-esi: f7d6a03c   edi: 00000000   ebp: d4f95f78   esp: dfca7edc
-ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-Process kswapd0 (pid: 219, ti=dfca6000 task=dfc60580 task.ti=dfca6000)
-Stack: d4f95f70 c0186d43 d4f95f70 f7d6a03c c0186f60 0000002f 00041f14 00000112 
-       dfffe560 000000d0 c018703a c015f855 00005803 00000000 00000000 00000093 
-       00000000 c04dcd00 00000000 00000080 0001c9e7 00000000 00000001 c04729c0 
-Call Trace:
- [<c0186d43>] prune_one_dentry+0x53/0x80
- [<c0186f60>] prune_dcache+0xf0/0x190
- [<c018703a>] shrink_dcache_memory+0x3a/0x40
- [<c015f855>] shrink_slab+0x135/0x1a0
- [<c015fcf7>] kswapd+0x377/0x480
- [<c013fb60>] autoremove_wake_function+0x0/0x50
- [<c015f980>] kswapd+0x0/0x480
- [<c013f99b>] kthread+0xbb/0xf0
- [<c013f8e0>] kthread+0x0/0xf0
- [<c0104eb3>] kernel_thread_helper+0x7/0x14
- =======================
-Code: ff ff ff 8d 74 26 00 e8 ab 9a 22 00 31 c0 c3 90 8d b4 26 00 00 00 00 85 c0 53 89 c3 74 55 8b 80 a4 00 00 00 83 bb 50 01 00 00 20 <8b> 40 20 74 45 85 c0 74 0b 8b 50 14 85 d2 74 04 89 d8 ff d2 8d 
-EIP: [<c01880a4>] iput+0x14/0x70 SS:ESP 0068:dfca7edc
+Based on patch by Arnd Bergmann:
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0511.0/1732.html
 
--- 
-Sometimes, there's a moment as you're waking, when you become aware of
-the real world around you, but you're still dreaming.
+This patch does not remove tty ioctl entries in compat_ioctl.[ch]
+That will be implemented in a separate patch.
+
+Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+CC: Arnd Bergmann <arnd@arndb.de>
+
+--- a/drivers/char/n_tty.c	2007-04-30 15:13:19.000000000 -0500
++++ b/drivers/char/n_tty.c	2007-04-30 15:17:28.000000000 -0500
+@@ -1545,21 +1545,18 @@ static unsigned int normal_poll(struct t
+ }
+ 
+ struct tty_ldisc tty_ldisc_N_TTY = {
+-	TTY_LDISC_MAGIC,	/* magic */
+-	"n_tty",		/* name */
+-	0,			/* num */
+-	0,			/* flags */
+-	n_tty_open,		/* open */
+-	n_tty_close,		/* close */
+-	n_tty_flush_buffer,	/* flush_buffer */
+-	n_tty_chars_in_buffer,	/* chars_in_buffer */
+-	read_chan,		/* read */
+-	write_chan,		/* write */
+-	n_tty_ioctl,		/* ioctl */
+-	n_tty_set_termios,	/* set_termios */
+-	normal_poll,		/* poll */
+-	NULL,			/* hangup */
+-	n_tty_receive_buf,	/* receive_buf */
+-	n_tty_write_wakeup	/* write_wakeup */
++	.magic           = TTY_LDISC_MAGIC,
++	.name            = "n_tty",
++	.open            = n_tty_open,
++	.close           = n_tty_close,
++	.flush_buffer    = n_tty_flush_buffer,
++	.chars_in_buffer = n_tty_chars_in_buffer,
++	.read            = read_chan,
++	.write           = write_chan,
++	.ioctl           = n_tty_ioctl,
++	.set_termios     = n_tty_set_termios,
++	.poll            = normal_poll,
++	.receive_buf     = n_tty_receive_buf,
++	.write_wakeup    = n_tty_write_wakeup
+ };
+ 
+--- a/include/linux/tty_driver.h	2006-11-29 15:57:37.000000000 -0600
++++ b/include/linux/tty_driver.h	2007-04-30 14:05:02.000000000 -0500
+@@ -132,6 +132,10 @@ struct tty_operations {
+ 	int  (*chars_in_buffer)(struct tty_struct *tty);
+ 	int  (*ioctl)(struct tty_struct *tty, struct file * file,
+ 		    unsigned int cmd, unsigned long arg);
++#ifdef CONFIG_COMPAT
++	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
++			     unsigned int cmd, unsigned long arg);
++#endif
+ 	void (*set_termios)(struct tty_struct *tty, struct termios * old);
+ 	void (*throttle)(struct tty_struct * tty);
+ 	void (*unthrottle)(struct tty_struct * tty);
+@@ -193,6 +197,10 @@ struct tty_driver {
+ 	int  (*chars_in_buffer)(struct tty_struct *tty);
+ 	int  (*ioctl)(struct tty_struct *tty, struct file * file,
+ 		    unsigned int cmd, unsigned long arg);
++#ifdef CONFIG_COMPAT
++	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
++			     unsigned int cmd, unsigned long arg);
++#endif
+ 	void (*set_termios)(struct tty_struct *tty, struct termios * old);
+ 	void (*throttle)(struct tty_struct * tty);
+ 	void (*unthrottle)(struct tty_struct * tty);
+--- a/drivers/char/tty_io.c	2006-11-29 15:57:37.000000000 -0600
++++ b/drivers/char/tty_io.c	2007-04-30 14:51:01.000000000 -0500
+@@ -151,6 +151,9 @@ static int tty_open(struct inode *, stru
+ static int tty_release(struct inode *, struct file *);
+ int tty_ioctl(struct inode * inode, struct file * file,
+ 	      unsigned int cmd, unsigned long arg);
++#ifdef CONFIG_COMPAT
++long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
++#endif
+ static int tty_fasync(int fd, struct file * filp, int on);
+ static void release_mem(struct tty_struct *tty, int idx);
+ 
+@@ -1153,8 +1156,8 @@ static unsigned int hung_up_tty_poll(str
+ 	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
+ }
+ 
+-static int hung_up_tty_ioctl(struct inode * inode, struct file * file,
+-			     unsigned int cmd, unsigned long arg)
++static long hung_up_tty_ioctl(struct file * file,
++			      unsigned int cmd, unsigned long arg)
+ {
+ 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
+ }
+@@ -1165,6 +1168,9 @@ static const struct file_operations tty_
+ 	.write		= tty_write,
+ 	.poll		= tty_poll,
+ 	.ioctl		= tty_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= tty_compat_ioctl,
++#endif
+ 	.open		= tty_open,
+ 	.release	= tty_release,
+ 	.fasync		= tty_fasync,
+@@ -1177,6 +1183,9 @@ static const struct file_operations ptmx
+ 	.write		= tty_write,
+ 	.poll		= tty_poll,
+ 	.ioctl		= tty_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= tty_compat_ioctl,
++#endif
+ 	.open		= ptmx_open,
+ 	.release	= tty_release,
+ 	.fasync		= tty_fasync,
+@@ -1189,6 +1198,9 @@ static const struct file_operations cons
+ 	.write		= redirected_tty_write,
+ 	.poll		= tty_poll,
+ 	.ioctl		= tty_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= tty_compat_ioctl,
++#endif
+ 	.open		= tty_open,
+ 	.release	= tty_release,
+ 	.fasync		= tty_fasync,
+@@ -1199,7 +1211,10 @@ static const struct file_operations hung
+ 	.read		= hung_up_tty_read,
+ 	.write		= hung_up_tty_write,
+ 	.poll		= hung_up_tty_poll,
+-	.ioctl		= hung_up_tty_ioctl,
++	.unlocked_ioctl = hung_up_tty_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl	= hung_up_tty_ioctl,
++#endif
+ 	.release	= tty_release,
+ };
+ 
+@@ -3284,6 +3299,32 @@ int tty_ioctl(struct inode * inode, stru
+ 	return retval;
+ }
+ 
++#ifdef CONFIG_COMPAT
++long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
++{
++	struct inode *inode = file->f_dentry->d_inode;
++	struct tty_struct *tty;
++	struct tty_ldisc *ld;
++	int retval = -ENOIOCTLCMD;
++
++	tty = (struct tty_struct *)file->private_data;
++	if (tty_paranoia_check(tty, inode, "tty_ioctl"))
++		return -EINVAL;
++
++	if (tty->driver->compat_ioctl) {
++		retval = (tty->driver->compat_ioctl)(tty, file, cmd, arg);
++		if (retval != -ENOIOCTLCMD)
++			return retval;
++	}
++
++	ld = tty_ldisc_ref_wait(tty);
++	if (ld->compat_ioctl)
++		retval = ld->compat_ioctl(tty, file, cmd, arg);
++	tty_ldisc_deref(ld);
++
++	return retval;
++}
++#endif
+ 
+ /*
+  * This implements the "Secure Attention Key" ---  the idea is to
+@@ -3691,6 +3732,9 @@ void tty_set_operations(struct tty_drive
+ 	driver->write_room = op->write_room;
+ 	driver->chars_in_buffer = op->chars_in_buffer;
+ 	driver->ioctl = op->ioctl;
++#ifdef CONFIG_COMPAT
++	driver->compat_ioctl = op->compat_ioctl;
++#endif
+ 	driver->set_termios = op->set_termios;
+ 	driver->throttle = op->throttle;
+ 	driver->unthrottle = op->unthrottle;
+--- a/include/linux/tty_ldisc.h	2006-11-29 15:57:37.000000000 -0600
++++ b/include/linux/tty_ldisc.h	2007-04-30 14:06:19.000000000 -0500
+@@ -59,6 +59,11 @@
+  * 	low-level driver can "grab" an ioctl request before the line
+  * 	discpline has a chance to see it.
+  * 
++ * long	(*compat_ioctl)(struct tty_struct * tty, struct file * file,
++ * 		        unsigned int cmd, unsigned long arg);
++ *
++ *      Process ioctl calls from 32-bit process on 64-bit system
++ *
+  * void	(*set_termios)(struct tty_struct *tty, struct termios * old);
+  *
+  * 	This function notifies the line discpline that a change has
+@@ -118,6 +123,10 @@ struct tty_ldisc {
+ 			 const unsigned char * buf, size_t nr);	
+ 	int	(*ioctl)(struct tty_struct * tty, struct file * file,
+ 			 unsigned int cmd, unsigned long arg);
++#ifdef CONFIG_COMPAT
++	long	(*compat_ioctl)(struct tty_struct * tty, struct file * file,
++				unsigned int cmd, unsigned long arg);
++#endif
+ 	void	(*set_termios)(struct tty_struct *tty, struct termios * old);
+ 	unsigned int (*poll)(struct tty_struct *, struct file *,
+ 			     struct poll_table_struct *);
+
+
+
+
