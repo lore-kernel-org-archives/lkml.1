@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992561AbXEBAhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992578AbXEBAro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992561AbXEBAhA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 20:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992572AbXEBAhA
+	id S2992578AbXEBAro (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 20:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992581AbXEBAro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 20:37:00 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:20948 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992561AbXEBAgr (ORCPT
+	Tue, 1 May 2007 20:47:44 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:39327 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992578AbXEBArn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 20:36:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:subject:from:reply-to:to:cc:in-reply-to:references:
-	content-type:organization:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-	b=Z69OvwQiLGDCYO0Q9oIcsrtuvLc+Qs93TfGLlLnx2b/q9IXYhyuWPbgaDnBM57p6x
-	q+pX/sTy8Tj7yfUwZrT0w==
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-From: Rohit Seth <rohitseth@google.com>
-Reply-To: rohitseth@google.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <463728EB.8030308@yahoo.com.au>
-References: <200704281830.l3SIUqOo004230@smtp.corp.google.com>
-	 <463728EB.8030308@yahoo.com.au>
+	Tue, 1 May 2007 20:47:43 -0400
+Subject: Re: [PATCH] fix dynticks for voyager
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Matt Mackall <mpm@selenic.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4637DA9F.3030503@goop.org>
+References: <1177951131.3674.37.camel@mulgrave.il.steeleye.com>
+	 <20070501222432.GP11166@waste.org>  <4637DA9F.3030503@goop.org>
 Content-Type: text/plain
-Organization: Google Inc
-Date: Tue, 01 May 2007 17:36:27 -0700
-Message-Id: <1178066187.19466.69.camel@galaxy.corp.google.com>
+Date: Tue, 01 May 2007 19:47:39 -0500
+Message-Id: <1178066859.4320.90.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 21:47 +1000, Nick Piggin wrote:
-> Rohit Seth wrote:
+On Tue, 2007-05-01 at 17:26 -0700, Jeremy Fitzhardinge wrote:
+> Matt Mackall wrote:
+> > On Mon, Apr 30, 2007 at 11:38:51AM -0500, James Bottomley wrote:
+> >   
+> >> As usual voyager tripped over an explicit boot CPU is zero assumption in
+> >> the dynticks code.  This is the fix I have queued in the voyager tree.
+> >>     
 > >
-> > 
-> > It is invalidating any entries (containing same physical address) in both I
-> > and D caches.  Any dirty lines in D cache are written back to memory before
-> > getting invalidated (ofcourse).
-> 
-> OK. (should it be issuing both fc and fc.i to be robust in case a
-> new implementation doesn't flush the dcache with fc.i?)
-> 
+> > Can we flush out all these assumptions by adding a constant offset
+> > somewhere? Or reversing the ordering?
 
-For the Itanium case specifically, you only want to invalidate a stale
-icache line.  Once that is done, next time icache will pick the correct
-updated contents.
+It might be useful to voyager, but unless the offset were random, people
+would simply hardwire it.
 
-> 
-> >>There are supposedly no icache lines at that point[**]:
-> > 
-> > 
-> > For this bug to trigger there has to be a (stale) entry in icache containing
-> > the old contents of a page that just got updated by kernel as explicit
-> > copying of data (DMAs are coherent on ia64, meaning if a device were to
-> > write to memory then architecture guarnatees that both I and D caches are
-> > invalidated).
-> 
-> So if we have a dirty dcache line for a given physical address,
-> it will _always_ be the case that a subsequent icache load will
-> find that dirty data?
+> My understanding is that the boot CPU is random depending on who wins
+> the "I get to boot" bunfight.
 
-yes for ia64.
+Not quite.  On apic systems, the boot CPU can be an arbitrary physical
+id but is conventionally logical id 0.  On voyager, the CPU id actually
+maps to a fixed location, so there's no sense in having a logical id.
+The booting CPU on voyager is simply the lowest numbered CPU that comes
+up through the SUS boot.
 
--rohit
+James
+
 
