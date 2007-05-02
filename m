@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992621AbXEBDTE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992648AbXEBDWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992621AbXEBDTE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:19:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992646AbXEBDTD
+	id S2992648AbXEBDWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992654AbXEBDWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:19:03 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39900 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2992621AbXEBDTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:19:00 -0400
-Date: Tue, 1 May 2007 20:10:26 -0700
-From: Greg KH <gregkh@suse.de>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
-	(-1)
-Message-ID: <20070502031026.GD6784@suse.de>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46338AEB.2070109@imap.cc> <20070428141024.887342bd.akpm@linux-foundation.org> <4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org> <46364346.6030407@imap.cc> <20070430124638.10611058.akpm@linux-foundation.org> <463723F4.8060009@imap.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463723F4.8060009@imap.cc>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Tue, 1 May 2007 23:22:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52424 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S2992648AbXEBDWD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 23:22:03 -0400
+Date: Tue, 1 May 2007 20:22:01 -0700
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: torvalds@linux-foundation.org, menage@google.com,
+       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
+ unpopulated cpuset
+Message-Id: <20070501202201.6903d922.pj@sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 01:26:44PM +0200, Tilman Schmidt wrote:
-> Am 30.04.2007 21:46 schrieb Andrew Morton:
-> > Sure, but what about 2.6.21-git3 (or, better, current -git)?
-> 
-> 2.6.21-git3 crashed with panic blink at "scanning usb: .."
-> (Nothing in the log this time.)
+David wrote:
+> You currently cannot remove all cpus or mems from cpus_allowed or
+> mems_allowed of a cpuset.  We now allow both if there are no attached
+> tasks.
 
-Eeek, that's not good.
+Why do you need this?  It adds a little more code, and changes
+semantics a little bit, so I'd think it should have at least a
+little bit of justfication.
 
-Can you keep bisecting Linus's tree?  'git bisect' makes this very easy
-to do.  We need to track this down as soon as possible if we can.
 
-> Will continue bisecting -rc7-mm2.
++	if (!*buf) {
++		cpus_clear(trialcs.cpus_allowed);
 
-Can you focus on Linus's tree now, as we know that it is the part
-causing problems?
+Won't the above code fail if someone does:
 
-thanks,
+	echo > /dev/cpuset/foobar/mems
 
-greg k-h
+Just guessing, but I'd expect buf[] to contain a newline char,
+not just a zero length string, at this point.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
