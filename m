@@ -1,83 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993201AbXEBN5J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993211AbXEBOAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993201AbXEBN5J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 09:57:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993204AbXEBN5J
+	id S2993211AbXEBOAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993212AbXEBOAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 09:57:09 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:56693 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993201AbXEBN5G convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 10:00:37 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37373 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993211AbXEBOAf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 09:57:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=a1H0Oc3YWmGymp4SeEd42ofaIRtYmF8EXXJkjVEkKFCCLKs6xeaAnU/UpgKMlAJvYBzEWZXU0ZjAUVkvB1SjkcTy8e5Lk9AoiLy/rB474s219RJZNqH7dEEvUSOhaQPi/pFnpsmIcDf/dRVU0oKJnalmOz8UA60XuOnyE+p6d7A=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [git pull] New firewire stack
-Date: Wed, 2 May 2007 09:56:59 -0400
-User-Agent: KMail/1.9.6
-Cc: Olaf Hering <olh@suse.de>,
-       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de> <4638888B.4080908@s5r6.in-berlin.de>
-In-Reply-To: <4638888B.4080908@s5r6.in-berlin.de>
+	Wed, 2 May 2007 10:00:35 -0400
+Date: Wed, 2 May 2007 15:00:20 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+In-Reply-To: <4638009E.3070408@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
+ <4638009E.3070408@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200705020956.59804.gene.heskett@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 02 May 2007 14:00:34.0480 (UTC) FILETIME=[40F6AB00:01C78CC2]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFuZHJlYUBzdXNlLmRlAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAaGNoQGluZnJhZGVhZC5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 May 2007, Stefan Richter wrote:
->Olaf Hering wrote:
->> On Tue, May 01, Kristian Høgsberg wrote:
->>>   drivers/firewire/Kconfig          |   60 ++
->>
->> NACK.
->> Upgrade the current drivers/ieee1394/ with the new code,
->
->Last time I believe I was the only one who asked whether to put it into
->drivers/ieee1394 instead of another directory.  Of course I acknowledge
->that everytime a new review round is started, people do reconsider.
->Especially since we had a gap of a few months since the last LKML review.
->
->> and keep all existing module names.
->
->I'm impartial to that.  Using same names might ease the transition from
->the userspace side, as far as there is userland which relies on module
->names.
->
->A certain drawback of same names would be that geeks cannot install both
->stacks at once during the transition period.  Therefore, checking
->whether eventual problems are in fact regressions involves a module
->unload/ configure/ build/ install/ reload cycle, instead of just module
->unload/ reload.  This especially means we can only get help from testers
->who are able to build kernels.
->
->Other opinions?
+On Wed, 2 May 2007, Nick Piggin wrote:
+> Hugh Dickins wrote:
+> > 
+> > But I was quite disappointed when
+> > mm-fix-fault-vs-invalidate-race-for-linear-mappings-fix.patch
+> > appeared, putting double unmap_mapping_range calls in.  Certainly
+> > you were wrong to take the one out, but a pity to end up with two.
+> > 
+> > Your comment says/said:
+> > The nopage vs invalidate race fix patch did not take care of truncating
+> > private COW pages. Mind you, I'm pretty sure this was previously racy
+> > even for regular truncate, not to mention vmtruncate_range.
+> > 
+> > vmtruncate_range (holepunch) was deficient I agree, and though we
+> > can now take out your second unmap_mapping_range there, that's only
+> > because I've slipped one into shmem_truncate_range.  In due course it
+> > needs to be properly handled by noting the range in shmem inode info.
+> > 
+> > (I think you couldn't take that approach, noting invalid range in
+> > ->mapping while invalidating, because NFS has/had some cases of
+> > invalidate_whatever without i_mutex?)
+> 
+> Sorry, I didn't parse this?
 
-I can and do build my own kernels so that's not a problem for me.  I also have 
-a firewire movie camera that went through absolute hell the last time a 
-firewire upgrade came by, and it was over 5 months before I had a working 
-kino install again.  So I'd vote unconditionally to have 2 trees to select 
-from at module load time until the shakeout has produced usable code in the 
-2nd tree.
+I meant that i_size is used to protect against truncation races, but
+we have no equivalent inval_start,inval_end in the struct inode or
+struct address_space, such as could be used for similar protection
+against races while invalidating.
 
->From me, its a definite ACK.
+And that IIRC there are places where NFS was doing the invalidation
+without i_mutex: so there could be concurrent invalidations, so one
+inval_start,inval_end in the structure wouldn't be enough anyway.
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-I owe, I owe,
-It's off to work I go...
+> But I wonder whether it is better to do
+> it in vmtruncate_range than the filesystem? Private COWed pages are
+> not really a filesystem "thing"...
+
+It wasn't the thought of private COWed pages which made me put a
+second unmap_mapping_range in shmem_truncate_range, it was its own
+internal file<->swap consistency which needed that (as a quick fix).
+The real fix to be having a trunc_start,trunc_end or whatever in
+the shmem_inode_info (assuming it's not wanted in the common inode:
+might be if holepunch spreads e.g. it's been mentioned with fallocate).
+
+Re private COWed pages and holepunch: Miklos and I agree that really
+it would be better for holepunch _not_ to remove them - but that's
+rather off-topic.
+
+More on-topic, since you suggest doing more within vmtruncate_range
+than the filesystem: no, I'm afraid that's misdesigned, and I want
+to move almost all of it into the filesystem ->truncate_range.
+Because, if what vmtruncate_range is doing before it gets to the
+filesystem isn't to be just a waste of time, the filesystem needs
+to know what's going on in advance - just as notify_change warns
+the filesystem about a coming truncation.  But easier than inventing
+some new notification is to move it all into the filesystem, with
+unmap_mapping_range+truncate_inode_pages_range its library helpers.
+
+> 
+> > But I'm pretty sure (to use your words!) regular truncate was not racy
+> > before: I believe Andrea's sequence count was handling that case fine,
+> > without a second unmap_mapping_range.
+> 
+> OK, I think you're right. I _think_ it should also be OK with the
+> lock_page version as well: we should not be able to have any pages
+> after the first unmap_mapping_range call, because of the i_size
+> write. So if we have no pages, there is nothing to 'cow' from.
+
+I'd be delighted if you can remove those later unmap_mapping_ranges.
+As I recall, the important thing for the copy pages is to be holding
+the page lock (or whatever other serialization) on the copied page
+still while the copy page is inserted into pagetable: that looks
+to be so in your __do_fault.
+
+> > But it is a shame, and leaves me wondering what you gained with the
+> > page lock there.
+> > 
+> > One thing gained is ease of understanding, and if your later patches
+> > build an edifice upon the knowledge of holding that page lock while
+> > faulting, I've no wish to undermine that foundation.
+> 
+> It also fixes a bug, doesn't it? ;)
+
+Well, I'd come to think that perhaps the bugs would be solved by
+that second unmap_mapping_range alone, so the pagelock changes
+just a misleading diversion.
+
+I'm not sure how I feel about that: calling unmap_mapping_range a
+second time feels such a cheat, but if (big if) it does solve the
+races, and the pagelock method is as expensive as your numbers
+now suggest...
+
+Hugh
