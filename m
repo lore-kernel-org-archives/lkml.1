@@ -1,51 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993049AbXEBLaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755024AbXEBLcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993049AbXEBLaT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 07:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993051AbXEBLaT
+	id S1755024AbXEBLcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 07:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXEBLcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 07:30:19 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:1698 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993049AbXEBLaR (ORCPT
+	Wed, 2 May 2007 07:32:21 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:44043 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755024AbXEBLcU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 07:30:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jKHUOcLt8TbkIQTFdU3Y6p8ir4tS/7G9LZIch99f891geFY1sxFJGb1pWYPA4OwGtEx1PZ2vB7p4/LPvxxDPB1rueX2K1SZSOEfvsjeYikeTuhQ1qDTmqyJVjDVNZNVdjtouLz7PsX2BJGYnnwzDASbw/hx1rZBJIz5k9w/miEQ=
-Message-ID: <46387601.4010403@gmail.com>
-Date: Wed, 02 May 2007 13:29:05 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 2 May 2007 07:32:20 -0400
+Message-ID: <463876BA.9020005@snapgear.com>
+Date: Wed, 02 May 2007 21:32:10 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 16/21] sysfs: implement bin_buffer
-References: <11777675753460-git-send-email-htejun@gmail.com>	 <1177767582628-git-send-email-htejun@gmail.com>	 <a781481a0705010725t310ecb31yde475412f620d6d6@mail.gmail.com>	 <463753DB.2060101@gmail.com>	 <a781481a0705011237n791f7cafn54509c1a41cf3de6@mail.gmail.com> <a781481a0705011304mb8b33faq4afc67363ac79c8d@mail.gmail.com>
-In-Reply-To: <a781481a0705011304mb8b33faq4afc67363ac79c8d@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
+References: <46382055.8030203@snapgear.com> <200705020458.06595.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200705020458.06595.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
->> Yes, I saw that, but you could change it just as well. In any case,
->> this will only make fs/sysfs/bin.c similar to what is being done in
->> fs/sysfs/file.c. We allocate the buffer page backing the attribute's
->> data in fill_read_buffer() and fill_write_buffer() using
->> get_zeroed_page() and not kzalloc().
+
+Hi Robin,
+
+Robin Getz wrote:
+> On Wed 2 May 2007 01:23, Greg Ungerer pondered:
+>> Hi All,
+>>
+>> An update of the uClinux (MMU-less) code against 2.6.21.
+>> A lot of cleanups, and a few bug fixes.
+>>
+>> Ahead is more changes to finalize platform device support
+>> for the new style ColdFire serial driver, and switching to
+>> the generic irq code.
+>>
+>> http://www.uclinux.org/pub/uClinux/uClinux-2.6.x/linux-2.6.21-uc0.patch.gz
 > 
-> Which begs another question -- why do we allocate the buffer page
-> lazily (only at the time of read(2) and write(2) and not at open(2))
-> in the case of normal attributes but prefer to do it during open(2)
-> itself for binary attributes? Note that the page (if allocated) is
-> freed during release() for both cases.
+> Greg:
+> 
+> Is is possible to split out the m68k stuff from the generic nommu stuff?
 
-Well, that also is because that was how bin files did it before the
-patch.  I don't object to any of your suggestions but also thinks that
-they are better off as separate patches.  So, feel free to submit patches.
+I could do that. Usually the actual mm changes have been
+a pretty small set of this. Often only 1 or 2 patches.
 
--- 
-tejun
+
+> (or 
+> maybe I am missing the point of this patch? - it is for review/inclusion into 
+> the -mm tree, or just for end users wanting to use 2.6.21?)
+
+This is specifically for review and inclusion in main line.
+
+
+> The patch is labeled uClinux (MMU-less), which I read as generic, but the 
+> majority has to do with only m68knommu.
+
+Well, if any non-mmu architecture people sent me patches that
+made sense for me to push upstream I would include them here.
+But that doesn't happen very often. They generally do it
+themselves.
+
+Historically the first -uc patches had m68knommu, h8300 and v850
+as well as the non-mmu changes in it.
+
+
+>  arch/m68knommu/Kconfig                   |   12
+>  arch/m68knommu/Makefile                  |    4
+>  arch/m68knommu/kernel/process.c          |    2
+>  arch/m68knommu/kernel/setup.c            |  116 +---
+>  arch/m68knommu/kernel/time.c             |    9
+>  arch/m68knommu/mm/memory.c               |  100 ---
+>  arch/m68knommu/platform/5206/config.c    |    8
+>  arch/m68knommu/platform/5206e/config.c   |    7
+>  arch/m68knommu/platform/520x/config.c    |  122 ++++
+>  arch/m68knommu/platform/523x/config.c    |    8
+>  arch/m68knommu/platform/5249/config.c    |   51 +
+>  arch/m68knommu/platform/5272/config.c    |    7
+>  arch/m68knommu/platform/527x/config.c    |    7
+>  arch/m68knommu/platform/528x/config.c    |    7
+>  arch/m68knommu/platform/5307/config.c    |    5
+>  arch/m68knommu/platform/5307/entry.S     |   20
+>  arch/m68knommu/platform/5307/ints.c      |   23
+>  arch/m68knommu/platform/5307/timers.c    |   10
+>  arch/m68knommu/platform/532x/config.c    |   46 +
+>  arch/m68knommu/platform/5407/config.c    |    7
+>  arch/m68knommu/platform/68328/config.c   |    3
+>  arch/m68knommu/platform/68360/config.c   |    2
+>  arch/m68knommu/platform/68EZ328/config.c |    2
+>  arch/m68knommu/platform/68VZ328/config.c |    7
+>  include/asm-m68knommu/dma.h              |    2
+>  include/asm-m68knommu/hw_irq.h           |    4
+>  include/asm-m68knommu/m528xsim.h         |    3
+>  include/asm-m68knommu/m532xsim.h         |   85 ++-
+>  include/asm-m68knommu/machdep.h          |   50 -
+>  include/asm-m68knommu/mcfuart.h          |   11
+>  include/asm-m68knommu/pgtable.h          |    7
+>  include/asm-m68knommu/timex.h            |   24
+>  include/asm-m68knommu/uaccess.h          |   11
+>  drivers/net/fec.c                        |   71 +-
+>  drivers/serial/68328serial.c             |   59 --
+>  drivers/serial/mcf.c                     |  826 +++++++++++++++++++++++++++++
+> 
+> The only generic stuff is:
+> 
+>  Makefile                                 |    2
+>  drivers/pci/pci.c                        |    2
+>  fs/binfmt_flat.c                         |    2
+>  fs/namei.c                               |    2
+>  mm/nommu.c                               |   15
+>  mm/page_alloc.c                          |    8
+> 
+> I looked at those, and had a question:
+> 
+> (copy and paste screws up the formatting, sorry):
+> 
+>> diff -Naur linux-2.6.21/fs/namei.c linux-2.6.21-uc0/fs/namei.c
+>> --- linux-2.6.21/fs/namei.c     2007-05-01 17:12:53.000000000 +1000
+>> +++ linux-2.6.21-uc0/fs/namei.c 2007-05-01 17:16:18.000000000 +1000
+>> @@ -120,12 +120,14 @@
+>>         int retval;
+>>         unsigned long len = PATH_MAX;
+>>
+>> +#ifdef CONFIG_MMU
+>>         if (!segment_eq(get_fs(), KERNEL_DS)) {
+>>                 if ((unsigned long) filename >= TASK_SIZE)
+>>                         return -EFAULT;
+>>                 if (TASK_SIZE - (unsigned long) filename < PATH_MAX)
+>>                         len = TASK_SIZE - (unsigned long) filename;
+>>         }
+>> +#endif
+>>
+>>         retval = strncpy_from_user(page, filename, len);
+>>         if (retval > 0) {
+> 
+> I was trying to understand why we don't want to do the same checking on noMMU?
+
+The problem is on systems that have RAM mapped at high physical
+addresses. TASK_SIZE may well be a numerically smaller number
+than the address range that RAM sits in. So this test fails when
+it shouldn't.
+
+Regards
+Greg
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
