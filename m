@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766852AbXEBTyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766856AbXEBTzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766852AbXEBTyq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766856AbXEBTyq
+	id S1766856AbXEBTzE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:55:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766875AbXEBTzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:54:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35070 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766852AbXEBTyp convert rfc822-to-8bit (ORCPT
+	Wed, 2 May 2007 15:55:04 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:42294 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766856AbXEBTy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:54:45 -0400
-Message-ID: <4638EC24.2020703@redhat.com>
-Date: Wed, 02 May 2007 15:53:08 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] New firewire stack
-References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de>
-In-Reply-To: <20070502122147.GA31215@suse.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 May 2007 15:54:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Jf4rNOALa6VkdlvJ2xAUUB1B3BGYIWnGbkg5eYx45E3OGFOU0w2pb7/W33FLGUsEI817F+okmcYxN8bFIh+Vs+qprL4zh4T3ljdX8DtAy0LQKHws8HYj4GqzJvvea1apr+yG91iFgh8oe7efHhGpLkj4FesvQPDHpDAi2bPVnQw=
+Date: Thu, 3 May 2007 03:59:31 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [RELEASE] Lguest for 2.6.21
+Message-ID: <20070502195931.GB1502@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
+	lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	virtualization <virtualization@lists.linux-foundation.org>
+References: <1178117028.19815.14.camel@localhost.localdomain> <20070502193303.GA1502@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502193303.GA1502@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Hering wrote:
-> On Tue, May 01, Kristian Høgsberg wrote:
-> 
->>   drivers/firewire/Kconfig          |   60 ++
-> 
-> NACK.
-> Upgrade the current drivers/ieee1394/ with the new code, and keep all
-> existing module names.
+On Thu, May 03, 2007 at 03:33:03AM +0800, WANG Cong wrote:
+>Hi Rusty!
+>
+>I found you forgot to check the return value of copy_from_user, and here is the fix for drivers/lguest/interrupts_and_traps.c.
+>
 
-What's your reasoning here?  Having different module names allows people to 
-compile both stacks and switch between them as they wish.
+Also this one, in drivers/lguest/hypercalls.c.
 
-Another point in favour of different module names is that the new stack 
-doesn't actually provide the same user space interfaces as the old stack. 
-Basically, no applications use the raw kernel interfaces and the new stack is 
-only compatible at the library level.  In the light of this, I think it's fair 
-to change the module names.
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-As for putting the new stack in drivers/ieee1394 - I don't know, I think it 
-makes sense to keep the new stack in it's own directory.  If it's a deal 
-breaker for inclusion, let's talk about moving it, but it would be nice if you 
-could elaborate just a little bit beyond "NACK".
+---
 
-thanks,
-Kristian
-
-
+--- linux-2.6.21-rc7-mm2/drivers/lguest/hypercalls.c.orig	2007-05-03 03:45:53.000000000 +0800
++++ linux-2.6.21-rc7-mm2/drivers/lguest/hypercalls.c	2007-05-03 03:46:20.000000000 +0800
+@@ -102,7 +102,8 @@ static void do_async_hcalls(struct lgues
+ 	unsigned int i;
+ 	u8 st[LHCALL_RING_SIZE];
+ 
+-	copy_from_user(&st, &lg->lguest_data->hcall_status, sizeof(st));
++	if (copy_from_user(&st, &lg->lguest_data->hcall_status, sizeof(st)))
++		return;
+ 	for (i = 0; i < ARRAY_SIZE(st); i++) {
+ 		struct lguest_regs regs;
+ 		unsigned int n = lg->next_hcall;
