@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767025AbXEBUli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753148AbXEBUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767025AbXEBUli (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767026AbXEBUli
+	id S1753148AbXEBUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbXEBUs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:41:38 -0400
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:38169 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767025AbXEBUlh (ORCPT
+	Wed, 2 May 2007 16:48:58 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:12090 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752257AbXEBUs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:41:37 -0400
-Date: Wed, 2 May 2007 16:36:27 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, wfg@ustc.edu
-Subject: Re: 2.6.22 -mm merge plans
-Message-ID: <20070502203627.GA18733@Krystal>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <20070501220803.GA27698@Krystal> <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502172934.GA17782@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 2 May 2007 16:48:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=VyO3MKh0JRF6nkalpvk5JbdT04BMDBrQLqB6O7XHWloYpYYBsMwFVPphNbXoah2v0FtYFYIGUd7R699InI0Q4LwHXdHeFrD8s9TXV58UTuHPDl0Y1Vl9rM8iFHe8xLDOt5xKFnF37Dlw7zyQ7UuiUM7OG02V8Zh/Pn6Q68PqVGc=
+Message-ID: <b3ece790705021348j7a0c7037u221a1f5b5dae4838@mail.gmail.com>
+Date: Wed, 2 May 2007 13:48:55 -0700
+From: "Tim Hockin" <thockin@hockin.org>
+To: "Rafal Bilski" <rafalbilski@interia.pl>
+Subject: Re: Natsemi DP83815 driver spaming
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Mark Brown" <broonie@sirena.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <4638EF0B.9050701@interia.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070502172934.GA17782@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 16:24:25 up 89 days, 10:31,  4 users,  load average: 1.22, 1.27, 1.55
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070501084639.GA528@sirena.org.uk>
+	 <20070501212750.GC31630@sirena.org.uk>
+	 <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com>
+	 <46382798.2090709@interia.pl>
+	 <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com>
+	 <463830E1.8080107@interia.pl>
+	 <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
+	 <20070502082211.GD31630@sirena.org.uk>
+	 <b3ece790705020744p2e73bb5fo2c0acad947a5de15@mail.gmail.com>
+	 <4638EF0B.9050701@interia.pl>
+X-Google-Sender-Auth: e51a600fdfe79f6c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Wed, May 02, 2007 at 09:47:07AM -0700, Andrew Morton wrote:
-> > > That doesn't constitute using it.
-> > 
-> > Andi, there was a huge amount of discussion about all this in September last
-> > year (subjects: *markers* and *LTTng*). The outcome of all that was, I
-> > believe, that the kernel should have a static marker infrastructure.
-> 
-> Only when it's actually useable.  A prerequisite for merging it is
-> having an actual trace transport infrastructure aswell as a few actually
-> useful tracing modules in the kernel tree.
-> 
-> Let this count as a vote to merge the markers once we have the infrastructure
-> above ready, it'll be very useful then.
+On 5/2/07, Rafal Bilski <rafalbilski@interia.pl> wrote:
 
-Hi Christoph,
+> What about module option?
 
-The idea is the following : either we integrate the infrastructure for
-instrumentation / data serialization / buffer management / extraction of
-data to user space in multiple different steps, which makes code review
-easier for you guys, or we bring the main pieces of the LTTng project
-altogether with the Linux Kernel Markers, which would result in a bigger
-change.
+Looks ok to me, if this is the preferred route.
 
-Based on the premise that discussing about logically distinct pieces of
-infrastructure is easier and can be done more thoroughly when done
-separately, we decided to submit the markers first, with the other
-pieces planned in a near future.
-
-I agree that it would be very useful to have the full tracing stack
-available in the Linux kernel, but we inevitably face the argument :
-"this change is too big" if we submit all LTTng modules at once or
-the argument : "we want the whole tracing stack, not just part of it"
-if we don't.
-
-This is why we chose to push the tracing infrastructure chunk by chunk :
-to make code review and criticism more efficient.
-
-Regards,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> ---
+>  drivers/net/natsemi.c |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+> index 349b96a..933e106 100644
+> --- a/drivers/net/natsemi.c
+> +++ b/drivers/net/natsemi.c
+> @@ -90,6 +90,10 @@ static int rx_copybreak;
+>  static int options[MAX_UNITS];
+>  static int full_duplex[MAX_UNITS];
+>
+> +/* Used to disable "is PHY alive" check for compatibility with broken
+> + * designs using rev. C chips. */
+> +static int disable_phy_check;
+> +
+>  /* Operational parameters that are set at compile time. */
+>
+>  /* Keep the ring sizes a power of two for compile efficiency.
+> @@ -141,6 +145,7 @@ module_param(debug, int, 0);
+>  module_param(rx_copybreak, int, 0);
+>  module_param_array(options, int, NULL, 0);
+>  module_param_array(full_duplex, int, NULL, 0);
+> +module_param(disable_phy_check, int, 0);
+>  MODULE_PARM_DESC(mtu, "DP8381x MTU (all boards)");
+>  MODULE_PARM_DESC(debug, "DP8381x default debug level");
+>  MODULE_PARM_DESC(rx_copybreak,
+> @@ -148,6 +153,8 @@ MODULE_PARM_DESC(rx_copybreak,
+>  MODULE_PARM_DESC(options,
+>         "DP8381x: Bits 0-3: media type, bit 17: full duplex");
+>  MODULE_PARM_DESC(full_duplex, "DP8381x full duplex setting(s) (1)");
+> +MODULE_PARM_DESC(disable_phy_check, "DP8381[56]: PHY lockup check disable"
+> +       " (all boards)");
+>
+>  /*
+>                                 Theory of Operation
+> @@ -1753,7 +1760,7 @@ static void netdev_timer(unsigned long data)
+>                 writew(1, ioaddr+PGSEL);
+>                 dspcfg = readw(ioaddr+DSPCFG);
+>                 writew(0, ioaddr+PGSEL);
+> -               if (dspcfg != np->dspcfg) {
+> +               if (!disable_phy_check && dspcfg != np->dspcfg) {
+>                         if (!netif_queue_stopped(dev)) {
+>                                 spin_unlock_irq(&np->lock);
+>                                 if (netif_msg_hw(np))
+> --
