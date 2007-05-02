@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992826AbXEBGvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbXEBGww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992826AbXEBGvo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992861AbXEBGvo
+	id S1754883AbXEBGww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754886AbXEBGwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:51:44 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:18996 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992826AbXEBGvn (ORCPT
+	Wed, 2 May 2007 02:52:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36219 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754883AbXEBGwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:51:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=p03AfxobUaI7o0COaegFnhyvl7tsezfJh7DqEwWRZN9FYsezWIUypSmcGw1qcnQO0EEOCfCW/3k4wXVU0tAgxXrck8jcaSMjMqNM/hdWPrP8o7Qkmeq8aMNS+I0XZktAe2t5VzwSaTG7wzIfNPPHxCdCSzX4P22DkECRhZ5AvOw=
-Message-ID: <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com>
-Date: Tue, 1 May 2007 23:51:41 -0700
-From: "Tim Hockin" <thockin@hockin.org>
-To: "=?UTF-8?Q?Rafa=C5=82_Bilski?=" <rafalbilski@interia.pl>
-Subject: Re: Natsemi DP83815 driver spaming
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <463830E1.8080107@interia.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 2 May 2007 02:52:50 -0400
+Date: Tue, 1 May 2007 23:52:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] compiler: define __attribute_unused__
+Message-Id: <20070501235237.ba43586a.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
+	<1178084403.28659.222.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
+	<1178087393.28659.238.camel@localhost.localdomain>
+	<Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46365887.3010705@interia.pl> <20070501084639.GA528@sirena.org.uk>
-	 <46371590.4090004@interia.pl> <20070501180830.GA31630@sirena.org.uk>
-	 <46379A7E.3000109@interia.pl> <20070501212750.GC31630@sirena.org.uk>
-	 <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com>
-	 <46382798.2090709@interia.pl>
-	 <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com>
-	 <463830E1.8080107@interia.pl>
-X-Google-Sender-Auth: 723a2e84b680b717
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/07, Rafal Bilski <rafalbilski@interia.pl> wrote:
+On Tue, 1 May 2007 23:41:34 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
 
-> 2.6.21.1 is first kernel which I'm using at this device. Earlier it was
-> WindowsCE terminal. It is hardware fault. Commenting out the code is my
-> way to avoid "wakeup" messages in log, but I don't want to change anything
-> in vanilla kernel. I'm lucky that NIC is working at all.
+> compiler: define __maybe_unused
+> 
+> Define __maybe_unused to apply to both functions or variables as
+> __attribute__((unused)).  This will not emit a compile-time warning when
+> a function or variable is declared but unreferenced.
+> 
+> We eventually want to change the name of __attribute_used__ to __used.
+> 
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  include/linux/compiler-gcc.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+> --- a/include/linux/compiler-gcc.h
+> +++ b/include/linux/compiler-gcc.h
+> @@ -37,3 +37,4 @@
+>  #define  noinline			__attribute__((noinline))
+>  #define __attribute_pure__		__attribute__((pure))
+>  #define __attribute_const__		__attribute__((__const__))
+> +#define __maybe_unused			__attribute__((unused))
 
-I'm not sure what the right answer is.  The code was designed to do
-the right thing, and yet in your case it's broken.  Does it need to be
-a build option to work around broken hardware?  Yuck.
+Seems sane to me.  We'd need a definition in compiler-intel.h too.  I don't
+know if ICC implements __attribute__((unused)) - probably it does.
+
+I guess we can get by without any commentary describing __maybe_unused, but
+I think __used would need one - it's pretty obscure.
+
+
++@cindex @code{used} attribute.
++@item used
++This attribute, attached to a function, means that code must be emitted
++for the function even if it appears that the function is not referenced.
++This is useful, for example, when the function is referenced only in
++inline assembly.
+
