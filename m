@@ -1,84 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161759AbXEBVHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766551AbXEBVJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161759AbXEBVHA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161764AbXEBVHA
+	id S1766551AbXEBVJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993163AbXEBVJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:07:00 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:53869 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161759AbXEBVG7 (ORCPT
+	Wed, 2 May 2007 17:09:59 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:57504 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993159AbXEBVJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:06:59 -0400
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-From: john stultz <johnstul@us.ibm.com>
-To: Rodolfo Giometti <giometti@enneenne.com>
-Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
-In-Reply-To: <20070502193314.GA23367@enneenne.com>
-References: <20070321074121.GA13843@enneenne.com>
-	 <20070502193314.GA23367@enneenne.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 14:06:53 -0700
-Message-Id: <1178140014.7338.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 2 May 2007 17:09:58 -0400
+Message-ID: <4638FE1B.9050901@zytor.com>
+Date: Wed, 02 May 2007 14:09:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Gerd Hoffmann <kraxel@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org> <4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org>
+In-Reply-To: <4638FC39.4010101@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 21:33 +0200, Rodolfo Giometti wrote:
-> Pulse per Second (PPS) support for Linux.
+Jeremy Fitzhardinge wrote:
 > 
-> Signed-off-by: Rodolfo Giometti <giometti@enneenne.com>
-> 
-> ---
-> 
-> Here my last release of PPS support for Linux.
-> 
-> The difference against my last patch is about all userland specific
-> code (timepps.h) which has been removed, I hope now you can consider
-> adding it into kernel source tree!
-> 
-> Please, let me know if I still should fix something else.
-
-Please inline your patch, rather then attaching them. It makes it very
-difficult to discuss when it is attached.
-
-
-> diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
-> new file mode 100644
-> index 0000000..7514389
-> --- /dev/null
-> +++ b/drivers/pps/clients/ktimer.c
-> @@ -0,0 +1,106 @@
-> +/*
-> + * ktimer.c -- kernel timer test client
-> + *
-
-Could you use a better name, like pps_ktimer_test.c, so it is less generic?
-
-Same goes for your kabi.c and sysfs.c files.
-
-
-> diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-> index 98ec861..543c7cb 100644
-> --- a/drivers/serial/8250.c
-> +++ b/drivers/serial/8250.c
-> @@ -2004,6 +2004,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
->  		up->ier |= UART_IER_MSI;
->  	if (up->capabilities & UART_CAP_UUE)
->  		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
-> +	if (up->port.flags & UPF_HARDPPS_CD)
-> +		up->ier |= UART_IER_MSI;	/* enable interrupts */
+> Hm, that's unfortunate.  How about an ELF file wrapped in some other
+> container, so that we can easily extract a properly formed ELF file?
 > 
 
-This isn't covered by a #ifdef, so is this always safe? Should it be in
-a separate patch?
+Effectively the same thing as changing the magic number.  Note that the
+format for bzImage is pretty rigid, and it would be *highly* undesirable
+to muck that up.
 
-Unfortunately I don't have any hardware to play with this, but I'd
-suggest you send this to Andrew Morton for inclusion into his tree for
-testing.
-
-thanks
--john
-
+	-hpa
