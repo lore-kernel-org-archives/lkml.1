@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993490AbXEBQjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993509AbXEBQl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993490AbXEBQjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993508AbXEBQjm
+	id S2993509AbXEBQl4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993512AbXEBQl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:39:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.229]:42307 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993490AbXEBQjl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:39:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PNpsgI/Y6BCZ1hJyQA4PgZQBdvfe1Uyh3ENFPw+GhPqRmhotygTBkwka1rUH+W2vnp23BlcTrPAykf7uSrRM6KAzeC8/IL7LZXTRN3taQ8uGy5CF2lSoRpt/gppJyMkW1q9oBkIHtKpmDRa0NsMQDiVKnwW6gO5uLi0Y6k2Jb4U=
-Message-ID: <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
-Date: Wed, 2 May 2007 09:39:39 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Subject: Re: [patch 14/22] pollfs: pollable futex
-Cc: "Davi Arnaut" <davi@haxent.com.br>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Davide Libenzi" <davidel@xmailserver.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070502104936.674a4b54.dada1@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 12:41:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35773 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993509AbXEBQlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:41:55 -0400
+Date: Wed, 2 May 2007 18:41:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vegard Nossum <vegard@peltkore.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502164152.GA2521@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <6734.129.240.220.12.1178110713.squirrel@peltkore.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070502052235.914764000@haxent.com.br>
-	 <20070502053427.123392000@haxent.com.br>
-	 <a36005b50705020040l8874d64m1bcf25da5cae885d@mail.gmail.com>
-	 <20070502095503.a06f5472.dada1@cosmosbay.com>
-	 <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
-	 <20070502104936.674a4b54.dada1@cosmosbay.com>
+In-Reply-To: <6734.129.240.220.12.1178110713.squirrel@peltkore.net>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/2/07, Eric Dumazet <dada1@cosmosbay.com> wrote:
-> I understand your concerns, but *this* patch bundle extends poll()/select()/epoll, and is not an alternative to kevent or other work in progress, (and linux centered)
 
-It is adding huge amounts of complexity and at the same time is not
-future-safe.  I consider this enough reason to reject this approach.
-You never can get rid of the interface.  It's much cleaner and safer
-to do it right instead of piling on more and more workarounds for
-special situations.
+* Vegard Nossum <vegard@peltkore.net> wrote:
+
+> The sys_sched_yield_to() is not callable from userspace on i386 
+> because it is not part of the syscall table 
+> (arch/i386/kernel/syscall_table.S). This causes sysenter_entry 
+> (arch/i386/kernel/entry.S) to use the wrong count for nr_syscalls (320 
+> instead of 321) and return with -ENOSYS.
+
+oops, indeed - the patch below should fix this. (x86 should really adopt 
+the nice x86_64 technique of building the syscall table out of the 
+unistd.h enumeration definitions.)
+
+	Ingo
+
+Index: linux/arch/i386/kernel/syscall_table.S
+===================================================================
+--- linux.orig/arch/i386/kernel/syscall_table.S
++++ linux/arch/i386/kernel/syscall_table.S
+@@ -319,3 +319,4 @@ ENTRY(sys_call_table)
+ 	.long sys_move_pages
+ 	.long sys_getcpu
+ 	.long sys_epoll_pwait
++	.long sys_sched_yield_to	/* 320 */
+
