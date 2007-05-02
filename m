@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755187AbXEBMcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993054AbXEBMeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755187AbXEBMcX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 08:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbXEBMcX
+	id S2993054AbXEBMeR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 08:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993079AbXEBMeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 08:32:23 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:40498 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755187AbXEBMcW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 08:32:22 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Wed, 2 May 2007 08:31:22 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Neil Brown <neilb@suse.de>
-cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Valdis.Kletnieks@vt.edu,
-       Andre Tomt <andre@tomt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: so ... what *are* candidates for removal?
-In-Reply-To: <17976.31592.666183.353731@notabene.brown>
-Message-ID: <Pine.LNX.4.64.0705020827320.8581@localhost.localdomain>
-References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>
- <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu>
- <4637C04E.4070306@s5r6.in-berlin.de> <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
- <46385EF8.8040005@s5r6.in-berlin.de> <alpine.DEB.0.98.0705020612290.9993@sigma.j-a-k-j.com>
- <Pine.LNX.4.64.0705020653560.7971@localhost.localdomain>
- <17976.31592.666183.353731@notabene.brown>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 2 May 2007 08:34:17 -0400
+Received: from ozlabs.org ([203.10.76.45]:56969 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993054AbXEBMeQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 08:34:16 -0400
+Subject: Re: Race between RCU and rmmod
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: dipankar@in.ibm.com
+Cc: David Howells <dhowells@redhat.com>, torvalds@osdl.org, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070502120051.GA13349@in.ibm.com>
+References: <30958.1178106624@redhat.com>
+	 <20070502120051.GA13349@in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 22:33:40 +1000
+Message-Id: <1178109221.28659.312.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Neil Brown wrote:
+On Wed, 2007-05-02 at 17:30 +0530, Dipankar Sarma wrote:
+> On Wed, May 02, 2007 at 12:50:24PM +0100, David Howells wrote:
+> > 
+> > Hi Dipankar, Rusty,
+> > 
+> > I seem to have found a race between RCU and rmmod.  What I see appears to be
+> > an RCU destructor function that has a call pending but lives in a module, gets
+> > deleted before the RCU callback is processed:
+> > 
+> > RIP: 0010:[<ffffffff880329b7>]  [<ffffffff880329b7>]
+> > 
+> > I think that rmmod needs to clear the RCU destructor queue, probably inside of
+> > __try_stop_module().
+> 
+> This is why we have rcu_barrier() although the corresponding documentation
+> patch seems to have got dropped. Modules that use RCU must call
+> rcu_barrier() in their cleanup routine.
 
-> Unfortunately, this community is not founded on the concept of
-> 'wiki'.  It is founded on the concept of 'email'.  That is were most
-> discussions happen.
->
-> So if you want to start a discussion (and your topic certainly seems
-> relevant) I suspect you will get more participation if you keep it
-> in the mailing list.
+Hi David, Dipankar,
 
-you have it backwards -- i deliberately chose a wiki to get this
-discussion *off* the LKML.  given the traffic volume here, and given
-that kernel code removal isn't what most people consider a high
-priority, i'm guessing most folks here are monumentally uninterested
-in the discussion.
+	My first thought was wondering if doing it for them isn't a bad thing,
+but they need to do it if they've got other teardown which would mess up
+RCU callbacks anyway...
 
-thus, a wiki gives the people who are still interested a place for all
-that info, while uncluttering the LKML.  and if some discussion gets
-really heated, *then* the LKML can be used to resolve it.
+Cheers,
+Rusty.
 
-as it is, i think this issue has been flogged adequately on this
-mailing list, and it can safely be moved elsewhere where people who
-care about it can still get to it.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
