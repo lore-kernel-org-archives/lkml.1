@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946110AbXEBAGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1946147AbXEBAQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946110AbXEBAGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 20:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946111AbXEBAGy
+	id S1946147AbXEBAQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 20:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946149AbXEBAQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 20:06:54 -0400
-Received: from nz-out-0506.google.com ([64.233.162.239]:43233 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1946110AbXEBAGw (ORCPT
+	Tue, 1 May 2007 20:16:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:14390 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1946147AbXEBAQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 20:06:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=gDnzvTNRrQ4C/FoHpxcoAXY0XuOIAcUmRWCp6szdb7ZOcDza1tt94Eudn/fNgkLJdq/uJrB5n57OV3ZyN9GQojT+v0MVH7K7SYgB/KE33w77YAUM8eHMnV+UXGPFo1rTFAjVkluQL/CanCmlaVpH/bi00+mqVyufnkw0vg3jicE=
-Message-ID: <75b66ecd0705011706r3200fcecvff00953264325f30@mail.gmail.com>
-Date: Tue, 1 May 2007 20:06:52 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Subject: Re: 24 lost ticks with 2.6.20.10 kernel
-Cc: "Michel Lespinasse" <walken@zoy.org>, "Chuck Ebbert" <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, "Dave Jones" <davej@redhat.com>,
-       "Jeb Cramer" <cramerj@intel.com>,
-       "John Ronciak" <john.ronciak@intel.com>,
-       "Jesse Brandeburg" <jesse.brandeburg@intel.com>,
-       "Jeff Kirsher" <jeffrey.t.kirsher@intel.com>
-In-Reply-To: <4637BA70.8000108@intel.com>
+	Tue, 1 May 2007 20:16:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=RC8Zddi0cOFOynNhkAQe8800fHODuICK4BPflhmaKqr1d5/WWu3JWzsKpG6siQu1P
+	mZC7u8cvMzdx4CNIoED6g==
+Date: Tue, 1 May 2007 17:16:19 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@engr.sgi.com>, linux-kernel@vger.kernel.org
+Subject: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
+ unpopulated cpuset
+Message-ID: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com>
-	 <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com>
-X-Google-Sender-Auth: cd2308f4c2bf60de
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/1/07, Kok, Auke <auke-jan.h.kok@intel.com> wrote:
-> Michel Lespinasse wrote:
-> > (I've added the E1000 maintainers to the thread as I found the issue
-> > seems to go away after I compile out that driver. For reference, I was
-> > trying to figure out why I lose exactly 24 ticks about every two
-> > seconds, as shown with report_lost_ticks. This is with a DQ965GF
-> > motherboard with onboard E1000).
->
-> that's perfectly likely. The main issue is that we read the hardware stats every
-> two seconds and that can consume quite some time. It's strange that you are
-> losing that many ticks IMHO, but losing one or two might very well be.
->
+You currently cannot remove all cpus or mems from cpus_allowed or
+mems_allowed of a cpuset.  We now allow both if there are no attached
+tasks.
 
-Why do you have to disable all interrupts?  Shouldn't it be sufficient
-to disable interrupts on the e1000 only?
+Cc: Paul Jackson <pj@sgi.com>
+Cc: Christoph Lameter <clameter@engr.sgi.com>
+Signed-off-by: Paul Menage <menage@google.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ kernel/cpuset.c |   38 ++++++++++++++++++++++++++++++--------
+ 1 files changed, 30 insertions(+), 8 deletions(-)
 
-Lee
+diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -822,11 +822,22 @@ static int update_cpumask(struct cpuset *cs, char *buf)
+ 		return -EACCES;
+ 
+ 	trialcs = *cs;
+-	retval = cpulist_parse(buf, trialcs.cpus_allowed);
+-	if (retval < 0)
+-		return retval;
++
++	/*
++	 * We allow a cpuset's cpus_allowed to be empty; if it has attached
++	 * tasks, we'll catch it later when we validate the change and return
++	 * -ENOSPC.
++	 */
++	if (!*buf) {
++		cpus_clear(trialcs.cpus_allowed);
++	} else {
++		retval = cpulist_parse(buf, trialcs.cpus_allowed);
++		if (retval < 0)
++			return retval;
++	}
+ 	cpus_and(trialcs.cpus_allowed, trialcs.cpus_allowed, cpu_online_map);
+-	if (cpus_empty(trialcs.cpus_allowed))
++	/* cpus_allowed cannot be empty for a cpuset with attached tasks. */
++	if (atomic_read(&cs->count) && cpus_empty(trialcs.cpus_allowed))
+ 		return -ENOSPC;
+ 	retval = validate_change(cs, &trialcs);
+ 	if (retval < 0)
+@@ -919,16 +930,27 @@ static int update_nodemask(struct cpuset *cs, char *buf)
+ 		return -EACCES;
+ 
+ 	trialcs = *cs;
+-	retval = nodelist_parse(buf, trialcs.mems_allowed);
+-	if (retval < 0)
+-		goto done;
++
++	/*
++	 * We allow a cpuset's mems_allowed to be empty; if it has attached
++	 * tasks, we'll catch it later when we validate the change and return
++	 * -ENOSPC.
++	 */
++	if (!*buf) {
++		nodes_clear(trialcs.mems_allowed);
++	} else {
++		retval = nodelist_parse(buf, trialcs.mems_allowed);
++		if (retval < 0)
++			goto done;
++	}
+ 	nodes_and(trialcs.mems_allowed, trialcs.mems_allowed, node_online_map);
+ 	oldmem = cs->mems_allowed;
+ 	if (nodes_equal(oldmem, trialcs.mems_allowed)) {
+ 		retval = 0;		/* Too easy - nothing to do */
+ 		goto done;
+ 	}
+-	if (nodes_empty(trialcs.mems_allowed)) {
++	/* mems_allowed cannot be empty for a cpuset with attached tasks. */
++	if (atomic_read(&cs->count) && nodes_empty(trialcs.mems_allowed)) {
+ 		retval = -ENOSPC;
+ 		goto done;
+ 	}
