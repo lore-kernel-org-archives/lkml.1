@@ -1,84 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXEBB5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752403AbXEBCEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbXEBB5w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 21:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXEBB5w
+	id S1752403AbXEBCEJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 22:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932114AbXEBCEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 21:57:52 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:23665 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752330AbXEBB5u (ORCPT
+	Tue, 1 May 2007 22:04:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59126 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbXEBCEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 21:57:50 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=xW0s4g+mOKyHJRvWGq2c1eY+qNUTdfIik0GiZ2QgJooOSfIc6P5BP8+yBaiC1ebEaXrHzd2/0JR6NGrL9RNwg74dGDWt/CgsjQXp7jFTUXEluQ0JiXuNJFwjTX+PHkVWyOTcSbypRxcEmILRrDTFLwauzZpGKfVUtF3S9M1q2nI=  ;
-X-YMail-OSG: rUhueyIVM1kMv7DmSI2poTKZaBYa9I8xuJyyhrp3T7TwmMB7Zsb0t2m_UXT2JmAkOz5dTRmKPg--
-Message-ID: <4637F014.7080409@yahoo.com.au>
-Date: Wed, 02 May 2007 11:57:40 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: rohitseth@google.com
-CC: "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-References: <200704281757.l3SHvUrs026921@smtp.corp.google.com>	 <46372706.5030609@yahoo.com.au> <1178066178.19466.67.camel@galaxy.corp.google.com>
-In-Reply-To: <1178066178.19466.67.camel@galaxy.corp.google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 1 May 2007 22:04:07 -0400
+Subject: Re: [linux-dvb] Re: DST/BT878 module customization (.. was:
+	Critical points about ...)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: Markus Rechberger <mrechberger@gmail.com>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
+In-Reply-To: <Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+	 <1178031333.3958.63.camel@localhost>
+	 <Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 01 May 2007 23:03:51 -0300
+Message-Id: <1178071431.11109.62.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rohit Seth wrote:
-> On Tue, 2007-05-01 at 21:39 +1000, Nick Piggin wrote:
+Em Ter, 2007-05-01 às 16:16 -0700, Trent Piepho escreveu:
+> On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
+> > With this configuration, dvb-bt8xx hangs during initialization,
+> > generating an OOPS, if you have a board with DST (modprobe dvb-bt8xx
+> > never returns).
 > 
->>Rohit Seth wrote:
+> Stupid typo in the first patch, a != should have been ==.
 > 
-> 
->>>If a user is requesting kernel to do (for example) write on a page that is
->>>already mapped with execute and write permissions then it should be treated
->>>as if the user space is doing modifications to that page.  There is no
->>>change in protections so lazy_prot_mmu_update shouldn't be called even
->>>though PG_arch_1 is (I think) set.  Does it answer your concern?
->>
->>I'm not sure that I would agree. For direct modifications of memory via
->>a passed in user virtual address, perhaps. For operations on pagecache,
->>we may not even have a handle to issue the flush cache instruction on (ie.
->>a user virtual address), let alone know whether anyone else is mapping
->>the page.
->>
-> 
-> 
-> Can you please describe the page cache scenario in more detail?  IMO, if
-> a page is user mapped with at least one execute and write permission
-> then the responsibility of update caches lies with user.
+> Fixed:
+> http://linuxtv.org/hg/~tap/dst-new
 
-What if a different user write(2)s the underlying page?
+With the changes, the dst unselection worked.
+
+Those are the logs with dst unselected:
+
+DVB: registering new adapter (bttv0).
+DVB: Unable to find symbol dst_attach()
+frontend_init: Could not find a Twinhan DST.
+dvb-bt8xx: A frontend driver was not found for device 109e/0878 subsystem fbfb/f800
 
 
->>>>What if you were to say remove all the PG_arch_1 code, and do 
->>>>something really simple like flush icache in 
->>>>flush_dcache_page? Would performance suffer horribly?
->>>
->>>
->>>On Itanium, I think it will have some performance penalty (horrible or not I
->>>don't know) as you will be invalidating the caches more often.  And they
->>>alsways look for last 0.1% performance that they can get.
->>
->>Sure, but if we _only_ flushed when page_mapcount was raised,
-> 
-> 
-> You will need this every time there is change in protection (e.g.
-> mprotect) not only when page_mapcount is raised.
+However, when dst is selected, I got those errors:
 
-Yeah, you would retain the flush on fault, I meant you would
-introduce a flush in flush_dcache_page for when mapcount is raised.
+
+DVB: registering new adapter (bttv0).
+dst(0) dst_get_device_id: Recognise [DSTMCI]
+dst(0) dst_get_device_id: Unsupported
+dst(0) dst_check_mb86a15: Found a MB86A15 NIM
+DST type flags : 0x1 newtuner 0x1000 VLF 0x10 firmware version = 2
+dst(0) dst_get_mac: MAC Address=[00:00:00:00:00:00]
+dst(0) dst_get_tuner_info: DST TYpe = MULTI FE
+dst(0) dst_fw_ver: Firmware Ver = 1.4 Build = 02, on 11:5, 22-2-2005
+dst(0) dst_card_type: Device Model=[VP1032]
+dst(0) dst_get_vendor: Vendor=[TWINHAN]
+Unable to handle kernel NULL pointer dereference at 00000000000002f0 RIP:
+<ffffffff883ede94>{:dvb_bt8xx:dvb_bt8xx_probe+2548}
+PGD 6c2c1067 PUD 73f56067 PMD 0
+Oops: 0000 [1] SMP
+CPU 0
+Modules linked in: dst dvb_bt8xx dvb_core bt878 tuner bttv video_buf ir_common compat_ioctl32 btcx_risc tveeprom videodev v4l2_common v4l1_compat dvb_pll ipt_ULOG x_tables autofs4 tun it87 hwmon_vid hwmon eeprom i2c_isa i2c_nforce2 ipv6 snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_intel8x0 snd_ac97_codec snd_ac97_bus snd_pcm snd_timer snd_page_alloc snd soundcore af_packet capi capifs kernelcapi bridge ide_cd binfmt_misc isofs loop nls_iso8859_1 nls_cp850 vfat fat evdev dm_mod usbmouse video usbhid thermal fan container button battery ac cpufreq_ondemand cpufreq_conservative cpufreq_powersave powernow_k8 freq_table processor firmware_class i2c_algo_bit i2c_core pcspkr forcedeth kqemu joydev analog gameport ohci1394 ieee1394 ehci_hcd ohci_hcd usbcore reiserfs sd_mod sata_nv libata scsi_mod
+Pid: 4211, comm: modprobe Tainted: P      2.6.17.4 #1
+RIP: 0010:[<ffffffff883ede94>] <ffffffff883ede94>{:dvb_bt8xx:dvb_bt8xx_probe+2548}
+RSP: 0018:ffff81006f0b5e38  EFLAGS: 00010286
+RAX: ffff8100716bf018 RBX: ffff81007962a000 RCX: 0000000000000000
+RDX: 0000000000000000 RSI: ffff8100716bf018 RDI: ffff8100716bf270
+RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000080
+R10: 0000000000000000 R11: ffffffff8011c530 R12: ffff8100717f7800
+R13: ffff81007962a0d0 R14: ffff81007962a498 R15: ffff81007962a3c8
+FS:  00002aff6d9c06f0(0000) GS:ffffffff80476000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00000000000002f0 CR3: 000000006c1d4000 CR4: 00000000000006e0
+Process modprobe (pid: 4211, threadinfo ffff81006f0b4000, task ffff81007dff42c0)
+Stack: ffff81007962a4b0 ffff81007962a070 0000007176bdc0c0 ffff8100717f7998
+       ffff8100717f7800 ffffffff883f0940 ffffffff883f0940 0000000000000000
+       0000000000518130 ffffffff8026ce95
+Call Trace: <ffffffff8026ce95>{driver_probe_device+101}
+       <ffffffff8026d00a>{__driver_attach+122} <ffffffff8026cf90>{__driver_attach+0}
+       <ffffffff8026c6f9>{bus_for_each_dev+73} <ffffffff8026c2e8>{bus_add_driver+136}
+       <ffffffff80152977>{sys_init_module+199} <ffffffff80109d2a>{system_call+126}
+
+Code: f6 04 25 f0 02 00 00 20 0f 84 ae 01 00 00 48 c7 c7 ae ee 3e
+RIP <ffffffff883ede94>{:dvb_bt8xx:dvb_bt8xx_probe+2548} RSP <ffff81006f0b5e38>
+CR2: 00000000000002f0
+
 
 -- 
-SUSE Labs, Novell Inc.
+Cheers,
+Mauro
+
