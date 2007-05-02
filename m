@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767105AbXEBSOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767068AbXEBSPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767105AbXEBSOz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:14:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767107AbXEBSOz
+	id S1767068AbXEBSPk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767112AbXEBSPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:14:55 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55034 "EHLO mga03.intel.com"
+	Wed, 2 May 2007 14:15:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46364 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767105AbXEBSOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:14:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,481,1170662400"; 
-   d="scan'208";a="223232121"
-Message-ID: <4638D51C.7010603@intel.com>
-Date: Wed, 02 May 2007 11:14:52 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: Michel Lespinasse <walken@zoy.org>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: 24 lost ticks with 2.6.20.10 kernel
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org>
-In-Reply-To: <20070502084146.GA6089@zoy.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 May 2007 18:14:53.0093 (UTC) FILETIME=[C7CE3D50:01C78CE5]
+	id S1767068AbXEBSPj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:15:39 -0400
+Date: Wed, 2 May 2007 20:15:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ting Yang <tingy@cs.umass.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502181533.GA19479@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com> <20070502174829.GX19966@holomorphy.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502174829.GX19966@holomorphy.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse wrote:
->> I've had good results with 2.6.21.1 (even running tickless :)) on these 
->> NICs. Have you tried that yet?
+
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+
+> > There is also p->wait_runtime which is taken into account when 
+> > calculating p->fair_key. So if p3 had waiting in runqueue for long 
+> > before, it can get to run quicker than 10ms later.
 > 
-> Not yet. Coming up... I'd prefer not to rely on new kernels at this
-> point though - but I can certainly try it just to report on current status.
+> Virtual time is time from the task's point of view, which it has spent 
+> executing. ->wait_runtime is a device to subtract out time spent on 
+> the runqueue but not running from what would otherwise be virtual time 
+> to express lag, whether deliberately or coincidentally. [...]
 
-I just checked and the fix I was referring to earlier didn't make it into 
-2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
+CFS is in fact _built around_ the ->wait_runtime metric (which, as its 
+name suggests already, expresses the precise lag a task observes 
+relative to 'ideal' fair execution), so what exactly makes you suspect 
+that this property of the ->wait_runtime metric might be 'coincidental'? 
+;-)
 
-http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
-
-for the changelog and commit id's for the patch:
-
-commit c58b8e4a25a1ba347a0e5d21984c97bd296f1691
-Merge: afc2e82... f50393f...
-Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-Date:   Fri Apr 27 10:14:53 2007 -0700
-
-     Merge branch 'e1000-fixes' of 
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6
-
-     * 'e1000-fixes' of 
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6:
-       e1000: FIX: Stop raw interrupts disabled nag from RT
-       e1000: FIX: firmware handover bits
-       e1000: FIX: be ready for incoming irq at pci_request_irq
-
-Please give this a try and see if it resolves your issues.
-
-hth,
-
-Auke
+	Ingo
