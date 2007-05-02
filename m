@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767070AbXEBSKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767083AbXEBSKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767070AbXEBSKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767076AbXEBSKR
+	id S1767083AbXEBSKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767080AbXEBSKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:10:17 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:54684 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767070AbXEBSKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:10:15 -0400
-Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
-From: john stultz <johnstul@us.ibm.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <200704291524.l3TFOL9j013216@harpo.it.uu.se>
-References: <200704291524.l3TFOL9j013216@harpo.it.uu.se>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 11:10:09 -0700
-Message-Id: <1178129409.6183.12.camel@localhost.localdomain>
+	Wed, 2 May 2007 14:10:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36789 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767082AbXEBSKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:10:46 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
+	DVB
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, v4l-dvb-maintainer@linuxtv.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 02 May 2007 15:10:26 -0300
+Message-Id: <1178129426.29579.17.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-04-29 at 17:24 +0200, Mikael Pettersson wrote:
-> On Thu, 26 Apr 2007 15:42:44 -0700, john stultz wrote:
-> >Another shot in the dark:
-> >
-> >I wonder if the ACPI PM counter is halting in idle. Does booting w/
-> >idle=poll change the behavior? (Please do this while your laptop is
-> >plugged in, as it will run the cpu at full speed all the time).
+Hi Jan,
+
+Em Seg, 2007-04-30 às 14:30 +0200, Jan Engelhardt escreveu:
+> Change Kconfig objects from "menu, config" into "menuconfig" so
+> that the user can disable the whole feature without having to
+> enter the menu first.
 > 
-> Bingo!
+> Also remove one indirection (CONFIG_DVB) that does not seem to
+> be really used inside the kernel.
 
-Awesome! Finally, some progress! Thanks again for putting up w/ all my
-testing requests.
+Hmm.. in fact, it becames harder to unselect DVB, at least on my tests.
+The patch bellow solved the issue. It also allows keeping core DVB,
+disabling the adapters menu.
 
-> I booted the x86-64 2.6.21 final kernel with idle=poll and let the
-> laptop idle for an hour. The ondemand cpufreq governor did reduce
-> the CPU's clock frequency, but that shouldn't have affected the
-> chipset or the ACPI PM counter.
-> 
-> Anyway, after 60 minutes `date' and `hwclock' were still in perfect
-> sync and matched actual time.
-> 
-> Any ideas why this halting in idle doesn't happen with the 32-bit kernel?
+If nobody is against, I intend to apply both Jan and the patch bellow on
+my tree by tomorrow.
 
-No clue. Time to ask Len. :)
+---
 
-Hey Len,
-	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
-I'm guessing the chipset halts the ACPI PM in lower C states. Do you
-have any guesses as to what might differ between x86_64 and i386 ACPI
-idle loops? Or might this be something different in what the BIOS
-exports in x86_64 mode or i386 mode?
+Allow disabling DVB Adapters
 
-Any suggestions on how to dig through this?
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
 
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
 
-Thomas: Heads up, the ACPI PM might be flakier then we thought.
+diff -r 497b1a27357c linux/drivers/media/dvb/Kconfig
+--- a/linux/drivers/media/dvb/Kconfig   Wed May 02 10:11:47 2007 -0300
++++ b/linux/drivers/media/dvb/Kconfig   Wed May 02 11:27:23 2007 -0300
+@@ -3,6 +3,15 @@
+ #
 
-thanks
--john
+ source "drivers/media/dvb/dvb-core/Kconfig"
++
++menuconfig DVB_CAPTURE_DRIVERS
++	bool "DVB/ATSC adapters"
++	depends on DVB_CORE
++	default y
++	---help---
++	  Say Y to select Digital TV adapters
++
++if DVB_CAPTURE_DRIVERS
 
+ comment "Supported SAA7146 based PCI Adapters"
+	depends on DVB_CORE && PCI && I2C
+@@ -30,3 +39,5 @@ comment "Supported DVB Frontends"
+ comment "Supported DVB Frontends"
+	depends on DVB_CORE
+ source "drivers/media/dvb/frontends/Kconfig"
++
++endif # DVB_CAPTURE_DRIVERS
+diff -r 497b1a27357c linux/drivers/media/dvb/dvb-core/Kconfig
+--- a/linux/drivers/media/dvb/dvb-core/Kconfig  Wed May 02 10:11:47 2007
+-0300
++++ b/linux/drivers/media/dvb/dvb-core/Kconfig  Wed May 02 11:06:31 2007
+-0300
+@@ -1,4 +1,4 @@ menuconfig DVB_CORE
+-menuconfig DVB_CORE
++config DVB_CORE
+	tristate "DVB for Linux"
+	depends on NET && INET
+	select CRC32
 
 
