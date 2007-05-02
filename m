@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXEBDSN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992621AbXEBDTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933012AbXEBDSN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:18:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXEBDSL
+	id S2992621AbXEBDTE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:19:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992646AbXEBDTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:18:11 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56511 "EHLO e6.ny.us.ibm.com"
+	Tue, 1 May 2007 23:19:03 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39900 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932768AbXEBDRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:17:51 -0400
-Date: Wed, 2 May 2007 08:55:41 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Paul Menage" <menage@google.com>
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, pj@sgi.com,
-       ebiederm@xmission.com, mbligh@google.com, containers@lists.osdl.org,
-       serue@us.ibm.com, akpm@linux-foundation.org, svaidy@linux.vnet.ibm.com,
-       devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 3/9] Containers (V9): Add tasks file interface
-Message-ID: <20070502032541.GA7311@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070427104607.252541000@menage.corp.google.com> <20070427111300.406327000@menage.corp.google.com> <46378311.6000703@linux.vnet.ibm.com> <6599ad830705011337r6f200baen841919ac17c6f38b@mail.gmail.com>
-Mime-Version: 1.0
+	id S2992621AbXEBDTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 May 2007 23:19:00 -0400
+Date: Tue, 1 May 2007 20:10:26 -0700
+From: Greg KH <gregkh@suse.de>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
+	(-1)
+Message-ID: <20070502031026.GD6784@suse.de>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <46338AEB.2070109@imap.cc> <20070428141024.887342bd.akpm@linux-foundation.org> <4636248E.7030309@imap.cc> <20070430112130.b64321d3.akpm@linux-foundation.org> <46364346.6030407@imap.cc> <20070430124638.10611058.akpm@linux-foundation.org> <463723F4.8060009@imap.cc>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6599ad830705011337r6f200baen841919ac17c6f38b@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <463723F4.8060009@imap.cc>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 01:37:24PM -0700, Paul Menage wrote:
-> > Any chance we could get a per-container task list? It will
-> > help subsystem writers as well.
+On Tue, May 01, 2007 at 01:26:44PM +0200, Tilman Schmidt wrote:
+> Am 30.04.2007 21:46 schrieb Andrew Morton:
+> > Sure, but what about 2.6.21-git3 (or, better, current -git)?
 > 
-> It would be possible, yes - but we probably wouldn't want the overhead
-> (additional ref counts and list manipulations on every fork/exit) of
-> it on by default. We could make it a config option that particular
-> subsystems could select.
-> 
-> I guess the question is how useful is this really, compared to just
-> doing a do_each_thread() and seeing which tasks are in the container?
-> Certainly that's a non-trivial operation, but in what circumstances is
-> it really necessary to do it?
+> 2.6.21-git3 crashed with panic blink at "scanning usb: .."
+> (Nothing in the log this time.)
 
-For the CPU controller I was working on, (a fast access to) such a list would 
-have been valuable. Basically each task has a weight associated with it
-(p->load_weight) which is made to depend upon its class limit. Whenever
-the class limit changes, we need to go and change all its member task's 
-->load_weight value. 
+Eeek, that's not good.
 
-If you don't maintain the per-container task list, I guess I could still
-work around it, by either:
+Can you keep bisecting Linus's tree?  'git bisect' makes this very easy
+to do.  We need to track this down as soon as possible if we can.
 
-	- Walk the task table and find relevant members, OR better
-	  perhaps
-	- Move p->load_weight to a class structure
+> Will continue bisecting -rc7-mm2.
 
--- 
-Regards,
-vatsa
+Can you focus on Linus's tree now, as we know that it is the part
+causing problems?
+
+thanks,
+
+greg k-h
