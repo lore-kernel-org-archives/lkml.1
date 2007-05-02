@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993415AbXEBP7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993437AbXEBQEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993415AbXEBP7N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993427AbXEBP7N
+	id S2993437AbXEBQEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993438AbXEBQEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:59:13 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54161 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2993415AbXEBP7M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:59:12 -0400
-Date: Wed, 2 May 2007 17:02:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: do_tty_write() can block even with O_NONBLOCK?
-Message-ID: <20070502170250.09ae354c@the-village.bc.nu>
-In-Reply-To: <17976.43884.191895.235227@zeus.sw.starentnetworks.com>
-References: <17976.43884.191895.235227@zeus.sw.starentnetworks.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 12:04:53 -0400
+Received: from THUNK.ORG ([69.25.196.29]:59188 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993437AbXEBQEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:04:52 -0400
+Date: Wed, 2 May 2007 12:04:36 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Cabot, Mason B" <mason.b.cabot@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070502160436.GA19442@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Cabot, Mason B" <mason.b.cabot@intel.com>,
+	linux-kernel@vger.kernel.org
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070501142325.09c294bd.akpm@linux-foundation.org> <p73slafxvor.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73slafxvor.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007 11:17:00 -0400
-Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com> wrote:
+On Wed, May 02, 2007 at 02:21:40PM +0200, Andi Kleen wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> > 
+> > Conceivably we could address this in the filesystem without mucking other
+> > things up.  But I'd have thought the simplest damage-control would be to
+> > detect this pattern in samba and to then use glibc's fallocate().
+> 
+> The advantage of detecting it in kernel would be that it would handle
+> Linux applications that do this (I suspect there are some) too.
 
-> 
-> I have two processes with the same tty open, one opens blocking and
-> one opens nonblocking.
-> 
-> If the blocking process blocks doing a write (due to flow control,
-> just going to fast, etc...) the nonblocking process will also block
-> when it writes until the blocking process unblocks.
-> 
-> This seems to occur because do_tty_write() isn't checking for
-> O_NONBLOCK when taking the tty's write mutex.
-> 
-> 
-> Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Um, which applications do you suspect?  So we can hunt down those user
+space applications programmers and slap them silly?  Or rather,
+unsilly, since that there's no good reason to ever suspect that
+writing a byte every 128k would result in a good allocation layout on disk?
 
-Acked-by: Alan Cox <alan@redhat.com>
-
-Looks fine to me.
+						- Ted
