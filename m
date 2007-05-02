@@ -1,124 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbXEDBpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbXEDB7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbXEDBpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 21:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXEDBpv
+	id S1754424AbXEDB7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 21:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbXEDB7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 21:45:51 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45399 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753296AbXEDBpu (ORCPT
+	Thu, 3 May 2007 21:59:22 -0400
+Received: from outbound3.mail.tds.net ([216.170.230.93]:42270 "EHLO
+	outbound3.mail.tds.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754424AbXEDB7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 21:45:50 -0400
-Date: Thu, 3 May 2007 18:45:47 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Chen, Tim C" <tim.c.chen@intel.com>
-cc: Tim Chen <tim.c.chen@linux.intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: RE: Regression with SLUB on Netperf and Volanomark
-In-Reply-To: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0705031839480.16296@schroedinger.engr.sgi.com>
-References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 May 2007 21:59:21 -0400
+X-Greylist: delayed 96385 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 21:59:21 EDT
+Subject: Re: Detecting process death for anycast named process monitoring
+From: "David M. Lloyd" <dmlloyd@flurg.com>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: Glen Turner <gdt@gdt.id.au>, Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <4639111A.70202@nortel.com>
+References: <4638FCEA.4010806@gdt.id.au>  <4639111A.70202@nortel.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 18:12:27 -0500
+Message-Id: <1178147547.26507.96.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hmmmm.. One potential issues are the complicated way the slab is 
-handled. Could you try this patch and see what impact it has?
+On Wed, 2007-05-02 at 16:30 -0600, Chris Friesen wrote:
+> Glen Turner wrote:
+> 
+> > The question is, how can a process with no relationship to another
+> > process detect that process unexpectedly dying?  If named goes
+> > away to a better place, we want to shut down the interface
+> > which causes Quagga to inject the anycast route.
 
-If it has any then remove the cachline alignment and see how that 
-influences things.
+> We did something similar where arbitrary processes can register to be 
+> sent an arbitrary signal when the state of other processes change.
 
+What about something like inotify, but for processes?  That would be
+cool...
 
-Remove constructor from buffer_head
+- DML
 
-Buffer head management uses a constructor which increases overhead
-for object handling. Remove the constructor. That way SLUB can place
-the freepointer in an optimal location instead of after the object
-in potentially another cache line.
-
-Also having no constructor makes allocation and disposal of slabs
-from the page allocator much easier since no pass over the objects
-allocated to call construtors is necessary. SLUB can directly begin by
-serving the first object.
-
-Plus it simplifies the code and removes a difficult to understand
-element for buffer handling.
-
-Align the buffer heads on cacheline boundaries for best performance.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- fs/buffer.c                 |   22 ++++------------------
- include/linux/buffer_head.h |    2 +-
- 2 files changed, 5 insertions(+), 19 deletions(-)
-
-Index: slub/fs/buffer.c
-===================================================================
---- slub.orig/fs/buffer.c	2007-04-30 22:03:21.000000000 -0700
-+++ slub/fs/buffer.c	2007-05-03 18:37:47.000000000 -0700
-@@ -2907,9 +2907,10 @@ static void recalc_bh_state(void)
- 	
- struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
- {
--	struct buffer_head *ret = kmem_cache_alloc(bh_cachep,
-+	struct buffer_head *ret = kmem_cache_zalloc(bh_cachep,
- 				set_migrateflags(gfp_flags, __GFP_RECLAIMABLE));
- 	if (ret) {
-+		INIT_LIST_HEAD(&ret->b_assoc_buffers);
- 		get_cpu_var(bh_accounting).nr++;
- 		recalc_bh_state();
- 		put_cpu_var(bh_accounting);
-@@ -2928,17 +2929,6 @@ void free_buffer_head(struct buffer_head
- }
- EXPORT_SYMBOL(free_buffer_head);
- 
--static void
--init_buffer_head(void *data, struct kmem_cache *cachep, unsigned long flags)
--{
--	if (flags & SLAB_CTOR_CONSTRUCTOR) {
--		struct buffer_head * bh = (struct buffer_head *)data;
--
--		memset(bh, 0, sizeof(*bh));
--		INIT_LIST_HEAD(&bh->b_assoc_buffers);
--	}
--}
--
- static void buffer_exit_cpu(int cpu)
- {
- 	int i;
-@@ -2965,12 +2955,8 @@ void __init buffer_init(void)
- {
- 	int nrpages;
- 
--	bh_cachep = kmem_cache_create("buffer_head",
--					sizeof(struct buffer_head), 0,
--					(SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
--					SLAB_MEM_SPREAD),
--					init_buffer_head,
--					NULL);
-+	bh_cachep = KMEM_CACHE(buffer_head,
-+			SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
- 
- 	/*
- 	 * Limit the bh occupancy to 10% of ZONE_NORMAL
-Index: slub/include/linux/buffer_head.h
-===================================================================
---- slub.orig/include/linux/buffer_head.h	2007-05-03 18:40:51.000000000 -0700
-+++ slub/include/linux/buffer_head.h	2007-05-03 18:41:07.000000000 -0700
-@@ -73,7 +73,7 @@ struct buffer_head {
- 	struct address_space *b_assoc_map;	/* mapping this buffer is
- 						   associated with */
- 	atomic_t b_count;		/* users using this buffer_head */
--};
-+} ____cacheline_aligned_in_smp;
- 
- /*
-  * macro tricks to expand the set_buffer_foo(), clear_buffer_foo()
