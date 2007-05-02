@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766782AbXEBRBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766790AbXEBRBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766782AbXEBRBE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 13:01:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766786AbXEBRBE
+	id S1766790AbXEBRBo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 13:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766794AbXEBRBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 13:01:04 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:5371 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766782AbXEBRBD (ORCPT
+	Wed, 2 May 2007 13:01:44 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55871 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1766790AbXEBRBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 13:01:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	mime-version:content-type;
-	b=fvvdbi+Pnzh/PZFRa/waVwoFuoVN9Bti4YwJfG2ePn1G3KmYbYBFN2Tjts5dObugX
-	1roi1P44xiOct2YhnInIA==
-Date: Wed, 2 May 2007 10:00:08 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Adam Belay <ambx1@neo.rr.com>, Jaroslav Kysela <perex@suse.cz>,
-       linux-kernel@vger.kernel.org
-Subject: [patch] wavefront: only declare isapnp on CONFIG_PNP
-Message-ID: <Pine.LNX.4.64.0705020042520.22968@chino.kir.corp.google.com>
+	Wed, 2 May 2007 13:01:43 -0400
+Date: Wed, 2 May 2007 10:01:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub
+In-Reply-To: <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705020955550.32271@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+ <20070501125559.9ab42896.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-isapnp[] is only used for CONFIG_PNP.  If this configuration option is
-not set, do not declare the array.
+On Wed, 2 May 2007, Hugh Dickins wrote:
 
-Cc: Adam Belay <ambx1@neo.rr.com>
-Cc: Jaroslav Kysela <perex@suse.cz>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- sound/isa/wavefront/wavefront.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> > Why would we need to go back to SLAB if we have not switched to SLUB? SLUB 
+> > is marked experimental and not the default.
+> 
+> I said above that I thought SLUB ought to be defaulted to on throughout
+> the -rcs: if we don't do that, we're not going to learn much from having
+> it in Linus' tree.
 
-diff --git a/sound/isa/wavefront/wavefront.c b/sound/isa/wavefront/wavefront.c
---- a/sound/isa/wavefront/wavefront.c
-+++ b/sound/isa/wavefront/wavefront.c
-@@ -40,7 +40,9 @@ MODULE_SUPPORTED_DEVICE("{{Turtle Beach,Maui/Tropez/Tropez+}}");
- static int index[SNDRV_CARDS] = SNDRV_DEFAULT_IDX;	    /* Index 0-MAX */
- static char *id[SNDRV_CARDS] = SNDRV_DEFAULT_STR;	    /* ID for this card */
- static int enable[SNDRV_CARDS] = SNDRV_DEFAULT_ENABLE;	    /* Enable this card */
-+#ifdef CONFIG_PNP
- static int isapnp[SNDRV_CARDS] = {[0 ... (SNDRV_CARDS - 1)] = 1};
-+#endif
- static long cs4232_pcm_port[SNDRV_CARDS] = SNDRV_DEFAULT_PORT;	/* PnP setup */
- static int cs4232_pcm_irq[SNDRV_CARDS] = SNDRV_DEFAULT_IRQ; /* 5,7,9,11,12,15 */
- static long cs4232_mpu_port[SNDRV_CARDS] = SNDRV_DEFAULT_PORT; /* PnP setup */
+I'd rather be careful with that..... mm is enough for now. Why go to the 
+extremes immediately. If it is an option then people can gradually start 
+testing with it.
+ 
+> > The only problems that I am aware of is(or was) the issue with arches 
+> > modifying page struct fields of slab pages that SLUB needs for its own 
+> > operations. And I thought it was all fixed since the powerpc guys were 
+> > quiet and the patch was in for i386.
+> 
+> You're forgetting your unions in struct page: in the SPLIT_PTLOCK
+> case (NR_CPUS >= 4) the pagetable code is using spinlock_t ptl,
+> which overlays SLUB's first_page and slab pointers.
+
+Uhhh.... Right. So SLUB wont work if the lowest page table block is 
+managed via slabs.
+ 
+> I just tried rebuilding powerpc with the SPLIT_PTLOCK cutover
+> edited to 8 cpus instead, and then no crash.
+> 
+> I presume the answer is just to extend your quicklist work to
+> powerpc's lowest level of pagetables.  The only other architecture
+
+I am not sure how PowerPCs lower pagetable pages work. If they are of 
+PAGE_SIZE then this is no problem.
+
+> which is using kmem_cache for them is arm26, which has
+> "#error SMP is not supported", so won't be giving this problem.
+
+Ahh. Good.
+
+But these are arch specific problems. We could use 
+ARCH_USES_SLAB_PAGE_STRUCT to disable SLUB on these platforms.
