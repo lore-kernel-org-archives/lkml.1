@@ -1,71 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767048AbXEBSGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767049AbXEBSG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767048AbXEBSGN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767047AbXEBSGN
+	id S1767049AbXEBSG7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767047AbXEBSG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:06:13 -0400
-Received: from holomorphy.com ([66.93.40.71]:41992 "EHLO holomorphy.com"
+	Wed, 2 May 2007 14:06:59 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50902 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767044AbXEBSGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:06:11 -0400
-Date: Wed, 2 May 2007 11:06:45 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: l.genoni@oltrelinux.com
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Rajib Majumder <rajibm2005@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, l.genoni@sns.it
-Subject: Re: Kernel Scalability
-Message-ID: <20070502180645.GY19966@holomorphy.com>
-References: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com> <Pine.LNX.4.64.0705021933320.14034@Phoenix.oltrelinux.com>
+	id S1767049AbXEBSG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:06:57 -0400
+Date: Wed, 2 May 2007 20:02:13 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Albert Cahalan <acahalan@gmail.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
+Subject: Re: console font limits
+In-Reply-To: <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705021953030.18504@yvahk01.tjqt.qr>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> 
+ <Pine.LNX.4.64.0705011347300.27246@anakin>  <1178021516.4372.62.camel@daplas>
+ <46375738.1010007@zytor.com> <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705021933320.14034@Phoenix.oltrelinux.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Daniel J Blueman wrote:
->> There are 128-processor IA64 systems which run recent 2.6 kernels out
->> there; the per-processor counters, RCU and page-fault scalability work
->> has been instrumental to the necessary scaling for decent resource
->> usage on these.
->> IIRC, there were some patches being developed to improve pagecache
->> scalability lately too, but I guess it all depends on what kind of
->> workload you have...
 
-On Wed, May 02, 2007 at 07:39:48PM +0200, l.genoni@oltrelinux.com wrote:
-> To stay on systems probably more familiar to the user who asked this 
-> question, there are also some 64 core X86_64 bot AMD and Intel out there, 
-> here the 2.6 kernel is doing 
-> very well even on those intel CPU with shared L2 cache.
-> I have some 16 and 32 core Opteron and never had scalability problems.
-> You have to pay a lot of attention to your kernel configuration  (100 HZ, 
-> just BKL preemption), and to the 
-> filesystems you decide to use.
+On May 1 2007 11:49, Albert Cahalan wrote:
+>>
+>> Well, I think the consensus is that anything beyond that should be done
+>> in userspace; the main such console daemon was Kon2 last I checked.
+>
+> Font size is not a sane place to draw the line. Features are.
+> The levels of support go something like this:
+>
+> 0. 7-bit ASCII
+> 1. Simple direct-to-font VGA characters.
+> 2. UTF-8 and large fonts, but no compositing or wide characters.
+> 3. Simple compositing and double-wide characters. (like xterm)
+> 4. Right-to-left. (like Kermit95)
+> 5. Complex shaping, glyph substitution, and vertical text.
+>
+> Without large fonts, UTF-8 is 90% pointless bloat.
 
-One doesn't typically experience scalability problems per se. One
-rather compares slopes of scaling lines and notes relative scaling
-across kernels, be they versions of the same kernel or different
-codebases altogether. It's still possible to have scalability
-problems, of course, where things basically slowdown severely or
-appear to stop entirely.
+> Personally I don't even need #1, but I think anything less than #3 is
+> really rude toward people outside of Europe+Americas. I especially hate
+> to hear Europeans argue against this when they have 100% precomposed
+> characters for themselves and appear to have played a role (via ISO votes)
+> in denying stuff like the mere 12 precomposed characters needed to use
+> the Yoruba language with simple renderers.
 
-Nonlinear scalability is generally considered to be where the limits
-of scaling set in. There is usually linear scaling until some number
-of processors, and then the limit is where the linearity breaks down.
-Linear scalability is defined as adding resources (e.g. cpus) to the
-system resulting in a linear increase in performance.
+0. yes we want that
 
-To characterize a kernel's scalability, one should say three things:
-(1) workload/benchmark
-(2) linear scaling coefficient
-(3) upper limit on linearity
+1. can't tell
 
-So you would say that when running dbench, Linux scales with a
-coefficient of 0.85 up to 78 processors or similar.
+2. utf8 yes, many text files are in that encoding.
+   large fonts - can't tell, I am fine with the regular vga
+   font infrastructure (8x16, 8x8)
+
+3. compositing - no, don't need that,
+   wide characters - does not even work in vga. just display a '??'
+   and everything is fine.
+
+4. I do not really think this has a future on VC.
+   You would also 'need' kerning and that serif combiner thing (complex
+   shaping?) for Arabic. At best, Arabic would look as horrible on VC
+   as it does in xterm today (no RTL, no serif combiner)
+
+5. Vertical text - who else supports this please? Webpages in languages
+   that want to do TTB(top-to-bottom) scripting use html workarounds -
+   probably because TTB availability it's not even guaranteed in a
+   webbrowser.
+
+In short, the current console is very much OK.
 
 
--- wli
+Jan
+-- 
